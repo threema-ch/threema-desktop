@@ -221,7 +221,7 @@ export type EncryptedKeyStorageFileContents = Readonly<
 >;
 
 /**
- * Validated key storage config for OnPrem
+ * Validated key storage config for OnPrem.
  */
 const KEY_STORAGE_OPPF_CONFIG = v
     .object({
@@ -274,7 +274,7 @@ export const KEY_STORAGE_CONTENTS_SCHEMA = v
 export type KeyStorageContents = Readonly<v.Infer<typeof KEY_STORAGE_CONTENTS_SCHEMA>>;
 
 /**
- * Validate key storage oppf config contents.
+ * Validated key storage OPPF config.
  */
 export type KeyStorageOppfConfig = v.Infer<typeof KEY_STORAGE_OPPF_CONFIG>;
 
@@ -331,8 +331,7 @@ export interface KeyStorage extends ProxyMarked {
     ) => Promise<void>;
 
     /**
-     *
-     *Change the cached information of the Oppf file
+     * Change the cached information of the OPPF file
      *
      * @throws {KeyStorageError} In case encrypting or writing the key storage fails
      */

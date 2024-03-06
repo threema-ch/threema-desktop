@@ -65,7 +65,7 @@ export class FetchBlobBackend implements BlobBackend {
 
         const auth = await this._fetchAuthToken();
         try {
-            response = await fetch(`${this._getUrlForPath(this._baseUrls.uploadUrl, scope)}`, {
+            response = await fetch(`${this._getUrl(this._baseUrls.uploadUrl, scope)}`, {
                 ...this._requestInit,
                 method: 'POST',
                 headers: {
@@ -100,7 +100,7 @@ export class FetchBlobBackend implements BlobBackend {
         let response: Response;
         try {
             response = await fetch(
-                `${this._getUrlForPath(
+                `${this._getUrl(
                     this._baseUrls.downloadUrl.replace('{blobId}', bytesToHex(id)),
                     scope,
                 )}`,
@@ -153,10 +153,7 @@ export class FetchBlobBackend implements BlobBackend {
         let response: Response;
         try {
             response = await fetch(
-                this._getUrlForPath(
-                    this._baseUrls.doneUrl.replace('{blobId}', bytesToHex(id)),
-                    scope,
-                ),
+                this._getUrl(this._baseUrls.doneUrl.replace('{blobId}', bytesToHex(id)), scope),
                 {
                     ...this._requestInit,
                     method: 'POST',
@@ -174,9 +171,12 @@ export class FetchBlobBackend implements BlobBackend {
         }
     }
 
-    private _getUrlForPath(path: string, scope: BlobScope): URL {
+    /**
+     * Create a blob endpoint URL by adding required GET parameters to the {@link baseUrl}.
+     */
+    private _getUrl(baseUrl: string, scope: BlobScope): URL {
         return new URL(
-            `${path}?deviceId=${this._deviceId}&deviceGroupId=${this._deviceGroupId}&scope=${scope}`,
+            `${baseUrl}?deviceId=${this._deviceId}&deviceGroupId=${this._deviceGroupId}&scope=${scope}`,
         );
     }
 

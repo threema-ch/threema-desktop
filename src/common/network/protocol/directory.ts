@@ -70,6 +70,7 @@ export const AUTH_TOKEN_SCHEMA = v
         authToken: v.string(),
     })
     .rest(v.unknown());
+
 /**
  * Validated identity data returned from the identity directory.
  */

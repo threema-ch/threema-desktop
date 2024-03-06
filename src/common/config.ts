@@ -42,9 +42,9 @@ export interface Config {
      * Blob server URLs.
      */
     readonly BLOB_SERVER_URLS: {
-        uploadUrl: string;
-        downloadUrl: string;
-        doneUrl: string;
+        readonly uploadUrl: string;
+        readonly downloadUrl: string;
+        readonly doneUrl: string;
     };
 
     /**

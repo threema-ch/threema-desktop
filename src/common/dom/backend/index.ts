@@ -46,6 +46,7 @@ import {
     extractErrorTraceback,
     type RendezvousCloseCause,
     RendezvousCloseError,
+    extractErrorMessage,
 } from '~/common/error';
 import type {FileStorage, ServicesForFileStorageFactory} from '~/common/file-storage';
 import {
@@ -278,9 +279,9 @@ export type SyncingPhase = 'receiving' | 'restoring' | 'encrypting';
  * Matches the interface in `ui/linking/index.ts`
  */
 export interface OppfFetchConfig {
-    password: string;
-    username: string;
-    oppfUrl: string;
+    readonly password: string;
+    readonly username: string;
+    readonly oppfUrl: string;
 }
 
 /**
@@ -346,7 +347,7 @@ export interface DeviceLinkingSetup extends ProxyMarked {
 }
 
 export interface PinForwarder extends ProxyMarked {
-    forward: (pins: DomainCertificatePin[] | undefined) => void;
+    readonly forward: (pins: DomainCertificatePin[] | undefined) => void;
 }
 
 /**
@@ -719,17 +720,22 @@ export class Backend implements ProxyMarked {
                     oppfUrl: keyStorageContents.onPremConfig.oppfUrl,
                 });
                 if (responseObject.parsedOppfResponse !== undefined) {
+                    // Valid OPPF found! Use it, and cache it in the key storage.
+                    parsedOppfResponse = responseObject.parsedOppfResponse;
                     const newOnPremConfig: KeyStorageOppfConfig = {
                         oppfUrl: keyStorageContents.onPremConfig.oppfUrl,
                         lastUpdated: BigInt(new Date().getUTCMilliseconds()),
                         oppfCachedConfig: responseObject.rawResponse,
                     };
-                    parsedOppfResponse = responseObject.parsedOppfResponse;
-
-                    void earlyServices.keyStorage
+                    earlyServices.keyStorage
                         .changeCachedOnPremConfig(keyStoragePassword, newOnPremConfig)
-                        .catch(assertUnreachable);
+                        .catch((error) =>
+                            log.error(
+                                `Failed to cache OnPrem config: ${extractErrorMessage(ensureError(error), 'short')}`,
+                            ),
+                        );
                 } else {
+                    // OPPF could not be fetched or is not valid. Use cached version instead.
                     parsedOppfResponse = OPPF_VALIDATION_SCHEMA.parse(
                         JSON.parse(keyStorageContents.onPremConfig.oppfCachedConfig),
                     );

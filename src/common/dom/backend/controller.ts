@@ -271,6 +271,7 @@ export class BackendController {
                 break;
             }
         }
+
         // If backend could not be created, that means that no identity was found. Initiate device
         // linking flow.
         if (backendEndpoint === undefined) {

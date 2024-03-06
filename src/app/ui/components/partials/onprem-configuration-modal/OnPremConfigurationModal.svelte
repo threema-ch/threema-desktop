@@ -55,7 +55,7 @@
           'The provided credentials are incorrect. Please check that the combination of URL and work credentials is correct or contact your administrator.',
         );
       } else {
-        log.warn('Could not fetch Oppf file with status code ', res.status);
+        log.warn('OPPF fetch failed with status code ', res.status);
         submitError = $i18n.t(
           'dialog--linking-oppf.error--fetch-error',
           'The provided URL is invalid. Please check that the combination of URL and work credentials is correct or contact your administrator.',

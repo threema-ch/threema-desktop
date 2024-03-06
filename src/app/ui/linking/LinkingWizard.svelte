@@ -2,6 +2,7 @@
   import {onMount} from 'svelte';
 
   import {globals} from '~/app/globals';
+  import OnPremConfigurationModal from '~/app/ui/components/partials/onprem-configuration-modal/OnPremConfigurationModal.svelte';
   import type {
     LinkingParams,
     LinkingWizardConfirmEmojiProps,
@@ -20,8 +21,6 @@
   import Sync from '~/app/ui/linking/steps/Sync.svelte';
   import type {LinkingState} from '~/common/dom/backend';
   import {unreachable} from '~/common/utils/assert';
-
-  import OnPremConfigurationModal from '~/app/ui/components/partials/onprem-configuration-modal/OnPremConfigurationModal.svelte';
 
   const log = globals.unwrap().uiLogging.logger(`ui.component.linking-wizard`);
 
