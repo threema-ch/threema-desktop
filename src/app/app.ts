@@ -444,4 +444,6 @@ async function main(): Promise<() => void> {
     };
 }
 
-main().catch(assertUnreachable);
+main().catch((error) => {
+    throw new Error(`Critical error while initializing app`, {cause: error});
+});
