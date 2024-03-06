@@ -57,7 +57,8 @@ export function assertError<TError extends abstract new (...args: any) => any>(
  * @throws {Error} Always.
  */
 export function assertUnreachable(message: unknown): never {
-    const error = new Error(`Asserted unreachable code section: ${message}`);
+    const options = message instanceof Error ? {cause: message} : {};
+    const error = new Error(`Asserted unreachable code section: ${message}`, options);
     CONSOLE_LOGGER.trace(error);
     throw error;
 }
