@@ -87,6 +87,18 @@
     "label--title": "«{name}» löschen",
     "prose--prompt": "Möchten Sie diesen Kontakt und den entsprechenden Chat wirklich löschen?"
   },
+  "dialog--delete-conversation": {
+    "action--cancel": "Abbrechen",
+    "action--contact-conversation-confirm": "Chat löschen",
+    "action--distribution-list-conversation-confirm": "Verteilerliste löschen",
+    "action--group-conversation-confirm": "Gruppenchat löschen",
+    "error--delete-conversation": "Löschen des Chats fehlgeschlagen",
+    "label--title": "Chat löschen",
+    "prose--contact-conversation-prompt": "Dadurch wird der Chat mit {name} und die darin enthaltenen Nachrichten auf diesem Gerät gelöscht (aber nicht auf Ihren verknüpften Geräten).",
+    "prose--distribution-list-conversation-prompt": "Dadurch wird diese Verteilerliste und die darin enthaltenen Nachrichten auf diesem Gerät gelöscht (aber nicht auf Ihren verknüpften Geräten).",
+    "prose--group-conversation-prompt": "Dadurch wird der Gruppenchat \"{name}\" und die darin enthaltenen Nachrichten auf diesem Gerät gelöscht (aber nicht auf Ihren verknüpften Geräten).",
+    "success--delete-conversation": "Chat wurde erfolgreich gelöscht"
+  },
   "dialog--delete-message": {
     "action--cancel": "Abbrechen",
     "action--confirm": "Nachricht löschen",
@@ -302,6 +314,7 @@
   },
   "messaging": {
     "action--conversation-option-archive": "Archivieren",
+    "action--conversation-option-delete": "Löschen",
     "action--conversation-option-more": "Mehr",
     "action--conversation-option-pin": "Anpinnen",
     "action--conversation-option-unarchive": "Dearchivieren",

@@ -8,5 +8,5 @@ import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
  */
 export interface ContextMenuProviderProps extends PopoverProps {
     readonly items: Readonly<ContextMenuItem[]>;
-    readonly popover: SvelteNullableBinding<Popover>;
+    readonly popover: SvelteNullableBinding<Popover> | undefined;
 }

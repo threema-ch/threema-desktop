@@ -930,4 +930,19 @@ export class ConversationModelRepository implements ConversationRepository {
         const tag = getDebugTagForReceiver(receiver);
         return getByReceiver(this._services, receiver, Existence.UNKNOWN, tag);
     }
+
+    /** @inheritdoc */
+    public async softDeleteByUid(uid: DbConversationUid): Promise<void> {
+        const conversation = getByUid(this._services, uid, Existence.UNKNOWN);
+        if (conversation === undefined) {
+            return;
+        }
+
+        await conversation.get().controller.removeAllMessages.fromLocal();
+        /**
+         * Soft-delete a conversation (i.e., the conversation is kept in the database but is not
+         * shown in the conversation list any more).
+         */
+        conversation.get().controller.update.fromSync({lastUpdate: undefined});
+    }
 }

@@ -87,6 +87,18 @@
     "label--title": "Delete “{name}”",
     "prose--prompt": "Do you really want to delete this contact and the corresponding chat?"
   },
+  "dialog--delete-conversation": {
+    "action--cancel": "Cancel",
+    "action--contact-conversation-confirm": "Delete Chat",
+    "action--distribution-list-conversation-confirm": "Delete Distribution List",
+    "action--group-conversation-confirm": "Delete Group Chat",
+    "error--delete-conversation": "Failed to delete chat",
+    "label--title": "Delete Chat",
+    "prose--contact-conversation-prompt": "This will delete the chat with {name} and its messages on this device (but not on your linked devices).",
+    "prose--distribution-list-conversation-prompt": "This will delete this distribution list and its messages on this device (but not on your linked devices).",
+    "prose--group-conversation-prompt": "This will delete the group chat \"{name}\" and its messages on this device (but not on your linked devices). However, you will stay a member of this group.",
+    "success--delete-conversation": "Chat successfully deleted"
+  },
   "dialog--delete-message": {
     "action--cancel": "Cancel",
     "action--confirm": "Delete Message",
@@ -302,6 +314,7 @@
   },
   "messaging": {
     "action--conversation-option-archive": "Archive",
+    "action--conversation-option-delete": "Delete",
     "action--conversation-option-more": "More",
     "action--conversation-option-pin": "Pin",
     "action--conversation-option-unarchive": "Unarchive",

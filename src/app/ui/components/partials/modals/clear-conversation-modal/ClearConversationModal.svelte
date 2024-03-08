@@ -17,7 +17,7 @@
 
   let modalComponent: SvelteNullableBinding<Modal> = null;
 
-  function handleClickConfirm(): void {
+  function handleSubmit(): void {
     conversation.clear().catch(assertUnreachable);
     modalComponent?.close();
   }
@@ -60,12 +60,16 @@
       },
       {
         label: getConfirmButtonLabel(receiver.type),
-        onClick: handleClickConfirm,
+        onClick: 'submit',
         type: 'filled',
       },
     ],
     title: $i18n.t('dialog--empty-conversation.label--title', 'Empty Chat'),
   }}
+  options={{
+    allowSubmittingWithEnter: true,
+  }}
+  on:submit={handleSubmit}
   on:close
 >
   <div class="content">
