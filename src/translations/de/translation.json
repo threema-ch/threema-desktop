@@ -104,6 +104,19 @@
     "action--confirm": "Nachricht löschen",
     "label--title": "Nachricht von diesem Gerät löschen?"
   },
+  "dialog--device-cookie": {
+    "label--close": "Ohne Geräte-Cookie fortfahren",
+    "label--continue": "Weiter",
+    "label--device-cookie-mismatch-title": "Verbindung von einem anderen Gerät erkannt",
+    "label--device-cookie-title": "Geräte-Cookie-Synchronisation empfohlen",
+    "label--relink": "Erneut verbinden und Geräte-Cookie synchronisieren",
+    "prose--explanation": "Die Desktop-App unterstützt nun Geräte-Cookies. Diese werden eingesetzt, um zu erkennen, ob Ihre Threema-ID auf einem anderen Gerät verwendet wird.",
+    "prose--solution": "Um das Geräte-Cookie zu installieren, müssen Sie die Desktop-App erneut mit Ihrem Mobilgerät verbinden. Aus Sicherheitsgründen empfehlen wir, das Geräte-Cookie so bald als möglich zu installieren."
+  },
+  "dialog--device-cookie-mismatch": {
+    "prose--explanation": "Der Server hat eine Verbindung von einem anderen Gerät mit derselben Threema-ID erkannt. Falls Sie Ihre Threema-ID nicht kürzlich auf einem anderen Gerät verwendet haben, kontaktieren Sie bitte unseren Support und senden Sie wenn möglich die Log-Datei mit.",
+    "prose--solution": "Falls Sie Ihre Threema-ID auf einem anderen Gerät verwendet haben, empfehlen wir, die Desktop-App erneut mit dem Mobilgerät zu verbinden, um das Geräte-Cookie zu synchronisieren."
+  },
   "dialog--discard-media-message": {
     "action--cancel": "Abbrechen",
     "action--confirm": "Verwerfen",

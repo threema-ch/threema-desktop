@@ -104,6 +104,19 @@
     "action--confirm": "Delete Message",
     "label--title": "Delete message from this device?"
   },
+  "dialog--device-cookie": {
+    "label--close": "Continue without device cookie",
+    "label--continue": "Continue",
+    "label--device-cookie-mismatch-title": "Connection from Another Device Detected",
+    "label--device-cookie-title": "Device-Cookie Synchronization Recommended",
+    "label--relink": "Relink and synchronize device cookie",
+    "prose--explanation": "The desktop app now supports device cookies. Device cookies are used to detect a connection from another device using your Threema ID.",
+    "prose--solution": "To install the device cookie, you need to relink the desktop app with your mobile device. For security reasons, we recommend installing the device cookie as soon as possible."
+  },
+  "dialog--device-cookie-mismatch": {
+    "prose--explanation": "The server has detected a connection from a different device with the same Threema ID. If you haven’t recently used your Threema ID on another device, please contact our support and send us the log file if possible.",
+    "prose--solution": "If you have used your Threema ID on another device, we recommend relinking the desktop app with your mobile device to synchronize the device cookie."
+  },
   "dialog--discard-media-message": {
     "action--cancel": "Cancel",
     "action--confirm": "Discard",
