@@ -209,24 +209,29 @@ export class Layer4Decoder implements SyncTransformerCodec<InboundL3Message, Inb
                 // TODO(DESK-1344) Remove this conditional as soon as we make the device cookie mandatory.
                 // For now, we only handle this message only when the device cookie has already been installed once.
                 if (this._controller.csp.deviceCookie !== undefined) {
-                    this._showDeviceCookieMismatchDialog()
-                        .then(() => {
-                            this._encoder.unwrap().forward({
-                                type: D2mPayloadType.PROXY,
-                                payload: {
-                                    type: CspPayloadType.CLEAR_DEVICE_COOKIE_CHANGED_INDICATION,
-                                    payload: struct.encoder(
-                                        structbuf.csp.payload.ClearDeviceCookieChangeIndication,
-                                        {},
-                                    ),
-                                },
-                            });
-                        })
-                        .catch((error) => {
-                            this._log.error(
-                                `Failed to show device cookie mismatch system dialog: ${error}`,
-                            );
-                        });
+                    this._log.debug('Received DEVICE_COOKIE_CHANGED_INDICATION message');
+                    /**
+                     * TODO(DESK-1371) Turn this on
+                     * this._showDeviceCookieMismatchDialog()
+                     * .then(() => {
+                     * this._encoder.unwrap().forward({
+                     * type: D2mPayloadType.PROXY,
+                     * payload: {
+                     * type: CspPayloadType.CLEAR_DEVICE_COOKIE_CHANGED_INDICATION,
+                     * payload: struct.encoder(
+                     * structbuf.csp.payload.ClearDeviceCookieChangeIndication,
+                     * {
+                     * },
+                     * ),
+                     * },
+                     * });
+                     * })
+                     * .catch((error) => {
+                     * this._log.error(
+                     * `Failed to show device cookie mismatch system dialog: ${error}`,
+                     * );
+                     * });
+                     */
                 } else {
                     this._log.warn(
                         'Received DEVICE_COOKIE_CHANGED_INDICATION, but no device cookie is available',
@@ -254,12 +259,13 @@ export class Layer4Decoder implements SyncTransformerCodec<InboundL3Message, Inb
 
     /**
      * Show device cookie mismatch dialog
+     * TODO(DESK-1371) Turn this on.
+     * private async _showDeviceCookieMismatchDialog(): Promise<RemoteProxy<SystemDialogHandle>> {
+     * return await this._services.systemDialog.open({
+     * type: 'device-cookie-mismatch',
+     * });
+     * }
      */
-    private async _showDeviceCookieMismatchDialog(): Promise<RemoteProxy<SystemDialogHandle>> {
-        return await this._services.systemDialog.open({
-            type: 'device-cookie-mismatch',
-        });
-    }
 }
 
 export class Layer4Encoder implements SyncTransformerCodec<OutboundL4Message, OutboundL3Message> {
