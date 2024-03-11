@@ -108,7 +108,8 @@
   "dialog--edit-device-name": {
     "action--cancel": "Cancel",
     "action--confirm": "Confirm",
-    "action--title": "Edit Device Name"
+    "action--title": "Edit Device Name",
+    "error--device-name-empty": "Device name must not be empty"
   },
   "dialog--edit-group": {
     "action--cancel": "Cancel",

@@ -15,7 +15,15 @@
     newDeviceName: string;
   }>();
 
+  function isValidDeviceName(deviceName: string): boolean {
+    return deviceName !== '';
+  }
+
   function handleClickConfirm(): void {
+    if (!isValidDeviceName(value)) {
+      return;
+    }
+
     dispatch('newDeviceName', value);
   }
 </script>
@@ -51,8 +59,19 @@
     on:close
     on:submit={handleClickConfirm}
   >
-    <div class="description">
-      <Input bind:value autofocus id="device-name" {maxlength} />
+    <div class="content">
+      <Input
+        bind:value
+        autofocus
+        id="device-name"
+        {maxlength}
+        error={isValidDeviceName(value)
+          ? undefined
+          : $i18n.t(
+              'dialog--edit-device-name.error--device-name-empty',
+              'Device name must not be empty',
+            )}
+      />
     </div>
   </Modal>
 </template>
@@ -60,15 +79,7 @@
 <style lang="scss">
   @use 'component' as *;
 
-  .description {
+  .content {
     padding: 0 rem(16px);
-
-    .warning {
-      display: flex;
-      align-items: center;
-      justify-content: start;
-      gap: rem(8px);
-      padding: rem(16px) rem(16px) 0;
-    }
   }
 </style>

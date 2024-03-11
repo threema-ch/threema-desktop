@@ -108,7 +108,8 @@
   "dialog--edit-device-name": {
     "action--cancel": "Abbrechen",
     "action--confirm": "Bestätigen",
-    "action--title": "Gerätenamen bearbeiten"
+    "action--title": "Gerätenamen bearbeiten",
+    "error--device-name-empty": "Gerätename darf nicht leer sein"
   },
   "dialog--edit-group": {
     "action--cancel": "Abbrechen",
