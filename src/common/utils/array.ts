@@ -2,21 +2,6 @@ import type {Primitive, ReadonlyUint8Array, u53, u8} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
 
 /**
- * Unpacks the type of items in an {@link Array}. Note: Returns identity if `T` is not an
- * {@link Array}.
- *
- * @example
- * ```ts
- * type Example1 = ItemOf<string[]> // string
- * type Example2 = ItemOf<string[][]> // string[]
- * type Example3 = ItemOf<['a', ['b', 'c']]> // 'a' | ['b', 'c']
- * type Example4 = ItemOf<string> // string
- * type Example5 = ItemOf<string | string[]> // string
- * ```
- */
-export type ItemOf<T> = T extends (infer TItem)[] ? TItem : T;
-
-/**
  * Split a large array into multiple smaller arrays with the same max size.
  *
  * @example
