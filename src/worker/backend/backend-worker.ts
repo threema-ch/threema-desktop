@@ -7,6 +7,7 @@ import {
     type PinForwarder,
 } from '~/common/dom/backend';
 import {createEndpointService} from '~/common/dom/utils/endpoint';
+import {setAssertFailLogger} from '~/common/utils/assert';
 import {
     type EndpointFor,
     PROXY_HANDLER,
@@ -23,6 +24,10 @@ declare const self: DedicatedWorkerGlobalScope;
  */
 export function main(factories: FactoriesForBackend): void {
     const logging = factories.logging('bw', BACKEND_WORKER_CONFIG.LOG_DEFAULT_STYLE);
+    {
+        const assertFailLogger = logging.logger('assert');
+        setAssertFailLogger((error) => assertFailLogger.trace(error));
+    }
     const log = logging.logger('main');
 
     // Greet with version!

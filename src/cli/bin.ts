@@ -8,7 +8,7 @@ import {CONSOLE_LOGGER} from '~/common/logging';
 import {randomBytes} from '~/common/node/crypto/random';
 import {FileSystemKeyStorage} from '~/common/node/key-storage';
 import type {u53} from '~/common/types';
-import {assert, unreachable} from '~/common/utils/assert';
+import {assert, setAssertFailLogger, unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 
 const COMMANDS = ['openSqlite'] as const;
@@ -149,6 +149,7 @@ async function runSqlite(argv: string[]): Promise<void> {
     return undefined;
 }
 
+setAssertFailLogger((error) => CONSOLE_LOGGER.trace(error));
 main()
     .then(() => {})
     .catch((error) => {

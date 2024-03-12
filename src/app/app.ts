@@ -31,10 +31,10 @@ import {initCrashReportingInSandboxBuilds} from '~/common/dom/utils/crash-report
 import {createEndpointService} from '~/common/dom/utils/endpoint';
 import type {ElectronIpc, SystemInfo} from '~/common/electron-ipc';
 import {extractErrorTraceback} from '~/common/error';
-import {RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
+import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import type {SettingsService} from '~/common/model/types/settings';
 import type {DomainCertificatePin, u53} from '~/common/types';
-import {assertUnreachable, unwrap} from '~/common/utils/assert';
+import {assertUnreachable, setAssertFailLogger, unwrap} from '~/common/utils/assert';
 import {Delayed} from '~/common/utils/delayed';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import type {ReadableStore} from '~/common/utils/store';
@@ -165,6 +165,10 @@ async function main(): Promise<() => void> {
     const fileLogger = new RemoteFileLogger(window.app.logToFile);
     const logging = TeeLogger.factory([consoleLogger, TagLogger.unstyled(fileLogger, 'app')]);
     const log = logging.logger('main');
+    {
+        const assertFailLogger = logging.logger('assert');
+        setAssertFailLogger((error) => assertFailLogger.trace(error));
+    }
     initCrashReportingInSandboxBuilds(log);
 
     // Get system info
@@ -449,6 +453,8 @@ async function main(): Promise<() => void> {
     };
 }
 
+// Temporarily set primitive assertion failed logger, then run main
+setAssertFailLogger((error) => CONSOLE_LOGGER.trace(error));
 main().catch((error) => {
     throw new Error(`Critical error while initializing app`, {cause: error});
 });

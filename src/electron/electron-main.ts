@@ -30,7 +30,14 @@ import type {LogFileInfo, LogInfo} from '~/common/node/file-storage/log-info';
 import {directoryModeInternalObjectIfPosix} from '~/common/node/fs';
 import {FileLogger} from '~/common/node/logging';
 import type {DomainCertificatePin, ReadonlyUint8Array, u53} from '~/common/types';
-import {assert, assertUnreachable, ensureError, unreachable, unwrap} from '~/common/utils/assert';
+import {
+    assert,
+    assertUnreachable,
+    ensureError,
+    setAssertFailLogger,
+    unreachable,
+    unwrap,
+} from '~/common/utils/assert';
 
 import {createTlsCertificateVerifier} from './tls-cert-verifier';
 
@@ -444,6 +451,10 @@ async function init(): Promise<MainInit> {
         logging = tagLogging;
     } else {
         logging = TeeLogger.factory([tagLogging, TagLogger.unstyled(fileLogger, 'main')]);
+    }
+    {
+        const assertFailLogger = logging.logger('assert');
+        setAssertFailLogger((error) => assertFailLogger.trace(error));
     }
     // eslint-disable-next-line require-atomic-updates
     log = logging.logger('main');
@@ -1101,7 +1112,8 @@ function main(
     }
 }
 
-// Initialise and run main app
+// Temporarily set primitive assertion failed logger, then initialise and run main app
+setAssertFailLogger((error) => CONSOLE_LOGGER.trace(error));
 (async () => {
     const signal = {start: false};
 

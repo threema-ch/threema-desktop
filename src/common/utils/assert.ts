@@ -1,4 +1,11 @@
-import {CONSOLE_LOGGER} from '~/common/logging';
+let assertFailLogger: ((error: Error) => void) | undefined;
+
+/**
+ * Set a global trace error logger that is called when an assertion fails.
+ */
+export function setAssertFailLogger(logger: (error: Error) => void): void {
+    assertFailLogger = logger;
+}
 
 /**
  * Assert a condition.
@@ -11,7 +18,7 @@ import {CONSOLE_LOGGER} from '~/common/logging';
 export function assert(condition: boolean, message?: string): asserts condition {
     if (!condition) {
         const error = new Error(`Assertion failed, message: ${message}`);
-        CONSOLE_LOGGER.trace(error);
+        assertFailLogger?.(error);
         throw error;
     }
 }
@@ -59,7 +66,7 @@ export function assertError<TError extends abstract new (...args: any) => any>(
 export function assertUnreachable(message: unknown): never {
     const options = message instanceof Error ? {cause: message} : {};
     const error = new Error(`Asserted unreachable code section: ${message}`, options);
-    CONSOLE_LOGGER.trace(error);
+    assertFailLogger?.(error);
     throw error;
 }
 
@@ -73,7 +80,7 @@ export function assertUnreachable(message: unknown): never {
  */
 export function unreachable(value: never, error?: Error): never {
     error ??= new Error('Unreachable code section!');
-    CONSOLE_LOGGER.trace(error);
+    assertFailLogger?.(error);
     throw error;
 }
 
