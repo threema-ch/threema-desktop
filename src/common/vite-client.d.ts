@@ -351,6 +351,9 @@ interface ImportMetaEnv extends ViteDefaultImportMetaEnv, BuildConfig {
     readonly ELECTRON_SETTINGS_PATH: readonly string[];
     readonly ARGON2_MIN_MEMORY_BYTES: import('./types').u53;
 
+    // Trusted OnPrem config public signature keys
+    readonly ONPREM_CONFIG_TRUSTED_PUBLIC_KEYS: readonly string[];
+
     // Public-key pins (HPKP)
     readonly TLS_CERTIFICATE_PINS: import('./types').DomainCertificatePin[] | undefined;
 

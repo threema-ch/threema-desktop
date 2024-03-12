@@ -26,6 +26,9 @@ export const NACL_CONSTANTS = {
      */
     MAC_LENGTH: 16,
 
+    /**
+     * Ed25519 signature length in bytes.
+     */
     SIGNATURE_LENGTH: 64,
 } as const;
 
@@ -185,12 +188,6 @@ export function isReadonlyRawKey<TLength extends SecretKeyLength>(
 export type PublicKey = WeakOpaque<ReadonlyUint8Array, {readonly PublicKey: unique symbol}>;
 
 /**
- * This can be used where we call the typed NaCL interface directly and where performance does not matter that much.
- * An example are signature verifications.
- */
-export type NonReadonlyPublicKey = WeakOpaque<Uint8Array, {readonly PublicKey: unique symbol}>;
-
-/**
  * Type guard for {@link PublicKey}.
  */
 export function isPublicKey(raw: unknown): raw is PublicKey {
@@ -244,6 +241,64 @@ export function ensureNonceHash(value: ReadonlyUint8Array): NonceHash {
 }
 
 /**
+ * An Ed25519 public key. Must be exactly 32 bytes long.
+ */
+export type Ed25519PublicKey = WeakOpaque<
+    ReadonlyUint8Array,
+    {readonly Ed25519PublicKey: unique symbol}
+>;
+
+/**
+ * Type guard for {@link Ed25519PublicKey}.
+ */
+export function isEd25519PublicKey(raw: unknown): raw is Ed25519PublicKey {
+    return raw instanceof Uint8Array && raw.byteLength === NACL_CONSTANTS.KEY_LENGTH;
+}
+
+/**
+ * Ensure input is a valid {@link Ed25519PublicKey}.
+ *
+ * @throws If the array is not a valid public key.
+ */
+export function ensureEd25519PublicKey(key: ReadonlyUint8Array): Ed25519PublicKey {
+    if (!isEd25519PublicKey(key)) {
+        throw new Error(
+            `Expected public key to be ${NACL_CONSTANTS.KEY_LENGTH} bytes but has ${key.byteLength} bytes`,
+        );
+    }
+    return key;
+}
+
+/**
+ * An Ed25519 signature. Must be exactly 64 bytes long.
+ */
+export type Ed25519Signature = WeakOpaque<
+    ReadonlyUint8Array,
+    {readonly Ed25519Signature: unique symbol}
+>;
+
+/**
+ * Type guard for {@link Ed25519Signature}.
+ */
+export function isEd25519Signature(raw: unknown): raw is Ed25519Signature {
+    return raw instanceof Uint8Array && raw.byteLength === NACL_CONSTANTS.SIGNATURE_LENGTH;
+}
+
+/**
+ * Ensure input is a valid {@link Ed25519Signature}.
+ *
+ * @throws If the array is not a valid public key.
+ */
+export function ensureEd25519Signature(signature: ReadonlyUint8Array): Ed25519Signature {
+    if (!isEd25519Signature(signature)) {
+        throw new Error(
+            `Expected Ed25519 signature to be ${NACL_CONSTANTS.SIGNATURE_LENGTH} bytes but has ${signature.byteLength} bytes`,
+        );
+    }
+    return signature;
+}
+
+/**
  * The first 16 byte of an NaCl nonce as used in the chat server protocol.
  */
 export type Cookie = WeakOpaque<Uint8Array, {readonly Cookie: unique symbol}>;
@@ -257,11 +312,6 @@ export type RawEncryptedData = WeakOpaque<Uint8Array, {readonly RawEncryptedData
  * Encrypted data view (without any headroom upfront).
  */
 export type EncryptedData = WeakOpaque<Uint8Array, {readonly EncryptedData: unique symbol}>;
-
-/**
- * Data signed with ED25519.
- */
-export type SignedDataEd25519 = WeakOpaque<Uint8Array, {readonly SignedData: unique symbol}>;
 
 /**
  * Concatenation of the nonce, followed by the encrypted data view.
@@ -364,13 +414,17 @@ export interface CryptoBackend {
     readonly randomBytes: <T extends ArrayBufferView>(buffer: T) => T;
 
     /**
+     * Verify an ED25519 signed message.
      *
-     * Apply ED25519 signature verification
+     * @param publicKey The Ed25519 public key.
+     * @param message The signed message.
+     * @param signature The Ed25519 signature.
      */
     readonly verifyEd25519Signature: (
-        message: SignedDataEd25519,
-        pk: NonReadonlyPublicKey,
-    ) => ReadonlyUint8Array | undefined;
+        publicKey: Ed25519PublicKey,
+        message: ReadonlyUint8Array,
+        signature: Ed25519Signature,
+    ) => void;
 
     /**
      * Derive a public key from a secret key.

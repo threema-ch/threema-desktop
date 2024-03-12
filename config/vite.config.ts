@@ -234,6 +234,13 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
         ELECTRON_SETTINGS_PATH: ['data', 'electron-settings.json'],
         ARGON2_MIN_MEMORY_BYTES: env.entry === 'mocha-tests' ? 100 * KiB : 128 * MiB,
 
+        // Trusted OnPrem config public signature keys
+        ONPREM_CONFIG_TRUSTED_PUBLIC_KEYS: [
+            'ek1qBp4DyRmLL9J5sCmsKSfwbsiGNB4veDAODjkwe/k=',
+            'Hrk8aCjwKkXySubI7CZ3y9Sx+oToEHjNkGw98WSRneU=',
+            '5pEn1T/5bhecNWrp9NgUQweRfgVtu/I8gRb3VxGP7k4=',
+        ],
+
         // Public-key pins (HPKP)
         TLS_CERTIFICATE_PINS:
             env.environment !== 'onprem'

@@ -277,9 +277,10 @@ export class BackendController {
                 state: 'initializing',
             });
 
+            // Note: `oppfConfig` will never resolve in non OnPrem builds.
             const oppfConfig = new ResolvablePromise<OppfFetchConfig>({uncaught: 'default'});
 
-            // Show linking screen with QR code
+            // Show linking screen
             const userPassword = new ResolvablePromise<string>({uncaught: 'default'});
             await showLinkingWizard(linkingStateStore, userPassword, oppfConfig);
 

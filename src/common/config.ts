@@ -1,4 +1,9 @@
-import {ensurePublicKey, type PublicKey} from '~/common/crypto';
+import {
+    ensurePublicKey,
+    type Ed25519PublicKey,
+    type PublicKey,
+    ensureEd25519PublicKey,
+} from '~/common/crypto';
 import type * as oppf from '~/common/dom/backend/onprem/oppf';
 import type {BlobIdString} from '~/common/network/protocol/blob';
 import {
@@ -9,6 +14,7 @@ import {
 } from '~/common/network/types';
 import type {u16, u32, u53} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
+import {base64ToU8a} from '~/common/utils/base64';
 import {byteToHex} from '~/common/utils/byte';
 import {applyVariables} from '~/common/utils/string';
 
@@ -104,6 +110,9 @@ export interface Config {
      * User agent used for network requests.
      */
     readonly USER_AGENT: string;
+
+    // Trusted OnPrem config public signature keys
+    readonly ONPREM_CONFIG_TRUSTED_PUBLIC_KEYS: readonly Ed25519PublicKey[];
 }
 
 function applyVariablesToUrl(
@@ -141,6 +150,7 @@ export const STATIC_CONFIG: Pick<
     | 'FILE_STORAGE_PATH'
     | 'DATABASE_PATH'
     | 'USER_AGENT'
+    | 'ONPREM_CONFIG_TRUSTED_PUBLIC_KEYS'
 > = {
     MEDIATOR_FRAME_MIN_BYTE_LENGTH: 4,
     MEDIATOR_FRAME_MAX_BYTE_LENGTH: 65536,
@@ -153,6 +163,9 @@ export const STATIC_CONFIG: Pick<
     USER_AGENT: `Threema Desktop/${import.meta.env.BUILD_VERSION} (${
         import.meta.env.BUILD_VARIANT
     }, ${import.meta.env.BUILD_TARGET})`,
+    ONPREM_CONFIG_TRUSTED_PUBLIC_KEYS: import.meta.env.ONPREM_CONFIG_TRUSTED_PUBLIC_KEYS.map(
+        (key) => ensureEd25519PublicKey(base64ToU8a(key)),
+    ),
 };
 
 /**
@@ -248,7 +261,7 @@ export function createDefaultConfig(): Config {
  *
  * @throws {Error} if not called within an OnPrem build.
  */
-export function createConfigFromOppf(onPremConfig: oppf.Type): Config {
+export function createConfigFromOppf(onPremConfig: oppf.OppfFile): Config {
     return createConfig({
         CHAT_SERVER_KEY: onPremConfig.chat.publicKey,
         MEDIATOR_SERVER_URL: onPremConfig.mediator.url,

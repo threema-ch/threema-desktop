@@ -21,6 +21,11 @@
 
   let inputElement: SvelteNullableBinding<HTMLInputElement> = null;
 
+  /** Select input */
+  export function select(): void {
+    inputElement?.select();
+  }
+
   /**
    * Bring focus to this input.
    */

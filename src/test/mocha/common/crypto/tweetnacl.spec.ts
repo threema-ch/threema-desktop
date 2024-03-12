@@ -9,13 +9,18 @@ import {
     type RawPlainData,
     type ReadonlyRawKey,
     wrapRawKey,
+    ensureEd25519Signature,
+    type Ed25519PublicKey,
+    type Ed25519Signature,
 } from '~/common/crypto';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {CryptoError} from '~/common/error';
 import type {ReadonlyUint8Array} from '~/common/types';
+import {unwrap} from '~/common/utils/assert';
 import chaiByteEqual from '~/test/common/plugins/byte-equal';
 import getSharedBoxTestVectors from '~/test/mocha/common/data/box.random';
 import getSecretBoxTestVectors from '~/test/mocha/common/data/secretbox.random';
+import getEd25519SignatureTestVectors from '~/test/mocha/common/data/sign';
 import {fakeRandomBytes} from '~/test/mocha/common/utils';
 
 const {expect} = chai.use(chaiByteEqual);
@@ -44,12 +49,58 @@ export function run(): void {
         it('should fix nonce length to 24 bytes', function () {
             expect(NACL_CONSTANTS.NONCE_LENGTH).to.equal(24);
         });
+
+        it('should fix Ed25519 signature length to 64 bytes', function () {
+            expect(NACL_CONSTANTS.SIGNATURE_LENGTH).to.equal(64);
+        });
     });
 
     describe('Crypto backend', function () {
         describe('TweetNaClBackend', function () {
             const tweetnacl = new TweetNaClBackend(fakeRandomBytes);
             const invalidReadonlyRawKey = mockReadonlyRawKey(new Uint8Array(31));
+
+            describe('#verifyEd25519Signature', function () {
+                const vectors = getEd25519SignatureTestVectors();
+                const [validPublicKey, validMessage, validSignature] = unwrap(vectors[0]);
+
+                it('should pass with valid signature', () => {
+                    tweetnacl.verifyEd25519Signature(validPublicKey, validMessage, validSignature);
+                });
+
+                it('should fail with invalid signature', () => {
+                    expect(() =>
+                        tweetnacl.verifyEd25519Signature(
+                            validPublicKey,
+                            validMessage,
+                            ensureEd25519Signature(tweetnacl.randomBytes(new Uint8Array(64))),
+                        ),
+                    ).to.throw(CryptoError);
+                });
+
+                it('should validate public key and signature length', () => {
+                    expect(() =>
+                        tweetnacl.verifyEd25519Signature(
+                            new Uint8Array(31) as ReadonlyUint8Array as Ed25519PublicKey,
+                            validMessage,
+                            validSignature,
+                        ),
+                    ).to.throw(CryptoError);
+                    expect(() =>
+                        tweetnacl.verifyEd25519Signature(
+                            validPublicKey,
+                            validMessage,
+                            new Uint8Array(63) as ReadonlyUint8Array as Ed25519Signature,
+                        ),
+                    ).to.throw(CryptoError);
+                });
+
+                it('should pass test vectors', function () {
+                    for (const [publicKey, message, signature] of vectors) {
+                        tweetnacl.verifyEd25519Signature(publicKey, message, signature);
+                    }
+                });
+            });
 
             describe('#getSecretBox()', function () {
                 it('should assert secret key length', () => {

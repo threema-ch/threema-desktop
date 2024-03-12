@@ -10,6 +10,8 @@
   import Step from '~/app/ui/linking/Step.svelte';
   import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
   import Password from '~/app/ui/svelte-components/blocks/Input/Password.svelte';
+  import {STATIC_CONFIG} from '~/common/config';
+  import {ensureBaseUrl, validateUrl} from '~/common/network/types';
   import {assertUnreachable} from '~/common/utils/assert';
   import {u8aToBase64} from '~/common/utils/base64';
   import {UTF8} from '~/common/utils/codec';
@@ -19,6 +21,8 @@
   type $$Props = OnPremConfigurationModalProps;
   export let oppfConfig: $$Props['oppfConfig'];
 
+  let oppfUrlInput: Input;
+
   let oppfUrl = 'https://';
   let password = '';
   let username = '';
@@ -26,28 +30,32 @@
   let submitError: string | undefined = undefined;
 
   async function handleClickConfirm(): Promise<void> {
-    const headers = new Headers();
-    headers.append('Authorization', `Basic ${u8aToBase64(UTF8.encode(`${username}:${password}`))}`);
-
-    let finalUrlString = oppfUrl;
+    let urlString = oppfUrl;
     try {
-      if (!/^https?:\/\//iu.test(finalUrlString)) {
-        finalUrlString = `https://${finalUrlString}`;
+      // Ensure the URL starts with 'https://'
+      if (!/^https?:\/\//iu.test(urlString)) {
+        urlString = `https://${urlString}`;
       }
 
-      let finalUrl = new URL(finalUrlString);
-      if (!finalUrl.toString().endsWith('.oppf')) {
-        finalUrl = new URL(`${finalUrl}/prov/config.oppf`);
+      // Ensure it points to an '.oppf' file or apply the default path on the base URL.
+      let url;
+      if (urlString.endsWith('.oppf')) {
+        url = validateUrl(urlString, {protocol: 'https:', search: 'deny', hash: 'deny'});
+      } else {
+        url = new URL('prov/config.oppf', ensureBaseUrl(urlString, 'https:'));
       }
-      const res = await fetch(finalUrl, {
-        headers,
+      const response = await fetch(url, {
+        headers: {
+          'user-agent': STATIC_CONFIG.USER_AGENT,
+          'authorization': `Basic ${u8aToBase64(UTF8.encode(`${username}:${password}`))}`,
+        },
         method: 'HEAD',
       });
-      if (res.status === 200) {
+      if (response.status === 200) {
         oppfConfig.resolve({
           password,
           username,
-          oppfUrl: finalUrl.toString(),
+          oppfUrl: url.toString(),
         });
       } else if (response.status === 401) {
         submitError = $i18n.t(
@@ -55,7 +63,7 @@
           'The provided credentials are incorrect. Please check that the combination of URL and work credentials is correct or contact your administrator.',
         );
       } else {
-        log.warn('OPPF fetch failed with status code ', res.status);
+        log.warn('OPPF fetch failed with status code ', response.status);
         submitError = $i18n.t(
           'dialog--linking-oppf.error--fetch-error',
           'The provided URL is invalid. Please check that the combination of URL and work credentials is correct or contact your administrator.',
@@ -111,7 +119,9 @@
     <Input
       id="oppf_url"
       label={$i18n.t('dialog--linking-oppf.label--url', 'URL')}
+      bind:this={oppfUrlInput}
       bind:value={oppfUrl}
+      on:focus={() => oppfUrlInput.select()}
     ></Input>
     {#if submitError !== undefined}
       <div class="error"><Text text={submitError} color="inherit" family="secondary"></Text></div>

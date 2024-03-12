@@ -12,7 +12,6 @@ import {
     createDefaultConfig,
     STATIC_CONFIG,
 } from '~/common/config';
-import type {NonReadonlyPublicKey, SignedDataEd25519} from '~/common/crypto';
 import {SecureSharedBoxFactory} from '~/common/crypto/box';
 import {NonceService} from '~/common/crypto/nonce';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
@@ -27,7 +26,7 @@ import {DeviceBackend, type DeviceIds, type IdentityData} from '~/common/device'
 import {workLicenseCheckJob} from '~/common/dom/backend/background-jobs';
 import {DeviceJoinProtocol, type DeviceJoinResult} from '~/common/dom/backend/join';
 import * as oppf from '~/common/dom/backend/onprem/oppf';
-import {OPPF_VALIDATION_SCHEMA} from '~/common/dom/backend/onprem/oppf';
+import {OPPF_FILE_SCHEMA} from '~/common/dom/backend/onprem/oppf';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {DebugBackend} from '~/common/dom/debug';
 import {ConnectionManager} from '~/common/dom/network/protocol/connection';
@@ -712,22 +711,27 @@ export class Backend {
                 );
 
                 // Download and verify OPPF from OnPrem server
-                let parsedOppfResponse: oppf.Type;
-                const responseObject = await this._fetchAndVerifyOppfFile(phase1Services, {
-                    password: workCredentials.password,
-                    username: workCredentials.username,
-                    oppfUrl: keyStorageContents.onPremConfig.oppfUrl,
-                });
-                if (responseObject.parsedOppfResponse !== undefined) {
-                    // Valid OPPF found! Use it, and cache it in the key storage.
-                    parsedOppfResponse = responseObject.parsedOppfResponse;
-                    const newOnPremConfig: KeyStorageOppfConfig = {
+                let oppfFile;
+                try {
+                    oppfFile = await this._fetchAndVerifyOppfFile(phase1Services, {
+                        password: workCredentials.password,
+                        username: workCredentials.username,
                         oppfUrl: keyStorageContents.onPremConfig.oppfUrl,
-                        lastUpdated: BigInt(new Date().getUTCMilliseconds()),
-                        oppfCachedConfig: responseObject.rawResponse,
-                    };
+                    });
+                } catch (error) {
+                    log.warn(
+                        'Unable to fetch/decode/verify OPPF file, falling back to the cached OnPrem configuration',
+                        error,
+                    );
+                }
+                if (oppfFile !== undefined) {
+                    // Valid OPPF config found! Use it and cache it in the key storage.
                     phase1Services.keyStorage
-                        .changeCachedOnPremConfig(keyStoragePassword, newOnPremConfig)
+                        .changeCachedOnPremConfig(keyStoragePassword, {
+                            oppfUrl: keyStorageContents.onPremConfig.oppfUrl,
+                            lastUpdated: BigInt(new Date().getUTCMilliseconds()),
+                            oppfCachedConfig: oppfFile.string,
+                        })
                         .catch((error) =>
                             log.error(
                                 `Failed to cache OnPrem config: ${extractErrorMessage(ensureError(error), 'short')}`,
@@ -735,12 +739,16 @@ export class Backend {
                         );
                 } else {
                     // OPPF could not be fetched or is not valid. Use cached version instead.
-                    parsedOppfResponse = OPPF_VALIDATION_SCHEMA.parse(
-                        JSON.parse(keyStorageContents.onPremConfig.oppfCachedConfig),
-                    );
+                    oppfFile = {
+                        parsed: OPPF_FILE_SCHEMA.parse(
+                            JSON.parse(keyStorageContents.onPremConfig.oppfCachedConfig),
+                        ),
+                        string: keyStorageContents.onPremConfig.oppfCachedConfig,
+                    };
                 }
-                await wrappedPinForwarder.forward(parsedOppfResponse.publicKeyPinning);
-                config = createConfigFromOppf(parsedOppfResponse);
+
+                await wrappedPinForwarder.forward(oppfFile.parsed.publicKeyPinning);
+                config = createConfigFromOppf(oppfFile.parsed);
             } catch (error) {
                 throw new BackendCreationError(
                     'onprem-configuration-error',
@@ -901,39 +909,33 @@ export class Backend {
 
         let config: Config;
         let oppfConfig: OppfFetchConfig | undefined;
-        let oppfFileRaw: string | undefined;
+        let oppfFile: {readonly parsed: oppf.OppfFile; readonly string: string} | undefined;
         let workCredentials: ThreemaWorkCredentials | undefined;
 
-        // Handle on prem dialog if necesary
+        // Handle OnPrem (if necessary)
         if (import.meta.env.BUILD_ENVIRONMENT === 'onprem') {
+            // Request OPPF config from the user
+            await linkingState.updateState({state: 'oppf'});
+            oppfConfig = await wrappedDeviceLinkingSetup.oppfConfig;
+
+            // Fetch and verify OPPF
             try {
-                oppfConfig = await wrappedDeviceLinkingSetup.oppfConfig;
-                const responseObject = await this._fetchAndVerifyOppfFile(
-                    phase1Services,
-                    oppfConfig,
-                );
+                oppfFile = await this._fetchAndVerifyOppfFile(phase1Services, oppfConfig);
                 workCredentials = {
                     username: oppfConfig.username,
                     password: oppfConfig.password,
                 };
-                const parsedOppfResponse = responseObject.parsedOppfResponse;
-                if (parsedOppfResponse === undefined) {
-                    log.warn('Verifying the signed OPPF failed');
-                    return await throwLinkingError('Verifying the OPPF file failed', {
-                        kind: 'onprem-configuration-error',
-                    });
-                }
-                oppfFileRaw = responseObject.rawResponse;
-                await wrappedPinForwarder.forward(parsedOppfResponse.publicKeyPinning);
-                config = createConfigFromOppf(parsedOppfResponse);
             } catch (error) {
-                log.error('Failed to fetch OPPF file with reason:', error);
+                log.error('Unable to fetch/decode/verify OPPF file', error);
                 return await throwLinkingError(
-                    'Fetching the OPPF file failed',
+                    'Fetching or verifying the OPPF file failed',
                     {kind: 'onprem-configuration-error'},
                     ensureError(error),
                 );
             }
+
+            await wrappedPinForwarder.forward(oppfFile.parsed.publicKeyPinning);
+            config = createConfigFromOppf(oppfFile.parsed);
         } else {
             config = createDefaultConfig();
         }
@@ -1250,7 +1252,7 @@ export class Backend {
         if (import.meta.env.BUILD_ENVIRONMENT === 'onprem') {
             onPremConfig = {
                 oppfUrl: unwrap(oppfConfig).oppfUrl,
-                oppfCachedConfig: unwrap(oppfFileRaw),
+                oppfCachedConfig: unwrap(oppfFile).string,
                 lastUpdated: BigInt(new Date().getUTCMilliseconds()),
             };
         }
@@ -1302,42 +1304,27 @@ export class Backend {
 
     private static async _fetchAndVerifyOppfFile(
         earlyServices: EarlyServicesThatDontRequireConfig,
-        oppfConfig: OppfFetchConfig,
-    ): Promise<
-        | {readonly parsedOppfResponse: oppf.Type; readonly rawResponse: string}
-        | {readonly parsedOppfResponse: undefined}
-    > {
+        {oppfUrl, username, password}: OppfFetchConfig,
+    ): Promise<{readonly parsed: oppf.OppfFile; readonly string: string}> {
         let response: Response;
         try {
-            response = await fetch(oppfConfig.oppfUrl, {
+            response = await fetch(oppfUrl, {
                 method: 'GET',
-                headers: new Headers({
-                    'authorization': `Basic ${u8aToBase64(UTF8.encode(`${oppfConfig.username}:${oppfConfig.password}`))}}`,
+                headers: {
+                    'authorization': `Basic ${u8aToBase64(UTF8.encode(`${username}:${password}`))}}`,
                     'accept': 'application/json',
                     'user-agent': STATIC_CONFIG.USER_AGENT,
-                }),
+                },
             });
         } catch (error) {
             throw new Error('Failed to fetch the config file');
         }
         const binary = await response.arrayBuffer();
-        const signedBuffer = new Uint8Array(binary);
-        const rawResponse = oppf.trimSignature(signedBuffer);
-        const parsedOppfResponse = OPPF_VALIDATION_SCHEMA.parse(JSON.parse(rawResponse));
-
-        // At the moment, we return the verified file instead of just checking it which `tweetnacl` also supports.
-        // This leads to simplified parsing and typing.
-        // Should the need arise to change this, we can always switch to verification only.
-        if (
-            earlyServices.crypto.verifyEd25519Signature(
-                signedBuffer as SignedDataEd25519,
-                parsedOppfResponse.signatureKey as NonReadonlyPublicKey,
-            ) !== undefined
-        ) {
-            return {parsedOppfResponse, rawResponse};
-        }
-
-        return {parsedOppfResponse: undefined};
+        return oppf.verifyOppfFile(
+            earlyServices,
+            STATIC_CONFIG.ONPREM_CONFIG_TRUSTED_PUBLIC_KEYS,
+            new Uint8Array(binary),
+        );
     }
 
     /**

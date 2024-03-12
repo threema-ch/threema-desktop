@@ -13,8 +13,8 @@ import {
     type RawPlainData,
     type ReadonlyRawKey,
     wrapRawKey,
-    type SignedDataEd25519,
-    type NonReadonlyPublicKey,
+    type Ed25519PublicKey,
+    type Ed25519Signature,
 } from '~/common/crypto';
 import {CryptoBox} from '~/common/crypto/box';
 import type {INonceService} from '~/common/crypto/nonce';
@@ -189,10 +189,28 @@ export class TweetNaClBackend implements CryptoBackend {
 
     /** @inheritdoc */
     public verifyEd25519Signature(
-        message: SignedDataEd25519,
-        pk: NonReadonlyPublicKey,
-    ): ReadonlyUint8Array | undefined {
-        return tweetnacl.sign.open(message, pk) as ReadonlyUint8Array;
+        publicKey: Ed25519PublicKey,
+        message: ReadonlyUint8Array,
+        signature: Ed25519Signature,
+    ): void {
+        // Validate lengths
+        if (publicKey.byteLength !== NACL_CONSTANTS.KEY_LENGTH) {
+            throw new CryptoError(`Ed25519 public key with invalid length ${publicKey.byteLength}`);
+        }
+        if (signature.byteLength !== NACL_CONSTANTS.SIGNATURE_LENGTH) {
+            throw new CryptoError(`Ed25519 signature with invalid length ${signature.byteLength}`);
+        }
+
+        // Verify signature
+        if (
+            !tweetnacl.sign.detached.verify(
+                message as Uint8Array,
+                signature as ReadonlyUint8Array as Uint8Array,
+                publicKey as ReadonlyUint8Array as Uint8Array,
+            )
+        ) {
+            throw new CryptoError('Ed25519 signature does not match!');
+        }
     }
 
     /** @inheritdoc */

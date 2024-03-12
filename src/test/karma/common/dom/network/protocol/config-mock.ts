@@ -30,4 +30,5 @@ export const TEST_CONFIG: Config = {
     FILE_STORAGE_PATH: ['/tmp/desktop-mocha-tests'],
     DATABASE_PATH: ':memory:',
     USER_AGENT: 'Threema Desktop Mocha Tests',
+    ONPREM_CONFIG_TRUSTED_PUBLIC_KEYS: [],
 };
