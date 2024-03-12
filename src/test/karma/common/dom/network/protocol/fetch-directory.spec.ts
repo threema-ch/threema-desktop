@@ -8,7 +8,6 @@ import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {FetchDirectoryBackend} from '~/common/dom/network/protocol/fetch-directory';
 import {NonceScope} from '~/common/enum';
-import {type Logger, type LoggerFactory, NOOP_LOGGER} from '~/common/logging';
 import {DirectoryError, type DirectoryErrorType} from '~/common/network/protocol/directory';
 import {ensureIdentityString} from '~/common/network/types';
 import type {ClientKey} from '~/common/network/types/keys';
@@ -16,16 +15,11 @@ import type {u53} from '~/common/types';
 import {assert, assertError} from '~/common/utils/assert';
 import {u8aToBase64} from '~/common/utils/base64';
 import {ValueObject} from '~/common/utils/object';
+import {NoopLoggerFactory} from '~/test/common/logging';
 import {makeResponse} from '~/test/karma/common/dom/dom-test-helpers';
 import {TEST_CONFIG} from '~/test/karma/common/dom/network/protocol/config-mock';
 
 const {expect} = chai.use(sinonChai);
-
-class NoopLoggerFactory implements LoggerFactory {
-    public logger(tag: string, style?: string): Logger {
-        return NOOP_LOGGER;
-    }
-}
 
 /**
  * Mock a `fetch()`-response.
@@ -122,10 +116,13 @@ class TestNonceService implements INonceService {
  */
 export function run(): void {
     describe('FetchDirectoryBackend', function () {
-        const backend = new FetchDirectoryBackend({
-            config: TEST_CONFIG,
-            logging: new NoopLoggerFactory(),
-        });
+        const backend = new FetchDirectoryBackend(
+            {
+                config: TEST_CONFIG,
+                logging: new NoopLoggerFactory(),
+            },
+            undefined,
+        );
         const crypto = new TweetNaClBackend(randomBytes);
 
         const ck = SecureSharedBoxFactory.consume(

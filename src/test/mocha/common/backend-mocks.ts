@@ -127,8 +127,10 @@ import type {
 } from '~/common/network/protocol/task';
 import {_only_for_testing, TaskManager} from '~/common/network/protocol/task/manager';
 import {randomGroupId} from '~/common/network/protocol/utils';
+import type {WorkBackend, WorkLicenseStatus} from '~/common/network/protocol/work';
 import * as structbuf from '~/common/network/structbuf';
 import {
+    ensureBaseUrl,
     ensureCspDeviceId,
     ensureD2mDeviceId,
     ensureFeatureMask,
@@ -198,36 +200,35 @@ import {
 } from '~/common/viewmodel/group-list-item';
 import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/viewmodel/profile';
 import {type SearchViewModelBundle, getSearchViewModelBundle} from '~/common/viewmodel/search/nav';
-
-import {assertCspPayloadType, assertD2mPayloadType} from './assertions';
+import {assertCspPayloadType, assertD2mPayloadType} from '~/test/mocha/common/assertions';
 
 export class TestCrypto extends TweetNaClBackend {}
 
-export const UNCONNECTABLE_URL = 'http = //127.0.0.1:99999';
-const FAKE_PROXY_HANDLER = undefined as unknown as typeof PROXY_HANDLER;
-
-export const TEST_CONFIG = {
-    /* eslint-disable @typescript-eslint/naming-convention */
+export const MOCK_URL = ensureBaseUrl('https://127.0.0.1:9999/', 'https:');
+export const TEST_CONFIG: Config = {
     CHAT_SERVER_KEY: ensurePublicKey(nodeRandomBytes(32)),
-    MEDIATOR_SERVER_URL: UNCONNECTABLE_URL,
+    mediatorServerUrl: () => MOCK_URL,
     MEDIATOR_FRAME_MIN_BYTE_LENGTH: 4,
     MEDIATOR_FRAME_MAX_BYTE_LENGTH: 65536,
     MEDIATOR_RECONNECTION_DELAY_S: 1,
-    DIRECTORY_SERVER_URL: UNCONNECTABLE_URL,
+    DIRECTORY_SERVER_URL: MOCK_URL,
     BLOB_SERVER_URLS: {
-        doneUrl: UNCONNECTABLE_URL,
-        uploadUrl: UNCONNECTABLE_URL,
-        downloadUrl: UNCONNECTABLE_URL,
+        upload: () => MOCK_URL,
+        download: () => MOCK_URL,
+        done: () => MOCK_URL,
     },
-    RENDEZVOUS_SERVER_URL: UNCONNECTABLE_URL,
-    UPDATE_SERVER_URL: UNCONNECTABLE_URL,
-    WORK_API_SERVER_URL: UNCONNECTABLE_URL,
+    safeServerUrl: () => MOCK_URL,
+    rendezvousServerUrl: () => MOCK_URL,
+    UPDATE_SERVER_URL: MOCK_URL,
+    WORK_SERVER_URL: MOCK_URL,
     DEBUG_PACKET_CAPTURE_HISTORY_LENGTH: 100,
     KEY_STORAGE_PATH: ['/tmp/desktop-mocha-tests'],
     FILE_STORAGE_PATH: ['/tmp/desktop-mocha-tests'],
     DATABASE_PATH: ':memory:',
     USER_AGENT: 'Threema Desktop Mocha Tests',
-} as const satisfies Config;
+};
+
+const FAKE_PROXY_HANDLER = undefined as unknown as typeof PROXY_HANDLER;
 
 export class TestTweetNaClBackend extends TweetNaClBackend {
     public constructor() {
@@ -573,23 +574,21 @@ export class TestMediaService extends BackendMediaService {
     public constructor(log: Logger) {
         // eslint-disable-next-line @typescript-eslint/require-await
         async function generateImageThumbnail(
-            _bytes: ReadonlyUint8Array,
-            _mediaType: string,
-            _log?: Logger,
+            bytes: ReadonlyUint8Array,
+            mediaType: string,
         ): Promise<FileBytesAndMediaType> {
-            return {bytes: new Uint8Array(), mediaType: _mediaType};
+            return {bytes: new Uint8Array(), mediaType};
         }
         // eslint-disable-next-line @typescript-eslint/require-await
         async function generateVideoThumbnail(
-            _bytes: ReadonlyUint8Array,
-            _mediaType: string,
-            _log?: Logger,
+            bytes: ReadonlyUint8Array,
+            mediaType: string,
         ): Promise<FileBytesAndMediaType> {
-            return {bytes: new Uint8Array(), mediaType: _mediaType};
+            return {bytes: new Uint8Array(), mediaType};
         }
         function refreshThumbnailCacheForMessage(
-            _messageId: MessageId,
-            _receiverLookup: DbReceiverLookup,
+            messageId: MessageId,
+            receiverLookup: DbReceiverLookup,
         ): void {}
         super(log, {
             generateImageThumbnail,
@@ -621,6 +620,15 @@ export class TestBlobBackend implements BlobBackend {
             // eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-empty-function
             done: async (doneScope: BlobScope) => {},
         };
+    }
+}
+
+export class TestWorkBackend implements WorkBackend {
+    public [TRANSFER_HANDLER] = FAKE_PROXY_HANDLER;
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public async checkLicense(): Promise<WorkLicenseStatus> {
+        return {valid: true};
     }
 }
 
@@ -708,6 +716,7 @@ export function makeTestServices(identity: IdentityString): TestServices {
             cache: () => endpointCache,
         } as unknown as EndpointService,
         taskManager,
+        work: new TestWorkBackend(),
     };
     const model = new TestModelRepositories(identity, partialServices);
     const viewModel = new TestViewModel({...partialServices, model});

@@ -21,7 +21,7 @@ type SecretBoxWithRandomNonce = CryptoBox<never, never, never, never, NonceScope
  */
 interface DeviceGroupKeyMap {
     /**
-     * Device Group Path Key
+     * Device Group Path Key (aka _Device Group ID_)
      */
     readonly dgpk: {
         key: WeakOpaque<RawKey<32>, {readonly DgpkKey: unique symbol}>;

@@ -279,3 +279,21 @@ function truncateStart(text: string | string[], max: u53): string {
 
     return `…${graphemeClusters.slice(-max - 1).join('')}`;
 }
+
+/**
+ * Replace all occurances of variables enclosed in curly braces with their respective value.
+ *
+ * For example `applyVariables('{foo}, {bar}!', {foo: 'Hey', bar: 'du'})` would return the string
+ * `Hey, du!';
+ *
+ * @param string Input string to replace variables in.
+ * @param variables A record of variable names and their respective values.
+ * @returns the string with all variable names replaced by their values.
+ */
+export function applyVariables(string: string, variables: Record<string, string>): string {
+    let replaced = string;
+    for (const [name, value] of Object.entries(variables)) {
+        replaced = replaced.replaceAll(`{${name}}`, value);
+    }
+    return replaced;
+}

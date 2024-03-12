@@ -33,12 +33,11 @@ import {DebugBackend} from '~/common/dom/debug';
 import {ConnectionManager} from '~/common/dom/network/protocol/connection';
 import {FetchBlobBackend} from '~/common/dom/network/protocol/fetch-blob';
 import {FetchDirectoryBackend} from '~/common/dom/network/protocol/fetch-directory';
+import {FetchWorkBackend} from '~/common/dom/network/protocol/fetch-work';
 import {
     RendezvousConnection,
     type RendezvousProtocolSetup,
 } from '~/common/dom/network/protocol/rendezvous';
-import {workLicenseCheck} from '~/common/dom/network/protocol/work-license-check';
-import type {SafeCredentials} from '~/common/dom/safe';
 import type {SystemInfo} from '~/common/electron-ipc';
 import {CloseCodeUtils, NonceScope, TransferTag} from '~/common/enum';
 import {
@@ -72,6 +71,7 @@ import {
 import {type DirectoryBackend, DirectoryError} from '~/common/network/protocol/directory';
 import {DropDeviceTask} from '~/common/network/protocol/task/d2m/drop-device';
 import {TaskManager} from '~/common/network/protocol/task/manager';
+import {StubWorkBackend, type WorkBackend} from '~/common/network/protocol/work';
 import {
     type ClientKey,
     randomRendezvousAuthenticationKey,
@@ -199,23 +199,6 @@ export interface BackendCreator {
 }
 
 /**
- * The backend handle exposes the core logic to the UI thread.
- */
-export type BackendHandle = Pick<
-    Backend,
-    | 'capture'
-    | 'connectionManager'
-    | 'debug'
-    | 'deviceIds'
-    | 'directory'
-    | 'model'
-    | 'keyStorage'
-    | 'viewModel'
-    | 'selfKickFromMediator'
-    | 'config'
->;
-
-/**
  * Service factories needed for a backend worker.
  */
 export interface FactoriesForBackend {
@@ -238,14 +221,6 @@ export interface FactoriesForBackend {
         key: RawDatabaseKey,
         shouldExist: boolean,
     ) => DatabaseBackend;
-}
-
-/**
- * Safe credentials and the associated device IDs.
- */
-export interface SafeCredentialsAndDeviceIds {
-    readonly credentials: SafeCredentials;
-    readonly deviceIds: DeviceIds;
 }
 
 /**
@@ -547,47 +522,69 @@ async function writeKeyStorage(
 }
 
 /**
+ * Backend functionality exposed to the UI thread.
+ *
+ * IMPORTANT: The UI thread should only have very constrained access to specific high-level parts of
+ * the backend directly. Low-level APIs must not be exposed. The UI should not be granted access to
+ * internal values that it does not need access to. Whenever a property from the {@link Backend}
+ * needs to be requested for the sole purpose of forwarding it into a function call to the
+ * {@link Backend}, that API should not be exposed!
+ */
+export interface BackendHandle extends ProxyMarked {
+    readonly capture: () => LocalStore<DisplayPacket | undefined>;
+    readonly connectionManager: ConnectionManager;
+    readonly debug: DebugBackend;
+    readonly deviceIds: DeviceIds;
+    readonly directory: Pick<DirectoryBackend, 'identity'>;
+    readonly keyStorage: Pick<KeyStorage, 'changePassword' | 'changeWorkCredentials'>;
+    readonly model: Repositories;
+    readonly selfKickFromMediator: () => Promise<void>;
+    readonly viewModel: IViewModelRepository;
+    readonly work: WorkBackend;
+}
+
+/**
  * The backend combines all required services and contains the core logic of our application.
  *
- * The backend lives in the worker thread. It is exposed via its {@link BackendHandle} to the UI
- * thread through the {@link BackendController}.
+ * The backend lives in the worker thread. Its {@link BackendHandle} is exposed to the UI thread
+ * through the {@link BackendController}.
  */
-export class Backend implements ProxyMarked {
-    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-
-    public readonly connectionManager: ConnectionManager;
-    public readonly debug: DebugBackend;
-    public readonly deviceIds: DeviceIds;
-    public readonly directory: DirectoryBackend;
-    public readonly keyStorage: KeyStorage;
-    public readonly model: Repositories;
-    public readonly viewModel: IViewModelRepository;
-    public readonly config: Config;
+export class Backend {
+    public readonly handle: BackendHandle;
 
     private readonly _log: Logger;
     private readonly _backgroundJobScheduler: BackgroundJobScheduler;
+    private readonly _connectionManager: ConnectionManager;
+    private readonly _debug: DebugBackend;
     private _capture?: RawCaptureHandlers;
 
     private constructor(private readonly _services: ServicesForBackend) {
         this._log = _services.logging.logger('backend');
         this._backgroundJobScheduler = new BackgroundJobScheduler(_services.logging);
-        this.connectionManager = new ConnectionManager(_services, () => this._capture);
-        this.debug = new DebugBackend(this._services, this);
-        this.deviceIds = {
-            cspDeviceId: _services.device.csp.deviceId,
-            d2mDeviceId: _services.device.d2m.deviceId,
+        this._connectionManager = new ConnectionManager(_services, () => this._capture);
+        this._debug = new DebugBackend(_services);
+        this.handle = {
+            [TRANSFER_HANDLER]: PROXY_HANDLER,
+            capture: this.capture.bind(this),
+            connectionManager: this._connectionManager,
+            debug: this._debug,
+            deviceIds: {
+                cspDeviceId: _services.device.csp.deviceId,
+                d2mDeviceId: _services.device.d2m.deviceId,
+            },
+            directory: _services.directory,
+            model: _services.model,
+            keyStorage: _services.keyStorage,
+            selfKickFromMediator: this.selfKickFromMediator.bind(this),
+            viewModel: _services.viewModel,
+            work: _services.work,
         };
-        this.directory = _services.directory;
-        this.model = _services.model;
-        this.keyStorage = _services.keyStorage;
-        this.viewModel = _services.viewModel;
-        this.config = _services.config;
 
         // Log IDs
         {
             const dgid = bytesToHex(_services.device.d2m.dgpk.public);
             const d2m = u64ToHexLe(_services.device.d2m.deviceId);
-            const csp = u64ToHexLe(this.deviceIds.cspDeviceId);
+            const csp = u64ToHexLe(_services.device.csp.deviceId);
             this._log.info(
                 `Backend created.\nDevice IDs:\n  DGID = ${dgid}\n  D2M  = ${d2m}\n  CSP  = ${csp}`,
             );
@@ -636,7 +633,7 @@ export class Backend implements ProxyMarked {
         log.info('Creating backend from existing key storage');
 
         // Initialize services that are needed early
-        const earlyServices = initEarlyBackendServicesWithoutConfig(
+        const phase1Services = initEarlyBackendServicesWithoutConfig(
             factories,
             {endpoint, logging},
             backendInit,
@@ -653,7 +650,7 @@ export class Backend implements ProxyMarked {
         //                 before the backend is actually attempted to be created.
         let keyStorageContents: KeyStorageContents;
         try {
-            keyStorageContents = await earlyServices.keyStorage.read(keyStoragePassword);
+            keyStorageContents = await phase1Services.keyStorage.read(keyStoragePassword);
         } catch (error) {
             assertError(error, KeyStorageError);
             switch (error.type) {
@@ -716,7 +713,7 @@ export class Backend implements ProxyMarked {
 
                 // Download and verify OPPF from OnPrem server
                 let parsedOppfResponse: oppf.Type;
-                const responseObject = await this._fetchAndVerifyOppfFile(earlyServices, {
+                const responseObject = await this._fetchAndVerifyOppfFile(phase1Services, {
                     password: workCredentials.password,
                     username: workCredentials.username,
                     oppfUrl: keyStorageContents.onPremConfig.oppfUrl,
@@ -729,7 +726,7 @@ export class Backend implements ProxyMarked {
                         lastUpdated: BigInt(new Date().getUTCMilliseconds()),
                         oppfCachedConfig: responseObject.rawResponse,
                     };
-                    earlyServices.keyStorage
+                    phase1Services.keyStorage
                         .changeCachedOnPremConfig(keyStoragePassword, newOnPremConfig)
                         .catch((error) =>
                             log.error(
@@ -755,18 +752,24 @@ export class Backend implements ProxyMarked {
             config = createDefaultConfig();
         }
 
-        const lateInitServices = initEarlyBackendServicesWithConfig(
-            factories,
-            {
-                ...earlyServices,
-                config,
-            },
-            keyStorageContents.workCredentials,
-        );
-        const services = {
-            ...lateInitServices,
-            ...earlyServices,
+        // Initialise the remaining services
+        const phase2Services = {
+            ...initEarlyBackendServicesWithConfig(
+                factories,
+                {...phase1Services, config},
+                keyStorageContents.workCredentials,
+            ),
             config,
+            work:
+                import.meta.env.BUILD_VARIANT === 'work'
+                    ? new FetchWorkBackend(
+                          {config, logging, systemInfo: backendInit.systemInfo},
+                          unwrap(
+                              keyStorageContents.workCredentials,
+                              'Expect work credentials in work build',
+                          ),
+                      )
+                    : new StubWorkBackend(),
         };
 
         // Open database
@@ -779,7 +782,7 @@ export class Backend implements ProxyMarked {
 
         // Create nonces service
         const nonces = new NonceService(
-            {crypto: services.crypto, db, logging},
+            {crypto: phase1Services.crypto, db, logging},
             new Identity(keyStorageContents.identityData.identity),
         );
 
@@ -787,7 +790,7 @@ export class Backend implements ProxyMarked {
         const identityData = {
             identity: keyStorageContents.identityData.identity,
             ck: SecureSharedBoxFactory.consume(
-                services.crypto,
+                phase1Services.crypto,
                 nonces,
                 NonceScope.CSP,
                 keyStorageContents.identityData.ck,
@@ -799,7 +802,7 @@ export class Backend implements ProxyMarked {
 
         // Create backend
         const backendServices = initBackendServices(
-            services,
+            {...phase1Services, ...phase2Services},
             db,
             identityData,
             deviceIds,
@@ -825,7 +828,7 @@ export class Backend implements ProxyMarked {
         }
 
         // Start connection
-        backend.connectionManager.start().catch(() => {
+        backend._connectionManager.start().catch(() => {
             // This fires when the first connection exits with an error. We can totally ignore it.
         });
 
@@ -834,7 +837,7 @@ export class Backend implements ProxyMarked {
 
         // Expose the backend on a new channel
         const {local, remote} = endpoint.createEndpointPair<BackendHandle>();
-        endpoint.exposeProxy(backend, local, logging.logger('com.backend'));
+        endpoint.exposeProxy(backend.handle, local, logging.logger('com.backend'));
         // eslint-disable-next-line @typescript-eslint/return-await
         return endpoint.transfer(remote, [remote]);
     }
@@ -862,7 +865,7 @@ export class Backend implements ProxyMarked {
         log.info('Creating backend through device linking flow');
 
         // Initialize services that are needed early
-        const earlyServices = initEarlyBackendServicesWithoutConfig(
+        const phase1Services = initEarlyBackendServicesWithoutConfig(
             factories,
             {endpoint, logging},
             backendInit,
@@ -895,16 +898,18 @@ export class Backend implements ProxyMarked {
             log.error(message);
             throw new BackendCreationError('handled-linking-error', message, {from: error});
         }
+
         let config: Config;
         let oppfConfig: OppfFetchConfig | undefined;
-        let rawResponse: string | undefined;
+        let oppfFileRaw: string | undefined;
         let workCredentials: ThreemaWorkCredentials | undefined;
+
         // Handle on prem dialog if necesary
         if (import.meta.env.BUILD_ENVIRONMENT === 'onprem') {
             try {
                 oppfConfig = await wrappedDeviceLinkingSetup.oppfConfig;
                 const responseObject = await this._fetchAndVerifyOppfFile(
-                    earlyServices,
+                    phase1Services,
                     oppfConfig,
                 );
                 workCredentials = {
@@ -918,7 +923,7 @@ export class Backend implements ProxyMarked {
                         kind: 'onprem-configuration-error',
                     });
                 }
-                rawResponse = responseObject.rawResponse;
+                oppfFileRaw = responseObject.rawResponse;
                 await wrappedPinForwarder.forward(parsedOppfResponse.publicKeyPinning);
                 config = createConfigFromOppf(parsedOppfResponse);
             } catch (error) {
@@ -933,11 +938,11 @@ export class Backend implements ProxyMarked {
             config = createDefaultConfig();
         }
 
-        const services = {
-            ...earlyServices,
+        // Initialise more services
+        const phase2Services = {
             ...initEarlyBackendServicesWithConfig(
                 factories,
-                {...earlyServices, config},
+                {...phase1Services, config},
                 workCredentials,
             ),
             config,
@@ -946,17 +951,15 @@ export class Backend implements ProxyMarked {
         // Generate rendezvous setup with all information needed to show the QR code
         let setup: RendezvousProtocolSetup;
         {
-            const rendezvousPath = bytesToHex(services.crypto.randomBytes(new Uint8Array(32)));
-            const url = config.RENDEZVOUS_SERVER_URL.replaceAll(
-                '{prefix4}',
-                rendezvousPath.slice(0, 1),
-            ).replaceAll('{prefix8}', rendezvousPath.slice(0, 2));
+            const rendezvousPath = bytesToHex(
+                phase1Services.crypto.randomBytes(new Uint8Array(32)),
+            );
             setup = {
                 role: 'initiator',
-                ak: randomRendezvousAuthenticationKey(services.crypto),
+                ak: randomRendezvousAuthenticationKey(phase1Services.crypto),
                 relayedWebSocket: {
                     pathId: 1,
-                    url: `${url}/${rendezvousPath}`,
+                    url: new URL(rendezvousPath, config.rendezvousServerUrl(rendezvousPath)),
                 },
             };
         }
@@ -1031,7 +1034,7 @@ export class Backend implements ProxyMarked {
             connectResult.connection,
             onBegin,
             logging.logger('backend-controller.join'),
-            {crypto: services.crypto, file: services.file},
+            {crypto: phase1Services.crypto, file: phase2Services.file},
         );
         let joinResult: DeviceJoinResult;
         try {
@@ -1050,11 +1053,12 @@ export class Backend implements ProxyMarked {
                 ensureError(error),
             );
         }
+
         await updateSyncingPhase('restoring');
 
         // Generate new random database key
         const databaseKey = wrapRawDatabaseKey(
-            services.crypto.randomBytes(new Uint8Array(DATABASE_KEY_LENGTH)),
+            phase1Services.crypto.randomBytes(new Uint8Array(DATABASE_KEY_LENGTH)),
         );
         const databaseKeyForKeyStorage = wrapRawDatabaseKey(databaseKey.unwrap().slice());
 
@@ -1063,7 +1067,7 @@ export class Backend implements ProxyMarked {
 
         // Create nonces service and import nonces from joinResult
         const nonces = new NonceService(
-            {crypto: services.crypto, db, logging},
+            {crypto: phase1Services.crypto, db, logging},
             new Identity(joinResult.identity),
         );
         log.info(`Importing ${joinResult.cspHashedNonces.size} CSP nonces.`);
@@ -1074,7 +1078,7 @@ export class Backend implements ProxyMarked {
         // Wrap the client key (but keep a copy for the key storage)
         const rawCkForKeyStorage = wrapRawClientKey(joinResult.rawCk.unwrap().slice());
         const ck = SecureSharedBoxFactory.consume(
-            services.crypto,
+            phase1Services.crypto,
             nonces,
             NonceScope.CSP,
             joinResult.rawCk,
@@ -1083,7 +1087,7 @@ export class Backend implements ProxyMarked {
         // Look up identity information and server group on directory server
         let privateData;
         try {
-            privateData = await services.directory.privateData(joinResult.identity, ck);
+            privateData = await phase2Services.directory.privateData(joinResult.identity, ck);
         } catch (error) {
             const message = `Fetching information about identity failed: ${error}`;
             if (
@@ -1106,6 +1110,9 @@ export class Backend implements ProxyMarked {
 
         // Validate Threema Work credentials depending on build variant. The consumer app may not
         // receive credentials, the work app must receive (valid) credentials.
+        let phase3Services: {
+            readonly work: WorkBackend;
+        };
         switch (import.meta.env.BUILD_VARIANT) {
             case 'consumer':
                 if (joinResult.workCredentials !== undefined) {
@@ -1114,6 +1121,7 @@ export class Backend implements ProxyMarked {
                         {kind: 'generic-error'},
                     );
                 }
+                phase3Services = {work: new StubWorkBackend()};
                 break;
             case 'work': {
                 const productName =
@@ -1144,25 +1152,26 @@ export class Backend implements ProxyMarked {
                     );
                 }
 
-                let licenseCheckResult;
-                try {
-                    licenseCheckResult = await workLicenseCheck(
-                        services.config.DIRECTORY_SERVER_URL,
+                phase3Services = {
+                    work: new FetchWorkBackend(
+                        {config, logging, systemInfo: backendInit.systemInfo},
                         joinResult.workCredentials,
-                        backendInit.systemInfo,
-                        log,
-                    );
+                    ),
+                };
+                let licenseStatus;
+                try {
+                    licenseStatus = await phase3Services.work.checkLicense();
                 } catch (error) {
                     return await throwLinkingError(
                         `${productName} credentials could not be validated: ${error}`,
                         {kind: 'generic-error'},
                     );
                 }
-                if (licenseCheckResult.valid) {
+                if (licenseStatus.valid) {
                     log.info(`${productName} credentials are valid`);
                 } else {
                     return await throwLinkingError(
-                        `${productName} credentials are invalid or revoked: ${licenseCheckResult.message}`,
+                        `${productName} credentials are invalid or revoked: ${licenseStatus.message}`,
                         {kind: 'invalid-work-credentials'},
                     );
                 }
@@ -1184,8 +1193,8 @@ export class Backend implements ProxyMarked {
         const dgkForKeyStorage = wrapRawDeviceGroupKey(dgk.unwrap().slice());
 
         // Create backend
-        const backendServices = initBackendServices(
-            services,
+        const services = initBackendServices(
+            {...phase1Services, ...phase2Services, ...phase3Services},
             db,
             identityData,
             deviceIds,
@@ -1193,11 +1202,11 @@ export class Backend implements ProxyMarked {
             nonces,
             joinResult.workCredentials,
         );
-        const backend = new Backend(backendServices);
+        const backend = new Backend(services);
 
         // Initialize database with essential data
         try {
-            await joinProtocol.restoreEssentialData(backend.model, identityData.identity);
+            await joinProtocol.restoreEssentialData(services.model, identityData.identity);
         } catch (error) {
             return await throwLinkingError(
                 `Failed to restore essential data: ${error}`,
@@ -1238,25 +1247,21 @@ export class Backend implements ProxyMarked {
 
         let onPremConfig: KeyStorageOppfConfig | undefined;
 
-        if (
-            import.meta.env.BUILD_ENVIRONMENT === 'onprem' &&
-            oppfConfig !== undefined &&
-            rawResponse !== undefined
-        ) {
+        if (import.meta.env.BUILD_ENVIRONMENT === 'onprem') {
             onPremConfig = {
-                oppfUrl: oppfConfig.oppfUrl,
-                oppfCachedConfig: rawResponse,
+                oppfUrl: unwrap(oppfConfig).oppfUrl,
+                oppfCachedConfig: unwrap(oppfFileRaw),
                 lastUpdated: BigInt(new Date().getUTCMilliseconds()),
             };
         }
 
         // Now that essential data is processed, we can connect to the Mediator server and register
         // ourselves
-        const initialConnectionResult = await backend.connectionManager.start();
+        const initialConnectionResult = await backend._connectionManager.start();
         if (initialConnectionResult.connected) {
             // Write key storage
             await writeKeyStorage(
-                services,
+                phase1Services,
                 userPassword,
                 identityData,
                 deviceIds,
@@ -1289,7 +1294,7 @@ export class Backend implements ProxyMarked {
 
         // Expose the backend on a new channel
         const {local, remote} = endpoint.createEndpointPair<BackendHandle>();
-        endpoint.exposeProxy(backend, local, logging.logger('com.backend'));
+        endpoint.exposeProxy(backend.handle, local, logging.logger('com.backend'));
         const transferredRemote: TransferredToRemote<EndpointFor<BackendHandle>> =
             endpoint.transfer(remote, [remote]);
         return transferredRemote;
@@ -1299,7 +1304,8 @@ export class Backend implements ProxyMarked {
         earlyServices: EarlyServicesThatDontRequireConfig,
         oppfConfig: OppfFetchConfig,
     ): Promise<
-        {parsedOppfResponse: oppf.Type; rawResponse: string} | {parsedOppfResponse: undefined}
+        | {readonly parsedOppfResponse: oppf.Type; readonly rawResponse: string}
+        | {readonly parsedOppfResponse: undefined}
     > {
         let response: Response;
         try {
@@ -1385,17 +1391,14 @@ export class Backend implements ProxyMarked {
 
         // Schedule license check every 12h
         if (import.meta.env.BUILD_VARIANT === 'work') {
-            const workData = this._services.device.workData;
-            if (workData !== undefined) {
-                this._backgroundJobScheduler.scheduleRecurringJob(
-                    (log) => workLicenseCheckJob(workData, this._services, log),
-                    {
-                        tag: 'work-license-check',
-                        intervalS: 12 * 3600,
-                        initialTimeoutS: 1,
-                    },
-                );
-            }
+            this._backgroundJobScheduler.scheduleRecurringJob(
+                (log) => workLicenseCheckJob(this._services, log),
+                {
+                    tag: 'work-license-check',
+                    intervalS: 12 * 3600,
+                    initialTimeoutS: 1,
+                },
+            );
         }
     }
 }

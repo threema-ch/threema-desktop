@@ -3,7 +3,7 @@ import {type BidirectionalStream, TransformStream} from '~/common/dom/streams';
 import {ProtocolError} from '~/common/error';
 import {CloseCode, type CloseInfo} from '~/common/network';
 import * as protobuf from '~/common/network/protobuf';
-import type {ServerGroup} from '~/common/network/types';
+import type {BaseUrl, ServerGroup} from '~/common/network/types';
 import type {ReadonlyUint8Array} from '~/common/types';
 import {bytesToHex} from '~/common/utils/byte';
 import type {AsyncTransformerCodec, TransformerCodecController} from '~/common/utils/codec';
@@ -12,9 +12,9 @@ import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {createWebSocketStream, type WebSocketEventWrapperStreamOptions} from './websocket';
 
 interface MediatorWebSocketTransportContext {
-    url: string;
-    deviceGroupId: ReadonlyUint8Array;
-    serverGroup: ServerGroup;
+    readonly baseUrl: BaseUrl;
+    readonly deviceGroupId: ReadonlyUint8Array;
+    readonly serverGroup: ServerGroup;
 }
 
 /**
@@ -66,7 +66,7 @@ export class MediatorWebSocketTransport implements MediatorTransport {
         );
 
         // Initiate connection
-        this._ws = createWebSocketStream(`${info.url}/${clientUrlInfo}`, options);
+        this._ws = createWebSocketStream(new URL(clientUrlInfo, info.baseUrl), options);
         this.closed = ResolvablePromise.wrap(
             this._ws.closed.then(({code, reason}) => ({
                 code: code ?? CloseCode.INTERNAL_ERROR,

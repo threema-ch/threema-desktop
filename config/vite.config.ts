@@ -94,11 +94,12 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
                     0x51, 0xc6, 0x61, 0xe4, 0xc0, 0xd8, 0xc9, 0x09,
                 ],
                 // TODO(DESK-821): Implement support for alternative server key
-                MEDIATOR_SERVER_URL: 'wss://mediator-{prefix4}.threema.ch/{prefix8}',
-                DIRECTORY_SERVER_URL: 'https://ds-apip.threema.ch',
-                BLOB_SERVER_URL: 'https://blob-mirror-{prefix4}.threema.ch/{prefix8}',
-                RENDEZVOUS_SERVER_URL: 'wss://rendezvous-{prefix4}.threema.ch/{prefix8}',
-                WORK_API_SERVER_URL: 'https://ds-apip-work.threema.ch',
+                MEDIATOR_SERVER_URL: 'wss://mediator-{dgpk4}.threema.ch/{dgpk8}/',
+                DIRECTORY_SERVER_URL: 'https://ds-apip.threema.ch/',
+                BLOB_SERVER_URL: 'https://blob-mirror-{dgpk4}.threema.ch/{dgpk8}/',
+                SAFE_SERVER_URL: 'https://safe-{bid8}.threema.ch/',
+                RENDEZVOUS_SERVER_URL: 'wss://rendezvous-{rp4}.threema.ch/{rp8}/',
+                WORK_SERVER_URL: 'https://ds-apip-work.threema.ch/',
                 UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop/',
 
                 // We don't do any automatic crash reporting for our live (consumer) builds
@@ -114,11 +115,12 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
                     0x81, 0x1d, 0xa1, 0x16, 0xa5, 0x43, 0xce, 0x43,
                     0xaa, 0x26, 0x87, 0xd1, 0x9f, 0x20, 0xaf, 0x3c,
                 ],
-                MEDIATOR_SERVER_URL: 'wss://mediator-{prefix4}.test.threema.ch/{prefix8}',
-                DIRECTORY_SERVER_URL: 'https://ds-apip.test.threema.ch',
-                BLOB_SERVER_URL: 'https://blob-mirror-{prefix4}.test.threema.ch/{prefix8}',
-                RENDEZVOUS_SERVER_URL: 'wss://rendezvous-{prefix4}.test.threema.ch/{prefix8}',
-                WORK_API_SERVER_URL: 'https://ds-apip-work.test.threema.ch',
+                MEDIATOR_SERVER_URL: 'wss://mediator-{dgpk4}.test.threema.ch/{dgpk8}/',
+                DIRECTORY_SERVER_URL: 'https://ds-apip.test.threema.ch/',
+                BLOB_SERVER_URL: 'https://blob-mirror-{dgpk4}.test.threema.ch/{dgpk8}/',
+                SAFE_SERVER_URL: 'https://safe-{bid8}.threema.ch/', // Does not have a sandboxed version
+                RENDEZVOUS_SERVER_URL: 'wss://rendezvous-{rp4}.test.threema.ch/{rp8}/',
+                WORK_SERVER_URL: 'https://ds-apip-work.test.threema.ch/',
                 UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop/',
 
                 // Only enabled for internal test builds on sandbox, if set through env variable
@@ -133,9 +135,11 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
                 MEDIATOR_SERVER_URL: undefined,
                 DIRECTORY_SERVER_URL: undefined,
                 BLOB_SERVER_URL: undefined,
+                SAFE_SERVER_URL: undefined,
                 RENDEZVOUS_SERVER_URL: undefined,
-                WORK_API_SERVER_URL: undefined,
+                WORK_SERVER_URL: undefined,
                 UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop/',
+
                 // Only enabled for internal test builds on sandbox, if set through env variable
                 SENTRY_DSN: process.env.SENTRY_DSN,
                 MINIDUMP_ENDPOINT: process.env.MINIDUMP_ENDPOINT,

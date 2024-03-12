@@ -32,7 +32,7 @@ import {assert, assertError} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {intoUnsignedLong} from '~/common/utils/number';
 import chaiByteEqual from '~/test/common/plugins/byte-equal';
-import {UNCONNECTABLE_URL, makeTestFileSystemKeyStorage} from '~/test/mocha/common/backend-mocks';
+import {MOCK_URL, makeTestFileSystemKeyStorage} from '~/test/mocha/common/backend-mocks';
 import {fakeRandomBytes} from '~/test/mocha/common/utils';
 
 const {expect} = chai.use(chaiByteEqual);
@@ -344,7 +344,7 @@ export function run(): void {
                                 },
                                 workCredentials: undefined,
                                 onPremConfig: {
-                                    oppfUrl: UNCONNECTABLE_URL,
+                                    oppfUrl: MOCK_URL.toString(),
                                     oppfCachedConfig: '',
                                     lastUpdated: intoUnsignedLong(
                                         BigInt(new Date().getUTCMilliseconds()),
@@ -494,7 +494,7 @@ export function run(): void {
                     password: 'passwörtli',
                 },
                 onPremConfig: {
-                    oppfUrl: UNCONNECTABLE_URL,
+                    oppfUrl: MOCK_URL.toString(),
                     oppfCachedConfig: '',
                     lastUpdated: intoUnsignedLong(BigInt(new Date().getUTCMilliseconds())),
                 },

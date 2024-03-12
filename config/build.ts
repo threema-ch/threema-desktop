@@ -135,8 +135,9 @@ export interface BuildConfig {
     readonly MEDIATOR_SERVER_URL: string | undefined;
     readonly DIRECTORY_SERVER_URL: string | undefined;
     readonly BLOB_SERVER_URL: string | undefined;
+    readonly SAFE_SERVER_URL: string | undefined;
     readonly RENDEZVOUS_SERVER_URL: string | undefined;
-    readonly WORK_API_SERVER_URL: string | undefined;
+    readonly WORK_SERVER_URL: string | undefined;
     readonly UPDATE_SERVER_URL: string;
     readonly SENTRY_DSN: string | undefined;
     readonly MINIDUMP_ENDPOINT: string | undefined;

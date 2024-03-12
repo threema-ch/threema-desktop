@@ -15,7 +15,7 @@ import {
     D2mLeaderStateUtils,
     GlobalPropertyKey,
 } from '~/common/enum';
-import {ConnectionClosed} from '~/common/error';
+import {ConnectionClosed, extractErrorTraceback} from '~/common/error';
 import {createLoggerStyle, type Logger} from '~/common/logging';
 import type {CloseInfo} from '~/common/network';
 import * as protobuf from '~/common/network/protobuf';
@@ -34,8 +34,7 @@ import {
 } from '~/common/network/protocol/state';
 import {ConnectedTaskManager} from '~/common/network/protocol/task/manager';
 import type {TemporaryClientKey} from '~/common/network/types/keys';
-import {assert, assertUnreachable, unreachable, unwrap} from '~/common/utils/assert';
-import {byteToHex} from '~/common/utils/byte';
+import {assert, assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
 import {Delayed} from '~/common/utils/delayed';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -229,7 +228,7 @@ class Connection {
         controller.d2m.promotedToLeader
             .then(() => leaderState.set(D2mLeaderState.LEADER))
             .catch((error) => {
-                log.warn('Leader state promise errored', error);
+                log.warn('Leader state promise errored', extractErrorTraceback(ensureError(error)));
                 closed.raise({
                     type: 'error',
                     info: {
@@ -249,15 +248,11 @@ class Connection {
             lowWaterMark: 131072, // 2 chunks of 64 KiB -> 128 KiB
             pollIntervalMs: 20, // Poll every 20ms until the low water mark has been reached
         };
-        const prefix = byteToHex(unwrap(device.d2m.dgpk.public[0]));
-        const url = config.MEDIATOR_SERVER_URL.replaceAll(
-            '{prefix4}',
-            unwrap(prefix[0]),
-        ).replaceAll('{prefix8}', prefix);
-        log.debug(`Connecting to ${url}`);
+        const baseUrl = config.mediatorServerUrl(device.d2m.dgpk.public);
+        log.debug(`Connecting to ${baseUrl}`);
         const mediator = new MediatorWebSocketTransport(
             {
-                url,
+                baseUrl,
                 deviceGroupId: device.d2m.dgpk.public,
                 serverGroup: device.serverGroup,
             },
@@ -309,7 +304,10 @@ class Connection {
                 });
             })
             .catch((error) => {
-                log.warn('Mediator transport closed with error:', error);
+                log.warn(
+                    'Mediator transport closed with error:',
+                    extractErrorTraceback(ensureError(error)),
+                );
                 closed.raise({
                     type: 'error',
                     info: {
@@ -345,7 +343,10 @@ class Connection {
                 }
             })
             .catch((error) => {
-                log.warn('Mediator transport readable side errored:', error);
+                log.warn(
+                    'Mediator transport readable side errored:',
+                    extractErrorTraceback(ensureError(error)),
+                );
                 closed.raise({
                     type: 'error',
                     info: {
@@ -380,7 +381,10 @@ class Connection {
                     }
                     return;
                 }
-                log.warn('Mediator transport writable side errored:', error);
+                log.warn(
+                    'Mediator transport writable side errored:',
+                    extractErrorTraceback(ensureError(error)),
+                );
                 closed.raise({
                     type: 'error',
                     info: {
@@ -414,7 +418,7 @@ class Connection {
                         );
                     }
                 } else {
-                    log.error('Task manager errored:', error);
+                    log.error('Task manager errored:', extractErrorTraceback(ensureError(error)));
                 }
             });
 
@@ -810,7 +814,10 @@ export class ConnectionManager implements ConnectionManagerHandle {
                 this._getCaptureHandlers,
             );
         } catch (error) {
-            this._log.warn('Could not create connection', error);
+            this._log.warn(
+                'Could not create connection',
+                extractErrorTraceback(ensureError(error)),
+            );
             this._services.taskManager.replace(this.state.set(ConnectionState.DISCONNECTED));
             this.leaderState.reset(D2mLeaderState.NONLEADER);
             yield {
@@ -861,7 +868,10 @@ export class ConnectionManager implements ConnectionManagerHandle {
                 yield result;
             }
         } catch (error) {
-            this._log.error('Connection result promise failed', error);
+            this._log.error(
+                'Connection result promise failed',
+                extractErrorTraceback(ensureError(error)),
+            );
             // We'll just continue here in this case
         }
 
@@ -871,7 +881,10 @@ export class ConnectionManager implements ConnectionManagerHandle {
         try {
             result = await disconnectedPromise;
         } catch (error) {
-            this._log.error('Connection disconnected promise failed', error);
+            this._log.error(
+                'Connection disconnected promise failed',
+                extractErrorTraceback(ensureError(error)),
+            );
             result = {
                 connected: false,
                 info: {code: CloseCode.INTERNAL_ERROR, origin: 'unknown'},

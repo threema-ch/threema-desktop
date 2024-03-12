@@ -1,6 +1,5 @@
 import type {I18nLocales} from '~/app/ui/i18n-types';
 import type {ServicesForBackend} from '~/common/backend';
-import type {BackendHandle} from '~/common/dom/backend';
 import {
     generateFakeContactConversation,
     generateFakeGroupConversation,
@@ -17,10 +16,7 @@ export class DebugBackend implements ProxyMarked {
 
     private readonly _log: Logger;
 
-    public constructor(
-        private readonly _services: ServicesForBackend,
-        private readonly _backend: BackendHandle,
-    ) {
+    public constructor(private readonly _services: ServicesForBackend) {
         this._log = _services.logging.logger('debug-backend');
     }
 
@@ -29,7 +25,7 @@ export class DebugBackend implements ProxyMarked {
      * not reflected.
      */
     public async generateFakeContactConversation(): Promise<void> {
-        await generateFakeContactConversation(this._services, this._backend);
+        await generateFakeContactConversation(this._services);
     }
 
     /**
@@ -37,7 +33,7 @@ export class DebugBackend implements ProxyMarked {
      * not reflected.
      */
     public async generateFakeGroupConversation(): Promise<void> {
-        await generateFakeGroupConversation(this._services, this._backend);
+        await generateFakeGroupConversation(this._services);
     }
 
     /**

@@ -3,7 +3,6 @@ import type {ServicesForBackend} from '~/common/backend';
 import {type CryptoBackend, ensurePublicKey} from '~/common/crypto';
 import {randomChoice, randomString, randomU8, randomU64} from '~/common/crypto/random';
 import type {DbContactUid} from '~/common/db';
-import type {BackendHandle} from '~/common/dom/backend';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {
     getTranslatedValue,
@@ -129,13 +128,14 @@ function generateFakeReaction(
  * Generate a fake conversation with fake data. The generated conversation is persistent but not
  * reflected.
  */
-export async function generateFakeContactConversation(
-    {crypto, file}: Pick<ServicesForBackend, 'crypto' | 'file'>,
-    backend: BackendHandle,
-): Promise<void> {
+export async function generateFakeContactConversation({
+    crypto,
+    file,
+    model,
+}: Pick<ServicesForBackend, 'crypto' | 'file' | 'model'>): Promise<void> {
     // Add contact
     const identity = ensureIdentityString(`Q${randomString(crypto, 7).toUpperCase()}`);
-    const contact = backend.model.contacts.add.fromSync({
+    const contact = model.contacts.add.fromSync({
         identity,
         publicKey: ensurePublicKey(randomBytes(new Uint8Array(32))),
         createdAt: new Date(),
@@ -253,11 +253,12 @@ export async function generateFakeContactConversation(
  * Generate a fake conversation with fake data. The generated conversation is persistent but not
  * reflected.
  */
-export async function generateFakeGroupConversation(
-    {crypto, file}: Pick<ServicesForBackend, 'crypto' | 'file'>,
-    backend: BackendHandle,
-): Promise<void> {
-    const contacts = backend.model.contacts.getAll();
+export async function generateFakeGroupConversation({
+    crypto,
+    file,
+    model,
+}: Pick<ServicesForBackend, 'crypto' | 'file' | 'model'>): Promise<void> {
+    const contacts = model.contacts.getAll();
 
     if (contacts.get().size === 0) {
         throw new Error('To generate a group, please add some contacts');
@@ -271,10 +272,10 @@ export async function generateFakeGroupConversation(
         contactObjects.push(contact);
     });
 
-    const group = backend.model.groups.add.fromSync(
+    const group = model.groups.add.fromSync(
         {
             groupId: randomU64(crypto) as GroupId,
-            creatorIdentity: backend.model.user.identity,
+            creatorIdentity: model.user.identity,
             createdAt: new Date(),
             name: randomChoice<string>(crypto, ['groupsoup', 'OMG a group!', 'Grubb3']),
             colorIndex: randomU8(crypto),

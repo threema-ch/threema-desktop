@@ -80,7 +80,7 @@ class WebSocketPath implements SinglePath {
      */
     public static async create(
         pid: PathId,
-        url: string,
+        url: URL,
         abort: AbortRaiser<RendezvousCloseCause>,
     ): Promise<WebSocketPath> {
         const options: WebSocketEventWrapperStreamOptions = {
@@ -285,7 +285,7 @@ export interface RendezvousProtocolSetup {
     /** Relayed Web Socket to be used. */
     readonly relayedWebSocket: {
         readonly pathId: PathId;
-        readonly url: string;
+        readonly url: URL;
     };
 }
 
@@ -579,7 +579,7 @@ function getJoinUri(setup: RendezvousProtocolSetup): string {
         {
             pathId: setup.relayedWebSocket.pathId,
             networkCost: protobuf.rendezvous.RendezvousInit.NetworkCost.UNKNOWN,
-            url: setup.relayedWebSocket.url,
+            url: setup.relayedWebSocket.url.toString(),
         },
     );
     const rendezvousInit = protobuf.utils.creator(protobuf.rendezvous.RendezvousInit, {

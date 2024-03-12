@@ -1,18 +1,14 @@
 import {expect} from 'chai';
 
-import {createDefaultConfig} from '~/common/config';
+import {STATIC_CONFIG} from '~/common/config';
 
 /**
  * Config tests.
  */
 export function run(): void {
-    describe('Config', function () {
-        it('Mediator Server URL to be set', function () {
-            if (import.meta.env.BUILD_ENVIRONMENT !== 'onprem') {
-                const config = createDefaultConfig();
-                expect(config.MEDIATOR_SERVER_URL).to.be.a('string');
-                expect(config.MEDIATOR_SERVER_URL).to.equal(import.meta.env.MEDIATOR_SERVER_URL);
-            }
+    describe('Static config', function () {
+        it('Key storage path to be available', function () {
+            expect(STATIC_CONFIG.KEY_STORAGE_PATH).to.deep.equal(import.meta.env.KEY_STORAGE_PATH);
         });
     });
 }

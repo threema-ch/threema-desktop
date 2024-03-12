@@ -14,15 +14,18 @@ import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {SafeError} from '~/common/error';
 import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
 import {IDENTITY_STRING_LIST_SCHEMA} from '~/common/network/protobuf/validate/helpers';
-import {ensureIdentityString, ensureNickname, type IdentityString} from '~/common/network/types';
+import {
+    ensureIdentityString,
+    ensureNickname,
+    type BaseUrl,
+    type IdentityString,
+} from '~/common/network/types';
 import type {ReadonlyUint8Array, WeakOpaque} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {base64ToU8a, u8aToBase64} from '~/common/utils/base64';
 import {bytesToHex} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 import {nullEmptyStringOptional, nullOptional} from '~/common/utils/valita-helpers';
-
-const SAFE_SERVER_TEMPLATE = 'https://safe-{prefix}.threema.ch';
 
 /**
  * Services needed for Safe backup restore.
@@ -39,7 +42,7 @@ export interface SafeCredentials {
     readonly identity: IdentityString;
     readonly password: string;
     readonly customSafeServer?: {
-        readonly url: string;
+        readonly url: BaseUrl;
         readonly auth?: {
             readonly username: string;
             readonly password: string;
@@ -190,6 +193,18 @@ export type SafeBackupId = WeakOpaque<ReadonlyUint8Array, {readonly SafeBackupId
 export type SafeEncryptionKey = WeakOpaque<RawKey<32>, {readonly SafeEncryptionKey: unique symbol}>;
 
 /**
+ * A Safe Backup ID (32 bytes) as hex string.
+ */
+export type SafeBackupIdString = WeakOpaque<string, {readonly SafeBackupIdString: unique symbol}>;
+
+/**
+ * Convert a bytes-based {@link SafeBackupId} to a string-based {@link SafeBackupIdString}3
+ */
+export function safeBackupIdToString(backupId: SafeBackupId): SafeBackupIdString {
+    return bytesToHex(backupId) as SafeBackupIdString;
+}
+
+/**
  * Derive the {@link SafeBackupId} and {@link SafeEncryptionKey} from the given credentials.
  *
  * ## Derivation
@@ -232,7 +247,7 @@ function deriveKey({
  * @throws {SafeError} If downloading fails.
  */
 async function fetchBackupBytes(
-    hexBackupId: string,
+    hexBackupId: SafeBackupIdString,
     config: ServicesForSafeBackup['config'],
     customSafeServer?: SafeCredentials['customSafeServer'],
 ): Promise<Uint8Array> {
@@ -244,27 +259,16 @@ async function fetchBackupBytes(
  * Request the Threema Safe backup with the specified backup ID.
  */
 async function requestSafeBackupUrl(
-    hexBackupId: string,
+    hexBackupId: SafeBackupIdString,
     config: ServicesForSafeBackup['config'],
     httpMethod: 'GET' | 'HEAD',
     customSafeServer?: SafeCredentials['customSafeServer'],
 ): Promise<Response> {
     // Determine URL
-    let server: string;
-    let path: string;
-    const customSafeServerUrl =
-        customSafeServer !== undefined ? new URL(customSafeServer.url) : undefined;
-    if (customSafeServerUrl === undefined) {
-        server = SAFE_SERVER_TEMPLATE.replace('{prefix}', hexBackupId.slice(0, 2));
-        path = '/';
-    } else {
-        server = customSafeServerUrl.origin;
-        path = customSafeServerUrl.pathname;
-        if (!path.endsWith('/')) {
-            path += '/';
-        }
-    }
-    const url = new URL(`${path}backups/${hexBackupId}`, server);
+    const url = new URL(
+        `backups/${hexBackupId}`,
+        customSafeServer?.url ?? config.safeServerUrl(hexBackupId),
+    );
 
     // Send download request
     let response: Response;
@@ -279,7 +283,7 @@ async function requestSafeBackupUrl(
             const encoded = u8aToBase64(UTF8.encode(credentials));
             headers.set('authorization', `Basic ${encoded}`);
         }
-        response = await fetch(`${url}`, {
+        response = await fetch(url, {
             method: httpMethod,
             cache: 'no-store',
             credentials: 'omit',
@@ -389,7 +393,7 @@ export async function isSafeBackupAvailable(
     log.debug(`Deriving backup key`);
     const [backupId] = deriveKey(credentials);
     try {
-        const hexBackupId = bytesToHex(backupId);
+        const hexBackupId = safeBackupIdToString(backupId);
         log.debug(`Backup ID is ${hexBackupId}`);
 
         // If the HEAD request succeeds, the backup exists on the server.
@@ -441,7 +445,7 @@ export async function downloadSafeBackup(
     {
         const [backupId, encryptionKey] = deriveKey(credentials);
         try {
-            const hexBackupId = bytesToHex(backupId);
+            const hexBackupId = safeBackupIdToString(backupId);
             log.debug(`Backup ID is ${hexBackupId}`);
 
             // Download, decrypt, decode

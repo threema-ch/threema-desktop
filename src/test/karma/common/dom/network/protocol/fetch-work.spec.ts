@@ -1,15 +1,11 @@
 import * as sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 
-import type {ThreemaWorkCredentials} from '~/common/device';
-import {
-    WorkLicenseCheckError,
-    workLicenseCheck,
-} from '~/common/dom/network/protocol/work-license-check';
-import type {SystemInfo} from '~/common/electron-ipc';
-import {NOOP_LOGGER} from '~/common/logging';
+import {FetchWorkBackend} from '~/common/dom/network/protocol/fetch-work';
+import {WorkError} from '~/common/network/protocol/work';
 import type {u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
+import {NoopLoggerFactory} from '~/test/common/logging';
 import {makeResponse} from '~/test/karma/common/dom/dom-test-helpers';
 import {TEST_CONFIG} from '~/test/karma/common/dom/network/protocol/config-mock';
 
@@ -39,36 +35,31 @@ function mockFetchResponse(
 }
 
 export function run(): void {
-    describe('work license check', function () {
+    describe('FetchWorkBackend', function () {
+        const backend = new FetchWorkBackend(
+            {
+                config: TEST_CONFIG,
+                logging: new NoopLoggerFactory(),
+                systemInfo: {os: 'other', arch: 'pentium386', locale: 'de_CH.utf8'},
+            },
+            {username: 'testuser', password: 'testpass'},
+        );
+
         this.beforeEach(function () {
             sinon.restore();
         });
 
-        // Test data
-        const credentials: ThreemaWorkCredentials = {username: 'testuser', password: 'testpass'};
-        const systemInfo: SystemInfo = {os: 'other', arch: 'pentium386', locale: 'de_CH.utf8'};
-
         it('valid license', async function () {
             mockFetchResponse('POST', 200, {success: true} as const);
 
-            const result = await workLicenseCheck(
-                TEST_CONFIG.WORK_API_SERVER_URL,
-                credentials,
-                systemInfo,
-                NOOP_LOGGER,
-            );
+            const result = await backend.checkLicense();
             expect(result.valid).to.be.true;
         });
 
         it('invalid license', async function () {
             mockFetchResponse('POST', 200, {success: false, error: 'Expired license'} as const);
 
-            const result = await workLicenseCheck(
-                TEST_CONFIG.WORK_API_SERVER_URL,
-                credentials,
-                systemInfo,
-                NOOP_LOGGER,
-            );
+            const result = await backend.checkLicense();
             expect(result.valid).to.be.false;
             assert(!result.valid);
             expect(result.message).to.equal('Expired license');
@@ -79,44 +70,34 @@ export function run(): void {
 
             let errorThrown;
             try {
-                await workLicenseCheck(
-                    TEST_CONFIG.WORK_API_SERVER_URL,
-                    credentials,
-                    systemInfo,
-                    NOOP_LOGGER,
-                );
+                await backend.checkLicense();
                 errorThrown = false;
             } catch (error) {
                 errorThrown = true;
-                expect(error).to.be.instanceOf(WorkLicenseCheckError);
-                assert(error instanceof WorkLicenseCheckError);
-                expect(error.type).to.equal('status-code');
+                expect(error).to.be.instanceOf(WorkError);
+                assert(error instanceof WorkError);
+                expect(error.type).to.equal('invalid-response');
                 expect(error.message).to.equal(
-                    'Request to license validation endpoint returned status code 500',
+                    'Work license validation endpoint request returned status 500',
                 );
             }
             expect(errorThrown).to.be.true;
         });
 
-        it('invalid response body', async function () {
+        it('invalid response', async function () {
             mockFetchResponse('POST', 200, {someOtherField: 42} as const);
 
             let errorThrown;
             try {
-                await workLicenseCheck(
-                    TEST_CONFIG.WORK_API_SERVER_URL,
-                    credentials,
-                    systemInfo,
-                    NOOP_LOGGER,
-                );
+                await backend.checkLicense();
                 errorThrown = false;
             } catch (error) {
                 errorThrown = true;
-                expect(error).to.be.instanceOf(WorkLicenseCheckError);
-                assert(error instanceof WorkLicenseCheckError);
-                expect(error.type).to.equal('invalid-response-body');
+                expect(error).to.be.instanceOf(WorkError);
+                assert(error instanceof WorkError);
+                expect(error.type).to.equal('invalid-response');
                 expect(error.message).to.equal(
-                    'Could not validate response body: ValitaError: missing_value at .success (missing value)',
+                    'Work license validation response against schema failed',
                 );
             }
             expect(errorThrown).to.be.true;

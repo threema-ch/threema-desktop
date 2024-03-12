@@ -40,23 +40,26 @@ export async function checkForUpdate(
         log.warn(`Unsupported OS, cannot check for updates.`);
         return undefined;
     }
-    const updateJson = `latest-version-${import.meta.env.BUILD_VARIANT}-${systemInfo.os}.json`;
-    const downloadCheckUrl = `${STATIC_CONFIG.UPDATE_SERVER_URL}${updateJson}`;
 
     // Download JSON
     let response: Response;
     try {
-        const headers = new Headers({
-            'user-agent': STATIC_CONFIG.USER_AGENT,
-            'accept': 'application/json',
-        });
-        response = await fetch(downloadCheckUrl, {
-            method: 'GET',
-            cache: 'no-store',
-            credentials: 'omit',
-            referrerPolicy: 'no-referrer',
-            headers,
-        });
+        response = await fetch(
+            new URL(
+                `latest-version-${import.meta.env.BUILD_VARIANT}-${systemInfo.os}.json`,
+                STATIC_CONFIG.UPDATE_SERVER_URL,
+            ),
+            {
+                method: 'GET',
+                cache: 'no-store',
+                credentials: 'omit',
+                referrerPolicy: 'no-referrer',
+                headers: {
+                    'user-agent': STATIC_CONFIG.USER_AGENT,
+                    'accept': 'application/json',
+                },
+            },
+        );
     } catch (error) {
         log.error(`Update check request failed: ${error}`);
         return undefined;

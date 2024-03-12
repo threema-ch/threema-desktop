@@ -328,11 +328,11 @@ async function main(): Promise<() => void> {
     }
 
     // Initialize global dialog component
-    const systemDialogsAppServices = new Delayed<AppServices>(
+    const appServices = new Delayed<AppServices>(
         () => new Error('App services for system dialogs not available'),
         () => new Error('App services for system dialogs already set'),
     );
-    attachSystemDialogs(logging, elements.systemDialogs, systemDialogsAppServices);
+    attachSystemDialogs(logging, elements.systemDialogs, appServices);
 
     // Instantiate early services
     const frontendMediaService = new FrontendMediaService();
@@ -407,7 +407,7 @@ async function main(): Promise<() => void> {
         router,
         settings,
     };
-    systemDialogsAppServices.set(services);
+    appServices.set(services);
 
     // We pass the blob cache to the thumbnail creator so that it can directly write into the cache
     frontendMediaService.setBlobCacheService(services.blobCache);

@@ -1,12 +1,12 @@
 import {expect} from 'chai';
 
-import {WORK_DATA_SYNC_RESPONSE_SCHEMA} from '~/common/dom/network/protocol/work-sync';
+import {WORK_SYNC_RESPONSE_SCHEMA} from '~/common/network/protocol/work';
 
 export function run(): void {
-    describe('work data sync', function () {
+    describe('Work data sync', function () {
         it('validates a valid sync response', function () {
             expect(
-                WORK_DATA_SYNC_RESPONSE_SCHEMA.parse({
+                WORK_SYNC_RESPONSE_SCHEMA.parse({
                     checkInterval: 234234,
                     contacts: [
                         {

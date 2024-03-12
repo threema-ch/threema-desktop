@@ -61,6 +61,8 @@ export namespace TransferTag {
     export type APPLICATION_STATE_ERROR = typeof APPLICATION_STATE_ERROR;
     export const BLOB_FETCH_ERROR = 25;
     export type BLOB_FETCH_ERROR = typeof BLOB_FETCH_ERROR;
+    export const WORK_ERROR = 26;
+    export type WORK_ERROR = typeof WORK_ERROR;
 }
 /**
  * All enums to be used must be declared in this file. They are disallowed in

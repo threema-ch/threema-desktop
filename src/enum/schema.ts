@@ -54,6 +54,7 @@ export const enum TransferTag {
     DEVICE_JOIN_PROTOCOL_ERROR = 23,
     APPLICATION_STATE_ERROR = 24,
     BLOB_FETCH_ERROR = 25,
+    WORK_ERROR = 26,
 }
 
 /**

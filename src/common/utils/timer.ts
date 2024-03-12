@@ -20,6 +20,15 @@ export type TimerCanceller = () => void;
 export type TimerCallback = (canceller: TimerCanceller) => void;
 
 /**
+ * Error raised when a timeout occurs.
+ */
+export class TimeoutError extends Error {
+    public constructor(timeoutMs: u53) {
+        super(`Timer timed out after ${timeoutMs}ms`);
+    }
+}
+
+/**
  * A timer allowing to schedule timers that fire once after a timeout and those
  * that fire repetitively in an interval.
  */
@@ -90,12 +99,21 @@ class GlobalTimer {
         return canceller;
     }
 
+    /**
+     * Waits for the given `event` to resolve or `timeoutMs` to elapse (in which case a
+     * `TimeoutError` will be thrown).
+     *
+     * @param event The event to wait for.
+     * @param timeoutMs Maximum amount of milliseconds to wait for `event`.
+     * @returns the result of `event`.
+     * @throws {@link TimeoutError} when `timeoutMs` elapsed before `event` resolved.
+     */
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     public waitFor<T>(event: Promise<T>, timeoutMs: u53): Promise<T> {
         return Promise.race([
             event,
             this.sleep(timeoutMs).then(() => {
-                throw new Error('Timer timed out');
+                throw new TimeoutError(timeoutMs);
             }),
         ]);
     }

@@ -1,4 +1,4 @@
-import type {Primitive, u53} from '~/common/types';
+import type {Primitive, ReadonlyUint8Array, u53, u8} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
 
 /**
@@ -118,9 +118,15 @@ export function joinConstArray<const Arr extends readonly string[], Separator ex
  *
  * Note: Mutation of the array while iterating leads to undefined behaviour!
  */
-export function* entriesReverse<T>(
+export function entriesReverse(
+    array: ReadonlyUint8Array,
+): IterableIterator<readonly [index: u53, value: u8]>;
+export function entriesReverse<T>(
     array: readonly T[],
-): IterableIterator<readonly [index: u53, value: T]> {
+): IterableIterator<readonly [index: u53, value: T]>;
+export function* entriesReverse(
+    array: ReadonlyUint8Array | readonly unknown[],
+): IterableIterator<readonly [index: u53, value: unknown]> {
     if (array.length === 0) {
         return;
     }

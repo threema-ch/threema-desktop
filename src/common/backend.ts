@@ -1,22 +1,22 @@
+import type {Compressor} from '~/common/compressor';
+import type {Config} from '~/common/config';
+import type {CryptoBackend} from '~/common/crypto';
+import type {INonceService} from '~/common/crypto/nonce';
+import type {Device} from '~/common/device';
 import type {SystemInfo} from '~/common/electron-ipc';
+import type {FileStorage} from '~/common/file-storage';
+import type {KeyStorage} from '~/common/key-storage';
+import type {LoggerFactory} from '~/common/logging';
 import type {BackendMediaService} from '~/common/media';
-
-import type {Compressor} from './compressor';
-import type {Config} from './config';
-import type {CryptoBackend} from './crypto';
-import type {INonceService} from './crypto/nonce';
-import type {Device} from './device';
-import type {FileStorage} from './file-storage';
-import type {KeyStorage} from './key-storage';
-import type {LoggerFactory} from './logging';
-import type {Repositories} from './model';
-import type {BlobBackend} from './network/protocol/blob';
-import type {DirectoryBackend} from './network/protocol/directory';
-import type {TaskManager} from './network/protocol/task/manager';
-import type {NotificationService} from './notification';
-import type {SystemDialogService} from './system-dialog';
-import type {EndpointService, Remote} from './utils/endpoint';
-import type {IViewModelRepository} from './viewmodel';
+import type {Repositories} from '~/common/model';
+import type {BlobBackend} from '~/common/network/protocol/blob';
+import type {DirectoryBackend} from '~/common/network/protocol/directory';
+import type {TaskManager} from '~/common/network/protocol/task/manager';
+import type {WorkBackend} from '~/common/network/protocol/work';
+import type {NotificationService} from '~/common/notification';
+import type {SystemDialogService} from '~/common/system-dialog';
+import type {EndpointService, Remote} from '~/common/utils/endpoint';
+import type {IViewModelRepository} from '~/common/viewmodel';
 
 /**
  * Services available in the backend.
@@ -36,10 +36,11 @@ export interface ServicesForBackend {
     readonly model: Repositories;
     readonly nonces: INonceService;
     readonly notification: NotificationService;
-    readonly viewModel: IViewModelRepository;
     readonly systemDialog: Remote<SystemDialogService>;
     readonly systemInfo: SystemInfo;
     readonly taskManager: TaskManager;
+    readonly viewModel: IViewModelRepository;
+    readonly work: WorkBackend;
 }
 
 /**
@@ -62,7 +63,7 @@ export type EarlyServicesThatRequireConfig = Pick<EarlyServices, 'directory' | '
  */
 export type EarlyServicesThatDontRequireConfig = Omit<
     EarlyServices,
-    'config' | keyof EarlyServicesThatRequireConfig
+    'config' | 'work' | keyof EarlyServicesThatRequireConfig
 >;
 
 /**

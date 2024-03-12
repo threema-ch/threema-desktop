@@ -1,5 +1,6 @@
 import {TransferTag} from '~/common/enum';
 import {BaseError} from '~/common/error';
+import type {ReadonlyUint8Array} from '~/common/types';
 import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
 /**
@@ -168,7 +169,7 @@ export interface Utf8Codec {
     /**
      * Decode UTF-8 bytes to a string.
      */
-    readonly decode: (array: Uint8Array) => string;
+    readonly decode: (array: ReadonlyUint8Array) => string;
 
     /**
      * Encode a string to UTF-8 bytes.
@@ -264,7 +265,7 @@ class Utf8TextEncoderDecoderCodec implements Utf8Codec {
     }
 
     /** @inheritdoc */
-    public decode(array: Uint8Array): string {
+    public decode(array: ReadonlyUint8Array): string {
         return this._decoder.decode(array);
     }
 

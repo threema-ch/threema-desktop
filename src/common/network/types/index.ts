@@ -6,6 +6,77 @@ import {unreachable} from '~/common/utils/assert';
 import type {SequenceNumberU32, SequenceNumberU64} from '~/common/utils/sequence-number';
 
 /**
+ * Properties to validate a URL with.
+ */
+export interface ValidateUrlProperties {
+    readonly protocol?: 'https:' | 'wss:';
+    readonly search?: 'allow' | 'deny';
+    readonly hash?: 'allow' | 'deny';
+}
+
+/**
+ * Validate that the URL fulfills the expected properties.
+ *
+ * @param url Provided URL.
+ * @param properties Expected properties to check for. Defaults are:
+ *   - `protocol`: `https:`
+ *   - `search`: `deny`
+ *   - `hash`: `deny`
+ * @returns unmodified validated {@link URL}.
+ */
+export function validateUrl(source: string | URL, properties?: ValidateUrlProperties): URL {
+    const url = typeof source === 'string' ? new URL(source) : source;
+
+    // Validate
+    if (url.protocol !== (properties?.protocol ?? 'https:')) {
+        throw new Error(
+            `URL uses unexpected protocol: '${url}' (expected-protocol=${properties?.protocol ?? 'https:'})`,
+        );
+    }
+    if ((properties?.search ?? 'deny') === 'deny' && url.search !== '') {
+        throw new Error(`URL may not contain search parameters: '${url}'`);
+    }
+    if ((properties?.hash ?? 'deny') === 'deny' && url.hash !== '') {
+        throw new Error(`URL may not contain fragment/hash: '${url}'`);
+    }
+
+    return url;
+}
+
+/**
+ * A base URL (has a trailing slash).
+ */
+export type BaseUrl = WeakOpaque<URL, {readonly BaseUrl: unique symbol}>;
+
+/**
+ * Ensure the resulting URL is a base URL and uses the expected protocol. A base URL has the
+ * following properties:
+ *
+ * - Path ends with a forward slash (auto-fixed if missing).
+ * - No search parameters (throws {@link Error} if provided).
+ * - No fragment/hash (throws {@link Error} if provided).
+ * - May have username, password or port.
+ *
+ * @param url Provided URL.
+ * @param protocol Expected protocol.
+ * @returns validated {@link BaseUrl}.
+ */
+export function ensureBaseUrl(
+    source: string | URL,
+    protocol: NonNullable<ValidateUrlProperties['protocol']>,
+): BaseUrl {
+    // Make a copy of the URL and validate protocol, search and hash
+    const url = validateUrl(new URL(source.toString()), {protocol, search: 'deny', hash: 'deny'});
+
+    // Ensure path ends with '/'
+    if (!url.pathname.endsWith('/')) {
+        url.pathname += '/';
+    }
+
+    return url as BaseUrl;
+}
+
+/**
  * The client's Threema ID as a string.
  *
  * See {@link IDENTITY_STRING_RE} for its pattern.

@@ -1,33 +1,28 @@
 import type {ServicesForBackend} from '~/common/backend';
-import type {ThreemaWorkData} from '~/common/device';
-import {workLicenseCheck} from '~/common/dom/network/protocol/work-license-check';
 import type {Logger} from '~/common/logging';
-import {assertUnreachable} from '~/common/utils/assert';
+import {assertUnreachable, unwrap} from '~/common/utils/assert';
 
 export function workLicenseCheckJob(
-    workData: ThreemaWorkData,
-    services: ServicesForBackend,
+    services: Pick<ServicesForBackend, 'device' | 'systemDialog' | 'work'>,
     log: Logger,
 ): void {
-    const {systemDialog, systemInfo} = services;
-
+    const {workCredentials} = unwrap(
+        services.device.workData,
+        'Require work data to run work license check job',
+    );
     log.debug('Checking Threema work license');
-    workLicenseCheck(
-        services.config.DIRECTORY_SERVER_URL,
-        workData.workCredentials,
-        systemInfo,
-        log,
-    )
+    unwrap(services.work, 'Require work backend to run work license check job')
+        .checkLicense()
         .then((result) => {
             if (result.valid) {
                 log.debug('Threema Work license is valid');
             } else {
                 log.error(`Threema Work credentials are invalid or expired: ${result.message}`);
-                systemDialog
+                services.systemDialog
                     .openOnce({
                         type: 'invalid-work-credentials',
                         context: {
-                            workCredentials: workData.workCredentials,
+                            workCredentials,
                         },
                     })
                     .catch(assertUnreachable);

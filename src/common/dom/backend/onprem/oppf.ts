@@ -1,7 +1,8 @@
 import * as v from '@badrap/valita';
 
 import {ensurePublicKey} from '~/common/crypto';
-import {ensureU16, ensureU53} from '~/common/types';
+import {ensureBaseUrl, validateUrl} from '~/common/network/types';
+import {ensureU53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {base64ToU8a} from '~/common/utils/base64';
 import {UTF8} from '~/common/utils/codec';
@@ -41,80 +42,99 @@ export const OPPF_VALIDATION_SCHEMA = v
     .object({
         version: v.string(),
         signatureKey: v.string().map((pk) => base64ToU8a(pk)),
-        refresh: v.number(),
+        refresh: v.number().map(ensureU53),
         license: v
             .object({
                 id: v.string(),
-                expires: v.string().map((s) => new Date(s).getMilliseconds()),
+                expires: v.string().map((s) => new Date(s)),
                 count: v.number().map(ensureU53),
             })
             .rest(v.unknown()),
         chat: v
             .object({
-                hostname: v.string(),
-                ports: v.array(v.number().map(ensureU16)),
                 publicKey: v.string().map((pk) => ensurePublicKey(base64ToU8a(pk))),
             })
             .rest(v.unknown()),
-
         directory: v
             .object({
-                url: v.string(),
+                url: v.string().map((url) => ensureBaseUrl(url, 'https:')),
             })
             .rest(v.unknown()),
-
-        blob: v
-            .object({
-                uploadUrl: v.string(),
-                downloadUrl: v.string(),
-                doneUrl: v.string(),
-            })
-            .rest(v.unknown()),
-
         work: v
             .object({
-                url: v.string(),
+                url: v.string().map((url) => {
+                    ensureBaseUrl(url, 'https:');
+                    return url;
+                }),
             })
             .rest(v.unknown()),
         avatar: v
             .object({
-                url: v.string(),
+                url: v.string().map((url) => {
+                    ensureBaseUrl(url, 'https:');
+                    return url;
+                }),
             })
             .rest(v.unknown()),
         safe: v
             .object({
-                url: v.string(),
-            })
-            .rest(v.unknown()),
-        web: v
-            .object({
-                url: v.string(),
-                overrideSaltyRtcHost: v.string().optional(),
-                overrideSaltyRtcPort: v.number().map(ensureU16).optional(),
+                url: v.string().map((url) => {
+                    ensureBaseUrl(url, 'https:');
+                    return url;
+                }),
             })
             .rest(v.unknown()),
         mediator: v
             .object({
-                url: v.string(),
+                url: v.string().map((url) => {
+                    ensureBaseUrl(url, 'wss:');
+                    return url;
+                }),
                 blob: v
                     .object({
-                        uploadUrl: v.string(),
-                        downloadUrl: v.string(),
-                        doneUrl: v.string(),
+                        uploadUrl: v.string().map((url) =>
+                            validateUrl(url, {
+                                protocol: 'https:',
+                                search: 'deny',
+                                hash: 'deny',
+                            }),
+                        ),
+                        downloadUrl: v.string().map((url) => {
+                            validateUrl(url, {
+                                protocol: 'https:',
+                                search: 'deny',
+                                hash: 'deny',
+                            });
+                            return url;
+                        }),
+                        doneUrl: v.string().map((url) => {
+                            validateUrl(url, {
+                                protocol: 'https:',
+                                search: 'deny',
+                                hash: 'deny',
+                            });
+                            return url;
+                        }),
                     })
                     .rest(v.unknown()),
             })
             .rest(v.unknown()),
         rendezvous: v
             .object({
-                url: v.string(),
+                url: v.string().map((url) => {
+                    ensureBaseUrl(url, 'wss:');
+                    return url;
+                }),
             })
             .rest(v.unknown()),
         updates: v
             .object({
                 desktop: v
                     .object({
-                        check: v.string(),
+                        check: v.string().map((url) => {
+                            ensureBaseUrl(url, 'https:');
+                            return url;
+                        }),
                     })
                     .rest(v.unknown()),
             })

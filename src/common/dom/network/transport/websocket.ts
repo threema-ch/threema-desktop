@@ -34,7 +34,7 @@ declare global {
     }
 
     interface WebSocketStream {
-        readonly url: string;
+        readonly url: URL;
         readonly connection: Promise<WebSocketConnection>;
         readonly closed: Promise<WebSocketCloseInfo>;
         readonly close: (info?: WebSocketCloseInfo) => void;
@@ -183,14 +183,15 @@ export class WebSocketByteLengthQueueingStrategy implements QueuingStrategy<Buff
 }
 
 export class WebSocketEventWrapperStream implements WebSocketStream {
-    public readonly url: string;
     public readonly connection: Promise<WebSocketConnection>;
     public readonly closed: Promise<WebSocketCloseInfo>;
 
     private readonly _ws: WebSocket;
 
-    public constructor(url: string, options: WebSocketEventWrapperStreamOptions) {
-        this.url = url;
+    public constructor(
+        public readonly url: URL,
+        options: WebSocketEventWrapperStreamOptions,
+    ) {
         const connection = (this.connection = new ResolvablePromise<WebSocketConnection, Error>({
             uncaught: 'discard',
         }));
@@ -255,7 +256,7 @@ export class WebSocketEventWrapperStream implements WebSocketStream {
 }
 
 export function createWebSocketStream(
-    url: string,
+    url: URL,
     options: WebSocketEventWrapperStreamOptions,
 ): WebSocketStream {
     let ws: WebSocketStream | undefined;

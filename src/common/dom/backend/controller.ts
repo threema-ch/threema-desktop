@@ -1,28 +1,23 @@
 import type {ServicesForBackendController} from '~/common/backend';
-import {STATIC_CONFIG, type Config} from '~/common/config';
+import {STATIC_CONFIG} from '~/common/config';
 import type {DeviceIds} from '~/common/device';
 import {
     BackendCreationError,
     type OppfFetchConfig,
     type BackendCreator,
-    type BackendHandle,
     type BackendInitAfterTransfer,
     type DeviceLinkingSetup,
     type LinkingState,
     type PinForwarder,
+    type BackendHandle,
 } from '~/common/dom/backend';
-import type {DebugBackend} from '~/common/dom/debug';
-import type {SafeCredentials} from '~/common/dom/safe';
 import type {SystemInfo} from '~/common/electron-ipc';
 import type {D2mLeaderState} from '~/common/enum';
 import {extractErrorMessage} from '~/common/error';
-import type {KeyStorage} from '~/common/key-storage';
 import type {Logger} from '~/common/logging';
 import type {IFrontendMediaService} from '~/common/media';
-import type {ProfilePictureView, Repositories} from '~/common/model';
+import type {ProfilePictureView} from '~/common/model';
 import type {DisplayPacket} from '~/common/network/protocol/capture';
-import type {ConnectionManagerHandle} from '~/common/network/protocol/connection';
-import type {DirectoryBackend} from '~/common/network/protocol/directory';
 import type {ConnectionState} from '~/common/network/protocol/state';
 import type {IdentityString} from '~/common/network/types';
 import type {NotificationCreator} from '~/common/notification';
@@ -32,11 +27,9 @@ import {
     type EndpointFor,
     PROXY_HANDLER,
     RELEASE_PROXY,
-    type Remote,
     type RemoteProxy,
     TRANSFER_HANDLER,
     type TransferredToRemote,
-    type ProxyMarked,
 } from '~/common/utils/endpoint';
 import {eternalPromise} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -47,7 +40,6 @@ import {
     type RemoteStore,
     WritableStore,
 } from '~/common/utils/store';
-import type {IViewModelRepository} from '~/common/viewmodel';
 
 export interface UserData {
     readonly identity: IdentityString;
@@ -60,30 +52,32 @@ export interface UserData {
  */
 interface EssentialStartupData {
     readonly connectionState: RemoteStore<ConnectionState>;
+    readonly deviceIds: DeviceIds;
     readonly leaderState: RemoteStore<D2mLeaderState>;
     readonly user: UserData;
 }
 
-export type InitialBootstrapData = SafeCredentials & DeviceIds & {newPassword: string};
-
 /**
- * The backend controller takes the remote backend handle and establishes the
+ * The backend controller takes the remote {@link BackendHandle} and establishes the
  * communication link between worker and UI thread.
  *
  * The backend controller instance itself lives in the UI thread.
  */
 export class BackendController {
     public readonly connectionState: EssentialStartupData['connectionState'];
+    public readonly deviceIds: EssentialStartupData['deviceIds'];
     public readonly leaderState: EssentialStartupData['leaderState'];
-    public readonly user: UserData;
-    public readonly debug: Remote<DebugBackend>;
-    public readonly connectionManager: Remote<ConnectionManagerHandle>;
-    public readonly deviceIds: DeviceIds;
-    public readonly directory: Remote<DirectoryBackend>;
-    public readonly model: Remote<Repositories>;
-    public readonly keyStorage: Remote<KeyStorage>;
-    public readonly viewModel: Remote<IViewModelRepository>;
-    public readonly config: Remote<Config & ProxyMarked>;
+    public readonly user: EssentialStartupData['user'];
+
+    public readonly connectionManager: RemoteProxy<BackendHandle>['connectionManager'];
+    public readonly debug: RemoteProxy<BackendHandle>['debug'];
+    public readonly directory: RemoteProxy<BackendHandle>['directory'];
+    public readonly keyStorage: RemoteProxy<BackendHandle>['keyStorage'];
+    public readonly model: RemoteProxy<BackendHandle>['model'];
+    public readonly selfKickFromMediator: RemoteProxy<BackendHandle>['selfKickFromMediator'];
+    public readonly viewModel: RemoteProxy<BackendHandle>['viewModel'];
+    public readonly work: RemoteProxy<BackendHandle>['work'];
+
     public capturing?: {
         readonly packets: IQueryableStore<readonly DisplayPacket[]>;
         readonly stop: () => void;
@@ -93,20 +87,21 @@ export class BackendController {
         private readonly _services: ServicesForBackendController,
         private readonly _log: Logger,
         private readonly _remote: RemoteProxy<BackendHandle>,
-        deviceIds: DeviceIds,
         data: EssentialStartupData,
     ) {
         this.connectionState = data.connectionState;
+        this.deviceIds = data.deviceIds;
         this.leaderState = data.leaderState;
         this.user = data.user;
-        this.debug = _remote.debug;
-        this.deviceIds = deviceIds;
+
         this.connectionManager = _remote.connectionManager;
+        this.debug = _remote.debug;
         this.directory = _remote.directory;
-        this.model = _remote.model;
         this.keyStorage = _remote.keyStorage;
+        this.model = _remote.model;
+        this.selfKickFromMediator = _remote.selfKickFromMediator;
         this.viewModel = _remote.viewModel;
-        this.config = _remote.config;
+        this.work = _remote.work;
     }
 
     public static async create(
@@ -354,7 +349,8 @@ export class BackendController {
             ]);
         // Done
         log.debug('Creating backend controller');
-        const backend = new BackendController({...services}, log, remote, deviceIds, {
+        const backend = new BackendController({...services}, log, remote, {
+            deviceIds,
             connectionState,
             leaderState,
             user: {identity, profilePicture, displayName},
@@ -406,12 +402,5 @@ export class BackendController {
                 this.capturing = undefined;
             },
         };
-    }
-
-    /**
-     * Self-kick device from mediator server.
-     */
-    public async selfKickFromMediator(): Promise<void> {
-        await this._remote.selfKickFromMediator();
     }
 }

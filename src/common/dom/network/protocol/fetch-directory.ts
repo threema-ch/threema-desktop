@@ -18,10 +18,11 @@ import {
 import type {IdentityString} from '~/common/network/types';
 import type {ClientKey} from '~/common/network/types/keys';
 import type {ReadonlyUint8Array} from '~/common/types';
-import {assert, unreachable, unwrap} from '~/common/utils/assert';
+import {assert, ensureError, unreachable, unwrap} from '~/common/utils/assert';
 import {base64ToU8a, u8aToBase64} from '~/common/utils/base64';
 import {UTF8} from '~/common/utils/codec';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {TIMER, TimeoutError} from '~/common/utils/timer';
 
 /**
  * Schema for the challenge payload returned by the directory server.
@@ -71,6 +72,8 @@ const ERROR_RESPONSE_SCHEMA = v
     })
     .rest(v.unknown());
 
+const DIRECTORY_TIMEOUT_MS = 10_000;
+
 /**
  * Directory backend implementation based on the [Fetch API].
  *
@@ -78,17 +81,15 @@ const ERROR_RESPONSE_SCHEMA = v
  */
 export class FetchDirectoryBackend implements DirectoryBackend {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    private readonly _base: string;
-    private readonly _requestInit: RequestInit;
+    private readonly _headers: Record<string, string>;
 
     public constructor(
-        services: Pick<ServicesForBackend, 'config' | 'logging'>,
-        workCredentials?: ThreemaWorkCredentials,
+        private readonly _services: Pick<ServicesForBackend, 'config' | 'logging'>,
+        workCredentials: ThreemaWorkCredentials | undefined,
     ) {
-        this._base = services.config.DIRECTORY_SERVER_URL;
-        const headers: Record<string, string> = {
+        this._headers = {
             'accept': 'application/json',
-            'user-agent': services.config.USER_AGENT,
+            'user-agent': _services.config.USER_AGENT,
         };
 
         // OnPrem directory requires authentication using Threema Work credentials
@@ -97,15 +98,8 @@ export class FetchDirectoryBackend implements DirectoryBackend {
                 workCredentials,
                 'Work credentials not passed to FetchDirectoryBackend in OnPrem build',
             );
-            headers.authorization = `Basic ${u8aToBase64(UTF8.encode(`${credentials.username}:${credentials.password}`))}`;
+            this._headers.authorization = `Basic ${u8aToBase64(UTF8.encode(`${credentials.username}:${credentials.password}`))}`;
         }
-
-        this._requestInit = {
-            cache: 'no-store',
-            credentials: 'omit',
-            referrerPolicy: 'no-referrer',
-            headers,
-        };
     }
 
     /** @inheritdoc */
@@ -163,35 +157,57 @@ export class FetchDirectoryBackend implements DirectoryBackend {
             import.meta.env.BUILD_ENVIRONMENT === 'onprem',
             'The directory server authentication token can only be fetched in OnPrem environments',
         );
-        const url = new URL('auth_token', this._base);
-        const response = await fetch(url, {...this._requestInit, method: 'GET'});
-        if (response.status !== 200) {
-            throw new DirectoryError(
-                'invalid-response',
-                `Authentication fetch failed with error: ${response.status}`,
-            );
-        }
-        let body: unknown;
-        try {
-            body = await response.json();
-            if (body === null || body === undefined) {
-                throw new Error(`Response body is ${typeof body}`);
+
+        // Run request with timeout
+        const abort = new AbortController();
+        const run = async (): Promise<string> => {
+            // Send request
+            const response = await this._fetch('auth_token', {method: 'GET'});
+            if (response.status !== 200) {
+                throw new DirectoryError(
+                    'invalid-response',
+                    `Authentication fetch failed with error: ${response.status}`,
+                );
             }
-        } catch (error) {
-            throw new DirectoryError(
-                'invalid-response',
-                `Auth token fetch request did not return a valid response body: ${error}`,
-                {from: error},
-            );
-        }
+
+            // Validate response JSON
+            let body: unknown;
+            try {
+                body = await response.json();
+                if (body === null || body === undefined) {
+                    throw new Error(`Response body is ${typeof body}`);
+                }
+            } catch (error) {
+                throw new DirectoryError(
+                    'invalid-response',
+                    `Auth token fetch request did not return a valid response body: ${error}`,
+                    {from: error},
+                );
+            }
+            try {
+                return AUTH_TOKEN_SCHEMA.parse(body).authToken;
+            } catch (error) {
+                throw new DirectoryError(
+                    'invalid-response',
+                    `Auth token fetch request response body validation against schema failed`,
+                    {from: error},
+                );
+            }
+        };
+
         try {
-            return AUTH_TOKEN_SCHEMA.parse(body).authToken;
-        } catch (error) {
-            throw new DirectoryError(
-                'invalid-response',
-                `Auth token fetch request response body validation against schema failed`,
-                {from: error},
-            );
+            return await TIMER.waitFor(run(), DIRECTORY_TIMEOUT_MS);
+        } catch (error_) {
+            const error = ensureError(error_);
+            if (error instanceof TimeoutError) {
+                // Abort any ongoing `fetch` request
+                abort.abort();
+                throw new DirectoryError('timeout', error.message, {from: error});
+            }
+            if (error instanceof DirectoryError) {
+                throw error;
+            }
+            throw new DirectoryError('fetch', error.message, {from: error});
         }
     }
 
@@ -223,8 +239,8 @@ export class FetchDirectoryBackend implements DirectoryBackend {
      * Send a non-authenticated GET request to the directory server and validate the response.
      *
      * @param description A description used in error messages. Example: "Identity".
-     * @param requestPath The request path. Example: "identity/ECHOECHO".
-     * @param requestPayload Optional object that will be encoded to JSON and used as body. If
+     * @param path The request path. Example: "identity/ECHOECHO".
+     * @param payload Optional object that will be encoded to JSON and used as body. If
      *   present, the request will use the POST method. Otherwise, the request will use the GET
      *   method.
      * @param schema The valita schema used to parse the response
@@ -233,68 +249,75 @@ export class FetchDirectoryBackend implements DirectoryBackend {
      */
     private async _request<TSchema extends v.Type>(
         description: string,
-        requestPath: string,
-        requestPayload: Record<string, unknown> | undefined,
+        path: string,
+        payload: Record<string, unknown> | undefined,
         schema: TSchema,
     ): Promise<v.Infer<TSchema> | undefined> {
-        // Send request
-        const url = `${new URL(requestPath, this._base)}`;
-        let response: Response;
-
-        let requestInit;
-
-        if (requestPayload === undefined) {
-            requestInit = {
-                ...this._requestInit,
-                method: 'GET',
-            };
-        } else {
-            requestInit = {
-                ...this._requestInit,
-                method: 'POST',
-                body: JSON.stringify(requestPayload),
-            };
-        }
-
-        try {
-            response = await fetch(url, requestInit);
-        } catch (error) {
-            throw new DirectoryError('fetch', `${description} fetch request errored`, {
-                from: error,
-            });
-        }
-        if (response.status === 404) {
-            return undefined;
-        }
-        if (response.status !== 200) {
-            throw new DirectoryError(
-                'invalid-response',
-                `${description} fetch request returned status ${response.status}`,
-            );
-        }
-
-        // Validate response JSON
-        let body: unknown;
-        try {
-            body = await response.json();
-            if (body === null || body === undefined) {
-                throw new Error(`Response body is ${typeof body}`);
+        // Run request with timeout
+        const abort = new AbortController();
+        const run = async (): Promise<v.Infer<TSchema> | undefined> => {
+            // Send request
+            let response: Response;
+            try {
+                response = await this._fetch(path, {
+                    ...(payload === undefined
+                        ? {method: 'GET'}
+                        : {method: 'POST', body: JSON.stringify(payload)}),
+                    signal: abort.signal,
+                });
+            } catch (error) {
+                throw new DirectoryError('fetch', `${description} fetch request errored`, {
+                    from: error,
+                });
             }
-        } catch (error) {
-            throw new DirectoryError(
-                'invalid-response',
-                `${description} fetch request did not return a valid response body: ${error}`,
-                {from: error},
-            );
-        }
+            if (response.status === 404) {
+                return undefined;
+            }
+            if (response.status !== 200) {
+                throw new DirectoryError(
+                    'invalid-response',
+                    `${description} fetch request returned status ${response.status}`,
+                );
+            }
+
+            // Validate response JSON
+            let body: unknown;
+            try {
+                body = await response.json();
+                if (body === null || body === undefined) {
+                    throw new Error(`Response body is ${typeof body}`);
+                }
+            } catch (error) {
+                throw new DirectoryError(
+                    'invalid-response',
+                    `${description} fetch request did not return a valid response body: ${error}`,
+                    {from: error},
+                );
+            }
+            try {
+                return schema.parse(body);
+            } catch (error) {
+                throw new DirectoryError(
+                    'invalid-response',
+                    `${description} fetch request response body validation against schema failed`,
+                    {from: error},
+                );
+            }
+        };
+
         try {
-            return schema.parse(body);
-        } catch (error) {
-            throw new DirectoryError(
-                'invalid-response',
-                `${description} fetch request response body validation against schema failed`,
-                {from: error},
-            );
+            return await TIMER.waitFor(run(), DIRECTORY_TIMEOUT_MS);
+        } catch (error_) {
+            const error = ensureError(error_);
+            if (error instanceof TimeoutError) {
+                // Abort any ongoing `fetch` request
+                abort.abort();
+                throw new DirectoryError('timeout', error.message, {from: error});
+            }
+            if (error instanceof DirectoryError) {
+                throw error;
+            }
+            throw new DirectoryError('fetch', error.message, {from: error});
         }
     }
 
@@ -302,8 +325,8 @@ export class FetchDirectoryBackend implements DirectoryBackend {
      * Send an authenticated POST request to the directory server and validate the response.
      *
      * @param description A description used in error messages. Example: "Private data".
-     * @param requestPath The request path. Example: "identity/fetch_priv".
-     * @param requestPayload The request payload. Warning: The payload record will be modified by
+     * @param path The request path. Example: "identity/fetch_priv".
+     * @param payload The request payload. Warning: The payload record will be modified by
      *   this function!
      * @param ck The {@link ClientKey} to be used for authentication
      * @param schema The valita schema used to parse the response
@@ -312,144 +335,158 @@ export class FetchDirectoryBackend implements DirectoryBackend {
      */
     private async _authenticatedRequest<TSchema extends v.Type>(
         description: string,
-        requestPath: string,
-        requestPayload: Record<string, unknown>,
+        path: string,
+        payload: Record<string, unknown>,
         ck: ClientKey,
         schema: TSchema,
     ): Promise<v.Infer<TSchema> | undefined> {
-        const url = `${new URL(requestPath, this._base)}`;
-        // Fetch challenge payload
-        let challengePayload;
-        {
-            // Send request
-            let response: Response;
-            try {
-                response = await fetch(url, {
-                    ...this._requestInit,
-                    method: 'POST',
-                    body: JSON.stringify(requestPayload),
-                });
-            } catch (error) {
-                throw new DirectoryError(
-                    'fetch',
-                    `${description} authentication fetch request errored`,
-                    {
-                        from: error,
-                    },
-                );
-            }
-
-            // Process response
-            if (response.status !== 200) {
-                throw new DirectoryError(
-                    'authentication',
-                    `${description} authentication fetch request returned status ${response.status}`,
-                );
-            }
-            const body = (await response.json()) as unknown;
-            try {
-                challengePayload = CHALLENGE_PAYLOAD.parse(body);
-            } catch (challengeParseError) {
-                // Not a challenge payload! Check if it's an error payload.
-                let errorPayload;
+        // Run request with timeout
+        const abort = new AbortController();
+        const run = async (): Promise<v.Infer<TSchema> | undefined> => {
+            // Fetch challenge payload
+            let challenge;
+            {
+                // Send request
+                let response: Response;
                 try {
-                    errorPayload = ERROR_RESPONSE_SCHEMA.parse(body);
-                } catch {
+                    response = await this._fetch(path, {
+                        signal: abort.signal,
+                        method: 'POST',
+                        body: JSON.stringify(payload),
+                    });
+                } catch (error) {
                     throw new DirectoryError(
-                        'authentication',
-                        `${description} authentication fetch request did not return a valid response body: ${challengeParseError}`,
-                        {from: challengeParseError},
+                        'fetch',
+                        `${description} authentication fetch request errored`,
+                        {
+                            from: error,
+                        },
                     );
                 }
 
-                // Handle error
-                const message = `${description} authentication fetch failed: ${errorPayload.error}`;
-                switch (errorPayload.errorType) {
-                    case 'invalid-identity':
-                        throw new DirectoryError('invalid-identity', message);
-                    case 'invalid-token':
-                    case 'identity-transfer-prohibited':
-                    case 'unknown':
-                        throw new DirectoryError('authentication', message);
-                    default:
-                        unreachable(errorPayload.errorType);
+                // Process response
+                if (response.status !== 200) {
+                    throw new DirectoryError(
+                        'authentication',
+                        `${description} authentication fetch request returned status ${response.status}`,
+                    );
+                }
+                const body = (await response.json()) as unknown;
+                try {
+                    challenge = CHALLENGE_PAYLOAD.parse(body);
+                } catch (challengeParseError) {
+                    // Not a challenge payload! Check if it's an error payload.
+                    let errorPayload;
+                    try {
+                        errorPayload = ERROR_RESPONSE_SCHEMA.parse(body);
+                    } catch {
+                        throw new DirectoryError(
+                            'authentication',
+                            `${description} authentication fetch request did not return a valid response body: ${challengeParseError}`,
+                            {from: challengeParseError},
+                        );
+                    }
+
+                    // Handle error
+                    const message = `${description} authentication fetch failed: ${errorPayload.error}`;
+                    switch (errorPayload.errorType) {
+                        case 'invalid-identity':
+                            throw new DirectoryError('invalid-identity', message);
+                        case 'invalid-token':
+                        case 'identity-transfer-prohibited':
+                        case 'unknown':
+                            throw new DirectoryError('authentication', message);
+                        default:
+                            unreachable(errorPayload.errorType);
+                    }
                 }
             }
-        }
 
-        // Encrypt token and add response to request payload
-        const authenticatedRequestPayload = this._calculateResponse(
-            challengePayload,
-            requestPayload,
-            ck,
-        );
+            // Encrypt token and add response to request payload
+            const authenticatedPayload = this._calculateResponse(challenge, payload, ck);
 
-        // Send signed request
-        let response: Response;
-        try {
-            response = await fetch(url, {
-                ...this._requestInit,
-                method: 'POST',
-                body: JSON.stringify(authenticatedRequestPayload),
-            });
-        } catch (error) {
-            throw new DirectoryError('fetch', `${description} fetch request errored`, {
-                from: error,
-            });
-        }
-        if (response.status === 404) {
-            return undefined;
-        }
-        if (response.status !== 200) {
-            throw new DirectoryError(
-                'invalid-response',
-                `${description} fetch request returned status ${response.status}`,
-            );
-        }
-
-        // Get response JSON
-        let body: unknown;
-        try {
-            body = await response.json();
-        } catch (error) {
-            throw new DirectoryError(
-                'invalid-response',
-                `${description} fetch request did not return a valid response body: ${error}`,
-                {from: error},
-            );
-        }
-
-        // Validate response JSON using schema
-        try {
-            return schema.parse(body);
-        } catch (error) {
-            // Fallback to parsing it as an error response with schema
-            let errorPayload;
+            // Send signed request
+            let response: Response;
             try {
-                errorPayload = ERROR_RESPONSE_SCHEMA.parse(body);
-            } catch (fallbackError) {
-                // Not an error payload either
+                response = await this._fetch(path, {
+                    signal: abort.signal,
+                    method: 'POST',
+                    body: JSON.stringify(authenticatedPayload),
+                });
+            } catch (error) {
+                throw new DirectoryError('fetch', `${description} fetch request errored`, {
+                    from: error,
+                });
+            }
+            if (response.status === 404) {
+                return undefined;
+            }
+            if (response.status !== 200) {
                 throw new DirectoryError(
                     'invalid-response',
-                    `${description} fetch request response body validation against schema failed`,
+                    `${description} fetch request returned status ${response.status}`,
+                );
+            }
+
+            // Get response JSON
+            let body: unknown;
+            try {
+                body = await response.json();
+            } catch (error) {
+                throw new DirectoryError(
+                    'invalid-response',
+                    `${description} fetch request did not return a valid response body: ${error}`,
                     {from: error},
                 );
             }
 
-            // Handle error
-            const message = `${description} fetch failed: ${errorPayload.error}`;
-            switch (errorPayload.errorType) {
-                case 'identity-transfer-prohibited':
-                    throw new DirectoryError('identity-transfer-prohibited', message);
-                case 'invalid-token':
-                    throw new DirectoryError('authentication', message);
-                case 'invalid-identity':
-                case 'unknown':
-                case undefined:
-                    throw new DirectoryError('invalid-response', message);
-                default:
-                    return unreachable(errorPayload.errorType);
+            // Validate response JSON using schema
+            try {
+                return schema.parse(body);
+            } catch (error) {
+                // Fallback to parsing it as an error response with schema
+                let errorPayload;
+                try {
+                    errorPayload = ERROR_RESPONSE_SCHEMA.parse(body);
+                } catch (fallbackError) {
+                    // Not an error payload either
+                    throw new DirectoryError(
+                        'invalid-response',
+                        `${description} fetch request response body validation against schema failed`,
+                        {from: error},
+                    );
+                }
+
+                // Handle error
+                const message = `${description} fetch failed: ${errorPayload.error}`;
+                switch (errorPayload.errorType) {
+                    case 'identity-transfer-prohibited':
+                        throw new DirectoryError('identity-transfer-prohibited', message);
+                    case 'invalid-token':
+                        throw new DirectoryError('authentication', message);
+                    case 'invalid-identity':
+                    case 'unknown':
+                    case undefined:
+                        throw new DirectoryError('invalid-response', message);
+                    default:
+                        return unreachable(errorPayload.errorType);
+                }
             }
+        };
+
+        try {
+            return await TIMER.waitFor(run(), DIRECTORY_TIMEOUT_MS);
+        } catch (error_) {
+            const error = ensureError(error_);
+            if (error instanceof TimeoutError) {
+                // Abort any ongoing `fetch` request
+                abort.abort();
+                throw new DirectoryError('timeout', error.message, {from: error});
+            }
+            if (error instanceof DirectoryError) {
+                throw error;
+            }
+            throw new DirectoryError('fetch', error.message, {from: error});
         }
     }
 
@@ -479,5 +516,18 @@ export class FetchDirectoryBackend implements DirectoryBackend {
             token: u8aToBase64(challenge.token),
             response: u8aToBase64(response),
         };
+    }
+
+    private async _fetch(path: string, init: RequestInit): Promise<Response> {
+        return await fetch(new URL(path, this._services.config.DIRECTORY_SERVER_URL), {
+            ...init,
+            cache: 'no-store',
+            credentials: 'omit',
+            referrerPolicy: 'no-referrer',
+            headers: {
+                ...init.headers,
+                ...this._headers,
+            },
+        });
     }
 }

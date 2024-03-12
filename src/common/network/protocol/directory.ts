@@ -12,9 +12,9 @@ import {
 import type {ClientKey} from '~/common/network/types/keys';
 import {base64ToU8a} from '~/common/utils/base64';
 import {
-    type ProxyMarked,
     registerErrorTransferHandler,
     TRANSFER_HANDLER,
+    type ProxyMarked,
 } from '~/common/utils/endpoint';
 
 export const VALID_IDENTITY_DATA_SCHEMA = v
@@ -123,6 +123,7 @@ export type DirectoryBackend = {
 /**
  * Type of the {@link DirectoryError}.
  *
+ * - timeout: Fetching data timed out.
  * - fetch: An error occurred when fetching data from the server (e.g. a network connectivity error)
  * - authentication: An error occurred during authenticating against the server
  * - identity-transfer-prohibited: The user tried to fetch information for a Work identity from a
@@ -132,6 +133,7 @@ export type DirectoryBackend = {
  *   server error, an empty response or a response that does not validate against the schema)
  */
 export type DirectoryErrorType =
+    | 'timeout'
     | 'fetch'
     | 'authentication'
     | 'identity-transfer-prohibited'

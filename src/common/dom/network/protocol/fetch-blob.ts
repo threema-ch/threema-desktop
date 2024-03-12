@@ -1,6 +1,5 @@
 import type {ServicesForBackend} from '~/common/backend';
-import type {Config} from '~/common/config';
-import type {EncryptedData} from '~/common/crypto';
+import type {EncryptedData, PublicKey} from '~/common/crypto';
 import {
     type BlobBackend,
     BlobBackendError,
@@ -8,10 +7,10 @@ import {
     type BlobId,
     type BlobScope,
     isBlobId,
+    blobIdToString,
 } from '~/common/network/protocol/blob';
 import type {DirectoryBackend} from '~/common/network/protocol/directory';
-import {unwrap} from '~/common/utils/assert';
-import {bytesToHex, byteToHex, hexToBytes} from '~/common/utils/byte';
+import {bytesToHex, hexToBytes} from '~/common/utils/byte';
 import {u64ToHexLe} from '~/common/utils/number';
 
 type ServicesForBlobBackend = Pick<ServicesForBackend, 'config' | 'device' | 'directory'>;
@@ -22,37 +21,19 @@ type ServicesForBlobBackend = Pick<ServicesForBackend, 'config' | 'device' | 'di
  * [Fetch API]: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
  */
 export class FetchBlobBackend implements BlobBackend {
-    private readonly _baseUrls: Config['BLOB_SERVER_URLS'];
-    private readonly _requestInit: RequestInit;
     private readonly _deviceId: string;
-    private readonly _deviceGroupId: string;
+    private readonly _deviceGroupId: {
+        readonly bytes: PublicKey;
+        readonly hex: string;
+    };
     private readonly _directoryBackend: DirectoryBackend;
-    public constructor(services: ServicesForBlobBackend) {
-        const prefix = byteToHex(unwrap(services.device.d2m.dgpk.public[0]));
-
-        this._requestInit = {
-            cache: 'no-store',
-            headers: {
-                'user-agent': services.config.USER_AGENT,
-            },
+    public constructor(private readonly _services: ServicesForBlobBackend) {
+        this._deviceId = u64ToHexLe(_services.device.d2m.deviceId);
+        this._deviceGroupId = {
+            bytes: _services.device.d2m.dgpk.public,
+            hex: bytesToHex(_services.device.d2m.dgpk.public),
         };
-
-        this._deviceId = u64ToHexLe(services.device.d2m.deviceId);
-        this._deviceGroupId = bytesToHex(services.device.d2m.dgpk.public);
-
-        this._baseUrls = {
-            uploadUrl: services.config.BLOB_SERVER_URLS.uploadUrl
-                .replaceAll('{prefix4}', unwrap(prefix[0]))
-                .replaceAll('{prefix8}', prefix),
-            downloadUrl: services.config.BLOB_SERVER_URLS.downloadUrl
-                .replaceAll('{prefix4}', unwrap(prefix[0]))
-                .replaceAll('{prefix8}', prefix),
-            doneUrl: services.config.BLOB_SERVER_URLS.doneUrl
-                .replaceAll('{prefix4}', unwrap(prefix[0]))
-                .replaceAll('{prefix8}', prefix),
-        };
-
-        this._directoryBackend = services.directory;
+        this._directoryBackend = _services.directory;
     }
 
     /** @inheritdoc */
@@ -65,16 +46,18 @@ export class FetchBlobBackend implements BlobBackend {
 
         const auth = await this._fetchAuthToken();
         try {
-            response = await fetch(`${this._getUrl(this._baseUrls.uploadUrl, scope)}`, {
-                ...this._requestInit,
-                method: 'POST',
-                headers: {
-                    ...this._requestInit.headers,
-                    accept: 'text/plain',
-                    ...auth,
+            response = await this._fetch(
+                this._services.config.BLOB_SERVER_URLS.upload(this._deviceGroupId.bytes),
+                scope,
+                {
+                    method: 'POST',
+                    headers: {
+                        ...auth,
+                        accept: 'text/plain',
+                    },
+                    body: formData,
                 },
-                body: formData,
-            });
+            );
         } catch (error) {
             throw new BlobBackendError('fetch', 'Fetch upload request errored', {from: error});
         }
@@ -97,18 +80,18 @@ export class FetchBlobBackend implements BlobBackend {
 
     /** @inheritdoc */
     public async download(scope: BlobScope, id: BlobId): Promise<BlobDownloadResult> {
+        const idString = blobIdToString(id);
         let response: Response;
         try {
-            response = await fetch(
-                `${this._getUrl(
-                    this._baseUrls.downloadUrl.replace('{blobId}', bytesToHex(id)),
-                    scope,
-                )}`,
+            response = await this._fetch(
+                this._services.config.BLOB_SERVER_URLS.download(
+                    this._deviceGroupId.bytes,
+                    idString,
+                ),
+                scope,
                 {
-                    ...this._requestInit,
                     method: 'GET',
                     headers: {
-                        ...this._requestInit.headers,
                         accept: 'application/octet-stream',
                     },
                 },
@@ -119,13 +102,13 @@ export class FetchBlobBackend implements BlobBackend {
         if (response.status === 404) {
             throw new BlobBackendError(
                 'not-found',
-                `Could not download blob ${bytesToHex(id)}, status: ${response.status}`,
+                `Could not download blob ${idString}, status: ${response.status}`,
             );
         }
         if (response.status !== 200) {
             throw new BlobBackendError(
                 'fetch',
-                `Could not download blob ${bytesToHex(id)}, status: ${response.status}`,
+                `Could not download blob ${idString}, status: ${response.status}`,
             );
         }
 
@@ -150,14 +133,14 @@ export class FetchBlobBackend implements BlobBackend {
      *   the server could not be reached or had an internal error.
      */
     private async _done(id: BlobId, scope: BlobScope): Promise<void> {
+        const idString = blobIdToString(id);
         let response: Response;
         try {
-            response = await fetch(
-                this._getUrl(this._baseUrls.doneUrl.replace('{blobId}', bytesToHex(id)), scope),
+            response = await this._fetch(
+                this._services.config.BLOB_SERVER_URLS.done(this._deviceGroupId.bytes, idString),
+                scope,
                 {
-                    ...this._requestInit,
                     method: 'POST',
-                    headers: {},
                 },
             );
         } catch (error) {
@@ -166,24 +149,33 @@ export class FetchBlobBackend implements BlobBackend {
         if (response.status !== 204) {
             throw new BlobBackendError(
                 'fetch',
-                `Could not mark blob ${bytesToHex(id)} as done, status: ${response.status}`,
+                `Could not mark blob ${idString} as done, status: ${response.status}`,
             );
         }
     }
 
-    /**
-     * Create a blob endpoint URL by adding required GET parameters to the {@link baseUrl}.
-     */
-    private _getUrl(baseUrl: string, scope: BlobScope): URL {
-        return new URL(
-            `${baseUrl}?deviceId=${this._deviceId}&deviceGroupId=${this._deviceGroupId}&scope=${scope}`,
-        );
+    private async _fetch(url: URL, scope: BlobScope, init: RequestInit): Promise<Response> {
+        // Apply URL search parameters and fetch
+        url = new URL(url);
+        url.search = new URLSearchParams({
+            deviceId: this._deviceId,
+            deviceGroupId: this._deviceGroupId.hex,
+            scope,
+        }).toString();
+        return await fetch(url, {
+            ...init,
+            cache: 'no-store',
+            headers: {
+                ...init.headers,
+                'user-agent': this._services.config.USER_AGENT,
+            },
+        });
     }
 
     /*
      * Fetches an authentication token from the directory server if needed.
      */
-    private async _fetchAuthToken(): Promise<{authorization: string} | Record<string, never>> {
+    private async _fetchAuthToken(): Promise<{readonly authorization?: string}> {
         if (import.meta.env.BUILD_ENVIRONMENT !== 'onprem') {
             return {};
         }
