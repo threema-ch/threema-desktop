@@ -223,11 +223,11 @@ export function run(): void {
             });
         });
 
-        describe('unwrapAndSubscribe', () => {
+        describe('getAndSubscribe', () => {
             it('should return the unwrapped store value', (done) => {
                 const [derivedStore] = createLayeredDerivedStore(
-                    ([{currentValue: source}], unwrapAndSubscribe) => {
-                        const value = unwrapAndSubscribe(source.innerStore);
+                    ([{currentValue: source}], getAndSubscribe) => {
+                        const value = getAndSubscribe(source.innerStore);
                         expect(value).to.equal(42);
                         done();
                     },
@@ -237,9 +237,9 @@ export function run(): void {
             it('should remove formerly subscribed unwrapped stores', () => {
                 let unwrapActive = true;
                 const [derivedStore, , innerStore] = createLayeredDerivedStore(
-                    ([{currentValue: source}], unwrapAndSubscribe) => {
+                    ([{currentValue: source}], getAndSubscribe) => {
                         if (unwrapActive) {
-                            unwrapAndSubscribe(source.innerStore);
+                            getAndSubscribe(source.innerStore);
                         }
                     },
                 );
@@ -253,7 +253,7 @@ export function run(): void {
                 typeAssert(derivedStore._state.symbol === LAZY_STORE_ENABLED_STATE);
                 expect(
                     // @ts-expect-error: Private property
-                    derivedStore._state.unwrappedStoreSubscriptions.find(
+                    derivedStore._state.additionalStoreSubscriptions.find(
                         (subscription) => subscription.ref === innerStore,
                     ),
                 ).is.undefined;
@@ -272,11 +272,11 @@ export function run(): void {
                     }
                 })();
                 const [derivedStore, , innerStore] = createLayeredDerivedStore(
-                    ([{currentValue: source}], unwrapAndSubscribe) => {
+                    ([{currentValue: source}], getAndSubscribe) => {
                         if (unwrapActive) {
-                            unwrapAndSubscribe(otherSourceStore);
+                            getAndSubscribe(otherSourceStore);
                         }
-                        unwrapAndSubscribe(source.innerStore);
+                        getAndSubscribe(source.innerStore);
                     },
                 );
                 derivedStore.subscribe(() => {
@@ -285,7 +285,7 @@ export function run(): void {
                 unwrapActive = false;
                 innerStore.set(24);
             });
-            it('should subscribe to new unwrapped stores', (done) => {
+            it('should subscribe to new stores', (done) => {
                 let newUnwrap = false;
                 const otherSourceStore = new (class implements IQueryableStore<string> {
                     public subscribe(): StoreUnsubscriber {
@@ -299,10 +299,10 @@ export function run(): void {
                     }
                 })();
                 const [derivedStore, , innerStore] = createLayeredDerivedStore(
-                    ([{currentValue: source}], unwrapAndSubscribe) => {
-                        unwrapAndSubscribe(source.innerStore);
+                    ([{currentValue: source}], getAndSubscribe) => {
+                        getAndSubscribe(source.innerStore);
                         if (newUnwrap) {
-                            unwrapAndSubscribe(otherSourceStore);
+                            getAndSubscribe(otherSourceStore);
                         }
                     },
                 );
@@ -312,10 +312,10 @@ export function run(): void {
                 newUnwrap = true;
                 innerStore.set(24);
             });
-            it('should trigger a new derivation on an update of any unwrapped store', () => {
+            it('should trigger a new derivation on an update of any additional store', () => {
                 const [derivedStore, , innerStore] = createLayeredDerivedStore(
-                    ([{currentValue: source}], unwrapAndSubscribe) =>
-                        unwrapAndSubscribe(source.innerStore) + 1,
+                    ([{currentValue: source}], getAndSubscribe) =>
+                        getAndSubscribe(source.innerStore) + 1,
                 );
                 const unsubscriber = derivedStore.subscribe(() => {
                     // No-op
@@ -326,7 +326,7 @@ export function run(): void {
 
                 unsubscriber();
             });
-            it('should unsubscribe from all unwrapped store subscriptions if the store gets disabled', (done) => {
+            it('should unsubscribe from all additional store subscriptions if the store gets disabled', (done) => {
                 const otherSourceStore = new (class implements IQueryableStore<string> {
                     public subscribe(subscriber: StoreSubscriber<string>): StoreUnsubscriber {
                         subscriber('');
@@ -339,8 +339,8 @@ export function run(): void {
                     }
                 })();
 
-                const [derivedStore] = createLayeredDerivedStore((source, unwrapAndSubscribe) => {
-                    unwrapAndSubscribe(otherSourceStore);
+                const [derivedStore] = createLayeredDerivedStore((source, getAndSubscribe) => {
+                    getAndSubscribe(otherSourceStore);
                 });
                 derivedStore.get();
             });
