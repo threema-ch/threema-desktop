@@ -4,6 +4,6 @@
     "lib": ["esnext"],
     "types": []
   },
-  "include": ["vite-client.d.ts", "**/*.ts"],
+  "include": ["url.d.ts", "vite-client.d.ts", "**/*.ts"],
   "exclude": ["dom/**", "node/**"]
 }

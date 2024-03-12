@@ -5,6 +5,5 @@
     "types": [],
     "resolveJsonModule": true
   },
-
-  "include": ["../@types/**/*.d.ts", "vite-client.d.ts", "**/*.ts"]
+  "include": ["i18next.d.ts", "vite-client.d.ts", "**/*.ts"]
 }

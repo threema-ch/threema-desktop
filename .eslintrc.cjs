@@ -855,14 +855,6 @@ module.exports = {
             },
         },
 
-        // Types source rules
-        {
-            files: './src/@types/**',
-            parserOptions: {
-                project: './src/@types/tsconfig.json',
-            },
-        },
-
         // App source rules
         {
             files: './src/app/**',

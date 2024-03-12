@@ -4,6 +4,10 @@
     "lib": ["esnext"],
     "types": ["chai", "mocha"]
   },
-
-  "include": ["../../../common/vite-client.d.ts", "../../common/chai.d.ts", "**/*.ts"]
+  "include": [
+    "../../../common/vite-client.d.ts",
+    "../../../common/url.d.ts",
+    "../../common/chai.d.ts",
+    "**/*.ts"
+  ]
 }

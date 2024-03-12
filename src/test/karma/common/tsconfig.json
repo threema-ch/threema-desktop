@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["esnext"],
+    "lib": ["dom", "esnext"],
     "types": ["chai", "mocha"]
   },
 

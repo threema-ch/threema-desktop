@@ -3,15 +3,13 @@
   "compilerOptions": {
     "lib": ["dom", "esnext"],
     "types": ["svelte"],
-
     // Needed for vite-tsconfig-paths to handle paths from non-TS files
     // (such as Svelte components)
     "allowJs": true,
     "resolveJsonModule": true
   },
-
   "include": [
-    "../@types/**/*.d.ts",
+    "../common/dom/i18next.d.ts",
     "../common/dom/vite-client.d.ts",
     "**/*.ts",
     "**/*.svelte",
