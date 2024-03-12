@@ -1,5 +1,5 @@
 import type {Logger} from '~/common/logging';
-import {assert} from '~/common/utils/assert';
+import {assert, unwrap} from '~/common/utils/assert';
 import {TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {
     type IQueryableStore,
@@ -219,14 +219,11 @@ export class DerivedStore<
                         `DerivedStore: Expected source store at index ${storeIndex}, but it was undefined`,
                     );
 
-                    // Override source store state at the specified index with a copy that includes the
-                    // new value.
-                    this._state.sourceStoreSubscriptions[storeIndex] = {
-                        ...currentState,
-                        currentValue: value as IQueryableStoreValue<
-                            TSourceStores[typeof storeIndex]
-                        >,
-                    };
+                    // Override source store state at the specified index
+                    unwrap(
+                        this._state.sourceStoreSubscriptions[storeIndex],
+                        `DerivedStore: Source store subscription with index ${storeIndex} has no state`,
+                    ).currentValue = value;
 
                     // Rederive and update `derivedValueStore` with the result.
                     this._state.derivedValueStore.set(
@@ -459,11 +456,6 @@ function subscribeAndGetInitialState<TStoreValue>(
 ): StoreSubscriptionState<typeof store> {
     let firstSubscriptionValue: TStoreValue | typeof NO_STORE_VALUE = NO_STORE_VALUE;
     const unsubscriber = store.subscribe((value) => {
-        assert(
-            value !== NO_STORE_VALUE,
-            'DerivedStore: Expected value to be defined in subscription callback',
-        );
-
         if (firstSubscriptionValue === NO_STORE_VALUE) {
             // Callback runs for the first time.
             firstSubscriptionValue = value;
@@ -495,11 +487,6 @@ type QueryableStores = readonly IQueryableStore<unknown>[];
  */
 interface StoreSubscriptionState<TStore extends IQueryableStore<unknown>> {
     /**
-     * Latest value emitted by the referenced store.
-     */
-    readonly currentValue: IQueryableStoreValue<TStore>;
-
-    /**
      * Reference to the subscribed store itself.
      */
     readonly ref: IQueryableStore<unknown>;
@@ -508,6 +495,11 @@ interface StoreSubscriptionState<TStore extends IQueryableStore<unknown>> {
      * Reference to the remembered unsubscriber to stop and release the subscription.
      */
     readonly unsubscriber: StoreUnsubscriber;
+
+    /**
+     * Latest value emitted by the referenced store.
+     */
+    currentValue: IQueryableStoreValue<TStore>;
 }
 
 /**
