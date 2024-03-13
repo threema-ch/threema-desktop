@@ -50,9 +50,11 @@ stages:
 
 # Generic "before script" for Windows to set up nvm
 .before_script_windows: &before_script_windows
-  - echo "`$Path is $env:Path"
+  - echo "Original `$Path is $env:Path"
+  - echo "Original `$LIB is $env:LIB"
   # Update env variables
   - $env:Path += ";C:\\ProgramData\\nvm"
+  - $env:Path += ";C:\\Users\\Developer\\.cargo\\bin"
   - $env:NVM_HOME = "C:\\ProgramData\\nvm"
   - $env:NVM_SYMLINK = "C:\\Program Files\\nodejs"
   # Ensure the proper node version is available
@@ -63,10 +65,16 @@ stages:
   # Version 1.1.10 fixes it. Remove this note once that version is available on Chocolatey.
   - nvm install (cat .nvmrc)
   - nvm use (cat .nvmrc)
+  # Set up visual studio env
+  - "& 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\Tools\\Launch-VsDevShell.ps1'"
+  # Print path again
+  - echo "Updated `$Path is $env:Path"
+  - echo "Updated `$LIB is $env:LIB"
   # Show versions
   - node --version
   - npm --version
   - curl.exe --version
+  - cargo +stable --version
 
 dist:
   stage: build
@@ -613,8 +621,6 @@ package:linux-binary-buildonly:
     # Ensure the proper node version is available
     - nvm install $(cat .nvmrc)
     - nvm use
-    # Ensure curl is available
-    - curl --version
     # Ensure coreutils are installed
     - brew install coreutils
   script:
