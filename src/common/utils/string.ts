@@ -281,7 +281,7 @@ function truncateStart(text: string | string[], max: u53): string {
 }
 
 /**
- * Replace all occurances of variables enclosed in curly braces with their respective value.
+ * Replace all occurences of variables enclosed in curly braces with their respective value.
  *
  * For example `applyVariables('{foo}, {bar}!', {foo: 'Hey', bar: 'du'})` would return the string
  * `Hey, du!';

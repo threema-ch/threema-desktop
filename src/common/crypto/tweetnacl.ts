@@ -209,7 +209,7 @@ export class TweetNaClBackend implements CryptoBackend {
                 publicKey as ReadonlyUint8Array as Uint8Array,
             )
         ) {
-            throw new CryptoError('Ed25519 signature does not match!');
+            throw new CryptoError('Ed25519 signature is not valid!');
         }
     }
 

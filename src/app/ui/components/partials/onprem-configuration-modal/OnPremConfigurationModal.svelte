@@ -5,13 +5,13 @@
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import Input from '~/app/ui/components/atoms/input/Input.svelte';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
+  import {checkAndCompleteUrl} from '~/app/ui/components/partials/onprem-configuration-modal/helpers';
   import type {OnPremConfigurationModalProps} from '~/app/ui/components/partials/onprem-configuration-modal/props';
   import {i18n} from '~/app/ui/i18n';
   import Step from '~/app/ui/linking/Step.svelte';
   import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
   import Password from '~/app/ui/svelte-components/blocks/Input/Password.svelte';
   import {STATIC_CONFIG} from '~/common/config';
-  import {ensureBaseUrl, validateUrl} from '~/common/network/types';
   import {assertUnreachable} from '~/common/utils/assert';
   import {u8aToBase64} from '~/common/utils/base64';
   import {UTF8} from '~/common/utils/codec';
@@ -30,20 +30,9 @@
   let submitError: string | undefined = undefined;
 
   async function handleClickConfirm(): Promise<void> {
-    let urlString = oppfUrl;
+    const urlString = oppfUrl;
     try {
-      // Ensure the URL starts with 'https://'
-      if (!/^https?:\/\//iu.test(urlString)) {
-        urlString = `https://${urlString}`;
-      }
-
-      // Ensure it points to an '.oppf' file or apply the default path on the base URL.
-      let url;
-      if (urlString.endsWith('.oppf')) {
-        url = validateUrl(urlString, {protocol: 'https:', search: 'deny', hash: 'deny'});
-      } else {
-        url = new URL('prov/config.oppf', ensureBaseUrl(urlString, 'https:'));
-      }
+      const url = checkAndCompleteUrl(urlString);
       const response = await fetch(url, {
         headers: {
           'user-agent': STATIC_CONFIG.USER_AGENT,

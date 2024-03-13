@@ -263,7 +263,7 @@ export function isEd25519PublicKey(raw: unknown): raw is Ed25519PublicKey {
 export function ensureEd25519PublicKey(key: ReadonlyUint8Array): Ed25519PublicKey {
     if (!isEd25519PublicKey(key)) {
         throw new Error(
-            `Expected public key to be ${NACL_CONSTANTS.KEY_LENGTH} bytes but has ${key.byteLength} bytes`,
+            `Expected Ed25519 public key to be ${NACL_CONSTANTS.KEY_LENGTH} bytes but has ${key.byteLength} bytes`,
         );
     }
     return key;
@@ -419,6 +419,7 @@ export interface CryptoBackend {
      * @param publicKey The Ed25519 public key.
      * @param message The signed message.
      * @param signature The Ed25519 signature.
+     * @throws {@link CryptoError} if signature is invalid.
      */
     readonly verifyEd25519Signature: (
         publicKey: Ed25519PublicKey,

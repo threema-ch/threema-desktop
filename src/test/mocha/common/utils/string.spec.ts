@@ -1,6 +1,12 @@
 import {expect} from 'chai';
 
-import {getGraphemeClusters, localeSort, splitAtLeast, truncate} from '~/common/utils/string';
+import {
+    applyVariables,
+    getGraphemeClusters,
+    localeSort,
+    splitAtLeast,
+    truncate,
+} from '~/common/utils/string';
 
 export function run(): void {
     describe('utils::string', function () {
@@ -96,6 +102,22 @@ export function run(): void {
                 expect(() => splitAtLeast('hello,big,world', ',', 4)).to.throw(
                     'Expected 4 after split, got 3',
                 );
+            });
+        });
+
+        describe('applyVariables', function () {
+            it('replace variables that are present', function () {
+                expect(applyVariables('hey {b} and {a}', {a: 'Alice', b: 'Bob'})).to.equal(
+                    'hey Bob and Alice',
+                );
+            });
+
+            it('replace nothing when a variable is not present', function () {
+                expect(applyVariables('hello, {world}', {mars: 'Mars'})).to.equal('hello, {world}');
+            });
+
+            it('replace nothing when no variable is marked', function () {
+                expect(applyVariables('hello world', {world: 'Mars'})).to.equal('hello world');
             });
         });
     });
