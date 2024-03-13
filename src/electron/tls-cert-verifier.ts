@@ -4,7 +4,7 @@ import type {Request} from 'electron';
 
 import type {Logger} from '~/common/logging';
 import type {DomainCertificatePin} from '~/common/types';
-import {base64ToU8a} from '~/common/utils/base64';
+import {byteEquals} from '~/common/utils/byte';
 
 /**
  * The verification results as returned by electron.
@@ -48,14 +48,7 @@ export function createTlsCertificateVerifier(
     if (certificatePins !== undefined) {
         for (const pin of certificatePins) {
             for (const fingerprint of pin.spkis) {
-                let fingerprintBytes;
-                try {
-                    fingerprintBytes = base64ToU8a(fingerprint.value);
-                } catch (error) {
-                    throw new Error(
-                        `Invalid certificate pinning config for "${pin.domain}": Fingerprint "${fingerprint.value}" could not be base64-decoded: ${error}`,
-                    );
-                }
+                const fingerprintBytes = fingerprint.value;
                 if (fingerprintBytes.byteLength !== 32) {
                     throw new Error(
                         `Invalid certificate pinning config for "${pin.domain}": Fingerprint "${fingerprint.value}" is not 32 bytes`,
@@ -119,7 +112,7 @@ export function createTlsCertificateVerifier(
             const fingerprint = spkiFingerprint(request.certificate.data, 'sha256');
 
             // Validate fingerprint against configured pins
-            if (pin.spkis.map((f) => f.value).includes(fingerprint)) {
+            if (pin.spkis.some((spki) => byteEquals(fingerprint, spki.value))) {
                 return valid();
             }
             return invalid(
@@ -147,7 +140,7 @@ function extractPublicKey(certificatePem: string): Uint8Array {
  *
  * See https://datatracker.ietf.org/doc/html/rfc7469#section-2.4
  */
-function spkiFingerprint(certificatePem: string, algorithm: 'sha256'): string {
+function spkiFingerprint(certificatePem: string, algorithm: 'sha256'): Uint8Array {
     const publicKey = extractPublicKey(certificatePem);
-    return createHash(algorithm).update(publicKey).digest('base64');
+    return createHash(algorithm).update(publicKey).digest();
 }

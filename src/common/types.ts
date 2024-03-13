@@ -388,10 +388,35 @@ export interface DomainCertificatePin {
      * The SPKI fingerprints (SHA-256-hashed and Base64-encoded public keys) of the certificates
      * that are whitelisted for the specified `domain`.
      */
-    readonly spkis: {
-        algorithm: 'sha256';
-        value: string;
+    readonly spkis: readonly {
+        readonly algorithm: 'sha256';
+        readonly value: SpkiValue;
     }[];
+}
+
+const SPKI_VALUE_LENGTH = 32;
+
+export type SpkiValue = WeakOpaque<ReadonlyUint8Array, {readonly SpkiValue: unique symbol}>;
+
+/**
+ * Type guard for {@link SpkiValue}.
+ */
+export function isSpkiValue(raw: unknown): raw is SpkiValue {
+    return raw instanceof Uint8Array && raw.byteLength === SPKI_VALUE_LENGTH;
+}
+
+/**
+ * Ensure input is a valid {@link SpkiValue}.
+ *
+ * @throws If the array is not a valid Spki Value
+ */
+export function ensureSpkiValue(spkiBytes: ReadonlyUint8Array): SpkiValue {
+    if (!isSpkiValue(spkiBytes)) {
+        throw new Error(
+            `Expected spki value to be ${SPKI_VALUE_LENGTH} bytes but has ${spkiBytes.byteLength} bytes`,
+        );
+    }
+    return spkiBytes;
 }
 
 /**

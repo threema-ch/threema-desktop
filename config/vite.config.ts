@@ -248,69 +248,39 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
                       {
                           domain: '*.threema.ch',
                           spkis: [
-                              {
-                                  algorithm: 'sha256',
-                                  value: '8kTK9HP1KHIP0sn6T2AFH3Bq+qq3wn2i/OJSMjewpFw=',
-                              },
-                              {
-                                  algorithm: 'sha256',
-                                  value: 'KKBJHJn1PQSdNTmoAfhxqWTO61r8O8bPi/JeGtP/6gg=',
-                              },
-                              {
-                                  algorithm: 'sha256',
-                                  value: 'h2gHawxPZyMCiZSkJN0dQ4RsDxowVuTmuiNQyjeU+Sk=',
-                              },
-                              {
-                                  algorithm: 'sha256',
-                                  value: 'HXqz8rMr6nBDdUX3CdyIwln8ym3qFUBwv4QGyMN2uEg=',
-                              },
-                              {
-                                  algorithm: 'sha256',
-                                  value: '2Vpy8qUQCqc2+Lg6BgRO8G6e6vh7NmvVHTljfwP/Pfk=',
-                              },
-                              {
-                                  algorithm: 'sha256',
-                                  value: 'vGQZ8hm2h+km+q7rnJ7kF9S17BwSY0rbhwjz6nIupf0=',
-                              },
-                              {
-                                  algorithm: 'sha256',
-                                  value: 'jsQHAHKQ2oOf3rvMn9GJVIKslkhLpODGOMPSxgLeIyo=',
-                              },
-                          ],
+                              '8kTK9HP1KHIP0sn6T2AFH3Bq+qq3wn2i/OJSMjewpFw=',
+                              'KKBJHJn1PQSdNTmoAfhxqWTO61r8O8bPi/JeGtP/6gg=',
+                              'h2gHawxPZyMCiZSkJN0dQ4RsDxowVuTmuiNQyjeU+Sk=',
+                              'HXqz8rMr6nBDdUX3CdyIwln8ym3qFUBwv4QGyMN2uEg=',
+                              '2Vpy8qUQCqc2+Lg6BgRO8G6e6vh7NmvVHTljfwP/Pfk=',
+                              'vGQZ8hm2h+km+q7rnJ7kF9S17BwSY0rbhwjz6nIupf0=',
+                              'jsQHAHKQ2oOf3rvMn9GJVIKslkhLpODGOMPSxgLeIyo=',
+                          ].map((value) => ({
+                              algorithm: 'sha256',
+                              value,
+                          })),
                       },
                       {
                           domain: '*.test.threema.ch',
                           spkis: [
-                              {
-                                  algorithm: 'sha256',
-                                  value: 'Dvvb0s1E8Y2tG67GoyzIkmJNAebvOqQjz4TnPMq3yhI=',
-                              },
-                              {
-                                  algorithm: 'sha256',
-                                  value: 'bmsGGaIGEs1HWAUIE082NSPYTURvChScDmE7PjL+5RQ=',
-                              },
-                          ],
+                              'Dvvb0s1E8Y2tG67GoyzIkmJNAebvOqQjz4TnPMq3yhI=',
+                              'bmsGGaIGEs1HWAUIE082NSPYTURvChScDmE7PjL+5RQ=',
+                          ].map((value) => ({
+                              algorithm: 'sha256',
+                              value,
+                          })),
                       },
                       {
                           domain: '*.sfu.threema.ch',
                           spkis: [
-                              {
-                                  algorithm: 'sha256',
-                                  value: 'useMPV2qPBEgxVucMPuqexG27L64zFAksHh9BehZpY0=',
-                              },
-                              {
-                                  algorithm: 'sha256',
-                                  value: '88JttF0tDWrGT6g8H9uEZ0T8xosvZtZwWlsZuD4NvHA=',
-                              },
-                              {
-                                  algorithm: 'sha256',
-                                  value: 'F82gDLif130AsVx454ZsMxPGl9EpzB5LqY39CzVKWDQ=',
-                              },
-                              {
-                                  algorithm: 'sha256',
-                                  value: 'Jo4Re5X+mksn/Ankgrnov07caZwkkT8NezJMQf1i8cI=',
-                              },
-                          ],
+                              'useMPV2qPBEgxVucMPuqexG27L64zFAksHh9BehZpY0=',
+                              '88JttF0tDWrGT6g8H9uEZ0T8xosvZtZwWlsZuD4NvHA=',
+                              'F82gDLif130AsVx454ZsMxPGl9EpzB5LqY39CzVKWDQ=',
+                              'Jo4Re5X+mksn/Ankgrnov07caZwkkT8NezJMQf1i8cI=',
+                          ].map((value) => ({
+                              algorithm: 'sha256',
+                              value,
+                          })),
                       },
                   ]
                 : undefined,

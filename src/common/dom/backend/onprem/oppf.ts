@@ -8,7 +8,7 @@ import {
     type Ed25519PublicKey,
 } from '~/common/crypto';
 import {ensureBaseUrl, validateUrl} from '~/common/network/types';
-import {ensureU53, type ReadonlyUint8Array} from '~/common/types';
+import {ensureSpkiValue, ensureU53, type ReadonlyUint8Array} from '~/common/types';
 import {entriesReverse} from '~/common/utils/array';
 import {base64ToU8a, u8aToBase64} from '~/common/utils/base64';
 import {byteEquals} from '~/common/utils/byte';
@@ -135,7 +135,7 @@ export const OPPF_FILE_SCHEMA = v
                             v
                                 .object({
                                     algorithm: v.literal('sha256'),
-                                    value: v.string(),
+                                    value: v.string().map(base64ToU8a).map(ensureSpkiValue),
                                 })
                                 .rest(v.unknown()),
                         ),

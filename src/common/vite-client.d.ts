@@ -355,7 +355,15 @@ interface ImportMetaEnv extends ViteDefaultImportMetaEnv, BuildConfig {
     readonly ONPREM_CONFIG_TRUSTED_PUBLIC_KEYS: readonly string[];
 
     // Public-key pins (HPKP)
-    readonly TLS_CERTIFICATE_PINS: import('./types').DomainCertificatePin[] | undefined;
+    readonly TLS_CERTIFICATE_PINS:
+        | {
+              readonly domain: string;
+              readonly spkis: readonly {
+                  readonly algorithm: 'sha256';
+                  readonly value: string;
+              }[];
+          }[]
+        | undefined;
 
     // Crash reporting (only used for internal test builds on sandbox)
     readonly SENTRY_DSN: string | undefined;

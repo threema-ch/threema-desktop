@@ -29,7 +29,12 @@ import {
 import type {LogFileInfo, LogInfo} from '~/common/node/file-storage/log-info';
 import {directoryModeInternalObjectIfPosix} from '~/common/node/fs';
 import {FileLogger} from '~/common/node/logging';
-import type {DomainCertificatePin, ReadonlyUint8Array, u53} from '~/common/types';
+import {
+    ensureSpkiValue,
+    type DomainCertificatePin,
+    type ReadonlyUint8Array,
+    type u53,
+} from '~/common/types';
 import {
     assert,
     assertUnreachable,
@@ -38,6 +43,7 @@ import {
     unreachable,
     unwrap,
 } from '~/common/utils/assert';
+import {base64ToU8a} from '~/common/utils/base64';
 
 import {createTlsCertificateVerifier} from './tls-cert-verifier';
 
@@ -784,7 +790,16 @@ function main(
             : electron.session.fromPartition(`volatile-${parameters.profile}`);
 
         session.setCertificateVerifyProc(
-            createTlsCertificateVerifier(import.meta.env.TLS_CERTIFICATE_PINS, log),
+            createTlsCertificateVerifier(
+                import.meta.env.TLS_CERTIFICATE_PINS?.map((pin) => ({
+                    domain: pin.domain,
+                    spkis: pin.spkis.map((val) => ({
+                        algorithm: val.algorithm,
+                        value: ensureSpkiValue(base64ToU8a(val.value)),
+                    })),
+                })),
+                log,
+            ),
         );
         const isMacOrWindows = process.platform === 'win32' || process.platform === 'darwin';
         window = new electron.BrowserWindow({
