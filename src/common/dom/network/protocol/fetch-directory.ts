@@ -162,7 +162,7 @@ export class FetchDirectoryBackend implements DirectoryBackend {
         const abort = new AbortController();
         const run = async (): Promise<string> => {
             // Send request
-            const response = await this._fetch('auth_token', {method: 'GET'});
+            const response = await this._fetch('auth_token', {method: 'GET', signal: abort.signal});
             if (response.status !== 200) {
                 throw new DirectoryError(
                     'invalid-response',
@@ -350,9 +350,9 @@ export class FetchDirectoryBackend implements DirectoryBackend {
                 let response: Response;
                 try {
                     response = await this._fetch(path, {
-                        signal: abort.signal,
                         method: 'POST',
                         body: JSON.stringify(payload),
+                        signal: abort.signal,
                     });
                 } catch (error) {
                     throw new DirectoryError(
