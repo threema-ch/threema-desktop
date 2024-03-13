@@ -349,38 +349,82 @@ function buildSource(dirs: Directories, args: string[]): void {
     }
 }
 
-function runElectronDistScript(
+/**
+ * Build both the electron application and the launcher binary.
+ */
+function buildApplicationAndLauncherBinary(
     dirs: Directories,
     flavor: BuildFlavor,
 ): {
     binaryBasename: string;
     binaryDirPath: string;
 } {
-    log.minor('Running dist script to package binary release');
-
-    const result = spawnSync(IS_WINDOWS ? 'npm.cmd' : 'npm', ['run', `dist:${flavor}`], {
-        cwd: dirs.root,
-        encoding: 'utf8',
-        shell: false,
-        stdio: [null, 1, 2],
-    });
-    if (result.status !== 0) {
-        console.warn(result);
-        fail(`Building binary failed, exit code ${result.status}`);
-    }
-
+    // Determine paths
     const buildOutputDir = path.join(dirs.root, 'build', 'electron', 'packaged');
     const binaryBasename = determineAppName(flavor);
     const binaryDir = `${binaryBasename}-${process.platform}-${process.arch}`;
     const binaryDirPath = path.join(buildOutputDir, binaryDir);
 
-    log.minor('Binary successfully built');
+    // Build launcher
+    log.minor('Building launcher binary through cargo');
+    const resultLauncher = spawnSync('cargo', ['build', `--release`], {
+        cwd: path.join(dirs.root, 'src', 'launcher'),
+        encoding: 'utf8',
+        shell: false,
+        stdio: [null, 1, 2],
+        env: {
+            ...process.env,
+            THREEMA_BUILD_FLAVOR: flavor,
+        },
+    });
+    if (resultLauncher.status !== 0) {
+        console.warn(resultLauncher);
+        fail(`Building launcher binary failed, exit code ${resultLauncher.status}`);
+    }
+    log.minor('Launcher binary successfully built');
 
+    // Build application
+    log.minor('Running dist script to package binary release');
+    const resultApp = spawnSync(IS_WINDOWS ? 'npm.cmd' : 'npm', ['run', `dist:${flavor}`], {
+        cwd: dirs.root,
+        encoding: 'utf8',
+        shell: false,
+        stdio: [null, 1, 2],
+    });
+    if (resultApp.status !== 0) {
+        console.warn(resultApp);
+        fail(`Building binary failed, exit code ${resultApp.status}`);
+    }
     if (!fs.existsSync(binaryDirPath)) {
         fail(
-            `Could not find binary after building, path\n    ${binaryDirPath}\n    does not exist`,
+            `Could not find binary dir after building, path\n    ${binaryDirPath}\n    does not exist`,
         );
     }
+    log.minor('Binary successfully built');
+
+    // Copy launcher into application output dir
+    const launcherBinaryPath = path.join(
+        dirs.root,
+        'src',
+        'launcher',
+        'target',
+        'release',
+        `threema-desktop-launcher${IS_WINDOWS ? '.exe' : ''}`,
+    );
+    if (!fs.existsSync(launcherBinaryPath)) {
+        fail(
+            `Could not find launcher binary after building, path\n    ${launcherBinaryPath}\n    does not exist`,
+        );
+    }
+    const launcherBinaryPathNew = path.join(
+        binaryDirPath,
+        IS_WINDOWS ? 'ThreemaDesktopLauncher.exe' : 'threema-desktop-launcher',
+    );
+    copySync(launcherBinaryPath, launcherBinaryPathNew, {
+        errorOnExist: true,
+        dereference: false,
+        preserveTimestamps: false,
+    });
 
     return {binaryBasename, binaryDirPath};
 }
@@ -467,6 +511,7 @@ function buildBinaryArchives(dirs: Directories, signed: boolean, args: string[])
     if (IS_POSIX) {
         requireCommand('tar');
     }
+    requireCommand('cargo');
 
     // Parse args
     if (args.length === 0) {
@@ -483,7 +528,7 @@ function buildBinaryArchives(dirs: Directories, signed: boolean, args: string[])
 
 function buildBinaryArchive(dirs: Directories, flavor: BuildFlavor, sign: boolean): void {
     // Build
-    const {binaryDirPath: binaryDirPathOld} = runElectronDistScript(dirs, flavor);
+    const {binaryDirPath: binaryDirPathOld} = buildApplicationAndLauncherBinary(dirs, flavor);
 
     // Rename and copy to temporary directory
     log.minor(`Packaging binary: ${flavor}`);
@@ -499,7 +544,9 @@ function buildBinaryArchive(dirs: Directories, flavor: BuildFlavor, sign: boolea
     // Sign
     if (sign) {
         if (IS_WINDOWS) {
-            signWindowsBinaryOrPackage(path.join(binaryDirPathNew, 'ThreemaDesktop.exe'), flavor);
+            for (const exe of ['ThreemaDesktop.exe', 'ThreemaDesktopLauncher.exe']) {
+                signWindowsBinaryOrPackage(path.join(binaryDirPathNew, exe), flavor);
+            }
         } else {
             fail('Binary signing not supported on non-Windows hosts');
         }
@@ -596,11 +643,13 @@ async function buildDmg(
 ): Promise<void> {
     log.minor(`Building DMG: ${flavor}`);
 
+    requireCommand('cargo');
+
     const hasChecksumBinaries =
         checkCommandAvailability('sha256sum') && checkCommandAvailability('b2sum');
 
-    // Build electron distribution
-    const {binaryDirPath, binaryBasename} = runElectronDistScript(dirs, flavor);
+    // Build
+    const {binaryDirPath, binaryBasename} = buildApplicationAndLauncherBinary(dirs, flavor);
 
     // Variables depending on build flavor
     const appName = determineAppName(flavor);
@@ -799,6 +848,8 @@ function buildMsixs(dirs: Directories, signed: boolean, args: string[]): void {
 function buildMsix(dirs: Directories, flavor: BuildFlavor, sign: boolean): void {
     log.minor(`Building MSIX: ${flavor}`);
 
+    requireCommand('cargo');
+
     // Look up required env variables
     const makeappxPath = unwrap(
         process.env.WIN_MAKEAPPX_EXE_PATH,
@@ -814,7 +865,7 @@ function buildMsix(dirs: Directories, flavor: BuildFlavor, sign: boolean): void 
     );
 
     // Build electron distribution
-    const {binaryDirPath} = runElectronDistScript(dirs, flavor);
+    const {binaryDirPath} = buildApplicationAndLauncherBinary(dirs, flavor);
 
     // Determine version
     //
@@ -857,7 +908,8 @@ function buildMsix(dirs: Directories, flavor: BuildFlavor, sign: boolean): void 
         .replaceAll('{{identityVersion}}', appVersion)
         .replaceAll('{{identityPublisher}}', certificateSubject)
         .replaceAll('{{displayName}}', displayName)
-        .replaceAll('{{applicationId}}', applicationId);
+        .replaceAll('{{applicationId}}', applicationId)
+        .replaceAll('{{executionAlias}}', `${applicationId.replaceAll('.', '')}.exe`);
     const manifestPath = path.join(binaryDirPath, 'AppxManifest.xml');
     log.minor(`Writing Manifest to ${manifestPath}`);
     fs.writeFileSync(manifestPath, manifest, {encoding: 'utf8'});
