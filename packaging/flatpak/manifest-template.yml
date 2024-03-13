@@ -41,7 +41,6 @@ modules:
       env:
         XDG_CACHE_HOME: /run/build/threema-desktop/flatpak-node/cache
         CARGO_HOME: /run/build/threema-desktop/cargo
-        THREEMA_BUILD_FLAVOR: '{{flavor}}'
         npm_config_cache: /run/build/threema-desktop/flatpak-node/npm-cache
         npm_config_offline: 'true'
       secret-env: ['SENTRY_DSN', 'MINIDUMP_ENDPOINT']
@@ -57,18 +56,17 @@ modules:
       - type: script
         dest-filename: run.sh
         commands:
-          - cd /app/main/
           - # Note: The following options were temporarily removed to work around a bug in Chromium or Electron:
             #
             # --ozone-platform-hint=auto \
             # --enable-features="WaylandWindowDecorations" \
             #
             # See https://github.com/electron/electron/issues/37531
-            threema-desktop-launcher /app/bin/zypak-wrapper.sh ./ThreemaDesktop "$@"
+            /app/main/threema-desktop-launcher --target-bin /app/bin/zypak-wrapper.sh /app/main/ThreemaDesktop "$@"
     build-commands:
       # Build and install launcher binary
       - cd src/launcher/ && cargo --offline fetch --manifest-path Cargo.toml --verbose
-      - cd src/launcher/ && cargo --offline build --release
+      - cd src/launcher/ && THREEMA_BUILD_FLAVOR='{{flavor}}' cargo --offline build --release --features allow_path_override
 
       # Install npm dependencies
       #

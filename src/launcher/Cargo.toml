@@ -8,6 +8,7 @@ keywords = ["threema", "desktop", "launcher"]
 publish = false
 
 [dependencies]
+colored = "2.0.4"
 home = "0.5.5"
 time = "0.3.30"
 
@@ -15,3 +16,7 @@ time = "0.3.30"
 overflow-checks = true
 lto = true
 strip = "debuginfo"
+
+[features]
+default = []
+allow_path_override = []
