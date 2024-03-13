@@ -192,7 +192,10 @@ function createConfig(config: {
             const prefix = byteToHex(unwrap(dgpk[0]));
             return applyVariablesToBaseUrl(
                 config.MEDIATOR_SERVER_URL,
-                {dgpk4: prefix.slice(0, 1), dgpk8: prefix.slice(0, 2)},
+                {
+                    deviceGroupIdPrefix4: prefix.slice(0, 1),
+                    deviceGroupIdPrefix8: prefix.slice(0, 2),
+                },
                 'wss:',
             );
         },
@@ -218,11 +221,18 @@ function createConfig(config: {
                 ),
         },
         safeServerUrl: (backupId) =>
-            applyVariablesToBaseUrl(config.SAFE_SERVER_URL, {bid8: backupId.slice(0, 2)}, 'https:'),
+            applyVariablesToBaseUrl(
+                config.SAFE_SERVER_URL,
+                {backupIdPrefix8: backupId.slice(0, 2)},
+                'https:',
+            ),
         rendezvousServerUrl: (rendezvousPathHex: string) =>
             applyVariablesToBaseUrl(
                 config.RENDEZVOUS_SERVER_URL,
-                {rp4: rendezvousPathHex.slice(0, 1), rp8: rendezvousPathHex.slice(0, 2)},
+                {
+                    rendezvousPathPrefix4: rendezvousPathHex.slice(0, 1),
+                    rendezvousPathPrefix8: rendezvousPathHex.slice(0, 2),
+                },
                 'wss:',
             ),
         WORK_SERVER_URL: ensureBaseUrl(config.WORK_SERVER_URL, 'https:'),
@@ -236,8 +246,8 @@ export function createDefaultConfig(): Config {
     function blobServerUrl(dgpk: PublicKey): string {
         const prefix = byteToHex(unwrap(dgpk[0]));
         return applyVariables(unwrap(import.meta.env.BLOB_SERVER_URL), {
-            dgpk4: prefix.slice(0, 1),
-            dgpk8: prefix.slice(0, 2),
+            deviceGroupIdPrefix4: prefix.slice(0, 1),
+            deviceGroupIdPrefix8: prefix.slice(0, 2),
         });
     }
 
