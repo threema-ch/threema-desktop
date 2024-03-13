@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"] // Prevent console window from showing up on Windows
+
 use std::{
     env, fs,
     path::{Path, PathBuf},

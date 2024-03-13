@@ -6,6 +6,7 @@
 <Package
     xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
     xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+    xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
     xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
     xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
 >
@@ -40,9 +41,10 @@
         <Capability Name="internetClient" />
     </Capabilities>
     <Applications>
+        <!-- Launcher binary. This is the main and only entry point. -->
         <Application
-            Id="{{applicationId}}"
-            Executable="ThreemaDesktop.exe"
+            Id="{{applicationId}}.Launcher"
+            Executable="ThreemaDesktopLauncher.exe"
             uap10:RuntimeBehavior="packagedClassicApp"
             uap10:TrustLevel="mediumIL"
         >
@@ -54,6 +56,18 @@
                 Square44x44Logo="resources\Square44x44Logo.png"
                 BackgroundColor="transparent"
             />
+            <Extensions>
+                <!-- The app execution alias allows launching Threema from the command line. -->
+                <uap5:Extension
+                    Category="windows.appExecutionAlias"
+                    Executable="ThreemaDesktopLauncher.exe"
+                    EntryPoint="Windows.FullTrustApplication"
+                >
+                    <uap5:AppExecutionAlias uap10:Subsystem='windows'>
+                        <uap5:ExecutionAlias Alias="{{executionAlias}}" />
+                    </uap5:AppExecutionAlias>
+                </uap5:Extension>
+            </Extensions>
         </Application>
     </Applications>
 </Package>
