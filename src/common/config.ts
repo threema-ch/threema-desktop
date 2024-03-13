@@ -277,7 +277,7 @@ export function createConfigFromOppf(onPremConfig: oppf.OppfFile): Config {
         MEDIATOR_SERVER_URL: onPremConfig.mediator.url,
         DIRECTORY_SERVER_URL: onPremConfig.directory.url,
         BLOB_SERVER_URLS: {
-            upload: () => onPremConfig.mediator.blob.uploadUrl.toString(),
+            upload: () => onPremConfig.mediator.blob.uploadUrl,
             download: () => onPremConfig.mediator.blob.downloadUrl,
             done: () => onPremConfig.mediator.blob.doneUrl,
         },

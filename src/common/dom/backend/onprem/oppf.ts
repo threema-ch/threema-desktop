@@ -79,13 +79,14 @@ export const OPPF_FILE_SCHEMA = v
                 }),
                 blob: v
                     .object({
-                        uploadUrl: v.string().map((url) =>
+                        uploadUrl: v.string().map((url) => {
                             validateUrl(url, {
                                 protocol: 'https:',
                                 search: 'deny',
                                 hash: 'deny',
-                            }),
-                        ),
+                            });
+                            return url;
+                        }),
                         downloadUrl: v.string().map((url) => {
                             validateUrl(url, {
                                 protocol: 'https:',
