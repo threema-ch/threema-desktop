@@ -162,18 +162,18 @@
         <MdIcon theme="Filled">arrow_upward</MdIcon>
       </IconButton>
     {/if}
-  </div>
 
-  <div
-    use:clickoutside={{enabled: isEmojiPickerVisible}}
-    class="emoji-picker"
-    data-is-visible={isEmojiPickerVisible}
-    on:clickoutside={({detail: {event}}) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      handleClickOutsideEmojiPicker(event);
-    }}
-  >
-    <EmojiPicker on:clickemoji={(event) => textAreaComponent?.insertText(event.detail)} />
+    <div
+      use:clickoutside={{enabled: isEmojiPickerVisible}}
+      class="emoji-picker"
+      data-is-visible={isEmojiPickerVisible}
+      on:clickoutside={({detail: {event}}) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        handleClickOutsideEmojiPicker(event);
+      }}
+    >
+      <EmojiPicker on:clickemoji={(event) => textAreaComponent?.insertText(event.detail)} />
+    </div>
   </div>
 </div>
 
@@ -203,6 +203,7 @@
     }
 
     .right {
+      position: relative;
       justify-content: right;
 
       .bytes-count {
@@ -218,8 +219,7 @@
     .emoji-picker {
       position: absolute;
       z-index: $z-index-modal;
-      bottom: calc(100% + rem(8px));
-      right: rem(8px);
+      bottom: calc(100% + rem(22px));
 
       &[data-is-visible='false'] {
         display: none;
