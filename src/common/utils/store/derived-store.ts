@@ -27,6 +27,16 @@ export type GetAndSubscribeFunction = <TStore extends IQueryableStore<unknown>>(
 ) => IQueryableStoreValue<TStore>;
 
 /**
+ * This is the value type passed to the derive function.
+ */
+export type CurrentSourceStoreValues<TSourceStores extends readonly IQueryableStore<unknown>[]> = {
+    readonly [K in keyof TSourceStores]: {
+        readonly currentValue: IQueryableStoreValue<TSourceStores[K]>;
+        readonly store: TSourceStores[K];
+    };
+};
+
+/**
  * Callback function of a derived store. Receives the current source store values, as well as a
  * {@link GetAndSubscribeFunction} that can be used to derive from additional stores in the
  * derivation function's body itself.
@@ -40,12 +50,7 @@ export type DeriveFunction<
      * for each source store (in the same order) that holds the store's `currentValue`, as well as
      * the store itself.
      */
-    currentSourceStoreValues: {
-        readonly [K in keyof TSourceStores]: {
-            readonly currentValue: IQueryableStoreValue<TSourceStores[K]>;
-            readonly store: TSourceStores[K];
-        };
-    },
+    currentSourceStoreValues: CurrentSourceStoreValues<TSourceStores>,
 
     /**
      * Function to get the value of additional stores while deriving. Implicitly subscribes the
@@ -323,12 +328,7 @@ export class DerivedStore<
                 // Cast is necessary here as the type system can't guarantee that the order of the
                 // source store array and the input array for the derive function have the same order
                 // and length.
-            })) as {
-                readonly [K in keyof TSourceStores]: {
-                    readonly currentValue: IQueryableStoreValue<TSourceStores[K]>;
-                    readonly store: TSourceStores[K];
-                };
-            },
+            })) as CurrentSourceStoreValues<TSourceStores>,
             // The `getAndSubscribe` function, which can be used to subscribe to add additional
             // stores during derivation.
             ((store) => {
