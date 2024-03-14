@@ -130,14 +130,16 @@
   </div>
 
   <div class="center">
-    <TextArea
-      bind:this={textAreaComponent}
-      bind:isEmpty={isTextAreaEmpty}
-      placeholder={$i18n.t('messaging.label--compose-area', 'Write a message...')}
-      on:pastefiles
-      on:submit={handleClickSendButton}
-      on:textbytelengthdidchange={handleChangeTextByteLength}
-    />
+    <div class="composearea">
+      <TextArea
+        bind:this={textAreaComponent}
+        bind:isEmpty={isTextAreaEmpty}
+        placeholder={$i18n.t('messaging.label--compose-area', 'Write a message...')}
+        on:pastefiles
+        on:submit={handleClickSendButton}
+        on:textbytelengthdidchange={handleChangeTextByteLength}
+      />
+    </div>
   </div>
 
   <div class="right">
@@ -183,15 +185,16 @@
   .container {
     position: relative;
     display: flex;
-    align-items: end;
+    align-items: stretch;
     justify-content: stretch;
-    padding: rem(12px) rem(8px);
+    padding-inline: rem(8px);
 
     .left,
     .right {
       flex: none;
       display: flex;
       align-items: center;
+      padding-block: rem(12px);
     }
 
     .left {
@@ -200,6 +203,20 @@
 
     .center {
       flex: 1 1 0;
+
+      .composearea,
+      .composearea :global(> .container) {
+        width: 100%;
+        height: 100%;
+      }
+
+      // Add padding to the text area so that its clickable area is larger. Note: As paddings will
+      // be excluded from the internal `spacer` measurement and the textarea itself is positioned
+      // absolutely, the measurement is still the same as without padding (intrinsic size + margins,
+      // excluding paddings).
+      .composearea :global(> .container > .textarea) {
+        padding-block: rem(22px);
+      }
     }
 
     .right {
