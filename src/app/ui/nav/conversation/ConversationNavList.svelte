@@ -74,8 +74,6 @@
     assertUnreachable,
   );
 
-  $: contextMenuPopovers = new Array<Popover>($conversationPreviewListStore.length);
-
   let modalState: ModalState = {type: 'none'};
 
   // Determine whether scroll snapping anchor is active.
@@ -271,6 +269,12 @@
       return sortedConversations;
     },
   );
+
+  let conversationPreviewListStoreLength = $conversationPreviewListStore.length;
+  $: if ($conversationPreviewListStore.length !== conversationPreviewListStoreLength) {
+    conversationPreviewListStoreLength = $conversationPreviewListStore.length;
+    contextMenuPopovers = new Array<Popover>(conversationPreviewListStoreLength);
+  }
 
   onMount(() => {
     // Process conversation list events
