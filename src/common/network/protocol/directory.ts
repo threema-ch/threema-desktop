@@ -24,7 +24,10 @@ export const VALID_IDENTITY_DATA_SCHEMA = v
         state: v
             .union(v.literal(ActivityState.ACTIVE), v.literal(ActivityState.INACTIVE))
             .optional(),
-        publicKey: v.string().map(base64ToU8a).map(ensurePublicKey),
+        publicKey: v
+            .string()
+            .map((value) => base64ToU8a(value))
+            .map((value) => ensurePublicKey(value)),
         featureMask: v.number().map(BigInt).map(ensureFeatureMask),
         type: v.number().map((type) => IdentityTypeUtils.fromNumber(type, IdentityType.REGULAR)),
     })

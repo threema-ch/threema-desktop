@@ -104,7 +104,7 @@ const TEST_MESSAGE_SCHEMA = v.union(
             content: v
                 .object({
                     fileName: v.string(),
-                    fileBytes: v.string().map(base64ToU8a),
+                    fileBytes: v.string().map((value) => base64ToU8a(value)),
                     mediaType: v.string(),
                     caption: translatedValueSchema(v.string()).optional(),
                 })
@@ -117,7 +117,7 @@ const TEST_MESSAGE_SCHEMA = v.union(
             type: v.literal('IMAGE'),
             content: v
                 .object({
-                    imageBytes: v.string().map(base64ToU8a),
+                    imageBytes: v.string().map((value) => base64ToU8a(value)),
                     mediaType: v.string(),
                     caption: translatedValueSchema(v.string()).optional(),
                 })
@@ -130,7 +130,7 @@ const TEST_MESSAGE_SCHEMA = v.union(
             type: v.literal('AUDIO'),
             content: v
                 .object({
-                    audioBytes: v.string().map(base64ToU8a),
+                    audioBytes: v.string().map((value) => base64ToU8a(value)),
                 })
                 .rest(v.unknown()),
         })
@@ -181,7 +181,7 @@ const TEST_CONTACT_SCHEMA = v
                 })
                 .rest(v.unknown()),
         ),
-        verificationLevel: v.number().map(VerificationLevelUtils.fromNumber),
+        verificationLevel: v.number().map((value) => VerificationLevelUtils.fromNumber(value)),
         acquaintanceLevel: v.union(v.literal('DIRECT'), v.literal('GROUP')).map((value) => {
             switch (value) {
                 case 'DIRECT':
@@ -202,7 +202,10 @@ const TEST_CONTACT_SCHEMA = v
                     return unreachable(value);
             }
         }),
-        avatar: v.string().map(base64ToU8a).optional(),
+        avatar: v
+            .string()
+            .map((value) => base64ToU8a(value))
+            .optional(),
         conversation: v.array(TEST_MESSAGE_SCHEMA),
     })
     .rest(v.unknown());
@@ -214,7 +217,10 @@ const TEST_GROUP_SCHEMA = v
         name: translatedValueSchema(v.string()),
         members: v.array(v.string().chain(identityStringOrOwnIdentity)),
         createdMinutesAgo: v.number(),
-        avatar: v.string().map(base64ToU8a).optional(),
+        avatar: v
+            .string()
+            .map((value) => base64ToU8a(value))
+            .optional(),
         conversation: v.array(TEST_MESSAGE_SCHEMA),
     })
     .rest(v.unknown());
@@ -225,7 +231,7 @@ export const SCREENSHOT_DATA_JSON_SCHEMA = v
             .object({
                 identity: v.string().map(ensureIdentityString),
                 nickname: v.string().map(ensureNickname).optional(),
-                profilePicture: v.string().map(base64ToU8a),
+                profilePicture: v.string().map((value) => base64ToU8a(value)),
             })
             .optional(),
         contacts: v.array(TEST_CONTACT_SCHEMA).default([]),

@@ -35,9 +35,12 @@ const CHALLENGE_PAYLOAD = v
     .object({
         token: v
             .string()
-            .map(base64ToU8a)
+            .map((value) => base64ToU8a(value))
             .map((a) => a as ReadonlyUint8Array),
-        tokenRespKeyPub: v.string().map(base64ToU8a).map(ensurePublicKey),
+        tokenRespKeyPub: v
+            .string()
+            .map((value) => base64ToU8a(value))
+            .map((value) => ensurePublicKey(value)),
     })
     .rest(v.unknown());
 

@@ -12,7 +12,7 @@ export const SCHEMA = validator(
         .object({
             currentTime: unsignedLongAsU64().map(unixTimestampToDateMs),
             maxDeviceSlots: v.number(),
-            deviceSlotState: v.number().map(DeviceSlotStateUtils.fromNumber),
+            deviceSlotState: v.number().map((value) => DeviceSlotStateUtils.fromNumber(value)),
             encryptedSharedDeviceData: instanceOf(Uint8Array),
             reflectionQueueLength: v.number().optional(),
         })

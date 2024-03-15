@@ -88,7 +88,10 @@ export const WORK_SYNC_RESPONSE_SCHEMA = v
                         .string()
                         .map((value) => (value === '' ? undefined : value))
                         .optional(),
-                    pk: v.string().map(base64ToU8a).map(ensurePublicKey),
+                    pk: v
+                        .string()
+                        .map((value) => base64ToU8a(value))
+                        .map((value) => ensurePublicKey(value)),
                 })
                 .rest(v.unknown()),
         ),

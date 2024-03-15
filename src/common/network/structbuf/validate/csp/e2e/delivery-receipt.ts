@@ -10,7 +10,7 @@ import {isIterable} from '~/common/utils/object';
 export const SCHEMA = v
     .object(
         validator(csp.e2e.DeliveryReceipt.prototype, {
-            status: v.number().map(CspE2eDeliveryReceiptStatusUtils.fromNumber),
+            status: v.number().map((value) => CspE2eDeliveryReceiptStatusUtils.fromNumber(value)),
             messageIds: v
                 .unknown()
                 .assert(isIterable)

@@ -100,7 +100,9 @@ export function run(): void {
 
             it('should reject an invalid value as input', function () {
                 const validator = v.object({value: nullOptional(v.number())});
-                expect(() => validator.parse({value: 'hi'})).to.throw('expected null or number');
+                expect(() => validator.parse({value: 'hi'})).to.throw(
+                    'invalid_type at .value (expected number)',
+                );
             });
 
             it('should be chainable with instanceOf(Uint8Array)', function () {

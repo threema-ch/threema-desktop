@@ -47,13 +47,13 @@ const BASE_SCHEMA = validator(sync.Contact, {
     firstName: v.string(),
     lastName: v.string(),
     nickname: nicknameOrValitaDefault(),
-    verificationLevel: v.number().map(VerificationLevelUtils.fromNumber),
-    workVerificationLevel: v.number().map(WorkVerificationLevelUtils.fromNumber),
-    identityType: v.number().map(IdentityTypeUtils.fromNumber),
-    acquaintanceLevel: v.number().map(AcquaintanceLevelUtils.fromNumber),
-    activityState: v.number().map(ActivityStateUtils.fromNumber),
-    featureMask: unsignedLongAsU64().map(ensureFeatureMask),
-    syncState: v.number().map(SyncStateUtils.fromNumber),
+    verificationLevel: v.number().map((value) => VerificationLevelUtils.fromNumber(value)),
+    workVerificationLevel: v.number().map((value) => WorkVerificationLevelUtils.fromNumber(value)),
+    identityType: v.number().map((value) => IdentityTypeUtils.fromNumber(value)),
+    acquaintanceLevel: v.number().map((value) => AcquaintanceLevelUtils.fromNumber(value)),
+    activityState: v.number().map((value) => ActivityStateUtils.fromNumber(value)),
+    featureMask: unsignedLongAsU64().map((value) => ensureFeatureMask(value)),
+    syncState: v.number().map((value) => SyncStateUtils.fromNumber(value)),
     readReceiptPolicyOverride: policyOverrideOrValitaDefault(ReadReceiptPolicyUtils),
     typingIndicatorPolicyOverride: policyOverrideOrValitaDefault(TypingIndicatorPolicyUtils),
     notificationTriggerPolicyOverride: policyOverrideWithOptionalExpirationDateOrValitaDefault(
@@ -62,8 +62,10 @@ const BASE_SCHEMA = validator(sync.Contact, {
     notificationSoundPolicyOverride: policyOverrideOrValitaDefault(NotificationSoundPolicyUtils),
     contactDefinedProfilePicture: DeltaImage.SCHEMA,
     userDefinedProfilePicture: DeltaImage.SCHEMA,
-    conversationCategory: v.number().map(ConversationCategoryUtils.fromNumber),
-    conversationVisibility: v.number().map(ConversationVisibilityUtils.fromNumber),
+    conversationCategory: v.number().map((value) => ConversationCategoryUtils.fromNumber(value)),
+    conversationVisibility: v
+        .number()
+        .map((value) => ConversationVisibilityUtils.fromNumber(value)),
 });
 
 const BASE_SCHEMA_CREATE = {

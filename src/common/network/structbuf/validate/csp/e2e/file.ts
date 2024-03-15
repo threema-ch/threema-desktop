@@ -136,7 +136,7 @@ export const SCHEMA = v
         validator(csp.e2e.File.prototype, {
             file: instanceOf(Uint8Array)
                 .map((value) => UTF8.decode(value))
-                .map(JSON.parse)
+                .map<unknown>((value) => JSON.parse(value))
                 .map((json) => RAW_FILE_JSON_SCHEMA.parse(json))
                 .map(processRawFileJson),
         }),

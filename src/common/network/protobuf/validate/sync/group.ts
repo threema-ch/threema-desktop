@@ -23,15 +23,17 @@ const BASE_SCHEMA = validator(sync.Group, {
     groupIdentity: GroupIdentity.SCHEMA,
     name: v.string(),
     createdAt: unsignedLongAsU64().map(unixTimestampToDateMs),
-    userState: v.number().map(GroupUserStateUtils.fromNumber),
+    userState: v.number().map((value) => GroupUserStateUtils.fromNumber(value)),
     notificationTriggerPolicyOverride: policyOverrideWithOptionalExpirationDateOrValitaDefault(
         GroupNotificationTriggerPolicyUtils,
     ),
     notificationSoundPolicyOverride: policyOverrideOrValitaDefault(NotificationSoundPolicyUtils),
     profilePicture: DeltaImage.SCHEMA,
     memberIdentities: Identities.SCHEMA,
-    conversationCategory: v.number().map(ConversationCategoryUtils.fromNumber),
-    conversationVisibility: v.number().map(ConversationVisibilityUtils.fromNumber),
+    conversationCategory: v.number().map((value) => ConversationCategoryUtils.fromNumber(value)),
+    conversationVisibility: v
+        .number()
+        .map((value) => ConversationVisibilityUtils.fromNumber(value)),
 });
 
 const BASE_SCHEMA_CREATE = {

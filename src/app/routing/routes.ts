@@ -23,7 +23,7 @@ import {instanceOf} from '~/common/utils/valita-helpers';
 const PARAM_RECEIVER_LOOKUP_SCHEMA = v.object({
     receiverLookup: v
         .object({
-            type: v.number().map(ReceiverTypeUtils.fromNumber),
+            type: v.number().map((value) => ReceiverTypeUtils.fromNumber(value)),
             uid: v.bigint().map(ensureU64),
         })
         .map((value) => value as DbReceiverLookup),
@@ -31,7 +31,7 @@ const PARAM_RECEIVER_LOOKUP_SCHEMA = v.object({
         .object({
             receiverLookup: v
                 .object({
-                    type: v.number().map(ReceiverTypeUtils.fromNumber),
+                    type: v.number().map((value) => ReceiverTypeUtils.fromNumber(value)),
                     uid: v.bigint().map(ensureU64),
                 })
                 .map((value) => value as DbReceiverLookup),

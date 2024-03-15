@@ -62,7 +62,10 @@ const SAFE_USER_SCHEMA = v
         privatekey: v.string(),
         temporaryDeviceGroupKeyTodoRemove: v.string().optional(),
         nickname: v.string().optional(),
-        profilePic: v.string().map<ReadonlyUint8Array>(base64ToU8a).optional(),
+        profilePic: v
+            .string()
+            .map<ReadonlyUint8Array>((value) => base64ToU8a(value))
+            .optional(),
         profilePicRelease: v
             .array(v.union(v.string(), v.null()))
             .optional()

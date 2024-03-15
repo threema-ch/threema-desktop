@@ -14,7 +14,10 @@ import {base64ToU8a, u8aToBase64} from '~/common/utils/base64';
 import {byteEquals} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 
-const OPPF_SIGNATURE_KEY_SCHEMA = v.string().map(base64ToU8a).map(ensureEd25519PublicKey);
+const OPPF_SIGNATURE_KEY_SCHEMA = v
+    .string()
+    .map((value) => base64ToU8a(value))
+    .map(ensureEd25519PublicKey);
 
 const OPPF_FILE_ONLY_SIGNATURE_KEY_SCHEMA = v
     .object({
@@ -136,7 +139,10 @@ export const OPPF_FILE_SCHEMA = v
                             v
                                 .object({
                                     algorithm: v.literal('sha256'),
-                                    value: v.string().map(base64ToU8a).map(ensureSpkiValue),
+                                    value: v
+                                        .string()
+                                        .map((value) => base64ToU8a(value))
+                                        .map(ensureSpkiValue),
                                 })
                                 .rest(v.unknown()),
                         ),
