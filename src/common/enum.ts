@@ -1176,6 +1176,35 @@ export namespace MessageTypeUtils {
         return typeof value === 'string' && (ALL as ReadonlySet<string>).has(value);
     }
 }
+export namespace StatusMessageType {
+    export const GROUP_MEMBER_CHANGE = 'group-member-change';
+    export type GROUP_MEMBER_CHANGE = typeof GROUP_MEMBER_CHANGE;
+    export const GROUP_NAME_CHANGE = 'group-name-change';
+    export type GROUP_NAME_CHANGE = typeof GROUP_NAME_CHANGE;
+}
+/** @generate convert */
+export type StatusMessageType = (typeof StatusMessageType)[keyof typeof StatusMessageType];
+export namespace StatusMessageTypeUtils {
+    export const ALL: ReadonlySet<StatusMessageType> = new Set([
+        StatusMessageType.GROUP_MEMBER_CHANGE,
+        StatusMessageType.GROUP_NAME_CHANGE,
+    ] as const);
+    export function fromString(value: string, fallback?: StatusMessageType): StatusMessageType {
+        if ((ALL as ReadonlySet<string>).has(value)) {
+            return value as StatusMessageType;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid StatusMessageType`);
+    }
+    export function containsString(value: string): value is StatusMessageType {
+        return (ALL as ReadonlySet<string>).has(value);
+    }
+    export function contains(value: unknown): value is StatusMessageType {
+        return typeof value === 'string' && (ALL as ReadonlySet<string>).has(value);
+    }
+}
 export namespace TriggerSource {
     export const SYNC = 0;
     /**

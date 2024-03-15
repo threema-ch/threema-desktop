@@ -1,4 +1,13 @@
-import type {DbConversationUid, DbReceiverLookup, UidOf} from '~/common/db';
+/* eslint-disable @typescript-eslint/member-ordering */
+import type {
+    DbAnyMessage,
+    DbConversationUid,
+    DbMessageUid,
+    DbReceiverLookup,
+    DbStatusMessage,
+    DbStatusMessageUid,
+    UidOf,
+} from '~/common/db';
 import {
     AcquaintanceLevel,
     ConversationVisibility,
@@ -30,6 +39,11 @@ import type {
     SetOfAnyLocalMessageModelStore,
 } from '~/common/model/types/message';
 import type {AnyReceiver, AnyReceiverStore} from '~/common/model/types/receiver';
+import type {
+    AnyStatusMessageModelStore,
+    GroupNameChangeStatusView,
+    GroupMemberChangeStatusView,
+} from '~/common/model/types/status';
 import {getDebugTagForReceiver} from '~/common/model/utils/debug-tags';
 import {LazyWeakRef, LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
@@ -40,7 +54,14 @@ import {OutgoingDeliveryReceiptTask} from '~/common/network/protocol/task/csp/ou
 import {ReflectContactSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-contact-sync-transaction';
 import {ReflectGroupSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-group-sync-transaction';
 import {ReflectIncomingMessageUpdateTask} from '~/common/network/protocol/task/d2d/reflect-message-update';
-import type {ConversationId, MessageId} from '~/common/network/types';
+import {
+    isMessageId,
+    type ConversationId,
+    type MessageId,
+    type StatusMessageId,
+    isStatusMessageId,
+    statusMessageIdtoStatusMessageUid,
+} from '~/common/network/types';
 import type {i53, Mutable, u53} from '~/common/types';
 import {assert, assertUnreachable, unreachable, unwrap} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
@@ -52,12 +73,13 @@ import {
 } from '~/common/utils/property-validator';
 import {type LocalStore, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-import {LocalSetStore} from '~/common/utils/store/set-store';
+import {LocalSetStore, type IDerivableSetStore} from '~/common/utils/store/set-store';
 
 import * as contact from './contact';
 import * as group from './group';
 import * as message from './message';
 import {MESSAGE_FACTORY} from './message/factory';
+import * as status from './status';
 
 // TODO(DESK-697)
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -104,6 +126,9 @@ export function deactivateAndPurgeCacheCascade(
         // Deactivate and purge all currently cached messages of this conversation
         message.deactivateAndPurgeCache(controller.uid);
 
+        // Deactivate and purge all currently cached status messages
+        status.deactivateAndPurgeCache(controller.uid);
+
         // Purge the conversation from the conversation cache
         cache.store[receiver.type].remove(receiver.uid);
     });
@@ -133,7 +158,6 @@ export function getByReceiver(
 ): LocalModelStore<Conversation> | undefined {
     return cache.store[receiver.type].getOrAdd(receiver.uid, () => {
         const {db} = services;
-
         // Lookup the associated conversation
         const conversation = db.getConversationOfReceiver(receiver);
         if (existence === Existence.ENSURED) {
@@ -268,6 +292,21 @@ export class ConversationModelController implements ConversationController {
     };
 
     /** @inheritdoc */
+    public createStatusMessage(
+        statusMessage:
+            | Omit<GroupMemberChangeStatusView, 'conversationUid' | 'ordinal'>
+            | Omit<GroupNameChangeStatusView, 'conversationUid' | 'ordinal'>,
+    ): AnyStatusMessageModelStore {
+        const statusMessageModelStore = status.createStatusMessage(this._services, {
+            ...statusMessage,
+            conversationUid: this.uid,
+        });
+        this._updateStatusStoresOnConversationUpdate();
+
+        return statusMessageModelStore;
+    }
+
+    /** @inheritdoc */
     public readonly removeMessage: ConversationController['removeMessage'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
@@ -291,6 +330,37 @@ export class ConversationModelController implements ConversationController {
             this.meta.update(() => {
                 message.removeAll(this._services, this._log, this.uid);
                 this._updateStoresOnConversationUpdate();
+                return {};
+            });
+        },
+    };
+
+    /** @inheritdoc */
+    public readonly removeStatusMessage: ConversationController['removeStatusMessage'] = {
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
+        // eslint-disable-next-line @typescript-eslint/require-await
+        fromLocal: async (statusMessageId: StatusMessageId) => {
+            this.meta.update(() => {
+                status.remove(
+                    this._services,
+                    this._log,
+                    this.uid,
+                    statusMessageIdtoStatusMessageUid(statusMessageId),
+                );
+                this._updateStatusStoresOnConversationUpdate();
+                return {};
+            });
+        },
+    };
+
+    /** @inheritdoc */
+    public readonly removeAllStatusMessages: ConversationController['removeAllStatusMessages'] = {
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
+        // eslint-disable-next-line @typescript-eslint/require-await
+        fromLocal: async () => {
+            this.meta.update(() => {
+                status.removeAllOfConversation(this._services, this._log, this.uid);
+                this._updateStatusStoresOnConversationUpdate();
                 return {};
             });
         },
@@ -371,7 +441,11 @@ export class ConversationModelController implements ConversationController {
 
     // Stores
     private readonly _lastMessageStore: WritableStore<AnyMessageModelStore | undefined>;
+    private readonly _lastStatusMessageStore: WritableStore<AnyStatusMessageModelStore | undefined>;
     private readonly _lastConversationUpdateStore: WritableStore<Date>;
+    // This store is used to notify subscribers that the conversation should be refreshed without touching lastUpdate.
+    // This is e.g. used for status messages.
+    private readonly _conversationRefreshTriggerStore: WritableStore<Date>;
 
     public constructor(
         private readonly _services: ServicesForModel,
@@ -392,7 +466,13 @@ export class ConversationModelController implements ConversationController {
         this._lastMessageStore = new WritableStore(
             message.getLastMessage(_services, this._handle, MESSAGE_FACTORY),
         );
+
+        this._lastStatusMessageStore = new WritableStore(
+            status.getLastStatusMessage(_services, this._handle),
+        );
+
         this._lastConversationUpdateStore = new WritableStore(new Date());
+        this._conversationRefreshTriggerStore = new WritableStore(new Date());
     }
 
     /**
@@ -441,8 +521,18 @@ export class ConversationModelController implements ConversationController {
     }
 
     /** @inheritdoc */
+    public lastStatusMessageStore(): LocalStore<AnyStatusMessageModelStore | undefined> {
+        return this._lastStatusMessageStore;
+    }
+
+    /** @inheritdoc */
     public lastConversationUpdateStore(): LocalStore<Date> {
         return this._lastConversationUpdateStore;
+    }
+
+    /** @inheritdoc */
+    public conversationRefreshTriggerStore(): LocalStore<Date> {
+        return this._conversationRefreshTriggerStore;
     }
 
     public decrementUnreadMessageCount(): void {
@@ -472,45 +562,194 @@ export class ConversationModelController implements ConversationController {
         return this.meta.run(() => message.all(this._services, this._handle, MESSAGE_FACTORY));
     }
 
-    /** @inheritdoc */
-    public getMessagesWithSurroundingMessages(
-        messageIds: ReadonlySet<MessageId>,
+    private _getSurroundingStandardMessages(
+        standardMessageIds: MessageId[],
         contextSize: u53,
-    ): Set<AnyMessageModelStore> {
+    ): {list: Pick<DbAnyMessage, 'uid'>[]; ordinals?: {newest: Date; oldest: Date}} {
         const {db} = this._services;
-        return this.meta.run(() => {
-            // Get sorted list of UIDs
-            const sortedUids = db.getSortedMessageUids(this.uid, messageIds).map((uid) => ({uid}));
-            if (sortedUids.length === 0) {
-                return new Set();
-            }
+        // Get sorted list of UIDs
+        const sortedUids = db
+            .getSortedMessageUids(this.uid, standardMessageIds)
+            .map((v) => ({uid: v.uid, ordinal: v.ordinal}));
+        if (sortedUids.length === 0) {
+            return {list: []};
+        }
 
-            // Add messages older than oldest message
-            const oldestUid = unwrap(sortedUids.at(0));
-            const olderMessages = [
-                ...this.meta.run(() =>
-                    db.getMessageUids(this.uid, contextSize, {
-                        direction: MessageQueryDirection.OLDER,
-                        uid: oldestUid.uid,
-                    }),
-                ),
-            ];
-
-            // Add messages newer than newest message
-            const newestUid = unwrap(sortedUids.at(-1));
-            const newerMessages = this.meta.run(() =>
+        // Add messages older than oldest message
+        const oldestUid = unwrap(sortedUids.at(0));
+        const olderMessages = [
+            ...this.meta.run(() =>
                 db.getMessageUids(this.uid, contextSize, {
-                    direction: MessageQueryDirection.NEWER,
-                    uid: newestUid.uid,
+                    direction: MessageQueryDirection.OLDER,
+                    uid: oldestUid.uid,
                 }),
+            ),
+        ];
+
+        // Add messages newer than newest message
+        const newestUid = unwrap(sortedUids.at(-1));
+        const newerMessages = this.meta.run(() =>
+            db.getMessageUids(this.uid, contextSize, {
+                direction: MessageQueryDirection.NEWER,
+                uid: newestUid.uid,
+            }),
+        );
+
+        return {
+            list: [...olderMessages, ...sortedUids, ...newerMessages],
+            ordinals: {newest: newestUid.ordinal, oldest: oldestUid.ordinal},
+        };
+    }
+
+    private _getSurroundingStatusMessages(
+        statusMessageIds: DbStatusMessageUid[],
+        contextSize: u53,
+    ): {list: Pick<DbStatusMessage, 'uid'>[]; ordinals?: {newest: Date; oldest: Date}} {
+        const {db} = this._services;
+        // Get sorted list of UIDs
+        const sortedUids = db
+            .getSortedStatusMessageUids(this.uid, statusMessageIds)
+            .map((v) => ({uid: v.uid, ordinal: v.ordinal}));
+        if (sortedUids.length === 0) {
+            return {list: []};
+        }
+
+        // Add messages older than oldest message
+        const oldestUid = unwrap(sortedUids.at(0));
+        const olderMessages = [
+            ...this.meta.run(() =>
+                db.getStatusMessageUids(this.uid, contextSize, {
+                    direction: MessageQueryDirection.OLDER,
+                    uid: oldestUid.uid,
+                }),
+            ),
+        ];
+
+        // Add messages newer than newest message
+        const newestUid = unwrap(sortedUids.at(-1));
+        const newerMessages = this.meta.run(() =>
+            db.getStatusMessageUids(this.uid, contextSize, {
+                direction: MessageQueryDirection.NEWER,
+                uid: newestUid.uid,
+            }),
+        );
+
+        return {
+            list: [...olderMessages, ...sortedUids, ...newerMessages],
+            ordinals: {newest: newestUid.ordinal, oldest: oldestUid.ordinal},
+        };
+    }
+
+    private _getAnySurroundingMessages(
+        standardMessageIds: MessageId[],
+        statusMessagesIds: DbStatusMessageUid[],
+        contextSize: u53,
+    ): {standardMessages: {uid: DbMessageUid}[]; statusMessages: {uid: DbStatusMessageUid}[]} {
+        const {db} = this._services;
+        // No message in viewport so the viewport is empty
+        if (standardMessageIds.length === 0 && statusMessagesIds.length === 0) {
+            return {standardMessages: [], statusMessages: []};
+        }
+
+        let standardMessages: {uid: DbMessageUid}[] | undefined = undefined;
+        let statusMessages: {uid: DbStatusMessageUid}[] | undefined = undefined;
+        let surroundingMessages;
+        let surroundingStatusMessages;
+        if (standardMessageIds.length > 0) {
+            surroundingMessages = this._getSurroundingStandardMessages(
+                standardMessageIds,
+                contextSize,
             );
 
-            // Return set of unique message stores
-            //
-            // Note: The store for the two reference messages is fetched twice. That's not a problem
-            //       though, thanks to caching, and because the set discards duplicates.
-            return new Set(
-                [...olderMessages, ...sortedUids, ...newerMessages].map((dbMessageListing) =>
+            standardMessages = surroundingMessages.list;
+        }
+
+        if (statusMessagesIds.length > 0) {
+            surroundingStatusMessages = this._getSurroundingStatusMessages(
+                statusMessagesIds,
+                contextSize,
+            );
+            statusMessages = surroundingStatusMessages.list;
+        }
+
+        // If there are no messages in the view port, we need to fetch the message context anyway.
+        // To that end, we take the newest and oldest status message in the viewport as a reference
+        if (standardMessages === undefined) {
+            assert(
+                surroundingStatusMessages?.ordinals !== undefined,
+                'Ordinals have to present if standard messages are undefined',
+            );
+            standardMessages = [
+                ...db.getMessageUidsByOrdinalReference(
+                    this.uid,
+                    {
+                        ordinal: surroundingStatusMessages.ordinals.newest,
+                        direction: MessageQueryDirection.NEWER,
+                    },
+                    contextSize,
+                ),
+                ...db.getMessageUidsByOrdinalReference(
+                    this.uid,
+                    {
+                        ordinal: surroundingStatusMessages.ordinals.oldest,
+                        direction: MessageQueryDirection.OLDER,
+                    },
+                    contextSize,
+                ),
+            ];
+        }
+
+        // If there are no status messages in the view port, we need to fetch the status message context anyway.
+        // To that end, we take the newest and oldest message in the viewport as a reference
+        if (statusMessages === undefined) {
+            assert(
+                surroundingMessages?.ordinals !== undefined,
+                'Ordinals have to present if standard messages are undefined',
+            );
+            statusMessages = [
+                ...db.getStatusMessageUidsByOrdinalReference(
+                    this.uid,
+                    {
+                        ordinal: surroundingMessages.ordinals.newest,
+                        direction: MessageQueryDirection.NEWER,
+                    },
+                    contextSize,
+                ),
+                ...db.getStatusMessageUidsByOrdinalReference(
+                    this.uid,
+                    {
+                        ordinal: surroundingMessages.ordinals.oldest,
+                        direction: MessageQueryDirection.OLDER,
+                    },
+                    contextSize,
+                ),
+            ];
+        }
+
+        return {standardMessages, statusMessages};
+    }
+
+    /** @inheritdoc */
+    public getMessagesWithSurroundingMessages(
+        anyMessageIds: ReadonlySet<MessageId | StatusMessageId>,
+        contextSize: u53,
+    ): Set<AnyMessageModelStore | AnyStatusMessageModelStore> {
+        const spreadMessageIds = [...anyMessageIds];
+        const standardMessageIds = spreadMessageIds.filter(isMessageId);
+        const statusMessageIds = spreadMessageIds
+            .filter(isStatusMessageId)
+            .map(statusMessageIdtoStatusMessageUid);
+        return this.meta.run(() => {
+            // Get sorted list of UIDs
+            const messageArray = this._getAnySurroundingMessages(
+                standardMessageIds,
+                statusMessageIds,
+                contextSize,
+            );
+
+            // Return the mixed fetched set of status and standard messages in the current viewport context
+            return new Set([
+                ...messageArray.standardMessages.map((dbMessageListing) =>
                     message.getByUid(
                         this._services,
                         this._handle,
@@ -519,8 +758,18 @@ export class ConversationModelController implements ConversationController {
                         Existence.ENSURED,
                     ),
                 ),
-            );
+                ...messageArray.statusMessages.map((dbMessageListings) =>
+                    status.getByUid(this._services, this._handle, dbMessageListings.uid),
+                ),
+            ]);
         });
+    }
+
+    /** @inheritdoc */
+    public getAllStatusMessages(): IDerivableSetStore<AnyStatusMessageModelStore> {
+        return this.meta.run(() =>
+            status.allStatusMessagesOfConversation(this._services, this._handle),
+        );
     }
 
     /** @inheritdoc */
@@ -842,6 +1091,14 @@ export class ConversationModelController implements ConversationController {
         );
         this._lastConversationUpdateStore.set(new Date());
     }
+
+    private _updateStatusStoresOnConversationUpdate(): void {
+        // Note: Update the "last status message" store before updating the "last conversation update"
+        // store. This way, when subscribing to conversation updates, the last message can be
+        // fetched from the "last message" store and will already be correct.
+        this._lastStatusMessageStore.set(status.getLastStatusMessage(this._services, this._handle));
+        this._conversationRefreshTriggerStore.set(new Date());
+    }
 }
 
 function all(services: ServicesForModel): LocalSetStore<LocalModelStore<Conversation>> {
@@ -905,6 +1162,7 @@ export class ConversationModelRepository implements ConversationRepository {
         this._log.debug('Creating new cache');
         cache = createCache();
         message.recreateCaches();
+        status.recreateCaches();
 
         this.totalUnreadMessageCount = derive(
             [this.getAll()],

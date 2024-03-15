@@ -19,6 +19,7 @@ import type {
     NotificationSoundPolicy,
     ReadReceiptPolicy,
     ReceiverType,
+    StatusMessageType,
     SyncState,
     TypingIndicatorPolicy,
     VerificationLevel,
@@ -30,6 +31,7 @@ import type {
     MediaBasedMessageType,
     TextBasedMessageType,
 } from '~/common/model/types/message';
+import type {AnyStatusMessage} from '~/common/model/types/status';
 import type {BlobId} from '~/common/network/protocol/blob';
 import type {
     FeatureMask,
@@ -574,6 +576,20 @@ export interface DbMessageLastEdit {
 }
 
 /**
+ * A status message UID.
+ */
+export type DbStatusMessageUid = WeakOpaque<DbUid, {readonly DbStatusMessageUid: unique symbol}>;
+
+export interface DbStatusMessage {
+    readonly createdAt: Date;
+    readonly conversationUid: DbConversationUid;
+    readonly ordinal: u53;
+    readonly statusBytes: ReadonlyUint8Array;
+    readonly type: StatusMessageType;
+    readonly uid: DbStatusMessageUid;
+}
+
+/**
  * A database message UID.
  */
 export type DbGlobalPropertyUid = WeakOpaque<DbUid, {readonly DbGlobalPropertyUid: unique symbol}>;
@@ -777,6 +793,14 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     ) => DbHas<DbAnyMessage>;
 
     /**
+     * Returns true if the status message uid exists in this conversation.
+     */
+    readonly hasStatusMessageByUid: (
+        conversationUid: DbConversationUid,
+        uid: DbStatusMessageUid,
+    ) => boolean;
+
+    /**
      * Return identifiers (`conversationUid`, `id`, and `uid`) of all matching messages that contain
      * the given text (case-insensitive). Note: Quoted content will not be searched.
      */
@@ -791,10 +815,19 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     readonly getMessageByUid: (uid: DbMessageUid) => DbGet<DbAnyMessage>;
 
     /**
+     * Get the status message with the specified UID
+     */
+    readonly getStatusMessageByUid: (uid: DbStatusMessageUid) => DbGet<DbStatusMessage>;
+
+    /**
      * Get the last (most recent) message of the conversation.
      */
     readonly getLastMessage: (conversationUid: DbConversationUid) => DbGet<DbAnyMessage>;
 
+    /**
+     * Get the last (most recent) status message of the conversation.
+     */
+    readonly getLastStatusMessage: (conversaitonUid: DbConversationUid) => DbGet<DbStatusMessage>;
     /**
      * Get the first (oldest), unread message of the conversation.
      */
@@ -861,6 +894,18 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     ) => {removed: u53; deletedFileIds: FileId[]};
 
     /**
+     * Delete a status message given a uid.
+     * Returns whether a status message was deleted or not.
+     */
+    readonly removeStatusMessage: (uid: DbRemove<DbStatusMessage>) => {removed: boolean};
+
+    /**
+     * Remove all status messages of a given conversation, no matter the type.
+     * The function returns the number of deleted status messages.
+     */
+    readonly removeAllStatusMessagesOfConversation: (uid: DbConversationUid) => u53;
+
+    /**
      * Mark all incoming messages of the given conversation as read.
      *
      * @returns the UID and message ID for all messages marked as read.
@@ -877,15 +922,13 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      *   reference message (and also including the reference message itself).
      * - If no reference message is defined: fetch list of the newest messages.
      *
-     * TODO(DESK-296): Order correctly. Right now, the order of messages returned is undefined. Find
-     * out whether there is a logical order (older-to-newer or newer-to-old) that can be used as-is.
-     * Take threading ID into account for sorting.
-     *
      * @param conversationUid {@link DbConversationUid} of the conversation to search in.
      * @param limit The length of the list of results to return. Note: Possibly smaller, if there
      *   are fewer messages in the conversation than `limit`.
      * @param reference The reference message to fetch around.
      * @returns List of message UIDs.
+     *
+     *   Note: If the combination of reference and conversationUid does not match, no message is returned.
      */
     readonly getMessageUids: (
         conversationUid: DbConversationUid,
@@ -897,12 +940,88 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     ) => DbList<DbAnyMessage, 'uid'>;
 
     /**
+     * Return `limit` amount (or all, or none) message UIDs associated to a conversation according to a reference
+     * which defines a point in time and a query direction.
+     *
+     * The timestamp to which a message is compared is `createdAt` or `processedAt` if the former is null.
+     *
+     * If no message is found that matches the condition, an empty list is returned.
+     *
+     * Note: The reference need not be found in the table. It can be any point in time without any relation to the entries of the
+     * status message table whatsoever.
+     */
+    readonly getMessageUidsByOrdinalReference: (
+        conversationUid: DbConversationUid,
+        reference: {
+            readonly ordinal: Date;
+            readonly direction: MessageQueryDirection;
+        },
+        limit?: u53,
+    ) => DbList<DbAnyMessage, 'uid'>;
+
+    /**
+     * Return `limit` amount (or all) status message UIDs associated to a conversation.
+     *
+     * - If a reference status message is defined: fetch list of message UIDs older/newer than the
+     *   reference status message (and also including the reference message itself).
+     * - If no reference status message is defined: fetch list of the newest status messages.
+     *
+     * TODO(DESK-296): Order correctly. Right now, the order of status messages returned is undefined. Find
+     * out whether there is a logical order (older-to-newer or newer-to-old) that can be used as-is.
+     * Take threading ID into account for sorting.
+     *
+     * @param conversationUid {@link DbConversationUid} of the conversation to search in.
+     * @param limit The length of the list of results to return. Note: Possibly smaller, if there
+     *   are fewer status messages in the conversation than `limit`.
+     * @param reference The reference status message to fetch around.
+     * @returns List of status message UIDs.
+     *
+     *   Note: If the combination of reference and conversationUid does not match, no status message is returned.
+     */
+    readonly getStatusMessageUids: (
+        conversationUid: DbConversationUid,
+        limit?: u53,
+        reference?: {
+            readonly uid: DbStatusMessageUid;
+            readonly direction: MessageQueryDirection;
+        },
+    ) => DbList<DbStatusMessage, 'uid'>;
+
+    /**
+     * Return `limit` amount (or all, or none) status message UIDs associated to a conversation according to a reference
+     * which defines a point in time and a query direction.
+     *
+     * The timestamp to which a status message is compared is `createdAt` or `processedAt` if the former is null.
+     *
+     * If no message is found that matches the condition, an empty list is returned.
+     *
+     * Note: The reference need not be found in the table. It can be any point in time without any relation to the entries of the
+     * status message table whatsoever.
+     */
+    readonly getStatusMessageUidsByOrdinalReference: (
+        conversationUid: DbConversationUid,
+        reference: {
+            readonly ordinal: Date;
+            readonly direction: MessageQueryDirection;
+        },
+        limit?: u53,
+    ) => DbList<DbStatusMessage, 'uid'>;
+
+    /**
      * Given a set of message IDs, return the corresponding UIDs as a sorted array (oldest first).
      */
     readonly getSortedMessageUids: (
         conversationUid: DbConversationUid,
-        messageIds: ReadonlySet<MessageId>,
-    ) => DbMessageUid[];
+        messageIds: MessageId[],
+    ) => {uid: DbMessageUid; ordinal: Date}[];
+
+    /**
+     * Given a set of message IDs, return the corresponding UIDs as a sorted array (oldest first).
+     */
+    readonly getSortedStatusMessageUids: (
+        conversationUid: DbConversationUid,
+        messageIds: DbStatusMessageUid[],
+    ) => {uid: DbStatusMessageUid; ordinal: Date}[];
 
     /**
      * Returns the message count of a conversation
@@ -924,6 +1043,20 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     readonly getSettings: <TKey extends keyof Settings>(
         category: TKey,
     ) => Settings[TKey] | undefined;
+
+    /**
+     * Add a status message to the db.
+     */
+    readonly addStatusMessage: (
+        statusMessage: DbCreateMessage<DbStatusMessage>,
+    ) => DbCreated<DbStatusMessage>;
+
+    /**
+     * Get the status messages of all types for a given conversation.
+     */
+    readonly getStatusMessagesofConversation: (
+        conversationUid: DbConversationUid,
+    ) => (AnyStatusMessage & {uid: DbStatusMessageUid})[];
 
     /**
      * Update a property for a given key. It returns the property if the action was

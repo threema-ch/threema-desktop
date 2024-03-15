@@ -18,13 +18,18 @@ import type {
     SetOfAnyLocalMessageModelStore,
 } from '~/common/model/types/message';
 import type {AnyReceiverStore} from '~/common/model/types/receiver';
+import type {
+    AnyStatusMessageModelStore,
+    GroupMemberChangeStatusView,
+    GroupNameChangeStatusView,
+} from '~/common/model/types/status';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
-import type {ConversationId, MessageId} from '~/common/network/types';
+import type {ConversationId, MessageId, StatusMessageId} from '~/common/network/types';
 import type {i53, u53} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
 import type {LocalStore} from '~/common/utils/store';
-import type {LocalSetStore} from '~/common/utils/store/set-store';
+import type {IDerivableSetStore, LocalSetStore} from '~/common/utils/store/set-store';
 
 export interface ConversationInitMixin {
     readonly lastUpdate?: Date;
@@ -52,10 +57,14 @@ export type ConversationController = {
     readonly meta: ModelLifetimeGuard<ConversationView>;
     readonly receiver: () => AnyReceiverStore;
     /**
-     * A store that contains the last message sent or received in this conversation (or none, if the
-     * conversation is empty).
+     * A store that contains the last message sent or received in this conversation (or none, if there has never been a conversation message).
      */
     readonly lastMessageStore: () => LocalStore<AnyMessageModelStore | undefined>;
+    /**
+     * A store that contains the last (newest) status message (or none, if there has never been a status message).
+     */
+    readonly lastStatusMessageStore: () => LocalStore<AnyStatusMessageModelStore | undefined>;
+
     /**
      * Return a store that contains the timestamp of the last conversation update. The store is
      * initialized with the current date.
@@ -69,6 +78,13 @@ export type ConversationController = {
      * Note that changes to an existing message do not trigger an update to this store.
      */
     readonly lastConversationUpdateStore: () => LocalStore<Date>;
+
+    /**
+     * Return a store that can be updated when a refresh of the conversation is needed without any side-effects.
+     * In contrast to {@link lastConversationUpdateStore}, this does e.g not trigger a reordering of the previews.
+     */
+    readonly conversationRefreshTriggerStore: () => LocalStore<Date>;
+
     /**
      * Update a conversation.
      *
@@ -98,6 +114,7 @@ export type ConversationController = {
         [init: DirectedMessageFor<MessageDirection.INBOUND, MessageType, 'init'>],
         AnyMessageModelStore
     >;
+
     /**
      * Remove a message from this conversation.
      *
@@ -106,12 +123,36 @@ export type ConversationController = {
      */
     readonly removeMessage: ControllerUpdateFromLocal<[uid: MessageId]>;
     /**
-     * Remove all message from this conversation, i.e. empty the conversation.
+     * Remove all message from this conversation.
      *
      * The messages will be only removed from the device where the action is executed. I.e. this
      * action is not reflected.
      */
     readonly removeAllMessages: ControllerUpdateFromLocal;
+
+    /**
+     * Remove a status message from this conversation. This is a local action, i.e it is not reflected.
+     * This triggers a refresh of the `_conversationRefreshTriggerStore`.
+     */
+    readonly removeStatusMessage: ControllerUpdateFromLocal<[uid: StatusMessageId]>;
+
+    /**
+     * Remove all status messages from this conversation. This is a local action, i.e it is not reflected.
+     * This triggers a refresh of the `_conversationRefreshTriggerStore`.
+     */
+    readonly removeAllStatusMessages: ControllerUpdateFromLocal;
+
+    /**
+     * Create a status message and add it to the DB.
+     * The status message can be of any type.
+     * Status are triggered locally and do not have side-effects on linked devices.
+     */
+    readonly createStatusMessage: (
+        statusMessage:
+            | Omit<GroupMemberChangeStatusView, 'conversationUid' | 'ordinal'>
+            | Omit<GroupNameChangeStatusView, 'conversationUid' | 'ordinal'>,
+    ) => AnyStatusMessageModelStore;
+
     /**
      * Return whether the message with the specified id exists in the this conversation.
      */
@@ -125,19 +166,25 @@ export type ConversationController = {
      */
     readonly getAllMessages: () => SetOfAnyLocalMessageModelStore;
     /**
-     * Return a {@link LocalModelStore} for every message in {@link messageIds}, plus a number of
-     * additional older and newer messages (the "context").
+     * Return a {@link LocalModelStore} for every (status) message in {@link anyMessageIds}, plus a number of
+     * additional older and newer (status) messages (the "context").
      *
-     * @param messageIds The reference message IDs.
-     * @param contextSize The number of messages to load for each direction. Example: If
-     *   `contextSize` is 10 and the last message ID is the only entry in {@link messageIds}, then
-     *   11 messages will be returned. If `contextSize` is 25 and 5 messages in the middle of the
-     *   conversation are part of {@link messageIds}, then 55 messages will be returned.
+     * @param anyMessageIds The reference (status) message IDs.
+     * @param contextSize The number of messages and status messages to load for each direction. Example: If
+     *   `contextSize` is 10 and the last message ID is the only entry in {@link anyMessageIds}, then at most
+     *   10 messages and 10 status messages will be returned. If `contextSize` is 25 and 5 messages in the middle of the
+     *   conversation are part of {@link anyMessageIds}, then at most 50 messages and 50 status messages + the five message in the middle (no matter if they are status or nomal messages) will be returned.
      */
     readonly getMessagesWithSurroundingMessages: (
-        messageIds: ReadonlySet<MessageId>,
+        anyMessageIds: ReadonlySet<MessageId | StatusMessageId>,
         contextSize: u53,
-    ) => Set<AnyMessageModelStore>;
+    ) => Set<AnyMessageModelStore | AnyStatusMessageModelStore>;
+
+    /**
+     * Retrieves all status messages of this conversation from the DB and creates the corresponding {@link LocalModelStores}
+     */
+    readonly getAllStatusMessages: () => IDerivableSetStore<AnyStatusMessageModelStore>;
+
     /**
      *
      * @returns The number of messages in this conversation

@@ -325,6 +325,14 @@ export async function generateFakeGroupConversation({
             MessageDirection.OUTBOUND,
         ]);
 
+        conversation.controller.createStatusMessage({
+            createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
+            type: 'group-name-change',
+            value: {
+                oldName: '1234',
+                newName: `${i} 4-5-6`,
+            },
+        });
         switch (direction) {
             case MessageDirection.INBOUND: {
                 const modelStore = conversation.controller.addMessage.fromSync({

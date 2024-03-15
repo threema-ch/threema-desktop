@@ -62,7 +62,7 @@ import {LocalSetStore} from '~/common/utils/store/set-store';
 /**
  * Factory for creating stores and database entries for concrete message types.
  *
- * Note: This avoids a circular dependency.
+ * Note: This avoids a circular` dependency.
  */
 export interface MessageFactory {
     readonly createStore: <TLocalModelStore extends AnyMessageModelStore>(

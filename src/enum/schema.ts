@@ -434,6 +434,12 @@ export enum MessageType {
     // LOCATION = 'location',
 }
 
+/** @generate convert */
+export enum StatusMessageType {
+    GROUP_MEMBER_CHANGE = 'group-member-change',
+    GROUP_NAME_CHANGE = 'group-name-change',
+}
+
 /**
  * Source that triggered some kind of update.
  */

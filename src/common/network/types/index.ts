@@ -1,4 +1,5 @@
 import type {Cookie, CryptoBox, NonceUnguardedScope} from '~/common/crypto';
+import type {DbStatusMessageUid} from '~/common/db';
 import {type NonceScope, ReceiverType} from '~/common/enum';
 import type {AnyReceiver} from '~/common/model';
 import {isU64, type ReadonlyUint8Array, type u32, type u64, type WeakOpaque} from '~/common/types';
@@ -334,6 +335,38 @@ export function ensureMessageId(id: unknown): MessageId {
     return id;
 }
 
+export type StatusMessageId = WeakOpaque<string, {readonly statusMessageId: unique symbol}>;
+
+/**
+ * Type guard for {@link StatusMessageId}.
+ */
+export function isStatusMessageId(id: unknown): id is StatusMessageId {
+    return typeof id === 'string' && !isNaN(parseInt(id, 10));
+}
+
+/**
+ * Ensure input is a valid {@link StatusMessageId}.
+ */
+export function ensureStatusMessageId(id: unknown): StatusMessageId {
+    if (!isStatusMessageId(id)) {
+        throw new Error(`Not a valid status message id: '${id}'`);
+    }
+    return id;
+}
+
+export function statusMessageIdtoStatusMessageUid(id: StatusMessageId): DbStatusMessageUid {
+    try {
+        return BigInt(id) as DbStatusMessageUid;
+    } catch {
+        throw new Error(
+            `Not a valid Status message ID as it cannot be casted to a status message uid`,
+        );
+    }
+}
+
+export function statusMessageUidToStatusMessageId(uid: DbStatusMessageUid): StatusMessageId {
+    return ensureStatusMessageId(uid.toString());
+}
 /**
  * A 64-bit group ID.
  */

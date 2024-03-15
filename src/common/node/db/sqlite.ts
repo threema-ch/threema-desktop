@@ -48,6 +48,8 @@ import type {
     DbMessageReaction,
     DbMessageEditFor,
     DbMessageLastEdit,
+    DbStatusMessage,
+    DbStatusMessageUid,
 } from '~/common/db';
 import {
     type GlobalPropertyKey,
@@ -60,8 +62,10 @@ import {
 import type {FileId} from '~/common/file-storage';
 import type {Logger} from '~/common/logging';
 import type {MediaBasedMessageType, TextBasedMessageType} from '~/common/model/types/message';
+import type {AnyStatusMessage} from '~/common/model/types/status';
 import type {GroupId, IdentityString, MessageId} from '~/common/network/types';
 import {type Settings, SETTINGS_CODEC} from '~/common/settings';
+import {STATUS_CODEC} from '~/common/status';
 import type {u53} from '~/common/types';
 import {chunk} from '~/common/utils/array';
 import {assert, assertUnreachable, isNotUndefined, unreachable} from '~/common/utils/assert';
@@ -89,6 +93,7 @@ import {
     tMessageVideoData,
     tNonce,
     tSettings,
+    tStatusMessage,
 } from './tables';
 
 type UpdateSetsForDbMessage<
@@ -1229,22 +1234,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public hasMessageByUid(uid: DbMessageUid): boolean {
-        return (
-            sync(
-                this._db
-                    .selectFrom(tMessage)
-                    .select({uid: tMessage.uid})
-                    .where(tMessage.uid.equals(uid))
-                    .executeSelectNoneOrOne(),
-            ) !== null
-        );
-    }
-
-    /** @inheritdoc */
-    /**
-     * If the message ID exists in the conversation, return its UID.
-     */
     public hasMessageById(
         conversationUid: DbConversationUid,
         messageId: MessageId,
@@ -1260,6 +1249,26 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 )
                 .executeSelectNoneOrOne(),
         )?.uid;
+    }
+
+    /** @inheritdoc */
+    public hasStatusMessageByUid(
+        conversationUid: DbConversationUid,
+        uid: DbStatusMessageUid,
+    ): boolean {
+        return (
+            sync(
+                this._db
+                    .selectFrom(tStatusMessage)
+                    .select({uid: tStatusMessage.uid})
+                    .where(
+                        tStatusMessage.conversationUid
+                            .equals(conversationUid)
+                            .and(tStatusMessage.uid.equals(uid)),
+                    )
+                    .executeSelectNoneOrOne(),
+            ) !== null
+        );
     }
 
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -1623,6 +1632,28 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
+    public getStatusMessageByUid(uid: DbStatusMessageUid): DbGet<DbStatusMessage> {
+        const statusMessage = sync(
+            this._db
+                .selectFrom(tStatusMessage)
+                .select({
+                    type: tStatusMessage.type,
+                    conversationUid: tStatusMessage.conversationUid,
+                    createdAt: tStatusMessage.createdAt,
+                    statusBytes: tStatusMessage.statusBytes,
+                    uid: tStatusMessage.uid,
+                    ordinal: tStatusMessage.createdAt.getTime(),
+                })
+                .where(tStatusMessage.uid.equals(uid))
+                .executeSelectNoneOrOne(),
+        );
+        if (statusMessage === null) {
+            return undefined;
+        }
+        return statusMessage;
+    }
+
+    /** @inheritdoc */
     public getLastMessage(conversationUid: DbConversationUid): DbGet<DbAnyMessage> {
         const common = sync(
             this._getCommonMessageSelector()
@@ -1636,6 +1667,32 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             return undefined;
         }
         return this._getMessage(common);
+    }
+
+    /** @inheritdoc */
+    public getLastStatusMessage(conversationUid: DbConversationUid): DbGet<DbStatusMessage> {
+        const statusMessage = sync(
+            this._db
+                .selectFrom(tStatusMessage)
+                .select({
+                    type: tStatusMessage.type,
+                    conversationUid: tStatusMessage.conversationUid,
+                    createdAt: tStatusMessage.createdAt,
+                    statusBytes: tStatusMessage.statusBytes,
+                    uid: tStatusMessage.uid,
+                    ordinal: tStatusMessage.createdAt.getTime(),
+                })
+                .where(tStatusMessage.conversationUid.equals(conversationUid))
+                // TODO(DESK-296): Order correctly
+                .orderBy('createdAt', 'desc')
+                .limit(1)
+                .executeSelectNoneOrOne(),
+        );
+        if (statusMessage === null) {
+            return undefined;
+        }
+
+        return statusMessage;
     }
 
     /** @inheritdoc */
@@ -2397,6 +2454,28 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         }, this._log);
     }
 
+    /** @inheritdoc */
+    public removeStatusMessage(uid: DbRemove<DbStatusMessage>): {removed: boolean} {
+        const removed = sync(
+            this._db
+                .deleteFrom(tStatusMessage)
+                .where(tStatusMessage.uid.equals(uid))
+                .executeDelete(),
+        );
+
+        return {removed: removed === 1};
+    }
+
+    /** @inheritdoc */
+    public removeAllStatusMessagesOfConversation(uid: DbConversationUid): u53 {
+        return sync(
+            this._db
+                .deleteFrom(tStatusMessage)
+                .where(tStatusMessage.conversationUid.equals(uid))
+                .executeDelete(),
+        );
+    }
+
     public markConversationAsRead(
         conversationUid: DbConversationUid,
         readAt: Date,
@@ -2413,6 +2492,102 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 )
                 .returning({uid: tMessage.uid, id: tMessage.messageId})
                 .executeUpdateMany(),
+        );
+    }
+
+    private _getMessagesByReferenceDateTime(
+        conversationUid: DbConversationUid,
+        referenceMessageDateTime: Date,
+        direction: MessageQueryDirection,
+        limit?: u53,
+    ): DbList<DbAnyMessage, 'uid'> {
+        // Determine ordering and dynamic WHERE clause: Filter by conversation
+        // and by processedAt timestamp.
+        let processedAtCondition;
+        let orderByMode: 'asc' | 'desc';
+        switch (direction) {
+            case MessageQueryDirection.OLDER:
+                orderByMode = 'desc';
+                processedAtCondition = tMessage.processedAt
+                    .lessOrEquals(referenceMessageDateTime)
+                    .or(
+                        // Handle case that processedAt was not (yet) set (outbound messages)
+                        tMessage.processedAt
+                            .isNull()
+                            .and(tMessage.createdAt.lessOrEquals(referenceMessageDateTime)),
+                    );
+                break;
+            case MessageQueryDirection.NEWER:
+                orderByMode = 'asc';
+                processedAtCondition = tMessage.processedAt
+                    .greaterOrEquals(referenceMessageDateTime)
+                    .or(
+                        // Handle case that processedAt was not (yet) set (outbound messages)
+                        tMessage.processedAt
+                            .isNull()
+                            .and(tMessage.createdAt.greaterOrEquals(referenceMessageDateTime)),
+                    );
+                break;
+            default:
+                unreachable(direction);
+        }
+
+        return sync(
+            this._db
+                .selectFrom(tMessage)
+                .select({
+                    uid: tMessage.uid,
+                    ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt),
+                })
+                .where(tMessage.conversationUid.equals(conversationUid).and(processedAtCondition))
+                // TODO(DESK-296): Order correctly
+                .orderBy('ordinal', orderByMode)
+                .limitIfValue(limit)
+                .executeSelectMany(),
+        );
+    }
+
+    private _getStatusMessagesByReferenceDateTime(
+        conversationUid: DbConversationUid,
+        referenceMessageDateTime: Date,
+        direction: MessageQueryDirection,
+        limit?: u53,
+    ): DbList<DbStatusMessage, 'uid'> {
+        // Determine ordering and dynamic WHERE clause: Filter by conversation
+        // and by processedAt timestamp.
+
+        let createdAtCondition;
+        let orderByMode: 'asc' | 'desc';
+        switch (direction) {
+            case MessageQueryDirection.OLDER:
+                orderByMode = 'desc';
+                createdAtCondition =
+                    tStatusMessage.createdAt.lessOrEquals(referenceMessageDateTime);
+                break;
+            case MessageQueryDirection.NEWER:
+                orderByMode = 'asc';
+                createdAtCondition =
+                    tStatusMessage.createdAt.greaterOrEquals(referenceMessageDateTime);
+
+                break;
+            default:
+                unreachable(direction);
+        }
+
+        return sync(
+            this._db
+                .selectFrom(tStatusMessage)
+                .select({
+                    uid: tStatusMessage.uid,
+                    ordinal: tStatusMessage.createdAt,
+                })
+                .where(
+                    tStatusMessage.conversationUid.equals(conversationUid).and(createdAtCondition),
+                )
+                // TODO(DESK-296): Order correctly
+                .orderBy('ordinal', orderByMode)
+                .limitIfValue(limit)
+                .executeSelectMany(),
         );
     }
 
@@ -2445,75 +2620,93 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             );
         }
 
-        const referenceMessageDateTime = this._db
-            .selectFrom(tMessage)
-            .where(
-                tMessage.conversationUid
-                    .equals(conversationUid)
-                    .and(tMessage.uid.equals(reference.uid)),
-            )
-            .selectOneColumn(tMessage.processedAt.valueWhenNull(tMessage.createdAt))
-            .forUseAsInlineQueryValue();
-
-        // Determine ordering and dynamic WHERE clause: Filter by conversation
-        // and by processedAt timestamp.
-        let processedAtCondition;
-        let orderByMode: 'asc' | 'desc';
-        switch (reference.direction) {
-            case MessageQueryDirection.OLDER:
-                orderByMode = 'desc';
-                processedAtCondition = tMessage.processedAt
-                    .lessOrEquals(referenceMessageDateTime)
-                    .or(
-                        // Handle case that processedAt was not (yet) set (outbound messages)
-                        tMessage.processedAt
-                            .isNull()
-                            .and(tMessage.createdAt.lessOrEquals(referenceMessageDateTime)),
-                    );
-                break;
-            case MessageQueryDirection.NEWER:
-                orderByMode = 'asc';
-                processedAtCondition = tMessage.processedAt
-                    .greaterOrEquals(referenceMessageDateTime)
-                    .or(
-                        // Handle case that processedAt was not (yet) set (outbound messages)
-                        tMessage.processedAt
-                            .isNull()
-                            .and(tMessage.createdAt.greaterOrEquals(referenceMessageDateTime)),
-                    );
-                break;
-            default:
-                unreachable(reference.direction);
-        }
-
-        return sync(
+        const referenceMessageDateTime = sync(
             this._db
                 .selectFrom(tMessage)
-                .select(selectFields)
                 .where(
                     tMessage.conversationUid
                         .equals(conversationUid)
-                        .and(referenceMessageDateTime.isNotNull())
-                        .and(processedAtCondition),
+                        .and(tMessage.uid.equals(reference.uid)),
                 )
-                // TODO(DESK-296): Order correctly
-                .orderBy('ordinal', orderByMode)
-                .limitIfValue(limit)
-                .executeSelectMany(),
+                .selectOneColumn(tMessage.processedAt.valueWhenNull(tMessage.createdAt))
+                .executeSelectNoneOrOne(),
+        );
+
+        if (referenceMessageDateTime === null) {
+            return [];
+        }
+
+        return this._getMessagesByReferenceDateTime(
+            conversationUid,
+            referenceMessageDateTime,
+            reference.direction,
+            limit,
+        );
+    }
+
+    /** @inheritdoc */
+    public getStatusMessageUids(
+        conversationUid: DbConversationUid,
+        limit?: u53,
+        reference?: {
+            readonly uid: DbStatusMessageUid;
+            readonly direction: MessageQueryDirection;
+        },
+    ): DbList<DbStatusMessage, 'uid'> {
+        // Fields to select
+        const selectFields = {
+            uid: tStatusMessage.uid,
+            ordinal: tStatusMessage.createdAt,
+        };
+
+        // If the reference UID is undefined, we start at the newest message.
+        if (reference === undefined) {
+            return sync(
+                this._db
+                    .selectFrom(tStatusMessage)
+                    .select(selectFields)
+                    .where(tStatusMessage.conversationUid.equals(conversationUid))
+                    // TODO(DESK-296): Order correctly
+                    .orderBy('ordinal', 'desc')
+                    .limitIfValue(limit)
+                    .executeSelectMany(),
+            );
+        }
+
+        const referenceMessageDateTime = sync(
+            this._db
+                .selectFrom(tStatusMessage)
+                .where(
+                    tStatusMessage.conversationUid
+                        .equals(conversationUid)
+                        .and(tStatusMessage.uid.equals(reference.uid)),
+                )
+                .selectOneColumn(tStatusMessage.createdAt)
+                .executeSelectNoneOrOne(),
+        );
+
+        if (referenceMessageDateTime === null) {
+            return [];
+        }
+
+        return this._getStatusMessagesByReferenceDateTime(
+            conversationUid,
+            referenceMessageDateTime,
+            reference.direction,
+            limit,
         );
     }
 
     /** @inheritdoc */
     public getSortedMessageUids(
         conversationUid: DbConversationUid,
-        messageIds: ReadonlySet<MessageId>,
-    ): DbMessageUid[] {
-        if (messageIds.size === 0) {
+        messageIds: MessageId[],
+    ): {uid: DbMessageUid; ordinal: Date}[] {
+        if (messageIds.length === 0) {
             return [];
         }
 
         // Note: The database abstraction wants arrays, not sets
-        const messageIdArray = [...messageIds];
 
         // Get sorted list of UIDs with ordinal
         const messageUidsWithOrdinal = sync(
@@ -2526,13 +2719,72 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .where(
                     tMessage.conversationUid
                         .equals(conversationUid)
-                        .and(tMessage.messageId.in(messageIdArray)),
+                        .and(tMessage.messageId.in(messageIds)),
                 )
                 .orderBy('ordinal', 'asc')
                 .executeSelectMany(),
         );
 
-        return messageUidsWithOrdinal.map(({uid}) => uid);
+        return messageUidsWithOrdinal;
+    }
+
+    /** @inheritdoc */
+    public getSortedStatusMessageUids(
+        conversationUid: DbConversationUid,
+        messageIds: DbStatusMessageUid[],
+    ): {uid: DbStatusMessageUid; ordinal: Date}[] {
+        if (messageIds.length === 0) {
+            return [];
+        }
+
+        // Note: The database abstraction wants arrays, not sets
+
+        // Get sorted list of UIDs with ordinal
+        const messageUidsWithOrdinal = sync(
+            this._db
+                .selectFrom(tStatusMessage)
+                .select({
+                    uid: tStatusMessage.uid,
+                    ordinal: tStatusMessage.createdAt,
+                })
+                .where(
+                    tStatusMessage.conversationUid
+                        .equals(conversationUid)
+                        .and(tStatusMessage.uid.in(messageIds)),
+                )
+                .orderBy('ordinal', 'asc')
+                .executeSelectMany(),
+        );
+
+        return messageUidsWithOrdinal;
+    }
+
+    /** @inheritdoc */
+    public getMessageUidsByOrdinalReference(
+        conversationUid: DbConversationUid,
+        reference: {readonly ordinal: Date; readonly direction: MessageQueryDirection},
+        limit?: u53,
+    ): DbList<DbAnyMessage, 'uid'> {
+        return this._getMessagesByReferenceDateTime(
+            conversationUid,
+            reference.ordinal,
+            reference.direction,
+            limit,
+        );
+    }
+
+    /** @inheritdoc */
+    public getStatusMessageUidsByOrdinalReference(
+        conversationUid: DbConversationUid,
+        reference: {readonly ordinal: Date; readonly direction: MessageQueryDirection},
+        limit?: u53,
+    ): DbList<DbStatusMessage, 'uid'> {
+        return this._getStatusMessagesByReferenceDateTime(
+            conversationUid,
+            reference.ordinal,
+            reference.direction,
+            limit,
+        );
     }
 
     /** @inheritdoc */
@@ -2541,6 +2793,17 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             this._db
                 .selectFrom(tMessage)
                 .where(tMessage.conversationUid.equals(conversationUid))
+                .selectCountAll()
+                .executeSelectOne(),
+        );
+    }
+
+    /** @inheritdoc */
+    public getConversationStatusMessageCount(conversationUid: DbConversationUid): u53 {
+        return sync(
+            this._db
+                .selectFrom(tStatusMessage)
+                .where(tStatusMessage.conversationUid.equals(conversationUid))
                 .selectCountAll()
                 .executeSelectOne(),
         );
@@ -2580,6 +2843,69 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         }
 
         return SETTINGS_CODEC[category].decode(settingsBytes);
+    }
+
+    /** @inheritdoc */
+    public addStatusMessage(
+        statusMessage: DbCreateMessage<DbStatusMessage>,
+    ): DbCreated<DbStatusMessage> {
+        const uid = sync(
+            this._db
+                .insertInto(tStatusMessage)
+                .set({
+                    conversationUid: statusMessage.conversationUid,
+                    type: statusMessage.type,
+                    statusBytes: statusMessage.statusBytes as Uint8Array,
+                    createdAt: statusMessage.createdAt,
+                })
+                .returningLastInsertedId()
+                .executeInsert(),
+        );
+        return uid;
+    }
+
+    /** @inheritdoc */
+    public getStatusMessagesofConversation(
+        conversationUid: DbConversationUid,
+    ): (AnyStatusMessage & {uid: DbStatusMessageUid})[] {
+        const queryResult = sync(
+            this._db
+                .selectFrom(tStatusMessage)
+                .where(tStatusMessage.conversationUid.equals(conversationUid))
+                .select({
+                    type: tStatusMessage.type,
+                    createdAt: tStatusMessage.createdAt,
+                    statusBytes: tStatusMessage.statusBytes,
+                    uid: tStatusMessage.uid,
+                })
+                .executeSelectMany(),
+        );
+        return queryResult.map((res): AnyStatusMessage & {uid: DbStatusMessageUid} => {
+            switch (res.type) {
+                case 'group-member-change':
+                    return {
+                        value: STATUS_CODEC[res.type].decode(res.statusBytes),
+                        type: res.type,
+                        createdAt: res.createdAt,
+                        conversationUid,
+                        uid: res.uid,
+                        // Note: This must be compatible with the ordinal of messages
+                        ordinal: res.createdAt.getTime(),
+                    };
+                case 'group-name-change':
+                    return {
+                        value: STATUS_CODEC[res.type].decode(res.statusBytes),
+                        type: res.type,
+                        createdAt: res.createdAt,
+                        conversationUid,
+                        uid: res.uid,
+                        // Note: This must be compatible with the ordinal of messages
+                        ordinal: res.createdAt.getTime(),
+                    };
+                default:
+                    return unreachable(res.type);
+            }
+        });
     }
 
     /** @inheritdoc */

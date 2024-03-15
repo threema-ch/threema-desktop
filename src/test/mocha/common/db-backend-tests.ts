@@ -62,6 +62,7 @@ import {
     type Nickname,
 } from '~/common/network/types';
 import {type RawBlobKey, wrapRawBlobKey} from '~/common/network/types/keys';
+import {STATUS_CODEC} from '~/common/status';
 import type {Dimensions, ReadonlyUint8Array, u53, u64} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
@@ -2042,6 +2043,153 @@ export function backendTests(
                     // eslint-disable-next-line @typescript-eslint/no-loop-func
                     expect(() => db.addNonces(scope, randomNonces)).to.throw();
                 }
+            });
+        });
+    });
+
+    describe('statusMessages', function () {
+        it('add status messages to db', function () {
+            makeContact(db, {
+                identity: 'LKJHGFDS',
+            });
+
+            makeContact(db, {
+                identity: 'TESTTESA',
+                visibility: ConversationVisibility.PINNED,
+            });
+
+            const groupUid1 = makeGroup(db, {creatorIdentity: ensureIdentityString('TESTTEST')});
+
+            const groupUid2 = makeGroup(db, {creatorIdentity: ensureIdentityString('TESTTESA')});
+
+            // Ensure that an associated conversation exists for each contact
+            // and that the conversation properties landed there
+            const conversation1 = db.getConversationOfReceiver({
+                type: ReceiverType.GROUP,
+                uid: groupUid1,
+            });
+
+            const conversation2 = db.getConversationOfReceiver({
+                type: ReceiverType.GROUP,
+                uid: groupUid2,
+            });
+            assert(conversation1 !== undefined);
+            assert(conversation2 !== undefined);
+
+            db.addStatusMessage({
+                type: 'group-member-change',
+                conversationUid: conversation1.uid,
+                createdAt: new Date(),
+                statusBytes: STATUS_CODEC['group-member-change'].encode({
+                    added: [ensureIdentityString('ASDFGHJK')],
+                    removed: [],
+                }),
+            });
+
+            db.addStatusMessage({
+                type: 'group-name-change',
+                conversationUid: conversation1.uid,
+                createdAt: new Date(),
+                statusBytes: STATUS_CODEC['group-name-change'].encode({
+                    oldName: 'old',
+                    newName: 'new',
+                }),
+            });
+            const statusMessages = db.getStatusMessagesofConversation(conversation1.uid);
+            expect(statusMessages.length).to.eq(2);
+            expect(
+                statusMessages.filter((s) => s.type === StatusMessageType.GROUP_MEMBER_CHANGE)
+                    .length,
+            ).to.eq(1);
+        });
+
+        it('remove status messages from the db', function () {
+            makeContact(db, {
+                identity: 'LKJHGFDS',
+            });
+
+            makeContact(db, {
+                identity: 'TESTTESA',
+                visibility: ConversationVisibility.PINNED,
+            });
+
+            const groupUid1 = makeGroup(db, {creatorIdentity: ensureIdentityString('TESTTEST')});
+
+            const groupUid2 = makeGroup(db, {creatorIdentity: ensureIdentityString('TESTTESA')});
+
+            // Ensure that an associated conversation exists for each contact
+            // and that the conversation properties landed there
+            const conversation1 = db.getConversationOfReceiver({
+                type: ReceiverType.GROUP,
+                uid: groupUid1,
+            });
+
+            const conversation2 = db.getConversationOfReceiver({
+                type: ReceiverType.GROUP,
+                uid: groupUid2,
+            });
+            assert(conversation1 !== undefined);
+            assert(conversation2 !== undefined);
+
+            db.addStatusMessage({
+                type: 'group-member-change',
+                conversationUid: conversation1.uid,
+                createdAt: new Date(),
+                statusBytes: STATUS_CODEC['group-member-change'].encode({
+                    added: [ensureIdentityString('ASDFGHJK')],
+                    removed: [],
+                }),
+            });
+
+            db.addStatusMessage({
+                type: 'group-name-change',
+                conversationUid: conversation1.uid,
+                createdAt: new Date(),
+                statusBytes: STATUS_CODEC['group-name-change'].encode({
+                    oldName: 'old',
+                    newName: 'new',
+                }),
+            });
+            const statusMessages = db.getStatusMessagesofConversation(conversation1.uid);
+
+            const statusMessage = statusMessages[0];
+            assert(statusMessage !== undefined);
+            db.removeStatusMessage(statusMessage.uid);
+
+            const newStatusMessages = db.getStatusMessagesofConversation(conversation1.uid);
+            expect(newStatusMessages.length).to.eql(1);
+            expect(newStatusMessages[0]?.type).to.not.eq(statusMessage.type);
+
+            db.addStatusMessage({
+                type: 'group-name-change',
+                conversationUid: conversation1.uid,
+                createdAt: new Date(),
+                statusBytes: STATUS_CODEC['group-name-change'].encode({
+                    oldName: 'old',
+                    newName: 'new',
+                }),
+            });
+
+            db.addStatusMessage({
+                type: 'group-name-change',
+                conversationUid: conversation2.uid,
+                createdAt: new Date(),
+                statusBytes: STATUS_CODEC['group-name-change'].encode({
+                    oldName: 'second conversation',
+                    newName: 'new second conversation',
+                }),
+            });
+            expect(db.getStatusMessagesofConversation(conversation1.uid).length).to.eq(2);
+            expect(db.getStatusMessagesofConversation(conversation2.uid).length).to.eq(1);
+
+            db.removeAllStatusMessagesOfConversation(conversation1.uid);
+            expect(db.getStatusMessagesofConversation(conversation1.uid).length).to.eq(0);
+
+            const conv2Status = db.getStatusMessagesofConversation(conversation2.uid);
+            expect(conv2Status.length).to.eq(1);
+            expect(conv2Status[0]?.value).to.deep.eq({
+                oldName: 'second conversation',
+                newName: 'new second conversation',
             });
         });
     });

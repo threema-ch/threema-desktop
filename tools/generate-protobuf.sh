@@ -56,6 +56,7 @@ mv $OUTFILE.new $OUTFILE
 TS_PROTO_FILES=(
     './src/common/node/key-storage/key-storage-file.proto'
     './src/common/node/settings/settings.proto'
+    './src/common/node/status/status.proto'
     './src/common/model/global-property/global-property.proto'
 )
 protoc \

@@ -370,6 +370,21 @@ class GroupMemberModelController implements GroupMemberController {
         fromLocal: async (contactUids: DbContactUid[]) => {
             this._log.debug('GroupMemberModelController: Add members from local');
             this._add(contactUids);
+            const group = getByUid(this._services, this._group.uid, Existence.ENSURED);
+            const groupConversation = group.get().controller.conversation().get();
+            const createdAt = new Date();
+            groupConversation.controller.createStatusMessage({
+                type: 'group-member-change',
+                value: {
+                    added: contactUids.map(
+                        (uid) =>
+                            contact.getByUid(this._services, uid, Existence.ENSURED).get().view
+                                .identity,
+                    ),
+                    removed: [],
+                },
+                createdAt,
+            });
         },
     };
 
@@ -387,7 +402,23 @@ class GroupMemberModelController implements GroupMemberController {
             // eslint-disable-next-line @typescript-eslint/require-await
         ) => {
             this._log.debug('GroupMemberModelController: Remove members from remote');
-            return this._remove(contactUids);
+            const num = this._remove(contactUids);
+            const group = getByUid(this._services, this._group.uid, Existence.ENSURED);
+            const groupConversation = group.get().controller.conversation().get();
+            const createdAt = new Date();
+            groupConversation.controller.createStatusMessage({
+                type: 'group-member-change',
+                value: {
+                    added: [],
+                    removed: contactUids.map(
+                        (uid) =>
+                            contact.getByUid(this._services, uid, Existence.ENSURED).get().view
+                                .identity,
+                    ),
+                },
+                createdAt,
+            });
+            return num;
         },
         fromSync: (contactUids: DbContactUid[]) => {
             this._log.debug('GroupMemberModelController: Remove members from sync');
@@ -400,7 +431,27 @@ class GroupMemberModelController implements GroupMemberController {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromSync: (contactUids: DbContactUid[]) => {
             this._log.debug('GroupMemberModelController: Set members from sync');
-            this._set(...this._diff(contactUids));
+            const [added, removed] = this._diff(contactUids);
+            this._set(added, removed);
+            const group = getByUid(this._services, this._group.uid, Existence.ENSURED);
+            const groupConversation = group.get().controller.conversation().get();
+            const createdAt = new Date();
+            groupConversation.controller.createStatusMessage({
+                type: 'group-member-change',
+                value: {
+                    added: added.map(
+                        (uid) =>
+                            contact.getByUid(this._services, uid, Existence.ENSURED).get().view
+                                .identity,
+                    ),
+                    removed: removed.map(
+                        (uid) =>
+                            contact.getByUid(this._services, uid, Existence.ENSURED).get().view
+                                .identity,
+                    ),
+                },
+                createdAt,
+            });
         },
         fromRemote: async (
             handle: ActiveTaskCodecHandle<'volatile'>,
@@ -408,7 +459,27 @@ class GroupMemberModelController implements GroupMemberController {
             // eslint-disable-next-line @typescript-eslint/require-await
         ) => {
             this._log.debug('GroupMemberModelController: Set members from remote');
-            this._set(...this._diff(contactUids));
+            const [added, removed] = this._diff(contactUids);
+            this._set(added, removed);
+            const group = getByUid(this._services, this._group.uid, Existence.ENSURED);
+            const groupConversation = group.get().controller.conversation().get();
+            const createdAt = new Date();
+            groupConversation.controller.createStatusMessage({
+                type: 'group-member-change',
+                value: {
+                    added: added.map(
+                        (uid) =>
+                            contact.getByUid(this._services, uid, Existence.ENSURED).get().view
+                                .identity,
+                    ),
+                    removed: removed.map(
+                        (uid) =>
+                            contact.getByUid(this._services, uid, Existence.ENSURED).get().view
+                                .identity,
+                    ),
+                },
+                createdAt,
+            });
         },
     };
 
@@ -534,16 +605,64 @@ export class GroupModelController implements GroupController {
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (name) => {
             this._log.debug('GroupModelController: Change name from local');
+            const oldName = this.meta.run((h) =>
+                h.view().name === '' ? '' : h.view().displayName,
+            );
             this._update({name});
+            const createdAt = new Date();
+            if (oldName !== name) {
+                this.conversation()
+                    .get()
+                    .controller.createStatusMessage({
+                        type: 'group-name-change',
+                        value: {
+                            oldName,
+                            newName: name,
+                        },
+                        createdAt,
+                    });
+            }
         },
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle, name) => {
             this._log.debug('GroupModelController: Change name from remote');
+            const oldName = this.meta.run((h) =>
+                h.view().name === '' ? '' : h.view().displayName,
+            );
             this._update({name});
+            const createdAt = new Date();
+            if (oldName !== name) {
+                this.conversation()
+                    .get()
+                    .controller.createStatusMessage({
+                        type: 'group-name-change',
+                        value: {
+                            oldName,
+                            newName: name,
+                        },
+                        createdAt,
+                    });
+            }
         },
         fromSync: (name: string) => {
             this._log.debug('GroupModelController: Change name from sync');
+            const oldName = this.meta.run((h) =>
+                h.view().name === '' ? '' : h.view().displayName,
+            );
             this._update({name});
+            const createdAt = new Date();
+            if (oldName !== name) {
+                this.conversation()
+                    .get()
+                    .controller.createStatusMessage({
+                        type: 'group-name-change',
+                        value: {
+                            oldName,
+                            newName: name,
+                        },
+                        createdAt,
+                    });
+            }
         },
     };
 
