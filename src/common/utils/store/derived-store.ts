@@ -247,22 +247,22 @@ export class DerivedStore<
         assert(
             sourceStoreSubscriptions.every(
                 ({currentValue, unsubscriber}) =>
-                    // Check if we have a `currentValue` and `unsubscriber` for every source store
-                    // at runtime, even if it is guaranteed by the type system.
+                    // Check if we have an `unsubscriber` for every source store at runtime, even if
+                    // it is guaranteed by the type system.
                     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                    currentValue !== NO_STORE_VALUE && unsubscriber !== undefined,
+                    unsubscriber !== undefined,
             ),
             'DerivedStore: Expected all source stores to have a value and an unsubscriber after the initialization phase',
         );
+
         // The states are now initialized (and assertions ensure the preconditions), thus it is safe to cast
         const initializedSourceStoreSubscriptions =
             sourceStoreSubscriptions as StoreSubscriptionStates<TSourceStores>;
 
+        // Start the first derivation.
         if (import.meta.env.VERBOSE_LOGGING.STORES) {
             this._log?.debug('Deriving first value');
         }
-
-        // Start the first derivation.
         const derivedValue = this._deriveValue(initializedSourceStoreSubscriptions);
 
         // Initialize the `derivedValueStore` and register the `deactivator` callback.
@@ -307,42 +307,42 @@ export class DerivedStore<
             'DerivedStore: Cannot derive a values if store is disabled',
         );
         assert(
-            sourceStoreSubscriptions.every(({currentValue}) => currentValue !== NO_STORE_VALUE),
-            'DerivedStore: Expected all source stores to have a value',
-        );
-        assert(
             this._sourceStores.length === sourceStoreSubscriptions.length,
             'DerivedStore: Mismatch of source stores and subscribed source stores',
         );
         this._state.isDeriving = true;
 
-        // Set to collect new source stores that are unwrapped during the derivation and need to be
-        // subscribed to.
-        const newAdditionalStores = new Set<IQueryableStore<unknown>>();
+        // Set to collect all additional stores that are unwrapped during the derivation.
+        const subscribedAdditionalStores = new Set<IQueryableStore<unknown>>();
+
+        // Get the current source store values.
+        //
+        // Note: Cast is necessary here as the type system can't guarantee that the order of the
+        // source store array and the input array for the derive function have the same order and
+        // length.
+        const currentSourceStoreValues = sourceStoreSubscriptions.map(({currentValue, ref}) => ({
+            currentValue,
+            store: ref,
+        })) as CurrentSourceStoreValues<TSourceStores>;
+
+        // The `getAndSubscribe` function, which can be used to subscribe to add additional
+        // stores during derivation.
+        const getAndSubscribe = ((store) => {
+            // Subscribe to the store (if it isn't already present) and get its current value.
+            const storeValue = this._getAndSubscribeAdditionalStore(store);
+
+            subscribedAdditionalStores.add(store);
+
+            return storeValue;
+        }) as GetAndSubscribeFunction;
 
         // Execute the derive callback with the current source store values.
-        const derivedValue = this._derive(
-            sourceStoreSubscriptions.map(({currentValue, ref}) => ({
-                currentValue,
-                store: ref,
-                // Cast is necessary here as the type system can't guarantee that the order of the
-                // source store array and the input array for the derive function have the same order
-                // and length.
-            })) as CurrentSourceStoreValues<TSourceStores>,
-            // The `getAndSubscribe` function, which can be used to subscribe to add additional
-            // stores during derivation.
-            ((store) => {
-                newAdditionalStores.add(store);
-
-                // Subscribe to the store (if it isn't already present) and get its current value.
-                return this._getAndSubscribeAdditionalStore(store);
-            }) as GetAndSubscribeFunction,
-        );
+        const derivedValue = this._derive(currentSourceStoreValues, getAndSubscribe);
 
         // Filter additional stores that are not used anymore and unsubscribe from them.
         this._state.additionalStoreSubscriptions = this._state.additionalStoreSubscriptions.filter(
             (subscription) => {
-                if (newAdditionalStores.has(subscription.ref)) {
+                if (subscribedAdditionalStores.has(subscription.ref)) {
                     return true;
                 }
 
@@ -356,7 +356,8 @@ export class DerivedStore<
     }
 
     /**
-     * Add a new subscription to {@link this._state.additionalStoreSubscriptions}.
+     * Add a subscription to {@link this._state.additionalStoreSubscriptions}. If a store is already
+     * subscribed, the current value will be returned directly without another subscription.
      *
      * Note: Updating additional stores is only possible while deriving.
      *
@@ -404,8 +405,9 @@ export class DerivedStore<
     }
 
     /**
-     * Disable the store and unsubscribe from the source store. Note: Must only be called on an
-     * enabled store.
+     * Disable the store and unsubscribe from the source store.
+     *
+     * Note: Must only be called on an enabled store.
      */
     private _disable(): void {
         assert(
@@ -428,13 +430,13 @@ export class DerivedStore<
         for (const subscription of this._state.additionalStoreSubscriptions.values()) {
             subscription.unsubscriber();
         }
-        // Clear subscription states.
-        this._state.sourceStoreSubscriptions.length = 0;
-        this._state.additionalStoreSubscriptions = [];
 
+        // Drop previous state and mark store as disabled.
+        //
         // Note: The valueStore has no subscribers anymore at this point, so we just drop it quietly
         // here.
         this._state = {symbol: LAZY_STORE_DISABLED_STATE};
+
         this._deactivator?.();
     }
 }
@@ -570,6 +572,10 @@ interface EnabledDerivedStoreState<
     additionalStoreSubscriptions: StoreSubscriptionStates<QueryableStores>;
     /**
      * Flag to indicate whether a derivation is currently in progress.
+     *
+     * This is used in functions that want to ensure that they cannot be called outide a derivation,
+     * for example in the `getAndSubscribe` function (which could theoretically be called by user
+     * code outside the derive function).
      */
     isDeriving: boolean;
 }
