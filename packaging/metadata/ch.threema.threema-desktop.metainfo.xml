@@ -541,7 +541,11 @@
                 </ul>
                 <p>Bugfixes:</p>
                 <ul>
-                    <li>Disable non-functional drag&amp;drop support for now</li>
+                    <li>
+                        Disable non-functional drag
+                        &amp;
+                        drop support for now
+                    </li>
                 </ul>
                 <p>...and a few other changes and improvements.</p>
             </description>
