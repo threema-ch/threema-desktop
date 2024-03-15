@@ -89,7 +89,7 @@ export type Join<
               Separator,
               Head extends Primitive
                   ? Acc extends ''
-                      ? Head
+                      ? `${Head}`
                       : // eslint-disable-next-line no-restricted-syntax
                         Concatenate<readonly [Acc, Separator, Head]>
                   : never
