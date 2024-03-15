@@ -1,4 +1,5 @@
 import type {ConversationCategory, ConversationVisibility} from '~/common/enum';
+import type {u53} from '~/common/types';
 import type {PropertiesMarked} from '~/common/utils/endpoint';
 import type {LocalSetStore} from '~/common/utils/store/set-store';
 import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
@@ -23,6 +24,8 @@ export interface ConversationSearchResult extends PropertiesMarked {
     readonly lastMessage: ConversationMessageViewModelBundle | undefined;
     readonly lastUpdate: Date | undefined;
     readonly receiver: AnyReceiverData;
+    readonly totalMessageCount: u53;
+    readonly unreadMessageCount: u53;
     readonly visibility: ConversationVisibility;
 }
 

@@ -13,18 +13,21 @@ import {
     getContactListItemStore,
 } from '~/common/viewmodel/contact-list-item';
 import {
+    getConversationListViewModelBundle,
+    type ConversationListViewModelBundle,
+} from '~/common/viewmodel/conversation/list';
+import {
+    getConversationListItemViewModelBundle,
+    type ConversationListItemViewModelBundle,
+} from '~/common/viewmodel/conversation/list/item';
+import {
     type ConversationViewModelBundle,
     getConversationViewModelBundle,
 } from '~/common/viewmodel/conversation/main';
 import {
-    type ConversationMessageViewModelBundle,
     getConversationMessageViewModelBundle,
+    type ConversationMessageViewModelBundle,
 } from '~/common/viewmodel/conversation/main/message';
-import {
-    type ConversationPreviewSetStore,
-    type ConversationPreviewTranslationsStore,
-    getConversationPreviewSetStore,
-} from '~/common/viewmodel/conversation-preview';
 import {type DebugPanelViewModel, getDebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import {
     getGroupListItemSetStore,
@@ -41,9 +44,6 @@ export type ServicesForViewModel = Pick<
     'config' | 'device' | 'endpoint' | 'file' | 'logging' | 'model' | 'crypto'
 >;
 export interface IViewModelRepository extends ProxyMarked {
-    readonly conversationPreviews: (
-        translations: ConversationPreviewTranslationsStore,
-    ) => ConversationPreviewSetStore;
     readonly conversation: (receiver: DbReceiverLookup) => ConversationViewModelBundle | undefined;
     /**
      * Returns the {@link ConversationMessageViewModelBundle} that belongs to the given
@@ -54,6 +54,17 @@ export interface IViewModelRepository extends ProxyMarked {
         conversation: ConversationModelStore,
         messageStore: AnyMessageModelStore,
     ) => ConversationMessageViewModelBundle;
+    /**
+     * Returns the {@link ConversationListViewModelBundle}.
+     */
+    readonly conversationList: () => ConversationListViewModelBundle;
+    /**
+     * Returns the {@link ConversationListItemViewModelBundle} that belongs to the given
+     * {@link conversationModelStore}.
+     */
+    readonly conversationListItem: (
+        conversationModelStore: ConversationModelStore,
+    ) => ConversationListItemViewModelBundle;
     readonly debugPanel: () => DebugPanelViewModel;
     readonly contactListItems: () => ContactListItemSetStore;
     readonly contactListItem: (
@@ -71,14 +82,6 @@ export class ViewModelRepository implements IViewModelRepository {
         private readonly _services: ServicesForViewModel,
         private readonly _cache: ViewModelCache,
     ) {}
-
-    public conversationPreviews(
-        translations: ConversationPreviewTranslationsStore,
-    ): ConversationPreviewSetStore {
-        return this._cache.conversationPreview.derefOrCreate(() =>
-            getConversationPreviewSetStore(this._services, this, translations),
-        );
-    }
 
     public conversation(receiver: DbReceiverLookup): ConversationViewModelBundle | undefined {
         const conversationModelStore = this._services.model.conversations.getForReceiver(receiver);
@@ -110,6 +113,22 @@ export class ViewModelRepository implements IViewModelRepository {
                     true,
                 ),
             );
+    }
+
+    /** @inheritdoc */
+    public conversationList(): ConversationListViewModelBundle {
+        return this._cache.conversationList.derefOrCreate(() =>
+            getConversationListViewModelBundle(this._services, this),
+        );
+    }
+
+    /** @inheritdoc */
+    public conversationListItem(
+        conversationModelStore: ConversationModelStore,
+    ): ConversationListItemViewModelBundle {
+        return this._cache.conversationListItem.getOrCreate(conversationModelStore, () =>
+            getConversationListItemViewModelBundle(this._services, conversationModelStore),
+        );
     }
 
     public contactListItems(): ContactListItemSetStore {

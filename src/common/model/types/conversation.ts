@@ -196,8 +196,4 @@ export type ConversationRepository = {
     getAll: () => LocalSetStore<LocalModelStore<Conversation>>;
     getByUid: (uid: DbConversationUid) => LocalModelStore<Conversation> | undefined;
     getForReceiver: (receiver: DbReceiverLookup) => LocalModelStore<Conversation> | undefined;
-    /**
-     * Soft deletes a conversation, i.e deletes all its messages and marks the conversation as deleted.
-     */
-    softDeleteByUid: (uid: DbConversationUid) => Promise<void>;
 } & ProxyMarked;

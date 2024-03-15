@@ -85,6 +85,8 @@ export function getConversationSearchResult(
                   ),
         lastUpdate: conversationModel.view.lastUpdate,
         receiver: getReceiverData(services, conversationModel, getAndSubscribe),
+        totalMessageCount: conversationModel.controller.getMessageCount(),
+        unreadMessageCount: conversationModel.view.unreadMessageCount,
         visibility: conversationModel.view.visibility,
     });
 }

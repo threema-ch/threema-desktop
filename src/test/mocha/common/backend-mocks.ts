@@ -184,16 +184,19 @@ import {
     getContactListItemSetStore,
     getContactListItemStore,
 } from '~/common/viewmodel/contact-list-item';
+import {
+    getConversationListViewModelBundle,
+    type ConversationListViewModelBundle,
+} from '~/common/viewmodel/conversation/list';
+import {
+    getConversationListItemViewModelBundle,
+    type ConversationListItemViewModelBundle,
+} from '~/common/viewmodel/conversation/list/item';
 import type {ConversationViewModelBundle} from '~/common/viewmodel/conversation/main';
 import {
     type ConversationMessageViewModelBundle,
     getConversationMessageViewModelBundle,
 } from '~/common/viewmodel/conversation/main/message';
-import {
-    type ConversationPreviewSetStore,
-    type ConversationPreviewTranslationsStore,
-    getConversationPreviewSetStore,
-} from '~/common/viewmodel/conversation-preview';
 import {type DebugPanelViewModel, getDebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import {
     getGroupListItemSetStore,
@@ -470,14 +473,18 @@ export class TestViewModel implements IViewModelRepository {
 
     public constructor(private readonly _services: Omit<ServicesForBackend, 'viewModel'>) {}
 
-    public conversationPreviews(
-        translations: ConversationPreviewTranslationsStore,
-    ): ConversationPreviewSetStore {
-        return getConversationPreviewSetStore(this._services, this, translations);
-    }
-
     public conversation(receiver: DbReceiverLookup): ConversationViewModelBundle | undefined {
         return undefined;
+    }
+
+    public conversationList(): ConversationListViewModelBundle {
+        return getConversationListViewModelBundle(this._services, this);
+    }
+
+    public conversationListItem(
+        conversationModelStore: ConversationModelStore,
+    ): ConversationListItemViewModelBundle {
+        return getConversationListItemViewModelBundle(this._services, conversationModelStore);
     }
 
     public conversationMessage(
