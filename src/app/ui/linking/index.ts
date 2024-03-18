@@ -4,9 +4,9 @@ import type {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import type {ReadableStore} from '~/common/utils/store';
 
 export interface OppfConfig {
-    oppfUrl: string;
-    username: string;
-    password: string;
+    readonly oppfUrl: string;
+    readonly username: string;
+    readonly password: string;
 }
 
 export interface LinkingParams {

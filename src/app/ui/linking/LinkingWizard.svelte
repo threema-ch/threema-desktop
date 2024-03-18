@@ -65,12 +65,10 @@
   /**
    * The state of the current step.
    */
-  let linkingWizardState: LinkingWizardState = {
-    component: 'scan',
-    props: {
-      joinUri: undefined,
-    },
-  };
+  let linkingWizardState: LinkingWizardState =
+    import.meta.env.BUILD_ENVIRONMENT === 'onprem'
+      ? {component: 'oppf', props: {oppfConfig: params.oppfConfig}}
+      : {component: 'scan', props: {joinUri: undefined}};
 
   // Handle backend linking state changes
   onMount(() =>
