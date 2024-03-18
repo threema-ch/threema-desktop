@@ -772,10 +772,7 @@ export class Backend {
                 import.meta.env.BUILD_VARIANT === 'work'
                     ? new FetchWorkBackend(
                           {config, logging, systemInfo: backendInit.systemInfo},
-                          unwrap(
-                              keyStorageContents.workCredentials,
-                              'Expect work credentials in work build',
-                          ),
+                          keyStorageContents.workCredentials,
                       )
                     : new StubWorkBackend(),
         };
