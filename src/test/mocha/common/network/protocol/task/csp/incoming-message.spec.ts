@@ -45,6 +45,7 @@ import {bytesToHex} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 import {Identity} from '~/common/utils/identity';
 import {dateToUnixTimestampMs, dateToUnixTimestampS, intoUnsignedLong} from '~/common/utils/number';
+import {hasPropertyStrict} from '~/common/utils/object';
 import {
     addTestGroup,
     addTestUserAsContact,
@@ -67,6 +68,17 @@ import {
 /**
  * Create a message from {@link sender} to {@link receiver} and with the {@link innerPayload} used
  * as the inner payload of the legacy message.
+ *
+ * Certain message properties can be overridden using the {@link overrides}:
+ *
+ * - `messageId`: Sets the legacy message ID of the message. If not set, a random message ID is
+ *   used.
+ * - `nickname`: Sets the legacy nickname of the message. If not set, the nickname of the
+ *   {@link sender} is used.
+ * - `metadata.messageId`: Sets the message ID in the encrypted metadata. If not set, fall back to
+ *   the legacy message ID.
+ * - `metadata.nickname`: Sets the nickname in the encrypted metadata. If not set, fall back to the
+ *   legacy nickname.
  */
 function createMessage(
     services: ServicesForBackend,
@@ -77,14 +89,27 @@ function createMessage(
     flags: CspMessageFlags,
     overrides?: {
         readonly messageId?: MessageId;
+        readonly nickname?: string | undefined;
         readonly metadata?: {
             readonly messageId?: MessageId;
+            readonly nickname?: string | undefined;
         };
     },
 ): structbuf.csp.payload.MessageWithMetadataBoxLike {
     const {crypto, device} = services;
     const createdAt = new Date();
+
     const messageId = overrides?.messageId ?? randomMessageId(crypto);
+
+    const legacyNickname =
+        overrides !== undefined && hasPropertyStrict(overrides, 'nickname')
+            ? overrides.nickname
+            : sender.nickname;
+    const metadataNickname =
+        overrides?.metadata !== undefined && hasPropertyStrict(overrides.metadata, 'nickname')
+            ? overrides.metadata.nickname
+            : legacyNickname;
+
     const [messageAndMetadataNonce, metadataContainer] = deriveMessageMetadataKey(
         {crypto, nonces: new TestNonceService()},
         device.csp.ck,
@@ -94,7 +119,7 @@ function createMessage(
             CREATE_BUFFER_TOKEN,
             protobuf.utils.encoder(protobuf.csp_e2e.MessageMetadata, {
                 padding: new Uint8Array(0),
-                nickname: sender.nickname,
+                nickname: metadataNickname,
                 messageId: intoUnsignedLong(overrides?.metadata?.messageId ?? messageId),
                 createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
             }),
@@ -122,7 +147,7 @@ function createMessage(
         flags: flags.toBitmask(),
         reserved: 0x00,
         metadataLength: metadataContainer.byteLength,
-        legacySenderNickname: UTF8.encode(sender.nickname ?? ''),
+        legacySenderNickname: UTF8.encode(legacyNickname ?? ''),
         metadataContainer,
         messageAndMetadataNonce,
         messageBox,
@@ -280,27 +305,26 @@ export function run(): void {
                 const oldNickname = ensureNickname('oldnick');
                 const newNickname = ensureNickname('newnick');
 
-                // Add contacts
+                // Add contact with old nickname
                 const user1Contact = addTestUserAsContact(model, {...user1, nickname: oldNickname});
                 expect(user1Contact.get().view.nickname).to.equal(oldNickname);
 
                 async function processMessageWithNickname(
-                    nickname: Nickname,
+                    legacyNickname: Nickname | '',
+                    metadataNickname: Nickname | '' | undefined,
                     expectContactReflection: boolean,
                 ): Promise<void> {
-                    // Create incoming text message with unchanged legacy nickname
+                    // Create message from user 1 with the specified nickname
                     const textMessage = createMessage(
                         services,
-                        {
-                            ...user1,
-                            nickname,
-                        },
+                        user1,
                         me,
                         CspE2eConversationType.TEXT,
                         structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
                             text: UTF8.encode('message'),
                         }),
                         CspMessageFlags.fromPartial({sendPushNotification: true}),
+                        {nickname: legacyNickname, metadata: {nickname: metadataNickname}},
                     );
 
                     // Run task
@@ -332,12 +356,24 @@ export function run(): void {
                 }
 
                 // When the nickname is unchanged, no contact update should be reflected
-                await processMessageWithNickname(oldNickname, false);
+                await processMessageWithNickname(oldNickname, oldNickname, false);
                 expect(user1Contact.get().view.nickname).to.equal(oldNickname);
 
                 // When the nickname is changed, a contact update should be reflected
-                await processMessageWithNickname(newNickname, true);
+                await processMessageWithNickname(newNickname, newNickname, true);
                 expect(user1Contact.get().view.nickname).to.equal(newNickname);
+
+                // When the nickname is cleared, a contact update should be reflected...
+                await processMessageWithNickname('', '', true);
+                expect(user1Contact.get().view.nickname).to.be.undefined;
+
+                // ...but only if nickname isn't already undefined.
+                await processMessageWithNickname('', '', false);
+                expect(user1Contact.get().view.nickname).to.be.undefined;
+
+                // If both legacy and encrypted metadata nickname are set, the latter wins
+                await processMessageWithNickname(oldNickname, newNickname, true);
+                expect(user1Contact.get().view.nickname).to.be.equal(newNickname);
             });
 
             it("creates a new contact for an unknown contact's text message", async function () {

@@ -623,7 +623,10 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         await contactModel.controller.update.fromRemote(handle, {
                             nickname: nicknameFromMessage,
                         });
-                    } else if (nicknameFromMessage.length === 0) {
+                    } else if (
+                        nicknameFromMessage.length === 0 &&
+                        contactModel.view.nickname !== undefined
+                    ) {
                         // Remove the contact's nickname if `nickname` is empty.
                         await contactModel.controller.update.fromRemote(handle, {
                             nickname: undefined,
