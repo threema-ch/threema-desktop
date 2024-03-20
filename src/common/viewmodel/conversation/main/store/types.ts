@@ -1,6 +1,6 @@
 import type {DbConversationUid} from '~/common/db';
 import type {ConversationCategory, MessageDirection} from '~/common/enum';
-import type {FEATURE_MASK_FLAG, MessageId} from '~/common/network/types';
+import type {FEATURE_MASK_FLAG, MessageId, StatusMessageId} from '~/common/network/types';
 import type {u53} from '~/common/types';
 import type {ConversationMessageSetStore} from '~/common/viewmodel/conversation/main/store';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
@@ -22,8 +22,8 @@ export interface ConversationViewModel {
     readonly isPrivate: boolean;
     readonly lastMessage:
         | {
-              readonly id: MessageId;
-              readonly direction: MessageDirection;
+              readonly id: MessageId | StatusMessageId;
+              readonly direction: MessageDirection | 'none';
           }
         | undefined;
     readonly messageSetStore: ConversationMessageSetStore;

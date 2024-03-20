@@ -65,8 +65,16 @@
       background-color: var(--mc-message-background-color-outgoing);
     }
 
+    &.none {
+      background-color: var(--mc-status-message-background-color);
+    }
+
     &.normal {
-      padding: rem(8px) rem(10px);
+      padding: rem(6px) rem(6px);
+    }
+
+    &.medium {
+      padding: rem(3px) rem(3px);
     }
 
     &.thin {

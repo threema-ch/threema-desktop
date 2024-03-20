@@ -325,14 +325,6 @@ export async function generateFakeGroupConversation({
             MessageDirection.OUTBOUND,
         ]);
 
-        conversation.controller.createStatusMessage({
-            createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
-            type: 'group-name-change',
-            value: {
-                oldName: '1234',
-                newName: `${i} 4-5-6`,
-            },
-        });
         switch (direction) {
             case MessageDirection.INBOUND: {
                 const modelStore = conversation.controller.addMessage.fromSync({
@@ -378,7 +370,6 @@ export async function generateFakeGroupConversation({
                         thumbnailFileData,
                     });
                     for (const reaction of reactions) {
-                        // eslint-disable-next-line max-depth
                         modelStore
                             .get()
                             .controller.reaction.fromSync(
@@ -396,7 +387,6 @@ export async function generateFakeGroupConversation({
                         text: generateFakeText(crypto, randomU8(crypto) / 2 + 1),
                     });
                     for (const reaction of reactions) {
-                        // eslint-disable-next-line max-depth
                         modelStore
                             .get()
                             .controller.reaction.fromSync(

@@ -50,6 +50,8 @@ import {
     VerificationLevel,
     WorkVerificationLevel,
     ReceiverType,
+    MessageTypeUtils,
+    StatusMessageTypeUtils,
 } from '~/common/enum';
 import {ConnectionClosed} from '~/common/error';
 import {InMemoryFileStorage} from '~/common/file-storage';
@@ -96,6 +98,7 @@ import type {
     CallsSettings,
     MediaSettings,
 } from '~/common/model/types/settings';
+import type {AnyStatusMessageModelStore} from '~/common/model/types/status';
 import type {User} from '~/common/model/types/user';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {CloseInfo} from '~/common/network';
@@ -206,6 +209,9 @@ import type {ConversationViewModelBundle} from '~/common/viewmodel/conversation/
 import {
     type ConversationMessageViewModelBundle,
     getConversationMessageViewModelBundle,
+    getConversationStatusMesageViewModelBundle,
+    type ConversationAnyMessageViewModelBundle,
+    type ConversationStatusMessageViewModelBundle,
 } from '~/common/viewmodel/conversation/main/message';
 import {type DebugPanelViewModel, getDebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/viewmodel/profile';
@@ -503,6 +509,27 @@ export class TestViewModel implements IViewModelRepository {
             conversation,
             true,
         );
+    }
+    public conversationStatusMessage(
+        conversation: ConversationModelStore,
+        messageStore: AnyStatusMessageModelStore,
+    ): ConversationStatusMessageViewModelBundle {
+        return getConversationStatusMesageViewModelBundle(this._services, messageStore);
+    }
+    public conversationAnyMessage(
+        conversation: ConversationModelStore,
+        messageStore: AnyMessageModelStore | AnyStatusMessageModelStore,
+    ): ConversationAnyMessageViewModelBundle {
+        if (MessageTypeUtils.containsString(messageStore.get().type)) {
+            return this.conversationMessage(conversation, messageStore as AnyMessageModelStore);
+        } else if (StatusMessageTypeUtils.containsString(messageStore.get().type)) {
+            return this.conversationStatusMessage(
+                conversation,
+                messageStore as AnyStatusMessageModelStore,
+            );
+        }
+
+        throw new Error('Tried to fetch a conversation message with an unknown type');
     }
 
     public contactList(): ContactListViewModelBundle {

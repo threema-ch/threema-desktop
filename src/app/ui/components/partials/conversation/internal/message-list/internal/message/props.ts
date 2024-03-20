@@ -2,9 +2,11 @@ import type {AppServices} from '~/app/types';
 import type {MessageProps as BasicMessageProps} from '~/app/ui/components/molecules/message/props';
 import type {MessageContextMenuProviderProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-context-menu-provider/props';
 import type {MessageDetailsModalProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-details-modal/props';
+import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
 import type {SanitizeAndParseTextToHtmlOptions} from '~/app/ui/utils/text';
 import type {DbContactUid} from '~/common/db';
-import type {MessageId} from '~/common/network/types';
+import type {StatusMessageType} from '~/common/enum';
+import type {MessageId, StatusMessageId} from '~/common/network/types';
 import type {FileMessageDataState} from '~/common/viewmodel/types';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
@@ -12,6 +14,7 @@ import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
  * Props accepted by the `Message` component.
  */
 export interface MessageProps {
+    readonly type: 'message';
     readonly actions: {
         readonly acknowledge: () => Promise<void>;
         readonly decline: () => Promise<void>;
@@ -62,6 +65,43 @@ export interface MessageProps {
     readonly services: AppServices;
     readonly status: BasicMessageProps['status'];
     readonly text?: TextContent;
+}
+
+// Every `StatusProp` needs to implement this interface. It defined the minimal information we need to display it in the frontend.
+interface BaseStatusProps {
+    readonly type: 'status';
+    // A function that can interact with the viewmodel to trigger some functionality of the status (e.g start a call).
+    readonly action?: () => Promise<void>;
+    /**
+     * Optional `HTMLElement` to use as the boundary for this message. This is used to constrain the
+     * positioning of the context menu. Note: This is usually the chat view this status message is part of.
+     */
+    readonly boundary?: SvelteNullableBinding<HTMLElement>;
+    readonly id: StatusMessageId;
+    readonly information: {
+        readonly at: Date;
+        readonly text: string;
+        readonly type: StatusMessageType;
+    };
+    readonly services: AppServices;
+}
+
+export type AnyStatusMessageProps = GroupMemberChangeProps | GroupNameChangeProps;
+
+export interface GroupMemberChangeProps extends BaseStatusProps {
+    readonly information: {
+        readonly at: Date;
+        readonly text: string;
+        readonly type: 'group-member-change';
+    };
+}
+
+export interface GroupNameChangeProps extends BaseStatusProps {
+    readonly information: {
+        readonly at: Date;
+        readonly text: string;
+        readonly type: 'group-name-change';
+    };
 }
 
 interface TextContent {

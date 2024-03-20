@@ -2,9 +2,18 @@ import {ReceiverType} from '~/common/enum';
 import type {Conversation} from '~/common/model';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import type {AnyMessageModelStore} from '~/common/model/types/message';
+import type {AnyStatusMessageModelStore} from '~/common/model/types/status';
 import {getDebugTagForReceiver} from '~/common/model/utils/debug-tags';
-import {FEATURE_MASK_FLAG, type FeatureMask} from '~/common/network/types';
-import {unreachable} from '~/common/utils/assert';
+import {
+    FEATURE_MASK_FLAG,
+    type FeatureMask,
+    statusMessageUidToStatusMessageId,
+    type StatusMessageId,
+    type MessageId,
+    isMessageId,
+    isStatusMessageId,
+} from '~/common/network/types';
+import {unreachable, assert, unwrap, assertUnreachable} from '~/common/utils/assert';
 import {type GetAndSubscribeFunction, derive} from '~/common/utils/store/derived-store';
 import {LocalSetBasedSetStore, LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
@@ -13,6 +22,24 @@ import type {
     ConversationViewModel,
     FeatureMaskMap,
 } from '~/common/viewmodel/conversation/main/store/types';
+
+function calculateLastMessageId(
+    conversationModel: Conversation,
+): MessageId | StatusMessageId | undefined {
+    // Always load window around last message.
+    const lastMessage = conversationModel.controller.lastMessageStore().get();
+    const lastStatusMessage = conversationModel.controller.lastStatusMessageStore().get();
+
+    if (lastMessage === undefined && lastStatusMessage === undefined) {
+        return undefined;
+    }
+
+    // Since an ordinal is always positive, this ternary returns the ID of the later last (status) message.
+    // Since we checked that both cannot be undefined already, the unwrap cannot fail here.
+    return (lastMessage?.get().view.ordinal ?? -1) > (lastStatusMessage?.get().view.ordinal ?? -1)
+        ? lastMessage?.get().view.id
+        : statusMessageUidToStatusMessageId(unwrap(lastStatusMessage).get().controller.uid);
+}
 
 /**
  * Returns the {@link ConversationMessageSetStore} for the conversation that the
@@ -54,6 +81,10 @@ export function getMessageSetStore(
             // conversation.
             getAndSubscribe(conversationModel.controller.lastConversationUpdateStore());
 
+            // Subscribe to last "status message update" store so that the conversation content is updated
+            // when a new status message comes in.
+            getAndSubscribe(conversationModel.controller.conversationRefreshTriggerStore());
+
             // Get active messages plus surrounding messages.
             let visibleMessagesWindowSet =
                 conversationModel.controller.getMessagesWithSurroundingMessages(
@@ -74,14 +105,14 @@ export function getMessageSetStore(
                 }
             }
 
-            // Always load window around last message.
-            const lastMessage = conversationModel.controller.lastMessageStore().get();
-            let lastMessageWindowSet: Set<AnyMessageModelStore>;
-            if (lastMessage !== undefined) {
-                const lastMessageId = lastMessage.get().view.id;
+            const newerLastMessageId = calculateLastMessageId(conversationModel);
+
+            let lastMessageWindowSet: Set<AnyMessageModelStore | AnyStatusMessageModelStore>;
+
+            if (newerLastMessageId !== undefined) {
                 lastMessageWindowSet =
                     conversationModel.controller.getMessagesWithSurroundingMessages(
-                        new Set([lastMessageId]),
+                        new Set([newerLastMessageId]),
                         defaultWindowSize,
                     );
             } else {
@@ -102,7 +133,7 @@ export function getMessageSetStore(
     const conversationMessageSetStore = new LocalDerivedSetStore(
         deltaSetStore,
         (messageStore) =>
-            viewModelRepository.conversationMessage(conversationModelStore, messageStore),
+            viewModelRepository.conversationAnyMessage(conversationModelStore, messageStore),
         storeOptions,
     );
 
@@ -118,15 +149,49 @@ export function getLastMessage(
     getAndSubscribe: GetAndSubscribeFunction,
 ): ConversationViewModel['lastMessage'] {
     const lastMessageStore = getAndSubscribe(conversationModel.controller.lastMessageStore());
-    if (lastMessageStore === undefined) {
+
+    const lastStatusMessageStore = getAndSubscribe(
+        conversationModel.controller.lastStatusMessageStore(),
+    );
+
+    if (lastMessageStore !== undefined) {
+        getAndSubscribe(lastMessageStore);
+    }
+
+    if (lastStatusMessageStore !== undefined) {
+        getAndSubscribe(lastStatusMessageStore);
+    }
+
+    if (lastMessageStore === undefined && lastStatusMessageStore === undefined) {
         return undefined;
     }
 
-    const lastMessage = getAndSubscribe(lastMessageStore);
-    return {
-        direction: lastMessage.view.direction,
-        id: lastMessage.view.id,
-    };
+    const lastMessageId = calculateLastMessageId(conversationModel);
+
+    // The typechecker cannot infer this, but this cannot happen since the only way `calculateLastMessageId` returns undefined
+    // is when both stores are undefined, which we have already checked here.
+    if (lastMessageId === undefined) {
+        return undefined;
+    }
+
+    if (isMessageId(lastMessageId)) {
+        assert(
+            lastMessageStore?.ctx !== undefined,
+            'The last message store of a standard message must have been properly created',
+        );
+        return {
+            direction: lastMessageStore.ctx,
+            id: lastMessageId,
+        };
+    } else if (isStatusMessageId(lastMessageId)) {
+        return {
+            direction: 'none',
+            id: lastMessageId,
+        };
+    }
+    return assertUnreachable(
+        'The Id of the last message store must be either a message Id or a status message Id',
+    );
 }
 
 function checkFeatureMaskSupportsEdit(featureMask: FeatureMask): boolean {

@@ -11,7 +11,7 @@ import type {Logger} from '~/common/logging';
 import type {Conversation} from '~/common/model';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {randomMessageId} from '~/common/network/protocol/utils';
-import type {MessageId} from '~/common/network/types';
+import type {MessageId, StatusMessageId} from '~/common/network/types';
 import {wrapRawBlobKey} from '~/common/network/types/keys';
 import {unreachable} from '~/common/utils/assert';
 import {
@@ -53,17 +53,19 @@ export interface IConversationViewModelController extends ProxyMarked {
      * Note: Make sure to pass in a new `Set` each time, otherwise store changes won't be
      *       propagated!
      */
-    readonly setCurrentViewportMessages: (messageIds: Set<MessageId>) => void;
+    readonly setCurrentViewportMessages: (messageIds: Set<MessageId | StatusMessageId>) => void;
     readonly unarchive: () => Promise<void>;
     readonly unpin: () => Promise<void>;
-    get currentViewportMessages(): IQueryableStore<Set<MessageId>>;
+    get currentViewportMessages(): IQueryableStore<Set<MessageId | StatusMessageId>>;
 }
 
 export class ConversationViewModelController implements IConversationViewModelController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
     private readonly _log: Logger;
-    private readonly _currentViewportMessagesStore = new WritableStore<Set<MessageId>>(new Set());
+    private readonly _currentViewportMessagesStore = new WritableStore<
+        Set<MessageId | StatusMessageId>
+    >(new Set());
 
     public constructor(
         private readonly _services: ServicesForViewModel,
@@ -73,7 +75,7 @@ export class ConversationViewModelController implements IConversationViewModelCo
         this._log = _services.logging.logger('viewmodel.conversation.main.controller');
     }
 
-    public get currentViewportMessages(): IQueryableStore<Set<MessageId>> {
+    public get currentViewportMessages(): IQueryableStore<Set<MessageId | StatusMessageId>> {
         return this._currentViewportMessagesStore;
     }
 
@@ -171,7 +173,7 @@ export class ConversationViewModelController implements IConversationViewModelCo
     }
 
     /** @inheritdoc */
-    public setCurrentViewportMessages(messageIds: Set<MessageId>): void {
+    public setCurrentViewportMessages(messageIds: Set<MessageId | StatusMessageId>): void {
         this._currentViewportMessagesStore.set(messageIds);
     }
 

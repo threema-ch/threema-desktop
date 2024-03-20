@@ -145,6 +145,9 @@ $brandings: (
       --mc-message-status-acknowledged-color: -g($mc, message-status-acknowledged),
       --mc-message-status-declined-color: -g($mc, message-status-declined),
       --mc-message-status-error-color: -g($mc, message-status-error),
+
+      --mc-status-message-background-color: -g($mc, status-message-background-color)
+
   );
 }
 

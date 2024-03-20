@@ -3,7 +3,7 @@ import type {MessageProps} from '~/app/ui/components/molecules/message/props';
 /**
  * Props accepted by the `Bubble` component.
  */
-export interface BubbleProps extends Pick<MessageProps, 'direction'> {
+export interface BubbleProps {
     /**
      * Whether clicking on the bubble should be enabled. Defaults to `false`.
      */
@@ -14,5 +14,8 @@ export interface BubbleProps extends Pick<MessageProps, 'direction'> {
      */
     readonly highlighted?: boolean;
     /** The size of the padding between the bubble and its content. */
-    readonly padding?: 'normal' | 'thin';
+    readonly padding?: 'normal' | 'thin' | 'medium';
+
+    /** The direction of the message used for color shading. */
+    readonly direction: MessageProps['direction'] | 'none';
 }

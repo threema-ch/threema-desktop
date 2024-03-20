@@ -4,7 +4,7 @@
   The list also abstracts generic list functionality, like scrolling to an item, glueing, and
   observing items that enter and exit the view.
 -->
-<script lang="ts" generics="TId, TProps">
+<script lang="ts" generics="TProps extends {id: unknown}">
   import {createEventDispatcher, onDestroy, onMount, tick} from 'svelte';
 
   import {intersection} from '~/app/ui/actions/intersection';
@@ -25,7 +25,7 @@
   // See https://github.com/sveltejs/eslint-plugin-svelte/issues/521
   // and https://github.com/sveltejs/svelte-eslint-parser/issues/306
   // eslint-disable-next-line no-undef
-  type $$Props = LazyListProps<TId, TProps>;
+  type $$Props = LazyListProps<TProps>;
 
   export let items: $$Props['items'];
   export let onError: $$Props['onError'] = undefined;
@@ -69,7 +69,7 @@
    */
   export async function scrollToItem(
     // eslint-disable-next-line no-undef
-    id: TId,
+    id: TProps['id'],
     options?: ScrollIntoViewOptions,
   ): Promise<void> {
     // Enqueue execution to avoid race conditions if another anchoring process is already in

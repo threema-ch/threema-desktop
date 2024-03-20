@@ -37,6 +37,8 @@
 
   type $$Props = MessageProps;
 
+  export let type: $$Props['type'] = 'message';
+  unusedProp(type);
   export let actions: $$Props['actions'];
   export let boundary: $$Props['boundary'] = undefined;
   export let conversation: $$Props['conversation'];

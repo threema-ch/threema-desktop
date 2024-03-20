@@ -1,5 +1,5 @@
 import type {Logger} from '~/common/logging';
-import type {MessageId} from '~/common/network/types';
+import type {MessageId, StatusMessageId} from '~/common/network/types';
 import {TIMER} from '~/common/utils/timer';
 
 /**
@@ -9,7 +9,7 @@ import {TIMER} from '~/common/utils/timer';
 export class Viewport {
     private static readonly _DEBOUNCE_MS = 100;
 
-    private readonly _messages = new Set<MessageId>();
+    private readonly _messages = new Set<MessageId | StatusMessageId>();
 
     private readonly _notifyController = TIMER.debounce(
         () => {
@@ -24,9 +24,9 @@ export class Viewport {
     public constructor(
         private readonly _log: Logger,
         private readonly _setCurrentViewportMessagesHandler: (
-            ids: Set<MessageId>,
+            ids: Set<MessageId | StatusMessageId>,
         ) => Promise<unknown>,
-        initiallyVisibleMessageId?: MessageId,
+        initiallyVisibleMessageId?: MessageId | StatusMessageId,
     ) {
         if (initiallyVisibleMessageId !== undefined) {
             this._setCurrentViewportMessagesHandler(new Set([initiallyVisibleMessageId])).catch(
@@ -38,7 +38,7 @@ export class Viewport {
     /**
      * Mark a message ID as visible in the viewport.
      */
-    public addMessage(id: MessageId): void {
+    public addMessage(id: MessageId | StatusMessageId): void {
         this._messages.add(id);
         this._notifyController();
     }
@@ -46,7 +46,7 @@ export class Viewport {
     /**
      * Remove a message ID from the visible messages in the viewport.
      */
-    public deleteMessage(id: MessageId): void {
+    public deleteMessage(id: MessageId | StatusMessageId): void {
         this._messages.delete(id);
         this._notifyController();
     }

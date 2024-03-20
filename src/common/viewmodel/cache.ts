@@ -1,6 +1,13 @@
-import type {AnyMessageModelStore, AnyReceiver, AnyReceiverStore} from '~/common/model';
+import type {
+    AnyMessageModelStore,
+    AnyReceiver,
+    AnyReceiverStore,
+    Conversation,
+} from '~/common/model';
 import type {ConversationModelStore} from '~/common/model/conversation';
+import type {AnyStatusMessageModelStore} from '~/common/model/types/status';
 import {LazyWeakRef} from '~/common/model/utils/model-cache';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {WeakValueMap} from '~/common/utils/map';
 import type {ContactDetailViewModelBundle} from '~/common/viewmodel/contact/detail';
 import type {ContactListViewModelBundle} from '~/common/viewmodel/contact/list';
@@ -8,7 +15,10 @@ import type {ContactListItemViewModelBundle} from '~/common/viewmodel/contact/li
 import type {ConversationListViewModelBundle} from '~/common/viewmodel/conversation/list';
 import type {ConversationListItemViewModelBundle} from '~/common/viewmodel/conversation/list/item';
 import type {ConversationViewModelBundle} from '~/common/viewmodel/conversation/main';
-import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
+import type {
+    ConversationMessageViewModelBundle,
+    ConversationStatusMessageViewModelBundle,
+} from '~/common/viewmodel/conversation/main/message';
 import type {DebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import type {ProfileViewModelStore} from '~/common/viewmodel/profile';
 import type {SearchViewModelBundle} from '~/common/viewmodel/search/nav';
@@ -18,6 +28,10 @@ export class ViewModelCache {
     public readonly conversationListItem = new WeakValueMap<
         ConversationModelStore,
         ConversationListItemViewModelBundle
+    >();
+    public readonly conversationStatus = new WeakValueMap<
+        LocalModelStore<Conversation>,
+        WeakValueMap<AnyStatusMessageModelStore, ConversationStatusMessageViewModelBundle>
     >();
     public readonly conversation = new WeakValueMap<
         ConversationModelStore,

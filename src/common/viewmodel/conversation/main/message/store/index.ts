@@ -1,7 +1,9 @@
+import type {DbStatusMessageUid} from '~/common/db';
 import {MessageDirection} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import type {AnyMessageModel, AnyMessageModelStore} from '~/common/model/types/message';
+import type {AnyStatusMessage, AnyStatusMessageModelStore} from '~/common/model/types/status';
 import type {PropertiesMarked} from '~/common/utils/endpoint';
 import type {LocalStore} from '~/common/utils/store';
 import {type GetAndSubscribeFunction, derive} from '~/common/utils/store/derived-store';
@@ -20,6 +22,27 @@ import type {ConversationMessageViewModel} from '~/common/viewmodel/conversation
 export type ConversationMessageViewModelStore = LocalStore<
     ConversationMessageViewModel & PropertiesMarked
 >;
+
+export type StatusMessageViewModelStore = LocalStore<
+    AnyStatusMessage & {uid: DbStatusMessageUid} & PropertiesMarked
+>;
+
+export function getStatusMessageViewModelStore(
+    log: Logger,
+    services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
+    messageModelStore: AnyStatusMessageModelStore,
+): StatusMessageViewModelStore {
+    const {endpoint} = services;
+
+    // eslint-disable-next-line arrow-body-style
+    return derive([messageModelStore], ([{currentValue: messageModel}], getAndSubscribe) => {
+        return endpoint.exposeProperties({
+            ...messageModel.view,
+            // Needed for a unique distinguisher in the frontend.
+            uid: messageModel.controller.uid,
+        });
+    });
+}
 
 export function getConversationMessageViewModelStore(
     log: Logger,

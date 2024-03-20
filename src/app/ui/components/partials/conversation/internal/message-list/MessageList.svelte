@@ -8,17 +8,18 @@
   import {globals} from '~/app/globals';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import LazyList from '~/app/ui/components/hocs/lazy-list/LazyList.svelte';
-  import type {LazyListItemProps} from '~/app/ui/components/hocs/lazy-list/props';
   import {Viewport} from '~/app/ui/components/partials/conversation/internal/message-list/helpers';
   import Message from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/Message.svelte';
   import MessageDetailsModal from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-details-modal/MessageDetailsModal.svelte';
   import MessageForwardModal from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-forward-modal/MessageForwardModal.svelte';
   import MessageMediaViewerModal from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-media-viewer-modal/MessageMediaViewerModal.svelte';
+  import StatusMessage from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/StatusMessage.svelte';
   import UnreadMessagesIndicator from '~/app/ui/components/partials/conversation/internal/message-list/internal/unread-messages-indicator/UnreadMessagesIndicator.svelte';
   import type {MessageListProps} from '~/app/ui/components/partials/conversation/internal/message-list/props';
   import {
     type MessagePropsFromBackend,
     messageSetStoreToMessagePropsStore,
+    type AnyMessagePropsFromBackend,
   } from '~/app/ui/components/partials/conversation/internal/message-list/transformers';
   import type {
     UnreadState,
@@ -29,7 +30,7 @@
   import {reactive, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import {appVisibility} from '~/common/dom/ui/state';
   import {MessageDirection} from '~/common/enum';
-  import type {MessageId} from '~/common/network/types';
+  import type {MessageId, StatusMessageId} from '~/common/network/types';
   import type {u53} from '~/common/types';
   import {assertUnreachable, unreachable} from '~/common/utils/assert';
 
@@ -48,7 +49,7 @@
   }>();
 
   let element: HTMLElement;
-  let lazyListComponent: SvelteNullableBinding<LazyList<MessageId, MessagePropsFromBackend>> = null;
+  let lazyListComponent: SvelteNullableBinding<LazyList<AnyMessagePropsFromBackend>> = null;
   let viewport = new Viewport(
     log,
     conversation.setCurrentViewportMessages,
@@ -69,17 +70,17 @@
   let modalState: ModalState = {type: 'none'};
 
   // Message that the chat view should be anchored to when it's (re-)initialized.
-  let anchoredMessageId: MessageId | undefined =
+  let anchoredMessageId: MessageId | StatusMessageId | undefined =
     conversation.initiallyVisibleMessageId ??
     conversation.firstUnreadMessageId ??
     conversation.lastMessage?.id;
 
   // `MessageId` of the message that should be highlighted with an animation as soon as it becomes
   // visible (i.e., as soon as it was anchored).
-  let messageToHighlightMessageId: MessageId | undefined;
+  let messageToHighlightMessageId: MessageId | StatusMessageId | undefined;
 
   // `MessageId` of the message that should be highlighted.
-  let highlightedMessageId: MessageId | undefined = undefined;
+  let highlightedMessageId: MessageId | StatusMessageId | undefined = undefined;
 
   let isScrollToBottomButtonVisible = false;
 
@@ -117,7 +118,7 @@
    * Scrolls the view to the message with the given id.
    */
   export async function scrollToMessage(
-    id: MessagePropsFromBackend['id'],
+    id: AnyMessagePropsFromBackend['id'],
     options?: ScrollIntoViewOptions & {
       /** Whether to play an animation after scrolling to highlight the target element. */
       readonly highlightOnScrollEnd?: boolean;
@@ -156,7 +157,14 @@
    * Returns undefined if no such message was found.
    */
   export function getPropsFromBackend(messageId: MessageId): MessagePropsFromBackend | undefined {
-    return $messagePropsStore.find((prop) => prop.id === messageId);
+    const messageProps = $messagePropsStore.find((prop) => prop.id === messageId);
+
+    // This is a sanity check for the typechecker.
+    // Because `MessageId` can only match normal messages, the type will never evaluate to `status`.
+    if (messageProps?.type === 'message') {
+      return messageProps;
+    }
+    return undefined;
   }
 
   function handleClickScrollToBottom(): void {
@@ -326,10 +334,8 @@
     log.error(`An error occurred in LazyList: ${error.message}`);
   }
 
-  function handleItemAnchored(
-    event: CustomEvent<LazyListItemProps<MessageId, MessagePropsFromBackend>>,
-  ): void {
-    const messageId: MessageId = event.detail.id;
+  function handleItemAnchored(event: CustomEvent<AnyMessagePropsFromBackend>): void {
+    const messageId = event.detail.id;
 
     // If the `messageId` that was just anchored was marked for highlighting after animation, mark
     // it as highlighted.
@@ -347,15 +353,11 @@
     anchoredMessageId = undefined;
   }
 
-  function handleItemEntered(
-    event: CustomEvent<LazyListItemProps<MessageId, MessagePropsFromBackend>>,
-  ): void {
+  function handleItemEntered(event: CustomEvent<AnyMessagePropsFromBackend>): void {
     viewport.addMessage(event.detail.id);
   }
 
-  function handleItemExited(
-    event: CustomEvent<LazyListItemProps<MessageId, MessagePropsFromBackend>>,
-  ): void {
+  function handleItemExited(event: CustomEvent<AnyMessagePropsFromBackend>): void {
     viewport.deleteMessage(event.detail.id);
   }
 
@@ -370,7 +372,7 @@
   /**
    * Trigger a full refresh of the message list.
    */
-  function reinitialize(initiallyVisibleMessageId?: MessageId): void {
+  function reinitialize(initiallyVisibleMessageId?: MessageId | StatusMessageId): void {
     if (initiallyVisibleMessageId !== undefined) {
       anchoredMessageId = initiallyVisibleMessageId;
     }
@@ -442,44 +444,51 @@
       on:itemexited={handleItemExited}
       on:scroll={handleScroll}
     >
-      <div class={`message ${item.direction}`} slot="item" let:item>
-        {#if item.id === rememberedUnreadState.firstUnreadMessageId}
-          <div class="separator">
-            <UnreadMessagesIndicator
-              variant={rememberedUnreadState.hasOutgoingMessageChangesSinceOpened
-                ? 'hairline'
-                : 'new-messages'}
-            />
-          </div>
+      <div
+        class={`message ${item.type === 'status-message' ? 'status' : item.direction}`}
+        slot="item"
+        let:item
+      >
+        {#if item.type === 'message'}
+          {#if item.id === rememberedUnreadState.firstUnreadMessageId}
+            <div class="separator">
+              <UnreadMessagesIndicator
+                variant={rememberedUnreadState.hasOutgoingMessageChangesSinceOpened
+                  ? 'hairline'
+                  : 'new-messages'}
+              />
+            </div>
+          {/if}
+          <!-- eslint-disable @typescript-eslint/no-unsafe-argument -->
+          <Message
+            actions={item.actions}
+            boundary={element}
+            {conversation}
+            direction={item.direction}
+            file={item.file}
+            highlighted={item.id === highlightedMessageId}
+            history={item.history}
+            id={item.id}
+            lastEdited={item.lastEdited}
+            quote={item.quote}
+            reactions={item.reactions}
+            sender={item.sender}
+            {services}
+            status={item.status}
+            text={item.text}
+            type={item.type}
+            on:clickquoteoption={() => dispatch('clickquote', item)}
+            on:clickeditoption={() => dispatch('clickedit', item)}
+            on:clickforwardoption={() => handleClickForwardOption(item)}
+            on:clickopendetailsoption={() => handleClickOpenDetailsOption(item)}
+            on:clickdeleteoption={() => dispatch('clickdelete', item)}
+            on:clickthumbnail={() => handleClickThumbnail(item)}
+            on:clickquote={() => handleClickQuote(item)}
+            on:completehighlightanimation={handleCompleteHighlightAnimation}
+          />
+        {:else}
+          <StatusMessage action={item.action} information={item.information} {services} />
         {/if}
-
-        <!-- eslint-disable @typescript-eslint/no-unsafe-argument -->
-        <Message
-          actions={item.actions}
-          boundary={element}
-          {conversation}
-          direction={item.direction}
-          file={item.file}
-          highlighted={item.id === highlightedMessageId}
-          history={item.history}
-          id={item.id}
-          lastEdited={item.lastEdited}
-          quote={item.quote}
-          reactions={item.reactions}
-          sender={item.sender}
-          {services}
-          status={item.status}
-          text={item.text}
-          on:clickquoteoption={() => dispatch('clickquote', item)}
-          on:clickeditoption={() => dispatch('clickedit', item)}
-          on:clickforwardoption={() => handleClickForwardOption(item)}
-          on:clickopendetailsoption={() => handleClickOpenDetailsOption(item)}
-          on:clickdeleteoption={() => dispatch('clickdelete', item)}
-          on:clickthumbnail={() => handleClickThumbnail(item)}
-          on:clickquote={() => handleClickQuote(item)}
-          on:completehighlightanimation={handleCompleteHighlightAnimation}
-        />
-        <!-- eslint-enable @typescript-eslint/no-unsafe-argument -->
       </div>
     </LazyList>
   {/if}
@@ -561,6 +570,15 @@
       &.outbound {
         align-items: end;
         justify-content: center;
+      }
+
+      &.status {
+        align-items: center;
+        justify-content: center;
+
+        :global(> *) {
+          max-width: min(rem(512px), 90%);
+        }
       }
 
       .separator {

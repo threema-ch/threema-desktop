@@ -7,7 +7,7 @@ import {derive} from '~/common/utils/store/derived-store';
 import type {LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
 import type {IConversationViewModelController} from '~/common/viewmodel/conversation/main/controller';
-import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
+import type {ConversationAnyMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
 import {
     getLastMessage,
     getMessageSetStore,
@@ -19,7 +19,7 @@ import {getConversationReceiverData} from '~/common/viewmodel/utils/receiver';
 export type ConversationViewModelStore = LocalStore<ConversationViewModel & PropertiesMarked>;
 
 /**
- * Partial store of a conversation's messages, as it should be provided by the viewmodel.
+ * Partial store of a conversation's and status messages, as it should be provided by the viewmodel.
  *
  * Note: It is not guaranteed that all messages of the conversation are included (hence, "partial");
  * However, the following messages can be expected to be included:
@@ -30,10 +30,11 @@ export type ConversationViewModelStore = LocalStore<ConversationViewModel & Prop
  *   height.
  * - A large enough window of messages immediately before (and including) the last message to fill
  *   (at least) one realistic viewport height.
+ * - As of now, all status messages of all catgegories in the current conversation.
  */
 export type ConversationMessageSetStore = LocalDerivedSetStore<
     SetOfAnyLocalMessageModelStore,
-    ConversationMessageViewModelBundle
+    ConversationAnyMessageViewModelBundle
 >;
 
 export function getConversationViewModelStore(

@@ -93,6 +93,11 @@
 
       // Image message
       message-image-placeholder-background-color: rgba(#000000, 4%),
+
+      // Status Message
+      status-message-background-color: theme.$grey-50
+
+
     ),
     compound-components: (
       // Profile picture upload

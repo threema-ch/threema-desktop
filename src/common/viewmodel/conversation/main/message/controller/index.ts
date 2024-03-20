@@ -1,5 +1,7 @@
 import {MessageDirection, MessageReaction, MessageType} from '~/common/enum';
 import type {AnyMessageModelStore} from '~/common/model';
+import type {GroupMemberChangeStatusModelStore} from '~/common/model/status/group-member-change';
+import type {GroupNameChangeModelStore} from '~/common/model/status/group-name-change';
 import {unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
@@ -91,4 +93,32 @@ export class ConversationMessageViewModelController
                 return unreachable(reaction);
         }
     }
+}
+
+/**
+ * Describes the controller of a status message in the view model.
+ * Some statuses might not have any additional functionality, so action will remain undefined.
+ * The controller is needed anyway to create a view model bundle.
+ */
+export interface IConversationStatusMessageViewModelController extends ProxyMarked {
+    /**
+     * Possible action of a status message that is triggered on a click.
+     */
+    readonly action?: () => void;
+}
+
+export class GroupMemberChangeViewModelController
+    implements IConversationStatusMessageViewModelController
+{
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
+
+    public constructor(private readonly _statusMessage: GroupMemberChangeStatusModelStore) {}
+}
+
+export class GroupNameChangeViewModelController
+    implements IConversationStatusMessageViewModelController
+{
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
+
+    public constructor(private readonly _statusMessage: GroupNameChangeModelStore) {}
 }

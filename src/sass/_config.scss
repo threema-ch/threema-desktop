@@ -116,6 +116,9 @@ $config: config-merge(components.$config, (
       --mc-message-status-acknowledged-color,
       --mc-message-status-declined-color,
       --mc-message-status-error-color,
+
+      // Status Message
+      --mc-status-message-background-color,
     ),
 
     compound-components: (
