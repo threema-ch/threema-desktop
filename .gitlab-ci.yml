@@ -360,17 +360,18 @@ package:source:
     - docker-privileged
   before_script:
     # Base dependencies
-    - apt-get update && apt-get install -y flatpak python3-aiohttp elfutils lftp jq
-    # Build flatpak-builder 1.2
-    - apt-get install -y libsoup2.4-dev libostree-dev libjson-glib-dev libelf-dev libdw-dev
+    - apt-get update
+    - apt-get install -y flatpak jq lftp elfutils libyaml-dev libglib2.0-dev libcurl4-gnutls-dev libxml2-dev libxslt1-dev python3-aiohttp
+    # Build current version of flatpak-builder
+    # TODO: Move off of build with patched `libglnx` (see: https://github.com/flatpak/flatpak-builder/issues/590).
+    - apt-get install -y meson cmake debugedit appstream appstream-compose libjson-glib-dev libelf-dev libostree-dev
     - |
       pushd /opt/
-      wget https://github.com/flatpak/flatpak-builder/releases/download/1.2.2/flatpak-builder-1.2.2.tar.xz
-      tar xf flatpak-builder-1.2.2.tar.xz
-      cd flatpak-builder-1.2.2
-      ./configure --disable-documentation
-      make -j4
-      make install
+      wget https://github.com/flatpak/flatpak-builder/releases/download/1.4.2/flatpak-builder-1.4.2-fixed-libglnx.tar.xz
+      tar xf flatpak-builder-1.4.2-fixed-libglnx.tar.xz
+      cd flatpak-builder-1.4.2
+      meson setup --prefix=/usr --buildtype=release -Ddocs=disabled _build
+      meson install -C _build
       popd
     # Add flathub remote
     - flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
