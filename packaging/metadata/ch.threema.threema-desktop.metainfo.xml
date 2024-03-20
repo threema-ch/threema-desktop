@@ -29,6 +29,23 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta30" date="2024-03-21">
+            <description>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Quarantine files downloaded on macOS</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>
+                        Fixed a bug that could cause the app to crash when switching chats while the
+                        context menu is open
+                    </li>
+                    <li>Fixed the display of the emoji picker</li>
+                </ul>
+                <p>...and a few other minor changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta29" date="2024-03-06">
             <description>
                 <p>New Features:</p>
