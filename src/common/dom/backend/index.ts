@@ -1060,6 +1060,10 @@ export class Backend {
                     error,
                 );
             }
+
+            // Abort rendezvous connection
+            rendezvous.abort('unknown');
+
             return await throwLinkingError(
                 `Device join protocol failed: ${error}`,
                 {kind: 'join-error'},
