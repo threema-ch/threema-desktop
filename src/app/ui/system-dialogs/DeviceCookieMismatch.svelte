@@ -5,6 +5,7 @@
   import CancelAndConfirm from '~/app/ui/svelte-components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '~/app/ui/svelte-components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
+  import {resetProfile} from '~/app/ui/utils/profile';
   import type {Config} from '~/common/config';
   import type {Logger} from '~/common/logging';
   import type {DeviceCookieMismatchDialog} from '~/common/system-dialog';
@@ -16,18 +17,17 @@
   export let config: Config;
   export let visible: boolean;
   export let context: DeviceCookieMismatchDialog['context'];
-  unusedProp(log, config, context);
+  unusedProp(config, context);
 
   /**
    * Unlink and delete the device data and restart the application.
    */
-  async function resetProfile(): Promise<void> {
-    // First, unlink from mediator
-    await appServices?.unwrap().backend.selfKickFromMediator();
-
-    // Then, request deletion of profile directory and app restart
-    const ipc = window.app;
-    ipc.deleteProfileAndRestartApp();
+  async function resetAndUnlink(): Promise<void> {
+    if (appServices === undefined || !appServices.isSet()) {
+      log.warn('Cannot unlink the profile because the app services are not yet ready');
+      return;
+    }
+    await resetProfile(appServices.unwrap());
   }
 </script>
 
@@ -37,7 +37,7 @@
     on:confirm
     on:clickoutside
     on:close
-    on:cancel={resetProfile}
+    on:cancel={resetAndUnlink}
     closableWithEscape={false}
   >
     <Title

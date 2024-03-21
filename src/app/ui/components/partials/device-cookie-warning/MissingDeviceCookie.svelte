@@ -3,18 +3,12 @@
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import {resetProfile} from '~/app/ui/utils/profile';
 
   export let services: AppServices;
-  /**
-   * Unlink and delete the device data and restart the application.
-   */
-  async function resetProfile(): Promise<void> {
-    // First, unlink from mediator
-    await services.backend.selfKickFromMediator();
 
-    // Then, request deletion of profile directory and app restart
-    const ipc = window.app;
-    ipc.deleteProfileAndRestartApp();
+  async function deleteAndUnlink(): Promise<void> {
+    await resetProfile(services);
   }
 </script>
 
@@ -43,7 +37,7 @@
           'Relink and synchronize device cookie',
         ),
         type: 'filled',
-        onClick: resetProfile,
+        onClick: deleteAndUnlink,
       },
     ],
   }}

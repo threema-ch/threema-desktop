@@ -3,6 +3,7 @@
   import {i18n, type Locale, LOCALES} from '~/app/ui/i18n';
   import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import {resetProfile} from '~/app/ui/utils/profile';
   import {type Theme, THEMES} from '~/common/dom/ui/theme';
   import {ReceiverType} from '~/common/enum';
   import type {
@@ -33,13 +34,8 @@
   /**
    * Unlink and delete the device data and restart the application.
    */
-  async function resetProfile(): Promise<void> {
-    // First, unlink from mediator
-    await services.backend.selfKickFromMediator();
-
-    // Then, request deletion of profile directory and app restart
-    const ipc = window.app;
-    ipc.deleteProfileAndRestartApp();
+  async function resetAndUnlink(): Promise<void> {
+    await resetProfile(services);
   }
 
   // Database inspection mode
@@ -199,7 +195,7 @@
 
     <h3>User Profile</h3>
 
-    <Button flavor="filled" on:click={resetProfile}>
+    <Button flavor="filled" on:click={resetAndUnlink}>
       <span class="icon-and-text"
         ><MdIcon theme="Filled">restart_alt</MdIcon>
         Delete Data and Unlink{#if import.meta.env.DEBUG}¹{/if}
