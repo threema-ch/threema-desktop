@@ -5,12 +5,12 @@
   import type {EventName, Modal} from '~/app/ui/svelte-components/blocks/ModalDialog';
 
   /**
-   * Determinate if the modal is visible.
+   * Determine if the modal is visible.
    */
   export let visible = false;
 
   /**
-   * Determinate if the modal is cancelable via esc keydown event.
+   * Determine if the modal is cancelable via esc keydown event.
    */
   export let closableWithEscape = true;
 

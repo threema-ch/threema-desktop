@@ -19,7 +19,7 @@ import type {IFrontendMediaService} from '~/common/media';
 import type {ProfilePictureView} from '~/common/model';
 import type {DisplayPacket} from '~/common/network/protocol/capture';
 import type {ConnectionState} from '~/common/network/protocol/state';
-import type {DeviceCookie, IdentityString} from '~/common/network/types';
+import type {IdentityString} from '~/common/network/types';
 import type {NotificationCreator} from '~/common/notification';
 import type {SystemDialogService} from '~/common/system-dialog';
 import {assertError, ensureError, unreachable} from '~/common/utils/assert';
@@ -72,7 +72,6 @@ export class BackendController {
     public readonly connectionManager: RemoteProxy<BackendHandle>['connectionManager'];
     public readonly debug: RemoteProxy<BackendHandle>['debug'];
     public readonly directory: RemoteProxy<BackendHandle>['directory'];
-    public readonly deviceCookie: DeviceCookie | undefined;
     public readonly keyStorage: RemoteProxy<BackendHandle>['keyStorage'];
     public readonly model: RemoteProxy<BackendHandle>['model'];
     public readonly selfKickFromMediator: RemoteProxy<BackendHandle>['selfKickFromMediator'];
@@ -89,7 +88,6 @@ export class BackendController {
         private readonly _log: Logger,
         private readonly _remote: RemoteProxy<BackendHandle>,
 
-        deviceCookie: DeviceCookie | undefined,
         data: EssentialStartupData,
     ) {
         this.connectionState = data.connectionState;
@@ -105,7 +103,6 @@ export class BackendController {
         this.selfKickFromMediator = _remote.selfKickFromMediator;
         this.viewModel = _remote.viewModel;
         this.work = _remote.work;
-        this.deviceCookie = deviceCookie;
     }
 
     public static async create(
@@ -343,26 +340,18 @@ export class BackendController {
 
         // Gather startup data
         log.debug('Waiting for startup data to be available');
-        const [
-            connectionState,
-            leaderState,
-            identity,
-            deviceIds,
-            deviceCookie,
-            profilePicture,
-            displayName,
-        ] = await Promise.all([
-            remote.connectionManager.state,
-            remote.connectionManager.leaderState,
-            remote.model.user.identity,
-            remote.deviceIds,
-            remote.deviceCookie,
-            remote.model.user.profilePicture,
-            remote.model.user.displayName,
-        ]);
+        const [connectionState, leaderState, identity, deviceIds, profilePicture, displayName] =
+            await Promise.all([
+                remote.connectionManager.state,
+                remote.connectionManager.leaderState,
+                remote.model.user.identity,
+                remote.deviceIds,
+                remote.model.user.profilePicture,
+                remote.model.user.displayName,
+            ]);
         // Done
         log.debug('Creating backend controller');
-        const backend = new BackendController({...services}, log, remote, deviceCookie, {
+        const backend = new BackendController({...services}, log, remote, {
             deviceIds,
             connectionState,
             leaderState,

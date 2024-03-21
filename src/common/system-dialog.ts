@@ -89,6 +89,13 @@ export interface DeviceCookieMismatchDialog extends SystemDialogBase {
 }
 
 /**
+ * Dialog which is shown when there is no device cookie
+ */
+export interface MissingDeviceCookieDialog extends SystemDialogBase {
+    readonly type: 'missing-device-cookie';
+}
+
+/**
  * All possible system dialogs.
  * Note: All Properties must be structurally clonable.
  */
@@ -98,7 +105,8 @@ export type SystemDialog =
     | ServerAlertDialog
     | UnrecoverableStateDialog
     | InvalidWorkCredentialsDialog;
-// TODO(DESK-1371) Add the device cookie mismatch warning to the system dialog.
+// TODO(DESK-1371) Add the device cookie mismatch and missing device cookie warning to the system dialog.
+// | MissingDeviceCookieDialog;
 // | DeviceCookieMismatchDialog;
 
 // TODO(DESK-1337): Result should reflect possible available actions

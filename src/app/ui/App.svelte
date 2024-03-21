@@ -41,31 +41,6 @@
     {},
   ) as Promise<Remote<LocalModelStore<IGlobalPropertyModel<'applicationState'>>>>;
 
-  // TODO(DESK-1344)
-  /**
-   *   interface NoneModalState {
-   *  readonly type: 'none';
-   *  }
-   *
-   *interface MissingDeviceCookieModalState {
-   *  type: 'missing-device-cookie';
-   *  props: {
-   *    services: AppServices;
-   *  };
-   *}
-   *    type ModalState = NoneModalState | MissingDeviceCookieModalState;
-   * let modalState: ModalState =
-   *   services.backend.deviceCookie === undefined
-   *     ? {type: 'missing-device-cookie', props: {services}}
-   *     : {type: 'none'};
-   * function handleCloseModal(): void {
-   *   // Reset modal state.
-   *   modalState = {
-   *     type: 'none',
-   *   };
-   * }
-   */
-
   // Create display mode observer
   const displayModeObserver = new DisplayModeObserver(display);
 
@@ -245,13 +220,6 @@
         <DebugPanel {services} />
       </footer>
     {/if}
-
-    <!-- TODO(DESK-1371) Enable the Missing device cookie warning.
-{#if modalState.type === 'none'}
-{:else if modalState.type === 'missing-device-cookie'}
-  <MissingDeviceCookie {...modalState.props} on:close={handleCloseModal}></MissingDeviceCookie>
-{/if}
--->
   </div>
 </template>
 

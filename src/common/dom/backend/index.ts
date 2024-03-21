@@ -539,7 +539,6 @@ export interface BackendHandle extends ProxyMarked {
     readonly connectionManager: ConnectionManager;
     readonly debug: DebugBackend;
     readonly deviceIds: DeviceIds;
-    readonly deviceCookie: DeviceCookie | undefined;
     readonly directory: Pick<DirectoryBackend, 'identity'>;
     readonly keyStorage: Pick<KeyStorage, 'changePassword' | 'changeWorkCredentials'>;
     readonly model: Repositories;
@@ -577,7 +576,6 @@ export class Backend {
                 cspDeviceId: _services.device.csp.deviceId,
                 d2mDeviceId: _services.device.d2m.deviceId,
             },
-            deviceCookie: _services.device.csp.deviceCookie,
             directory: _services.directory,
             model: _services.model,
             keyStorage: _services.keyStorage,
@@ -840,6 +838,13 @@ export class Backend {
             // backendServices.systemDialog.open({type: 'missing-work-credentials'}).catch(assertUnreachable);;
             // startConnection = false;
         }
+
+        // TODO(DESK-1371) Activate this dialog
+        // if (backendServices.device.csp.deviceCookie === undefined) {
+        //     backendServices.systemDialog
+        //         .openOnce({type: 'missing-device-cookie'})
+        //         .catch(assertUnreachable);
+        // }
 
         // Start connection
         backend._connectionManager.start().catch(() => {

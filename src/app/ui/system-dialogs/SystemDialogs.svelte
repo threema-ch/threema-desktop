@@ -33,7 +33,8 @@
     'server-alert': ServerAlert,
     'unrecoverable-state': UnrecoverableState,
     'invalid-work-credentials': InvalidWorkCredentials,
-    // TODO(DESK-1371) Enable the device cookie mismatch warning.
+    // TODO(DESK-1371) Enable the device cookie mismatch and missing-device-cookie warning
+    // 'missing-device-cookie': MissingDeviceCookie,
     // 'device-cookie-mismatch': DeviceCookieMismatch,
   };
 
