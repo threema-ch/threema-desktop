@@ -247,6 +247,67 @@ export namespace CloseCodeUtils {
         return (NAME_OF as Record<u53, string | undefined>)[value];
     }
 }
+export namespace RendezvousCloseCode {
+    export const NORMAL = 1000;
+    // Builtin close codes
+    /** Normal closure, e.g. when the user is explicitly disconnecting. */
+    export type NORMAL = typeof NORMAL;
+    export const RENDEZVOUS_PROTOCOL_ERROR = 4000;
+    // Server <-> Client
+    /** Rendezvous protocol error. */
+    export type RENDEZVOUS_PROTOCOL_ERROR = typeof RENDEZVOUS_PROTOCOL_ERROR;
+    export const INIT_TIMEOUT_REACHED = 4003;
+    /** Init timeout reached, other device did not connect. */
+    export type INIT_TIMEOUT_REACHED = typeof INIT_TIMEOUT_REACHED;
+    export const OTHER_DEVICE_DISCONNECTED = 4004;
+    /** Other device disconnected without reflectable close code. */
+    export type OTHER_DEVICE_DISCONNECTED = typeof OTHER_DEVICE_DISCONNECTED;
+    export const ULP_ERROR = 4100;
+    // Client <-> Client
+    /** Upper Layer Protocol error. */
+    export type ULP_ERROR = typeof ULP_ERROR;
+}
+/**
+ * WebSocket close code, extended by the Rendezvous Protocol 4xxx custom close
+ * codes.
+ *
+ * @generate name convert
+ */
+export type RendezvousCloseCode = (typeof RendezvousCloseCode)[keyof typeof RendezvousCloseCode];
+export namespace RendezvousCloseCodeUtils {
+    export const ALL: ReadonlySet<RendezvousCloseCode> = new Set([
+        RendezvousCloseCode.NORMAL,
+        RendezvousCloseCode.RENDEZVOUS_PROTOCOL_ERROR,
+        RendezvousCloseCode.INIT_TIMEOUT_REACHED,
+        RendezvousCloseCode.OTHER_DEVICE_DISCONNECTED,
+        RendezvousCloseCode.ULP_ERROR,
+    ] as const);
+    export function fromNumber(value: u53, fallback?: RendezvousCloseCode): RendezvousCloseCode {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as RendezvousCloseCode;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid RendezvousCloseCode`);
+    }
+    export function containsNumber(value: u53): value is RendezvousCloseCode {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is RendezvousCloseCode {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+    export const NAME_OF = {
+        [RendezvousCloseCode.NORMAL]: 'NORMAL',
+        [RendezvousCloseCode.RENDEZVOUS_PROTOCOL_ERROR]: 'RENDEZVOUS_PROTOCOL_ERROR',
+        [RendezvousCloseCode.INIT_TIMEOUT_REACHED]: 'INIT_TIMEOUT_REACHED',
+        [RendezvousCloseCode.OTHER_DEVICE_DISCONNECTED]: 'OTHER_DEVICE_DISCONNECTED',
+        [RendezvousCloseCode.ULP_ERROR]: 'ULP_ERROR',
+    } as const;
+    export function nameOf<T extends u53>(value: T): string | undefined {
+        return (NAME_OF as Record<u53, string | undefined>)[value];
+    }
+}
 export namespace ConnectionState {
     export const CONNECTING = 0;
     export type CONNECTING = typeof CONNECTING;
@@ -960,7 +1021,7 @@ export namespace CspE2eMessageUpdateType {
     export type DELETE_MESSAGE = typeof DELETE_MESSAGE;
 }
 /**
- * E2EE Message update
+ * E2EE 1:1 Message update (e.g. edit or delete)
  *
  * @generate name convert
  */
@@ -1004,7 +1065,7 @@ export namespace CspE2eGroupMessageUpdateType {
     export type GROUP_DELETE_MESSAGE = typeof GROUP_DELETE_MESSAGE;
 }
 /**
- * E2EE Message update
+ * E2EE group Message update
  *
  * @generate name convert
  */

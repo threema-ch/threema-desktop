@@ -6,9 +6,9 @@ import {type QueryablePromise, ResolvablePromise} from '~/common/utils/resolvabl
 /**
  * This must be compatible with DOM's {@link AbortController}.
  */
-interface DomAbortController<TDomSignal extends DomAbortSignal> {
+interface DomAbortController<TDomSignal extends DomAbortSignal, TEvent = undefined> {
     readonly signal: TDomSignal;
-    abort: () => void;
+    readonly abort: (reason?: TEvent) => void;
 }
 
 /**
@@ -32,7 +32,7 @@ export interface AbortListener<TEvent = undefined> {
     readonly promise: QueryablePromise<TEvent>;
     readonly subscribe: (subscriber: AbortSubscriber<TEvent>) => EventUnsubscriber;
     readonly attach: <TDomSignal extends DomAbortSignal>(
-        controller: DomAbortController<TDomSignal>,
+        controller: DomAbortController<TDomSignal, TEvent>,
     ) => TDomSignal;
 }
 
@@ -122,9 +122,9 @@ export class AbortRaiser<TEvent = undefined> {
      * Attach an {@link DomAbortController} to the raiser's listener.
      */
     public attach<TDomSignal extends DomAbortSignal>(
-        controller: DomAbortController<TDomSignal>,
+        controller: DomAbortController<TDomSignal, TEvent>,
     ): TDomSignal {
-        this.subscribe(() => controller.abort());
+        this.subscribe((event: TEvent) => controller.abort(event));
         return controller.signal;
     }
 }

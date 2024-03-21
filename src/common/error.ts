@@ -1,5 +1,6 @@
 import {TransferTag} from '~/common/enum';
 import type {FileStorageErrorType} from '~/common/file-storage';
+import type {RendezvousCloseCause} from '~/common/network/protocol/rendezvous';
 import {ensureError} from '~/common/utils/assert';
 import {
     type RegisteredErrorTransferHandler,
@@ -270,9 +271,6 @@ export class SafeError extends BaseError {
         super(message, options);
     }
 }
-
-/** A rendezvous connection close cause. */
-export type RendezvousCloseCause = 'unknown' | 'closed' | 'timeout' | 'complete';
 
 /** An error wrapping a {@link RendezvousCloseCause}. */
 export class RendezvousCloseError extends Error {

@@ -44,7 +44,6 @@ import {
     type BaseErrorOptions,
     DeviceJoinError,
     extractErrorTraceback,
-    type RendezvousCloseCause,
     RendezvousCloseError,
     extractErrorMessage,
 } from '~/common/error';
@@ -68,6 +67,7 @@ import {
     type RawPacket,
 } from '~/common/network/protocol/capture';
 import {type DirectoryBackend, DirectoryError} from '~/common/network/protocol/directory';
+import type {RendezvousCloseCause} from '~/common/network/protocol/rendezvous';
 import {DropDeviceTask} from '~/common/network/protocol/task/d2m/drop-device';
 import {TaskManager} from '~/common/network/protocol/task/manager';
 import {VolatileProtocolStateBackend} from '~/common/network/protocol/volatile-protocol-state';
@@ -1068,7 +1068,7 @@ export class Backend {
             }
 
             // Abort rendezvous connection
-            rendezvous.abort('unknown');
+            rendezvous.abort('protocol-error');
 
             return await throwLinkingError(
                 `Device join protocol failed: ${error}`,

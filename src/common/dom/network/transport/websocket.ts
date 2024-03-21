@@ -8,7 +8,9 @@ import {
     WritableStream,
     type WritableStreamDefaultController,
 } from '~/common/dom/streams';
+import {RendezvousCloseCode} from '~/common/enum';
 import {CloseCode} from '~/common/network';
+import {closeCauseToCloseInfo, isRendezvousCloseCause} from '~/common/network/protocol/rendezvous';
 import type {u16, u32, u53} from '~/common/types';
 import {ProxyHandlerWrapper} from '~/common/utils/proxy';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -197,18 +199,31 @@ export class WebSocketEventWrapperStream implements WebSocketStream {
         }));
         const closed = (this.closed = new ResolvablePromise({uncaught: 'discard'}));
 
-        // Create WebSocket (and we want ArrayBuffer's)
+        // Create WebSocket
         this._ws = new WebSocket(url, options.protocols as string[]);
         this._ws.binaryType = 'arraybuffer';
 
-        // Resolve connection once open.
-        // Reject it on error, premature close or on abort.
+        // Resolve connection promise once open.
+        // Reject promise on error, or prematurely close connection on abort.
         if (options.signal) {
-            options.signal.onabort = (): void => {
+            options.signal.onabort = (event): void => {
                 if (connection.done) {
                     return;
                 }
-                this._ws.close();
+
+                // Forward close code and reason to WebSocket
+                let code = RendezvousCloseCode.NORMAL;
+                let reason;
+                if (
+                    event.target instanceof AbortSignal &&
+                    isRendezvousCloseCause(event.target.reason)
+                ) {
+                    const closeInfo = closeCauseToCloseInfo(event.target.reason);
+                    code = closeInfo.code;
+                    reason = closeInfo.reason;
+                }
+
+                this._ws.close(code, reason);
             };
         }
         this._ws.onopen = (): void => {

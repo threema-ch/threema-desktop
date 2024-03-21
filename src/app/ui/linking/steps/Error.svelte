@@ -41,6 +41,17 @@
             );
             break;
 
+          case 'protocol-error':
+            title = t(
+              'dialog--linking-error.label--title-connection-error-protocol',
+              'Protocol Error',
+            );
+            message = t(
+              'dialog--linking-error.prose--message-connection-error-protocol',
+              'Connection to the server was lost before linking was complete. Please try again',
+            );
+            break;
+
           case 'closed':
           case 'complete':
           case 'unknown':
@@ -69,6 +80,17 @@
             message = t(
               'dialog--linking-error.label--message-rendezvous-error-timeout',
               'The linking session has expired due to inactivity. Please start the linking process again.',
+            );
+            break;
+
+          case 'protocol-error':
+            title = t(
+              'dialog--linking-error.label--title-connection-error-protocol',
+              'Protocol Error',
+            );
+            message = t(
+              'dialog--linking-error.prose--message-connection-error-protocol',
+              'Connection to the server was lost before linking was complete. Please try again',
             );
             break;
 

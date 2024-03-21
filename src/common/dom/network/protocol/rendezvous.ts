@@ -11,11 +11,15 @@ import {
     WritableStream,
     type WritableStreamDefaultWriter,
 } from '~/common/dom/streams';
-import {TransferTag} from '~/common/enum';
-import {BaseError, type RendezvousCloseCause, RendezvousCloseError} from '~/common/error';
+import {RendezvousCloseCode, TransferTag} from '~/common/enum';
+import {BaseError, RendezvousCloseError} from '~/common/error';
 import type {Logger} from '~/common/logging';
 import * as protobuf from '~/common/network/protobuf';
 import {UNIT_MESSAGE} from '~/common/network/protobuf';
+import {
+    closeCauseToCloseInfo,
+    type RendezvousCloseCause,
+} from '~/common/network/protocol/rendezvous';
 import type {RendezvousAuthenticationKey} from '~/common/network/types/keys';
 import type {ReadonlyUint8Array, u32} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
@@ -67,7 +71,7 @@ class WebSocketPath implements SinglePath {
             }),
         );
         this.writable = connection.writable;
-        this.close = () => ws.close();
+        this.close = (cause) => ws.close(closeCauseToCloseInfo(cause ?? 'unknown'));
     }
 
     /**
@@ -82,6 +86,7 @@ class WebSocketPath implements SinglePath {
         pid: PathId,
         url: URL,
         abort: AbortRaiser<RendezvousCloseCause>,
+        log: Logger,
     ): Promise<WebSocketPath> {
         const options: WebSocketEventWrapperStreamOptions = {
             signal: abort.attach(new AbortController()),
@@ -94,10 +99,28 @@ class WebSocketPath implements SinglePath {
         const ws = createWebSocketStream(url, options);
         ws.closed
             .then((info) => {
-                // TODO(SE-366): Specify close codes. Currently hard-coded. We will likely only
-                // specify a subset of what the implementation of the rendezvous server currently
-                // sends to keep it simple.
-                abort.raise(info.code === 4003 ? 'timeout' : 'closed');
+                const logMessage = `WebSocket closed with code ${info.code ?? '?'} (${info.reason ?? 'empty reason'})`;
+                if (info.code === RendezvousCloseCode.NORMAL) {
+                    log.info(logMessage);
+                } else {
+                    log.warn(logMessage);
+                }
+
+                let closeCause: RendezvousCloseCause;
+                switch (info.code) {
+                    case RendezvousCloseCode.NORMAL:
+                        closeCause = 'closed';
+                        break;
+                    case RendezvousCloseCode.RENDEZVOUS_PROTOCOL_ERROR:
+                        closeCause = 'protocol-error';
+                        break;
+                    case RendezvousCloseCode.INIT_TIMEOUT_REACHED:
+                        closeCause = 'timeout';
+                        break;
+                    default:
+                        closeCause = 'unknown';
+                }
+                abort.raise(closeCause);
             })
             .catch((error) => {
                 // Ignore, in order to prevent unhandled rejection error. The connection closing event
@@ -418,6 +441,7 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
                 setup.relayedWebSocket.pathId,
                 setup.relayedWebSocket.url,
                 abort,
+                log,
             ),
         ];
 

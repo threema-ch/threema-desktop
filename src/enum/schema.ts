@@ -126,6 +126,33 @@ export enum CloseCode {
 }
 
 /**
+ * WebSocket close code, extended by the Rendezvous Protocol 4xxx custom close
+ * codes.
+ *
+ * @generate name convert
+ */
+export enum RendezvousCloseCode {
+    // Builtin close codes
+
+    /** Normal closure, e.g. when the user is explicitly disconnecting. */
+    NORMAL = 1000,
+
+    // Server <-> Client
+
+    /** Rendezvous protocol error. */
+    RENDEZVOUS_PROTOCOL_ERROR = 4000,
+    /** Init timeout reached, other device did not connect. */
+    INIT_TIMEOUT_REACHED = 4003,
+    /** Other device disconnected without reflectable close code. */
+    OTHER_DEVICE_DISCONNECTED = 4004,
+
+    // Client <-> Client
+
+    /** Upper Layer Protocol error. */
+    ULP_ERROR = 4100,
+}
+
+/**
  * Combined connection state towards the Mediator server and the Chat server.
  *
  * @generate name store

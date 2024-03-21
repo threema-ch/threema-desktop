@@ -7,7 +7,7 @@ import {randomU64} from '~/common/crypto/random';
 import type {DeviceIds, ThreemaWorkCredentials} from '~/common/device';
 import type {RendezvousConnection} from '~/common/dom/network/protocol/rendezvous';
 import {ReceiverType} from '~/common/enum';
-import {DeviceJoinError, type RendezvousCloseCause, RendezvousCloseError} from '~/common/error';
+import {DeviceJoinError, RendezvousCloseError} from '~/common/error';
 import {FileStorageError, type StoredFileHandle} from '~/common/file-storage';
 import type {Logger} from '~/common/logging';
 import type {Repositories} from '~/common/model';
@@ -18,6 +18,7 @@ import {validate} from '~/common/network/protobuf';
 import {join} from '~/common/network/protobuf/js';
 import type {EssentialData} from '~/common/network/protobuf/validate/join';
 import {type BlobId, type BlobIdString, blobIdToString} from '~/common/network/protocol/blob';
+import type {RendezvousCloseCause} from '~/common/network/protocol/rendezvous';
 import {
     type ConversationId,
     ensureCspDeviceId,
