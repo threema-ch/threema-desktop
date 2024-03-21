@@ -76,19 +76,19 @@
     {#if receiver.type === 'contact'}
       {$i18n.t(
         'dialog--empty-conversation.prose--contact-conversation-prompt',
-        "This will delete the {n, plural, =1 {only message} other {# messages}} of this chat with {name} on this device. Your linked devices won't be affected.",
-        {n: conversation.totalMessagesCount, name: truncate(receiver.name, 80, 'end')},
+        'This will delete all messages including all media and documents in this chat with "{name}" on this device (but not on your linked devices).',
+        {name: truncate(receiver.name, 80, 'end')},
       )}
     {:else if receiver.type === 'group'}
       {$i18n.t(
         'dialog--empty-conversation.prose--group-conversation-prompt',
-        'This will delete the {n, plural, =1 {only message} other {# messages}} of this "{name}" group chat on this device. Your linked devices won\'t be affected.',
-        {n: conversation.totalMessagesCount, name: truncate(receiver.name, 80, 'end')},
+        'This will delete all messages including all media and documents in the "{name}" group chat on this device (but not on your linked devices).',
+        {name: truncate(receiver.name, 80, 'end')},
       )}
     {:else if receiver.type === 'distribution-list'}
       {$i18n.t(
         'dialog--empty-conversation.prose--distribution-list-conversation-prompt',
-        'This will delete the {n, plural, =1 {only message} other {# messages}} of this "{name}" distribution list on this device. Your linked devices won\'t be affected.',
+        'This will delete all messages including all media and documents in the "{name}" distribution list on this device (but not on your linked devices).',
         {n: conversation.totalMessagesCount, name: truncate(receiver.name, 80, 'end')},
       )}
     {:else}

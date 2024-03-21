@@ -126,9 +126,9 @@
     "action--distribution-list-conversation-confirm": "Chat leeren",
     "action--group-conversation-confirm": "Gruppenchat leeren",
     "label--title": "Chat leeren",
-    "prose--contact-conversation-prompt": "Dadurch {n, plural, =1 {wird die Nachricht} other {werden alle # Nachrichten}} in diesem Chat mit {name} auf diesem Gerät gelöscht (jedoch nicht auf den verknüpften Geräten).",
-    "prose--distribution-list-conversation-prompt": "Dadurch {n, plural, =1 {wird die Nachricht} other {werden alle # Nachrichten}} in der Verteilerliste «{name}» auf diesem Gerät gelöscht (jedoch nicht auf den verknüpften Geräten).",
-    "prose--group-conversation-prompt": "Dadurch {n, plural, =1 {wird die Nachricht} other {werden alle # Nachrichten}} im Gruppenchat «{name}» auf diesem Gerät gelöscht (jedoch nicht auf den verknüpften Geräten)."
+    "prose--contact-conversation-prompt": "Dadurch werden alle Nachrichten inklusive Medien und Dokumenten in diesem Chat mit \"{name}\" auf diesem Gerät gelöscht (jedoch nicht auf den verknüpften Geräten).",
+    "prose--distribution-list-conversation-prompt": "Dadurch werden alle Nachrichten inklusive Medien und Dokumenten in dieser Verteilerliste \"{name}\" auf diesem Gerät gelöscht (jedoch nicht auf den verknüpften Geräten).",
+    "prose--group-conversation-prompt": "Dadurch werden alle Nachrichten inklusive Medien und Dokumenten in diesem Grouppenchat \"{name}\" auf diesem Gerät gelöscht (jedoch nicht auf den verknüpften Geräten)."
   },
   "dialog--error-connection": {
     "action--client-was-dropped-cancel": "OK",
@@ -350,6 +350,7 @@
     "error--copy-message-selection": "Auswahl konnte nicht in die Zwischenablage kopiert werden",
     "error--copy-undefined-message-content": "Es gibt nichts zu kopieren",
     "error--delete-message": "Nachricht konnte nicht gelöscht werden",
+    "error--delete-status-message": "Statusnachricht konnte nicht gelöscht werden",
     "error--file-decryption-error": "Daten konnten nicht entschlüsselt werden.",
     "error--file-internal-error": "Daten konnten aufgrund eines internen Fehlers nicht geladen werden.",
     "error--file-not-loaded": "Daten konnten nicht geladen werden.",
@@ -493,6 +494,11 @@
     "label--change-password": "App-Passwort ändern",
     "label--title": "Sicherheitseinstellungen",
     "prose--subtitle": "Passwort"
+  },
+  "status": {
+    "prose--group-created-name": "Gruppe \"{new}\" wurde erstellt",
+    "prose--group-member-change": "{numAdded, plural, =0 {} =1 {{added} wurde zu der Gruppe hinzugefügt} other {{added} wurden zu der Gruppe hinzugefügt}}{and, plural, =0 { } other {, und}} {numRemoved, plural, =0 {} =1 {{removed} wurde von der Gruppe entfernt} other {{removed} wurden von der Gruppe entfernt}}",
+    "prose--group-name-change": "Der Gruppenname wurde von \"{old}\" zu \"{new}\" geändert"
   },
   "system": {
     "error--check-internet-and-retry": "Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",

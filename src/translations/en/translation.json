@@ -126,9 +126,9 @@
     "action--distribution-list-conversation-confirm": "Empty Chat",
     "action--group-conversation-confirm": "Empty Group Chat",
     "label--title": "Empty Chat",
-    "prose--contact-conversation-prompt": "This will delete {n, plural, =1 {the only message} other {all # messages}} in this chat with {name} on this device (but not on your linked devices).",
-    "prose--distribution-list-conversation-prompt": "This will delete {n, plural, =1 {the only message} other {all # messages}} in the “{name}” distribution list on this device (but not on your linked devices).",
-    "prose--group-conversation-prompt": "This will delete the {n, plural, =1 {the only message} other {all # messages}} in the “{name}” group chat on this device (but not on your linked devices)."
+    "prose--contact-conversation-prompt": "This will delete all messages including all media and documents in this chat with \"{name}\" on this device (but not on your linked devices).",
+    "prose--distribution-list-conversation-prompt": "This will delete all messages including all media and documents in the \"{name}\" distribution list on this device (but not on your linked devices).",
+    "prose--group-conversation-prompt": "This will delete all messages including all media and documents in the \"{name}\" group chat on this device (but not on your linked devices)."
   },
   "dialog--error-connection": {
     "action--client-was-dropped-cancel": "OK",
@@ -350,6 +350,7 @@
     "error--copy-message-selection": "Could not copy selection to clipboard",
     "error--copy-undefined-message-content": "There’s nothing to copy",
     "error--delete-message": "Could not delete message",
+    "error--delete-status-message": "Could not delete status message",
     "error--file-decryption-error": "Data could not be decrypted.",
     "error--file-internal-error": "Data could not be loaded due to an internal error.",
     "error--file-not-loaded": "Data could not be loaded.",
@@ -493,6 +494,11 @@
     "label--change-password": "Change Password",
     "label--title": "Security Settings",
     "prose--subtitle": "Password"
+  },
+  "status": {
+    "prose--group-created-name": "Group created with name \"{new}\"",
+    "prose--group-member-change": "{numAdded, plural, =0 {} =1 {{added} was added to the group} other {{added} were added to the group}}{and, plural, =0 { } other {, and}} {numRemoved, plural, =0 {} =1 {{removed} was removed from the group} other {{removed} were removed from the group}}",
+    "prose--group-name-change": "The group name was changed from \"{old}\" to \"{new}\""
   },
   "system": {
     "error--check-internet-and-retry": "Please check your Internet connection and try again.",
