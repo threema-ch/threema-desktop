@@ -13,6 +13,7 @@
     DistributionListView,
     GroupView,
   } from '~/common/model';
+  import type {AnyStatusMessage} from '~/common/model/types/status';
   import {assertUnreachable, unreachable, unwrap} from '~/common/utils/assert';
 
   export let services: AppServices;
@@ -48,7 +49,7 @@
         | {type: 'contact'; view: ContactView}
         | {type: 'group'; view: GroupView}
         | {type: 'distributionList'; view: DistributionListView},
-      messages: AnyMessage<'view'>[],
+      messages: (AnyMessage<'view'> | AnyStatusMessage)[],
     ][];
   }
   /**
@@ -86,7 +87,7 @@
           unreachable(receiverStore);
       }
       const messageMap = (await conversation.get().controller.getAllMessages()).get();
-      const messages: AnyMessage<'view'>[] = [];
+      const messages: (AnyMessage<'view'> | AnyStatusMessage)[] = [];
       for (const message of messageMap.values()) {
         messages.push(message.get().view);
       }
