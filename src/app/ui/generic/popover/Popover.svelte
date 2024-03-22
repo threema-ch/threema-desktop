@@ -159,13 +159,18 @@
       return;
     }
 
-    // Ignore clicks inside wrapper.
+    // Ignore clicks inside trigger.
     if (
-      event.target === trigger ||
-      event.target === popover ||
-      trigger?.contains(event.target as Node) === true ||
-      popover.contains(event.target as Node)
+      // If `triggerBehavior` is not `"none"`, clicks on it should not count as clicks outside, or
+      // it would be closed immediately.
+      triggerBehavior !== 'none' &&
+      (event.target === trigger || trigger?.contains(event.target as Node) === true)
     ) {
+      return;
+    }
+
+    // Ignore clicks inside wrapper.
+    if (event.target === popover || popover.contains(event.target as Node)) {
       return;
     }
 

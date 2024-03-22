@@ -1,46 +1,38 @@
 import type {AppServices} from '~/app/types';
-import type {MessageProps} from '~/app/ui/components/molecules/message/props';
-import type {SanitizeAndParseTextToHtmlOptions} from '~/app/ui/utils/text';
-import type {DbContactUid} from '~/common/db';
-import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
+import type {ContextMenuOption} from '~/app/ui/components/hocs/context-menu-provider/types';
+import type {ConversationPreviewProps} from '~/app/ui/components/partials/conversation-preview-list/internal/conversation-preview/props';
 
 /**
  * Props accepted by the `ConversationPreviewList` component.
  */
-export interface ConversationPreviewListProps {
+export interface ConversationPreviewListProps<THandlerProps = undefined> {
+    readonly contextMenuItems?:
+        | ContextMenuItemWithHandlerProps<THandlerProps>[]
+        | ((
+              item: ConversationPreviewListItem<THandlerProps>,
+          ) => ContextMenuItemWithHandlerProps<THandlerProps>[]);
     /**
      * Optional substring(s) to highlight in conversation preview text fields.
      */
     readonly highlights?: string | string[];
-    readonly items: ConversationPreviewListItemProps[];
+    readonly items: ConversationPreviewListItem<THandlerProps>[];
     readonly services: AppServices;
 }
 
-export interface ConversationPreviewListItemProps {
-    readonly isArchived: boolean;
-    readonly isPinned: boolean;
-    readonly isPrivate: boolean;
-    readonly lastMessage?: {
-        readonly file?: Pick<NonNullable<MessageProps['file']>, 'type'>;
-        readonly reactions: MessageProps['reactions'];
-        readonly sender?: NonNullable<MessageProps['sender']> &
-            (
-                | {
-                      readonly type: 'self';
-                  }
-                | {
-                      readonly type: 'contact';
-                      readonly uid: DbContactUid;
-                  }
-            );
-        readonly status: MessageProps['status'];
-        readonly text?: TextContent;
-    };
-    readonly receiver: AnyReceiverData;
+export interface ConversationPreviewListItem<THandlerProps>
+    extends Omit<ConversationPreviewProps, 'active' | 'contextMenuOptions' | 'services'> {
+    /**
+     * Additional data belonging to a list item, which will be passed to to each context menu item
+     * handler callback.
+     */
+    readonly handlerProps: THandlerProps;
 }
 
-interface TextContent {
-    readonly mentions?: SanitizeAndParseTextToHtmlOptions['mentions'];
-    /** Raw, unparsed, text. */
-    readonly raw: string;
+export type ContextMenuItemWithHandlerProps<THandlerProps> =
+    | ContextMenuOptionWithHandlerProps<THandlerProps>
+    | 'divider';
+
+interface ContextMenuOptionWithHandlerProps<THandlerProps>
+    extends Omit<ContextMenuOption, 'handler'> {
+    readonly handler: (props: THandlerProps) => void;
 }

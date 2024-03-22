@@ -12,7 +12,7 @@ export type AnyContentItemOptions =
     | CharmsContentItemOptions
     | ReceiverNameContentItemOptions
     | StatusContentItemOptions
-    | TagsContentItemProps
+    | TagsContentItemOptions
     | TextContentItemOptions
     | TimestampContentItemOptions
     | VerificationContentItemOptions;
@@ -34,7 +34,7 @@ export interface StatusContentItemOptions extends IndicatorProps {
     readonly type: 'status-icon';
 }
 
-export interface TagsContentItemProps extends TagsProps {
+export interface TagsContentItemOptions extends TagsProps {
     readonly type: 'tags';
 }
 

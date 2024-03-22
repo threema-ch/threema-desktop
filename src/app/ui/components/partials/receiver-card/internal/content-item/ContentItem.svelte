@@ -18,7 +18,7 @@
   export let options: $$Props['options'];
 </script>
 
-<span class="item">
+<span class="item" data-type={options.type}>
   {#if options.type === 'charms'}
     <Charms
       isBlocked={options.isBlocked}
@@ -91,6 +91,14 @@
     max-width: 100%;
     text-overflow: ellipsis;
     overflow: hidden;
+
+    &[data-type='charms'],
+    &[data-type='status-icon'],
+    &[data-type='tags'],
+    &[data-type='relative-timestamp'],
+    &[data-type='verification-dots'] {
+      flex: 0 0 auto;
+    }
 
     .nowrap {
       overflow-wrap: normal;

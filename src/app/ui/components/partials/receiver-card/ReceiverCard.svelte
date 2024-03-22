@@ -6,10 +6,10 @@
 <script lang="ts">
   import {globals} from '~/app/globals';
   import Avatar from '~/app/ui/components/atoms/avatar/Avatar.svelte';
+  import type {AvatarCharm} from '~/app/ui/components/atoms/avatar/props';
   import ContentItem from '~/app/ui/components/partials/receiver-card/internal/content-item/ContentItem.svelte';
   import type {ReceiverCardProps} from '~/app/ui/components/partials/receiver-card/props';
   import {i18n} from '~/app/ui/i18n';
-  import ThreemaIcon from '~/app/ui/svelte-components/blocks/Icon/ThreemaIcon.svelte';
   import type {DbReceiverLookup} from '~/common/db';
   import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
@@ -25,6 +25,7 @@
   export let receiver: $$Props['receiver'];
   export let services: $$Props['services'];
   export let size: NonNullable<$$Props['size']> = 'md';
+  export let unreadMessageCount: NonNullable<$$Props['unreadMessageCount']> = 0;
 
   let profilePictureStore: IQueryableStore<Blob | undefined> = new ReadableStore(undefined);
 
@@ -57,6 +58,87 @@
     }
   }
 
+  function getAvatarCharms(currentReceiver: typeof receiver): AvatarCharm[] | undefined {
+    let receiverCharm: AvatarCharm[];
+    switch (currentReceiver.badge) {
+      case 'contact-consumer':
+        receiverCharm = [
+          {
+            content: {
+              type: 'icon',
+              description: $i18n.t(
+                'contacts.hint--badge-consumer',
+                "This contact uses Threema's private version.",
+              ),
+              icon: 'threema_consumer_contact',
+            },
+            style: {
+              type: 'cutout',
+              backgroundColor: 'transparent',
+              contentColor: 'var(--cc-profile-picture-overlay-badge-icon-consumer-color)',
+              gap: 2,
+            },
+          },
+        ];
+        break;
+
+      case 'contact-work':
+        receiverCharm = [
+          {
+            content: {
+              type: 'icon',
+              description: $i18n.t(
+                'contacts.hint--badge-work',
+                'This contact uses the business app "Threema Work."',
+              ),
+              icon: 'threema_work_contact',
+            },
+            position: 135,
+            style: {
+              type: 'cutout',
+              backgroundColor: 'transparent',
+              contentColor: 'var(--cc-profile-picture-overlay-badge-icon-work-color)',
+              gap: 2,
+            },
+          },
+        ];
+        break;
+
+      case undefined:
+        // No charm, as the contact doesn't have a badge.
+        receiverCharm = [];
+        break;
+
+      default:
+        return unreachable(currentReceiver.badge);
+    }
+
+    const unreadMessageCountCharm: AvatarCharm[] =
+      unreadMessageCount <= 0
+        ? []
+        : [
+            {
+              content: {
+                type: 'text',
+                text: `${unreadMessageCount > 9 ? '9+' : unreadMessageCount}`,
+              },
+              offset: {
+                x: -2,
+                y: -2,
+              },
+              position: 315,
+              style: {
+                type: 'cutout',
+                backgroundColor: 'var(--cc-profile-picture-overlay-unread-background-color)',
+                contentColor: 'var(--cc-profile-picture-overlay-unread-text-color)',
+                gap: 2,
+              },
+            },
+          ];
+
+    return [...receiverCharm, ...unreadMessageCountCharm];
+  }
+
   $: ({topLeft = [], topRight = [], bottomLeft = [], bottomRight = []} = content);
   $: ({isClickable = false} = options);
 
@@ -67,9 +149,7 @@
   <span class="avatar">
     <Avatar
       byteStore={profilePictureStore}
-      charm={{
-        positionDegrees: 135,
-      }}
+      charms={getAvatarCharms(receiver)}
       color={receiver.color}
       description={$i18n.t('contacts.hint--profile-picture', {
         name: receiver.name,
@@ -77,35 +157,7 @@
       disabled={!isClickable}
       initials={receiver.initials}
       size={getAvatarSizePxForSize(size)}
-    >
-      <div slot="charm">
-        {#if receiver.badge === 'contact-work'}
-          <div
-            class="work"
-            title={$i18n.t(
-              'contacts.hint--badge-work',
-              'This contact uses the business app "Threema Work."',
-            )}
-          >
-            <ThreemaIcon theme="Filled">threema_work_contact</ThreemaIcon>
-          </div>
-        {:else if receiver.badge === 'contact-consumer'}
-          <div
-            class="consumer"
-            title={$i18n.t(
-              'contacts.hint--badge-consumer',
-              "This contact uses Threema's private version.",
-            )}
-          >
-            <ThreemaIcon theme="Filled">threema_consumer_contact</ThreemaIcon>
-          </div>
-        {:else if receiver.badge === undefined}
-          <!-- Do nothing, as the contact doesn't have a badge. -->
-        {:else}
-          {unreachable(receiver.badge)}
-        {/if}
-      </div>
-    </Avatar>
+    />
   </span>
 
   <div class="content">

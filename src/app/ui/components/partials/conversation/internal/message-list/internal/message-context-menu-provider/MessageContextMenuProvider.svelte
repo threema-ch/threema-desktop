@@ -246,6 +246,7 @@
     bind:popover
     {anchorPoints}
     beforeOpen={handleBeforeOpen}
+    closeOnClickOutside={true}
     container={boundary}
     items={menuItems}
     offset={{left: 0, top: 4}}

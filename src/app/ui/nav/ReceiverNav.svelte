@@ -4,9 +4,9 @@
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
+  import SearchBar from '~/app/ui/components/molecules/search-bar/SearchBar.svelte';
   import ContactNavBar from '~/app/ui/components/partials/contact-nav-bar/ContactNavBar.svelte';
   import IconText from '~/app/ui/generic/menu/item/IconText.svelte';
-  import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {i18n} from '~/app/ui/i18n';
   import type {ContactTab} from '~/app/ui/nav';
   import {checkContactCreationAllowed} from '~/app/ui/nav/contact-add';
@@ -15,6 +15,7 @@
   import GroupList from '~/app/ui/nav/receiver/GroupList.svelte';
   import ReceiverTabSwitcher from '~/app/ui/nav/receiver/ReceiverTabSwitcher.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import {WorkVerificationLevel} from '~/common/enum';
   import {unreachable} from '~/common/utils/assert';
 
@@ -23,7 +24,7 @@
   export let services: AppServices;
   const {router, backend} = services;
 
-  let searchInput: SearchInput | null | undefined;
+  let searchBar: SvelteNullableBinding<SearchBar> | undefined;
   let activeTab: ContactTab = 'private-contacts';
 
   let searchInputPlaceholder: string;
@@ -59,8 +60,7 @@
         unreachable(activeTab);
     }
 
-    searchInput?.focus();
-    searchInput?.select();
+    searchBar?.focusAndSelect();
   }
 
   function navigateBack(): void {
@@ -90,7 +90,7 @@
   }
 
   function handleHotkeyControlF(): void {
-    searchInput?.select();
+    searchBar?.focusAndSelect();
   }
 
   onMount(() => {
@@ -111,10 +111,10 @@
       <ReceiverTabSwitcher bind:activeTab />
     </div>
     <div class="search">
-      <SearchInput
-        bind:this={searchInput}
+      <SearchBar
+        bind:this={searchBar}
+        bind:term={$contactListFilter}
         placeholder={searchInputPlaceholder}
-        bind:value={$contactListFilter}
       />
     </div>
 

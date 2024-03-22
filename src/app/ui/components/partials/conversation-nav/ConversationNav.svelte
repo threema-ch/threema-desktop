@@ -1,0 +1,315 @@
+<!--
+  @component Renders the conversation navigation sidebar.
+-->
+<script lang="ts">
+  import {onMount, tick} from 'svelte';
+
+  import {globals} from '~/app/globals';
+  import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
+  import SearchBar from '~/app/ui/components/molecules/search-bar/SearchBar.svelte';
+  import {
+    conversationListEvent,
+    getContextMenuItems,
+    goToSettings,
+  } from '~/app/ui/components/partials/conversation-nav/helpers';
+  import TopBar from '~/app/ui/components/partials/conversation-nav/internal/TopBar.svelte';
+  import type {ConversationNavProps} from '~/app/ui/components/partials/conversation-nav/props';
+  import {conversationListItemSetStoreToConversationPreviewListPropsStore} from '~/app/ui/components/partials/conversation-nav/transformers';
+  import type {
+    ModalState,
+    ContextMenuItemHandlerProps,
+    RemoteConversationListViewModelStoreValue,
+    RemoteProfileViewModelStoreValue,
+  } from '~/app/ui/components/partials/conversation-nav/types';
+  import ConversationPreviewList from '~/app/ui/components/partials/conversation-preview-list/ConversationPreviewList.svelte';
+  import type {ConversationPreviewListItem} from '~/app/ui/components/partials/conversation-preview-list/props';
+  import ClearConversationModal from '~/app/ui/components/partials/modals/clear-conversation-modal/ClearConversationModal.svelte';
+  import DeleteConversationModal from '~/app/ui/components/partials/modals/delete-conversation-modal/DeleteConversationModal.svelte';
+  import SearchResultList from '~/app/ui/components/partials/search-result-list/SearchResultList.svelte';
+  import {i18n} from '~/app/ui/i18n';
+  import {toast} from '~/app/ui/snackbar';
+  import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
+  import {display} from '~/common/dom/ui/state';
+  import {extractErrorMessage} from '~/common/error';
+  import {ensureError, unreachable} from '~/common/utils/assert';
+  import {ReadableStore, type IQueryableStore} from '~/common/utils/store';
+
+  const {uiLogging, hotkeyManager} = globals.unwrap();
+  const log = uiLogging.logger('ui.component.conversation-nav');
+
+  type $$Props = ConversationNavProps;
+
+  export let services: $$Props['services'];
+
+  const {backend, router} = services;
+
+  // ViewModelBundle of the current conversation.
+  let viewModelStore: IQueryableStore<RemoteConversationListViewModelStoreValue | undefined> =
+    new ReadableStore(undefined);
+
+  let profileViewModelStore: IQueryableStore<RemoteProfileViewModelStoreValue | undefined> =
+    new ReadableStore(undefined);
+
+  let modalState: ModalState = {type: 'none'};
+
+  let searchBarComponent: SvelteNullableBinding<SearchBar> = null;
+  let searchTerm: string | undefined = undefined;
+
+  let conversationPreviewListComponent: SvelteNullableBinding<
+    ConversationPreviewList<ContextMenuItemHandlerProps>
+  > = null;
+  let searchResultListComponent: SvelteNullableBinding<SearchResultList> = null;
+
+  /**
+   * Scroll to the top of the conversation list.
+   */
+  export function scrollToTop(): void {
+    conversationPreviewListComponent?.scrollToTop();
+  }
+
+  function handleHotkeyControlF(): void {
+    searchBarComponent?.focusAndSelect();
+  }
+
+  function handleClickContactListButton(): void {
+    router.replaceNav(ROUTE_DEFINITIONS.nav.contactList.withoutParams());
+  }
+
+  function handleClickProfilePicture(): void {
+    goToSettings(router, $display);
+  }
+
+  function handleClickSettingsButton(): void {
+    goToSettings(router, $display);
+  }
+
+  async function handleClearSearchBar(): Promise<void> {
+    /*
+     * Wait for any pending state changes to be applied before scrolling to the active conversation,
+     * because it might not be rendered before that (e.g., if a filter has been applied).
+     */
+    await tick();
+    await conversationPreviewListComponent?.scrollToActiveConversation();
+  }
+
+  function handleRequestRefreshSearchResults(): void {
+    searchResultListComponent?.refresh();
+  }
+
+  function handleCloseModal(): void {
+    modalState = {
+      type: 'none',
+    };
+  }
+
+  function handleOpenClearModal(
+    item: ConversationPreviewListItem<ContextMenuItemHandlerProps>,
+    props: ContextMenuItemHandlerProps,
+  ): void {
+    modalState = {
+      type: 'clear-conversation',
+      props: {
+        conversation: {
+          clear: async () => {
+            await props.viewModelBundle.viewModelController.clear().catch((error) => {
+              log.error(
+                `Clearing conversation failed: ${extractErrorMessage(ensureError(error), 'short')}`,
+              );
+            });
+          },
+          totalMessagesCount: item.totalMessageCount,
+        },
+        receiver: item.receiver,
+      },
+    };
+  }
+
+  function handleOpenDeleteModal(
+    item: ConversationPreviewListItem<ContextMenuItemHandlerProps>,
+    props: ContextMenuItemHandlerProps,
+  ): void {
+    modalState = {
+      type: 'delete-conversation',
+      props: {
+        conversation: {
+          delete: async () => {
+            await props.viewModelBundle.viewModelController.delete().catch((error) => {
+              log.error(
+                `Deleting conversation failed: ${extractErrorMessage(ensureError(error), 'short')}`,
+              );
+            });
+
+            // In case the conversation is open, we need to route back to welcome.
+            if (
+              $router.main.id === 'conversation' &&
+              $router.main.params.receiverLookup.type === item.receiver.lookup.type &&
+              $router.main.params.receiverLookup.uid === item.receiver.lookup.uid
+            ) {
+              router.goToWelcome();
+            }
+          },
+        },
+        receiver: item.receiver,
+      },
+    };
+  }
+
+  // Current search results.
+  $: conversationSearchResults = $viewModelStore?.listItemSetStore;
+  $: conversationPreviewListProps =
+    conversationSearchResults === undefined
+      ? undefined
+      : conversationListItemSetStoreToConversationPreviewListPropsStore(
+          conversationSearchResults,
+          $i18n,
+        );
+
+  onMount(async () => {
+    await backend.viewModel
+      .conversationList()
+      .then((viewModelBundle) => {
+        // Replace `viewModelBundle`.
+        viewModelStore = viewModelBundle.viewModelStore;
+      })
+      .catch((error) => {
+        log.error(`Failed to load ConversationListViewModelBundle: ${ensureError(error)}`);
+
+        toast.addSimpleFailure(
+          i18n.get().t('messaging.error--conversation-list-load', 'Chats could not be loaded'),
+        );
+      });
+
+    await backend.viewModel
+      .profile()
+      .then((store) => {
+        // Replace `profileViewModelStore`.
+        profileViewModelStore = store;
+      })
+      .catch((error) => {
+        log.error(`Failed to load ProfileViewModel: ${ensureError(error)}`);
+      });
+
+    await conversationPreviewListComponent?.scrollToActiveConversation();
+  });
+
+  onMount(() => {
+    hotkeyManager.registerHotkey({control: true, code: 'KeyF'}, handleHotkeyControlF);
+
+    return () => {
+      hotkeyManager.unregisterHotkey(handleHotkeyControlF);
+    };
+  });
+
+  onMount(() => {
+    // Process conversation nav events.
+    conversationListEvent.attach((eventType) => {
+      switch (eventType.action) {
+        case 'scroll-to-top':
+          scrollToTop();
+          break;
+
+        default:
+          unreachable(eventType.action);
+      }
+    });
+
+    return () => conversationListEvent.detach();
+  });
+</script>
+
+<div class="container">
+  <div class="top-bar">
+    <!-- eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -->
+    {#if $profileViewModelStore !== undefined}
+      <TopBar
+        profilePicture={$profileViewModelStore.profilePicture}
+        initials={$profileViewModelStore.initials}
+        on:clickcontactlistbutton={handleClickContactListButton}
+        on:clickprofilepicture={handleClickProfilePicture}
+        on:clicksettingsbutton={handleClickSettingsButton}
+      />
+    {/if}
+  </div>
+
+  <div class="search">
+    <SearchBar
+      bind:this={searchBarComponent}
+      bind:term={searchTerm}
+      onRequestRefresh={handleRequestRefreshSearchResults}
+      placeholder={$i18n.t('search.label--search-input-placeholder', 'Search...')}
+      on:clear={handleClearSearchBar}
+    />
+  </div>
+
+  <div class="list">
+    {#if $conversationPreviewListProps !== undefined && $conversationPreviewListProps.items.length > 0}
+      {#if searchTerm === undefined || searchTerm === ''}
+        <!-- Suppress `any` type warnings, as the types are fine, but not recognized by the linter
+        in Svelte. -->
+        <!-- eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call -->
+        <ConversationPreviewList
+          bind:this={conversationPreviewListComponent}
+          contextMenuItems={(item) =>
+            getContextMenuItems(item, $i18n, log, handleOpenClearModal, handleOpenDeleteModal)}
+          {...$conversationPreviewListProps}
+          {services}
+        />
+        <!-- eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call -->
+      {:else}
+        <SearchResultList bind:this={searchResultListComponent} {searchTerm} {services} />
+      {/if}
+    {:else}
+      <!-- No chats. -->
+    {/if}
+  </div>
+</div>
+
+{#if modalState.type === 'none'}
+  <!-- No modal is displayed in this state. -->
+{:else if modalState.type === 'clear-conversation'}
+  <ClearConversationModal {...modalState.props} on:close={handleCloseModal} />
+{:else if modalState.type === 'delete-conversation'}
+  <DeleteConversationModal {...modalState.props} on:close={handleCloseModal} />
+{:else}
+  {unreachable(modalState)}
+{/if}
+
+<style lang="scss">
+  @use 'component' as *;
+
+  .container {
+    display: grid;
+    overflow: hidden;
+    background-color: var(--t-nav-background-color);
+    grid-template:
+      'top-bar' rem(64px)
+      'search' rem(52px)
+      'list' 1fr
+      / 100%;
+
+    .top-bar {
+      grid-area: top-bar;
+
+      padding: rem(12px) rem(8px) rem(16px) rem(16px);
+    }
+
+    .search {
+      grid-area: search;
+
+      padding: 0 rem(16px) rem(12px);
+    }
+
+    .list {
+      grid-area: list;
+
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: start;
+      min-width: 0;
+      max-width: 100%;
+      min-height: 0;
+      max-height: 100%;
+    }
+  }
+</style>

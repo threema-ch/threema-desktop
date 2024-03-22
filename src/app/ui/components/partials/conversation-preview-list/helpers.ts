@@ -1,5 +1,5 @@
 import type {Status} from '~/app/ui/components/molecules/message/internal/indicator/props';
-import type {ConversationPreviewListItemProps} from '~/app/ui/components/partials/conversation-preview-list/props';
+import type {ConversationPreviewProps} from '~/app/ui/components/partials/conversation-preview-list/internal/conversation-preview/props';
 import type {AnyContentItemOptions} from '~/app/ui/components/partials/receiver-card/internal/content-item/types';
 import type {I18nType} from '~/app/ui/i18n-types';
 import {type SanitizedHtml, sanitizeAndParseTextToHtml} from '~/app/ui/utils/text';
@@ -7,11 +7,37 @@ import {unreachable} from '~/common/utils/assert';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
 export function getReceiverCardBottomLeftItemOptions(
+    draft: string | undefined,
     i18n: I18nType,
     isArchived: boolean,
-    lastMessage: ConversationPreviewListItemProps['lastMessage'],
+    isPrivate: boolean,
+    lastMessage: ConversationPreviewProps['lastMessage'],
     receiver: AnyReceiverData,
 ): AnyContentItemOptions[] | undefined {
+    // Hide last message text if the conversation is private.
+    if (isPrivate) {
+        return [
+            {
+                type: 'text',
+                text: {
+                    raw: i18n.t('messaging.label--protected-conversation', 'Private'),
+                },
+            },
+        ];
+    }
+
+    // Prefer draft.
+    if (draft !== undefined) {
+        return [
+            {
+                type: 'text',
+                text: {
+                    html: `<span class="draft">${i18n.t('messaging.label--prefix-draft', 'Draft:')}</span> ${draft}` as SanitizedHtml,
+                },
+            },
+        ];
+    }
+
     const lastMessageItem =
         lastMessage === undefined
             ? []
@@ -78,18 +104,17 @@ function getLastMessagePreviewText(
     i18n: I18nType,
     receiver: Pick<AnyReceiverData, 'type'>,
     lastMessage: Pick<
-        NonNullable<ConversationPreviewListItemProps['lastMessage']>,
+        NonNullable<ConversationPreviewProps['lastMessage']>,
         'file' | 'sender' | 'text'
     >,
 ): SanitizedHtml {
     let text: SanitizedHtml | undefined = undefined;
     if (lastMessage.text !== undefined) {
         text = sanitizeAndParseTextToHtml(lastMessage.text.raw, i18n.t, {
-            mentions: undefined,
+            mentions: lastMessage.text.mentions,
             shouldLinkMentions: false,
             shouldParseLinks: false,
             shouldParseMarkup: true,
-            truncate: 60,
         });
     } else if (lastMessage.file !== undefined) {
         switch (lastMessage.file.type) {

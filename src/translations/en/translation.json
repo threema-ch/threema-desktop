@@ -343,7 +343,6 @@
   "messaging": {
     "action--conversation-option-archive": "Archive",
     "action--conversation-option-delete": "Delete",
-    "action--conversation-option-more": "More",
     "action--conversation-option-pin": "Pin",
     "action--conversation-option-unarchive": "Unarchive",
     "action--conversation-option-unpin": "Unpin",
@@ -373,6 +372,7 @@
     "error--add-files-partially-inaccessible": "Some files couldn’t be accessed",
     "error--contact-blocked": "You cannot send a message to this contact because it is blocked.",
     "error--contact-invalid": "You cannot send a message to this contact because it is invalid.",
+    "error--conversation-list-load": "Chats could not be loaded",
     "error--conversation-not-found": "Conversation not found",
     "error--copy-message-content": "Could not copy message to clipboard",
     "error--copy-message-image": "Could not copy image to clipboard",

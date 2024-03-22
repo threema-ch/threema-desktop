@@ -7,6 +7,9 @@ import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
  * Props accepted by the `ContextMenuProvider` component.
  */
 export interface ContextMenuProviderProps extends PopoverProps {
-    readonly items: Readonly<ContextMenuItem[]>;
+    /**
+     * Options to show in the context menu. If empty, no context menu will be rendered.
+     */
+    readonly items: Readonly<ContextMenuItem[]> | undefined;
     readonly popover: SvelteNullableBinding<Popover> | undefined;
 }

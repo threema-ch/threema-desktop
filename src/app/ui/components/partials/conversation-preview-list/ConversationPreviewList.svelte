@@ -1,23 +1,22 @@
 <!--
-  @component
-  Renders a list of preview cards for the given conversations.
+  @component Renders a list of preview cards for the given conversations.
 -->
-<script lang="ts">
-  import {getFragmentForRoute} from '~/app/routing/router';
-  import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
+<script lang="ts" generics="THandlerProps = never">
   import type {ConversationRouteParams} from '~/app/ui/components/partials/conversation/types';
-  import {
-    getReceiverCardBottomLeftItemOptions,
-    getMessageDateByStatus,
-  } from '~/app/ui/components/partials/conversation-preview-list/helpers';
+  import ConversationPreview from '~/app/ui/components/partials/conversation-preview-list/internal/conversation-preview/ConversationPreview.svelte';
   import type {ConversationPreviewListProps} from '~/app/ui/components/partials/conversation-preview-list/props';
-  import ReceiverCard from '~/app/ui/components/partials/receiver-card/ReceiverCard.svelte';
-  import {i18n} from '~/app/ui/i18n';
-  import {reactive} from '~/app/ui/utils/svelte';
+  import {transformContextMenuItemsToContextMenuOptions} from '~/app/ui/components/partials/conversation-preview-list/transformers';
+  import {scrollIntoViewIfNeededAsync} from '~/app/ui/utils/scroll';
+  import {reactive, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import type {DbReceiverLookup} from '~/common/db';
 
-  type $$Props = ConversationPreviewListProps;
+  // Generic parameters are not yet recognized by the linter.
+  // See https://github.com/sveltejs/eslint-plugin-svelte/issues/521
+  // and https://github.com/sveltejs/svelte-eslint-parser/issues/306
+  // eslint-disable-next-line no-undef
+  type $$Props = ConversationPreviewListProps<THandlerProps>;
 
+  export let contextMenuItems: $$Props['contextMenuItems'] = undefined;
   export let highlights: $$Props['highlights'] = undefined;
   export let items: $$Props['items'] = [];
   export let services: $$Props['services'];
@@ -25,6 +24,47 @@
   const {router} = services;
 
   let routeParams: ConversationRouteParams | undefined = undefined;
+
+  let containerElement: SvelteNullableBinding<HTMLElement> = null;
+
+  /**
+   * Scroll to the first item in the list.
+   */
+  export function scrollToTop(): void {
+    containerElement?.scrollTo({
+      behavior: 'instant',
+      top: 0,
+    });
+  }
+
+  /**
+   * Scroll list to bring the conversation of the given receiver into view.
+   */
+  export async function scrollToConversation(lookup: DbReceiverLookup): Promise<void> {
+    await scrollIntoViewIfNeededAsync({
+      container: containerElement,
+      element: containerElement?.querySelector(
+        `li[data-receiver="${`${lookup.type}.${lookup.uid}`}"]`,
+      ),
+      options: {
+        behavior: 'instant',
+        block: 'start',
+      },
+      timeoutMs: 100,
+    });
+  }
+
+  /**
+   * Scroll list to bring the current active conversation into view.
+   */
+  export async function scrollToActiveConversation(): Promise<void> {
+    const lookup = routeParams?.receiverLookup;
+    if (lookup === undefined) {
+      return;
+    }
+
+    await scrollToConversation(lookup);
+  }
 
   function handleChangeRouterState(): void {
     const routerState = router.get();
@@ -37,7 +77,9 @@
     }
   }
 
-  function handleClickItem(lookup: DbReceiverLookup, active?: boolean): void {
+  function handleClickItem(event: MouseEvent, lookup: DbReceiverLookup, active?: boolean): void {
+    event.preventDefault();
+
     if (active === true) {
       // Close conversation if it was already open.
       router.goToWelcome();
@@ -46,84 +88,35 @@
     }
   }
 
-  function getItemUrl(lookup: DbReceiverLookup): string {
-    const route = ROUTE_DEFINITIONS.main.conversation.withTypedParams({
-      receiverLookup: lookup,
-    });
-
-    return `#${getFragmentForRoute(route) ?? ''}`;
-  }
-
   $: reactive(handleChangeRouterState, [$router]);
 </script>
 
-<ul class="container">
+<ul bind:this={containerElement} class="container">
   {#each items as item (`${item.receiver.lookup.type}.${item.receiver.lookup.uid}`)}
-    {@const {lastMessage, receiver} = item}
+    {@const {lastMessage, receiver, totalMessageCount, unreadMessageCount} = item}
     {@const active =
       routeParams?.receiverLookup.type === receiver.lookup.type &&
       routeParams.receiverLookup.uid === receiver.lookup.uid}
 
-    <li>
-      <a
-        href={getItemUrl(receiver.lookup)}
-        class="item"
-        class:active
-        on:click|preventDefault={() => handleClickItem(receiver.lookup, active)}
-      >
-        <ReceiverCard
-          content={{
-            topLeft: [
-              {
-                type: 'receiver-name',
-                receiver: item.receiver,
-                highlights,
-              },
-            ],
-            topRight: [
-              {
-                type: 'charms',
-                isBlocked: item.receiver.type === 'contact' && item.receiver.isBlocked,
-                isPinned: item.isPinned,
-                isPrivate: item.isPrivate,
-                notificationPolicy: item.receiver.notificationPolicy,
-              },
-            ],
-            bottomLeft: getReceiverCardBottomLeftItemOptions(
-              $i18n,
-              item.isArchived,
-              lastMessage,
-              item.receiver,
-            ),
-            bottomRight:
-              lastMessage === undefined
-                ? undefined
-                : [
-                    {
-                      type: 'relative-timestamp',
-                      date: getMessageDateByStatus(lastMessage.status),
-                      format: 'auto',
-                      services,
-                    },
-                    {
-                      type: 'status-icon',
-                      conversation: {
-                        receiver,
-                      },
-                      reactions: lastMessage.reactions,
-                      status: lastMessage.status,
-                    },
-                  ],
+    <ConversationPreview
+      {active}
+      contextMenuOptions={contextMenuItems === undefined
+        ? undefined
+        : {
+            container: containerElement,
+            ...transformContextMenuItemsToContextMenuOptions(item, contextMenuItems),
           }}
-          options={{
-            isClickable: true,
-          }}
-          {receiver}
-          {services}
-          size="md"
-        />
-      </a>
-    </li>
+      {highlights}
+      isArchived={item.isArchived}
+      isPinned={item.isPinned}
+      isPrivate={item.isPrivate}
+      {lastMessage}
+      {receiver}
+      {services}
+      {totalMessageCount}
+      {unreadMessageCount}
+      on:click={(event) => handleClickItem(event.detail, receiver.lookup, active)}
+    />
   {/each}
 </ul>
 
@@ -135,42 +128,12 @@
     flex-direction: column;
     align-items: stretch;
     justify-content: start;
+    overflow-x: hidden;
+    overflow-y: scroll;
 
     list-style-type: none;
     margin: 0;
     padding: 0;
     max-width: 100%;
-
-    li {
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      justify-content: start;
-
-      .item {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        justify-content: start;
-
-        padding: rem(10px) rem(16px);
-        text-decoration: inherit;
-        color: inherit;
-
-        &:hover {
-          cursor: pointer;
-          background-color: var(--cc-conversation-preview-background-color--hover);
-        }
-
-        &:focus-visible {
-          box-shadow: inset 0em 0em 0em em(1px) var(--c-icon-button-naked-outer-border-color--focus);
-          outline: none;
-        }
-
-        &.active {
-          background-color: var(--cc-conversation-preview-background-color--active);
-        }
-      }
-    }
   }
 </style>

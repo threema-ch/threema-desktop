@@ -5,10 +5,10 @@
 <script lang="ts">
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
+  import SearchBar from '~/app/ui/components/molecules/search-bar/SearchBar.svelte';
   import {getSearchInputPlaceholderForTab} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-forward-modal/helpers';
   import ForwardRecipient from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-forward-modal/internal/forward-recipient/ForwardRecipient.svelte';
   import type {MessageForwardModalProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-forward-modal/props';
-  import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {i18n} from '~/app/ui/i18n';
   import type {ContactTab} from '~/app/ui/nav';
   import {filterContacts} from '~/app/ui/nav/receiver';
@@ -77,9 +77,8 @@
     </div>
 
     <div class="search">
-      <SearchInput
-        bind:value={searchTerm}
-        autofocus
+      <SearchBar
+        bind:term={searchTerm}
         placeholder={getSearchInputPlaceholderForTab(activeTab, $i18n.t)}
       />
     </div>

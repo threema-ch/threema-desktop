@@ -23,10 +23,10 @@
     ModalState,
     RemoteConversationViewModelStoreValue,
   } from '~/app/ui/components/partials/conversation/types';
+  import {conversationListEvent} from '~/app/ui/components/partials/conversation-nav/helpers';
   import {i18n} from '~/app/ui/i18n';
   import MediaMessage from '~/app/ui/modal/MediaMessage.svelte';
   import {type MediaFile, generateThumbnail} from '~/app/ui/modal/media-message';
-  import {conversationListEvent} from '~/app/ui/nav/conversation';
   import {toast} from '~/app/ui/snackbar';
   import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';

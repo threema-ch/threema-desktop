@@ -343,7 +343,6 @@
   "messaging": {
     "action--conversation-option-archive": "Archivieren",
     "action--conversation-option-delete": "Löschen",
-    "action--conversation-option-more": "Mehr",
     "action--conversation-option-pin": "Anpinnen",
     "action--conversation-option-unarchive": "Dearchivieren",
     "action--conversation-option-unpin": "Entpinnen",
@@ -373,6 +372,7 @@
     "error--add-files-partially-inaccessible": "Einige Dateien konnten nicht geöffnet werden",
     "error--contact-blocked": "Sie können keine Nachricht an diesen Kontakt senden, weil er blockiert wurde.",
     "error--contact-invalid": "Sie können keine Nachricht an diesen Kontakt senden, weil er nicht gültig ist.",
+    "error--conversation-list-load": "Chats konnten nicht geladen werden",
     "error--conversation-not-found": "Konversation nicht gefunden",
     "error--copy-message-content": "Nachricht konnte nicht in die Zwischenablage kopiert werden",
     "error--copy-message-image": "Bild konnte nicht in die Zwischenablage kopiert werden",

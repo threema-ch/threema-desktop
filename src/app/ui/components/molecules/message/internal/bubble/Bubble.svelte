@@ -41,7 +41,7 @@
   bind:this={element}
   class={`bubble ${direction} ${padding}`}
   class:highlighted
-  disabled={!clickable}
+  data-disabled={!clickable}
   on:click
 >
   <slot />
@@ -93,7 +93,7 @@
       }
     }
 
-    &:not(:disabled) {
+    &:not([data-disabled='true']) {
       &::after {
         transition: backdrop-filter 0.15s;
       }

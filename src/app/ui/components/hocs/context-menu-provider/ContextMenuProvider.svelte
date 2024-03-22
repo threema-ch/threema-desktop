@@ -47,53 +47,57 @@
   }
 </script>
 
-<Popover
-  bind:this={popover}
-  {afterClose}
-  {afterOpen}
-  {anchorPoints}
-  {beforeClose}
-  {beforeOpen}
-  {closeOnClickOutside}
-  {container}
-  {element}
-  {flip}
-  {offset}
-  {reference}
-  {triggerBehavior}
-  on:clicktrigger
-  on:hasclosed
-  on:hasopened
-  on:willclose
-  on:willopen
->
-  <div class="trigger" slot="trigger">
-    <slot />
-  </div>
+{#if items !== undefined && items.length > 0}
+  <Popover
+    bind:this={popover}
+    {afterClose}
+    {afterOpen}
+    {anchorPoints}
+    {beforeClose}
+    {beforeOpen}
+    {closeOnClickOutside}
+    {container}
+    {element}
+    {flip}
+    {offset}
+    {reference}
+    {triggerBehavior}
+    on:clicktrigger
+    on:hasclosed
+    on:hasopened
+    on:willclose
+    on:willopen
+  >
+    <div class="trigger" slot="trigger">
+      <slot />
+    </div>
 
-  <div class="menu" slot="popover">
-    <MenuContainer mode="small">
-      {#each items as item}
-        {#if item === 'divider'}
-          <MenuItemDivider />
-        {:else if item.icon !== undefined}
-          <MenuItem on:click={() => handleClickItem(item)} disabled={item.disabled}>
-            <span class={`icon ${item.icon.color}`} slot="icon">
-              <MdIcon theme={item.icon.filled === true ? 'Filled' : 'Outlined'}
-                >{item.icon.name}</MdIcon
-              >
-            </span>
-            <span>{item.label}</span>
-          </MenuItem>
-        {:else}
-          <MenuItem on:click={() => handleClickItem(item)} disabled={item.disabled}>
-            <span>{item.label}</span>
-          </MenuItem>
-        {/if}
-      {/each}
-    </MenuContainer>
-  </div>
-</Popover>
+    <div class="menu" slot="popover">
+      <MenuContainer mode="small">
+        {#each items as item}
+          {#if item === 'divider'}
+            <MenuItemDivider />
+          {:else if item.icon !== undefined}
+            <MenuItem on:click={() => handleClickItem(item)} disabled={item.disabled}>
+              <span class={`icon ${item.icon.color}`} slot="icon">
+                <MdIcon theme={item.icon.filled === true ? 'Filled' : 'Outlined'}
+                  >{item.icon.name}</MdIcon
+                >
+              </span>
+              <span>{item.label}</span>
+            </MenuItem>
+          {:else}
+            <MenuItem on:click={() => handleClickItem(item)} disabled={item.disabled}>
+              <span>{item.label}</span>
+            </MenuItem>
+          {/if}
+        {/each}
+      </MenuContainer>
+    </div>
+  </Popover>
+{:else}
+  <slot />
+{/if}
 
 <style lang="scss">
   @use 'component' as *;
