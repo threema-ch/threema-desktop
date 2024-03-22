@@ -47,14 +47,13 @@ import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {OutgoingDeliveryReceiptTask} from '~/common/network/protocol/task/csp/outgoing-delivery-receipt';
+import {OutgoingEditMessageTask} from '~/common/network/protocol/task/csp/outgoing-edit-message';
 import type {IdentityString, MessageId} from '~/common/network/types';
 import type {u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {LazyMap} from '~/common/utils/map';
 import {LocalSetStore} from '~/common/utils/store/set-store';
-
-import {OutgoingMessageUpdateTask} from '~/common/network/protocol/task/csp/outgoing-conversation-message-update';
 
 /**
  * Factory for creating stores and database entries for concrete message types.
@@ -901,7 +900,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
     }
 
     private _handleEditFromLocal(storeHandle: GuardedStoreHandle<TView>, lastEditedAt: Date): void {
-        const task = new OutgoingMessageUpdateTask(
+        const task = new OutgoingEditMessageTask(
             this._services,
             this._conversation.getReceiver().get(),
             this._conversation.getReceiver().get().controller.conversation(),

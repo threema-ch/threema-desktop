@@ -6,12 +6,14 @@ import {
     CspE2eForwardSecurityType,
     CspE2eGroupControlType,
     CspE2eGroupConversationType,
+    CspE2eGroupMessageUpdateType,
     CspE2eGroupStatusUpdateType,
+    CspE2eMessageUpdateType,
     CspE2eStatusUpdateType,
     CspE2eWebSessionResumeType,
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import type * as protobuf from '~/common/network/protobuf';
+import * as protobuf from '~/common/network/protobuf';
 import type {IncomingMessage, OutgoingMessage} from '~/common/network/protobuf/validate/d2d';
 import {MESSAGE_ID_SCHEMA} from '~/common/network/protobuf/validate/helpers';
 import {type CspE2eType, cspE2eTypeNameOf, type ReflectedE2eType} from '~/common/network/protocol';
@@ -28,7 +30,10 @@ import {hasProperty} from '~/common/utils/object';
 function unhandled(
     params:
         | {
-              maybeReflectedE2eType: CspE2eConversationType;
+              maybeReflectedE2eType:
+                  | CspE2eConversationType
+                  | CspE2eMessageUpdateType
+                  | CspE2eGroupMessageUpdateType;
           }
         | {
               maybeReflectedE2eType:
@@ -143,7 +148,10 @@ export abstract class ReflectedMessageTaskBase<
         type: T,
         body: Uint8Array,
         messageTypeDebug: string,
-    ): structbuf.validate.csp.e2e.ValidatedCspE2eTypes | undefined {
+    ):
+        | structbuf.validate.csp.e2e.ValidatedCspE2eTypes
+        | protobuf.validate.csp_e2e.ValidatedCspE2eTypes
+        | undefined {
         try {
             const maybeReflectedE2eType = type satisfies ReflectedE2eType;
             switch (maybeReflectedE2eType) {
@@ -313,6 +321,29 @@ export abstract class ReflectedMessageTaskBase<
                         container: undefined,
                     };
                 }
+
+                case CspE2eMessageUpdateType.EDIT_MESSAGE: {
+                    const message = protobuf.validate.csp_e2e.EditMessage.SCHEMA.parse(
+                        protobuf.csp_e2e.EditMessage.decode(body),
+                    );
+                    return {
+                        type: CspE2eMessageUpdateType.EDIT_MESSAGE,
+                        message: {
+                            messageId: message.messageId,
+                            text: message.text,
+                        },
+                    };
+                }
+                case CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE: {
+                    const container = structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupMemberContainer.decode(body),
+                    );
+                    return {
+                        type: CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE,
+                        message: container,
+                    };
+                }
+
                 case CspE2eStatusUpdateType.TYPING_INDICATOR:
                     // TODO(DESK-589): Implement
                     return undefined;
@@ -345,6 +376,8 @@ export abstract class ReflectedMessageTaskBase<
                 case CspE2eGroupConversationType.GROUP_VIDEO: // TODO(DESK-586)
                 case CspE2eGroupConversationType.GROUP_POLL_SETUP: // TODO(DESK-244)
                 case CspE2eGroupConversationType.GROUP_POLL_VOTE: // TODO(DESK-244)
+                case CspE2eMessageUpdateType.DELETE_MESSAGE: // TODO(DESK-1389)
+                case CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE: // TODO(DESK-1389)
                     return unhandled({maybeReflectedE2eType, body});
                 default:
                     this._log.warn(

@@ -1109,42 +1109,47 @@ export class LegacyMessage extends base.Struct implements LegacyMessageLike {
  *     be the result. If this fails, exceptionally abort these steps and the
  *     connection. If the message has been discarded, _Acknowledge_ and abort
  *     these steps.
- * 15. If `inner-metadata` is not defined, set `inner-metadata` to
+ * 15. If `inner-type` is `0xa0` (i.e. FS encapsulation within FS
+ *     encapsulation), log a warning, _Acknowledge_ and discard the message
+ *     and abort these steps.
+ * 16. If `inner-metadata` is not defined, set `inner-metadata` to
  *     `outer-metadata`.
- * 16. If `inner-metadata` is defined and `message-id` does not equal
+ * 17. If `inner-metadata` is defined and `message-id` does not equal
  *     `inner-metadata.message_id`, log a warning, _Acknowledge_ and discard
  *     the message and abort these steps.
- * 17. If `message-id` refers to a message that has been received previously
+ * 18. If `message-id` refers to a message that has been received previously
  *     from `sender-identity` (including group messages), log a warning,
  *     _Acknowledge_ and discard the message and abort these steps.
- * 18. If `sender-identity` is blocked¹ and `inner-type` is not exempted
+ * 19. If `sender-identity` is blocked¹ and `inner-type` is not exempted
  *     from blocking, _Acknowledge_ and  discard the message and abort these
  *     steps.
- * 19. If `sender-identity` equals `*3MAPUSH`:
- *     1. If `inner-type` is not any of `0xa0` or `0xfe`, log a warning,
+ * 20. If `sender-identity` equals `*3MAPUSH`:
+ *     1. If `inner-type` is not `0xfe`, log a warning,
  *        _Acknowledge_ and discard the message and abort these steps:
  *     2. Run the receive steps associated to `inner-type` with
  *        `inner-message`. If this fails, exceptionally abort these steps and
  *        the connection. If the message has been discarded, _Acknowledge_
  *        the message and abort these steps.
- * 20. If `sender-identity` is not a _Special Contact_ and `inner-type` is
- *     not `0xa0`:
- *     1. Let `nickname` be the value of `inner-metadata.nickname`. If
- *       `nickname` is empty, fall back to decoding the plaintext
- *       `legacy-sender-nickname` and assign it to `nickname`.
- *     2. Trim any excess whitespaces from the beginning and the end of
- *        `nickname`.
- *     3. If `nickname` is not empty and `contact-or-init` contains an
- *        existing contact:
- *        1. Update the contact's nickname with `nickname`.
+ * 21. If `sender-identity` is not a _Special Contact_:
+ *     1. If `inner-metadata.nickname` is defined, let `nickname` be the
+ *        value of `inner-metadata.nickname`.²
+ *     2. If `inner-metadata` is not defined and _User Profile Distribution_
+ *        was expected for `inner-type`, let `nickname` be the result of
+ *        decoding the plaintext `legacy-sender-nickname`.²
+ *     3. If `nickname` is present, trim any excess whitespaces from the
+ *        beginning and the end of `nickname`.
+ *     4. If `nickname` is present and `contact-or-init` contains an existing
+ *        contact:
+ *        1. Update the contact's nickname with `nickname`. Remove the
+ *           contact's nickname if `nickname` is empty.
  *        2. (MD) If the contact's nickname has been changed, reflect the
  *           contact in a transaction (scope: `CONTACT_SYNC`, precondition: a
  *           contact for `sender-identity` exists). If this fails,
  *           exceptionally abort these steps and the connection.
  *        3. (MD) If a contact for `sender-identity` no longer exists, log a
  *           warning, _Acknowledge_ and discard the message and abort these
- *           steps.²
- *     4. If `contact-or-init` does not contain an existing contact:
+ *           steps.³
+ *     5. If `contact-or-init` does not contain an existing contact:
  *        1. If `inner-type` does not require to create an implicit
  *           _direct_ contact, log a notice, _Acknowledge_ and discard the
  *           message and abort these steps.
@@ -1155,40 +1160,50 @@ export class LegacyMessage extends base.Struct implements LegacyMessageLike {
  *        3. (MD) Reflect the contact in a transaction (precondition: a
  *           contact for `sender-identity` does not exist). If this fails,
  *           exceptionally abort these steps and the connection.
- *     5. Run the receive steps associated to `inner-type` with
+ *     6. Run the receive steps associated to `inner-type` with
  *        `inner-message`. If this fails, exceptionally abort these steps and
  *        the connection. If the message has been discarded, _Acknowledge_
  *        the message and abort these steps.
- * 21. (MD) If the properties associated to `inner-type` require
+ * 22. (MD) If the properties associated to `inner-type` require
  *     reflecting incoming messages, reflect `outer-type` and `outer-message`
- *     to other devices and wait for reflection acknowledgement.³ If this
+ *     to other devices and wait for reflection acknowledgement.⁴ If this
  *     fails, exceptionally abort these steps and the connection.
- * 22. _Acknowledge_ the message.
- * 23. If the properties associated to `type` require sending
- *     automatic delivery receipts and `flags` does not contain the _no
- *     automatic delivery receipts_ (`0x80`) flag, enqueue a persistent task
- *     that runs the following steps:
- *     1. Let `delivery-receipt` be a
- *        [`delivery-receipt`](ref:e2e.delivery-receipt) message towards
- *        `sender-identity` with status _received_ (`0x01`) and the
- *        respective `message-id`.
- *     1. (MD) Reflect `delivery-receipt` to other devices and
- *        wait for reflection acknowledgement. If this fails, exceptionally
- *        abort these sub-steps and the connection.
- *     2. Send a `delivery-receipt` to `sender-identity` with status
- *        _received_ (`0x01`) and the respective `message-id`.
+ * 23. _Acknowledge_ the message.⁵
+ * 24. If the properties associated to `type` do not require sending
+ *     automatic delivery receipts or `flags` contains the _no
+ *     automatic delivery receipts_ (`0x80`) flag, abort these steps.
+ * 25. Let `delivery-receipt` be a
+ *     [`delivery-receipt`](ref:e2e.delivery-receipt) message towards
+ *     `sender-identity` with status _received_ (`0x01`) and the
+ *     respective `message-id`.
+ * 26. (MD) Reflect `delivery-receipt` to other devices and
+ *     wait for reflection acknowledgement. If this fails, exceptionally
+ *     abort these sub-steps and the connection.
+ * 27. Send a `delivery-receipt` to `sender-identity` with status
+ *     _received_ (`0x01`) and the respective `message-id`.
  *
  * ¹: A sender can be blocked implicitly or explicitly, see
  * [Blocking](#Blocking).
  *
- * ²: This a bailout mechanism that handles the extremely unlikely case that
+ * ²: Note that the `nickname` of `MessageMetadata` may be undefined (leading
+ * to no changes) or defined but explicitly empty (leading to the nickname of
+ * the contact being removed) which is an important semantic difference.
+ * Unlike the legacy nickname field which always contains a value and
+ * therefore cannot represent this semantic difference without having to
+ * check whether _User Profile Distribution_ was required for the type.
+ *
+ * ³: This a bailout mechanism that handles the extremely unlikely case that
  * another device removed the contact associated to `sender-identity` while
  * we are still processing the message sent from that contact. It is
  * intentionally handled crudely because of its unlikelyness.
  *
- * ³: We reflect the **outer** message container depending on the unwrapped
+ * ⁴: We reflect the **outer** message container depending on the unwrapped
  * **inner** message type, so the forward security properties are untouched
  * and all other devices need to go through the same process.
+ *
+ * ⁵: Because the message is already acknowledged towards the server here,
+ * the following steps may not get executed at all if the connection drops
+ * or the execution fails.
  *
  * The following steps are defined as _Acknowledge_ steps for an incoming
  * message:

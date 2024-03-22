@@ -21,12 +21,14 @@ import {
     CspE2eStatusUpdateType,
     type D2dCspMessageType,
     MessageDirection,
-    MessageType,
     ReceiverType,
     SyncState,
     VerificationLevel,
     WorkVerificationLevel,
     CspE2eWebSessionResumeType,
+    CspE2eMessageUpdateType,
+    CspE2eGroupMessageUpdateType,
+    MessageType,
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {
@@ -74,6 +76,7 @@ import {
     type InboundImageMessageInitFragment,
     type InboundTextMessageInitFragment,
     type InboundVideoMessageInitFragment,
+    type EditMessageFragment,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
@@ -95,6 +98,7 @@ import {idColorIndex} from '~/common/utils/id-color';
 import {Identity} from '~/common/utils/identity';
 import {
     dateToUnixTimestampMs,
+    intoU64,
     intoUnsignedLong,
     u64ToHexLe,
     unixTimestamptoDateS,
@@ -306,6 +310,7 @@ type MessageProcessingInstructions =
     | GroupControlMessageInstructions
     | StatusUpdateInstructions
     | ForwardSecurityMessageInstructions
+    | EditMessageInstructions
     | UnhandledMessageInstructions;
 
 interface BaseProcessingInstructions {
@@ -376,6 +381,15 @@ interface ForwardSecurityMessageInstructions extends BaseProcessingInstructions 
     readonly missingContactHandling: 'create';
     readonly reflectFragment: 'not-reflected';
     readonly task: ComposableTask<ActiveTaskCodecHandle<'volatile'>, unknown>;
+}
+
+interface EditMessageInstructions extends BaseProcessingInstructions {
+    readonly messageCategory: 'edit-conversation-message';
+    readonly conversationId: ContactConversationId | GroupConversationId;
+    readonly deliveryReceipt: false;
+    readonly missingContactHandling: 'discard';
+    readonly updatedMessage: EditMessageFragment;
+    readonly reflectFragment: D2dIncomingMessageFragment;
 }
 
 interface UnhandledMessageInstructions extends BaseProcessingInstructions {
@@ -669,7 +683,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         let group: LocalModelStore<Group> | undefined = undefined;
         if (
             ((instructions.messageCategory === 'conversation-message' ||
-                instructions.messageCategory === 'status-update') &&
+                instructions.messageCategory === 'status-update' ||
+                instructions.messageCategory === 'edit-conversation-message') &&
                 instructions.conversationId.type === ReceiverType.GROUP) ||
             (instructions.messageCategory === 'unhandled' &&
                 instructions.conversationId.type === ReceiverType.GROUP &&
@@ -738,6 +753,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         instructions.initFragment.receivedAt = incomingMessageReflectedAt;
                     }
                     break;
+                case 'edit-conversation-message':
                 case 'status-update':
                 case 'contact-control':
                 case 'group-control':
@@ -746,9 +762,69 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     unreachable(instructions);
             }
         }
-
+        let conversation: LocalModelStore<Conversation>;
         // Process / save the message
         switch (instructions.messageCategory) {
+            case 'edit-conversation-message': {
+                // 1. Lookup the message with message_id originally sent by the sender within the
+                //    associated conversation and let message be the result.
+                assert(
+                    senderContactOrInit instanceof LocalModelStore,
+                    'Contact should have been created by IncomingMessageTask, but was not',
+                );
+                if (instructions.conversationId.type === ReceiverType.CONTACT) {
+                    conversation = senderContactOrInit.get().controller.conversation();
+                } else {
+                    group = model.groups.getByGroupIdAndCreator(
+                        instructions.conversationId.groupId,
+                        instructions.conversationId.creatorIdentity,
+                    );
+                    if (group === undefined) {
+                        this._log.warn(
+                            `Discarding ${messageTypeDebug} message ${u64ToHexLe(
+                                this._id,
+                            )} as the referenced group does not exist`,
+                            messageReferenceDebug,
+                        );
+                        return await this._discard(handle);
+                    }
+                    conversation = group.get().controller.conversation();
+                }
+                const message = conversation
+                    .get()
+                    .controller.getMessage(instructions.updatedMessage.messageId);
+
+                // 2. If `message` is not defined or the sender is not the original sender of
+                //    `message`, discard the message and abort these steps.
+                if (message === undefined || message.ctx !== MessageDirection.INBOUND) {
+                    this._log.warn(
+                        `Discarding ${messageTypeDebug} message ${u64ToHexLe(
+                            this._id,
+                        )} as it was not found or not inbound`,
+                        messageReferenceDebug,
+                    );
+                    return await this._discard(handle);
+                }
+
+                const messageSender = message.get().controller.sender();
+                if (messageSender.ctx !== senderContactOrInit.ctx) {
+                    this._log.warn(
+                        `Discarding ${messageTypeDebug} message ${u64ToHexLe(
+                            this._id,
+                        )} as the original sender and the editor do not match`,
+                        messageReferenceDebug,
+                    );
+                    return await this._discard(handle);
+                }
+
+                // Note: Protocol steps 3 and 4 are handled by the message controller
+                await message.get().controller.editMessage.fromRemote(handle, {
+                    text: instructions.updatedMessage.text,
+                    lastEditedAt: instructions.updatedMessage.lastEditedAt,
+                });
+
+                break;
+            }
             case 'conversation-message':
             case 'unhandled': {
                 // Assert that sender contact exists:
@@ -762,7 +838,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 );
 
                 // Look up conversation
-                let conversation: LocalModelStore<Conversation>;
                 switch (instructions.conversationId.type) {
                     case ReceiverType.CONTACT:
                         conversation = senderContactOrInit.get().controller.conversation();
@@ -1632,6 +1707,55 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 this._log.warn('Discarding web session resume message');
                 return 'discard';
 
+            case CspE2eMessageUpdateType.EDIT_MESSAGE: {
+                const updatedMessage = protobuf.csp_e2e.EditMessage.decode(
+                    cspMessageBody as Uint8Array,
+                );
+                const instructions: EditMessageInstructions = {
+                    messageCategory: 'edit-conversation-message',
+                    conversationId: senderConversationId,
+                    missingContactHandling: 'discard',
+                    deliveryReceipt: false,
+                    updatedMessage: {
+                        messageId: ensureMessageId(intoU64(updatedMessage.messageId)),
+                        lastEditedAt: clampedCreatedAt,
+                        text: updatedMessage.text,
+                    },
+                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                };
+                return instructions;
+            }
+
+            case CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE: {
+                const validatedContainer =
+                    structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
+                    );
+                const updatedMessage = protobuf.csp_e2e.EditMessage.decode(
+                    validatedContainer.innerData,
+                );
+
+                const groupConversationId: GroupConversationId = {
+                    type: ReceiverType.GROUP,
+                    groupId: validatedContainer.groupId,
+                    creatorIdentity: validatedContainer.creatorIdentity,
+                };
+
+                const instructions: EditMessageInstructions = {
+                    messageCategory: 'edit-conversation-message',
+                    conversationId: groupConversationId,
+                    missingContactHandling: 'discard',
+                    deliveryReceipt: false,
+                    updatedMessage: {
+                        messageId: ensureMessageId(intoU64(updatedMessage.messageId)),
+                        lastEditedAt: clampedCreatedAt,
+                        text: updatedMessage.text,
+                    },
+                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                };
+                return instructions;
+            }
+
             // Forwarding of known but unhandled messages. These messages will be reflected and
             // discarded. The messages won't appear in Threema Desktop, but they will appear on
             // synchronized devices that support these message types.
@@ -1667,6 +1791,10 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupConversationType.GROUP_POLL_VOTE: // TODO(DESK-244)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
+            case CspE2eMessageUpdateType.DELETE_MESSAGE: // TODO(DESK-1387)
+            case CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE: // TODO(DESK-1387)
+                return unhandled(maybeCspE2eType, false);
+
             default:
                 return exhausted(maybeCspE2eType, 'forward');
         }

@@ -61,6 +61,14 @@ export type AnyOutboundMessageInitFragment =
     | OutboundVideoMessageInitFragment
     | OutboundAudioMessageInitFragment;
 
+// Important: In the functions where the database update is actually invoked, we need to switch on these types
+// because for media messages, the text ist called `caption` and not text`
+export interface EditMessageFragment {
+    messageId: MessageId;
+    text: string;
+    lastEditedAt: Date;
+}
+
 /**
  * Get a conversation.
  *

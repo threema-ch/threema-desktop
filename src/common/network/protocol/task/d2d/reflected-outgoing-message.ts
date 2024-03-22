@@ -10,6 +10,8 @@ import {
     ReceiverType,
     ReceiverTypeUtils,
     CspE2eGroupStatusUpdateType,
+    CspE2eMessageUpdateType,
+    CspE2eGroupMessageUpdateType,
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import {OWN_IDENTITY_ALIAS, type MessageFor} from '~/common/model/types/message';
@@ -38,6 +40,7 @@ import {
     type OutboundImageMessageInitFragment,
     type OutboundTextMessageInitFragment,
     type OutboundVideoMessageInitFragment,
+    type EditMessageFragment,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import * as structbuf from '~/common/network/structbuf';
 import type {
@@ -68,7 +71,8 @@ type CommonOutboundMessageInitFragment = Omit<
 type MessageProcessingInstructions =
     | ConversationMessageInstructions
     | GroupControlMessageInstructions
-    | StatusUpdateInstructions;
+    | StatusUpdateInstructions
+    | EditMessageInstructions;
 
 interface BaseProcessingInstructions {
     /**
@@ -84,6 +88,12 @@ interface ConversationMessageInstructions extends BaseProcessingInstructions {
      */
     readonly conversationId: ContactConversationId | GroupConversationId;
     readonly initFragment: AnyOutboundMessageInitFragment;
+}
+
+interface EditMessageInstructions extends BaseProcessingInstructions {
+    readonly messageCategory: 'edit-conversation-message';
+    readonly conversationId: ContactConversationId | GroupConversationId;
+    readonly updatedMessage: EditMessageFragment;
 }
 
 interface GroupControlMessageInstructions extends BaseProcessingInstructions {
@@ -198,6 +208,45 @@ export class ReflectedOutgoingMessageTask
 
         // Process / save the message
         switch (instructions.messageCategory) {
+            case 'edit-conversation-message': {
+                const conversation = getConversationById(model, instructions.conversationId);
+                if (conversation === undefined) {
+                    this._log.error(
+                        `Discarding ${this._direction} ${messageTypeDebug} message because conversation was not found in database`,
+                        messageReferenceDebug,
+                    );
+                    return;
+                }
+
+                if (
+                    !conversation.get().controller.hasMessage(instructions.updatedMessage.messageId)
+                ) {
+                    this._log.warn(
+                        `Discarding ${this._direction} ${messageTypeDebug} message ${instructions.updatedMessage.messageId} as the message does not exist`,
+                        messageReferenceDebug,
+                    );
+                    return;
+                }
+                const messageStore = conversation
+                    .get()
+                    .controller.getMessage(instructions.updatedMessage.messageId);
+
+                if (messageStore === undefined) {
+                    this._log.warn(
+                        `Discarding ${this._direction} ${messageTypeDebug} message ${instructions.updatedMessage.messageId} as the message does not exist`,
+                        messageReferenceDebug,
+                    );
+                    return;
+                }
+
+                messageStore.get().controller.editMessage.fromSync({
+                    text: instructions.updatedMessage.text,
+                    lastEditedAt: instructions.updatedMessage.lastEditedAt,
+                });
+
+                return;
+            }
+
             case 'conversation-message': {
                 // Ensure that the D2D and CSP conversation types match
                 if (
@@ -320,7 +369,9 @@ export class ReflectedOutgoingMessageTask
      * @param conversationId The conversation associated with this outgoing message.
      */
     private _getInstructionsForMessage(
-        validatedBody: structbuf.validate.csp.e2e.ValidatedCspE2eTypes,
+        validatedBody:
+            | structbuf.validate.csp.e2e.ValidatedCspE2eTypes
+            | protobuf.validate.csp_e2e.ValidatedCspE2eTypes,
         messageId: MessageId,
         createdAt: Date,
         reflectedAt: Date,
@@ -527,6 +578,41 @@ export class ReflectedOutgoingMessageTask
                 return instructions;
             }
 
+            case CspE2eMessageUpdateType.EDIT_MESSAGE: {
+                assert(conversationId.type === ReceiverType.CONTACT);
+                const instructions: EditMessageInstructions = {
+                    messageCategory: 'edit-conversation-message',
+                    conversationId,
+                    updatedMessage: {
+                        text: validatedBody.message.text,
+                        messageId: validatedBody.message.messageId,
+                        lastEditedAt: createdAt,
+                    },
+                };
+                return instructions;
+            }
+            case CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE: {
+                const editMessage = protobuf.validate.csp_e2e.EditMessage.SCHEMA.parse(
+                    protobuf.csp_e2e.EditMessage.decode(
+                        validatedBody.message.innerData,
+                        validatedBody.message.innerData.byteLength,
+                    ),
+                );
+                const instructions: EditMessageInstructions = {
+                    messageCategory: 'edit-conversation-message',
+                    conversationId: {
+                        type: ReceiverType.GROUP,
+                        creatorIdentity: validatedBody.message.creatorIdentity,
+                        groupId: validatedBody.message.groupId,
+                    },
+                    updatedMessage: {
+                        text: editMessage.text,
+                        messageId: editMessage.messageId,
+                        lastEditedAt: createdAt,
+                    },
+                };
+                return instructions;
+            }
             default:
                 return unreachable(validatedBody);
         }

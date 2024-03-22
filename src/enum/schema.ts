@@ -365,6 +365,26 @@ export enum CspE2eDeliveryReceiptStatus {
 }
 
 /**
+ * E2EE Message update
+ *
+ * @generate name convert
+ */
+export enum CspE2eMessageUpdateType {
+    EDIT_MESSAGE = 0x91,
+    DELETE_MESSAGE = 0x92,
+}
+
+/**
+ * E2EE Message update
+ *
+ * @generate name convert
+ */
+export enum CspE2eGroupMessageUpdateType {
+    GROUP_EDIT_MESSAGE = 0x93,
+    GROUP_DELETE_MESSAGE = 0x94,
+}
+
+/**
  * Receiver of an end-to-end encrypted message.
  *
  * @generate convert name
@@ -520,7 +540,12 @@ export enum D2dCspMessageType {
     GROUP_POLL_VOTE = 83,
     GROUP_DELIVERY_RECEIPT = 129,
     WEB_SESSION_RESUME = 254,
+    EDIT_MESSAGE = 145,
+    DELETE_MESSAGE = 146,
+    GROUP_EDIT_MESSAGE = 147,
+    GROUP_DELETE_MESSAGE = 148,
 }
+
 /** @generate convert */
 export enum AcquaintanceLevel {
     /**

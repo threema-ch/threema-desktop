@@ -9,8 +9,12 @@ import {
     CspE2eGroupControlTypeUtils,
     CspE2eGroupConversationType,
     CspE2eGroupConversationTypeUtils,
+    CspE2eGroupMessageUpdateType,
+    CspE2eGroupMessageUpdateTypeUtils,
     CspE2eGroupStatusUpdateType,
     CspE2eGroupStatusUpdateTypeUtils,
+    CspE2eMessageUpdateType,
+    CspE2eMessageUpdateTypeUtils,
     CspE2eStatusUpdateType,
     CspE2eStatusUpdateTypeUtils,
     CspE2eWebSessionResumeType,
@@ -286,7 +290,9 @@ export type CspE2eType =
     | CspE2eGroupStatusUpdateType
     | CspE2eGroupControlType
     | CspE2eForwardSecurityType
-    | CspE2eWebSessionResumeType;
+    | CspE2eWebSessionResumeType
+    | CspE2eMessageUpdateType
+    | CspE2eGroupMessageUpdateType;
 export const CSP_E2E_TYPE_NAME_OF = {
     ...CspE2eConversationTypeUtils.NAME_OF,
     ...CspE2eStatusUpdateTypeUtils.NAME_OF,
@@ -296,6 +302,8 @@ export const CSP_E2E_TYPE_NAME_OF = {
     ...CspE2eGroupControlTypeUtils.NAME_OF,
     ...CspE2eForwardSecurityTypeUtils.NAME_OF,
     ...CspE2eWebSessionResumeTypeUtils.NAME_OF,
+    ...CspE2eMessageUpdateTypeUtils.NAME_OF,
+    ...CspE2eGroupMessageUpdateTypeUtils.NAME_OF,
 } as const;
 export function cspE2eTypeNameOf<T extends u53>(value: T): string | undefined {
     return (CSP_E2E_TYPE_NAME_OF as Record<u53, string | undefined>)[value];
@@ -328,7 +336,9 @@ export type ReceiverTypeForCspE2eMessageType<T extends CspE2eType> =
           ? ReceiverType.GROUP
           : T extends CspE2eGroupControlType
             ? ReceiverType.GROUP
-            : ReceiverType.CONTACT;
+            : T extends CspE2eGroupMessageUpdateType
+              ? ReceiverType.GROUP
+              : ReceiverType.CONTACT;
 
 /**
  * A list of all types in {@link CspE2eType} that are reflected.
@@ -719,5 +729,44 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             outgoing: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
+    },
+    [CspE2eMessageUpdateType.EDIT_MESSAGE]: {
+        userProfileDistribution: false,
+        exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
+        sendToGatewayGroupCreator: 'not-applicable',
+    },
+
+    [CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE]: {
+        userProfileDistribution: false,
+        exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
+        sendToGatewayGroupCreator: 'if-captured',
+    },
+
+    [CspE2eMessageUpdateType.DELETE_MESSAGE]: {
+        userProfileDistribution: false,
+        exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
+        sendToGatewayGroupCreator: 'not-applicable',
+    },
+
+    [CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE]: {
+        userProfileDistribution: false,
+        exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
+        sendToGatewayGroupCreator: 'if-captured',
     },
 };

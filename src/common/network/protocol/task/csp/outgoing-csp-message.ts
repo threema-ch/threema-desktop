@@ -18,6 +18,8 @@ import {
     ReceiverType,
     ReceiverTypeUtils,
     type CspE2eGroupStatusUpdateType,
+    type CspE2eGroupMessageUpdateType,
+    type CspE2eMessageUpdateType,
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {AnyReceiver, Contact} from '~/common/model';
@@ -83,6 +85,7 @@ export interface MessageProperties<TMessageEncoder, MessageType extends CspE2eTy
 type ValidGroupMessages =
     | CspE2eGroupConversationType
     | CspE2eGroupStatusUpdateType
+    | CspE2eGroupMessageUpdateType
     // Note: GROUP_SYNC_REQUEST is excluded, because it is only sent to the creator, not to all members
     | Exclude<CspE2eGroupControlType, CspE2eGroupControlType.GROUP_SYNC_REQUEST>;
 
@@ -93,6 +96,7 @@ type ValidContactMessages =
     | CspE2eConversationType
     | CspE2eStatusUpdateType
     | CspE2eContactControlType
+    | CspE2eMessageUpdateType
     // Note: GROUP_CALL_START is always sent to the whole group, not to a single contact
     | Exclude<CspE2eGroupControlType, CspE2eGroupControlType.GROUP_CALL_START>
     | CspE2eForwardSecurityType;

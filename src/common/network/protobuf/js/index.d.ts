@@ -360,11 +360,14 @@ export namespace common {
         O2O_AUDIO_CALL_SUPPORT = 16,
         O2O_VIDEO_CALL_SUPPORT = 32,
         FORWARD_SECURITY_SUPPORT = 64,
-        GROUP_CALL_SUPPORT = 128
+        GROUP_CALL_SUPPORT = 128,
+        EDIT_MESSAGE_SUPPORT = 256,
+        DELETE_MESSAGE_SUPPORT = 512
     }
     /** CspE2eMessageType enum. */
     enum CspE2eMessageType {
         _INVALID_TYPE = 0,
+        EMPTY = 252,
         TEXT = 1,
         DEPRECATED_IMAGE = 2,
         LOCATION = 16,
@@ -380,6 +383,8 @@ export namespace common {
         CALL_RINGING = 100,
         DELIVERY_RECEIPT = 128,
         TYPING_INDICATOR = 144,
+        EDIT_MESSAGE = 145,
+        DELETE_MESSAGE = 146,
         CONTACT_SET_PROFILE_PICTURE = 24,
         CONTACT_DELETE_PROFILE_PICTURE = 25,
         CONTACT_REQUEST_PROFILE_PICTURE = 26,
@@ -401,6 +406,8 @@ export namespace common {
         GROUP_POLL_SETUP = 82,
         GROUP_POLL_VOTE = 83,
         GROUP_DELIVERY_RECEIPT = 129,
+        GROUP_EDIT_MESSAGE = 147,
+        GROUP_DELETE_MESSAGE = 148,
         FORWARD_SECURITY_ENVELOPE = 160,
         WEB_SESSION_RESUME = 254
     }
@@ -788,6 +795,78 @@ export namespace csp_e2e {
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
         public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e.MessageMetadata;
+    }
+    /** Properties of an EditMessage. */
+    interface IEditMessage {
+        /** EditMessage messageId */
+        messageId?: (Long | null);
+        /** EditMessage text */
+        text?: (string | null);
+    }
+    type EditMessageEncodable = types.WeakOpaque<IEditMessage, {
+        readonly EditMessageEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents an EditMessage. */
+    class EditMessage implements IEditMessage {
+        /**
+         * Constructs a new EditMessage.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: csp_e2e.IEditMessage);
+        /** EditMessage messageId. */
+        public messageId: Long;
+        /** EditMessage text. */
+        public text: string;
+        /**
+         * Encodes the specified EditMessage message. Does not implicitly {@link csp_e2e.EditMessage.verify|verify} messages.
+         * @param message EditMessage message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: csp_e2e.EditMessageEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes an EditMessage message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns EditMessage
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e.EditMessage;
+    }
+    /** Properties of a DeleteMessage. */
+    interface IDeleteMessage {
+        /** DeleteMessage messageId */
+        messageId?: (Long | null);
+    }
+    type DeleteMessageEncodable = types.WeakOpaque<IDeleteMessage, {
+        readonly DeleteMessageEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents a DeleteMessage. */
+    class DeleteMessage implements IDeleteMessage {
+        /**
+         * Constructs a new DeleteMessage.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: csp_e2e.IDeleteMessage);
+        /** DeleteMessage messageId. */
+        public messageId: Long;
+        /**
+         * Encodes the specified DeleteMessage message. Does not implicitly {@link csp_e2e.DeleteMessage.verify|verify} messages.
+         * @param message DeleteMessage message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: csp_e2e.DeleteMessageEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes a DeleteMessage message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns DeleteMessage
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e.DeleteMessage;
     }
     /** Properties of a GroupCallStart. */
     interface IGroupCallStart {

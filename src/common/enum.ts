@@ -953,6 +953,94 @@ export namespace CspE2eDeliveryReceiptStatusUtils {
         return (NAME_OF as Record<u53, string | undefined>)[value];
     }
 }
+export namespace CspE2eMessageUpdateType {
+    export const EDIT_MESSAGE = 145;
+    export type EDIT_MESSAGE = typeof EDIT_MESSAGE;
+    export const DELETE_MESSAGE = 146;
+    export type DELETE_MESSAGE = typeof DELETE_MESSAGE;
+}
+/**
+ * E2EE Message update
+ *
+ * @generate name convert
+ */
+export type CspE2eMessageUpdateType =
+    (typeof CspE2eMessageUpdateType)[keyof typeof CspE2eMessageUpdateType];
+export namespace CspE2eMessageUpdateTypeUtils {
+    export const ALL: ReadonlySet<CspE2eMessageUpdateType> = new Set([
+        CspE2eMessageUpdateType.EDIT_MESSAGE,
+        CspE2eMessageUpdateType.DELETE_MESSAGE,
+    ] as const);
+    export function fromNumber(
+        value: u53,
+        fallback?: CspE2eMessageUpdateType,
+    ): CspE2eMessageUpdateType {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as CspE2eMessageUpdateType;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid CspE2eMessageUpdateType`);
+    }
+    export function containsNumber(value: u53): value is CspE2eMessageUpdateType {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is CspE2eMessageUpdateType {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+    export const NAME_OF = {
+        [CspE2eMessageUpdateType.EDIT_MESSAGE]: 'EDIT_MESSAGE',
+        [CspE2eMessageUpdateType.DELETE_MESSAGE]: 'DELETE_MESSAGE',
+    } as const;
+    export function nameOf<T extends u53>(value: T): string | undefined {
+        return (NAME_OF as Record<u53, string | undefined>)[value];
+    }
+}
+export namespace CspE2eGroupMessageUpdateType {
+    export const GROUP_EDIT_MESSAGE = 147;
+    export type GROUP_EDIT_MESSAGE = typeof GROUP_EDIT_MESSAGE;
+    export const GROUP_DELETE_MESSAGE = 148;
+    export type GROUP_DELETE_MESSAGE = typeof GROUP_DELETE_MESSAGE;
+}
+/**
+ * E2EE Message update
+ *
+ * @generate name convert
+ */
+export type CspE2eGroupMessageUpdateType =
+    (typeof CspE2eGroupMessageUpdateType)[keyof typeof CspE2eGroupMessageUpdateType];
+export namespace CspE2eGroupMessageUpdateTypeUtils {
+    export const ALL: ReadonlySet<CspE2eGroupMessageUpdateType> = new Set([
+        CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE,
+        CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE,
+    ] as const);
+    export function fromNumber(
+        value: u53,
+        fallback?: CspE2eGroupMessageUpdateType,
+    ): CspE2eGroupMessageUpdateType {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as CspE2eGroupMessageUpdateType;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid CspE2eGroupMessageUpdateType`);
+    }
+    export function containsNumber(value: u53): value is CspE2eGroupMessageUpdateType {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is CspE2eGroupMessageUpdateType {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+    export const NAME_OF = {
+        [CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE]: 'GROUP_EDIT_MESSAGE',
+        [CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE]: 'GROUP_DELETE_MESSAGE',
+    } as const;
+    export function nameOf<T extends u53>(value: T): string | undefined {
+        return (NAME_OF as Record<u53, string | undefined>)[value];
+    }
+}
 export namespace ReceiverType {
     export const CONTACT = 0;
     export type CONTACT = typeof CONTACT;
@@ -1285,6 +1373,14 @@ export namespace D2dCspMessageType {
     export type GROUP_DELIVERY_RECEIPT = typeof GROUP_DELIVERY_RECEIPT;
     export const WEB_SESSION_RESUME = 254;
     export type WEB_SESSION_RESUME = typeof WEB_SESSION_RESUME;
+    export const EDIT_MESSAGE = 145;
+    export type EDIT_MESSAGE = typeof EDIT_MESSAGE;
+    export const DELETE_MESSAGE = 146;
+    export type DELETE_MESSAGE = typeof DELETE_MESSAGE;
+    export const GROUP_EDIT_MESSAGE = 147;
+    export type GROUP_EDIT_MESSAGE = typeof GROUP_EDIT_MESSAGE;
+    export const GROUP_DELETE_MESSAGE = 148;
+    export type GROUP_DELETE_MESSAGE = typeof GROUP_DELETE_MESSAGE;
 }
 /**
  * PROTOBUF
@@ -1335,6 +1431,10 @@ export namespace D2dCspMessageTypeUtils {
         D2dCspMessageType.GROUP_POLL_VOTE,
         D2dCspMessageType.GROUP_DELIVERY_RECEIPT,
         D2dCspMessageType.WEB_SESSION_RESUME,
+        D2dCspMessageType.EDIT_MESSAGE,
+        D2dCspMessageType.DELETE_MESSAGE,
+        D2dCspMessageType.GROUP_EDIT_MESSAGE,
+        D2dCspMessageType.GROUP_DELETE_MESSAGE,
     ] as const);
     export function fromNumber(value: u53, fallback?: D2dCspMessageType): D2dCspMessageType {
         if ((ALL as ReadonlySet<u53>).has(value)) {

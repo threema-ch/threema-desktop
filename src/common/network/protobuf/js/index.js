@@ -922,6 +922,8 @@ export const common = $root.common = (() => {
      * @property {number} O2O_VIDEO_CALL_SUPPORT=32 O2O_VIDEO_CALL_SUPPORT value
      * @property {number} FORWARD_SECURITY_SUPPORT=64 FORWARD_SECURITY_SUPPORT value
      * @property {number} GROUP_CALL_SUPPORT=128 GROUP_CALL_SUPPORT value
+     * @property {number} EDIT_MESSAGE_SUPPORT=256 EDIT_MESSAGE_SUPPORT value
+     * @property {number} DELETE_MESSAGE_SUPPORT=512 DELETE_MESSAGE_SUPPORT value
      */
     common.CspFeatureMaskFlag = (function() {
         const valuesById = {}, values = Object.create(valuesById);
@@ -934,6 +936,8 @@ export const common = $root.common = (() => {
         values[valuesById[32] = "O2O_VIDEO_CALL_SUPPORT"] = 32;
         values[valuesById[64] = "FORWARD_SECURITY_SUPPORT"] = 64;
         values[valuesById[128] = "GROUP_CALL_SUPPORT"] = 128;
+        values[valuesById[256] = "EDIT_MESSAGE_SUPPORT"] = 256;
+        values[valuesById[512] = "DELETE_MESSAGE_SUPPORT"] = 512;
         return values;
     })();
 
@@ -942,6 +946,7 @@ export const common = $root.common = (() => {
      * @name common.CspE2eMessageType
      * @enum {number}
      * @property {number} _INVALID_TYPE=0 _INVALID_TYPE value
+     * @property {number} EMPTY=252 EMPTY value
      * @property {number} TEXT=1 TEXT value
      * @property {number} DEPRECATED_IMAGE=2 DEPRECATED_IMAGE value
      * @property {number} LOCATION=16 LOCATION value
@@ -957,6 +962,8 @@ export const common = $root.common = (() => {
      * @property {number} CALL_RINGING=100 CALL_RINGING value
      * @property {number} DELIVERY_RECEIPT=128 DELIVERY_RECEIPT value
      * @property {number} TYPING_INDICATOR=144 TYPING_INDICATOR value
+     * @property {number} EDIT_MESSAGE=145 EDIT_MESSAGE value
+     * @property {number} DELETE_MESSAGE=146 DELETE_MESSAGE value
      * @property {number} CONTACT_SET_PROFILE_PICTURE=24 CONTACT_SET_PROFILE_PICTURE value
      * @property {number} CONTACT_DELETE_PROFILE_PICTURE=25 CONTACT_DELETE_PROFILE_PICTURE value
      * @property {number} CONTACT_REQUEST_PROFILE_PICTURE=26 CONTACT_REQUEST_PROFILE_PICTURE value
@@ -978,12 +985,15 @@ export const common = $root.common = (() => {
      * @property {number} GROUP_POLL_SETUP=82 GROUP_POLL_SETUP value
      * @property {number} GROUP_POLL_VOTE=83 GROUP_POLL_VOTE value
      * @property {number} GROUP_DELIVERY_RECEIPT=129 GROUP_DELIVERY_RECEIPT value
+     * @property {number} GROUP_EDIT_MESSAGE=147 GROUP_EDIT_MESSAGE value
+     * @property {number} GROUP_DELETE_MESSAGE=148 GROUP_DELETE_MESSAGE value
      * @property {number} FORWARD_SECURITY_ENVELOPE=160 FORWARD_SECURITY_ENVELOPE value
      * @property {number} WEB_SESSION_RESUME=254 WEB_SESSION_RESUME value
      */
     common.CspE2eMessageType = (function() {
         const valuesById = {}, values = Object.create(valuesById);
         values[valuesById[0] = "_INVALID_TYPE"] = 0;
+        values[valuesById[252] = "EMPTY"] = 252;
         values[valuesById[1] = "TEXT"] = 1;
         values[valuesById[2] = "DEPRECATED_IMAGE"] = 2;
         values[valuesById[16] = "LOCATION"] = 16;
@@ -999,6 +1009,8 @@ export const common = $root.common = (() => {
         values[valuesById[100] = "CALL_RINGING"] = 100;
         values[valuesById[128] = "DELIVERY_RECEIPT"] = 128;
         values[valuesById[144] = "TYPING_INDICATOR"] = 144;
+        values[valuesById[145] = "EDIT_MESSAGE"] = 145;
+        values[valuesById[146] = "DELETE_MESSAGE"] = 146;
         values[valuesById[24] = "CONTACT_SET_PROFILE_PICTURE"] = 24;
         values[valuesById[25] = "CONTACT_DELETE_PROFILE_PICTURE"] = 25;
         values[valuesById[26] = "CONTACT_REQUEST_PROFILE_PICTURE"] = 26;
@@ -1020,6 +1032,8 @@ export const common = $root.common = (() => {
         values[valuesById[82] = "GROUP_POLL_SETUP"] = 82;
         values[valuesById[83] = "GROUP_POLL_VOTE"] = 83;
         values[valuesById[129] = "GROUP_DELIVERY_RECEIPT"] = 129;
+        values[valuesById[147] = "GROUP_EDIT_MESSAGE"] = 147;
+        values[valuesById[148] = "GROUP_DELETE_MESSAGE"] = 148;
         values[valuesById[160] = "FORWARD_SECURITY_ENVELOPE"] = 160;
         values[valuesById[254] = "WEB_SESSION_RESUME"] = 254;
         return values;
@@ -2067,6 +2081,185 @@ export const csp_e2e = $root.csp_e2e = (() => {
         };
 
         return MessageMetadata;
+    })();
+
+    csp_e2e.EditMessage = (function() {
+
+        /**
+         * Properties of an EditMessage.
+         * @memberof csp_e2e
+         * @interface IEditMessage
+         * @property {Long|null} [messageId] EditMessage messageId
+         * @property {string|null} [text] EditMessage text
+         */
+
+        /**
+         * Constructs a new EditMessage.
+         * @memberof csp_e2e
+         * @classdesc Represents an EditMessage.
+         * @implements IEditMessage
+         * @constructor
+         * @param {csp_e2e.IEditMessage=} [properties] Properties to set
+         */
+        function EditMessage(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * EditMessage messageId.
+         * @member {Long} messageId
+         * @memberof csp_e2e.EditMessage
+         * @instance
+         */
+        EditMessage.prototype.messageId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+
+        /**
+         * EditMessage text.
+         * @member {string} text
+         * @memberof csp_e2e.EditMessage
+         * @instance
+         */
+        EditMessage.prototype.text = "";
+
+        /**
+         * Encodes the specified EditMessage message. Does not implicitly {@link csp_e2e.EditMessage.verify|verify} messages.
+         * @function encode
+         * @memberof csp_e2e.EditMessage
+         * @static
+         * @param {csp_e2e.EditMessage} message EditMessage message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        EditMessage.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.messageId != null && Object.hasOwnProperty.call(message, "messageId"))
+                writer.uint32(/* id 1, wireType 1 =*/9).fixed64(message.messageId);
+            if (message.text != null && Object.hasOwnProperty.call(message, "text"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.text);
+            return writer;
+        };
+
+        /**
+         * Decodes an EditMessage message from the specified reader or buffer.
+         * @function decode
+         * @memberof csp_e2e.EditMessage
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {csp_e2e.EditMessage} EditMessage
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        EditMessage.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.csp_e2e.EditMessage();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.messageId = reader.fixed64();
+                        break;
+                    }
+                case 2: {
+                        message.text = reader.string();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        return EditMessage;
+    })();
+
+    csp_e2e.DeleteMessage = (function() {
+
+        /**
+         * Properties of a DeleteMessage.
+         * @memberof csp_e2e
+         * @interface IDeleteMessage
+         * @property {Long|null} [messageId] DeleteMessage messageId
+         */
+
+        /**
+         * Constructs a new DeleteMessage.
+         * @memberof csp_e2e
+         * @classdesc Represents a DeleteMessage.
+         * @implements IDeleteMessage
+         * @constructor
+         * @param {csp_e2e.IDeleteMessage=} [properties] Properties to set
+         */
+        function DeleteMessage(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * DeleteMessage messageId.
+         * @member {Long} messageId
+         * @memberof csp_e2e.DeleteMessage
+         * @instance
+         */
+        DeleteMessage.prototype.messageId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+
+        /**
+         * Encodes the specified DeleteMessage message. Does not implicitly {@link csp_e2e.DeleteMessage.verify|verify} messages.
+         * @function encode
+         * @memberof csp_e2e.DeleteMessage
+         * @static
+         * @param {csp_e2e.DeleteMessage} message DeleteMessage message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        DeleteMessage.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.messageId != null && Object.hasOwnProperty.call(message, "messageId"))
+                writer.uint32(/* id 1, wireType 1 =*/9).fixed64(message.messageId);
+            return writer;
+        };
+
+        /**
+         * Decodes a DeleteMessage message from the specified reader or buffer.
+         * @function decode
+         * @memberof csp_e2e.DeleteMessage
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {csp_e2e.DeleteMessage} DeleteMessage
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        DeleteMessage.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.csp_e2e.DeleteMessage();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.messageId = reader.fixed64();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        return DeleteMessage;
     })();
 
     csp_e2e.GroupCallStart = (function() {

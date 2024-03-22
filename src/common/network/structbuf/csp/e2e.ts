@@ -29,8 +29,6 @@ import * as utils from '../utils.js';
  * they may be synchronised as part of the D2D protocol and even land in the
  * Threema Safe Backup. This is considered acceptable.
  *
- * **However, 1:1 conversations with these contacts must be hidden.**
- *
  * ¹: OnPrem provisions these public keys in the associated OPPF file.
  *
  * ### Mitigating Replay
@@ -175,11 +173,43 @@ import * as utils from '../utils.js';
  *
  * ### Sending
  *
- * A group message is encrypted and sent to each member individually.
- * However, the same [message ID](ref:e2e#message-id) must be used for those
- * individual messages (e.g. required for quoting). A group message is only
- * considered _sent_ once the server acknowledged reception of each individual
- * message.
+ * The following steps are defined as the _Common Send Steps_ and must always
+ * be invoked as part of a persistent task:
+ *
+ * 1. Let `message` be the message to be sent. Note: `message` must contain
+ *    all information to construct a message and must be assigned a stable
+ *    message ID via `message.id`.
+ * 2. Let `receivers` be the provided list of receivers for `message`.
+ * 3. If `message` is part of a group conversation, run the _Common Group Send
+ *    Steps_ with `receivers` and update `receivers` with the result. If the
+ *    message has been discarded, abort these steps.
+ * 4. If `message` is not exempted from blocking, remove all receivers from
+ *    `receivers` who are blocked.
+ * 5. (MD) Create a `d2d.OutgoingMessage` for `message` and reflect it. Wait
+ *    for the corresponding `reflect-ack`.
+ * 6. For each `receiver` in `receivers`:
+ *   1. If the `receiver` supports FS or has an FS session, invoke the FS
+ *      protocol and update `message` with the result. (TODO: Too condensed and
+ *      underspecified.)
+ *   2. Create a `payload.message-with-metadata-box` for `message` and assign
+ *      the `receiver` the resulting `payload`.¹
+ * 7. Wait until all `message-ack`s for each receiver's `payload` of
+ *    `receivers` has been received.
+ * 8. (MD) If `message` is eligible for automatic delivery receipts, reflect an
+ *    `OutgoingMessageUpdate.Sent` for `message.id`.
+ *
+ * The following steps are defined as the _Common Group Send Steps_:
+ *
+ * 1. Let `receivers` be the provided list of receivers for the message to be
+ *    sent.
+ * 2. If the user is no longer part of the group, discard the message and abort
+ *    these steps.
+ * 3. Remove all group members from `receivers` who are no longer part of the
+ *    group.
+ * 4. Return the updated `receivers`.
+ *
+ * ¹: Note that, in groups, this implicitly assigns the same message ID towards
+ * each group member which in fact is a requirement of the protocol.
  *
  * ### Receiving
  *
@@ -943,6 +973,8 @@ export class GroupMemberContainer extends base.Struct implements GroupMemberCont
  *   - Automatic: Yes
  *   - Manual: Yes
  * - When rejected: Re-send after confirmation
+ * - Edit applies to: Text
+ * - Deletable by: User and sender
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
@@ -960,6 +992,8 @@ export class GroupMemberContainer extends base.Struct implements GroupMemberCont
  *   - Automatic: N/A
  *   - Manual: Yes
  * - When rejected: Re-send after confirmation
+ * - Edit applies to: Text
+ * - Deletable by: User and sender
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * When receiving this message as a 1:1 conversation message:
@@ -1113,6 +1147,8 @@ export class Text extends base.Struct implements TextLike {
  *   - Automatic: Yes
  *   - Manual: Yes
  * - When rejected: N/A (deprecated message is not being sent)
+ * - Edit applies to: N/A
+ * - Deletable by: User and sender
  * - Send to Threema Gateway ID group creator: N/A
  *
  * The image must be in JPEG format, is uploaded to the blob server and
@@ -1319,6 +1355,8 @@ export class DeprecatedImage extends base.Struct implements DeprecatedImageLike 
  *   - Automatic: N/A
  *   - Manual: Yes
  * - When rejected: N/A (deprecated message is not being sent)
+ * - Edit applies to: N/A
+ * - Deletable by: User and sender
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * The image must be in JPEG format, is uploaded to the blob server and
@@ -1521,6 +1559,8 @@ export class DeprecatedGroupImage extends base.Struct implements DeprecatedGroup
  *   - Automatic: Yes
  *   - Manual: Yes
  * - When rejected: Re-send after confirmation
+ * - Edit applies to: N/A
+ * - Deletable by: User and sender
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
@@ -1538,6 +1578,8 @@ export class DeprecatedGroupImage extends base.Struct implements DeprecatedGroup
  *   - Automatic: N/A
  *   - Manual: Yes
  * - When rejected: Re-send after confirmation
+ * - Edit applies to: N/A
+ * - Deletable by: User and sender
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * When receiving this message as a group message (wrapped by
@@ -1725,6 +1767,8 @@ export class Location extends base.Struct implements LocationLike {
  *   - Automatic: Yes
  *   - Manual: Yes
  * - When rejected: N/A (deprecated message is not being sent)
+ * - Edit applies to: N/A
+ * - Deletable by: User and sender
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
@@ -1742,6 +1786,8 @@ export class Location extends base.Struct implements LocationLike {
  *   - Automatic: N/A
  *   - Manual: Yes
  * - When rejected: N/A (deprecated message is not being sent)
+ * - Edit applies to: N/A
+ * - Deletable by: User and sender
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * The audio is uploaded to the blob server and encrypted by:
@@ -1976,6 +2022,8 @@ export class DeprecatedAudio extends base.Struct implements DeprecatedAudioLike 
  *   - Automatic: Yes
  *   - Manual: Yes
  * - When rejected: N/A (deprecated message is not being sent)
+ * - Edit applies to: N/A
+ * - Deletable by: User and sender
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
@@ -1993,6 +2041,8 @@ export class DeprecatedAudio extends base.Struct implements DeprecatedAudioLike 
  *   - Automatic: N/A
  *   - Manual: Yes
  * - When rejected: N/A (deprecated message is not being sent)
+ * - Edit applies to: N/A
+ * - Deletable by: User and sender
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * The video is uploaded to the blob server and encrypted by:
@@ -2275,6 +2325,8 @@ export class DeprecatedVideo extends base.Struct implements DeprecatedVideoLike 
  *   - Automatic: Yes
  *   - Manual: Yes
  * - When rejected: Re-send after confirmation
+ * - Edit applies to: Caption
+ * - Deletable by: User and sender
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
@@ -2292,6 +2344,8 @@ export class DeprecatedVideo extends base.Struct implements DeprecatedVideoLike 
  *   - Automatic: N/A
  *   - Manual: Yes
  * - When rejected: Re-send after confirmation
+ * - Edit applies to: Caption
+ * - Deletable by: User and sender
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * The file is uploaded to the blob server and encrypted by:
@@ -2511,6 +2565,8 @@ export class File extends base.Struct implements FileLike {
  *   - Automatic: Yes
  *   - Manual: Yes
  * - When rejected: Re-send after confirmation
+ * - Edit applies to: N/A
+ * - Deletable by: User only (TODO(SE-383))
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
@@ -2528,6 +2584,8 @@ export class File extends base.Struct implements FileLike {
  *   - Automatic: N/A
  *   - Manual: Yes
  * - When rejected: Re-send after confirmation
+ * - Edit applies to: N/A
+ * - Deletable by: User only (TODO(SE-383))
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * When receiving this message as a 1:1 conversation message:
@@ -2775,6 +2833,8 @@ export class PollSetup extends base.Struct implements PollSetupLike {
  *   - Automatic: No
  *   - Manual: No
  * - When rejected: N/A (ignored)
+ * - Edit applies to: N/A (can just send another `poll-vote`)
+ * - Deletable by: User only (TODO(SE-383))
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
@@ -2791,6 +2851,8 @@ export class PollSetup extends base.Struct implements PollSetupLike {
  *   - Automatic: N/A
  *   - Manual: No
  * - When rejected: N/A (ignored)
+ * - Edit applies to: N/A (can just send another `poll-vote`)
+ * - Deletable by: User only (TODO(SE-383))
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * When receiving this message as a 1:1 conversation message:
@@ -3010,6 +3072,8 @@ export class PollVote extends base.Struct implements PollVoteLike {
  *   - Automatic: No
  *   - Manual: No
  * - When rejected: Abort call
+ * - Edit applies to: N/A
+ * - Deletable by: User only (TODO(SE-384))
  * - Send to Threema Gateway ID group creator: N/A
  *
  * [//]: # "When sending: TODO(SE-102)"
@@ -3166,6 +3230,8 @@ export class CallOffer extends base.Struct implements CallOfferLike {
  *   - Automatic: No
  *   - Manual: No
  * - When rejected: Abort call
+ * - Edit applies to: N/A
+ * - Deletable by: User only (TODO(SE-384))
  * - Send to Threema Gateway ID group creator: N/A
  *
  * [//]: # "When sending: TODO(SE-102)"
@@ -3334,6 +3400,8 @@ export class CallAnswer extends base.Struct implements CallAnswerLike {
  *   - Automatic: No
  *   - Manual: No
  * - When rejected: N/A (ignored)
+ * - Edit applies to: N/A
+ * - Deletable by: N/A
  * - Send to Threema Gateway ID group creator: N/A
  *
  * ¹: This message does not trigger any kind of reaction and adding ICE
@@ -3497,6 +3565,8 @@ export class CallIceCandidate extends base.Struct implements CallIceCandidateLik
  *   - Automatic: No
  *   - Manual: No
  * - When rejected: N/A (ignored)
+ * - Edit applies to: N/A
+ * - Deletable by: User only (TODO(SE-384))
  * - Send to Threema Gateway ID group creator: N/A
  *
  * [//]: # "When sending: TODO(SE-102)"
@@ -3646,6 +3716,8 @@ export class CallHangup extends base.Struct implements CallHangupLike {
  *   - Automatic: No
  *   - Manual: No
  * - When rejected: Abort call
+ * - Edit applies to: N/A
+ * - Deletable by: N/A
  * - Send to Threema Gateway ID group creator: N/A
  *
  * [//]: # "When sending: TODO(SE-102)"
@@ -3791,6 +3863,8 @@ export class CallRinging extends base.Struct implements CallRingingLike {
  *   - Outgoing: Yes²
  * - Delivery receipts: No, that would be silly!
  * - When rejected: N/A (ignored)
+ * - Edit applies to: N/A (can just send another `delivery-receipt`)
+ * - Deletable by: N/A
  * - Send to Threema Gateway ID group creator: N/A
  *
  * ¹: Repeating a status of type _received_ or _read_ has no ill-effects.
@@ -3812,6 +3886,8 @@ export class CallRinging extends base.Struct implements CallRingingLike {
  *     `delivery-receipt` is sent in this case).
  * - Delivery receipts: No, that would be silly!
  * - When rejected: N/A (ignored)
+ * - Edit applies to: N/A (can just send another `delivery-receipt`)
+ * - Deletable by: N/A
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * ¹: Repeating a status of type _received_ or _read_ has no ill-effects.
@@ -4017,6 +4093,8 @@ export class DeliveryReceipt extends base.Struct implements DeliveryReceiptLike 
  *   - Automatic: No
  *   - Manual: No
  * - When rejected: N/A (ignored)
+ * - Edit applies to: N/A
+ * - Deletable by: N/A
  * - Send to Threema Gateway ID group creator: N/A
  *
  * ¹: It is deemed acceptable if the _typing_ indicator in the UI is replayed
@@ -4178,6 +4256,8 @@ export class TypingIndicator extends base.Struct implements TypingIndicatorLike 
  *   - Automatic: No
  *   - Manual: No
  * - When rejected: N/A (ignored)
+ * - Edit applies to: N/A (can just send another `set-profile-picture`)
+ * - Deletable by: N/A (can just send a `delete-profile-picture`)
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
@@ -4194,6 +4274,8 @@ export class TypingIndicator extends base.Struct implements TypingIndicatorLike 
  *   - Automatic: N/A
  *   - Manual: No
  * - When rejected: N/A¹
+ * - Edit applies to: N/A (can just send another `set-profile-picture`)
+ * - Deletable by: N/A (can just send a `delete-profile-picture`)
  * - Send to Threema Gateway ID group creator: N/A
  *
  * ¹: For the group creator it will be handled as if `group-sync-request` was
@@ -4411,6 +4493,8 @@ export class SetProfilePicture extends base.Struct implements SetProfilePictureL
  *   - Automatic: No
  *   - Manual: No
  * - When rejected: N/A (ignored)
+ * - Edit applies to: N/A (can just send another `delete-profile-picture`)
+ * - Deletable by: N/A
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
@@ -4427,6 +4511,8 @@ export class SetProfilePicture extends base.Struct implements SetProfilePictureL
  *   - Automatic: N/A
  *   - Manual: No
  * - When rejected: N/A¹
+ * - Edit applies to: N/A (can just send another `delete-profile-picture`)
+ * - Deletable by: N/A
  * - Send to Threema Gateway ID group creator: N/A
  *
  * ¹: For the group creator it will be handled as if `group-sync-request` was
@@ -4559,6 +4645,8 @@ export class DeleteProfilePicture extends base.Struct implements DeleteProfilePi
  *   - Automatic: No
  *   - Manual: No
  * - When rejected: N/A (ignored)
+ * - Edit applies to: N/A
+ * - Deletable by: N/A
  * - Send to Threema Gateway ID group creator: N/A
  *
  * Send this when restoring a contact from a backup.
@@ -4695,6 +4783,8 @@ export class ContactRequestProfilePicture
  *   - Automatic: N/A
  *   - Manual: No
  * - When rejected: N/A¹
+ * - Edit applies to: N/A (can just send another `group-setup`)
+ * - Deletable by: N/A (can just send another `group-setup`)
  * - Send to Threema Gateway ID group creator: N/A
  *
  * ¹: For the group creator it will be handled as if `group-sync-request` was
@@ -4707,47 +4797,48 @@ export class ContactRequestProfilePicture
  *
  * When sending this message to all group members:
  *
- * 1. If the user is not the creator of the group, abort these steps.
- * 2. Create a `group-setup` message with an empty members list and send it
- *    to the group members that are to be removed from the group.
- * 3. Let `members` be the current member list of the group. Remove all
- *    members from this list that are to be removed from the group. Add all
- *    members to this list that are to be added to the group. (i.e. this
- *    list represents the updated member set with all removed and added
- *    members.)
- * 4. For each member of `members`, create a contact with acquaintance level
- *    _group_ if not already present in the contact list.
- * 5. Create a `group-setup` message with the members present in
- *    `members`. Send this message to all group members present in
- *    `members`.
- * 6. For each newly added `member` in `members`,
- *    additionally:
- *    1. If the group has a profile picture, send a
- *       [`set-profile-picture`](ref:e2e.set-profile-picture) group control
- *       message to the newly added `member`.
- *    2. If the group has no profile picture, send a
- *       [`delete-profile-picture`](ref:e2e.delete-profile-picture) group
- *       control message to the newly added `member`.
- *    3. If a group call is currently considered running within this group,
- *       run the _Group Call Refresh Steps_ and let `chosen-call` be the
- *       result. If `chosen-call` is defined, repeat
- *       `csp-e2e.GroupCallStart` that is associated to `chosen-call` with
- *       the _created_ timestamp set to the `started_at` value associated to
- *       `chosen-call`.
- * 7. If the action of the user triggering these steps was to disband or
- *    delete the group (and consequently `members` is empty):
- *    1. If the user is currently participating in a group call of this
- *       group, trigger leaving the call.
- *    2. Mark the group as _left_ and abort these steps. Persist this
- *       mark even if the group and its history is being removed by the
- *       user. When disbanding but not deleting, the client should persist
- *       the previous member setup, ignoring the content of `member` to give
- *       the user the possibility to view the message history and the member
- *       setup prior to the user being removed. The user must not be able to
- *       send any more messages to the group but may be allowed to _reopen_
- *       the group with the previous member setup, when desired.
- * 8. Update the group with the given `members`.
- * 9. If the group was previously marked as _left_, remove the _left_ mark.
+ * 1.  If the user is not the creator of the group, abort these steps.
+ * 2.  Create a `group-setup` message with an empty members list and send it
+ *     to the group members that are to be removed from the group.
+ * 3.  Let `members` be the current member list of the group. Remove all
+ *     members from this list that are to be removed from the group. Add all
+ *     members to this list that are to be added to the group. (i.e. this
+ *     list represents the updated member set with all removed and added
+ *     members.)
+ * 4.  For each member of `members`, create a contact with acquaintance level
+ *     _group_ if not already present in the contact list.
+ * 5.  Create a `group-setup` message with the members present in
+ *     `members`. Send this message to all group members present in
+ *     `members`.
+ * 6.  For each newly added `member` in `members`,
+ *     additionally:
+ *     1. If the group has a profile picture, send a
+ *        [`set-profile-picture`](ref:e2e.set-profile-picture) group control
+ *        message to the newly added `member`.
+ *     2. If the group has no profile picture, send a
+ *        [`delete-profile-picture`](ref:e2e.delete-profile-picture) group
+ *        control message to the newly added `member`.
+ *     3. If a group call is currently considered running within this group,
+ *        run the _Group Call Refresh Steps_ and let `chosen-call` be the
+ *        result. If `chosen-call` is defined, repeat
+ *        `csp-e2e.GroupCallStart` that is associated to `chosen-call` with
+ *        the _created_ timestamp set to the `started_at` value associated to
+ *        `chosen-call`.
+ * 7.  If the action of the user triggering these steps was to disband or
+ *     delete the group (and consequently `members` is empty):
+ *     1. If the user is currently participating in a group call of this
+ *        group, trigger leaving the call.
+ *     2. Mark the group as _left_ and abort these steps. Persist this
+ *        mark even if the group and its history is being removed by the
+ *        user. When disbanding but not deleting, the client should persist
+ *        the previous member setup, ignoring the content of `member` to give
+ *        the user the possibility to view the message history and the member
+ *        setup prior to the user being removed. The user must not be able to
+ *        send any more messages to the group but may be allowed to _reopen_
+ *        the group with the previous member setup, when desired.
+ * 8.  Update the group with the given `members`.
+ * 9.  If the group was previously marked as _left_, remove the _left_ mark.
+ * 10. Run the _Rejected Messages Refresh Steps_ for the group.
  *
  * When receiving this message as a group control message (wrapped by
  * [`group-creator-container`](ref:e2e.group-creator-container)):
@@ -4779,7 +4870,8 @@ export class ContactRequestProfilePicture
  * 6. Create or update the group with the given `members` plus the sender
  *    (creator).
  * 7. If the group was previously marked as _left_, remove the _left_ mark.
- * 8. If the user is currently participating in a group call of this group
+ * 8. Run the _Rejected Messages Refresh Steps_ for the group.
+ * 9. If the user is currently participating in a group call of this group
  *    and there are group call participants which are no longer members of
  *    the group, remove these participants from the group call (handle them
  *    as if they left the call).
@@ -4927,6 +5019,8 @@ export class GroupSetup extends base.Struct implements GroupSetupLike {
  *   - Automatic: N/A
  *   - Manual: No
  * - When rejected: N/A¹
+ * - Edit applies to: N/A (can just send another `group-name`)
+ * - Deletable by: N/A (can just send an empty name)
  * - Send to Threema Gateway ID group creator: N/A
  *
  * ¹: For the group creator it will be handled as if `group-sync-request` was
@@ -5084,6 +5178,8 @@ export class GroupName extends base.Struct implements GroupNameLike {
  *   - Automatic: N/A
  *   - Manual: No
  * - When rejected: N/A¹
+ * - Edit applies to: N/A
+ * - Deletable by: N/A
  * - Send to Threema Gateway ID group creator: Yes
  *
  * ¹: Re-send of `group-leave` implicitly triggered by FS `Reject` receive
@@ -5100,6 +5196,7 @@ export class GroupName extends base.Struct implements GroupNameLike {
  *    setup prior to the user leaving the group. The user must not be able to
  *    send any more messages to the group but should be able to clone the
  *    group with the previous member setup, when desired.
+ * 3. Run the _Rejected Messages Refresh Steps_ for the group.
  *
  * When receiving this message as a group control message (wrapped by
  * [`group-member-container`](ref:e2e.group-member-container)):
@@ -5113,7 +5210,8 @@ export class GroupName extends base.Struct implements GroupNameLike {
  *     2. Send a [`group-sync-request`](ref:e2e.group-sync-request) to the
  *        group creator, discard the message and abort these steps.
  * 4. Remove the member from the local group.
- * 5. If the user and the sender are participating in a group call of this
+ * 5. Run the _Rejected Messages Refresh Steps_ for the group.
+ * 6. If the user and the sender are participating in a group call of this
  *    group, remove the sender from the group call (handle it as if the
  *    sender left the call).
  */
@@ -5227,6 +5325,8 @@ export class GroupLeave extends base.Struct implements GroupLeaveLike {
  *   - Automatic: N/A
  *   - Manual: No
  * - When rejected: N/A¹
+ * - Edit applies to: N/A
+ * - Deletable by: N/A
  * - Send to Threema Gateway ID group creator: Yes
  *
  * ¹: Implicitly ignored by FS `Reject` receive steps.
@@ -5364,6 +5464,8 @@ export class GroupSyncRequest extends base.Struct implements GroupSyncRequestLik
  *   - Automatic: No
  *   - Manual: No
  * - When rejected: N/A (not sent by clients)
+ * - Edit applies to: N/A
+ * - Deletable by: N/A
  * - Send to Threema Gateway ID group creator: N/A
  *
  * When receiving this message:
