@@ -290,6 +290,7 @@
     "label--delivered-date": "Zugestellt",
     "label--file-name": "Dateiname",
     "label--file-size": "Dateigrösse",
+    "label--history": "Bearbeitungsverlauf",
     "label--last-edited-date": "Zuletzt bearbeitet am",
     "label--media-type": "Media Type",
     "label--message-id": "Nachrichten-ID",
@@ -297,7 +298,8 @@
     "label--read-date": "Gelesen",
     "label--received-date": "Erhalten",
     "label--sent-date": "Gesendet",
-    "label--title": "Nachrichtendetails"
+    "label--title": "Nachrichtendetails",
+    "prose--empty-caption": "Keine Dateiüberschrift"
   },
   "dialog--server-alert": {
     "action--confirm": "OK"

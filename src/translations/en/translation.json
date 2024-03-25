@@ -298,7 +298,8 @@
     "label--read-date": "Read",
     "label--received-date": "Received",
     "label--sent-date": "Sent",
-    "label--title": "Message Details"
+    "label--title": "Message Details",
+    "prose--empty-caption": "No caption"
   },
   "dialog--server-alert": {
     "action--confirm": "OK"
