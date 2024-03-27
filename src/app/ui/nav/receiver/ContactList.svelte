@@ -4,7 +4,7 @@
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
-  import {contextMenuAction} from '~/app/ui/generic/context-menu';
+  import {contextmenu} from '~/app/ui/actions/contextmenu';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import type {VirtualRect} from '~/app/ui/generic/popover/types';
   import {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
@@ -209,7 +209,7 @@
     {#each $sortedFilteredContacts as contact (contact.contactUid)}
       <div
         class="contact-preview"
-        use:contextMenuAction={(event) => {
+        use:contextmenu={(event) => {
           event.preventDefault();
           currentContact = contact;
           contextMenuPosition = {

@@ -6,6 +6,7 @@
   import {afterUpdate, createEventDispatcher} from 'svelte';
 
   import {globals} from '~/app/globals';
+  import {contextmenu} from '~/app/ui/actions/contextmenu';
   import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
   import type {ContextMenuItem} from '~/app/ui/components/hocs/context-menu-provider/types';
   import {
@@ -14,7 +15,6 @@
     getContextMenuItems,
   } from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-context-menu-provider/helpers';
   import type {MessageContextMenuProviderProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-context-menu-provider/props';
-  import {contextMenuAction} from '~/app/ui/generic/context-menu';
   import type Popover from '~/app/ui/generic/popover/Popover.svelte';
   import type {AnchorPoint, VirtualRect} from '~/app/ui/generic/popover/types';
   import {i18n} from '~/app/ui/i18n';
@@ -238,7 +238,7 @@
 </script>
 
 <div class={`container ${placement}`}>
-  <div class="message" use:contextMenuAction={handleContextMenuEvent}>
+  <div class="message" use:contextmenu={handleContextMenuEvent}>
     <slot name="message" />
   </div>
 

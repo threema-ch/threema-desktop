@@ -1,6 +1,6 @@
 import type {SvelteAction} from '~/app/types';
 
-export function contextMenuAction(
+export function contextmenu(
     node: HTMLElement,
     action: (event: MouseEvent, ...args: unknown[]) => void,
 ): SvelteAction {

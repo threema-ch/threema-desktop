@@ -6,6 +6,7 @@
 
   import {getFragmentForRoute} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
+  import {contextmenu} from '~/app/ui/actions/contextmenu';
   import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
   import {
     conversationDrafts,
@@ -17,7 +18,6 @@
   } from '~/app/ui/components/partials/conversation-preview-list/helpers';
   import type {ConversationPreviewProps} from '~/app/ui/components/partials/conversation-preview-list/internal/conversation-preview/props';
   import ReceiverCard from '~/app/ui/components/partials/receiver-card/ReceiverCard.svelte';
-  import {contextMenuAction} from '~/app/ui/generic/context-menu';
   import type {VirtualRect} from '~/app/ui/generic/popover/types';
   import {i18n} from '~/app/ui/i18n';
   import {reactive} from '~/app/ui/utils/svelte';
@@ -119,7 +119,7 @@
 <li
   class="container"
   data-receiver={`${receiver.lookup.type}.${receiver.lookup.uid}`}
-  use:contextMenuAction={handleAlternativeClick}
+  use:contextmenu={handleAlternativeClick}
 >
   <ContextMenuProvider
     bind:popover
