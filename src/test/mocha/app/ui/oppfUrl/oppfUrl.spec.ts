@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import {checkAndCompleteUrl} from '~/app/ui/components/partials/onprem-configuration-modal/helpers';
+import {checkAndCompleteUrl} from '~/app/ui/components/partials/modals/onprem-configuration-modal/helpers';
 
 export function run(): void {
     it('OppfUrl input parsing', function () {

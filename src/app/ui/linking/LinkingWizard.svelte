@@ -2,7 +2,7 @@
   import {onMount} from 'svelte';
 
   import {globals} from '~/app/globals';
-  import OnPremConfigurationModal from '~/app/ui/components/partials/onprem-configuration-modal/OnPremConfigurationModal.svelte';
+  import OnPremConfigurationModal from '~/app/ui/components/partials/modals/onprem-configuration-modal/OnPremConfigurationModal.svelte';
   import type {
     LinkingParams,
     LinkingWizardConfirmEmojiProps,

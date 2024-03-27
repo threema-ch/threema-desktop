@@ -5,8 +5,8 @@
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import Input from '~/app/ui/components/atoms/input/Input.svelte';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
-  import {checkAndCompleteUrl} from '~/app/ui/components/partials/onprem-configuration-modal/helpers';
-  import type {OnPremConfigurationModalProps} from '~/app/ui/components/partials/onprem-configuration-modal/props';
+  import {checkAndCompleteUrl} from '~/app/ui/components/partials/modals/onprem-configuration-modal/helpers';
+  import type {OnPremConfigurationModalProps} from '~/app/ui/components/partials/modals/onprem-configuration-modal/props';
   import {i18n} from '~/app/ui/i18n';
   import Step from '~/app/ui/linking/Step.svelte';
   import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
