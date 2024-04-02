@@ -24,6 +24,7 @@
 
   img {
     @extend %elevation-160;
+
     grid-area: 1 / 1;
     border-radius: rem(8px);
     display: block;
@@ -34,5 +35,6 @@
     height: auto;
     max-width: 100%;
     max-height: 100%;
+    background-color: rgba(var(--cc-modal-dialog-background-color-rgb-triplet), 1);
   }
 </style>
