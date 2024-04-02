@@ -534,7 +534,9 @@
       event.key === 'ArrowUp' &&
       $viewModelStore?.lastMessage?.direction === MessageDirection.OUTBOUND &&
       composeBarState.quotedMessage === undefined &&
-      (composeBarComponent?.getText() === undefined || composeBarComponent.getText() === '')
+      (composeBarComponent?.getText() === undefined || composeBarComponent.getText() === '') &&
+      // TODO(DESK-1401) Revert the commit that added this comment.
+      import.meta.env.BUILD_ENVIRONMENT === 'sandbox'
     ) {
       const messageToEdit = messageListComponent?.getPropsFromBackend(
         $viewModelStore.lastMessage.id,

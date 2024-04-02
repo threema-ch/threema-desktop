@@ -312,7 +312,8 @@
     status.sent !== undefined &&
     Date.now() - status.sent.at.getTime() < EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES * 60000 &&
     // For audios we dont support edit yet
-    !(file !== undefined && file.type === 'audio');
+    !(file !== undefined && file.type === 'audio') &&
+    import.meta.env.BUILD_ENVIRONMENT === 'sandbox';
 
   $: timestamp = reactive(
     () => ({
