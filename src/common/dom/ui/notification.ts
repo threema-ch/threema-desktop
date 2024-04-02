@@ -9,6 +9,16 @@ import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
 class ProxyNotification extends Notification {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
+
+    public constructor(
+        title: string,
+        options: ExtendedNotificationOptions,
+        // This identifier can be used to check which message was last shown in the notification,
+        // this allows updating edited message iff the message edited was the message last shown.
+        public readonly lastNotificationIdentifier: string,
+    ) {
+        super(title, options);
+    }
 }
 
 export class FrontendNotificationCreator implements NotificationCreator {
@@ -37,6 +47,7 @@ export class FrontendNotificationCreator implements NotificationCreator {
     public create(
         title: string,
         options: ExtendedNotificationOptions,
+        identifier: string,
     ): NotificationHandle | undefined {
         const {tag} = options;
 
@@ -46,9 +57,28 @@ export class FrontendNotificationCreator implements NotificationCreator {
         }
 
         // Create notification
-        const notification = new ProxyNotification(title, options);
+        const notification = new ProxyNotification(title, options, identifier);
         this._notifications.set(tag, notification);
         notification.addEventListener('close', () => this._notifications.delete(tag));
+        return notification;
+    }
+
+    public update(
+        title: string,
+        options: ExtendedNotificationOptions,
+        identifier: string,
+    ): NotificationHandle | undefined {
+        const {tag} = options;
+
+        // Check if we shouldn't show notifications if the application is focused
+        if (options.creator.ignore === 'if-focused' && appVisibility.get() === 'focused') {
+            return undefined;
+        }
+
+        const notification = this._notifications.get(tag);
+        if (notification?.lastNotificationIdentifier === identifier) {
+            this._notifications.set(tag, new ProxyNotification(title, options, identifier));
+        }
         return notification;
     }
 }

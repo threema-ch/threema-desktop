@@ -89,6 +89,13 @@ export interface NotificationCreator extends ProxyMarked {
     readonly create: (
         title: string,
         options: ExtendedNotificationOptions,
+        identifier: string,
+    ) => NotificationHandle | undefined;
+
+    readonly update: (
+        title: string,
+        options: ExtendedNotificationOptions,
+        identifier: string,
     ) => NotificationHandle | undefined;
 }
 
@@ -105,9 +112,49 @@ export class NotificationService {
             readonly view: ConversationView;
         },
     ): Promise<void> {
-        // TODO(DESK-255): Handle notifications by settings (ignore notification if disabled in settings)
+        const {title, body, tag} = this._getNotificationParameters(message, conversation);
+        await this._creator.create(
+            title,
+            {
+                tag,
+                body,
+                creator: {ignore: 'if-focused'},
+            },
+            message.get().view.id.toString(),
+        );
+    }
 
+    public async notifyMessageEdit(
+        message: AnyInboundMessageModelStore,
+        conversation: {
+            readonly receiver: AnyReceiverStore;
+            readonly view: ConversationView;
+        },
+    ): Promise<void> {
         // Fetch models
+        const {title, body, tag} = this._getNotificationParameters(message, conversation);
+
+        // Show notification. This automatically replaces an existing notification from the same
+        // receiver via the `tag`.
+        await this._creator.update(
+            title,
+            {
+                tag,
+                body,
+                creator: {ignore: 'if-focused'},
+            },
+            // We can take the messageId since for every conversation, there is at most one notification proxy.
+            message.get().view.id.toString(),
+        );
+    }
+
+    private _getNotificationParameters(
+        message: AnyInboundMessageModelStore,
+        conversation: {
+            readonly receiver: AnyReceiverStore;
+            readonly view: ConversationView;
+        },
+    ): {title: string; body: string | undefined; tag: NotificationTag} {
         const messageModel = message.get();
         const receiverModel = conversation.receiver.get();
 
@@ -151,12 +198,6 @@ export class NotificationService {
             body = '';
         }
 
-        // Show notification. This automatically replaces an existing notification from the same
-        // receiver via the `tag`.
-        await this._creator.create(title, {
-            tag: receiverModel.controller.notificationTag,
-            body,
-            creator: {ignore: 'if-focused'},
-        });
+        return {title, body, tag: receiverModel.controller.notificationTag};
     }
 }

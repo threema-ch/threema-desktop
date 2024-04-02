@@ -573,6 +573,7 @@ export class TestNotificationService extends NotificationService {
         async function create(
             title: string,
             options: ExtendedNotificationOptions,
+            identifier: string = '',
         ): Promise<NotificationHandle | undefined> {
             return undefined;
         }

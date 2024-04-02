@@ -50,7 +50,7 @@ import {OutgoingDeliveryReceiptTask} from '~/common/network/protocol/task/csp/ou
 import {OutgoingEditMessageTask} from '~/common/network/protocol/task/csp/outgoing-edit-message';
 import type {IdentityString, MessageId} from '~/common/network/types';
 import type {u53} from '~/common/types';
-import {assert, unreachable} from '~/common/utils/assert';
+import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {LazyMap} from '~/common/utils/map';
 import {LocalSetStore} from '~/common/utils/store/set-store';
@@ -602,7 +602,25 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
             editedMessage: UnifiedEditMessage,
             // eslint-disable-next-line @typescript-eslint/require-await
         ) => {
-            this.meta.run((handle) => this._editMessage(handle, editedMessage));
+            this.meta.run((handle) => {
+                this._editMessage(handle, editedMessage);
+                const message = this.conversation().get().controller.getMessage(handle.view().id);
+                assert(
+                    message !== undefined,
+                    'Existing messageId cannot reference undefined MessageModelStore',
+                );
+                assert(
+                    message.ctx === MessageDirection.INBOUND,
+                    'Cannot reference an outbound message from an inbound controller',
+                );
+                this._services.notification
+                    .notifyMessageEdit(message, {
+                        receiver: this.conversation().get().controller.receiver(),
+                        view: this.conversation().get().view,
+                    })
+
+                    .catch(assertUnreachable);
+            });
         },
         fromSync: (editedMessage: UnifiedEditMessage) => {
             this.meta.run((handle) => {
