@@ -18,15 +18,15 @@ Set the title using `document.title = 'Threema'` or `document.title = 'Threema W
 Create screenshots of the resulting window (manually for now). It is recommended to include the
 following screens:
 
-- Welcome screen
-- Chat with Hanna without sidebar
-- Chat with Foodies without sidebar
-- Chat with Foodies without sidebar with emoji picker
-- Chat with Foodies with sidebar
-- Chat with Foodies without sidebar, with contact list on the left
-- Settings: Profile
-- Settings: Appearance
-- Global search: Search for "to" (EN) or "er" (DE) while Foodies is open
+- 1: Welcome screen
+- 2: Chat with Hanna without sidebar
+- 3: Chat with Foodies without sidebar
+- 4: Chat with Foodies without sidebar with emoji picker
+- 5: Chat with Foodies with sidebar
+- 6: Chat with Foodies without sidebar, with contact list on the left
+- 7: Settings: Profile
+- 8: Settings: Appearance
+- 9: Global search: Search for "to" (EN) or "er" (DE) while Foodies is open
 
 Create screenshots with the following configurations:
 
