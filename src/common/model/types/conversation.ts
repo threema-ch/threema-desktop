@@ -3,7 +3,6 @@ import type {
     ConversationCategory,
     ConversationVisibility,
     MessageDirection,
-    MessageType,
     ReceiverType,
 } from '~/common/enum';
 import type {
@@ -14,6 +13,8 @@ import type {
 } from '~/common/model/types/common';
 import type {
     AnyMessageModelStore,
+    AnyNonDeletedMessageModelStore,
+    AnyNonDeletedMessageType,
     DirectedMessageFor,
     SetOfAnyLocalMessageModelStore,
 } from '~/common/model/types/message';
@@ -108,10 +109,10 @@ export type ConversationController = {
      * Note: This triggers an update of the `_lastModificationStore`.
      */
     readonly addMessage: ControllerCustomUpdateFromSource<
-        [init: DirectedMessageFor<MessageDirection.OUTBOUND, MessageType, 'init'>],
-        [init: DirectedMessageFor<MessageDirection, MessageType, 'init'>],
-        [init: DirectedMessageFor<MessageDirection.INBOUND, MessageType, 'init'>],
-        AnyMessageModelStore
+        [init: DirectedMessageFor<MessageDirection.OUTBOUND, AnyNonDeletedMessageType, 'init'>],
+        [init: DirectedMessageFor<MessageDirection, AnyNonDeletedMessageType, 'init'>],
+        [init: DirectedMessageFor<MessageDirection.INBOUND, AnyNonDeletedMessageType, 'init'>],
+        AnyNonDeletedMessageModelStore
     >;
 
     /**
@@ -161,6 +162,13 @@ export type ConversationController = {
             | Omit<GroupNameChangeStatus['view'], 'conversationUid' | 'id' | 'ordinal'>,
     ) => AnyStatusMessageModelStore;
 
+    /*
+     * Mark a message as deleted. Contrarily to `removeMessage`, this function deletes all text and
+     * additional data from the message and marks it as deleted, disabling any interaction with the
+     * message expect for removing it. This operation is irreversible and is reflected to all
+     * devices, as well as sent to all recipients of the current conversation.
+     */
+    readonly deleteMessage: ControllerUpdateFromSource<[uid: MessageId, deletedAt: Date]>;
     /**
      * Return whether the message with the specified id exists in the this conversation.
      */

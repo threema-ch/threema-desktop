@@ -128,7 +128,7 @@ export class InboundVideoMessageModelController
     public async blob(): Promise<FileBytesAndMediaType> {
         const blob = await loadOrDownloadBlob(
             'main',
-            this._type,
+            MessageType.VIDEO,
             MessageDirection.INBOUND,
             this.uid,
             this._conversation,
@@ -156,7 +156,7 @@ export class InboundVideoMessageModelController
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
         const blob = await loadOrDownloadBlob(
             'thumbnail',
-            this._type,
+            MessageType.VIDEO,
             MessageDirection.INBOUND,
             this.uid,
             this._conversation,
@@ -176,7 +176,7 @@ export class InboundVideoMessageModelController
         message.update((view) =>
             updateFileBasedMessageCaption(
                 this._services,
-                this._type,
+                MessageType.VIDEO,
                 this.uid,
                 view,
                 editedMessage,
@@ -200,7 +200,7 @@ export class OutboundVideoMessageModelController
     public async blob(): Promise<FileBytesAndMediaType> {
         const blob = await loadOrDownloadBlob(
             'main',
-            this._type,
+            MessageType.VIDEO,
             MessageDirection.OUTBOUND,
             this.uid,
             this._conversation,
@@ -216,7 +216,7 @@ export class OutboundVideoMessageModelController
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
         const blob = await loadOrDownloadBlob(
             'thumbnail',
-            this._type,
+            MessageType.VIDEO,
             MessageDirection.OUTBOUND,
             this.uid,
             this._conversation,
@@ -231,7 +231,7 @@ export class OutboundVideoMessageModelController
     /** @inheritdoc */
     public async uploadBlobs(): Promise<UploadedBlobBytes> {
         return await uploadBlobs(
-            this._type,
+            MessageType.VIDEO,
             this.uid,
             this._conversation.uid,
             this._services,
@@ -247,7 +247,7 @@ export class OutboundVideoMessageModelController
         message.update((view) =>
             updateFileBasedMessageCaption(
                 this._services,
-                this._type,
+                MessageType.VIDEO,
                 this.uid,
                 view,
                 editedMessage,

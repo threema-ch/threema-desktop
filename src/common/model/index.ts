@@ -57,8 +57,8 @@ export {
     type AnyInboundMessageModel,
     type AnyOutboundMessageModel,
     type AnyMessageModelStore,
-    type AnyInboundMessageModelStore,
-    type AnyOutboundMessageModelStore,
+    type AnyInboundNonDeletedMessageModelStore,
+    type AnyOutboundNonDeletedMessageModelStore,
     type DirectedMessageFor,
     type MessageFor,
 } from '~/common/model/types/message';

@@ -9,14 +9,18 @@ import type {
 import type {MessageFactory} from '~/common/model/message';
 import {createAudioMessage, getAudioMessageModelStore} from '~/common/model/message/audio-message';
 import type {NO_SENDER} from '~/common/model/message/common';
+import {
+    commonToDeletedView,
+    getDeletedMessageModelStore,
+} from '~/common/model/message/deleted-message';
 import {createFileMessage, getFileMessageModelStore} from '~/common/model/message/file-message';
 import {createImageMessage, getImageMessageModelStore} from '~/common/model/message/image-message';
 import {createTextMessage, getTextMessageModelStore} from '~/common/model/message/text-message';
 import {createVideoMessage, getVideoMessageModelStore} from '~/common/model/message/video-message';
 import type {ConversationControllerHandle} from '~/common/model/types/conversation';
-import type {BaseMessageView} from '~/common/model/types/message';
+import type {AnyNonDeletedMessageType, BaseMessageView} from '~/common/model/types/message';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
-import {unreachable} from '~/common/utils/assert';
+import {assert, unreachable} from '~/common/utils/assert';
 
 /**
  * Default message factory for creating stores and database entries for all existing message types.
@@ -72,12 +76,24 @@ export const MESSAGE_FACTORY: MessageFactory = {
                     common,
                     sender,
                 ) as TLocalModelStore; // Trivially true as message.type === TLocalModelStore['type']
+            case 'deleted':
+                assert(
+                    common.deletedAt !== undefined,
+                    `DeletedAt must be defined for deleted message with uid ${message.uid}`,
+                );
+                return getDeletedMessageModelStore(
+                    services,
+                    conversation,
+                    commonToDeletedView(common),
+                    message.uid,
+                    sender,
+                ) as TLocalModelStore;
             default:
                 return unreachable(message);
         }
     },
 
-    createDbMessage: <TDirection extends MessageDirection, TType extends MessageType>(
+    createDbMessage: <TDirection extends MessageDirection, TType extends AnyNonDeletedMessageType>(
         services: ServicesForModel,
         common: Omit<DbMessageCommon<TType>, 'uid' | 'type' | 'ordinal'>,
         init: DirectedMessageFor<TDirection, TType, 'init'>,

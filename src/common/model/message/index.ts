@@ -12,14 +12,14 @@ import {
     Existence,
     MessageDirection,
     MessageReaction,
-    type MessageType,
+    MessageType,
     TriggerSource,
     ReceiverType,
 } from '~/common/enum';
 import {deleteFilesInBackground} from '~/common/file-storage';
 import type {Logger} from '~/common/logging';
 import type {
-    AnyInboundMessageModelStore,
+    AnyInboundNonDeletedMessageModelStore,
     AnyMessageModelStore,
     Contact,
     DirectedMessageFor,
@@ -45,6 +45,9 @@ import {
     type MessageHistoryViewEntry,
     type CommonBaseFileMessageView,
     type UpdateFileBasedMessage,
+    type AnyNonDeletedMessageType,
+    type AnyNonDeletedMessageModelStore,
+    type AnyDeletedMessageModelStore,
 } from '~/common/model/types/message';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
@@ -74,7 +77,10 @@ export interface MessageFactory {
         sender: LocalModelStore<Contact> | typeof NO_SENDER,
     ) => TLocalModelStore;
 
-    readonly createDbMessage: <TDirection extends MessageDirection, TType extends MessageType>(
+    readonly createDbMessage: <
+        TDirection extends MessageDirection,
+        TType extends AnyNonDeletedMessageType,
+    >(
         services: ServicesForModel,
         common: Omit<DbMessageCommon<TType>, 'uid' | 'type' | 'ordinal'>,
         init: DirectedMessageFor<TDirection, TType, 'init'>,
@@ -123,24 +129,39 @@ function getCommonView<TDirection extends MessageDirection>(
     direction: TDirection,
     message: DbAnyMessage,
 ): BaseMessageView<TDirection> {
+    let extension;
+    if (message.type !== MessageType.DELETED) {
+        extension = {
+            reactions: message.reactions,
+            lastEditedAt: message.lastEditedAt,
+            history: message.history.map(
+                (val): MessageHistoryViewEntry => ({
+                    editedAt: val.editedAt,
+                    text: val.text ?? '',
+                }),
+            ),
+        };
+    } else {
+        extension = {
+            reactions: [],
+            lastEditedAt: undefined,
+            history: [],
+            deletedAt: message.deletedAt,
+        };
+    }
     const common: CommonBaseMessageView = {
         id: message.id,
         createdAt: message.createdAt,
         readAt: message.readAt,
         ordinal: message.ordinal,
-        reactions: message.reactions,
-        lastEditedAt: message.lastEditedAt,
-        history: message.history.map(
-            (val): MessageHistoryViewEntry => ({
-                editedAt: val.editedAt,
-                text: val.text ?? '',
-            }),
-        ),
+        ...extension,
     };
 
     switch (direction) {
         case MessageDirection.INBOUND: {
-            assert(message.raw !== undefined, 'Expected inbound message to have a raw body');
+            if (message.type !== MessageType.DELETED) {
+                assert(message.raw !== undefined, 'Expected inbound message to have a raw body');
+            }
             assert(
                 message.processedAt !== undefined,
                 'Expected inbound message to have a `processedAt` value',
@@ -149,7 +170,7 @@ function getCommonView<TDirection extends MessageDirection>(
                 ...common,
                 direction: MessageDirection.INBOUND,
                 receivedAt: message.processedAt,
-                raw: message.raw,
+                raw: message.type === MessageType.DELETED ? undefined : message.raw,
             };
             return inbound as BaseMessageView<TDirection>;
         }
@@ -219,6 +240,7 @@ function getCommonDbMessageData<TDirection extends MessageDirection, TType exten
         readAt: init.readAt,
         threadId: 1337n, // TODO(DESK-296): Set this properly
         history: [],
+        deletedAt: undefined,
     };
     switch (init.direction) {
         case MessageDirection.INBOUND: {
@@ -252,7 +274,7 @@ export function create(
     services: ServicesForModel,
     conversation: ConversationControllerHandle,
     factory: MessageFactory,
-    init: DirectedMessageFor<MessageDirection, MessageType, 'init'>,
+    init: DirectedMessageFor<MessageDirection, AnyNonDeletedMessageType, 'init'>,
 ): AnyMessageModelStore {
     // Gather common message data
     const [common, sender] = getCommonDbMessageData(services, conversation.uid, init);
@@ -350,8 +372,8 @@ export function getFirstUnreadMessageId(
 export function editMessageByMessageUid(
     services: ServicesForModel,
     messageUid: DbMessageUid,
-    type: MessageType,
-    change: DbMessageEditFor<MessageType>,
+    type: AnyNonDeletedMessageType,
+    change: DbMessageEditFor<AnyNonDeletedMessageType>,
 ): void {
     const {db} = services;
     db.editMessage(messageUid, type, change);
@@ -369,8 +391,8 @@ function update(
     services: ServicesForModel,
     log: Logger,
     conversationUid: UidOf<DbConversation>,
-    uid: UidOf<DbMessageCommon<MessageType>>,
-    type: MessageType,
+    uid: UidOf<DbMessageCommon<AnyNonDeletedMessageType>>,
+    type: AnyNonDeletedMessageType,
     change: Partial<
         Omit<InboundBaseMessageView, 'receivedAt'> | Omit<OutboundBaseMessageView, 'sentAt'>
     >,
@@ -403,8 +425,8 @@ function createOrUpdateReaction(
 function updateOutboundMessageSentAt(
     services: ServicesForModel,
     conversationUid: UidOf<DbConversation>,
-    uid: UidOf<DbMessageCommon<MessageType>>,
-    type: MessageType,
+    uid: UidOf<DbMessageCommon<AnyNonDeletedMessageType>>,
+    type: AnyNonDeletedMessageType,
     sentAt: Date,
 ): void {
     const {db} = services;
@@ -435,6 +457,50 @@ function remove(
 
     // Delete from file system
     deleteFilesInBackground(file, log, deletedFileIds);
+}
+
+/**
+ * Marks a message as deleted and deletes all entries in corresponding tables (such as reactions) as
+ * well as files referenced by this message in the file storage. Such messages are first repurposed
+ * to deleted messages in the database. The original message is then removed from the cache and
+ * replaced with its deleted counterpart.
+ *
+ * @throws Error if the message type was not deletable or the (message, conversation)-pair was not
+ * found in the database.
+ */
+export function deleteMessage(
+    services: ServicesForModel,
+    deletedAt: Date,
+    conversation: ConversationControllerHandle,
+    messageModel: AnyNonDeletedMessageModelStore,
+    messageFactory: MessageFactory,
+    log: Logger,
+): AnyDeletedMessageModelStore {
+    const {db, file} = services;
+    const messageUid = messageModel.get().controller.uid;
+    return messageModel.get().controller.meta.deactivate(() => {
+        // Delete from database
+        const {deletedMessage, deletedFileIds} = db.deleteMessage(
+            conversation.uid,
+            messageUid,
+            deletedAt,
+        );
+        if (deletedMessage === undefined) {
+            throw new Error(`Could not delete message with UID ${messageUid} from database`);
+        }
+
+        // Delete from file system
+        deleteFilesInBackground(file, log, deletedFileIds);
+
+        // Delete from cache
+        caches.get(conversation.uid).remove(messageUid);
+
+        return caches
+            .get(conversation.uid)
+            .add(messageUid, () =>
+                createStore(services, conversation, messageFactory, deletedMessage, undefined),
+            );
+    });
 }
 
 /**
@@ -491,7 +557,7 @@ export function all(
  */
 export function updateFileBasedMessageCaption<TFileMessageView extends CommonBaseFileMessageView>(
     services: ServicesForModel,
-    messageType: MessageType,
+    messageType: AnyNonDeletedMessageType,
     messageUid: DbMessageUid,
     messageView: Readonly<TFileMessageView>,
     editedMessage: UnifiedEditMessage,
@@ -515,7 +581,7 @@ export function updateFileBasedMessageCaption<TFileMessageView extends CommonBas
     return {...change, history: newHistory};
 }
 
-abstract class CommonBaseMessageModelController<TView extends CommonBaseMessageView> {
+export abstract class CommonBaseMessageController<TView extends CommonBaseMessageView> {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly meta = new ModelLifetimeGuard<TView>();
 
@@ -551,6 +617,25 @@ abstract class CommonBaseMessageModelController<TView extends CommonBaseMessageV
         this.meta.deactivate(() =>
             remove(this._services, this._log, this._conversation.uid, this.uid),
         );
+    }
+}
+
+/**
+ * This class represents a controller for all messages that can be interacted with. Such
+ * interactions may entail deleting, editing, reactions and so on.
+ */
+export abstract class CommonBaseInteractableMessageModelController<
+    TView extends CommonBaseMessageView,
+> extends CommonBaseMessageController<TView> {
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
+
+    public constructor(
+        uid: UidOf<DbMessageCommon<AnyNonDeletedMessageType>>,
+        protected override readonly _type: AnyNonDeletedMessageType,
+        conversation: ConversationControllerHandle,
+        services: ServicesForModel,
+    ) {
+        super(uid, _type, conversation, services);
     }
 
     protected _read(
@@ -618,7 +703,7 @@ abstract class CommonBaseMessageModelController<TView extends CommonBaseMessageV
 
 /** @inheritdoc */
 export abstract class InboundBaseMessageModelController<TView extends InboundBaseMessageView>
-    extends CommonBaseMessageModelController<TView>
+    extends CommonBaseInteractableMessageModelController<TView>
     implements InboundBaseMessageController<TView>
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
@@ -665,6 +750,12 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
                     message.ctx === MessageDirection.INBOUND,
                     'Cannot reference an outbound message from an inbound controller',
                 );
+
+                assert(
+                    message.type !== MessageType.DELETED,
+                    'Cannot edit a message that was already deleted',
+                );
+
                 this._updateNotificationForEditedMessage(message);
             });
         },
@@ -678,7 +769,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
     public constructor(
         services: ServicesForModel,
         uid: UidOf<DbMessageCommon<MessageType>>,
-        type: MessageType,
+        type: AnyNonDeletedMessageType,
         conversation: ConversationControllerHandle,
         protected readonly _sender: LocalModelStore<Contact>,
     ) {
@@ -769,7 +860,9 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
         });
     }
 
-    private _updateNotificationForEditedMessage(message: AnyInboundMessageModelStore): void {
+    private _updateNotificationForEditedMessage(
+        message: AnyInboundNonDeletedMessageModelStore,
+    ): void {
         const conversation = this.conversation().get();
         this._services.notification
             .notifyMessageEdit(message, {
@@ -783,7 +876,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
 
 /** @inheritdoc */
 export abstract class OutboundBaseMessageModelController<TView extends OutboundBaseMessageView>
-    extends CommonBaseMessageModelController<TView>
+    extends CommonBaseInteractableMessageModelController<TView>
     implements OutboundBaseMessageController<TView>
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
@@ -847,7 +940,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
     public constructor(
         services: ServicesForModel,
         uid: UidOf<DbMessageCommon<MessageType>>,
-        type: MessageType,
+        type: AnyNonDeletedMessageType,
         conversation: ConversationControllerHandle,
     ) {
         super(uid, type, conversation, services);
@@ -1006,10 +1099,10 @@ export class MessageModelRepository implements MessageRepository {
     }
 
     /** @inheritdoc */
-    public findAllByText(text: string, limit?: u53): LocalSetStore<AnyMessageModelStore> {
+    public findAllByText(text: string, limit?: u53): LocalSetStore<AnyNonDeletedMessageModelStore> {
         const {db, model} = this._services;
 
-        const stores: AnyMessageModelStore[] = db
+        const stores: AnyNonDeletedMessageModelStore[] = db
             .getMessageIdentifiersByText(text, limit)
             .map((message) => {
                 // Look up the conversation.
@@ -1032,6 +1125,11 @@ export class MessageModelRepository implements MessageRepository {
                     messageModelStore !== undefined,
                     `Expected MessageModelStore for message with UID ${message.uid} to exist`,
                 );
+
+                /**
+                 * The search results should not contain any message that was deleted.
+                 */
+                assert(messageModelStore.type !== MessageType.DELETED);
 
                 return messageModelStore;
             });

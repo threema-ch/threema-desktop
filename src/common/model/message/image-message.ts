@@ -131,7 +131,7 @@ export class InboundImageMessageModelController
     public async blob(): Promise<FileBytesAndMediaType> {
         const blob = await loadOrDownloadBlob(
             'main',
-            this._type,
+            MessageType.IMAGE,
             MessageDirection.INBOUND,
             this.uid,
             this._conversation,
@@ -159,7 +159,7 @@ export class InboundImageMessageModelController
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
         const blob = await loadOrDownloadBlob(
             'thumbnail',
-            this._type,
+            MessageType.IMAGE,
             MessageDirection.INBOUND,
             this.uid,
             this._conversation,
@@ -179,7 +179,7 @@ export class InboundImageMessageModelController
         message.update((view) =>
             updateFileBasedMessageCaption(
                 this._services,
-                this._type,
+                MessageType.IMAGE,
                 this.uid,
                 view,
                 editedMessage,
@@ -203,7 +203,7 @@ export class OutboundImageMessageModelController
     public async blob(): Promise<FileBytesAndMediaType> {
         const blob = await loadOrDownloadBlob(
             'main',
-            this._type,
+            MessageType.IMAGE,
             MessageDirection.OUTBOUND,
             this.uid,
             this._conversation,
@@ -219,7 +219,7 @@ export class OutboundImageMessageModelController
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
         const blob = await loadOrDownloadBlob(
             'thumbnail',
-            this._type,
+            MessageType.IMAGE,
             MessageDirection.OUTBOUND,
             this.uid,
             this._conversation,
@@ -234,7 +234,7 @@ export class OutboundImageMessageModelController
     /** @inheritdoc */
     public async uploadBlobs(): Promise<UploadedBlobBytes> {
         return await uploadBlobs(
-            this._type,
+            MessageType.IMAGE,
             this.uid,
             this._conversation.uid,
             this._services,
@@ -255,7 +255,7 @@ export class OutboundImageMessageModelController
         message.update((view) =>
             updateFileBasedMessageCaption(
                 this._services,
-                this._type,
+                MessageType.IMAGE,
                 this.uid,
                 view,
                 editedMessage,

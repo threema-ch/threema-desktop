@@ -107,7 +107,7 @@ export class InboundTextMessageModelController
             text: editedMessage.newText,
         };
         message.update((view) => {
-            editMessageByMessageUid(this._services, this.uid, this._type, change);
+            editMessageByMessageUid(this._services, this.uid, MessageType.TEXT, change);
             const newHistory: MessageHistoryViewEntry[] =
                 view.history.length === 0
                     ? [{text: view.text, editedAt: view.createdAt}]
@@ -140,7 +140,7 @@ export class OutboundTextMessageModelController
             text: editedMessage.newText,
         };
         message.update((view) => {
-            editMessageByMessageUid(this._services, this.uid, this._type, change);
+            editMessageByMessageUid(this._services, this.uid, MessageType.TEXT, change);
             const newHistory: MessageHistoryViewEntry[] =
                 view.history.length === 0
                     ? [{text: view.text, editedAt: view.createdAt}]

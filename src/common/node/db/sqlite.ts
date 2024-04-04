@@ -65,7 +65,11 @@ import {
 } from '~/common/enum';
 import type {FileId} from '~/common/file-storage';
 import type {Logger} from '~/common/logging';
-import type {MediaBasedMessageType, TextBasedMessageType} from '~/common/model/types/message';
+import type {
+    AnyNonDeletedMessageType,
+    MediaBasedMessageType,
+    TextBasedMessageType,
+} from '~/common/model/types/message';
 import {
     statusMessageUidToStatusMessageId,
     type GroupId,
@@ -1892,7 +1896,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     private _getLastEdit(
-        type: Exclude<MessageType, MessageType.DELETED>,
+        type: AnyNonDeletedMessageType,
         messageUid: DbMessageUid,
     ): DbMessageLastEdit {
         switch (type) {
@@ -1959,7 +1963,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public editMessage<TMessageType extends Exclude<MessageType, MessageType.DELETED>>(
+    public editMessage<TMessageType extends AnyNonDeletedMessageType>(
         messageUid: DbMessageUid,
         type: TMessageType,
         messageUpdate: DbMessageEditFor<TMessageType>,

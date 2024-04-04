@@ -127,7 +127,7 @@ export class InboundAudioMessageModelController
     public async blob(): Promise<FileBytesAndMediaType> {
         const blob = await loadOrDownloadBlob(
             'main',
-            this._type,
+            MessageType.AUDIO,
             MessageDirection.INBOUND,
             this.uid,
             this._conversation,
@@ -143,7 +143,7 @@ export class InboundAudioMessageModelController
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
         const blob = await loadOrDownloadBlob(
             'thumbnail',
-            this._type,
+            MessageType.AUDIO,
             MessageDirection.INBOUND,
             this.uid,
             this._conversation,
@@ -163,7 +163,7 @@ export class InboundAudioMessageModelController
         message.update((view) =>
             updateFileBasedMessageCaption(
                 this._services,
-                this._type,
+                MessageType.AUDIO,
                 this.uid,
                 view,
                 editedMessage,
@@ -187,7 +187,7 @@ export class OutboundAudioMessageModelController
     public async blob(): Promise<FileBytesAndMediaType> {
         const blob = await loadOrDownloadBlob(
             'main',
-            this._type,
+            MessageType.AUDIO,
             MessageDirection.OUTBOUND,
             this.uid,
             this._conversation,
@@ -203,7 +203,7 @@ export class OutboundAudioMessageModelController
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
         const blob = await loadOrDownloadBlob(
             'thumbnail',
-            this._type,
+            MessageType.AUDIO,
             MessageDirection.OUTBOUND,
             this.uid,
             this._conversation,
@@ -218,7 +218,7 @@ export class OutboundAudioMessageModelController
     /** @inheritdoc */
     public async uploadBlobs(): Promise<UploadedBlobBytes> {
         return await uploadBlobs(
-            this._type,
+            MessageType.AUDIO,
             this.uid,
             this._conversation.uid,
             this._services,
@@ -234,7 +234,7 @@ export class OutboundAudioMessageModelController
         message.update((view) =>
             updateFileBasedMessageCaption(
                 this._services,
-                this._type,
+                MessageType.AUDIO,
                 this.uid,
                 view,
                 editedMessage,

@@ -16,6 +16,7 @@ import type {ConversationControllerHandle} from '~/common/model/types/conversati
 import type {
     AnyFileBasedMessageModelLifetimeGuard,
     AnyFileBasedOutboundMessageModelLifetimeGuard,
+    AnyNonDeletedMessageType,
     CommonBaseFileMessageView,
     CommonBaseMessageView,
     FileData,
@@ -120,7 +121,7 @@ function determineBlobDoneScope(
 export function updateFileBasedMessage(
     services: Pick<ServicesForModel, 'db' | 'file'>,
     log: Logger,
-    messageType: MessageType,
+    messageType: AnyNonDeletedMessageType,
     conversationUid: DbConversationUid,
     messageUid: DbMessageUid,
     change: UpdateFileBasedMessage,
@@ -150,7 +151,7 @@ export interface BlobLoadResult {
 
 export async function loadOrDownloadBlob(
     type: 'main',
-    messageType: MessageType,
+    messageType: AnyNonDeletedMessageType,
     messageDirection: MessageDirection,
     messageUid: DbMessageUid,
     conversation: ConversationControllerHandle,
@@ -161,7 +162,7 @@ export async function loadOrDownloadBlob(
 ): Promise<BlobLoadResult>;
 export async function loadOrDownloadBlob(
     type: 'thumbnail',
-    messageType: MessageType,
+    messageType: AnyNonDeletedMessageType,
     messageDirection: MessageDirection,
     messageUid: DbMessageUid,
     conversation: ConversationControllerHandle,
@@ -180,7 +181,7 @@ export async function loadOrDownloadBlob(
  */
 export async function loadOrDownloadBlob(
     type: BlobType,
-    messageType: MessageType,
+    messageType: AnyNonDeletedMessageType,
     messageDirection: MessageDirection,
     messageUid: DbMessageUid,
     conversation: ConversationControllerHandle,
@@ -519,7 +520,7 @@ export type UploadedBlobBytes = {readonly [k in BlobType]: ReadonlyUint8Array | 
  * The uploaded file and thumbnail bytes are returned for further processing.
  */
 export async function uploadBlobs(
-    messageType: MessageType,
+    messageType: AnyNonDeletedMessageType,
     messageUid: DbMessageUid,
     conversationUid: DbConversationUid,
     services: Pick<ServicesForModel, 'blob' | 'crypto' | 'db' | 'file'>,
@@ -610,7 +611,7 @@ export async function uploadBlobs(
 
 export async function overwriteThumbnail(
     bytes: ReadonlyUint8Array,
-    messageType: MessageType,
+    messageType: AnyNonDeletedMessageType,
     messageUid: DbMessageUid,
     conversationUid: DbConversationUid,
     services: Pick<ServicesForModel, 'db' | 'file'>,

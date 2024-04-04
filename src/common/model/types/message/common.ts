@@ -29,7 +29,7 @@ export type IdentityStringOrMe = IdentityString | typeof OWN_IDENTITY_ALIAS;
 
 export type MediaBasedMessageType = Exclude<MessageType, MessageType.TEXT | MessageType.DELETED>;
 
-export type TextBasedMessageType = Exclude<MessageType, MediaBasedMessageType>;
+export type TextBasedMessageType = MessageType.TEXT;
 
 export interface MessageReactionView {
     readonly reactionAt: Date;
@@ -81,6 +81,8 @@ export interface CommonBaseMessageView {
 
     readonly lastEditedAt?: Date;
 
+    readonly deletedAt?: Date;
+
     /**
      * Ordinal for message ordering. Note: Higher `ordinal` means the message is newer.
      */
@@ -99,9 +101,9 @@ export type InboundBaseMessageView = CommonBaseMessageView & {
     readonly receivedAt: Date;
 
     /**
-     * Unparsed raw body.
+     * Unparsed raw body. For deleted messages, we don't need a raw body.
      */
-    readonly raw: ReadonlyUint8Array;
+    readonly raw?: ReadonlyUint8Array;
 };
 export type OutboundBaseMessageView = CommonBaseMessageView & {
     /**
@@ -177,7 +179,7 @@ export type InboundBaseMessageController<TView extends InboundBaseMessageView> =
          *
          * Note: This interface does not allow updating `fromLocal`, because when viewing a
          *       conversation on the local device, the _entire_ conversation should be marked as
-         *       read. Thus, use `ConversationController.read.fromLocal` instead.
+         *       read. Thus, use `ConversationControllerLocal` instead.
          */
         readonly read: ControllerUpdateFromSync<[readAt: Date]>;
 
@@ -190,6 +192,9 @@ export type InboundBaseMessageController<TView extends InboundBaseMessageView> =
             [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString] // FromRemote
         >;
 
+        /**
+         * Edits the message text/content of this message.
+         */
         readonly editMessage: Omit<
             ControllerUpdateFromSource<[editedMessage: UnifiedEditMessage]>,
             'fromLocal'
@@ -227,6 +232,9 @@ export type OutboundBaseMessageController<TView extends OutboundBaseMessageView>
             [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString] // FromRemote
         >;
 
+        /**
+         * Edits the message text/content of this message.
+         */
         readonly editMessage: Omit<
             ControllerUpdateFromSource<[editedMessage: UnifiedEditMessage]>,
             'fromRemote'

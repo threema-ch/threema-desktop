@@ -7,7 +7,7 @@ import {
     Existence,
     MessageDirection,
     MessageQueryDirection,
-    type MessageType,
+    MessageType,
     ReadReceiptPolicy,
     ReceiverType,
     TriggerSource,
@@ -24,12 +24,18 @@ import type {
     ConversationView,
 } from '~/common/model/types/conversation';
 import type {
-    AnyInboundMessageModelStore,
+    AnyInboundNonDeletedMessageModelStore,
     AnyMessageModelStore,
-    AnyOutboundMessageModelStore,
+    AnyNonDeletedMessageModelStore,
+    AnyNonDeletedMessageType,
+    AnyOutboundNonDeletedMessageModelStore,
     DirectedMessageFor,
     SetOfAnyLocalMessageModelStore,
 } from '~/common/model/types/message';
+import type {
+    InboundDeletedMessageModel,
+    OutboundDeletedMessageModel,
+} from '~/common/model/types/message/deleted';
 import type {AnyReceiver, AnyReceiverStore} from '~/common/model/types/receiver';
 import type {
     AnyStatusMessageModelStore,
@@ -218,7 +224,7 @@ export class ConversationModelController implements ConversationController {
     public readonly addMessage: ConversationController['addMessage'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromLocal: async (
-            init: DirectedMessageFor<MessageDirection.OUTBOUND, MessageType, 'init'>,
+            init: DirectedMessageFor<MessageDirection.OUTBOUND, AnyNonDeletedMessageType, 'init'>,
         ) => {
             const receiverStore = this.receiver();
             const receiver = receiverStore.get();
@@ -245,11 +251,11 @@ export class ConversationModelController implements ConversationController {
             // Return the added message
             return messageStore;
         },
-        fromSync: (init: DirectedMessageFor<MessageDirection, MessageType, 'init'>) =>
+        fromSync: (init: DirectedMessageFor<MessageDirection, AnyNonDeletedMessageType, 'init'>) =>
             this._addMessage(init),
         fromRemote: async (
             activeTaskHandle,
-            init: DirectedMessageFor<MessageDirection.INBOUND, MessageType, 'init'>,
+            init: DirectedMessageFor<MessageDirection.INBOUND, AnyNonDeletedMessageType, 'init'>,
         ) => {
             const receiver = this.receiver();
 
@@ -311,6 +317,70 @@ export class ConversationModelController implements ConversationController {
 
             messageToRemove.get().controller.remove();
             this._updateStoresOnConversationUpdate();
+        },
+    };
+
+    /** @inheritdoc */
+    public readonly deleteMessage: ConversationController['deleteMessage'] = {
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
+        // eslint-disable-next-line @typescript-eslint/require-await
+        fromLocal: async (uid: MessageId, deletedAt: Date) => {
+            const messageToDelete = this.getMessage(uid);
+
+            if (messageToDelete === undefined) {
+                this._log.warn('Cannot find the message to be deleted');
+                return;
+            }
+
+            if (messageToDelete.type === MessageType.DELETED) {
+                this._log.warn('Trying to delete a message that was already deleted.');
+                return;
+            }
+
+            assert(
+                messageToDelete.ctx === MessageDirection.OUTBOUND,
+                `Expected message direction ${MessageDirection.OUTBOUND} does not match the actual message direction ${messageToDelete.ctx}`,
+            );
+
+            this._deleteMessage(messageToDelete, deletedAt, TriggerSource.LOCAL);
+        },
+
+        fromSync: (uid: MessageId, deletedAt: Date) => {
+            const messageToDelete = this.getMessage(uid);
+
+            if (messageToDelete === undefined) {
+                this._log.warn('Cannot find the message to be deleted');
+                return;
+            }
+
+            if (messageToDelete.type === MessageType.DELETED) {
+                this._log.warn('Trying to delete a message that was already deleted.');
+                return;
+            }
+
+            this._deleteMessage(messageToDelete, deletedAt, TriggerSource.SYNC);
+        },
+
+        // eslint-disable-next-line @typescript-eslint/require-await
+        fromRemote: async (handle, uid: MessageId, deletedAt: Date) => {
+            const messageToDelete = this.getMessage(uid);
+
+            if (messageToDelete === undefined) {
+                this._log.warn('Cannot find the message to be deleted');
+                return;
+            }
+
+            if (messageToDelete.type === MessageType.DELETED) {
+                this._log.warn('Trying to delete a message that was already deleted.');
+                return;
+            }
+
+            assert(
+                messageToDelete.ctx === MessageDirection.INBOUND,
+                `Expected message direction ${MessageDirection.INBOUND} does not match the actual message direction ${messageToDelete.ctx}`,
+            );
+
+            this._deleteMessage(messageToDelete, deletedAt, TriggerSource.REMOTE);
         },
     };
 
@@ -688,6 +758,44 @@ export class ConversationModelController implements ConversationController {
         return message.getFirstUnreadMessageId(this._services, this._handle);
     }
 
+    private _deleteMessage(
+        messageToDelete: AnyNonDeletedMessageModelStore,
+        deletedAt: Date,
+        triggerSource: TriggerSource,
+    ): void {
+        const deletedMessageStore = message.deleteMessage(
+            this._services,
+            deletedAt,
+            this._handle,
+            messageToDelete,
+            MESSAGE_FACTORY,
+            this._log,
+        );
+
+        switch (triggerSource) {
+            case TriggerSource.LOCAL:
+                assert(
+                    deletedMessageStore.ctx === MessageDirection.OUTBOUND,
+                    'Cannot send an outgoing delete message task for an inbound message',
+                );
+
+                break;
+            case TriggerSource.REMOTE:
+                assert(
+                    deletedMessageStore.ctx === MessageDirection.INBOUND,
+                    'Cannot create a delete notification for an outbound message',
+                );
+
+                break;
+            case TriggerSource.SYNC:
+                break;
+            default:
+                unreachable(triggerSource);
+        }
+
+        this._updateStoresOnConversationUpdate();
+    }
+
     /**
      * Update database with the change, determine derived view data and return the view update.
      */
@@ -934,17 +1042,17 @@ export class ConversationModelController implements ConversationController {
     }
 
     private _addMessage(
-        init: DirectedMessageFor<MessageDirection.INBOUND, MessageType, 'init'>,
-    ): AnyInboundMessageModelStore;
+        init: DirectedMessageFor<MessageDirection.INBOUND, AnyNonDeletedMessageType, 'init'>,
+    ): Exclude<AnyInboundNonDeletedMessageModelStore, InboundDeletedMessageModel>;
     private _addMessage(
-        init: DirectedMessageFor<MessageDirection.OUTBOUND, MessageType, 'init'>,
-    ): AnyOutboundMessageModelStore;
+        init: DirectedMessageFor<MessageDirection.OUTBOUND, AnyNonDeletedMessageType, 'init'>,
+    ): Exclude<AnyOutboundNonDeletedMessageModelStore, OutboundDeletedMessageModel>;
     private _addMessage(
-        init: DirectedMessageFor<MessageDirection, MessageType, 'init'>,
-    ): AnyMessageModelStore;
+        init: DirectedMessageFor<MessageDirection, AnyNonDeletedMessageType, 'init'>,
+    ): AnyNonDeletedMessageModelStore;
     private _addMessage(
-        init: DirectedMessageFor<MessageDirection, MessageType, 'init'>,
-    ): AnyMessageModelStore {
+        init: DirectedMessageFor<MessageDirection, AnyNonDeletedMessageType, 'init'>,
+    ): AnyNonDeletedMessageModelStore {
         const isInbound = init.direction === MessageDirection.INBOUND;
         const isUnread = init.readAt === undefined;
 
@@ -955,6 +1063,8 @@ export class ConversationModelController implements ConversationController {
 
         // Store the message in the DB and retrieve the model
         const store = message.create(this._services, this._handle, MESSAGE_FACTORY, init);
+
+        assert(store.type !== MessageType.DELETED, 'Cannot directly add a deleted message');
 
         // Ensure that the contracts stated by the overload variants of this function are fulfilled
         switch (init.direction) {

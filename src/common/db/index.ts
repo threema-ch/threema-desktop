@@ -27,6 +27,7 @@ import type {
 } from '~/common/enum';
 import type {FileEncryptionKey, FileId} from '~/common/file-storage';
 import type {
+    AnyNonDeletedMessageType,
     IdentityStringOrMe,
     MediaBasedMessageType,
     TextBasedMessageType,
@@ -899,7 +900,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      *
      * Updates the main message table's `lastEditedAt` field of the corresponding message.
      */
-    readonly editMessage: <TMessageType extends Exclude<MessageType, MessageType.DELETED>>(
+    readonly editMessage: <TMessageType extends AnyNonDeletedMessageType>(
         messageUid: DbMessageUid,
         type: TMessageType,
         messageUpdate: DbMessageEditFor<TMessageType>,

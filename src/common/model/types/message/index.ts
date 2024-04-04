@@ -7,6 +7,12 @@ import type {
 } from '~/common/model/types/message/audio';
 import type {CommonBaseMessageView} from '~/common/model/types/message/common';
 import type {
+    InboundDeletedMessage,
+    InboundDeletedMessageModelStore,
+    OutboundDeletedMessageModelStore,
+    OutboundDeletedMessage,
+} from '~/common/model/types/message/deleted';
+import type {
     IInboundFileMessageModelStore,
     InboundFileMessage,
     IOutboundFileMessageModelStore,
@@ -56,7 +62,9 @@ export type InboundMessageFor<TType extends MessageType> = TType extends Message
           ? InboundVideoMessage
           : TType extends MessageType.AUDIO
             ? InboundAudioMessage
-            : never;
+            : TType extends MessageType.DELETED
+              ? InboundDeletedMessage
+              : never;
 
 /**
  * Helper to return the appropriate bundle for the specified outbound message type.
@@ -71,7 +79,9 @@ export type OutboundMessageFor<TType extends MessageType> = TType extends Messag
           ? OutboundVideoMessage
           : TType extends MessageType.AUDIO
             ? OutboundAudioMessage
-            : never;
+            : TType extends MessageType.DELETED
+              ? OutboundDeletedMessage
+              : never;
 
 type BundleProperty = 'view' | 'init' | 'controller' | 'model';
 
@@ -116,6 +126,15 @@ export type UnifiedEditMessage = Required<Pick<CommonBaseMessageView, 'lastEdite
 };
 
 export type AnyMessageModel = AnyInboundMessageModel | AnyOutboundMessageModel;
+export type AnyNonDeletedMessageModel = Exclude<
+    AnyMessageModel,
+    OutboundDeletedMessage['model'] | InboundDeletedMessage['model']
+>;
+export type AnyNonDeletedMessageModelStore = Exclude<
+    AnyMessageModelStore,
+    OutboundDeletedMessageModelStore | InboundDeletedMessageModelStore
+>;
+
 export type AnyFileBasedMessageModel =
     | InboundAudioMessage['model']
     | InboundFileMessage['model']
@@ -130,21 +149,27 @@ export type AnyInboundMessageModel =
     | InboundFileMessage['model']
     | InboundImageMessage['model']
     | InboundVideoMessage['model']
-    | InboundAudioMessage['model'];
+    | InboundAudioMessage['model']
+    | InboundDeletedMessage['model'];
 export type AnyOutboundMessageModel =
     | OutboundTextMessage['model']
     | OutboundFileMessage['model']
     | OutboundImageMessage['model']
     | OutboundVideoMessage['model']
-    | OutboundAudioMessage['model'];
-export type AnyMessageModelStore = AnyInboundMessageModelStore | AnyOutboundMessageModelStore;
-export type AnyInboundMessageModelStore =
+    | OutboundAudioMessage['model']
+    | OutboundDeletedMessage['model'];
+export type AnyMessageModelStore =
+    | AnyInboundNonDeletedMessageModelStore
+    | AnyOutboundNonDeletedMessageModelStore
+    | InboundDeletedMessageModelStore
+    | OutboundDeletedMessageModelStore;
+export type AnyInboundNonDeletedMessageModelStore =
     | IInboundTextMessageModelStore
     | IInboundFileMessageModelStore
     | IInboundImageMessageModelStore
     | IInboundVideoMessageModelStore
     | IInboundAudioMessageModelStore;
-export type AnyOutboundMessageModelStore =
+export type AnyOutboundNonDeletedMessageModelStore =
     | IOutboundTextMessageModelStore
     | IOutboundFileMessageModelStore
     | IOutboundImageMessageModelStore
@@ -165,6 +190,9 @@ export type AnyVideoMessageModelStore =
 export type AnyAudioMessageModelStore =
     | IInboundAudioMessageModelStore
     | IOutboundAudioMessageModelStore;
+export type AnyDeletedMessageModelStore =
+    | InboundDeletedMessageModelStore
+    | OutboundDeletedMessageModelStore;
 
 export type SetOfAnyRemoteMessageModel =
     | ReadonlySet<RemoteModelStore<InboundTextMessage['model']>>
@@ -188,6 +216,8 @@ export type SetOfAnyLocalMessageModelStore = IDerivableSetStore<
     | LocalModelStore<OutboundVideoMessage['model']>
     | LocalModelStore<InboundAudioMessage['model']>
     | LocalModelStore<OutboundAudioMessage['model']>
+    | LocalModelStore<InboundDeletedMessage['model']>
+    | LocalModelStore<OutboundDeletedMessage['model']>
 >;
 export type SetOfAnyLocalMessageOrStatusMessageModelStore = IDerivableSetStore<
     AnyMessageModelStore | AnyStatusMessageModelStore
@@ -227,5 +257,10 @@ export type MessageRepository = {
      * Find all messages which contain the given text (case-insensitive). Note: Will not match
      * quotes contained in a message.
      */
-    readonly findAllByText: (text: string, limit?: u53) => LocalSetStore<AnyMessageModelStore>;
+    readonly findAllByText: (
+        text: string,
+        limit?: u53,
+    ) => LocalSetStore<AnyNonDeletedMessageModelStore>;
 } & ProxyMarked;
+
+export type AnyNonDeletedMessageType = Exclude<MessageType, MessageType.DELETED>;
