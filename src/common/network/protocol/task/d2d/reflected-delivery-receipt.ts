@@ -1,4 +1,4 @@
-import type {MessageReaction} from '~/common/enum';
+import {MessageType, type MessageReaction} from '~/common/enum';
 import type {
     AnyMessageModel,
     AnyOutboundMessageModel,
@@ -8,6 +8,7 @@ import type {PassiveTaskCodecHandle, ServicesForTasks} from '~/common/network/pr
 import {DeliveryReceiptTaskBase} from '~/common/network/protocol/task/common/delivery-receipt';
 import type {DeliveryReceipt} from '~/common/network/structbuf/validate/csp/e2e';
 import type {ConversationId, MessageId} from '~/common/network/types';
+import {u64ToHexLe} from '~/common/utils/number';
 
 /**
  * Receive and process incoming or outgoing reflected delivery receipts.
@@ -37,6 +38,14 @@ export class ReflectedDeliveryReceiptTask extends DeliveryReceiptTaskBase<Passiv
         message: AnyOutboundMessageModel,
         deliveredAt: Date,
     ): void {
+        if (message.type === MessageType.DELETED) {
+            this._log.warn(
+                `Skipping message update for ${u64ToHexLe(
+                    message.view.id,
+                )} because it was already deleted`,
+            );
+            return;
+        }
         message.controller.delivered.fromSync(deliveredAt);
     }
 
@@ -45,6 +54,14 @@ export class ReflectedDeliveryReceiptTask extends DeliveryReceiptTaskBase<Passiv
         message: AnyMessageModel,
         readAt: Date,
     ): void {
+        if (message.type === MessageType.DELETED) {
+            this._log.warn(
+                `Skipping message update for ${u64ToHexLe(
+                    message.view.id,
+                )} because it was already deleted`,
+            );
+            return;
+        }
         message.controller.read.fromSync(readAt);
     }
 
@@ -54,6 +71,14 @@ export class ReflectedDeliveryReceiptTask extends DeliveryReceiptTaskBase<Passiv
         reaction: MessageReaction,
         reactedAt: Date,
     ): void {
+        if (message.type === MessageType.DELETED) {
+            this._log.warn(
+                `Skipping message update for ${u64ToHexLe(
+                    message.view.id,
+                )} because it was already deleted`,
+            );
+            return;
+        }
         message.controller.reaction.fromSync(reaction, reactedAt, this._senderIdentity);
     }
 }

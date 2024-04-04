@@ -1,4 +1,4 @@
-import {MessageDirection} from '~/common/enum';
+import {MessageDirection, MessageType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import * as protobuf from '~/common/network/protobuf';
 import {toCommonConversationId} from '~/common/network/protobuf/validate/d2d/conversation-id';
@@ -78,6 +78,15 @@ export class ReflectedOutgoingMessageUpdateTask implements PassiveTask<void> {
                     `Skipping message update for ${u64ToHexLe(
                         messageId,
                     )} because it is no outbound message`,
+                );
+                continue;
+            }
+
+            if (message.type === MessageType.DELETED) {
+                this._log.error(
+                    `Skipping message update for ${u64ToHexLe(
+                        messageId,
+                    )} because it is was already deleted`,
                 );
                 continue;
             }

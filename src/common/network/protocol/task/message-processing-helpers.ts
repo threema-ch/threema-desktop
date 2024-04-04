@@ -6,6 +6,10 @@ import {CspE2eStatusUpdateType, ReceiverType} from '~/common/enum';
 import type {Conversation, Repositories} from '~/common/model';
 import type {UnifiedEditMessage} from '~/common/model/types/message';
 import type {InboundAudioMessage, OutboundAudioMessage} from '~/common/model/types/message/audio';
+import type {
+    InboundDeletedMessage,
+    OutboundDeletedMessage,
+} from '~/common/model/types/message/deleted';
 import type {InboundFileMessage, OutboundFileMessage} from '~/common/model/types/message/file';
 import type {InboundImageMessage, OutboundImageMessage} from '~/common/model/types/message/image';
 import type {InboundTextMessage, OutboundTextMessage} from '~/common/model/types/message/text';
@@ -44,11 +48,19 @@ export type InboundAudioMessageInitFragment = Mutable<
     Omit<InboundAudioMessage['init'], OmittedInitKeys>,
     'receivedAt'
 >;
+export type InboundDeletedMessageInitFragment = Mutable<
+    Omit<InboundDeletedMessage['init'], OmittedInitKeys>,
+    'receivedAt'
+>;
 export type OutboundTextMessageInitFragment = Omit<OutboundTextMessage['init'], OmittedInitKeys>;
 export type OutboundFileMessageInitFragment = Omit<OutboundFileMessage['init'], OmittedInitKeys>;
 export type OutboundImageMessageInitFragment = Omit<OutboundImageMessage['init'], OmittedInitKeys>;
 export type OutboundVideoMessageInitFragment = Omit<OutboundVideoMessage['init'], OmittedInitKeys>;
 export type OutboundAudioMessageInitFragment = Omit<OutboundAudioMessage['init'], OmittedInitKeys>;
+export type OutboundDeletedMessageInitFragment = Omit<
+    OutboundDeletedMessage['init'],
+    OmittedInitKeys
+>;
 export type AnyInboundMessageInitFragment =
     | InboundTextMessageInitFragment
     | InboundFileMessageInitFragment
@@ -66,6 +78,10 @@ export type EditMessageFragment = UnifiedEditMessage & {
     messageId: MessageId;
 };
 
+export interface DeleteMessageFragment {
+    messageId: MessageId;
+    deletedAt: Date;
+}
 /**
  * Get a conversation.
  *

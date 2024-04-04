@@ -48,6 +48,7 @@ import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import type {InternalActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {OutgoingConversationMessageTask} from '~/common/network/protocol/task/csp/outgoing-conversation-message';
+import {OutgoingDeleteMessageTask} from '~/common/network/protocol/task/csp/outgoing-delete-message';
 import {OutgoingDeliveryReceiptTask} from '~/common/network/protocol/task/csp/outgoing-delivery-receipt';
 import {ReflectContactSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-contact-sync-transaction';
 import {ReflectGroupSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-group-sync-transaction';
@@ -773,13 +774,23 @@ export class ConversationModelController implements ConversationController {
         );
 
         switch (triggerSource) {
-            case TriggerSource.LOCAL:
+            case TriggerSource.LOCAL: {
                 assert(
                     deletedMessageStore.ctx === MessageDirection.OUTBOUND,
                     'Cannot send an outgoing delete message task for an inbound message',
                 );
+                const task = new OutgoingDeleteMessageTask(
+                    this._services,
+                    this.receiver().get(),
+                    deletedMessageStore,
+                    deletedAt,
+                );
+                this._services.taskManager.schedule(task).catch((error) => {
+                    this._log.error(`Delete message task failed: ${error}`);
+                });
 
                 break;
+            }
             case TriggerSource.REMOTE:
                 assert(
                     deletedMessageStore.ctx === MessageDirection.INBOUND,
@@ -787,6 +798,7 @@ export class ConversationModelController implements ConversationController {
                 );
 
                 break;
+
             case TriggerSource.SYNC:
                 break;
             default:

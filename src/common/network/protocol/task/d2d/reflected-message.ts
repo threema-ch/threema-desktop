@@ -341,13 +341,26 @@ export abstract class ReflectedMessageTaskBase<
                     };
                 }
 
-                case CspE2eMessageUpdateType.DELETE_MESSAGE: // TODO(DESK-1389)
-                case CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE: // TODO(DESK-1389)
-                    this._log.warn(
-                        `Discarding unsupported ${this._direction} ${messageTypeDebug} message`,
+                case CspE2eMessageUpdateType.DELETE_MESSAGE: {
+                    const message = protobuf.validate.csp_e2e.DeleteMessage.SCHEMA.parse(
+                        protobuf.csp_e2e.DeleteMessage.decode(body),
                     );
-                    return undefined;
-
+                    return {
+                        type: CspE2eMessageUpdateType.DELETE_MESSAGE,
+                        message: {
+                            messageId: message.messageId,
+                        },
+                    };
+                }
+                case CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE: {
+                    const container = structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupMemberContainer.decode(body),
+                    );
+                    return {
+                        type: CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE,
+                        message: container,
+                    };
+                }
                 case CspE2eStatusUpdateType.TYPING_INDICATOR:
                     // TODO(DESK-589): Implement
                     return undefined;

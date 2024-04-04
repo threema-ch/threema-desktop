@@ -5,7 +5,7 @@ import {
     CspE2eGroupConversationType,
     CspE2eStatusUpdateType,
     MessageDirection,
-    type MessageType,
+    MessageType,
     NonceScope,
     ReceiverType,
     CspE2eGroupStatusUpdateType,
@@ -42,6 +42,7 @@ import {
     type InboundVideoMessageInitFragment,
     messageReferenceDebugFor,
     type EditMessageFragment,
+    type DeleteMessageFragment,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import * as structbuf from '~/common/network/structbuf';
 import type {
@@ -52,6 +53,7 @@ import type {
 } from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
+import {u64ToHexLe} from '~/common/utils/number';
 
 import {ReflectedGroupNameTask} from './reflected-group-name';
 import {ReflectedGroupProfilePictureTask} from './reflected-group-profile-picture';
@@ -71,7 +73,8 @@ type MessageProcessingInstructions =
     | ConversationMessageInstructions
     | GroupControlMessageInstructions
     | StatusUpdateInstructions
-    | EditMessageInstructions;
+    | EditMessageInstructions
+    | DeleteMessageInstructions;
 
 interface BaseProcessingInstructions {
     /**
@@ -92,7 +95,12 @@ interface ConversationMessageInstructions extends BaseProcessingInstructions {
 interface EditMessageInstructions extends BaseProcessingInstructions {
     readonly messageCategory: 'edit-conversation-message';
     readonly conversationId: ContactConversationId | GroupConversationId;
-    readonly updatedMessage: EditMessageFragment;
+    readonly updatedMessageFragment: EditMessageFragment;
+}
+interface DeleteMessageInstructions extends BaseProcessingInstructions {
+    readonly messageCategory: 'delete-conversation-message';
+    readonly conversationId: ContactConversationId | GroupConversationId;
+    readonly updatedMessageFragment: DeleteMessageFragment;
 }
 
 interface GroupControlMessageInstructions extends BaseProcessingInstructions {
@@ -209,6 +217,7 @@ export class ReflectedIncomingMessageTask
 
         // Process / save the message
         switch (instructions.messageCategory) {
+            case 'delete-conversation-message':
             case 'edit-conversation-message': {
                 const conversation = getConversationById(model, instructions.conversationId)?.get();
                 if (conversation === undefined) {
@@ -220,21 +229,43 @@ export class ReflectedIncomingMessageTask
                 }
 
                 const messageStore = conversation.controller.getMessage(
-                    instructions.updatedMessage.messageId,
+                    instructions.updatedMessageFragment.messageId,
                 );
 
                 if (messageStore === undefined) {
                     this._log.warn(
-                        `Discarding ${this._direction} ${messageTypeDebug} message as the target message with ID ${instructions.updatedMessage.messageId} does not exist`,
+                        `Discarding ${this._direction} ${messageTypeDebug} message as the target message with ID ${instructions.updatedMessageFragment.messageId} does not exist`,
                         messageReferenceDebug,
                     );
                     return;
                 }
 
-                messageStore.get().controller.editMessage.fromSync({
-                    newText: instructions.updatedMessage.newText,
-                    lastEditedAt: instructions.updatedMessage.lastEditedAt,
-                });
+                if (messageStore.type === MessageType.DELETED) {
+                    this._log.warn(
+                        `Discarding ${messageTypeDebug} message ${u64ToHexLe(
+                            messageStore.get().view.id,
+                        )} as the referenced message was already deleted.`,
+                    );
+                    return;
+                }
+
+                switch (instructions.messageCategory) {
+                    case 'delete-conversation-message':
+                        conversation.controller.deleteMessage.fromSync(
+                            instructions.updatedMessageFragment.messageId,
+                            instructions.updatedMessageFragment.deletedAt,
+                        );
+
+                        break;
+                    case 'edit-conversation-message':
+                        messageStore.get().controller.editMessage.fromSync({
+                            newText: instructions.updatedMessageFragment.newText,
+                            lastEditedAt: instructions.updatedMessageFragment.lastEditedAt,
+                        });
+                        break;
+                    default:
+                        unreachable(instructions);
+                }
 
                 return;
             }
@@ -545,7 +576,7 @@ export class ReflectedIncomingMessageTask
                 const instructions: EditMessageInstructions = {
                     messageCategory: 'edit-conversation-message',
                     conversationId: {type: ReceiverType.CONTACT, identity: senderIdentity},
-                    updatedMessage: {
+                    updatedMessageFragment: {
                         newText: validatedBody.message.text,
                         messageId: validatedBody.message.messageId,
                         lastEditedAt: createdAt,
@@ -567,7 +598,7 @@ export class ReflectedIncomingMessageTask
                         creatorIdentity: validatedBody.message.creatorIdentity,
                         groupId: validatedBody.message.groupId,
                     },
-                    updatedMessage: {
+                    updatedMessageFragment: {
                         newText: editMessage.text,
                         messageId: editMessage.messageId,
                         lastEditedAt: createdAt,
@@ -576,6 +607,39 @@ export class ReflectedIncomingMessageTask
                 return instructions;
             }
 
+            case CspE2eMessageUpdateType.DELETE_MESSAGE: {
+                const instructions: DeleteMessageInstructions = {
+                    messageCategory: 'delete-conversation-message',
+                    conversationId: {type: ReceiverType.CONTACT, identity: senderIdentity},
+                    updatedMessageFragment: {
+                        messageId: validatedBody.message.messageId,
+                        deletedAt: createdAt,
+                    },
+                };
+                return instructions;
+            }
+
+            case CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE: {
+                const deletedMessage = protobuf.validate.csp_e2e.DeleteMessage.SCHEMA.parse(
+                    protobuf.csp_e2e.DeleteMessage.decode(
+                        validatedBody.message.innerData,
+                        validatedBody.message.innerData.byteLength,
+                    ),
+                );
+                const instructions: DeleteMessageInstructions = {
+                    messageCategory: 'delete-conversation-message',
+                    conversationId: {
+                        type: ReceiverType.GROUP,
+                        creatorIdentity: validatedBody.message.creatorIdentity,
+                        groupId: validatedBody.message.groupId,
+                    },
+                    updatedMessageFragment: {
+                        messageId: deletedMessage.messageId,
+                        deletedAt: createdAt,
+                    },
+                };
+                return instructions;
+            }
             default:
                 return unreachable(validatedBody);
         }

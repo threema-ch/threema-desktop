@@ -1,4 +1,4 @@
-import {MessageDirection, ReceiverType} from '~/common/enum';
+import {MessageDirection, MessageType, ReceiverType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import * as protobuf from '~/common/network/protobuf';
 import {toCommonConversationId} from '~/common/network/protobuf/validate/d2d/conversation-id';
@@ -88,6 +88,14 @@ export class ReflectedIncomingMessageUpdateTask implements PassiveTask<void> {
                 continue;
             }
 
+            if (message.type === MessageType.DELETED) {
+                this._log.warn(
+                    `Skipping message update for ${u64ToHexLe(
+                        messageId,
+                    )} because it was already deleted`,
+                );
+                continue;
+            }
             // Apply update
             switch (update.update) {
                 case 'read':

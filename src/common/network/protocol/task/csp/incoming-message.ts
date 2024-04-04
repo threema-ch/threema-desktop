@@ -40,6 +40,7 @@ import type {
     MessageFor,
 } from '~/common/model';
 import {isPredefinedContact} from '~/common/model/types/contact';
+import type {AnyNonDeletedMessageType} from '~/common/model/types/message';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {
@@ -77,6 +78,7 @@ import {
     type InboundTextMessageInitFragment,
     type InboundVideoMessageInitFragment,
     type EditMessageFragment,
+    type DeleteMessageFragment,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
@@ -311,7 +313,8 @@ type MessageProcessingInstructions =
     | StatusUpdateInstructions
     | ForwardSecurityMessageInstructions
     | EditMessageInstructions
-    | UnhandledMessageInstructions;
+    | UnhandledMessageInstructions
+    | DeleteMessageInstructions;
 
 interface BaseProcessingInstructions {
     /**
@@ -389,6 +392,15 @@ interface EditMessageInstructions extends BaseProcessingInstructions {
     readonly deliveryReceipt: false;
     readonly missingContactHandling: 'discard';
     readonly updatedMessageFragment: EditMessageFragment;
+    readonly reflectFragment: D2dIncomingMessageFragment;
+}
+
+interface DeleteMessageInstructions extends BaseProcessingInstructions {
+    readonly messageCategory: 'delete-conversation-message';
+    readonly conversationId: ContactConversationId | GroupConversationId;
+    readonly deliveryReceipt: false;
+    readonly missingContactHandling: 'discard';
+    readonly updatedMessageFragment: DeleteMessageFragment;
     readonly reflectFragment: D2dIncomingMessageFragment;
 }
 
@@ -684,7 +696,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         if (
             ((instructions.messageCategory === 'conversation-message' ||
                 instructions.messageCategory === 'status-update' ||
-                instructions.messageCategory === 'edit-conversation-message') &&
+                instructions.messageCategory === 'edit-conversation-message' ||
+                instructions.messageCategory === 'delete-conversation-message') &&
                 instructions.conversationId.type === ReceiverType.GROUP) ||
             (instructions.messageCategory === 'unhandled' &&
                 instructions.conversationId.type === ReceiverType.GROUP &&
@@ -754,6 +767,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     }
                     break;
                 case 'edit-conversation-message':
+                case 'delete-conversation-message':
                 case 'status-update':
                 case 'contact-control':
                 case 'group-control':
@@ -765,6 +779,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         let conversation: LocalModelStore<Conversation>;
         // Process / save the message
         switch (instructions.messageCategory) {
+            case 'delete-conversation-message':
             case 'edit-conversation-message': {
                 // 1. Lookup the message with message_id originally sent by the sender within the
                 //    associated conversation and let message be the result.
@@ -816,6 +831,17 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     return await this._discard(handle);
                 }
 
+                // 3. If `message` is not editable (see the associated _Edit applies to_
+                // property), discard the message and abort these steps.
+                if (message.type === MessageType.DELETED) {
+                    this._log.warn(
+                        `Discarding ${messageTypeDebug} message ${u64ToHexLe(
+                            this._id,
+                        )} as the referenced message was already deleted.`,
+                    );
+                    return await this._discard(handle);
+                }
+
                 const messageSender = message.get().controller.sender();
                 if (messageSender.ctx !== senderContactOrInit.ctx) {
                     this._log.warn(
@@ -827,11 +853,26 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     return await this._discard(handle);
                 }
 
-                // Note: Protocol steps 3 and 4 are handled by the message controller
-                await message.get().controller.editMessage.fromRemote(handle, {
-                    newText: instructions.updatedMessageFragment.newText,
-                    lastEditedAt: instructions.updatedMessageFragment.lastEditedAt,
-                });
+                switch (instructions.messageCategory) {
+                    case 'delete-conversation-message':
+                        await conversation
+                            .get()
+                            .controller.deleteMessage.fromRemote(
+                                handle,
+                                instructions.updatedMessageFragment.messageId,
+                                instructions.updatedMessageFragment.deletedAt,
+                            );
+
+                        break;
+                    case 'edit-conversation-message':
+                        await message.get().controller.editMessage.fromRemote(handle, {
+                            newText: instructions.updatedMessageFragment.newText,
+                            lastEditedAt: instructions.updatedMessageFragment.lastEditedAt,
+                        });
+                        break;
+                    default:
+                        unreachable(instructions);
+                }
 
                 break;
             }
@@ -1766,6 +1807,52 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return instructions;
             }
 
+            case CspE2eMessageUpdateType.DELETE_MESSAGE: {
+                const deletedMessage = protobuf.csp_e2e.DeleteMessage.decode(
+                    cspMessageBody as Uint8Array,
+                );
+                const instructions: DeleteMessageInstructions = {
+                    messageCategory: 'delete-conversation-message',
+                    conversationId: senderConversationId,
+                    missingContactHandling: 'discard',
+                    deliveryReceipt: false,
+                    updatedMessageFragment: {
+                        messageId: ensureMessageId(intoU64(deletedMessage.messageId)),
+                        deletedAt: clampedCreatedAt,
+                    },
+                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                };
+                return instructions;
+            }
+            case CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE: {
+                // TODO(DESK-1387)
+                const validatedContainer =
+                    structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
+                    );
+                const updatedMessage = protobuf.csp_e2e.DeleteMessage.decode(
+                    validatedContainer.innerData,
+                );
+
+                const groupConversationId: GroupConversationId = {
+                    type: ReceiverType.GROUP,
+                    groupId: validatedContainer.groupId,
+                    creatorIdentity: validatedContainer.creatorIdentity,
+                };
+
+                const instructions: DeleteMessageInstructions = {
+                    messageCategory: 'delete-conversation-message',
+                    conversationId: groupConversationId,
+                    missingContactHandling: 'discard',
+                    deliveryReceipt: false,
+                    updatedMessageFragment: {
+                        messageId: ensureMessageId(intoU64(updatedMessage.messageId)),
+                        deletedAt: clampedCreatedAt,
+                    },
+                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                };
+                return instructions;
+            }
             // Forwarding of known but unhandled messages. These messages will be reflected and
             // discarded. The messages won't appear in Threema Desktop, but they will appear on
             // synchronized devices that support these message types.
@@ -1801,9 +1888,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupConversationType.GROUP_POLL_VOTE: // TODO(DESK-244)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
-            case CspE2eMessageUpdateType.DELETE_MESSAGE: // TODO(DESK-1387)
-            case CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE: // TODO(DESK-1387)
-                return unhandled(maybeCspE2eType, false);
 
             default:
                 return exhausted(maybeCspE2eType, 'forward');
@@ -1843,7 +1927,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
     private _getDirectedMessageInit(
         initFragment: Readonly<AnyInboundMessageInitFragment>,
         contact: LocalModelStore<Contact>,
-    ): DirectedMessageFor<MessageDirection.INBOUND, MessageType, 'init'> {
+    ): DirectedMessageFor<MessageDirection.INBOUND, AnyNonDeletedMessageType, 'init'> {
         switch (initFragment.type) {
             case MessageType.TEXT:
                 return getDirectedTextMessageInit(this._id, contact.get().ctx, initFragment);

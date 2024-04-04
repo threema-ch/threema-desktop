@@ -120,6 +120,7 @@ export function messageStoreHasThumbnail(
         case 'text':
         case 'file':
         case 'audio':
+        case 'deleted':
             return false;
         default:
             return unreachable(messageStore);

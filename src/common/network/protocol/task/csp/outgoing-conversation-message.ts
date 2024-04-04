@@ -3,11 +3,12 @@ import {
     CspE2eConversationType,
     CspE2eGroupConversationType,
     MessageDirection,
+    MessageType,
     ReceiverType,
     ReceiverTypeUtils,
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import type {AnyOutboundMessageModelStore, AnyReceiver} from '~/common/model';
+import type {AnyOutboundNonDeletedMessageModelStore, AnyReceiver} from '~/common/model';
 import type {UploadedBlobBytes} from '~/common/model/message/common';
 import type {CspE2eType, LayerEncoder} from '~/common/network/protocol';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
@@ -61,7 +62,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
     public constructor(
         private readonly _services: ServicesForTasks,
         private readonly _receiverModel: TReceiver,
-        private readonly _messageModelStore: AnyOutboundMessageModelStore,
+        private readonly _messageModelStore: AnyOutboundNonDeletedMessageModelStore,
         private readonly _outgoingCspMessageTaskConstructor: IOutgoingCspMessageTaskConstructor = OutgoingCspMessageTask,
     ) {
         // Instantiate logger
@@ -75,6 +76,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
      * @throws Error if the conversation for the receiver cannot be found
      * @throws Error if the message does not exist in the conversation.
      * @throws Error if the message is not an outbound message.
+     * @throws Error if the message was deleted
      */
     public static fromLookup<TReceiver extends AnyReceiver>(
         services: ServicesForTasks,
@@ -98,6 +100,11 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
         assert(
             messageStore.ctx === MessageDirection.OUTBOUND,
             'Outgoing message task requires outbound messages',
+        );
+
+        assert(
+            messageStore.type !== MessageType.DELETED,
+            'Cannot send a deleted conversation message',
         );
 
         // Receiver

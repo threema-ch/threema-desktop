@@ -1,9 +1,10 @@
-import {MessageDirection, type MessageReaction} from '~/common/enum';
+import {MessageDirection, MessageType, type MessageReaction} from '~/common/enum';
 import type {AnyMessageModel, AnyOutboundMessageModel} from '~/common/model';
 import type {ActiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
 import {DeliveryReceiptTaskBase} from '~/common/network/protocol/task/common/delivery-receipt';
 import type {DeliveryReceipt} from '~/common/network/structbuf/validate/csp/e2e';
 import type {ConversationId, IdentityString, MessageId} from '~/common/network/types';
+import {u64ToHexLe} from '~/common/utils/number';
 
 /**
  * Receive and process incoming delivery receipts from CSP.
@@ -35,6 +36,14 @@ export class IncomingDeliveryReceiptTask extends DeliveryReceiptTaskBase<
         message: AnyOutboundMessageModel,
         deliveredAt: Date,
     ): void {
+        if (message.type === MessageType.DELETED) {
+            this._log.warn(
+                `Skipping message update for ${u64ToHexLe(
+                    message.view.id,
+                )} because it was already deleted`,
+            );
+            return;
+        }
         message.controller.delivered.fromRemote(handle, deliveredAt).catch(() => {
             // Ignore
         });
@@ -45,6 +54,14 @@ export class IncomingDeliveryReceiptTask extends DeliveryReceiptTaskBase<
         message: AnyMessageModel,
         readAt: Date,
     ): void {
+        if (message.type === MessageType.DELETED) {
+            this._log.warn(
+                `Skipping message update for ${u64ToHexLe(
+                    message.view.id,
+                )} because it was already deleted`,
+            );
+            return;
+        }
         if (message.ctx === MessageDirection.OUTBOUND) {
             message.controller.read.fromRemote(handle, readAt).catch(() => {
                 // Ignore
@@ -62,6 +79,14 @@ export class IncomingDeliveryReceiptTask extends DeliveryReceiptTaskBase<
         reaction: MessageReaction,
         reactedAt: Date,
     ): void {
+        if (message.type === MessageType.DELETED) {
+            this._log.warn(
+                `Skipping message update for ${u64ToHexLe(
+                    message.view.id,
+                )} because it was already deleted`,
+            );
+            return;
+        }
         message.controller.reaction
             .fromRemote(handle, reaction, reactedAt, this._senderIdentity)
             .catch(() => {

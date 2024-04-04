@@ -56,6 +56,10 @@ export class OutgoingEditMessageTask<TReceiver extends AnyReceiver>
             this._log.error('Message does not exist anymore, aborting edit');
             return;
         }
+        if (messageModelStore.type === MessageType.DELETED) {
+            this._log.error('Message is of type deleted and cannot be edited');
+            return;
+        }
         const messageModel = messageModelStore.get();
         assert(messageModel.ctx === MessageDirection.OUTBOUND);
         assert(
