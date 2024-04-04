@@ -1,4 +1,4 @@
-import {MessageDirection} from '~/common/enum';
+import {MessageDirection, MessageType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import type {AnyMessageModel, AnyMessageModelStore} from '~/common/model/types/message';
@@ -56,8 +56,27 @@ function getConversationMessageViewModel(
     getAndSubscribe: GetAndSubscribeFunction,
     resolveQuote: boolean,
 ): ConversationMessageViewModel {
+    if (messageModel.type === MessageType.DELETED) {
+        return {
+            type: 'message',
+            deletedAt: messageModel.view.deletedAt,
+            direction:
+                messageModel.view.direction === MessageDirection.INBOUND ? 'inbound' : 'outbound',
+            id: messageModel.view.id,
+            file: undefined,
+            lastEditedAt: undefined,
+            ordinal: messageModel.view.ordinal,
+            quote: undefined,
+            reactions: [],
+            status: getMessageStatus(messageModel),
+            history: [],
+            sender: getMessageSender(services, messageModel, getAndSubscribe),
+            text: undefined,
+        };
+    }
     return {
         type: 'message',
+        deletedAt: undefined,
         direction:
             messageModel.view.direction === MessageDirection.INBOUND ? 'inbound' : 'outbound',
         file: getMessageFile(messageModel),

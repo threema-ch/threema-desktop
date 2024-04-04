@@ -33,7 +33,6 @@ export function messageSetStoreToMessageListMessagesStore(
                             ordinal: viewModel.ordinal,
                         };
                     }
-
                     case 'message': {
                         // If the `viewModel` is of type `"message"`, the controller (which is part
                         // of the same bundle) must be as well.
@@ -71,16 +70,26 @@ function getMessageProps(
     return {
         type: viewModel.type,
         actions: {
-            acknowledge: async () => {
-                await viewModelController.acknowledge();
-            },
-            decline: async () => {
-                await viewModelController.decline();
-            },
-            edit: async (newText: string) => {
-                await viewModelController.edit(newText, new Date());
-            },
+            acknowledge:
+                viewModel.deletedAt === undefined
+                    ? async () => {
+                          await viewModelController.acknowledge();
+                      }
+                    : undefined,
+            decline:
+                viewModel.deletedAt === undefined
+                    ? async () => {
+                          await viewModelController.decline();
+                      }
+                    : undefined,
+            edit:
+                viewModel.deletedAt === undefined
+                    ? async (newText: string) => {
+                          await viewModelController.edit(newText, new Date());
+                      }
+                    : undefined,
         },
+        deletedAt: viewModel.deletedAt,
         direction: viewModel.direction,
         file: getMessageFileProps(viewModelController, viewModel),
         id: viewModel.id,

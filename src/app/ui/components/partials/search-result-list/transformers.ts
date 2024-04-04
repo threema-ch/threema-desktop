@@ -63,6 +63,7 @@ export function conversationSearchResultSetStoreToConversationPreviewListPropsSt
                                       sender: lastMessageViewModel.sender,
                                       status: lastMessageViewModel.status,
                                       text: lastMessageViewModel.text,
+                                      type: lastMessageViewModel.type,
                                   },
                         receiver: result.receiver,
                         totalMessageCount: result.totalMessageCount,

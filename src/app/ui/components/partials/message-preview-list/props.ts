@@ -40,6 +40,7 @@ interface MessagePreviewProps {
         >;
     };
     readonly id: MessageId;
+    readonly deletedAt?: Date;
     readonly lastEdited: MessageProps['lastEdited'];
     readonly quote?:
         | Omit<MessagePreviewProps, 'boundary' | 'conversation' | 'services'>

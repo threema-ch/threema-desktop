@@ -1,6 +1,6 @@
 import type {DbContactReceiverLookup} from '~/common/db';
 import {ReceiverType} from '~/common/enum';
-import type {AnyMessageModel} from '~/common/model';
+import type {AnyNonDeletedMessageModel} from '~/common/model/types/message';
 import {type IdentityString, isIdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import type {ServicesForViewModel} from '~/common/viewmodel';
@@ -55,7 +55,9 @@ export interface MentionEveryone {
  *
  * @returns Set of parsed identity strings or `@@@@@@@`.
  */
-function getMentionedIdentityStrings(messageModel: AnyMessageModel): Set<AnyMention['identity']> {
+function getMentionedIdentityStrings(
+    messageModel: AnyNonDeletedMessageModel,
+): Set<AnyMention['identity']> {
     let text: string;
 
     switch (messageModel.type) {
@@ -90,7 +92,7 @@ function getMentionedIdentityStrings(messageModel: AnyMessageModel): Set<AnyMent
  */
 export function getMentions(
     services: Pick<ServicesForViewModel, 'model'>,
-    messageModel: AnyMessageModel,
+    messageModel: AnyNonDeletedMessageModel,
 ): AnyMention[] {
     const {model} = services;
 

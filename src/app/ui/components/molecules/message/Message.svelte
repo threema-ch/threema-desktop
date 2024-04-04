@@ -31,6 +31,7 @@
   export let direction: $$Props['direction'];
   export let file: $$Props['file'] = undefined;
   export let highlighted: $$Props['highlighted'] = undefined;
+  export let deletedAt: $$Props['deletedAt'] = undefined;
   export let lastEdited: $$Props['lastEdited'] = undefined;
   export let onError: $$Props['onError'];
   export let options: NonNullable<$$Props['options']> = {};
@@ -217,7 +218,7 @@
     {/if}
 
     {#if content !== undefined}
-      <div class="text">
+      <div class={`text ${deletedAt !== undefined ? 'deleted' : ''}`}>
         <Prose {content} selectable={true} wrap={true} />
       </div>
     {/if}
@@ -259,6 +260,11 @@
 
     .text {
       @extend %font-normal-400;
+
+      &.deleted {
+        color: var(--t-text-e2-color);
+        font-style: italic;
+      }
     }
 
     // If `.text` is a general-subsequent sibling of `.file` or `.quote`.

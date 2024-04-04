@@ -106,10 +106,17 @@ function getLastMessagePreviewText(
     receiver: Pick<AnyReceiverData, 'type'>,
     lastMessage: Pick<
         NonNullable<ConversationPreviewProps['lastMessage']>,
-        'file' | 'sender' | 'text'
+        'file' | 'sender' | 'text' | 'type'
     >,
 ): SanitizedHtml {
     let text: SanitizedHtml | undefined = undefined;
+
+    if (lastMessage.type === 'deleted') {
+        return i18n.t(
+            'messaging.label--deleted-message-preview',
+            'This message was deleted',
+        ) as SanitizedHtml;
+    }
     if (lastMessage.text !== undefined) {
         text = sanitizeAndParseTextToHtml(lastMessage.text.raw, i18n.t, {
             mentions: lastMessage.text.mentions,

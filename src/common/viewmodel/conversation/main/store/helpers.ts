@@ -207,9 +207,12 @@ export function getLastMessage(
     );
 }
 
-function checkFeatureMaskSupportsEdit(featureMask: FeatureMask): boolean {
+function checkFeatureMaskSupportsFeature(
+    featureMask: FeatureMask,
+    feature: keyof typeof FEATURE_MASK_FLAG,
+): boolean {
     // eslint-disable-next-line no-bitwise
-    return (featureMask & FEATURE_MASK_FLAG.EDIT_MESSAGE_SUPPORT) !== 0x00n;
+    return (featureMask & FEATURE_MASK_FLAG[feature]) !== 0x00n;
 }
 
 /**
@@ -224,9 +227,10 @@ function checkFeatureMaskSupportsEdit(featureMask: FeatureMask): boolean {
  * If only some contacts support editing, the return value includes the display names of the
  * contacts that don't support this feature yet.
  */
-function supportsEditMessage(
+function supportsFeature(
     conversation: Conversation,
     services: Pick<ServicesForViewModel, 'device' | 'logging' | 'model'>,
+    feature: keyof typeof FEATURE_MASK_FLAG,
 ): {supported: 'none' | 'all'} | {supported: 'partial'; notSupportedNames: string[]} {
     const {device, logging, model} = services;
     const log = logging.logger('viewmodel.conversation.supportsEditMessage');
@@ -239,7 +243,9 @@ function supportsEditMessage(
         case ReceiverType.CONTACT: {
             // Check whether contact supports editing
             const featureMask = receiver.get().view.featureMask;
-            return {supported: checkFeatureMaskSupportsEdit(featureMask) ? 'all' : 'none'};
+            return {
+                supported: checkFeatureMaskSupportsFeature(featureMask, feature) ? 'all' : 'none',
+            };
         }
         case ReceiverType.GROUP: {
             // Check whether group members support editing
@@ -255,7 +261,7 @@ function supportsEditMessage(
                     log.error(`Could not find group member contact for identity ${identity}`);
                     continue;
                 }
-                if (!checkFeatureMaskSupportsEdit(member.view.featureMask)) {
+                if (!checkFeatureMaskSupportsFeature(member.view.featureMask, feature)) {
                     notSupportedNames.push(member.view.displayName);
                 }
             }
@@ -280,12 +286,21 @@ export function getSupportedFeatures(
     services: Pick<ServicesForViewModel, 'device' | 'logging' | 'model'>,
 ): FeatureMaskMap {
     const featureSet: FeatureMaskMap = new Map();
-    const editSupport = supportsEditMessage(conversation, services);
+    const editSupport = supportsFeature(conversation, services, 'EDIT_MESSAGE_SUPPORT');
     if (editSupport.supported === 'all') {
         featureSet.set(FEATURE_MASK_FLAG.EDIT_MESSAGE_SUPPORT, {notSupported: []});
     } else if (editSupport.supported === 'partial') {
         featureSet.set(FEATURE_MASK_FLAG.EDIT_MESSAGE_SUPPORT, {
             notSupported: editSupport.notSupportedNames,
+        });
+    }
+
+    const deleteSupport = supportsFeature(conversation, services, 'DELETED_MESSAGES_SUPPORT');
+    if (deleteSupport.supported === 'all') {
+        featureSet.set(FEATURE_MASK_FLAG.DELETED_MESSAGES_SUPPORT, {notSupported: []});
+    } else if (deleteSupport.supported === 'partial') {
+        featureSet.set(FEATURE_MASK_FLAG.DELETED_MESSAGES_SUPPORT, {
+            notSupported: deleteSupport.notSupportedNames,
         });
     }
 

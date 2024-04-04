@@ -177,6 +177,7 @@
       props: {
         conversation,
         direction: message.direction,
+        deletedAt: message.deletedAt,
         file: message.file,
         history: message.history,
         id: message.id,
@@ -193,6 +194,7 @@
       type: 'message-details',
       props: {
         conversation,
+        deletedAt: undefined,
         history: [],
         id: message.id,
         reactions: [],
@@ -466,9 +468,11 @@
           {/if}
           <!-- eslint-disable @typescript-eslint/no-unsafe-argument -->
           <Message
+            type={item.type}
             actions={item.actions}
             boundary={element}
             {conversation}
+            deletedAt={item.deletedAt}
             direction={item.direction}
             file={item.file}
             highlighted={item.id === highlightedMessageId}

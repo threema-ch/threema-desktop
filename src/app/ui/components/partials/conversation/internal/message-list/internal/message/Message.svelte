@@ -39,6 +39,7 @@
   export let actions: $$Props['actions'];
   export let boundary: $$Props['boundary'] = undefined;
   export let conversation: $$Props['conversation'];
+  export let deletedAt: $$Props['deletedAt'];
   export let direction: $$Props['direction'];
   export let file: $$Props['file'] = undefined;
   export let id: $$Props['id'];
@@ -50,6 +51,7 @@
   export let services: $$Props['services'];
   export let status: $$Props['status'];
   export let text: $$Props['text'] = undefined;
+  export let type: $$Props['type'] = 'message';
 
   const {
     router,
@@ -144,7 +146,7 @@
   }
 
   function handleClickAcknowledgeOption(): void {
-    actions.acknowledge().catch((error) => {
+    actions.acknowledge?.().catch((error) => {
       log.error(`Could not react to message: ${extractErrorMessage(ensureError(error), 'short')}`);
 
       toast.addSimpleFailure(
@@ -154,7 +156,7 @@
   }
 
   function handleClickDeclineOption(): void {
-    actions.decline().catch((error) => {
+    actions.decline?.().catch((error) => {
       log.error(`Could not react to message: ${extractErrorMessage(ensureError(error), 'short')}`);
 
       toast.addSimpleFailure(
@@ -305,6 +307,7 @@
       default:
         unreachable(receiver);
     }
+    showReactionButtons &&= deletedAt === undefined;
   }
 
   let showEditButton: boolean = false;
@@ -312,6 +315,7 @@
     () =>
       import.meta.env.BUILD_ENVIRONMENT === 'sandbox' &&
       direction === 'outbound' &&
+      deletedAt === undefined &&
       status.sent !== undefined &&
       // For audio we don't support edits yet.
       !(file !== undefined && file.type === 'audio') &&
@@ -373,11 +377,11 @@
           }
         : false,
       quote:
-        conversation.receiver.type === 'contact'
+        (conversation.receiver.type === 'contact'
           ? !conversation.receiver.isBlocked
-          : !conversation.receiver.isDisabled,
+          : !conversation.receiver.isDisabled) && deletedAt === undefined,
       // TODO(DESK-1400)
-      forward: text !== undefined && file === undefined,
+      forward: text !== undefined && file === undefined && deletedAt === undefined,
       openDetails: true,
       deleteMessage: true,
     }}
@@ -433,6 +437,7 @@
             {direction}
             file={transformMessageFileProps(file, id, conversation.receiver.lookup, services)}
             {highlighted}
+            {deletedAt}
             {lastEdited}
             onError={(error) =>
               log.error(

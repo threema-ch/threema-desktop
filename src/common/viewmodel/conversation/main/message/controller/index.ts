@@ -48,6 +48,7 @@ export class ConversationMessageViewModelController
                 return await this._message.get().controller.blob();
 
             case MessageType.TEXT:
+            case MessageType.DELETED:
                 return undefined;
 
             default:
@@ -65,6 +66,9 @@ export class ConversationMessageViewModelController
         if (messageModel.ctx !== MessageDirection.OUTBOUND) {
             return;
         }
+        if (messageModel.type === MessageType.DELETED) {
+            return;
+        }
         await messageModel.controller.editMessage.fromLocal({
             newText,
             lastEditedAt: editedAt,
@@ -74,21 +78,25 @@ export class ConversationMessageViewModelController
     private async _applyReaction(reaction: MessageReaction): Promise<void> {
         const messageModel = this._message.get();
 
+        if (messageModel.type === MessageType.DELETED) {
+            return;
+        }
+
         switch (reaction) {
             case MessageReaction.ACKNOWLEDGE:
-                return await messageModel.controller.reaction.fromLocal(
+                await messageModel.controller.reaction.fromLocal(
                     MessageReaction.ACKNOWLEDGE,
                     new Date(),
                 );
-
+                return;
             case MessageReaction.DECLINE:
-                return await messageModel.controller.reaction.fromLocal(
+                await messageModel.controller.reaction.fromLocal(
                     MessageReaction.DECLINE,
                     new Date(),
                 );
-
+                return;
             default:
-                return unreachable(reaction);
+                unreachable(reaction);
         }
     }
 }

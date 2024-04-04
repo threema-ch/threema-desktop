@@ -77,7 +77,7 @@ interface ModalAction {
     readonly onClick?: (() => void) | 'close';
 }
 
-interface ModalButton {
+export interface ModalButton {
     readonly disabled?: boolean;
     /**
      * Whether the button should get autofocused as soon as it's rendered.

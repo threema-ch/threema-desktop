@@ -12,6 +12,7 @@
   } from '~/app/ui/components/partials/conversation/drafts';
   import {prepareFilesForMediaComposeModal} from '~/app/ui/components/partials/conversation/helpers';
   import ComposeBar from '~/app/ui/components/partials/conversation/internal/compose-bar/ComposeBar.svelte';
+  import DeleteMessageModal from '~/app/ui/components/partials/conversation/internal/delete=message-modal/DeleteMessageModal.svelte';
   import MessageList from '~/app/ui/components/partials/conversation/internal/message-list/MessageList.svelte';
   import {getTextContent} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/helpers';
   import {transformMessageFileProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/transformers';
@@ -26,6 +27,7 @@
     ComposeBarState,
     ConversationRouteParams,
     EditedMessage,
+    FeatureSupport,
     ModalState,
     QuotedMessage,
     RemoteConversationViewModelStoreValue,
@@ -96,16 +98,15 @@
 
   let modalState: ModalState = {type: 'none'};
 
-  let receiverSupportsEditedMessages:
-    | {supported: false}
-    | {supported: true; notSupportedNames: string[]};
+  let receiverSupportsEditedMessages: FeatureSupport;
+  let receiverSupportsDeleteMessage: FeatureSupport;
 
   function handleClickJoinCall(event: CustomEvent<MouseEvent>): void {
     // TODO(DESK-1447): Handle joining group call (example below).
     // viewModelController?.joinCall();
   }
 
-  function handleClickDeleteMessage(event: CustomEvent<AnyMessageListMessage>): void {
+  function handleClickDeleteMessageLocally(event: CustomEvent<AnyMessageListMessage>): void {
     switch (event.detail.type) {
       case 'message':
         viewModelController?.deleteMessage(event.detail.id).catch((error) => {
@@ -128,6 +129,15 @@
       default:
         unreachable(event.detail);
     }
+  }
+
+  function handleClickDeleteMessageForAll(event: CustomEvent<MessageListMessage>): void {
+    viewModelController?.deleteMessageForAll(event.detail.id).catch((error) => {
+      log.error(`Could not delete message with id ${event.detail.id}`, error);
+      toast.addSimpleFailure(
+        $i18n.t('messaging.error--delete-message', 'Could not delete message'),
+      );
+    });
   }
 
   function getComposeBarQuoteComponent(
@@ -323,6 +333,14 @@
             ? {supported: true, notSupportedNames: editFeature.notSupported}
             : {supported: false};
 
+        const deleteFeature = viewModelStore
+          .get()
+          ?.supportedFeatures.get(FEATURE_MASK_FLAG.DELETED_MESSAGES_SUPPORT);
+        receiverSupportsDeleteMessage =
+          deleteFeature !== undefined
+            ? {supported: true, notSupportedNames: deleteFeature.notSupported}
+            : {supported: false};
+
         // Set an `initiallyVisibleMessageId` if provided by the current route.
         initiallyVisibleMessageId = routeParams?.initialMessage?.messageId;
 
@@ -331,11 +349,14 @@
           draftStore = conversationDrafts.getOrCreateStore($viewModelStore.receiver.lookup);
         }
         const draft = draftStore.get();
-
-        // Get initial data belonging to the new conversation from the current route.
-        const forwardedMessageText = (
+        const forwardedMessageViewModelStore = (
           await getForwardedMessageViewModelBundle()
-        )?.viewModelStore.get().text?.raw;
+        )?.viewModelStore.get();
+
+        const forwardedMessageText =
+          forwardedMessageViewModelStore?.deletedAt !== undefined
+            ? undefined
+            : forwardedMessageViewModelStore?.text?.raw;
         const preloadedFiles = getPreloadedFiles();
 
         // Load initial data. Note: If there is both a draft and a forwarded message, the forwarded
@@ -405,7 +426,7 @@
       return;
     }
 
-    await composeBarState.editedMessage.actions.edit(event.detail).catch((error) => {
+    await composeBarState.editedMessage.actions.edit?.(event.detail).catch((error) => {
       log.error('Failed to update message with error:', error);
     });
     resetComposeBar();
@@ -487,6 +508,17 @@
     return routeParams.preloadedFiles.map(
       ({bytes, fileName, mediaType}) => new File([new Blob([bytes], {type: mediaType})], fileName),
     );
+  }
+
+  function handleClickDeleteMessage(event: CustomEvent<AnyMessageListMessage>): void {
+    if (event.detail.type === 'status-message') {
+      handleClickDeleteMessageLocally(event);
+      return;
+    }
+    modalState = {
+      type: 'delete-message',
+      props: event.detail,
+    };
   }
 
   /**
@@ -606,7 +638,8 @@
       if (
         messageToEdit?.status.sent !== undefined &&
         Date.now() - messageToEdit.status.sent.at.getTime() <
-          EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES * 60000
+          EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES * 60000 &&
+        messageToEdit.deletedAt === undefined
       ) {
         event.preventDefault();
         handleClickEditMessage(messageToEdit);
@@ -828,6 +861,14 @@
   <!-- No modal is displayed in this state. -->
 {:else if modalState.type === 'media-compose'}
   <MediaMessage {...modalState.props} on:close={handleCloseModal} on:clicksend={handleClickSend} />
+{:else if modalState.type === 'delete-message'}
+  <DeleteMessageModal
+    message={{...modalState.props}}
+    featureSupport={receiverSupportsDeleteMessage}
+    on:close={handleCloseModal}
+    on:deletelocally={handleClickDeleteMessageLocally}
+    on:deleteforall={handleClickDeleteMessageForAll}
+  ></DeleteMessageModal>
 {:else}
   {unreachable(modalState)}
 {/if}

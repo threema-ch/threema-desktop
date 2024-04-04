@@ -39,6 +39,7 @@ export interface IConversationViewModelController extends ProxyMarked {
     readonly delete: () => Promise<void>;
     readonly deleteMessage: (messageId: MessageId) => Promise<void>;
     readonly deleteStatusMessage: (statusMessageId: StatusMessageId) => Promise<void>;
+    readonly deleteMessageForAll: (messageId: MessageId) => Promise<void>;
     readonly findForwardedMessage: (
         receiverLookup: DbReceiverLookup,
         messageId: MessageId,
@@ -109,6 +110,12 @@ export class ConversationViewModelController implements IConversationViewModelCo
         return await this._conversation
             .get()
             .controller.removeStatusMessage.fromLocal(statusMessageId);
+    }
+
+    public async deleteMessageForAll(messageId: MessageId): Promise<void> {
+        return await this._conversation
+            .get()
+            .controller.deleteMessage.fromLocal(messageId, new Date());
     }
 
     public findForwardedMessage(

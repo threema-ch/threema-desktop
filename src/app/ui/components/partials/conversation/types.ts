@@ -23,7 +23,7 @@ export type RemoteConversationViewModelStoreValue = ReturnType<
     Remote<ConversationViewModelBundle>['viewModelStore']['get']
 >;
 
-export type ModalState = NoneModalState | ClearConversationModalState;
+export type ModalState = NoneModalState | ClearConversationModalState | DeleteMessageModalState;
 
 interface NoneModalState {
     readonly type: 'none';
@@ -38,12 +38,16 @@ interface ClearConversationModalState {
     };
 }
 
+interface DeleteMessageModalState {
+    readonly type: 'delete-message';
+    readonly props: MessageListMessage;
+}
+
 export type EditedMessage = Pick<MessageListMessage, 'actions' | 'id' | 'text'>;
 export interface QuotedMessage {
     readonly id: MessageId;
     readonly props: QuoteProps;
 }
-
 /**
  * Base compose bar type.
  */
@@ -81,3 +85,5 @@ export interface ComposeBarEdit extends ComposeBarMode {
     readonly editedMessage: EditedMessage;
     readonly quotedMessage: QuotedMessage;
 }
+
+export type FeatureSupport = {supported: false} | {supported: true; notSupportedNames: string[]};

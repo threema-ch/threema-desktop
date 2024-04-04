@@ -12,16 +12,18 @@ import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
  * Props accepted by the `Message` component.
  */
 export interface MessageProps {
+    readonly type: 'message';
     readonly actions: {
-        readonly acknowledge: () => Promise<void>;
-        readonly decline: () => Promise<void>;
-        readonly edit: (newText: string) => Promise<void>;
+        readonly acknowledge: (() => Promise<void>) | undefined;
+        readonly decline: (() => Promise<void>) | undefined;
+        readonly edit: ((newText: string) => Promise<void>) | undefined;
     };
     readonly boundary?: MessageContextMenuProviderProps['boundary'];
     readonly conversation: {
         readonly receiver: AnyReceiverData;
         readonly isEditingSupported: boolean;
     };
+    readonly deletedAt: Date | undefined;
     readonly direction: BasicMessageProps['direction'];
     readonly file?: Omit<NonNullable<BasicMessageProps['file']>, 'thumbnail'> & {
         readonly sync: {

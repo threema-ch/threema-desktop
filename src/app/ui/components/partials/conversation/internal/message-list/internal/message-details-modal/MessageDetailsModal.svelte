@@ -19,6 +19,7 @@
 
   export let conversation: $$Props['conversation'];
   export let direction: $$Props['direction'] = undefined;
+  export let deletedAt: $$Props['deletedAt'] = undefined;
   export let file: $$Props['file'] = undefined;
   export let id: $$Props['id'] = undefined;
   export let lastEdited: $$Props['lastEdited'] = undefined;
@@ -138,6 +139,13 @@
               text={formatDateLocalized(lastEdited.at, $i18n, 'extended', use24hTime)}
               selectable
             />
+          </KeyValueList.Item>
+        {/if}
+        {#if deletedAt !== undefined}
+          <KeyValueList.Item
+            key={$i18n.t('dialog--message-details.label--deleted-date', 'Deleted')}
+          >
+            <Text text={formatDateLocalized(deletedAt, $i18n, 'extended', use24hTime)} selectable />
           </KeyValueList.Item>
         {/if}
       </KeyValueList.Section>

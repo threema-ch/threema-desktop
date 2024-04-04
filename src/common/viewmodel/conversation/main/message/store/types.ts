@@ -6,13 +6,18 @@ import type {IdColor} from '~/common/utils/id-color';
 import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
 import type {AnyMention} from '~/common/viewmodel/utils/mentions';
 
+export type ConversationMessageViewModel =
+    | StandardConversationMessageViewModel
+    | DeletedMessageViewModel;
+
 /**
  * Data to be supplied to the UI layer as part of the `ViewModelStore`. This should be as close as
  * possible to the `MessageProps` that the message component expects, excluding props that only
  * exist in the ui layer.
  */
-export interface ConversationMessageViewModel {
+export interface StandardConversationMessageViewModel {
     readonly type: 'message';
+    readonly deletedAt: undefined;
     readonly direction: 'inbound' | 'outbound';
     readonly file?: {
         readonly duration?: f64;
@@ -62,6 +67,22 @@ export interface ConversationMessageViewModel {
         readonly editedAt: Date;
         readonly text: string;
     }[];
+}
+
+export interface DeletedMessageViewModel {
+    readonly type: 'message';
+    readonly deletedAt: Date;
+    readonly direction: 'inbound' | 'outbound';
+    readonly file: undefined;
+    readonly id: MessageId;
+    readonly history: [];
+    readonly lastEditedAt: undefined;
+    readonly ordinal: u53;
+    readonly quote: undefined;
+    readonly reactions: [];
+    readonly sender?: AnyMessageSender;
+    readonly status: StatusData;
+    readonly text: undefined;
 }
 
 /**

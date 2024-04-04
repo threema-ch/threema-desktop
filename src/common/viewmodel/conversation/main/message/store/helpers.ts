@@ -12,7 +12,10 @@ import {u64ToHexLe} from '~/common/utils/number';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
 import {getConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
-import type {ConversationMessageViewModel} from '~/common/viewmodel/conversation/main/message/store/types';
+import type {
+    ConversationMessageViewModel,
+    StandardConversationMessageViewModel,
+} from '~/common/viewmodel/conversation/main/message/store/types';
 import {getMentions} from '~/common/viewmodel/utils/mentions';
 
 /**
@@ -26,7 +29,7 @@ export function getMessageQuote(
     services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
     messageModel: AnyMessageModel,
     conversationModelStore: ConversationModelStore,
-): ConversationMessageViewModel['quote'] {
+): StandardConversationMessageViewModel['quote'] {
     if (messageModel.type !== MessageType.TEXT) {
         // Quotes are only permitted in text messages.
         return undefined;
@@ -174,7 +177,7 @@ export function getMessageSender(
 export function getMessageText(
     services: Pick<ServicesForViewModel, 'model'>,
     messageModel: AnyMessageModel,
-): ConversationMessageViewModel['text'] {
+): StandardConversationMessageViewModel['text'] | undefined {
     switch (messageModel.type) {
         case 'text':
             return {
@@ -192,7 +195,8 @@ export function getMessageText(
                       mentions: getMentions(services, messageModel),
                       raw: messageModel.view.caption,
                   };
-
+        case 'deleted':
+            return undefined;
         default:
             return unreachable(messageModel);
     }
@@ -209,14 +213,16 @@ export function getMessageHistory(
  */
 export function getMessageFile(
     messageModel: AnyMessageModel,
-): ConversationMessageViewModel['file'] {
+): StandardConversationMessageViewModel['file'] {
     const {type} = messageModel;
-    if (type === 'text') {
+    if (type === 'text' || type === 'deleted') {
         return undefined;
     }
 
     const renderingType = type === 'image' ? messageModel.view.renderingType : undefined;
-    let imageRenderingType: NonNullable<ConversationMessageViewModel['file']>['imageRenderingType'];
+    let imageRenderingType: NonNullable<
+        StandardConversationMessageViewModel['file']
+    >['imageRenderingType'];
     switch (renderingType) {
         case ImageRenderingType.REGULAR:
             imageRenderingType = 'regular';
@@ -254,7 +260,7 @@ export function getMessageFile(
 
 function getMessageFileSyncDirection(
     messageModel: AnyFileBasedMessageModel,
-): Required<ConversationMessageViewModel>['file']['sync']['direction'] {
+): Required<StandardConversationMessageViewModel>['file']['sync']['direction'] {
     if (messageModel.view.state === 'unsynced' || messageModel.view.state === 'syncing') {
         const fileData = messageModel.view.fileData;
         const blobId = messageModel.view.blobId;
@@ -271,7 +277,7 @@ function getMessageFileSyncDirection(
 
 function getMessageFileThumbnail(
     messageModel: AnyFileBasedMessageModel,
-): Required<ConversationMessageViewModel>['file']['thumbnail'] {
+): Required<StandardConversationMessageViewModel>['file']['thumbnail'] {
     switch (messageModel.type) {
         case 'file':
         case 'audio':

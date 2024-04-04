@@ -122,6 +122,7 @@ export class BlobCacheService {
             case 'text':
             case 'audio':
             case 'file':
+            case 'deleted':
                 return undefined;
             default:
                 return unreachable(message);

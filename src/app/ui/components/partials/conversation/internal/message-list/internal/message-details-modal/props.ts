@@ -8,6 +8,7 @@ import type {MessageId, StatusMessageId} from '~/common/network/types';
  */
 export interface MessageDetailsModalProps {
     readonly conversation: MessageProps['conversation'];
+    readonly deletedAt?: Date;
     readonly direction?: MessageProps['direction'];
     readonly file?: MessageProps['file'];
     readonly id?: MessageId | StatusMessageId;
