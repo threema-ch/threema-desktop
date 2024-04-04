@@ -457,6 +457,7 @@ export enum MessageType {
     IMAGE = 'image',
     VIDEO = 'video',
     AUDIO = 'audio',
+    DELETED = 'deleted',
     // POLL = 'poll',
     // LOCATION = 'location',
 }

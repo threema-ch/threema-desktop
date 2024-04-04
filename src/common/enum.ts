@@ -1203,6 +1203,8 @@ export namespace MessageType {
     export type VIDEO = typeof VIDEO;
     export const AUDIO = 'audio';
     export type AUDIO = typeof AUDIO;
+    export const DELETED = 'deleted';
+    export type DELETED = typeof DELETED;
 }
 /**
  * All possible message types.
@@ -1220,6 +1222,7 @@ export namespace MessageTypeUtils {
         MessageType.IMAGE,
         MessageType.VIDEO,
         MessageType.AUDIO,
+        MessageType.DELETED,
     ] as const);
     export function fromString(value: string, fallback?: MessageType): MessageType {
         if ((ALL as ReadonlySet<string>).has(value)) {

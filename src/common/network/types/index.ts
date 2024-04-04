@@ -441,6 +441,8 @@ export const FEATURE_MASK_FLAG = {
     GROUP_CALL_SUPPORT: 0x80n,
     // Can handle edited messages
     EDIT_MESSAGE_SUPPORT: 0x100n,
+    // Can handle deleted messages
+    DELETED_MESSAGES_SUPPORT: 0x200n,
 } as const;
 
 /**

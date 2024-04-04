@@ -590,6 +590,8 @@ export const tMessage = new (class TMessage extends Table<DBConnection, 'TMessag
     /** Optional timestamp for when message was edited.*/
     public lastEditedAt = this.optionalColumn('lastEditedAt', 'localDateTime');
 
+    /** Optional timestamp for when the message was deleted. Defaults to null if this message was not deleted */
+    public deletedAt = this.optionalColumn('deletedAt', 'localDateTime');
     /**
      * Unparsed raw body. Only provided for inbound messages.
      */

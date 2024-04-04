@@ -371,6 +371,9 @@ export interface DbMessageCommon<T extends MessageType> {
     /** Optional timestamp for when a message was edited. Defaults to null if a message was never edited.*/
     readonly lastEditedAt?: Date;
 
+    /** Optional timestamp for when a message was deleted. Defaults to null if a message has not been deleted yet. */
+    readonly deletedAt?: Date;
+
     /**
      * Optional timestamp for when the 'read' delivery receipt message...
      *
@@ -522,19 +525,30 @@ export interface DbAudioMessageFragment extends DbBaseFileMessageFragment {
 export type DbAudioMessage = DbAudioMessageFragment & DbMessageCommon<MessageType.AUDIO>;
 
 /**
+ * A deleted message cannot have a raw body, nor can it be edited, have reactions or have a history.
+ */
+export type DbDeletedMessage = Omit<
+    DbMessageCommon<MessageType.DELETED>,
+    'raw' | 'lastEditedAt' | 'reactions' | 'history'
+> &
+    Required<Pick<DbMessageCommon<MessageType.DELETED>, 'deletedAt'>>;
+
+/**
  * A file data UID.
  */
 export type DbFileDataUid = WeakOpaque<DbUid, {readonly DbFileDataUid: unique symbol}>;
 
-/**
- * Any database message.
- */
-export type DbAnyMessage =
+export type DbAnyNonDeletedMessage =
     | DbTextMessage
     | DbFileMessage
     | DbImageMessage
     | DbVideoMessage
     | DbAudioMessage;
+
+/*
+ * Any database message.
+ */
+export type DbAnyMessage = DbAnyNonDeletedMessage | DbDeletedMessage;
 
 /**
  * Any database media (file-based) message
@@ -563,6 +577,7 @@ export type DbMessageFor<TType extends MessageType> = {
     image: DbImageMessage;
     video: DbVideoMessage;
     audio: DbAudioMessage;
+    deleted: DbDeletedMessage;
 }[TType];
 
 /*
@@ -821,12 +836,12 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      * Return identifiers (`conversationUid`, `id`, and `uid`) of all matching messages that contain
      * the given text (case-insensitive).
      *
-     * Note: Quoted content will not be searched.
+     * Note: Quoted content will not be searched, nor will deleted messages.
      */
     readonly getMessageIdentifiersByText: (
         text: string,
         limit?: u53,
-    ) => DbList<Pick<DbAnyMessage, 'conversationUid' | 'id' | 'uid'>>;
+    ) => DbList<Pick<DbAnyNonDeletedMessage, 'conversationUid' | 'id' | 'uid'>>;
 
     /**
      * Get the message with the specified UID.
@@ -871,7 +886,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      */
     readonly updateMessage: (
         conversationUid: DbConversationUid,
-        message: DbUpdate<DbAnyMessage, 'type'>,
+        message: DbUpdate<DbAnyNonDeletedMessage, 'type'>,
     ) => {deletedFileIds: FileId[]};
 
     /**
@@ -884,7 +899,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      *
      * Updates the main message table's `lastEditedAt` field of the corresponding message.
      */
-    readonly editMessage: <TMessageType extends MessageType>(
+    readonly editMessage: <TMessageType extends Exclude<MessageType, MessageType.DELETED>>(
         messageUid: DbMessageUid,
         type: TMessageType,
         messageUpdate: DbMessageEditFor<TMessageType>,
@@ -906,6 +921,22 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
         conversationUid: DbConversationUid,
         uid: DbRemove<DbAnyMessage>,
     ) => {removed: boolean; deletedFileIds: FileId[]};
+
+    /**
+     * Delete the message and associated data. This includes subtables, such as the type specific
+     * message subtable, reactions and the history. Furthermore, it marks the message as deleted.
+     * Additionally, the list of {@link FileId}s that were removed from the database is returned.
+     * This data should be used by the caller to clean up the file storage. Note: This differs in
+     * removing a message in a fundamental way: A message removal only happens locally while message
+     * deletion is reflected and set to the recipient as well. This also means that the message
+     * persists in the local database, marked as deleted, and a placeholder is shown for it on all
+     * affected devices.
+     */
+    readonly deleteMessage: (
+        conversationUid: DbConversationUid,
+        uid: DbRemove<DbAnyMessage>,
+        deletedAt: Date,
+    ) => {deletedMessage: DbDeletedMessage | undefined; deletedFileIds: FileId[]};
 
     /**
      * Remove all messages of a conversation.

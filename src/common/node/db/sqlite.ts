@@ -52,6 +52,8 @@ import type {
     DbStatusMessage,
     DbStatusMessageUid,
     DbCreateStatusMessage,
+    DbAnyNonDeletedMessage,
+    DbDeletedMessage,
 } from '~/common/db';
 import {
     type GlobalPropertyKey,
@@ -73,7 +75,13 @@ import {
 import {type Settings, SETTINGS_CODEC} from '~/common/settings';
 import type {u53} from '~/common/types';
 import {chunk} from '~/common/utils/array';
-import {assert, assertUnreachable, isNotUndefined, unreachable} from '~/common/utils/assert';
+import {
+    assert,
+    assertUnreachable,
+    isNotUndefined,
+    unreachable,
+    unwrap,
+} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {hasProperty, omit, pick} from '~/common/utils/object';
 
@@ -1302,6 +1310,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 lastEditedAt: tMessage.lastEditedAt,
                 // TODO(DESK-1445): Implement ordinal using virtual columns
                 ordinal: tMessage.processedAtTimestamp.valueWhenNull(tMessage.createdAtTimestamp),
+                deletedAt: tMessage.deletedAt,
+
                 reactions: this._db
                     .aggregateAsArrayDistinct({
                         reaction: tMesssageReactionLeftJoin.reaction,
@@ -1557,6 +1567,17 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     ...audio,
                 };
             }
+
+            case MessageType.DELETED:
+                return {
+                    ...common,
+                    type: MessageType.DELETED,
+                    deletedAt: unwrap(
+                        common.deletedAt,
+                        'A message of type deleted must havea deletedAt timestamp',
+                    ),
+                };
+
             default:
                 return unreachable(common.type, new Error(`Unknown message type ${common.type}`));
         }
@@ -1566,7 +1587,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     public getMessageIdentifiersByText(
         text: string,
         limit?: u53,
-    ): DbList<Pick<DbAnyMessage, 'conversationUid' | 'id' | 'uid'>> {
+    ): DbList<Pick<DbAnyNonDeletedMessage, 'conversationUid' | 'id' | 'uid'>> {
         // TODO(DESK-1333): The following queries could potentially be improved by not utilizing
         // subqueries.
         return sync(
@@ -1732,6 +1753,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         if (common === null) {
             return undefined;
         }
+
         return this._getMessage(common);
     }
 
@@ -1869,7 +1891,10 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         );
     }
 
-    private _getLastEdit(type: MessageType, messageUid: DbMessageUid): DbMessageLastEdit {
+    private _getLastEdit(
+        type: Exclude<MessageType, MessageType.DELETED>,
+        messageUid: DbMessageUid,
+    ): DbMessageLastEdit {
         switch (type) {
             case 'text':
                 return this._getLastTextMessageEdit(tMessageTextData, messageUid);
@@ -1934,7 +1959,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public editMessage<TMessageType extends MessageType>(
+    public editMessage<TMessageType extends Exclude<MessageType, MessageType.DELETED>>(
         messageUid: DbMessageUid,
         type: TMessageType,
         messageUpdate: DbMessageEditFor<TMessageType>,
@@ -2014,7 +2039,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     /** @inheritdoc */
     public updateMessage(
         conversationUid: DbConversationUid,
-        message: DbUpdate<DbAnyMessage, 'type'>,
+        message: DbUpdate<DbAnyNonDeletedMessage, 'type'>,
     ): {deletedFileIds: FileId[]} {
         const messageWithoutReactions = omit<typeof message, 'reactions'>(message, ['reactions']);
 
@@ -2355,8 +2380,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         fileDataUid?: DbFileDataUid;
         thumbnailFileDataUid?: DbFileDataUid;
     }[] {
-        // Text messages don't have associated file data
-        if (message.type === MessageType.TEXT) {
+        // Text messages or deleted messages don't have associated file data
+        if (message.type === MessageType.TEXT || message.type === MessageType.DELETED) {
             return [];
         }
 
@@ -2639,6 +2664,119 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
 
         return {
             removed: deletedCount === 1,
+            deletedFileIds,
+        };
+    }
+
+    /** @inheritdoc */
+    public deleteMessage(
+        conversationUid: DbConversationUid,
+        uid: DbMessageUid,
+        deletedAt: Date,
+    ): {deletedMessage: DbDeletedMessage | undefined; deletedFileIds: FileId[]} {
+        const [deletedMessage, deletedFileIds] = this._db.syncTransaction(() => {
+            const typeQueryResult = sync(
+                this._db
+                    .selectFrom(tMessage)
+                    .select({
+                        type: tMessage.messageType,
+                    })
+                    .where(tMessage.uid.equals(uid))
+                    .executeSelectNoneOrOne(),
+            );
+
+            if (typeQueryResult === null) {
+                this._log.warn('The message to be deleted was not found');
+                return [null, []];
+            }
+            const type = typeQueryResult.type;
+            if (type === MessageType.DELETED) {
+                this._log.warn('Cannot delete a message of type deleted');
+                return [null, []];
+            }
+            // In order to clean up unreferenced file data entries, we need to get a list of the
+            // file data UIDs that will be deleted.
+            const fileDataUidRows = this._getReferencedFileUidsByMessage({
+                uid,
+                conversationUid,
+                type,
+            });
+
+            const fileDataUids = fileDataUidRows
+                .flatMap((row) => [row.fileDataUid, row.thumbnailFileDataUid])
+                .filter(isNotUndefined);
+
+            // Delete the corresponding entry in the message subtable.
+            const table =
+                type === MessageType.TEXT ? tMessageTextData : this._getTableForFileType(type);
+            sync(
+                this._db
+                    .deleteFrom(table)
+                    .where(table.messageUid.equalsIfValue(uid))
+                    .executeDelete(),
+            );
+            // Delete all message reactions.
+            sync(
+                this._db
+                    .deleteFrom(tMessageReaction)
+                    .where(tMessageReaction.messageUid.equalsIfValue(uid))
+                    .executeDelete(),
+            );
+
+            // Delete the message history.
+            sync(
+                this._db
+                    .deleteFrom(tMessageHistory)
+                    .where(tMessageHistory.messageUid.equalsIfValue(uid))
+                    .executeDelete(),
+            );
+
+            // After deleting the message file data, we can now determine whether there are now
+            // unreferenced file data entries that should be cleaned up.
+            //
+            // Note: Deleting the files from the file storage is the responsibility of the caller.
+            const unreferencedFileIds = this._deleteFromMessageDataIfUnreferenced(fileDataUids);
+
+            // Now change the message type and all associated data in the main table of the deleted message.
+            const dbDeletedMessage = sync(
+                this._db
+                    .update(tMessage)
+                    .set({
+                        lastEditedAt: undefined,
+                        raw: undefined,
+                        messageType: MessageType.DELETED,
+                        deletedAt,
+                    })
+                    .where(tMessage.uid.equalsIfValue(uid))
+                    .returning({
+                        uid: tMessage.uid,
+                        id: tMessage.messageId,
+                        senderContactUid: tMessage.senderContactUid,
+                        conversationUid: tMessage.conversationUid,
+                        createdAt: tMessage.createdAt,
+                        processedAt: tMessage.processedAt,
+                        deliveredAt: tMessage.deliveredAt,
+                        readAt: tMessage.readAt,
+                        threadId: tMessage.threadId,
+                        deletedAt: tMessage.deletedAt,
+                        ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt).getTime(),
+                    })
+                    .executeUpdateNoneOrOne(),
+            );
+            return [dbDeletedMessage, unreferencedFileIds];
+        }, this._log);
+        if (deletedMessage === null) {
+            return {deletedMessage: undefined, deletedFileIds: []};
+        }
+        return {
+            deletedMessage: {
+                ...deletedMessage,
+                type: MessageType.DELETED,
+                deletedAt: unwrap(
+                    deletedMessage.deletedAt,
+                    'A message of type deleted must havea deletedAt timestamp',
+                ),
+            },
             deletedFileIds,
         };
     }

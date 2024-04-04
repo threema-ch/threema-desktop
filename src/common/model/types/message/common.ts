@@ -27,7 +27,7 @@ import type {FileBytesAndMediaType} from '~/common/utils/file';
 export const OWN_IDENTITY_ALIAS = 'me';
 export type IdentityStringOrMe = IdentityString | typeof OWN_IDENTITY_ALIAS;
 
-export type MediaBasedMessageType = Exclude<MessageType, MessageType.TEXT>;
+export type MediaBasedMessageType = Exclude<MessageType, MessageType.TEXT | MessageType.DELETED>;
 
 export type TextBasedMessageType = Exclude<MessageType, MediaBasedMessageType>;
 
