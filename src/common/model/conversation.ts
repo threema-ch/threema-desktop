@@ -797,6 +797,15 @@ export class ConversationModelController implements ConversationController {
                     'Cannot create a delete notification for an outbound message',
                 );
 
+                this.meta.run((viewHandle): void => {
+                    this._services.notification
+                        .notifyMessageDelete(deletedMessageStore, {
+                            receiver: this.receiver(),
+                            view: viewHandle.view(),
+                        })
+                        .catch(assertUnreachable);
+                });
+
                 break;
 
             case TriggerSource.SYNC:

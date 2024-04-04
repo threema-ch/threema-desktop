@@ -1,10 +1,14 @@
+import {i18n} from '~/app/ui/i18n';
 import {appVisibility} from '~/common/dom/ui/state';
 import type {
+    CustomNotification,
+    DeletedMessageNotification,
     ExtendedNotificationOptions,
     NotificationCreator,
     NotificationHandle,
     NotificationTag,
 } from '~/common/notification';
+import {unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
 class ProxyNotification extends Notification {
@@ -45,29 +49,50 @@ export class FrontendNotificationCreator implements NotificationCreator {
     }
 
     public create(
-        title: string,
-        options: ExtendedNotificationOptions,
-        identifier: string,
+        notification: Exclude<CustomNotification, DeletedMessageNotification>,
     ): NotificationHandle | undefined {
+        const {options, identifier} = notification;
         const {tag} = options;
 
         // Check if we shouldn't show notifications if the application is focused
-        if (options.creator.ignore === 'if-focused' && appVisibility.get() === 'focused') {
+        if (
+            notification.options.creator.ignore === 'if-focused' &&
+            appVisibility.get() === 'focused'
+        ) {
             return undefined;
         }
 
         // Create notification
-        const notification = new ProxyNotification(title, options, identifier);
-        this._notifications.set(tag, notification);
-        notification.addEventListener('close', () => this._notifications.delete(tag));
-        return notification;
+        switch (notification.type) {
+            case 'generic': {
+                const proxyNotification = new ProxyNotification(
+                    notification.title,
+                    options,
+                    identifier,
+                );
+                this._notifications.set(tag, proxyNotification);
+                proxyNotification.addEventListener('close', () => this._notifications.delete(tag));
+                return proxyNotification;
+            }
+            case 'new-message': {
+                const title = this._createNewMessageTitle(
+                    notification.unreadCount,
+                    notification.receiverConversation,
+                    notification.senderName,
+                );
+                const proxyNotification = new ProxyNotification(title, options, identifier);
+                this._notifications.set(tag, proxyNotification);
+                proxyNotification.addEventListener('close', () => this._notifications.delete(tag));
+                return proxyNotification;
+            }
+
+            default:
+                return unreachable(notification);
+        }
     }
 
-    public update(
-        title: string,
-        options: ExtendedNotificationOptions,
-        identifier: string,
-    ): NotificationHandle | undefined {
+    public update(notification: CustomNotification): NotificationHandle | undefined {
+        const {options, identifier} = notification;
         const {tag} = options;
 
         // Check if we shouldn't show notifications if the application is focused
@@ -75,10 +100,85 @@ export class FrontendNotificationCreator implements NotificationCreator {
             return undefined;
         }
 
-        const notification = this._notifications.get(tag);
-        if (notification?.lastNotificationIdentifier === identifier) {
-            this._notifications.set(tag, new ProxyNotification(title, options, identifier));
+        switch (notification.type) {
+            case 'generic': {
+                const proxyNotification = this._notifications.get(tag);
+                if (proxyNotification?.lastNotificationIdentifier === identifier) {
+                    this._notifications.set(
+                        tag,
+                        new ProxyNotification(notification.title, options, identifier),
+                    );
+                }
+                return proxyNotification;
+            }
+            case 'new-message': {
+                const title = this._createNewMessageTitle(
+                    notification.unreadCount,
+                    notification.receiverConversation,
+                    notification.senderName,
+                );
+                const proxyNotification = this._notifications.get(tag);
+                if (proxyNotification?.lastNotificationIdentifier === identifier) {
+                    this._notifications.set(tag, new ProxyNotification(title, options, identifier));
+                }
+                return proxyNotification;
+            }
+
+            case 'deleted-message': {
+                const title = this._createNewMessageTitle(
+                    notification.unreadCount,
+                    notification.receiverConversation,
+                    notification.senderName,
+                );
+                const body: string = i18n
+                    .get()
+                    .t(
+                        'messaging.prose--notification-deleted-message',
+                        'This message was deleted.',
+                    );
+                const proxyNotification = new ProxyNotification(
+                    title,
+                    {...options, body},
+                    identifier,
+                );
+                this._notifications.set(tag, proxyNotification);
+                proxyNotification.addEventListener('close', () => this._notifications.delete(tag));
+                return proxyNotification;
+            }
+
+            default:
+                return unreachable(notification);
         }
-        return notification;
+    }
+
+    private _createNewMessageTitle(
+        unreadCount: number,
+        recipientName: string,
+        senderName: string | undefined,
+    ): string {
+        if (senderName === undefined) {
+            return i18n
+                .get()
+                .t(
+                    'messaging.prose--notification-title-single',
+                    '{n, plural, =1 {new message} other {{n} new messages}} from {recipientName}',
+                    {
+                        n: unreadCount.toString(),
+                        recipientName,
+                    },
+                );
+        }
+
+        return i18n
+            .get()
+            .t(
+                'messaging.prose--notification-title-group',
+                '{n, plural, =1 {new message from {senderName}} other {{n} new messages}} in group {recipientName}',
+                {
+                    n: unreadCount.toString(),
+                    senderName,
+                    recipientName,
+                },
+            );
     }
 }

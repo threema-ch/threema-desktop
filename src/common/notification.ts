@@ -1,11 +1,11 @@
 import {ConversationCategory, ReceiverType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {ConversationView} from '~/common/model';
-import type {AnyInboundMessageModelStore} from '~/common/model/types/message';
+import type {InboundDeletedMessageModelStore} from '~/common/model/message/deleted-message';
+import type {AnyInboundNonDeletedMessageModelStore} from '~/common/model/types/message';
 import type {AnyReceiverStore} from '~/common/model/types/receiver';
 import type {GroupId, IdentityString} from '~/common/network/types';
 import type {u53, WeakOpaque} from '~/common/types';
-import {unreachable} from '~/common/utils/assert';
 import type {ProxyMarked, RemoteProxy} from '~/common/utils/endpoint';
 import {u64ToHexLe} from '~/common/utils/number';
 
@@ -85,18 +85,42 @@ export type NotificationHandle = {
     close: () => void;
 } & ProxyMarked;
 
+export type CustomNotification =
+    | GenericNotification
+    | NewMessageNotification
+    | DeletedMessageNotification;
+
+interface GenericNotification {
+    readonly type: 'generic';
+    readonly title: string;
+    readonly options: ExtendedNotificationOptions;
+    readonly identifier: string;
+}
+
+interface NewMessageNotification {
+    readonly type: 'new-message';
+    readonly receiverConversation: string;
+    readonly senderName?: string;
+    readonly options: ExtendedNotificationOptions;
+    readonly unreadCount: u53;
+    readonly identifier: string;
+}
+
+export interface DeletedMessageNotification {
+    readonly type: 'deleted-message';
+    readonly receiverConversation: string;
+    readonly senderName?: string;
+    readonly options: ExtendedNotificationOptions & {body: undefined};
+    readonly unreadCount: u53;
+    readonly identifier: string;
+}
+
 export interface NotificationCreator extends ProxyMarked {
     readonly create: (
-        title: string,
-        options: ExtendedNotificationOptions,
-        identifier: string,
+        notification: Exclude<CustomNotification, DeletedMessageNotification>,
     ) => NotificationHandle | undefined;
 
-    readonly update: (
-        title: string,
-        options: ExtendedNotificationOptions,
-        identifier: string,
-    ) => NotificationHandle | undefined;
+    readonly update: (notification: CustomNotification) => NotificationHandle | undefined;
 }
 
 export class NotificationService {
@@ -106,80 +130,104 @@ export class NotificationService {
     ) {}
 
     public async notifyNewMessage(
-        message: AnyInboundMessageModelStore,
+        message: AnyInboundNonDeletedMessageModelStore,
         conversation: {
             readonly receiver: AnyReceiverStore;
             readonly view: ConversationView;
         },
     ): Promise<void> {
-        const {title, body, tag} = this._getNotificationParameters(message, conversation);
-        await this._creator.create(
-            title,
-            {
+        const {receiverConversation, unreadCount, senderName, body, tag} =
+            this._getNotificationParameters(message, conversation);
+
+        await this._creator.create({
+            type: 'new-message',
+            receiverConversation,
+            senderName,
+            options: {
                 tag,
                 body,
                 creator: {ignore: 'if-focused'},
             },
-            message.get().view.id.toString(),
-        );
+            unreadCount,
+            identifier: message.get().view.id.toString(),
+        });
     }
 
     public async notifyMessageEdit(
-        message: AnyInboundMessageModelStore,
+        message: AnyInboundNonDeletedMessageModelStore,
         conversation: {
             readonly receiver: AnyReceiverStore;
             readonly view: ConversationView;
         },
     ): Promise<void> {
-        // Fetch models
-        const {title, body, tag} = this._getNotificationParameters(message, conversation);
+        const {receiverConversation, unreadCount, senderName, body, tag} =
+            this._getNotificationParameters(message, conversation);
 
-        // Show notification. This automatically replaces an existing notification from the same
-        // receiver via the `tag`.
-        await this._creator.update(
-            title,
-            {
+        await this._creator.update({
+            type: 'new-message',
+            receiverConversation,
+            senderName,
+            options: {
                 tag,
                 body,
                 creator: {ignore: 'if-focused'},
             },
-            message.get().view.id.toString(),
-        );
+            unreadCount,
+            identifier: message.get().view.id.toString(),
+        });
     }
 
-    private _getNotificationParameters(
-        message: AnyInboundMessageModelStore,
+    public async notifyMessageDelete(
+        message: InboundDeletedMessageModelStore,
         conversation: {
             readonly receiver: AnyReceiverStore;
             readonly view: ConversationView;
         },
-    ): {title: string; body: string | undefined; tag: NotificationTag} {
+    ): Promise<void> {
+        const {receiverConversation, unreadCount, senderName, tag} =
+            this._getNotificationParameters(message, conversation);
+
+        await this._creator.update({
+            type: 'deleted-message',
+            receiverConversation,
+            senderName,
+            options: {
+                tag,
+                body: undefined,
+                creator: {ignore: 'if-focused'},
+            },
+            unreadCount,
+            identifier: message.get().view.id.toString(),
+        });
+    }
+
+    private _getNotificationParameters(
+        message: AnyInboundNonDeletedMessageModelStore | InboundDeletedMessageModelStore,
+        conversation: {
+            readonly receiver: AnyReceiverStore;
+            readonly view: ConversationView;
+        },
+    ): {
+        receiverConversation: string;
+        senderName?: string;
+        unreadCount: u53;
+        body: string | undefined;
+        tag: NotificationTag;
+    } {
         const messageModel = message.get();
         const receiverModel = conversation.receiver.get();
 
-        // Determine title
-        let title;
         const unreadCount = conversation.view.unreadMessageCount;
-        switch (receiverModel.type) {
-            case ReceiverType.CONTACT: {
-                title = `${unreadCount} new message(s) from ${receiverModel.view.displayName}`;
-                break;
-            }
-            case ReceiverType.GROUP: {
-                const groupName = receiverModel.view.displayName;
-                if (unreadCount === 1) {
-                    title = `Message from ${
-                        messageModel.controller.sender().get().view.displayName
-                    } in ${groupName}`;
-                } else {
-                    title = `${unreadCount} new message(s) in ${groupName}`;
-                }
-                break;
-            }
-            case ReceiverType.DISTRIBUTION_LIST:
-                throw new Error('Cannot receive message from a distribution list');
-            default:
-                unreachable(receiverModel);
+
+        if (receiverModel.type === ReceiverType.DISTRIBUTION_LIST) {
+            throw new Error('Cannot receive message from a distribution list');
+        }
+        const receiverConversation = receiverModel.view.displayName;
+
+        let senderName: string | undefined = undefined;
+
+        if (conversation.receiver.type === ReceiverType.GROUP) {
+            senderName = messageModel.controller.sender().get().view.displayName;
         }
 
         // Determine body
@@ -197,6 +245,12 @@ export class NotificationService {
             body = '';
         }
 
-        return {title, body, tag: receiverModel.controller.notificationTag};
+        return {
+            receiverConversation,
+            unreadCount,
+            senderName,
+            body,
+            tag: receiverModel.controller.notificationTag,
+        };
     }
 }

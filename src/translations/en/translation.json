@@ -86,6 +86,13 @@
     "prose--group-conversation-prompt": "This will delete the group chat \"{name}\" and its messages on this device (but not on your linked devices).",
     "success--delete-conversation": "Chat successfully deleted"
   },
+  "dialog--delete-message": {
+    "action--cancel": "Cancel",
+    "action--delete-for-all": "Delete for all",
+    "action--delete-locally": "Delete on this device",
+    "action--delete-message": "Delete message",
+    "prose--delete-message": "Do you really want to delete this message?"
+  },
   "dialog--device-cookie": {
     "label--close": "Continue without device cookie",
     "label--continue": "Continue",
@@ -254,6 +261,7 @@
   },
   "dialog--message-details": {
     "label--created-date": "Created",
+    "label--deleted-date": "Deleted",
     "label--delivered-date": "Delivered",
     "label--file-name": "File Name",
     "label--file-size": "File Size",
@@ -378,6 +386,7 @@
     "label--default-image-message-preview": "Image",
     "label--default-sender-self": "Me: {text}",
     "label--default-video-message-preview": "Video",
+    "label--deleted-message-preview": "This message was deleted",
     "label--mention-all": "All",
     "label--mention-me": "Me",
     "label--prefix-draft": "Draft:",
@@ -385,11 +394,16 @@
     "label--timestamp-yesterday": "Yesterday {time}",
     "label--unread-messages": "New Messages",
     "markup--chat-empty-state": "This chat is linked with your mobile device. <1/>All future messages will appear here.",
+    "prose--delete-not-support-partial": "This message will not be deleted for the following group members because they use older versions of Threema: {names}.",
     "prose--edit-message": "Edit Message",
     "prose--edit-not-support": "Cannot edit the message because the recipient’s app version does not support this feature.",
     "prose--edit-not-support-group": "Cannot edit the message because no group member supports this feature.",
     "prose--edit-not-support-partial": "The following group members will not be able to see your edits: {names}. To see edits, they need to install the latest Threema version.",
+    "prose--message deleted": "This message was deleted",
     "prose--message-edited": "Edited",
+    "prose--notification-deleted-message": "This message was deleted",
+    "prose--notification-title-group": "{n, plural, =1 {new message from {senderName}} other {{n} new messages}} in group {recipientName}",
+    "prose--notification-title-single": "{n, plural, =1 {new message} other {{n} new messages}} from {recipientName}",
     "prose--paste-image-in-edit": "It’s not possible to paste a file when editing a message.",
     "success--copy-message-content": "Message copied to clipboard",
     "success--copy-message-image": "Image copied to clipboard",
