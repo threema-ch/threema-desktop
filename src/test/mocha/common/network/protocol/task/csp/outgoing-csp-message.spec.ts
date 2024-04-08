@@ -446,6 +446,110 @@ export function run(): void {
                 await editTask.run(editHandle);
                 handle.finish();
             });
+
+            it('correctly sends and reflects a delete message', async function () {
+                const {crypto, model} = services;
+
+                const user1store = addTestUserAsContact(model, user1);
+
+                const cspMessageFlags = CspMessageFlags.forMessageType('text');
+                const messageId = randomMessageId(crypto);
+                // Create new OutgoingMessageTask
+                const messageProperties = {
+                    type: CspE2eConversationType.TEXT,
+                    encoder: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                        text: UTF8.encode('Hello World!'),
+                    }),
+                    cspMessageFlags,
+                    messageId,
+                    createdAt: new Date(),
+                    allowUserProfileDistribution: true,
+                } as const;
+                const task = new OutgoingCspMessageTask(
+                    services,
+                    user1store.get(),
+                    messageProperties,
+                );
+
+                // Run task
+                const expectations: NetworkExpectation[] = [
+                    // First, the outgoing message must be reflected
+                    getExpectedD2dOutgoingReflectedMessage(messageProperties),
+
+                    ...getExpectedCspMessagesForGroupMember(
+                        user1,
+                        messageProperties.messageId,
+                        messageProperties.type,
+                    ),
+
+                    // Finally, an OutgoingMessageUpdate.Sent is reflected
+                    NetworkExpectationFactory.reflectSingle((payload) => {
+                        expect(payload.content).to.equal('outgoingMessageUpdate');
+                        const message = payload.outgoingMessageUpdate;
+                        assert(
+                            message !== null && message !== undefined,
+                            'payload.outgoingMessageUpdate is null or undefined',
+                        );
+                        expect(message.updates).to.have.length(1);
+                        const update = unwrap(message.updates[0]);
+                        expect(update.conversation?.contact).to.equal(user1.identity.string);
+                        expect(ensureMessageId(intoU64(update.messageId))).to.equal(
+                            messageProperties.messageId,
+                        );
+                    }),
+                ];
+                const handle = new TestHandle(services, expectations);
+                await task.run(handle);
+                handle.finish();
+
+                const encoder = protobuf.utils.encoder(protobuf.csp_e2e.DeleteMessage, {
+                    messageId: intoUnsignedLong(messageId),
+                });
+
+                const deleteMessageProperties = {
+                    type: CspE2eMessageUpdateType.DELETE_MESSAGE as ValidCspMessageTypeForReceiver<Contact>,
+                    encoder,
+                    cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
+                    messageId: randomMessageId(crypto),
+                    createdAt: new Date(),
+                    allowUserProfileDistribution: false,
+                };
+                const deleteTask = new OutgoingCspMessageTask(
+                    services,
+                    user1store.get(),
+                    deleteMessageProperties,
+                );
+
+                // Run task
+                const editExpectations: NetworkExpectation[] = [
+                    // First, the outgoing message must be reflected
+                    getExpectedD2dOutgoingReflectedMessage(deleteMessageProperties),
+
+                    ...getExpectedCspMessagesForGroupMember(
+                        user1,
+                        deleteMessageProperties.messageId,
+                        deleteMessageProperties.type,
+                    ),
+
+                    // Finally, an OutgoingMessageUpdate.Sent is reflected
+                    NetworkExpectationFactory.reflectSingle((payload) => {
+                        expect(payload.content).to.equal('outgoingMessage');
+                        const message = payload.outgoingMessage;
+                        assert(
+                            message !== null && message !== undefined,
+                            'payload.outgoingMessageUpdate is null or undefined',
+                        );
+                        expect(message.conversation?.contact).to.equal(user1.identity.string);
+                        expect(ensureMessageId(intoU64(message.messageId))).to.equal(
+                            messageProperties.messageId,
+                        );
+                    }),
+                ];
+
+                const deleteHandle = new TestHandle(services, editExpectations);
+                await deleteTask.run(deleteHandle);
+                handle.finish();
+            });
         });
 
         interface GroupMessageTestParams {

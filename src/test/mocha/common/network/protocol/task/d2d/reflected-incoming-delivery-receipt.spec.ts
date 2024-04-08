@@ -7,12 +7,12 @@ import {
     MessageReaction,
     ReceiverType,
 } from '~/common/enum';
-import type {Conversation} from '~/common/model';
-import {
-    OWN_IDENTITY_ALIAS,
-    type AnyInboundMessageModelStore,
-    type AnyOutboundMessageModelStore,
-} from '~/common/model/types/message';
+import type {
+    AnyInboundNonDeletedMessageModelStore,
+    AnyOutboundNonDeletedMessageModelStore,
+    Conversation,
+} from '~/common/model';
+import {OWN_IDENTITY_ALIAS} from '~/common/model/types/message';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/reflected-delivery-receipt';
 import {randomMessageId} from '~/common/network/protocol/utils';
@@ -91,7 +91,7 @@ export function run(): void {
             // Ensure that message does not yet have a reaction
             const msg = conversation
                 .get()
-                .controller.getMessage(messageId) as AnyOutboundMessageModelStore;
+                .controller.getMessage(messageId) as AnyOutboundNonDeletedMessageModelStore;
             assert(
                 msg.get().view.deliveredAt === undefined,
                 'Message should not yet be marked as delivered',
@@ -178,7 +178,7 @@ export function run(): void {
             // Ensure that message does not yet have a reaction
             const msg = conversation
                 .get()
-                .controller.getMessage(messageId) as AnyInboundMessageModelStore;
+                .controller.getMessage(messageId) as AnyInboundNonDeletedMessageModelStore;
             assert(msg.get().view.readAt === undefined, 'Message should not yet be marked as read');
             assert(msg.get().view.reactions.length === 0, 'Message should not yet have a reaction');
 

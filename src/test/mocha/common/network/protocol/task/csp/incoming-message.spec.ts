@@ -205,6 +205,26 @@ function createNewEditMessageTask(
     return new IncomingMessageTask(services, editMessage);
 }
 
+function createNewDeleteMessageTask(
+    services: TestServices,
+    user: TestUser,
+    me: IdentityString,
+    messageId: MessageId,
+): IncomingMessageTask {
+    const deleteMessage = createMessage(
+        services,
+        user,
+        me,
+        CspE2eMessageUpdateType.DELETE_MESSAGE,
+        protobuf.utils.encoder(protobuf.csp_e2e.DeleteMessage, {
+            messageId: intoUnsignedLong(messageId),
+        }),
+        CspMessageFlags.fromPartial({sendPushNotification: true}),
+    );
+
+    return new IncomingMessageTask(services, deleteMessage);
+}
+
 /**
  * Test incoming message task.
  */
@@ -1339,6 +1359,226 @@ export function run(): void {
                 const updatedMessage = conversation?.get().controller.getMessage(newMessageId);
 
                 expect(updatedMessage, 'No message wit this ID should exist').to.be.undefined;
+            });
+        });
+
+        describe('delete message', function () {
+            services = makeTestServices(me);
+
+            const {crypto, model} = services;
+            const messageId = randomMessageId(crypto);
+            const user1Contact = addTestUserAsContact(model, user1);
+
+            const messageTask = createNewIncomingTextMessageTask(
+                services,
+                user1,
+                me,
+                'This is a secret message',
+                messageId,
+            );
+            const messageExpectations: NetworkExpectation[] = [
+                NetworkExpectationFactory.reflectSingle((payload) => {
+                    expect(payload.incomingMessage).not.to.be.undefined;
+                    const incomingMessage = unwrap(payload.incomingMessage);
+                    expect(incomingMessage.senderIdentity).to.equal(user1.identity.string);
+                    expect(incomingMessage.type).to.equal(protobuf.common.CspE2eMessageType.TEXT);
+                }),
+                NetworkExpectationFactory.writeIncomingMessageAck(),
+
+                // Send delivery receipt
+                ...reflectAndSendDeliveryReceipt(
+                    services,
+                    user1,
+                    CspE2eDeliveryReceiptStatus.RECEIVED,
+                ),
+            ];
+
+            const messageHandle = new TestHandle(services, messageExpectations);
+            const deleteHandle = new TestHandle(services, [
+                NetworkExpectationFactory.reflectSingle(() => {}),
+                NetworkExpectationFactory.writeIncomingMessageAck(),
+            ]);
+
+            const deleteMessageTask = createNewDeleteMessageTask(services, user1, me, messageId);
+
+            const secondMessageId = ensureMessageId(BigInt(messageId) + BigInt(8));
+
+            const user3 = {
+                identity: new Identity(ensureIdentityString('USER0003')),
+                nickname: 'user3' as Nickname,
+                ck: createClientKey(),
+            };
+
+            const user3Contact = addTestUserAsContact(model, user3);
+
+            const messageTask3 = createNewIncomingTextMessageTask(
+                services,
+                user3,
+                me,
+                'This is a secret message',
+                secondMessageId,
+            );
+            const messageExpectations3: NetworkExpectation[] = [
+                NetworkExpectationFactory.reflectSingle((payload) => {
+                    expect(payload.incomingMessage).not.to.be.undefined;
+                    const incomingMessage = unwrap(payload.incomingMessage);
+                    expect(incomingMessage.senderIdentity).to.equal(user3.identity.string);
+                    expect(incomingMessage.type).to.equal(protobuf.common.CspE2eMessageType.TEXT);
+                }),
+                NetworkExpectationFactory.writeIncomingMessageAck(),
+
+                // Send delivery receipt
+                ...reflectAndSendDeliveryReceipt(
+                    services,
+                    user3,
+                    CspE2eDeliveryReceiptStatus.RECEIVED,
+                ),
+            ];
+
+            const messageHandle3 = new TestHandle(services, messageExpectations3);
+            const editHandle3 = new TestHandle(services, [
+                NetworkExpectationFactory.reflectSingle((payload) => {
+                    expect(payload.incomingMessage).not.to.be.undefined;
+                    const incomingMessage = unwrap(payload.incomingMessage);
+                    expect(incomingMessage.senderIdentity).to.equal(user3.identity.string);
+                    expect(incomingMessage.type).to.equal(
+                        protobuf.common.CspE2eMessageType.EDIT_MESSAGE,
+                    );
+                }),
+                NetworkExpectationFactory.writeIncomingMessageAck(),
+            ]);
+
+            const deleteMessageTask3 = createNewDeleteMessageTask(
+                services,
+                user3,
+                me,
+                secondMessageId,
+            );
+
+            const deleteHandle3 = new TestHandle(services, [
+                NetworkExpectationFactory.reflectSingle(() => {}),
+                NetworkExpectationFactory.writeIncomingMessageAck(),
+            ]);
+
+            const updateText = 'This secret message was edited';
+            const editMessageTask3 = createNewEditMessageTask(
+                services,
+                user3,
+                me,
+                secondMessageId,
+                updateText,
+            );
+
+            it('receives a standard, correct delete message', async function () {
+                await messageTask.run(messageHandle);
+                messageHandle.finish();
+
+                await deleteMessageTask.run(deleteHandle);
+                messageHandle.finish();
+
+                const conversation = model.conversations.getForReceiver({
+                    type: ReceiverType.CONTACT,
+                    uid: user1Contact.ctx,
+                });
+
+                expect(conversation).to.not.equal(undefined, 'Conversation should exist');
+
+                const deletedMessage = conversation?.get().controller.getMessage(messageId);
+
+                assert(deletedMessage !== undefined, 'Message should not be undefined');
+                expect(deletedMessage.get().view.deletedAt).to.not.equal(
+                    undefined,
+                    'The message should have a deletedAt flag',
+                );
+
+                expect(deletedMessage.get().type).to.equal(MessageType.DELETED);
+            });
+
+            it('receives an edit on an already deleted message', async function () {
+                const editMessageTask2 = createNewEditMessageTask(
+                    services,
+                    user1,
+                    me,
+                    messageId,
+                    'bli bla blub',
+                );
+
+                const editHandle2 = new TestHandle(services, [
+                    NetworkExpectationFactory.writeIncomingMessageAck(),
+                ]);
+
+                await editMessageTask2.run(editHandle2);
+                editHandle2.finish();
+                const conversation = model.conversations.getForReceiver({
+                    type: ReceiverType.CONTACT,
+                    uid: user1Contact.ctx,
+                });
+
+                const deletedMessage = conversation?.get().controller.getMessage(messageId);
+
+                assert(deletedMessage !== undefined, 'Message should not be undefined');
+                expect(deletedMessage.get().view.deletedAt).to.not.equal(
+                    undefined,
+                    'The message should have a deletedAt flag',
+                );
+
+                expect(deletedMessage.get().type).to.equal(MessageType.DELETED);
+            });
+
+            it('receives a delete on a message that does not exist', async function () {
+                const newMessageId = ensureMessageId(BigInt(messageId) + BigInt(4));
+
+                const deleteMessageTask2 = createNewDeleteMessageTask(
+                    services,
+                    user1,
+                    me,
+                    newMessageId,
+                );
+
+                const deleteHandle2 = new TestHandle(services, [
+                    NetworkExpectationFactory.writeIncomingMessageAck(),
+                ]);
+
+                await deleteMessageTask2.run(deleteHandle2);
+                deleteHandle2.finish();
+                const conversation = model.conversations.getForReceiver({
+                    type: ReceiverType.CONTACT,
+                    uid: user1Contact.ctx,
+                });
+
+                const deletedMessage = conversation?.get().controller.getMessage(newMessageId);
+
+                assert(deletedMessage === undefined, 'Message should not be defined');
+            });
+
+            it('receives a delete that makes version history disappear', async function () {
+                await messageTask3.run(messageHandle3);
+
+                messageHandle3.finish();
+
+                await editMessageTask3.run(editHandle3);
+                editHandle3.finish();
+                const conversation = model.conversations.getForReceiver({
+                    type: ReceiverType.CONTACT,
+                    uid: user3Contact.ctx,
+                });
+
+                const editedMessage = conversation?.get().controller.getMessage(secondMessageId);
+
+                expect(
+                    editedMessage?.get().view.history.length,
+                    'Version history must have two members',
+                ).to.eql(2);
+
+                await deleteMessageTask3.run(deleteHandle3);
+                deleteHandle3.finish();
+
+                const deletedMessage = conversation?.get().controller.getMessage(secondMessageId);
+
+                expect(
+                    deletedMessage?.get().view.history.length,
+                    'Version history must be empty',
+                ).to.eql(0);
             });
         });
     });

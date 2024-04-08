@@ -251,6 +251,74 @@ export function run(): void {
                 expect(message.get().view.lastEditedAt, 'EditedAt').to.eql(createdAtEdit);
                 expect(message.get().view.text).to.equal(editText);
             });
+
+            it('process reflected delete message from contact', async function () {
+                const {crypto} = services;
+                const messageId = randomMessageId(crypto);
+                const createdAt = secondsAgo(20);
+                const reflectedAt = secondsAgo(10);
+
+                const messageEncoder = structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                    text: UTF8.encode('Hallo Zueri'),
+                });
+                const reflectedMessage: d2d.IncomingMessage = {
+                    senderIdentity: user1.identity.string,
+                    messageId: intoUnsignedLong(messageId),
+                    createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
+                    type: CspE2eConversationType.TEXT,
+                    body: messageEncoder.encode(new Uint8Array(messageEncoder.byteLength())),
+                    nonce: services.crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
+                };
+                const taskM = new ReflectedIncomingMessageTask(
+                    services,
+                    reflectedMessage,
+                    ensureD2mDeviceId(42n),
+                    reflectedAt,
+                );
+                const handle = new TestHandle(services, []);
+                await taskM.run(handle);
+                handle.finish();
+
+                const messageDeleteEncoder = proto.utils.encoder(proto.csp_e2e.DeleteMessage, {
+                    messageId: intoUnsignedLong(messageId),
+                });
+
+                const createdAtDelete = secondsAgo(7);
+
+                const reflectedDeleteMessage: d2d.IncomingMessage = {
+                    senderIdentity: user1.identity.string,
+                    messageId: intoUnsignedLong(messageId),
+                    createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAtDelete)),
+                    type: CspE2eMessageUpdateType.DELETE_MESSAGE,
+                    body: messageDeleteEncoder.encode(
+                        new Uint8Array(messageDeleteEncoder.byteLength()),
+                    ),
+                    nonce: services.crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
+                };
+
+                const reflectAtDelete = secondsAgo(5);
+
+                const deleteMessageTask = new ReflectedIncomingMessageTask(
+                    services,
+                    reflectedDeleteMessage,
+                    ensureD2mDeviceId(42n),
+                    reflectAtDelete,
+                );
+
+                await deleteMessageTask.run(handle);
+                handle.finish();
+                const messages = userConversation.get().controller.getAllMessages().get();
+
+                expect(messages.size, 'Conversation message count').to.equal(1);
+                const [message] = [...messages.values()];
+                assert(message !== undefined);
+                assert(message.ctx === MessageDirection.INBOUND, 'Wrong message direction');
+                assert(message.type === 'deleted', `Wrong message type: ${message.type}`);
+                expect(message.get().view.createdAt, 'createdAt').to.eql(createdAt);
+                expect(message.get().view.receivedAt, 'receivedAt').to.eql(reflectedAt);
+                expect(message.get().view.lastEditedAt, 'EditedAt').to.eql(undefined);
+                expect(message.get().view.deletedAt, 'DeletedAt').to.eql(createdAtDelete);
+            });
         });
 
         describe('ReflectedOutgoingMessageTask', function () {
@@ -647,6 +715,75 @@ export function run(): void {
                     reflectedEditMessageCreatedAt,
                 );
                 expect(message.get().view.text).to.equal(editText);
+            });
+
+            it('apply a reflected outgoing delete message', async function () {
+                const {crypto} = services;
+
+                // Process outgoing reflected message to user
+                const messageId = randomMessageId(crypto);
+                const createdAt = new Date();
+                const text = 'Hello Pfäffikon';
+                const task = new ReflectedOutgoingMessageTask(
+                    services,
+                    makeMessage(messageId, createdAt, CspE2eConversationType.TEXT, text, {
+                        id: 'contact',
+                        contact: user1.identity.string,
+                        group: undefined,
+                        distributionList: undefined,
+                    }),
+                    ensureD2mDeviceId(42n),
+                    new Date(),
+                );
+                const handle = new TestHandle(services, []);
+                await task.run(handle);
+                handle.finish();
+
+                const messageDeleteEncoder = proto.utils.encoder(proto.csp_e2e.DeleteMessage, {
+                    messageId: intoUnsignedLong(messageId),
+                });
+
+                const reflectedDeleteCreatedAt = secondsAgo(7);
+
+                const reflectedDeleteMessage: d2d.OutgoingMessage = {
+                    messageId: intoUnsignedLong(messageId),
+                    conversation: {
+                        id: 'contact',
+                        contact: user1.identity.string,
+                        group: undefined,
+                        distributionList: undefined,
+                    },
+                    createdAt: intoUnsignedLong(dateToUnixTimestampMs(reflectedDeleteCreatedAt)),
+                    type: CspE2eMessageUpdateType.DELETE_MESSAGE,
+                    body: messageDeleteEncoder.encode(
+                        new Uint8Array(messageDeleteEncoder.byteLength()),
+                    ),
+                    nonces: [
+                        services.crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
+                    ],
+                };
+
+                const reflectedAtDelete = secondsAgo(5);
+
+                const editTask = new ReflectedOutgoingMessageTask(
+                    services,
+                    reflectedDeleteMessage,
+                    ensureD2mDeviceId(42n),
+                    reflectedAtDelete,
+                );
+
+                await editTask.run(handle);
+                handle.finish();
+
+                const messages = userConversation.get().controller.getAllMessages().get();
+                expect(messages.size, 'Conversation message count').to.equal(1);
+                const [message] = [...messages.values()];
+                assert(message !== undefined);
+                assert(message.ctx === MessageDirection.OUTBOUND, 'Wrong message direction');
+                assert(message.type === 'deleted', `Wrong message type: ${message.type}`);
+                expect(message.get().view.createdAt, 'createdAt').to.eql(createdAt);
+                expect(message.get().view.lastEditedAt, 'lastEditedAt').to.eql(undefined);
+                expect(message.get().view.deletedAt, 'deletedAt').to.eql(reflectedDeleteCreatedAt);
             });
         });
     });

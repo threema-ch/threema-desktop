@@ -149,10 +149,10 @@ import {randomBytes} from '~/common/node/crypto/random';
 import {SqliteDatabaseBackend} from '~/common/node/db/sqlite';
 import {FileSystemKeyStorage} from '~/common/node/key-storage';
 import {
-    type ExtendedNotificationOptions,
     type NotificationCreator,
     type NotificationHandle,
     NotificationService,
+    type CustomNotification,
 } from '~/common/notification';
 import type {SystemDialog, SystemDialogHandle, SystemDialogService} from '~/common/system-dialog';
 import type {u8, u53, ReadonlyUint8Array} from '~/common/types';
@@ -477,9 +477,7 @@ export class TestNotificationService extends NotificationService {
         // Mock remote NotificationCreator
         // eslint-disable-next-line @typescript-eslint/require-await
         async function create(
-            title: string,
-            options: ExtendedNotificationOptions,
-            identifier: string = '',
+            notification: CustomNotification,
         ): Promise<NotificationHandle | undefined> {
             return undefined;
         }

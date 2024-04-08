@@ -18,6 +18,7 @@ import type {
     DbMessageUid,
     DbNonceUid,
     DbReceiverLookup,
+    DbTextMessage,
     DbUnreadMessageCountMixin,
 } from '~/common/db';
 import {
@@ -69,10 +70,10 @@ import {assert, unwrap} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {Identity} from '~/common/utils/identity';
 import {hasProperty} from '~/common/utils/object';
+import {expectSameNonceHashes} from '~/test/mocha/common/crypto/nonce.spec';
 import {pseudoRandomBytes} from '~/test/mocha/common/utils';
 
 import {makeTestServices} from './backend-mocks';
-import {expectSameNonceHashes} from './crypto/nonce.spec';
 
 /**
  * Available features of the database backend.
@@ -941,12 +942,16 @@ export function backendTests(
 
             // Make sure reactions are properly stored in db
             // and that no reaction does not result in undefined
-            expect(msg1?.reactions.length === 1);
-            expect(msg2?.reactions.length === 1);
-            expect(msg3?.reactions.length === 0);
-            expect(msg1?.reactions[0]?.reaction).to.equal(MessageReaction.ACKNOWLEDGE);
-            expect(msg2?.reactions[0]?.reaction).to.equal(MessageReaction.DECLINE);
-            expect(msg3?.reactions[0]?.reaction).to.be.undefined;
+            expect((msg1 as DbTextMessage).reactions.length === 1);
+            expect((msg2 as DbTextMessage).reactions.length === 1);
+            expect((msg3 as DbTextMessage).reactions.length === 0);
+            expect((msg1 as DbTextMessage).reactions[0]?.reaction).to.equal(
+                MessageReaction.ACKNOWLEDGE,
+            );
+            expect((msg2 as DbTextMessage).reactions[0]?.reaction).to.equal(
+                MessageReaction.DECLINE,
+            );
+            expect((msg3 as DbTextMessage).reactions[0]?.reaction).to.be.undefined;
 
             // Unknown messages are undefined
             expect(db.getMessageByUid(9999n as DbMessageUid)).to.be.undefined;
@@ -1199,8 +1204,9 @@ export function backendTests(
                 at: lastReaction.reactionAt,
                 senderIdentity: lastReaction.senderIdentity,
             });
-
-            expect(db.getMessageByUid(message2.uid)?.reactions[0]).to.deep.equal(lastReaction);
+            const textData2 = db.getMessageByUid(message2.uid);
+            assert(textData2?.type === 'text');
+            expect(textData2.reactions[0]).to.deep.equal(lastReaction);
 
             // Ensure that an update of the file data is processed
             const fileData2 = makeFileData();
@@ -1473,7 +1479,6 @@ export function backendTests(
             expect(conversation).to.not.be.undefined;
             assert(conversation !== undefined);
             expect(conversation.lastUpdate).to.deep.equal(lastUpdate);
-
             // Ensure that the removed file IDs are returned
             if (!features.doesNotImplementFileDataCleanup) {
                 expect(removeInfo1.deletedFileIds).to.have.members([

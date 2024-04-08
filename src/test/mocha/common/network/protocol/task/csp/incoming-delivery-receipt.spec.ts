@@ -10,7 +10,7 @@ import {
 } from '~/common/enum';
 import type {
     AnyOutboundMessageModel,
-    AnyOutboundMessageModelStore,
+    AnyOutboundNonDeletedMessageModelStore,
     ContactView,
     Conversation,
 } from '~/common/model';
@@ -379,7 +379,7 @@ export function run(): void {
             // Ensure that message does not yet have a reaction
             const msg = singleConversation
                 .get()
-                .controller.getMessage(messageId) as AnyOutboundMessageModelStore;
+                .controller.getMessage(messageId) as AnyOutboundNonDeletedMessageModelStore;
             assert(
                 msg.get().view.deliveredAt === undefined,
                 'Message should not yet be marked as delivered',
