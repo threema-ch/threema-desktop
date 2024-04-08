@@ -14,8 +14,9 @@
   export let options: NonNullable<$$Props['options']> = {};
   export let reactions: NonNullable<$$Props['reactions']> = [];
   export let status: $$Props['status'];
+  export let isDeleted: $$Props['isDeleted'] = false;
 
-  $: elements = getIndicatorElements(direction, options, reactions, status);
+  $: elements = getIndicatorElements(direction, options, reactions, status, isDeleted);
 </script>
 
 <template>

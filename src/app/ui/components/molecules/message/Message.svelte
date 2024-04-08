@@ -138,6 +138,7 @@
                       options={options.indicatorOptions}
                       {reactions}
                       {status}
+                      isDeleted={deletedAt !== undefined}
                     />
                   </span>
                 {/if}
@@ -156,7 +157,13 @@
             <svelte:fragment slot="status">
               {#if messageInfoPlacement === 'preview'}
                 <Text text={timestamp.fluent} wrap={false} />
-                <Indicator {direction} options={options.indicatorOptions} {reactions} {status} />
+                <Indicator
+                  {direction}
+                  options={options.indicatorOptions}
+                  {reactions}
+                  {status}
+                  isDeleted={deletedAt !== undefined}
+                />
               {/if}
             </svelte:fragment>
           </FileInfo>
@@ -182,7 +189,13 @@
             {#if messageInfoPlacement === 'preview'}
               <span class="badge status">
                 <Text text={timestamp.short} wrap={false} />
-                <Indicator {direction} options={options.indicatorOptions} {reactions} {status} />
+                <Indicator
+                  {direction}
+                  options={options.indicatorOptions}
+                  {reactions}
+                  {status}
+                  isDeleted={deletedAt !== undefined}
+                />
               </span>
             {/if}
           </div>
@@ -230,7 +243,13 @@
             <Text text={$i18n.t('messaging.prose--message-edited', 'Edited')} wrap={false}></Text>
           {/if}
           <Text text={timestamp.fluent} wrap={false} />
-          <Indicator {direction} options={options.indicatorOptions} {reactions} {status} />
+          <Indicator
+            {direction}
+            options={options.indicatorOptions}
+            {reactions}
+            {status}
+            isDeleted={deletedAt !== undefined}
+          />
         </span>
       </div>
     {/if}

@@ -21,6 +21,7 @@ export interface IndicatorProps {
     };
     readonly reactions: Readonly<Reaction[]>;
     readonly status: Status;
+    readonly isDeleted: boolean;
 }
 
 interface Reaction {

@@ -38,6 +38,7 @@ export interface ConversationPreviewProps {
             );
         readonly status: IndicatorProps['status'];
         readonly text?: TextContent;
+        readonly deletedAt: MessageProps['deletedAt'];
     };
     readonly popover?: ContextMenuProviderProps['popover'];
     readonly receiver: AnyReceiverData;

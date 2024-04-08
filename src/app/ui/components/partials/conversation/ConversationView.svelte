@@ -132,6 +132,10 @@
   }
 
   function handleClickDeleteMessageForAll(event: CustomEvent<MessageListMessage>): void {
+    if (event.detail.deletedAt !== undefined) {
+      log.warn('Tried to delete an already deleted message on all devices');
+      return;
+    }
     viewModelController?.deleteMessageForAll(event.detail.id).catch((error) => {
       log.error(`Could not delete message with id ${event.detail.id}`, error);
       toast.addSimpleFailure(
