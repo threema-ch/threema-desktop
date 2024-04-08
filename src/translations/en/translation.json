@@ -96,7 +96,8 @@
     "label--title": "Delete Chat",
     "prose--contact-conversation-prompt": "This will delete the chat with {name} and its messages on this device (but not on your linked devices).",
     "prose--distribution-list-conversation-prompt": "This will delete this distribution list and its messages on this device (but not on your linked devices).",
-    "prose--group-conversation-prompt": "This will delete the group chat \"{name}\" and its messages on this device (but not on your linked devices). However, you will stay a member of this group.",
+    "prose--group-conversation-member": "However, you will stay a member of this group.",
+    "prose--group-conversation-prompt": "This will delete the group chat \"{name}\" and its messages on this device (but not on your linked devices).",
     "success--delete-conversation": "Chat successfully deleted"
   },
   "dialog--delete-message": {

@@ -96,6 +96,7 @@
     "label--title": "Chat löschen",
     "prose--contact-conversation-prompt": "Dadurch wird der Chat mit {name} und die darin enthaltenen Nachrichten auf diesem Gerät gelöscht (aber nicht auf Ihren verknüpften Geräten).",
     "prose--distribution-list-conversation-prompt": "Dadurch wird diese Verteilerliste und die darin enthaltenen Nachrichten auf diesem Gerät gelöscht (aber nicht auf Ihren verknüpften Geräten).",
+    "prose--group-conversation-member": "Sie werden jedoch ein Mitglied dieser Gruppe bleiben.",
     "prose--group-conversation-prompt": "Dadurch wird der Gruppenchat \"{name}\" und die darin enthaltenen Nachrichten auf diesem Gerät gelöscht (aber nicht auf Ihren verknüpften Geräten).",
     "success--delete-conversation": "Chat wurde erfolgreich gelöscht"
   },

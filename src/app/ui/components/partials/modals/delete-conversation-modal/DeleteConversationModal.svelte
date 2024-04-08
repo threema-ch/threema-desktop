@@ -106,18 +106,25 @@
         {name: receiver.name},
       )}
     {:else if receiver.type === 'group'}
-      {$i18n.t(
+      {`${$i18n.t(
         'dialog--delete-conversation.prose--group-conversation-prompt',
-        'This will delete the group chat "{name}" and its messages on this device (but not on your linked devices). However, you will stay a member of this group.',
+        'This will delete the group chat "{name}" and its messages on this device (but not on your linked devices).',
         {name: receiver.name},
-      )}
+      )} ${
+        !receiver.isLeft
+          ? $i18n.t(
+              'dialog--delete-conversation.prose--group-conversation-member',
+              'However, you will stay a member of this group.',
+            )
+          : ''
+      } `}
     {:else if receiver.type === 'distribution-list'}
       {$i18n.t(
         'dialog--delete-conversation.prose--distribution-list-conversation-prompt',
         'This will delete this distribution list and its messages on this device (but not on your linked devices).',
       )}
     {:else}
-      {unreachable(receiver.type)}
+      {unreachable(receiver)}
     {/if}
   </div>
 </Modal>

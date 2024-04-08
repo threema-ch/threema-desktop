@@ -405,7 +405,7 @@ interface SelfReceiverData extends Omit<CommonReceiverData, 'lookup' | 'notifica
     readonly identity: IdentityString;
 }
 
-interface ContactReceiverData extends CommonReceiverData {
+export interface ContactReceiverData extends CommonReceiverData {
     readonly type: 'contact';
     readonly badge?: Extract<ReceiverBadgeType, 'contact-consumer' | 'contact-work'>;
     readonly identity: IdentityString;
@@ -417,7 +417,7 @@ interface ContactReceiverData extends CommonReceiverData {
     readonly verification: VerificationData;
 }
 
-interface GroupReceiverData extends CommonReceiverData {
+export interface GroupReceiverData extends CommonReceiverData {
     readonly type: 'group';
     /** Creator of the group. */
     readonly creator: SelfReceiverData | ContactReceiverData;
@@ -429,7 +429,7 @@ interface GroupReceiverData extends CommonReceiverData {
 }
 
 // TODO(DESK-771): Implement distribution lists.
-interface DistributionListReceiverData extends CommonReceiverData {
+export interface DistributionListReceiverData extends CommonReceiverData {
     readonly type: 'distribution-list';
     readonly lookup: DbDistributionListReceiverLookup;
 }
