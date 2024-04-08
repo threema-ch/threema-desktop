@@ -468,7 +468,7 @@ package:source:
         echo "---"
       done
     # Copy screenshot(s)
-    - cp packaging/flatpak/screenshot-1.png packaging/flatpak/repo/
+    - cp packaging/flatpak/screenshot-* packaging/flatpak/repo/
     # Dump gpg public key
     - gpg --export --armor $GPG_ID > packaging/flatpak/repo/signkey.pub
     # Sync to server
