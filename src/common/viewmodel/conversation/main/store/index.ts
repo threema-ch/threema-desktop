@@ -14,7 +14,7 @@ import {
     getSupportedFeatures,
 } from '~/common/viewmodel/conversation/main/store/helpers';
 import type {ConversationViewModel} from '~/common/viewmodel/conversation/main/store/types';
-import {getReceiverData} from '~/common/viewmodel/utils/receiver';
+import {getConversationReceiverData} from '~/common/viewmodel/utils/receiver';
 
 export type ConversationViewModelStore = LocalStore<ConversationViewModel & PropertiesMarked>;
 
@@ -63,7 +63,7 @@ export function getConversationViewModelStore(
                 isPrivate: conversationModel.view.category === ConversationCategory.PROTECTED,
                 lastMessage: getLastMessage(conversationModel, getAndSubscribe),
                 messageSetStore,
-                receiver: getReceiverData(services, conversationModel, getAndSubscribe),
+                receiver: getConversationReceiverData(services, conversationModel, getAndSubscribe),
                 supportedFeatures: getSupportedFeatures(conversationModel, services),
                 totalMessagesCount: conversationModel.controller.getMessageCount(),
                 unreadMessagesCount: conversationModel.view.unreadMessageCount,

@@ -11,7 +11,10 @@ import type {
     ReceiverSearchResult,
     SearchViewModel,
 } from '~/common/viewmodel/search/nav/store/types';
-import {getCommonReceiverData, getReceiverData} from '~/common/viewmodel/utils/receiver';
+import {
+    getCommonReceiverData,
+    getConversationReceiverData,
+} from '~/common/viewmodel/utils/receiver';
 
 const TAG_BASE = `search.nav.store`;
 
@@ -84,7 +87,7 @@ export function getConversationSearchResult(
                       false,
                   ),
         lastUpdate: conversationModel.view.lastUpdate,
-        receiver: getReceiverData(services, conversationModel, getAndSubscribe),
+        receiver: getConversationReceiverData(services, conversationModel, getAndSubscribe),
         totalMessageCount: conversationModel.controller.getMessageCount(),
         unreadMessageCount: conversationModel.view.unreadMessageCount,
         visibility: conversationModel.view.visibility,
@@ -116,7 +119,11 @@ export function getMessageSearchResults(
 
             return endpoint.exposeProperties({
                 conversation: {
-                    receiver: getReceiverData(services, conversationModel, getAndSubscribe),
+                    receiver: getConversationReceiverData(
+                        services,
+                        conversationModel,
+                        getAndSubscribe,
+                    ),
                 },
                 message: getConversationMessageViewModelBundle(
                     services,
@@ -163,7 +170,7 @@ export function getReceiverSearchResults(
 
                 receiverResults.push(
                     endpoint.exposeProperties({
-                        receiver: getReceiverData(
+                        receiver: getConversationReceiverData(
                             services,
                             model.controller.conversation().get(),
                             getAndSubscribe,

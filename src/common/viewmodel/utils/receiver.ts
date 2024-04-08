@@ -29,28 +29,68 @@ import {getContactBadge} from '~/common/viewmodel/utils/contact';
 
 export type AnyReceiverData =
     | ContactReceiverData
-    | GroupReceiverData
-    | DistributionListReceiverData;
+    | DistributionListReceiverData
+    | GroupReceiverData;
 
 export type AnyReceiverDataOrSelf = SelfReceiverData | AnyReceiverData;
+
+export type ReceiverDataFor<TReceiver extends AnyReceiver> = {
+    readonly [ReceiverType.CONTACT]: ContactReceiverData;
+    readonly [ReceiverType.DISTRIBUTION_LIST]: DistributionListReceiverData;
+    readonly [ReceiverType.GROUP]: GroupReceiverData;
+}[TReceiver['type']];
+
+export type AnyReceiverUpdateData =
+    | ContactReceiverUpdateData
+    | GroupReceiverUpdateData
+    | DistributionListReceiverUpdateData;
+
+export type ReceiverUpdateDataFor<TReceiver extends AnyReceiver> = {
+    readonly [ReceiverType.CONTACT]: ContactReceiverUpdateData;
+    readonly [ReceiverType.DISTRIBUTION_LIST]: DistributionListReceiverUpdateData;
+    readonly [ReceiverType.GROUP]: GroupReceiverUpdateData;
+}[TReceiver['type']];
 
 /**
  * Extracts and returns data related to a conversation's receiver from the specified
  * {@link conversationModel}.
  */
-export function getReceiverData(
+export function getConversationReceiverData(
     services: Pick<ServicesForViewModel, 'model'>,
     conversationModel: Conversation,
     getAndSubscribe: GetAndSubscribeFunction,
 ): AnyReceiverData {
     const receiverModel = getAndSubscribe(conversationModel.controller.receiver());
 
+    return getReceiverData(services, receiverModel, getAndSubscribe);
+}
+
+/**
+ * Collects the respective receiver data for the given `receiverModel`.
+ */
+export function getReceiverData<TReceiver extends AnyReceiver>(
+    services: Pick<ServicesForViewModel, 'model'>,
+    receiverModel: TReceiver,
+    getAndSubscribe: GetAndSubscribeFunction,
+): ReceiverDataFor<TReceiver> {
     switch (receiverModel.type) {
         case ReceiverType.CONTACT:
-            return getContactReceiverData(services, receiverModel, getAndSubscribe);
+            // Cast is necessary, as TypeScript isn't able to infer that at this point, `TReceiver`
+            // is `Contact`.
+            return getContactReceiverData(
+                services,
+                receiverModel,
+                getAndSubscribe,
+            ) satisfies ContactReceiverData as ReceiverDataFor<TReceiver>;
 
         case ReceiverType.GROUP:
-            return getGroupReceiverData(services, receiverModel, getAndSubscribe);
+            // Cast is necessary, as TypeScript isn't able to infer that at this point, `TReceiver`
+            // is `Group`.
+            return getGroupReceiverData(
+                services,
+                receiverModel,
+                getAndSubscribe,
+            ) satisfies GroupReceiverData as ReceiverDataFor<TReceiver>;
 
         case ReceiverType.DISTRIBUTION_LIST:
             throw new Error('TODO(DESK-771): Support distribution lists');
@@ -381,9 +421,44 @@ export function getGroupNotificationPolicy(groupModel: Group): NotificationPolic
 }
 
 /**
- * Returns whether the receiver belonging to the given {@link receiverModel} is blocked according to
- * the user's privacy settings.
+ * Update the given receiver's model with the provided data.
  */
+export async function updateReceiverData<TReceiver extends AnyReceiver>(
+    receiver: TReceiver,
+    update: ReceiverUpdateDataFor<TReceiver>,
+): Promise<void> {
+    switch (receiver.type) {
+        case ReceiverType.CONTACT: {
+            // Even though `update` is dependent on `TReceiver`, TypeScript is not able to
+            // narrow its type.
+            assert(update.type === 'contact', `Expected given update data to be of type "contact"`);
+
+            return await receiver.controller.update.fromLocal({
+                firstName: update.firstName,
+                lastName: update.lastName,
+            });
+        }
+
+        case ReceiverType.DISTRIBUTION_LIST: {
+            throw new Error('TODO(DESK-771): Implement distribution lists');
+        }
+
+        case ReceiverType.GROUP: {
+            throw new Error('TODO(DESK-653): Implement group renaming');
+        }
+
+        default:
+            return unreachable(receiver);
+    }
+}
+
+interface VerificationData {
+    readonly type: 'default' | 'shared-work-subscription';
+    readonly level: 'unverified' | 'server-verified' | 'fully-verified';
+}
+
+type NotificationPolicy = 'default' | 'muted' | 'mentioned' | 'never';
+
 interface CommonReceiverData {
     /** Color used as the backdrop. */
     readonly color: IdColor;
@@ -434,9 +509,18 @@ export interface DistributionListReceiverData extends CommonReceiverData {
     readonly lookup: DbDistributionListReceiverLookup;
 }
 
-interface VerificationData {
-    readonly type: 'default' | 'shared-work-subscription';
-    readonly level: 'unverified' | 'server-verified' | 'fully-verified';
+interface ContactReceiverUpdateData {
+    readonly type: 'contact';
+    readonly firstName: string;
+    readonly lastName: string;
 }
 
-type NotificationPolicy = 'default' | 'muted' | 'mentioned' | 'never';
+// TODO(DESK-771): Implement distribution lists.
+interface DistributionListReceiverUpdateData {
+    readonly type: 'distribution-list';
+}
+
+// TODO(DESK-653): Implement group renaming.
+interface GroupReceiverUpdateData {
+    readonly type: 'group';
+}

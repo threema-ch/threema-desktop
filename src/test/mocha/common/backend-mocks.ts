@@ -55,6 +55,8 @@ import {InMemoryFileStorage} from '~/common/file-storage';
 import {type Logger, type LoggerFactory, NOOP_LOGGER, TagLogger} from '~/common/logging';
 import {BackendMediaService, type IFrontendMediaService} from '~/common/media';
 import type {
+    AnyReceiver,
+    AnyReceiverStore,
     Contact,
     ContactInit,
     Group,
@@ -179,11 +181,13 @@ import type {LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import type {IViewModelRepository} from '~/common/viewmodel';
 import {
-    type ContactListItemSetEntry,
-    type ContactListItemSetStore,
-    getContactListItemSetStore,
-    getContactListItemStore,
-} from '~/common/viewmodel/contact-list-item';
+    getContactListViewModelBundle,
+    type ContactListViewModelBundle,
+} from '~/common/viewmodel/contact/list';
+import {
+    getContactListItemViewModelBundle,
+    type ContactListItemViewModelBundle,
+} from '~/common/viewmodel/contact/list/item';
 import {
     getConversationListViewModelBundle,
     type ConversationListViewModelBundle,
@@ -198,10 +202,6 @@ import {
     getConversationMessageViewModelBundle,
 } from '~/common/viewmodel/conversation/main/message';
 import {type DebugPanelViewModel, getDebugPanelViewModel} from '~/common/viewmodel/debug-panel';
-import {
-    getGroupListItemSetStore,
-    type GroupListItemSetStore,
-} from '~/common/viewmodel/group-list-item';
 import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/viewmodel/profile';
 import {type SearchViewModelBundle, getSearchViewModelBundle} from '~/common/viewmodel/search/nav';
 import {assertCspPayloadType, assertD2mPayloadType} from '~/test/mocha/common/assertions';
@@ -473,10 +473,6 @@ export class TestViewModel implements IViewModelRepository {
 
     public constructor(private readonly _services: Omit<ServicesForBackend, 'viewModel'>) {}
 
-    public conversation(receiver: DbReceiverLookup): ConversationViewModelBundle | undefined {
-        return undefined;
-    }
-
     public conversationList(): ConversationListViewModelBundle {
         return getConversationListViewModelBundle(this._services, this);
     }
@@ -485,6 +481,10 @@ export class TestViewModel implements IViewModelRepository {
         conversationModelStore: ConversationModelStore,
     ): ConversationListItemViewModelBundle {
         return getConversationListItemViewModelBundle(this._services, conversationModelStore);
+    }
+
+    public conversation(receiver: DbReceiverLookup): ConversationViewModelBundle | undefined {
+        return undefined;
     }
 
     public conversationMessage(
@@ -499,35 +499,22 @@ export class TestViewModel implements IViewModelRepository {
         );
     }
 
-    public conversationMessageById(
-        conversation: ConversationModelStore,
-        messageId: MessageId,
-    ): ConversationMessageViewModelBundle | undefined {
-        const messageStore = conversation.get().controller.getMessage(messageId);
-        if (messageStore === undefined) {
-            return undefined;
-        }
-        return this.conversationMessage(conversation, messageStore);
+    public contactList(): ContactListViewModelBundle {
+        return getContactListViewModelBundle(this._services, this);
     }
 
-    public contactListItems(): ContactListItemSetStore {
-        return getContactListItemSetStore(this._services);
-    }
-
-    public contactListItem(uid: DbContactUid): LocalStore<ContactListItemSetEntry> | undefined {
-        return getContactListItemStore(this._services, uid);
-    }
-
-    public groupListItems(): GroupListItemSetStore {
-        return getGroupListItemSetStore(this._services);
-    }
-
-    public profile(): ProfileViewModelStore {
-        return getProfileViewModelStore(this._services);
+    public contactListItem<TReceiver extends AnyReceiver>(
+        receiverModelStore: ReceiverStoreFor<TReceiver>,
+    ): ContactListItemViewModelBundle<TReceiver> {
+        return getContactListItemViewModelBundle(this._services, receiverModelStore);
     }
 
     public debugPanel(): DebugPanelViewModel {
         return getDebugPanelViewModel(this._services);
+    }
+
+    public profile(): ProfileViewModelStore {
+        return getProfileViewModelStore(this._services);
     }
 
     public search(): SearchViewModelBundle {

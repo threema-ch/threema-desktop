@@ -5,7 +5,7 @@ import {derive} from '~/common/utils/store/derived-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
 import type {ConversationListItemViewModel} from '~/common/viewmodel/conversation/list/item/store/types';
 import {getConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
-import {getReceiverData} from '~/common/viewmodel/utils/receiver';
+import {getConversationReceiverData} from '~/common/viewmodel/utils/receiver';
 
 export type ConversationListItemViewModelStore = LocalStore<
     ConversationListItemViewModel & PropertiesMarked
@@ -36,7 +36,7 @@ export function getConversationListItemViewModelStore(
                               false,
                           ),
                 lastUpdate: conversationModel.view.lastUpdate,
-                receiver: getReceiverData(services, conversationModel, getAndSubscribe),
+                receiver: getConversationReceiverData(services, conversationModel, getAndSubscribe),
                 totalMessageCount: conversationModel.controller.getMessageCount(),
                 unreadMessageCount: conversationModel.view.unreadMessageCount,
                 visibility: conversationModel.view.visibility,

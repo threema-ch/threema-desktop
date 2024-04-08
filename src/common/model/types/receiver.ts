@@ -1,3 +1,4 @@
+import type {ReceiverType} from '~/common/enum';
 import type {Contact} from '~/common/model/types/contact';
 import type {Conversation} from '~/common/model/types/conversation';
 import type {DistributionList} from '~/common/model/types/distribution-list';
@@ -7,10 +8,17 @@ import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {NotificationTag} from '~/common/notification';
 
 export type AnyReceiver = Contact | DistributionList | Group;
+
 export type AnyReceiverStore =
     | LocalModelStore<Contact>
     | LocalModelStore<DistributionList>
     | LocalModelStore<Group>;
+
+export type ReceiverStoreFor<TReceiver extends AnyReceiver> = {
+    readonly [ReceiverType.CONTACT]: LocalModelStore<Contact>;
+    readonly [ReceiverType.DISTRIBUTION_LIST]: LocalModelStore<DistributionList>;
+    readonly [ReceiverType.GROUP]: LocalModelStore<Group>;
+}[TReceiver['type']];
 
 /**
  * This interface is the common base for the contact controller, the group controller and the

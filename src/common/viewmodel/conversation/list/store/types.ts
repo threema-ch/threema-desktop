@@ -1,4 +1,6 @@
-import type {ConversationListItemSetStore} from '~/common/viewmodel/conversation/list/store';
+import type {ConversationModelStore} from '~/common/model/conversation';
+import type {IDerivableSetStore, LocalDerivedSetStore} from '~/common/utils/store/set-store';
+import type {ConversationListItemViewModelBundle} from '~/common/viewmodel/conversation/list/item';
 
 /**
  * Data to be supplied to the UI layer as part of the `ViewModelStore`. This should be as close as
@@ -8,3 +10,12 @@ import type {ConversationListItemSetStore} from '~/common/viewmodel/conversation
 export interface ConversationListViewModel {
     readonly listItemSetStore: ConversationListItemSetStore;
 }
+
+/**
+ * {@link SetStore} containing the {@link ConversationListItemViewModelBundle}s of all
+ * conversations.
+ */
+type ConversationListItemSetStore = LocalDerivedSetStore<
+    IDerivableSetStore<ConversationModelStore>,
+    ConversationListItemViewModelBundle
+>;

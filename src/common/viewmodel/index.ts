@@ -1,17 +1,19 @@
 import type {ServicesForBackend} from '~/common/backend';
-import type {DbContactUid, DbReceiverLookup} from '~/common/db';
-import type {AnyMessageModelStore} from '~/common/model';
+import type {DbReceiverLookup} from '~/common/db';
+import type {AnyMessageModelStore, AnyReceiver} from '~/common/model';
 import type {ConversationModelStore} from '~/common/model/conversation';
+import type {ReceiverStoreFor} from '~/common/model/types/receiver';
 import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {WeakValueMap} from '~/common/utils/map';
-import type {LocalStore} from '~/common/utils/store';
 import type {ViewModelCache} from '~/common/viewmodel/cache';
 import {
-    type ContactListItemSetEntry,
-    type ContactListItemSetStore,
-    getContactListItemSetStore,
-    getContactListItemStore,
-} from '~/common/viewmodel/contact-list-item';
+    getContactListViewModelBundle,
+    type ContactListViewModelBundle,
+} from '~/common/viewmodel/contact/list';
+import {
+    getContactListItemViewModelBundle,
+    type ContactListItemViewModelBundle,
+} from '~/common/viewmodel/contact/list/item';
 import {
     getConversationListViewModelBundle,
     type ConversationListViewModelBundle,
@@ -44,7 +46,24 @@ export type ServicesForViewModel = Pick<
     'config' | 'device' | 'endpoint' | 'file' | 'logging' | 'model' | 'crypto'
 >;
 export interface IViewModelRepository extends ProxyMarked {
+    /**
+     * Returns the {@link ConversationListViewModelBundle}.
+     */
+    readonly conversationList: () => ConversationListViewModelBundle;
+
+    /**
+     * Returns the {@link ConversationListItemViewModelBundle} that belongs to the given
+     * {@link conversationModelStore}.
+     */
+    readonly conversationListItem: (
+        conversationModelStore: ConversationModelStore,
+    ) => ConversationListItemViewModelBundle;
+
+    /**
+     * Returns the {@link ConversationViewModelBundle} that belongs to the given {@link receiver}.
+     */
     readonly conversation: (receiver: DbReceiverLookup) => ConversationViewModelBundle | undefined;
+
     /**
      * Returns the {@link ConversationMessageViewModelBundle} that belongs to the given
      * {@link messageStore} in the given {@link conversation}. Note: If the message contains a
@@ -54,23 +73,21 @@ export interface IViewModelRepository extends ProxyMarked {
         conversation: ConversationModelStore,
         messageStore: AnyMessageModelStore,
     ) => ConversationMessageViewModelBundle;
+
     /**
-     * Returns the {@link ConversationListViewModelBundle}.
+     * Returns the {@link ContactListViewModelBundle}.
      */
-    readonly conversationList: () => ConversationListViewModelBundle;
+    readonly contactList: () => ContactListViewModelBundle;
+
     /**
-     * Returns the {@link ConversationListItemViewModelBundle} that belongs to the given
-     * {@link conversationModelStore}.
+     * Returns the {@link ContactListItemViewModelBundle} that belongs to the given
+     * {@link receiverModelStore}.
      */
-    readonly conversationListItem: (
-        conversationModelStore: ConversationModelStore,
-    ) => ConversationListItemViewModelBundle;
+    readonly contactListItem: <TReceiver extends AnyReceiver>(
+        receiverModelStore: ReceiverStoreFor<TReceiver>,
+    ) => ContactListItemViewModelBundle<TReceiver>;
+
     readonly debugPanel: () => DebugPanelViewModel;
-    readonly contactListItems: () => ContactListItemSetStore;
-    readonly contactListItem: (
-        uid: DbContactUid,
-    ) => LocalStore<ContactListItemSetEntry> | undefined;
-    readonly groupListItems: () => GroupListItemSetStore;
     readonly profile: () => ProfileViewModelStore;
     readonly search: () => SearchViewModelBundle;
 }
@@ -83,13 +100,30 @@ export class ViewModelRepository implements IViewModelRepository {
         private readonly _cache: ViewModelCache,
     ) {}
 
+    /** @inheritdoc */
+    public conversationList(): ConversationListViewModelBundle {
+        return this._cache.conversationList.derefOrCreate(() =>
+            getConversationListViewModelBundle(this._services, this),
+        );
+    }
+
+    /** @inheritdoc */
+    public conversationListItem(
+        conversationModelStore: ConversationModelStore,
+    ): ConversationListItemViewModelBundle {
+        return this._cache.conversationListItem.getOrCreate(conversationModelStore, () =>
+            getConversationListItemViewModelBundle(this._services, conversationModelStore),
+        );
+    }
+
+    /** @inheritdoc */
     public conversation(receiver: DbReceiverLookup): ConversationViewModelBundle | undefined {
         const conversationModelStore = this._services.model.conversations.getForReceiver(receiver);
         if (conversationModelStore === undefined) {
             return undefined;
         }
 
-        return this._cache.conversations.getOrCreate(conversationModelStore, () =>
+        return this._cache.conversation.getOrCreate(conversationModelStore, () =>
             getConversationViewModelBundle(this._services, this, conversationModelStore),
         );
     }
@@ -116,29 +150,21 @@ export class ViewModelRepository implements IViewModelRepository {
     }
 
     /** @inheritdoc */
-    public conversationList(): ConversationListViewModelBundle {
-        return this._cache.conversationList.derefOrCreate(() =>
-            getConversationListViewModelBundle(this._services, this),
+    public contactList(): ContactListViewModelBundle {
+        return this._cache.contactList.derefOrCreate(() =>
+            getContactListViewModelBundle(this._services, this),
         );
     }
 
     /** @inheritdoc */
-    public conversationListItem(
-        conversationModelStore: ConversationModelStore,
-    ): ConversationListItemViewModelBundle {
-        return this._cache.conversationListItem.getOrCreate(conversationModelStore, () =>
-            getConversationListItemViewModelBundle(this._services, conversationModelStore),
-        );
-    }
-
-    public contactListItems(): ContactListItemSetStore {
-        return this._cache.contactListItem.derefOrCreate(() =>
-            getContactListItemSetStore(this._services),
-        );
-    }
-
-    public contactListItem(uid: DbContactUid): LocalStore<ContactListItemSetEntry> | undefined {
-        return getContactListItemStore(this._services, uid);
+    public contactListItem<TReceiver extends AnyReceiver>(
+        receiverModelStore: ReceiverStoreFor<TReceiver>,
+    ): ContactListItemViewModelBundle<TReceiver> {
+        // The bundle needs to be cast to `AnyReceiver` in order to add it to the cache, and back to
+        // `TReceiver` when it's retrieved, because the cache is shared among all types.
+        return this._cache.contactListItem.getOrCreate(receiverModelStore, () =>
+            getContactListItemViewModelBundle<AnyReceiver>(this._services, receiverModelStore),
+        ) satisfies ContactListItemViewModelBundle<AnyReceiver> as unknown as ContactListItemViewModelBundle<TReceiver>;
     }
 
     public groupListItems(): GroupListItemSetStore {
