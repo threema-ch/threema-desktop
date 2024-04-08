@@ -4,12 +4,14 @@ import {NACL_CONSTANTS} from '~/common/crypto';
 import {
     CspE2eConversationType,
     CspE2eGroupConversationType,
+    CspE2eMessageUpdateType,
     MessageDirection,
     ReceiverType,
 } from '~/common/enum';
 import type {Contact, Conversation} from '~/common/model';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {d2d} from '~/common/network/protobuf';
+import * as proto from '~/common/network/protobuf';
 import {ReflectedIncomingMessageTask} from '~/common/network/protocol/task/d2d/reflected-incoming-message';
 import {ReflectedOutgoingMessageTask} from '~/common/network/protocol/task/d2d/reflected-outgoing-message';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
@@ -176,6 +178,78 @@ export function run(): void {
                 expect(message.get().view.createdAt, 'createdAt').to.eql(createdAt);
                 expect(message.get().view.receivedAt, 'receivedAt').to.eql(reflectedAt);
                 expect(message.get().view.text).to.equal(text);
+            });
+
+            it('processes a reflected incoming edit message from contact', async function () {
+                const {crypto} = services;
+
+                // Process incoming reflected message from user1
+                const messageId = randomMessageId(crypto);
+                const text = 'Hello Pfäffikon';
+                const createdAt = secondsAgo(20);
+                const reflectedAt = secondsAgo(10);
+                const messageEncoder = structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                    text: UTF8.encode(text),
+                });
+                const reflectedMessage: d2d.IncomingMessage = {
+                    senderIdentity: user1.identity.string,
+                    messageId: intoUnsignedLong(messageId),
+                    createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
+                    type: CspE2eConversationType.TEXT,
+                    body: messageEncoder.encode(new Uint8Array(messageEncoder.byteLength())),
+                    nonce: services.crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
+                };
+                const taskM = new ReflectedIncomingMessageTask(
+                    services,
+                    reflectedMessage,
+                    ensureD2mDeviceId(42n),
+                    reflectedAt,
+                );
+                const handle = new TestHandle(services, []);
+                await taskM.run(handle);
+                handle.finish();
+
+                const editText = 'Hallo Zueri';
+                const messageEditEncoder = proto.utils.encoder(proto.csp_e2e.EditMessage, {
+                    text: editText,
+                    messageId: intoUnsignedLong(messageId),
+                });
+
+                const createdAtEdit = secondsAgo(7);
+
+                const reflectedEditMessage: d2d.IncomingMessage = {
+                    senderIdentity: user1.identity.string,
+                    messageId: intoUnsignedLong(messageId),
+                    createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAtEdit)),
+                    type: CspE2eMessageUpdateType.EDIT_MESSAGE,
+                    body: messageEditEncoder.encode(
+                        new Uint8Array(messageEditEncoder.byteLength()),
+                    ),
+                    nonce: services.crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
+                };
+
+                const reflectedAtEdit = secondsAgo(5);
+
+                const editTask = new ReflectedIncomingMessageTask(
+                    services,
+                    reflectedEditMessage,
+                    ensureD2mDeviceId(42n),
+                    reflectedAtEdit,
+                );
+
+                await editTask.run(handle);
+                handle.finish();
+
+                const messages = userConversation.get().controller.getAllMessages().get();
+                expect(messages.size, 'Conversation message count').to.equal(1);
+                const [message] = [...messages.values()];
+                assert(message !== undefined);
+                assert(message.ctx === MessageDirection.INBOUND, 'Wrong message direction');
+                assert(message.type === 'text', `Wrong message type: ${message.type}`);
+                expect(message.get().view.createdAt, 'createdAt').to.eql(createdAt);
+                expect(message.get().view.receivedAt, 'receivedAt').to.eql(reflectedAt);
+                expect(message.get().view.lastEditedAt, 'EditedAt').to.eql(createdAtEdit);
+                expect(message.get().view.text).to.equal(editText);
             });
         });
 
@@ -498,6 +572,81 @@ export function run(): void {
                 expect(groupMessages.size, 'Group conversation 1 message count').to.equal(0);
                 const groupMessages2 = groupConversation2.get().controller.getAllMessages().get();
                 expect(groupMessages2.size, 'Group conversation 2 message count').to.equal(0);
+            });
+
+            it('applies a reflected outgoing edit message', async function () {
+                const {crypto} = services;
+
+                // Process outgoing reflected message to user
+                const messageId = randomMessageId(crypto);
+                const createdAt = new Date();
+                const text = 'Hello Pfäffikon';
+                const task = new ReflectedOutgoingMessageTask(
+                    services,
+                    makeMessage(messageId, createdAt, CspE2eConversationType.TEXT, text, {
+                        id: 'contact',
+                        contact: user1.identity.string,
+                        group: undefined,
+                        distributionList: undefined,
+                    }),
+                    ensureD2mDeviceId(42n),
+                    new Date(),
+                );
+                const handle = new TestHandle(services, []);
+                await task.run(handle);
+                handle.finish();
+
+                const editText = 'Hallo Zueri';
+                const messageEditEncoder = proto.utils.encoder(proto.csp_e2e.EditMessage, {
+                    text: editText,
+                    messageId: intoUnsignedLong(messageId),
+                });
+
+                const reflectedEditMessageCreatedAt = secondsAgo(7);
+
+                const reflectedEditMessage: d2d.OutgoingMessage = {
+                    messageId: intoUnsignedLong(messageId),
+                    conversation: {
+                        id: 'contact',
+                        contact: user1.identity.string,
+                        group: undefined,
+                        distributionList: undefined,
+                    },
+                    createdAt: intoUnsignedLong(
+                        dateToUnixTimestampMs(reflectedEditMessageCreatedAt),
+                    ),
+                    type: CspE2eMessageUpdateType.EDIT_MESSAGE,
+                    body: messageEditEncoder.encode(
+                        new Uint8Array(messageEditEncoder.byteLength()),
+                    ),
+                    nonces: [
+                        services.crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
+                    ],
+                };
+
+                const reflectedAtEdit = secondsAgo(5);
+
+                const editTask = new ReflectedOutgoingMessageTask(
+                    services,
+                    reflectedEditMessage,
+                    ensureD2mDeviceId(42n),
+                    reflectedAtEdit,
+                );
+
+                await editTask.run(handle);
+                handle.finish();
+
+                const messages = userConversation.get().controller.getAllMessages().get();
+                expect(messages.size, 'Conversation message count').to.equal(1);
+                const [message] = [...messages.values()];
+                assert(message !== undefined);
+                assert(message.ctx === MessageDirection.OUTBOUND, 'Wrong message direction');
+                assert(message.type === 'text', `Wrong message type: ${message.type}`);
+                expect(message.get().view.createdAt, 'createdAt').to.eql(createdAt);
+                expect(message.get().view.lastEditedAt, 'lastEditedAt').to.eql(
+                    reflectedEditMessageCreatedAt,
+                );
+                expect(message.get().view.text).to.equal(editText);
             });
         });
     });

@@ -9,12 +9,14 @@ import {
     CspE2eDeliveryReceiptStatus,
     CspE2eGroupControlType,
     CspE2eGroupConversationType,
+    CspE2eMessageUpdateType,
     MessageType,
     ReceiverType,
     TransactionScope,
     UnknownContactPolicy,
 } from '~/common/enum';
 import type {Conversation} from '~/common/model';
+import type {AnyTextMessageModelStore} from '~/common/model/types/message';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import type {BlobId} from '~/common/network/protocol/blob';
@@ -164,6 +166,7 @@ function createNewIncomingTextMessageTask(
     user: TestUser,
     me: IdentityString,
     messageText = 'this is the secret message',
+    messageId?: MessageId,
 ): IncomingMessageTask {
     const textMessage = createMessage(
         services,
@@ -174,9 +177,32 @@ function createNewIncomingTextMessageTask(
             text: UTF8.encode(messageText),
         }),
         CspMessageFlags.fromPartial({sendPushNotification: true}),
+        {messageId},
     );
 
     return new IncomingMessageTask(services, textMessage);
+}
+
+function createNewEditMessageTask(
+    services: TestServices,
+    user: TestUser,
+    me: IdentityString,
+    messageId: MessageId,
+    messageText = 'This message was changed',
+): IncomingMessageTask {
+    const editMessage = createMessage(
+        services,
+        user,
+        me,
+        CspE2eMessageUpdateType.EDIT_MESSAGE,
+        protobuf.utils.encoder(protobuf.csp_e2e.EditMessage, {
+            text: messageText,
+            messageId: intoUnsignedLong(messageId),
+        }),
+        CspMessageFlags.fromPartial({sendPushNotification: true}),
+    );
+
+    return new IncomingMessageTask(services, editMessage);
 }
 
 /**
@@ -1207,6 +1233,112 @@ export function run(): void {
                 expect(messages.length).to.equal(0);
 
                 expect(expectations, 'Not all expectations consumed').to.be.empty;
+            });
+        });
+
+        describe('edit message', function () {
+            services = makeTestServices(me);
+
+            const {crypto, model} = services;
+            const messageId = randomMessageId(crypto);
+
+            const messageTask = createNewIncomingTextMessageTask(
+                services,
+                user1,
+                me,
+                'This is a secret message',
+                messageId,
+            );
+            const messageExpectations: NetworkExpectation[] = [
+                NetworkExpectationFactory.reflectSingle((payload) => {
+                    expect(payload.incomingMessage).not.to.be.undefined;
+                    const incomingMessage = unwrap(payload.incomingMessage);
+                    expect(incomingMessage.senderIdentity).to.equal(user1.identity.string);
+                    expect(incomingMessage.type).to.equal(protobuf.common.CspE2eMessageType.TEXT);
+                }),
+                NetworkExpectationFactory.writeIncomingMessageAck(),
+
+                // Send delivery receipt
+                ...reflectAndSendDeliveryReceipt(
+                    services,
+                    user1,
+                    CspE2eDeliveryReceiptStatus.RECEIVED,
+                ),
+            ];
+            const messageHandle = new TestHandle(services, messageExpectations);
+            const editHandle = new TestHandle(services, [
+                NetworkExpectationFactory.reflectSingle((payload) => {
+                    expect(payload.incomingMessage).not.to.be.undefined;
+                    const incomingMessage = unwrap(payload.incomingMessage);
+                    expect(incomingMessage.senderIdentity).to.equal(user1.identity.string);
+                    expect(incomingMessage.type).to.equal(
+                        protobuf.common.CspE2eMessageType.EDIT_MESSAGE,
+                    );
+                }),
+                NetworkExpectationFactory.writeIncomingMessageAck(),
+            ]);
+
+            const updateText = 'This secret messsage  was edited';
+            const editMessageTask = createNewEditMessageTask(
+                services,
+                user1,
+                me,
+                messageId,
+                updateText,
+            );
+
+            const user1Contact = addTestUserAsContact(model, user1);
+
+            it('receives a standard, correct edit message', async function () {
+                await messageTask.run(messageHandle);
+
+                await editMessageTask.run(editHandle);
+
+                const conversation = model.conversations.getForReceiver({
+                    type: ReceiverType.CONTACT,
+                    uid: user1Contact.ctx,
+                });
+
+                expect(conversation).to.not.equal(undefined, 'Conversation should exist');
+
+                const updatedMessage = conversation?.get().controller.getMessage(messageId);
+
+                assert(updatedMessage !== undefined, 'Message should not be undefined');
+
+                expect(updatedMessage.get().view.lastEditedAt).to.not.equal(
+                    undefined,
+                    'The message should have a lastEditedAt flag',
+                );
+
+                const updatedMessageAsTextMessage = updatedMessage as AnyTextMessageModelStore;
+                expect(updatedMessageAsTextMessage.get().view.text).to.equal(
+                    'This secret messsage  was edited',
+                );
+            });
+
+            it('receives an edit message to a message that does not exist', async function () {
+                const newMessageId = ensureMessageId(BigInt(messageId) + BigInt(1));
+                const editMessageTask2 = createNewEditMessageTask(
+                    services,
+                    user1,
+                    me,
+                    newMessageId,
+                );
+                const editHandle2 = new TestHandle(services, [
+                    NetworkExpectationFactory.writeIncomingMessageAck(),
+                ]);
+                await editMessageTask2.run(editHandle2);
+
+                const conversation = model.conversations.getForReceiver({
+                    type: ReceiverType.CONTACT,
+                    uid: user1Contact.ctx,
+                });
+
+                expect(conversation).to.not.equal(undefined, 'Conversation should exist');
+
+                const updatedMessage = conversation?.get().controller.getMessage(newMessageId);
+
+                expect(updatedMessage, 'No message wit this ID should exist').to.be.undefined;
             });
         });
     });
