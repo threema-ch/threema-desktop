@@ -255,12 +255,6 @@
     flex-direction: column;
     align-items: stretch;
     justify-content: start;
-    min-width: 0;
-    max-width: 100%;
-    min-height: 0;
-    max-height: 100%;
-    overflow-x: hidden;
-    overflow-y: scroll;
 
     .empty {
       color: var(--t-text-e2-color);

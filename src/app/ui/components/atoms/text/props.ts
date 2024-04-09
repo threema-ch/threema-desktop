@@ -6,6 +6,11 @@ export interface TextProps {
     readonly color?: 'mono-high' | 'mono-low' | 'mono-disabled' | 'inherit';
     /** Optional text decorations. Defaults to `"inherit"`. */
     readonly decoration?: 'strikethrough' | 'underline' | 'inherit';
+    /**
+     * Whether to replace cut off text with an ellipsis if this text element isn't allowed to wrap.
+     * Defaults to `false`.
+     */
+    readonly ellipsis?: boolean;
     /** Font family variant to use. Defaults to `"inherit"`. */
     readonly family?: 'primary' | 'secondary' | 'inherit';
     /** Whether text is selectable. Defaults to `false`. */

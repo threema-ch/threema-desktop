@@ -6,7 +6,6 @@
   import ConversationPreview from '~/app/ui/components/partials/conversation-preview-list/internal/conversation-preview/ConversationPreview.svelte';
   import type {ConversationPreviewListProps} from '~/app/ui/components/partials/conversation-preview-list/props';
   import {transformContextMenuItemsToContextMenuOptions} from '~/app/ui/components/partials/conversation-preview-list/transformers';
-  import {scrollIntoViewIfNeededAsync} from '~/app/ui/utils/scroll';
   import {reactive, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import type {DbReceiverLookup} from '~/common/db';
 
@@ -26,45 +25,6 @@
   let routeParams: ConversationRouteParams | undefined = undefined;
 
   let containerElement: SvelteNullableBinding<HTMLElement> = null;
-
-  /**
-   * Scroll to the first item in the list.
-   */
-  export function scrollToTop(): void {
-    containerElement?.scrollTo({
-      behavior: 'instant',
-      top: 0,
-    });
-  }
-
-  /**
-   * Scroll list to bring the conversation of the given receiver into view.
-   */
-  export async function scrollToConversation(lookup: DbReceiverLookup): Promise<void> {
-    await scrollIntoViewIfNeededAsync({
-      container: containerElement,
-      element: containerElement?.querySelector(
-        `li[data-receiver="${`${lookup.type}.${lookup.uid}`}"]`,
-      ),
-      options: {
-        behavior: 'instant',
-        block: 'start',
-      },
-      timeoutMs: 100,
-    });
-  }
-
-  /**
-   * Scroll list to bring the current active conversation into view.
-   */
-  export async function scrollToActiveConversation(): Promise<void> {
-    const lookup = routeParams?.receiverLookup;
-    if (lookup === undefined) {
-      return;
-    }
-
-    await scrollToConversation(lookup);
-  }
 
   function handleChangeRouterState(): void {
     const routerState = router.get();
@@ -128,8 +88,7 @@
     flex-direction: column;
     align-items: stretch;
     justify-content: start;
-    overflow-x: hidden;
-    overflow-y: scroll;
+    overflow: hidden;
 
     list-style-type: none;
     margin: 0;

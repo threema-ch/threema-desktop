@@ -4,6 +4,7 @@
   import type {AppServices} from '~/app/types';
   import AsideContactDetails from '~/app/ui/aside/ContactDetails.svelte';
   import AsideGroupDetails from '~/app/ui/aside/GroupDetails.svelte';
+  import ContactNav from '~/app/ui/components/partials/contact-nav/ContactNav.svelte';
   import ConversationView from '~/app/ui/components/partials/conversation/ConversationView.svelte';
   import ConversationNav from '~/app/ui/components/partials/conversation-nav/ConversationNav.svelte';
   import Settings from '~/app/ui/components/partials/settings/Settings.svelte';
@@ -14,7 +15,6 @@
   import ModalContactEdit from '~/app/ui/modal/ContactEdit.svelte';
   import ModalGroupEdit from '~/app/ui/modal/GroupEdit.svelte';
   import NavContactAdd from '~/app/ui/nav/ContactAddNav.svelte';
-  import NavContactList from '~/app/ui/nav/ReceiverNav.svelte';
   import NavContactAddDetail from '~/app/ui/nav/contact-add/ContactAddDetail.svelte';
   import NetworkAlert from '~/app/ui/notification/NetworkAlert.svelte';
   import Snackbar from '~/app/ui/snackbar/Snackbar.svelte';
@@ -114,7 +114,7 @@
         navPanelComponent = ConversationNav;
         break;
       case 'contactList':
-        navPanelComponent = NavContactList;
+        navPanelComponent = ContactNav;
         break;
       case 'contactAdd':
         navPanelComponent = NavContactAdd;

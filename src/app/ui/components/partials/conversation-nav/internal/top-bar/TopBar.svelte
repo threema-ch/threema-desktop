@@ -5,7 +5,7 @@
   import {createEventDispatcher} from 'svelte';
 
   import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
-  import type {TopBarProps} from '~/app/ui/components/partials/conversation-nav/internal/props';
+  import type {TopBarProps} from '~/app/ui/components/partials/conversation-nav/internal/top-bar/props';
   import type Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {i18n} from '~/app/ui/i18n';
   import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';

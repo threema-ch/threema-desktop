@@ -9,6 +9,7 @@
 
   export let color: NonNullable<$$Props['color']> = 'inherit';
   export let decoration: NonNullable<$$Props['decoration']> = 'inherit';
+  export let ellipsis: NonNullable<$$Props['ellipsis']> = false;
   export let family: NonNullable<$$Props['family']> = 'inherit';
   export let selectable: NonNullable<$$Props['selectable']> = false;
   export let size: NonNullable<$$Props['size']> = 'inherit';
@@ -16,7 +17,12 @@
   export let wrap: NonNullable<$$Props['wrap']> = true;
 </script>
 
-<span class={`text c-${color} d-${decoration} f-${family} s-${size}`} class:selectable class:wrap>
+<span
+  class={`text c-${color} d-${decoration} f-${family} s-${size}`}
+  class:ellipsis
+  class:selectable
+  class:wrap
+>
   {text}
 </span>
 
@@ -109,6 +115,13 @@
     }
 
     // Options
+    &.ellipsis {
+      max-width: 100%;
+      display: inline-block;
+      overflow-x: hidden;
+      text-overflow: ellipsis;
+    }
+
     &.selectable {
       user-select: text;
     }

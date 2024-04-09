@@ -12,7 +12,7 @@
     getContextMenuItems,
     goToSettings,
   } from '~/app/ui/components/partials/conversation-nav/helpers';
-  import TopBar from '~/app/ui/components/partials/conversation-nav/internal/TopBar.svelte';
+  import TopBar from '~/app/ui/components/partials/conversation-nav/internal/top-bar/TopBar.svelte';
   import type {ConversationNavProps} from '~/app/ui/components/partials/conversation-nav/props';
   import {conversationListItemSetStoreToConversationPreviewListPropsStore} from '~/app/ui/components/partials/conversation-nav/transformers';
   import type {
@@ -28,7 +28,9 @@
   import SearchResultList from '~/app/ui/components/partials/search-result-list/SearchResultList.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
+  import {scrollIntoViewIfNeededAsync} from '~/app/ui/utils/scroll';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
+  import type {DbReceiverLookup} from '~/common/db';
   import {display} from '~/common/dom/ui/state';
   import {extractErrorMessage} from '~/common/error';
   import {ensureError, unreachable} from '~/common/utils/assert';
@@ -60,12 +62,7 @@
   > = null;
   let searchResultListComponent: SvelteNullableBinding<SearchResultList> = null;
 
-  /**
-   * Scroll to the top of the conversation list.
-   */
-  export function scrollToTop(): void {
-    conversationPreviewListComponent?.scrollToTop();
-  }
+  let listElement: SvelteNullableBinding<HTMLElement> = null;
 
   function handleHotkeyControlF(): void {
     searchBarComponent?.focusAndSelect();
@@ -89,7 +86,7 @@
      * because it might not be rendered before that (e.g., if a filter has been applied).
      */
     await tick();
-    await conversationPreviewListComponent?.scrollToActiveConversation();
+    await scrollToActiveItem();
   }
 
   function handleRequestRefreshSearchResults(): void {
@@ -154,6 +151,37 @@
     };
   }
 
+  function scrollToTop(): void {
+    listElement?.scrollTo({
+      behavior: 'instant',
+      top: 0,
+    });
+  }
+
+  async function scrollToItem(lookup: DbReceiverLookup): Promise<void> {
+    await scrollIntoViewIfNeededAsync({
+      container: listElement,
+      element: listElement?.querySelector(
+        `ul > li[data-receiver="${`${lookup.type}.${lookup.uid}`}"]`,
+      ),
+      options: {
+        behavior: 'instant',
+        block: 'start',
+      },
+      timeoutMs: 100,
+    }).catch((error) => {
+      log.info(`Scroll to conversation was not performed: ${error}`);
+    });
+  }
+
+  async function scrollToActiveItem(): Promise<void> {
+    const routerState = router.get();
+
+    if (routerState.main.id === 'conversation') {
+      await scrollToItem(routerState.main.params.receiverLookup);
+    }
+  }
+
   // Current search results.
   $: conversationSearchResults = $viewModelStore?.listItemSetStore;
   $: conversationPreviewListProps =
@@ -189,7 +217,7 @@
         log.error(`Failed to load ProfileViewModel: ${ensureError(error)}`);
       });
 
-    await conversationPreviewListComponent?.scrollToActiveConversation();
+    await scrollToActiveItem();
   });
 
   onMount(() => {
@@ -241,7 +269,7 @@
     />
   </div>
 
-  <div class="list">
+  <div bind:this={listElement} class="list">
     {#if $conversationPreviewListProps !== undefined && $conversationPreviewListProps.items.length > 0}
       {#if searchTerm === undefined || searchTerm === ''}
         <!-- Suppress `any` type warnings, as the types are fine, but not recognized by the linter
@@ -302,14 +330,7 @@
     .list {
       grid-area: list;
 
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      justify-content: start;
-      min-width: 0;
-      max-width: 100%;
-      min-height: 0;
-      max-height: 100%;
+      overflow-y: scroll;
     }
   }
 </style>

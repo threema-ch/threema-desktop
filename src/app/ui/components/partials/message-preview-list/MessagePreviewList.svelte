@@ -56,7 +56,7 @@
 
     <li class="conversation">
       <div class="name">
-        <Text color="mono-low" text={receiver.name} size="body" wrap={false} />
+        <Text color="mono-low" ellipsis={true} size="body" text={receiver.name} wrap={false} />
       </div>
 
       <ul class="messages">
@@ -70,8 +70,8 @@
           )}
 
           <li class={`preview ${message.direction}`}>
-            <span class="avatar">
-              {#if message.direction === 'inbound' && message.sender?.type === 'contact'}
+            {#if message.direction === 'inbound' && message.sender?.type === 'contact'}
+              <span class="avatar">
                 {#await profilePicture.getProfilePictureForReceiver( {type: ReceiverType.CONTACT, uid: message.sender.uid}, ) then senderProfilePictureStore}
                   <Avatar
                     byteStore={senderProfilePictureStore ?? new ReadableStore(undefined)}
@@ -83,10 +83,10 @@
                     size={24}
                   />
                 {/await}
-              {:else}
-                <!-- Don't show a profile picture, as the sender is either `undefined` or the user themself. -->
-              {/if}
-            </span>
+              </span>
+            {:else}
+              <!-- Don't show a profile picture, as the sender is either `undefined` or the user themself. -->
+            {/if}
 
             <div class="message">
               <Message
@@ -169,6 +169,7 @@
     margin: 0;
     padding: 0;
     max-width: 100%;
+    overflow: hidden;
 
     li {
       display: flex;
@@ -193,6 +194,7 @@
     .conversation {
       .name {
         padding: 0 0 rem(12px) 0;
+        overflow: hidden;
       }
 
       .messages {

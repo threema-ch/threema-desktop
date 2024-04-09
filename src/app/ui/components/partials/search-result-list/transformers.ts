@@ -143,6 +143,7 @@ export function receiverSearchResultSetStoreToReceiverPreviewListPropsStore(
             .slice(0, limit)
             .sort((a, b) => a.receiver.name.localeCompare(b.receiver.name))
             .map((result) => ({
+                handlerProps: undefined,
                 receiver: result.receiver,
             })),
     }));
