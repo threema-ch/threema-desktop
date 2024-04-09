@@ -36,6 +36,7 @@ export interface IConversationViewModelController extends ProxyMarked {
      * Clear the conversation by deleting all stored messages.
      */
     readonly clear: () => Promise<void>;
+    readonly delete: () => Promise<void>;
     readonly deleteMessage: (messageId: MessageId) => Promise<void>;
     readonly findForwardedMessage: (
         receiverLookup: DbReceiverLookup,
@@ -84,6 +85,16 @@ export class ConversationViewModelController implements IConversationViewModelCo
 
     public async clear(): Promise<void> {
         return await this._conversation.get().controller.removeAllMessages.fromLocal();
+    }
+
+    /** @inheritdoc */
+    public async delete(): Promise<void> {
+        // Clear all conversation contents.
+        await this.clear();
+
+        // Soft-delete the conversation (i.e., the conversation is kept in the database but is not
+        // shown in the conversation list anymore).
+        return this._conversation.get().controller.update.fromSync({lastUpdate: undefined});
     }
 
     public async deleteMessage(messageId: MessageId): Promise<void> {

@@ -629,6 +629,16 @@
                 ?.unpin()
                 .catch((error) => log.error('Could not unpin conversation', error));
             },
+            delete: async () => {
+              await viewModelController?.delete().catch(assertUnreachable);
+              if (
+                $router.main.id === 'conversation' &&
+                $router.main.params.receiverLookup.type === $viewModelStore?.receiver.lookup.type &&
+                $router.main.params.receiverLookup.uid === $viewModelStore.receiver.lookup.uid
+              ) {
+                router.goToWelcome();
+              }
+            },
           }}
           receiver={$viewModelStore.receiver}
           {services}

@@ -5,6 +5,7 @@
   import type {TopBarProps} from '~/app/ui/components/partials/conversation/internal/top-bar/props';
   import type {ModalState} from '~/app/ui/components/partials/conversation/internal/top-bar/types';
   import ClearConversationModal from '~/app/ui/components/partials/modals/clear-conversation-modal/ClearConversationModal.svelte';
+  import DeleteConversationModal from '~/app/ui/components/partials/modals/delete-conversation-modal/DeleteConversationModal.svelte';
   import ReceiverCard from '~/app/ui/components/partials/receiver-card/ReceiverCard.svelte';
   import type Popover from '~/app/ui/generic/popover/Popover.svelte';
   import type {AnchorPoint, Offset} from '~/app/ui/generic/popover/types';
@@ -86,6 +87,16 @@
     popover?.close();
   }
 
+  function handleDeleteConversation(): void {
+    modalState = {
+      type: 'delete-conversation',
+      props: {
+        conversation,
+        receiver,
+      },
+    };
+  }
+
   function handleCloseModal(): void {
     // Reset modal state.
     modalState = {
@@ -161,6 +172,13 @@
             name: conversation.isArchived ? 'unarchive' : 'archive',
           },
         },
+        {
+          handler: () => handleDeleteConversation(),
+          label: $i18n.t('messaging.action--conversation-option-delete'),
+          icon: {
+            name: 'delete_forever',
+          },
+        },
       ]}
       {offset}
       reference={referenceElement}
@@ -180,6 +198,8 @@
   <!-- No modal is displayed in this state. -->
 {:else if modalState.type === 'clear-conversation'}
   <ClearConversationModal {...modalState.props} on:close={handleCloseModal} />
+{:else if modalState.type === 'delete-conversation'}
+  <DeleteConversationModal {...modalState.props} on:close={handleCloseModal} />
 {:else}
   {unreachable(modalState)}
 {/if}
