@@ -1413,25 +1413,42 @@ export function backendTests(
                 lastUpdate,
             });
             expect(db.getMessageUids(conversation.uid, 20)).to.have.length(12);
+            const imageFileData = makeFileData();
+            const thumbnailFileData2 = makeFileData();
+            createImageMessage(db, {
+                conversationUid: conversation.uid,
+                fileData: imageFileData,
+                thumbnailFileData: thumbnailFileData2,
+            });
+            const lu = new Date(1974);
+            db.updateConversation({
+                uid: conversation.uid,
+                lastUpdate: lu,
+            });
+            expect(db.getMessageUids(conversation.uid, 20)).to.have.length(13);
 
             // Now, remove all messages and ensure that they're gone
             const removeInfo1 = db.removeAllMessages(conversation.uid, false);
             expect(db.getMessageUids(conversation.uid, 20)).to.have.length(0);
-            expect(removeInfo1.removed).to.equal(12);
+            expect(removeInfo1.removed).to.equal(13);
 
             // Ensure that the conversation still exists and that `lastUpdate` remains untouched
             conversation = db.getConversationOfReceiver(receiver);
             expect(conversation).to.not.be.undefined;
             assert(conversation !== undefined);
-            expect(conversation.lastUpdate).to.deep.equal(lastUpdate);
+            expect(conversation.lastUpdate).to.deep.equal(lu);
 
             // Ensure that the removed file IDs are returned
             if (!features.doesNotImplementFileDataCleanup) {
-                expect(removeInfo1.deletedFileIds).have.members([
-                    fileData1.fileId,
-                    thumbnailFileData.fileId,
-                    fileData2.fileId,
-                ]);
+                expect(removeInfo1.deletedFileIds.sort()).have.members(
+                    [
+                        fileData1.fileId,
+                        thumbnailFileData.fileId,
+                        fileData2.fileId,
+                        imageFileData.fileId,
+                        thumbnailFileData2.fileId,
+                    ].sort(),
+                );
             }
 
             // Add a bunch of messages again
