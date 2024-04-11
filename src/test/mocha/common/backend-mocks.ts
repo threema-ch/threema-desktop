@@ -291,10 +291,10 @@ export class TestDirectoryBackend implements DirectoryBackend {
     /** @inheritdoc */
     public async identities(
         identities: IdentityString[],
-    ): Promise<Record<IdentityString, IdentityData>> {
-        const data: Record<IdentityString, IdentityData> = {};
+    ): Promise<Map<IdentityString, IdentityData>> {
+        const data = new Map<IdentityString, IdentityData>();
         for (const identity of identities) {
-            data[identity] = await this.identity(identity);
+            data.set(identity, await this.identity(identity));
         }
         return data;
     }

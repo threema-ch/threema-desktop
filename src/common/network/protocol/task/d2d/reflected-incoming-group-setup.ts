@@ -81,7 +81,7 @@ export class ReflectedIncomingGroupSetupTask extends GroupSetupTaskBase<PassiveT
         // If a contact is not known, the only possible reason is that the contact is revoked/invalid.
         const identityData = await this._services.directory.identities(identitiesToAdd);
         for (const identity of identitiesToAdd) {
-            const fetched = identityData[identity];
+            const fetched = identityData.get(identity);
             assert(
                 fetched !== undefined,
                 `Directory lookup did not return information for all identities`,

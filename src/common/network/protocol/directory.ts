@@ -99,7 +99,7 @@ export type DirectoryBackend = {
      */
     identities: (
         identities: IdentityString[],
-    ) => Promise<Record<IdentityString, IdentityData | undefined>>;
+    ) => Promise<Map<IdentityString, IdentityData | undefined>>;
 
     /**
      * Fetch identity private data from the directory.

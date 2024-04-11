@@ -158,7 +158,7 @@ export async function addGroupContacts(
     // Add contacts
     const contactStores: LocalModelStore<Contact>[] = [];
     for (const identity of identities) {
-        const fetched = identityDataMap[identity];
+        const fetched = identityDataMap.get(identity);
         assert(
             fetched !== undefined,
             `Directory lookup did not return information for all identities`,

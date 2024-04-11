@@ -123,7 +123,7 @@ export class FetchDirectoryBackend implements DirectoryBackend {
     /** @inheritdoc */
     public async identities(
         identities: IdentityString[],
-    ): Promise<Record<IdentityString, IdentityData>> {
+    ): Promise<Map<IdentityString, IdentityData | undefined>> {
         const responseData = await this._request(
             'Bulk identity data',
             `identity/fetch_bulk`,
@@ -138,17 +138,17 @@ export class FetchDirectoryBackend implements DirectoryBackend {
         }
 
         const missingIdentities = new Set(identities);
-        const result: Record<IdentityString, IdentityData> = {};
+        const result = new Map<IdentityString, IdentityData>();
 
         // Add valid identities
         for (const identity of responseData.identities) {
             missingIdentities.delete(identity.identity);
-            result[identity.identity] = identity;
+            result.set(identity.identity, identity);
         }
 
         // All missing identities either do not exist or have been revoked
         for (const missingIdentity of missingIdentities) {
-            result[missingIdentity] = {state: ActivityState.INVALID};
+            result.set(missingIdentity, {state: ActivityState.INVALID});
         }
 
         return result;

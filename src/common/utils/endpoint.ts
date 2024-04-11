@@ -994,6 +994,10 @@ export class EndpointService {
                 path: [] as string[],
                 ...(ev.data as Message),
             };
+            assert(
+                !path.some((segment) => segment.startsWith('__')),
+                `Path contains disallowed segment starting with double-underscore: ${path.join('.')}`,
+            );
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             const argumentList = (ev.data.argumentList ?? []).map((argument: WireValue) =>
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
