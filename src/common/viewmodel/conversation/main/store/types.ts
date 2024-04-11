@@ -28,14 +28,15 @@ export interface ConversationViewModel {
         | undefined;
     readonly messageSetStore: ConversationMessageSetStore;
     readonly receiver: AnyReceiverData;
+    readonly supportedFeatures: FeatureMaskMap;
     readonly totalMessagesCount: u53;
     readonly unreadMessagesCount: u53;
-    readonly supportedFeatures: FeatureMaskMap;
 }
 
 /**
- * A map from supported feature masks to names that do not support them
- * so that they can be displayed accordingly in the frontend.
+ * This map includes keys for every feature that is supported in a conversation. The associated
+ * value includes the display names of contacts that do not yet support the feature (in case of
+ * partial support).
  */
 export type FeatureMaskMap = Map<
     (typeof FEATURE_MASK_FLAG)[keyof typeof FEATURE_MASK_FLAG],

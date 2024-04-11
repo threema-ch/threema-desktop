@@ -4,6 +4,7 @@ import type {ConversationModelStore} from '~/common/model/conversation';
 import type {AnyMessageModelStore} from '~/common/model/types/message';
 import {getDebugTagForReceiver} from '~/common/model/utils/debug-tags';
 import {FEATURE_MASK_FLAG, type FeatureMask} from '~/common/network/types';
+import {unreachable} from '~/common/utils/assert';
 import {type GetAndSubscribeFunction, derive} from '~/common/utils/store/derived-store';
 import {LocalSetBasedSetStore, LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
@@ -134,58 +135,71 @@ function checkFeatureMaskSupportsEdit(fM: FeatureMask): boolean {
 }
 
 /**
- * We implicitly assume here that model.getbyIdentity returns undefined iff it is the user
- * since all recipients of a conversation have to be in the database (except for the user).
+ * Check whether contacts in this conversation support message editing.
+ *
+ * The return value can be:
+ *
+ * - All contacts support editing
+ * - No contacts support editing
+ * - Some contacts support editing
+ *
+ * If only some contacts support editing, the return value includes the display names of the
+ * contacts that don't support this feature yet.
  */
 function supportsEditMessage(
     conversation: Conversation,
-    services: Pick<ServicesForViewModel, 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'logging' | 'model'>,
 ): {supported: 'none' | 'all'} | {supported: 'partial'; notSupportedNames: string[]} {
-    const receiver = conversation.controller.receiver();
+    const {device, logging, model} = services;
+    const log = logging.logger('viewmodel.conversation.supportsEditMessage');
+
+    // Display names of contacts that don't support message editing
     const notSupportedNames: string[] = [];
-    if (receiver.type === ReceiverType.CONTACT) {
-        const fM = receiver.get().view.featureMask;
-        return {supported: checkFeatureMaskSupportsEdit(fM) ? 'all' : 'none'};
-    } else if (receiver.type === ReceiverType.GROUP) {
-        const contact = services.model.contacts
-            .getByIdentity(receiver.get().view.creatorIdentity)
-            ?.get();
 
-        if (contact !== undefined) {
-            const fM = contact.view.featureMask;
+    const receiver = conversation.controller.receiver();
+    switch (receiver.type) {
+        case ReceiverType.CONTACT: {
+            // Check whether contact supports editing
+            const featureMask = receiver.get().view.featureMask;
+            return {supported: checkFeatureMaskSupportsEdit(featureMask) ? 'all' : 'none'};
+        }
+        case ReceiverType.GROUP: {
+            // Check whether group members support editing
+            //
+            // Note: Right now, the list of members includes the group creator (if the user isn't
+            // the creator). TODO(DESK-558): Ensure that the creator is included in this check!
+            const memberIdentities = receiver
+                .get()
+                .view.members.filter((identity) => identity !== device.identity.string);
+            for (const identity of memberIdentities) {
+                const member = model.contacts.getByIdentity(identity)?.get();
+                if (member === undefined) {
+                    log.error(`Could not find group member contact for identity ${identity}`);
+                    continue;
+                }
+                if (!checkFeatureMaskSupportsEdit(member.view.featureMask)) {
+                    notSupportedNames.push(member.view.displayName);
+                }
+            }
 
-            if (!checkFeatureMaskSupportsEdit(fM)) {
-                notSupportedNames.push(contact.view.displayName);
+            if (notSupportedNames.length === memberIdentities.length) {
+                return {supported: 'none'};
+            } else if (notSupportedNames.length === 0) {
+                return {supported: 'all'};
             }
-        }
-
-        const members = receiver.get().view.members;
-        for (const m of members) {
-            const member = services.model.contacts.getByIdentity(m)?.get();
-            if (member === undefined) {
-                continue;
-            }
-            const fM = member.view.featureMask;
-            if (!checkFeatureMaskSupportsEdit(fM)) {
-                notSupportedNames.push(member.view.displayName);
-            }
-        }
-        // No member supports edit so we don't allow it at all
-        if (notSupportedNames.length === members.length) {
-            return {supported: 'none'};
-        }
-        // Some members support it so we
-        if (notSupportedNames.length > 0) {
             return {supported: 'partial', notSupportedNames};
         }
+        case ReceiverType.DISTRIBUTION_LIST:
+            // TODO(DESK-771) Distribution lists
+            return {supported: 'none'};
+        default:
+            return unreachable(receiver);
     }
-    // TODO(DESK-771) Distribution lists
-    return {supported: 'all'};
 }
 
 export function getSupportedFeatures(
     conversation: Conversation,
-    services: Pick<ServicesForViewModel, 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'logging' | 'model'>,
 ): FeatureMaskMap {
     const featureSet: FeatureMaskMap = new Map();
     const editSupport = supportsEditMessage(conversation, services);

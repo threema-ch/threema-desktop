@@ -37,7 +37,7 @@ export type ConversationMessageSetStore = LocalDerivedSetStore<
 >;
 
 export function getConversationViewModelStore(
-    services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     viewModelRepository: IViewModelRepository,
     conversationViewModelController: IConversationViewModelController,
     conversationModelStore: ConversationModelStore,
@@ -64,9 +64,9 @@ export function getConversationViewModelStore(
                 lastMessage: getLastMessage(conversationModel, getAndSubscribe),
                 messageSetStore,
                 receiver: getReceiverData(services, conversationModel, getAndSubscribe),
+                supportedFeatures: getSupportedFeatures(conversationModel, services),
                 totalMessagesCount: conversationModel.controller.getMessageCount(),
                 unreadMessagesCount: conversationModel.view.unreadMessageCount,
-                supportedFeatures: getSupportedFeatures(conversationModel, services),
             }),
     );
 }
