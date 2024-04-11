@@ -28,7 +28,7 @@
 </script>
 
 <div class="container">
-  <div class="navbar">
+  <div class="top-bar">
     <div class="left">
       <IconButton flavor="naked" on:click={handleClickBack}>
         <MdIcon theme="Outlined">arrow_back</MdIcon>
@@ -43,6 +43,7 @@
       />
     </div>
   </div>
+
   <div class="list">
     <SettingsNavList {services} />
   </div>
@@ -56,13 +57,13 @@
     overflow: hidden;
     background-color: var(--t-nav-background-color);
     grid-template:
-      'navbar' min-content
+      'top-bar' min-content
       'list' 1fr
       / 100%;
 
-    .navbar {
-      grid-area: navbar;
-      padding: rem(12px) rem(16px);
+    .top-bar {
+      grid-area: top-bar;
+      padding: rem(12px) rem(8px);
       display: grid;
       grid-template:
         'left center right' min-content
