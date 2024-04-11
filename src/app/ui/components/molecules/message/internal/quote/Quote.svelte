@@ -22,16 +22,21 @@
   export let onError: $$Props['onError'];
   export let sender: $$Props['sender'] = undefined;
   export let mode: NonNullable<$$Props['mode']> = 'quote';
+
+  let buttonClass: string;
+  $: {
+    const classes: string[] = [mode];
+    if (file !== undefined) {
+      classes.push(`${file.type}-container`);
+    }
+    if (mode === 'quote') {
+      classes.push(`color-${sender?.color ?? 'default'}`);
+    }
+    buttonClass = classes.join(' ');
+  }
 </script>
 
-<button
-  class={mode === 'quote'
-    ? `quote ${sender?.color ?? 'default'} ${file === undefined ? '' : `${file.type}-container`}`
-    : `edit ${file === undefined ? '' : `${file.type}-container`}`}
-  class:captioned={content !== undefined}
-  disabled={!clickable}
-  on:click
->
+<button class={buttonClass} class:captioned={content !== undefined} disabled={!clickable} on:click>
   {#if sender !== undefined && mode === 'quote'}
     <span class="sender">
       <Sender name={sender.name} color={sender.color} />
@@ -312,7 +317,7 @@
   }
 
   @each $color in map-get-req($config, profile-picture-colors) {
-    .quote.#{$color} {
+    .quote.color-#{$color} {
       &:before {
         background-color: var(--c-profile-picture-initials-#{$color}, default);
       }

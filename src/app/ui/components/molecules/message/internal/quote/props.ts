@@ -15,9 +15,10 @@ export interface QuoteProps {
     readonly clickable?: boolean;
     /** Optional file data, if this is a file-based message. */
     readonly file?: MessageProps['file'];
+    /** The mode of this component. Defaults to quote. */
+    readonly mode?: 'quote' | 'edit';
+    /** Function that is executed when an error occurs while loading the quote. */
     readonly onError: (error: Error) => void;
     /** Details about the message sender. */
     readonly sender?: MessageProps['sender'];
-    /** The mode of this component. Defaults to quote. */
-    readonly mode?: 'quote' | 'edit';
 }
