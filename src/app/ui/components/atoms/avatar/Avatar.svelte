@@ -185,6 +185,8 @@
   .container {
     display: block;
     position: relative;
+    width: var($-temp-vars, --c-t-size);
+    height: var($-temp-vars, --c-t-size);
 
     .charm {
       position: absolute;

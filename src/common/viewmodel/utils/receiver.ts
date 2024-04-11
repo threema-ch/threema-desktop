@@ -177,10 +177,12 @@ function getContactReceiverData(
         type: 'contact',
         ...getCommonReceiverData(contactModel),
         badge: getContactBadge(contactModel.view),
+        firstName: contactModel.view.firstName,
         identity: contactModel.view.identity,
         isBlocked: isContactReceiverBlocked(services, contactModel, getAndSubscribe),
         isInactive: isContactReceiverInactive(contactModel),
         isInvalid: isContactReceiverInvalid(contactModel),
+        lastName: contactModel.view.lastName,
         lookup: {
             type: contactModel.type,
             uid: contactModel.ctx,
@@ -483,10 +485,12 @@ interface SelfReceiverData extends Omit<CommonReceiverData, 'lookup' | 'notifica
 export interface ContactReceiverData extends CommonReceiverData {
     readonly type: 'contact';
     readonly badge?: Extract<ReceiverBadgeType, 'contact-consumer' | 'contact-work'>;
+    readonly firstName: string;
     readonly identity: IdentityString;
     readonly isBlocked: boolean;
     readonly isInactive: boolean;
     readonly isInvalid: boolean;
+    readonly lastName: string;
     readonly lookup: DbContactReceiverLookup;
     readonly nickname?: string;
     readonly verification: VerificationData;

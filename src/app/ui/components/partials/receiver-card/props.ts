@@ -1,6 +1,5 @@
-import type {AppServices} from '~/app/types';
+import type {ProfilePictureProps} from '~/app/ui/components/partials/profile-picture/props';
 import type {ContentItemProps} from '~/app/ui/components/partials/receiver-card/internal/content-item/props';
-import type {u53} from '~/common/types';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
@@ -29,12 +28,12 @@ export interface ReceiverCardProps {
         'color' | 'initials' | 'isDisabled' | 'lookup' | 'name' | 'type'
     > &
         Pick<AnyReceiverData & {type: 'contact'}, 'badge'>;
-    readonly services: Pick<AppServices, 'profilePicture'>;
+    readonly services: ProfilePictureProps['services'];
     /** Controls how large the avatar, text, and other elements appear. Defaults to `"md"`. */
-    readonly size?: 'md' | 'sm';
+    readonly size?: ProfilePictureProps['size'];
     /**
      * Count of unread messages in the conversation with the respective receiver, to be displayed in
      * a badge. Defaults to `0`.
      */
-    readonly unreadMessageCount?: u53;
+    readonly unreadMessageCount?: ProfilePictureProps['unreadMessageCount'];
 }
