@@ -11,19 +11,31 @@ import {
     type StoreUnsubscriber,
     WritableStore,
 } from '~/common/utils/store';
-import {DerivedStore, type DeriveFunction} from '~/common/utils/store/derived-store';
+import {
+    DEFAULT_DERIVED_STORE_DISABLE_COOLDOWN_MS,
+    DerivedStore,
+    type AnyDerivedStoreOptions,
+    type DeriveFunction,
+} from '~/common/utils/store/derived-store';
+import {TIMER} from '~/common/utils/timer';
 
 type SourceStore = WritableStore<u32>;
 
-function createSimpleDerivedStore(): readonly [
+function createSimpleDerivedStore(
+    options?: AnyDerivedStoreOptions<{answer: string}>,
+): readonly [
     derivedStore: DerivedStore<[SourceStore], Readonly<{answer: string}>>,
     sourceStores: SourceStore,
 ] {
     const sourceStore = new WritableStore(41);
 
-    const derivedStore = new DerivedStore([sourceStore], ([{currentValue: source}]) => ({
-        answer: `is ${source + 1}`,
-    }));
+    const derivedStore = new DerivedStore(
+        [sourceStore],
+        ([{currentValue: source}]) => ({
+            answer: `is ${source + 1}`,
+        }),
+        options,
+    );
 
     return [derivedStore, sourceStore];
 }
@@ -101,7 +113,7 @@ export function run(): void {
                 );
                 unsubscriber();
             });
-            it('should disable the store on last unsubscription', function () {
+            it('should disable the store on last unsubscription per default', async function () {
                 const [store] = createSimpleDerivedStore();
                 // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
@@ -122,12 +134,41 @@ export function run(): void {
                     store._state.symbol,
                     'Store to be enabled after first unsubscriptions',
                 ).to.equal(LAZY_STORE_ENABLED_STATE);
+
                 unsubscribers[1]?.();
+                await TIMER.sleep(DEFAULT_DERIVED_STORE_DISABLE_COOLDOWN_MS).then(() => {
+                    expect(
+                        // @ts-expect-error: Private property
+                        store._state.symbol,
+                        'Store to be disabled after second unsubscriptions',
+                    ).to.equal(LAZY_STORE_DISABLED_STATE);
+                });
+            }).timeout(DEFAULT_DERIVED_STORE_DISABLE_COOLDOWN_MS + 1000);
+            it("should never disable the store if its mode is 'persistent'", function () {
+                const [store] = createSimpleDerivedStore({subscriptionMode: 'persistent'});
+                // @ts-expect-error: Private property
+                expect(store._state.symbol).to.equal(
+                    LAZY_STORE_ENABLED_STATE,
+                    "Store with mode 'persistent' to be in enabled state as soon as it has been initialized",
+                );
+
+                const unsubscribers = [undefined].map(() =>
+                    store.subscribe(() => {
+                        // No-op
+                    }),
+                );
                 expect(
                     // @ts-expect-error: Private property
                     store._state.symbol,
-                    'Store to be disabled after second unsubscriptions',
-                ).to.equal(LAZY_STORE_DISABLED_STATE);
+                    'Store to be enabled when it has subscribers',
+                ).to.equal(LAZY_STORE_ENABLED_STATE);
+
+                unsubscribers[0]?.();
+                expect(
+                    // @ts-expect-error: Private property
+                    store._state.symbol,
+                    'Store to still be enabled even after it has lost all its subscribers',
+                ).to.equal(LAZY_STORE_ENABLED_STATE);
             });
             it('should return the derived values to a subscriber on subscription', function () {
                 const [store] = createSimpleDerivedStore();
@@ -188,7 +229,7 @@ export function run(): void {
                 // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
             });
-            it('should throw when a sourceStore updates value on a disable store', function () {
+            it('should throw when a sourceStore updates value on a disabled store', async function () {
                 let sourceStoreSubscriber: StoreSubscriber<string> | undefined = undefined;
                 const faultySourceStore = new (class implements IQueryableStore<string> {
                     public subscribe(subscriber: StoreSubscriber<string>): StoreUnsubscriber {
@@ -210,9 +251,15 @@ export function run(): void {
                 // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_ENABLED_STATE);
                 expect(sourceStoreSubscriber).to.not.be.undefined;
+
                 derivedStoreUnsubscriber();
-                // @ts-expect-error: Private property
-                expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
+                await TIMER.sleep(DEFAULT_DERIVED_STORE_DISABLE_COOLDOWN_MS).then(() => {
+                    expect(
+                        // @ts-expect-error: Private property
+                        store._state.symbol,
+                        'Store to be disabled after unsubscriber is called',
+                    ).to.equal(LAZY_STORE_DISABLED_STATE);
+                });
 
                 expect(() => {
                     typeAssert(sourceStoreSubscriber !== undefined);
@@ -220,7 +267,7 @@ export function run(): void {
                 }).to.throw(
                     'Assertion failed, message: DerivedStore: A source store subscription must only call back to an enabled derived store',
                 );
-            });
+            }).timeout(DEFAULT_DERIVED_STORE_DISABLE_COOLDOWN_MS + 1000);
         });
 
         describe('getAndSubscribe', () => {

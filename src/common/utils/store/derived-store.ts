@@ -1,4 +1,5 @@
 import type {Logger} from '~/common/logging';
+import type {u53} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
 import {TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {
@@ -15,9 +16,11 @@ import {
     type StoreSubscriber,
     type StoreUnsubscriber,
     WritableStore,
-    type StoreDeactivator,
     type StoreTransferDebug,
 } from '~/common/utils/store';
+import {TIMER, type TimerCanceller} from '~/common/utils/timer';
+
+export const DEFAULT_DERIVED_STORE_DISABLE_COOLDOWN_MS = 5000;
 
 /**
  * Get the current value of a store and implicitly subscribe to updates.
@@ -59,6 +62,43 @@ export type DeriveFunction<
     getAndSubscribe: GetAndSubscribeFunction,
 ) => TDerivedValue;
 
+export type AnyDerivedStoreOptions<TValue> =
+    | LazyDerivedStoreOptions<TValue>
+    | PersistentDerivedStoreOptions<TValue>;
+
+/**
+ * Store options interface.
+ */
+interface CommonDerivedStoreOptions<TValue> extends Omit<StoreOptions<TValue>, 'activator'> {
+    /**
+     * Whether this {@link DerivedStore} should always stay subscribed to its source stores, or
+     * lazily de-/reactivate when it has subscribers itself. Note: GC will be prevented if the
+     * `subscriptionMode` is `"persistent"`, which means the store will always exist in memory. Make
+     * sure to use this mode sparingly and consciously.
+     */
+    readonly subscriptionMode?: 'persistent' | 'lazy';
+}
+
+/**
+ * A `DerivedStore` that disables itself when it has lost all its subscribers.
+ */
+interface LazyDerivedStoreOptions<TValue> extends CommonDerivedStoreOptions<TValue> {
+    readonly subscriptionMode?: 'lazy';
+    /**
+     * Duration to wait before disabling the store when it has lost all its subscribers. Defaults to
+     * `5000`.
+     */
+    readonly disablingDebounceMs?: u53;
+}
+
+/**
+ * A `DerivedStore` that is always subscribed to its source stores, regardless of whether it has
+ * subscribers itself.
+ */
+interface PersistentDerivedStoreOptions<TValue> extends CommonDerivedStoreOptions<TValue> {
+    readonly subscriptionMode?: 'persistent';
+}
+
 /**
  * Constructor for the {@link DerivedStore} to allow a more natural wrapping.
  *
@@ -83,7 +123,7 @@ export function derive<
 >(
     sourceStores: TSourceStores,
     deriveFunction: DeriveFunction<TSourceStores, TInDerivedValue>,
-    options?: StoreOptions<TOutDerivedValue>,
+    options?: AnyDerivedStoreOptions<TOutDerivedValue>,
 ): DerivedStore<TSourceStores, TInDerivedValue, TOutDerivedValue> {
     return new DerivedStore(sourceStores, deriveFunction, options);
 }
@@ -106,13 +146,15 @@ export class DerivedStore<
     implements IQueryableStore<TOutDerivedValue>, LocalStore<TOutDerivedValue>
 {
     public readonly [TRANSFER_HANDLER] = STORE_TRANSFER_HANDLER;
-    public readonly debug: StoreTransferDebug;
 
+    public readonly debug: StoreTransferDebug;
     private readonly _log: Logger | undefined;
+    private readonly _persistentUnsubscriber: StoreUnsubscriber | undefined;
+
     private _state: States<TSourceStores, TInDerivedValue, TOutDerivedValue> = {
         symbol: LAZY_STORE_DISABLED_STATE,
     };
-    private _deactivator: StoreDeactivator | undefined;
+    private _disablerCanceller: TimerCanceller | undefined;
 
     /**
      * Create a derived store.
@@ -125,13 +167,18 @@ export class DerivedStore<
     public constructor(
         private readonly _sourceStores: TSourceStores,
         private readonly _derive: DeriveFunction<TSourceStores, TInDerivedValue>,
-        private readonly _options?: StoreOptions<TOutDerivedValue>,
+        private readonly _options?: AnyDerivedStoreOptions<TOutDerivedValue>,
     ) {
         this._log = _options?.debug?.log;
         this.debug = {
             prefix: _options?.debug?.log?.prefix,
             tag: _options?.debug?.tag,
         };
+        if (_options?.subscriptionMode === 'persistent') {
+            // If this store is persistent, immediately enable it without waiting for the first
+            // subscription.
+            this._persistentUnsubscriber = this.subscribe(() => {});
+        }
     }
 
     /** @inheritdoc */
@@ -147,12 +194,12 @@ export class DerivedStore<
         return () => {
             unsubscriber();
 
-            // If the last subscriber has unsubscribed, deactivate this store.
+            // If the last subscriber has unsubscribed, disable this store.
             if (
                 this._state.symbol === LAZY_STORE_ENABLED_STATE &&
                 this._state.derivedValueStore.subscribersCount === 0
             ) {
-                this._disable();
+                this._disableDebounced();
             }
         };
     }
@@ -265,17 +312,10 @@ export class DerivedStore<
         }
         const derivedValue = this._deriveValue(initializedSourceStoreSubscriptions);
 
-        // Initialize the `derivedValueStore` and register the `deactivator` callback.
+        // Initialize the `derivedValueStore`.
         const derivedValueStore = new WritableStore<TInDerivedValue, TOutDerivedValue>(
             derivedValue,
             {
-                activator: () => {
-                    const deactivator = this._options?.activator?.();
-                    return () => {
-                        this._disable();
-                        deactivator?.();
-                    };
-                },
                 debug: this._options?.debug,
             },
         );
@@ -291,8 +331,6 @@ export class DerivedStore<
             sourceStoreSubscriptions: initializedSourceStoreSubscriptions,
             additionalStoreSubscriptions: this._state.additionalStoreSubscriptions,
         };
-
-        this._deactivator = this._options?.activator?.();
     }
 
     /**
@@ -405,18 +443,19 @@ export class DerivedStore<
     }
 
     /**
-     * Disable the store and unsubscribe from the source store.
+     * Disable the store and unsubscribe from the source store(s). This shouldn't be used directly
+     * in most cases - use `_disableDebounced` instead.
      *
      * Note: Must only be called on an enabled store.
      */
     private _disable(): void {
         assert(
             this._state.symbol === LAZY_STORE_ENABLED_STATE,
-            'Store must be in enabled state to be disabled',
+            'DerivedStore: Store must be in enabled state to be disabled',
         );
         assert(
             this._state.derivedValueStore.subscribersCount === 0,
-            'Store cannot be disabled if it still has subscribers',
+            'DerivedStore: Store cannot be disabled if it still has subscribers',
         );
 
         if (import.meta.env.VERBOSE_LOGGING.STORES) {
@@ -436,8 +475,51 @@ export class DerivedStore<
         // Note: The valueStore has no subscribers anymore at this point, so we just drop it quietly
         // here.
         this._state = {symbol: LAZY_STORE_DISABLED_STATE};
+    }
 
-        this._deactivator?.();
+    private _disableDebounced(): void {
+        assert(
+            this._state.symbol === LAZY_STORE_ENABLED_STATE,
+            'DerivedStore: Store must be in enabled state to be disabled',
+        );
+        assert(
+            this._state.derivedValueStore.subscribersCount === 0,
+            'DerivedStore: Store cannot be disabled if it still has subscribers',
+        );
+
+        // If another timeout already exists, cancel it before scheduling a new disabler.
+        this._disablerCanceller?.();
+
+        // Start a timer to disable the store if it isn't resubscribed within a certain amount of
+        // time. This prevents unneccessary re-subscription, e.g., when switching between views that
+        // need the same data.
+        this._disablerCanceller = TIMER.timeout(
+            () => {
+                assert(
+                    this._state.symbol === LAZY_STORE_ENABLED_STATE,
+                    'DerivedStore: Store state changed to not enabled during debounced disable, which is not allowed',
+                );
+
+                // If the store has regained subscribers during the debounce period, back out of
+                // disabling it and keep it enabled.
+                if (this._state.derivedValueStore.subscribersCount !== 0) {
+                    if (import.meta.env.VERBOSE_LOGGING.STORES) {
+                        this._log?.debug(
+                            'DerivedStore: Store has regained subscribers during debounced disable and will therefore not be disabled',
+                        );
+                    }
+                    return;
+                }
+
+                // Finally disable the store.
+                this._disable();
+            },
+            this._options?.subscriptionMode === 'lazy'
+                ? this._options.disablingDebounceMs ?? DEFAULT_DERIVED_STORE_DISABLE_COOLDOWN_MS
+                : // The following case should never happen, because persistent stores should never be
+                  // disabled in the first place.
+                  0,
+        );
     }
 }
 
