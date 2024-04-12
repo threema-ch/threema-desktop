@@ -176,7 +176,7 @@
     "ts-proto": "~1.167.2",
     "typescript": "~5.3.3",
     "typescript-eslint-parser-for-extra-files": "~0.6.0",
-    "vite": "4.5.2",
+    "vite": "4.5.3",
     "vite-tsconfig-paths": "4.2.1"
   },
   "overrides": {
