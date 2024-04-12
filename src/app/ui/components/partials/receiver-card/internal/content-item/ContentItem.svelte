@@ -1,6 +1,5 @@
 <!--
-  @component 
-  Renders content as part of a `ReceiverCard` content.
+  @component Renders content as part of a `ReceiverCard` content.
 -->
 <script lang="ts">
   import {getTextContentItemOptionsFromReceiverNameContentItemOptions} from '~/app/ui/components/partials/receiver-card/internal/content-item/helpers';
@@ -9,6 +8,8 @@
   import Tags from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/tags/Tags.svelte';
   import Timestamp from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/timestamp/Timestamp.svelte';
   import type {ContentItemProps} from '~/app/ui/components/partials/receiver-card/internal/content-item/props';
+  import {i18n} from '~/app/ui/i18n';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import VerificationDots from '~/app/ui/svelte-components/threema/VerificationDots/VerificationDots.svelte';
   import {unreachable} from '~/common/utils/assert';
   import {hasProperty} from '~/common/utils/object';
@@ -19,7 +20,13 @@
 </script>
 
 <span class="item" data-type={options.type}>
-  {#if options.type === 'charms'}
+  {#if options.type === 'blocked-icon'}
+    {#if options.isBlocked}
+      <span class="blocked-icon">
+        <MdIcon title={$i18n.t('contacts.label--blocked', 'Blocked')} theme="Filled">block</MdIcon>
+      </span>
+    {/if}
+  {:else if options.type === 'charms'}
     <Charms
       isBlocked={options.isBlocked}
       isPinned={options.isPinned}
@@ -92,12 +99,18 @@
     text-overflow: ellipsis;
     overflow: hidden;
 
+    &[data-type='blocked-icon'],
     &[data-type='charms'],
     &[data-type='status-icon'],
     &[data-type='tags'],
     &[data-type='relative-timestamp'],
     &[data-type='verification-dots'] {
       flex: 0 0 auto;
+    }
+
+    .blocked-icon {
+      color: red;
+      font-weight: 900;
     }
 
     .nowrap {

@@ -9,6 +9,7 @@ import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
  * Configuration options for a `ContentItem` in a `ReceiverCard`.
  */
 export type AnyContentItemOptions =
+    | BlockedIndicatorContentItem
     | CharmsContentItemOptions
     | ReceiverNameContentItemOptions
     | StatusContentItemOptions
@@ -16,6 +17,11 @@ export type AnyContentItemOptions =
     | TextContentItemOptions
     | TimestampContentItemOptions
     | VerificationContentItemOptions;
+
+export interface BlockedIndicatorContentItem {
+    readonly type: 'blocked-icon';
+    readonly isBlocked: boolean;
+}
 
 export interface CharmsContentItemOptions extends CharmsProps {
     readonly type: 'charms';

@@ -121,6 +121,10 @@
             receiver.type === 'contact'
               ? [
                   {
+                    type: 'blocked-icon',
+                    isBlocked: receiver.isBlocked,
+                  },
+                  {
                     type: 'text',
                     text: {
                       raw: receiver.identity,
