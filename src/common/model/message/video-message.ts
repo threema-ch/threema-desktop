@@ -172,15 +172,16 @@ export class InboundVideoMessageModelController
     protected override _editMessage(
         message: GuardedStoreHandle<InboundVideoMessage['view']>,
         editedMessage: UnifiedEditMessage,
-    ): void {
+    ): boolean {
         const change = {
             lastEditedAt: editedMessage.lastEditedAt,
-            caption: editedMessage.text,
+            caption: editedMessage.newText,
         };
         message.update((view) => {
             editMessageByMessageUid(this._services, this.uid, this._type, change);
             return change;
         });
+        return true;
     }
 }
 
@@ -241,15 +242,16 @@ export class OutboundVideoMessageModelController
     protected override _editMessage(
         message: GuardedStoreHandle<OutboundVideoMessage['view']>,
         editedMessage: UnifiedEditMessage,
-    ): void {
+    ): boolean {
         const change = {
             lastEditedAt: editedMessage.lastEditedAt,
-            caption: editedMessage.text,
+            caption: editedMessage.newText,
         };
         message.update((view) => {
             editMessageByMessageUid(this._services, this.uid, this._type, change);
             return change;
         });
+        return true;
     }
 }
 

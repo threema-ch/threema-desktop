@@ -66,7 +66,7 @@ export class ConversationMessageViewModelController
             return;
         }
         await messageModel.controller.editMessage.fromLocal({
-            text: newText,
+            newText: newText,
             lastEditedAt: editedAt,
         });
     }

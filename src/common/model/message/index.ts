@@ -559,10 +559,21 @@ abstract class CommonBaseMessageModelController<TView extends CommonBaseMessageV
         });
     }
 
+    /**
+     * Update the message model using {@link editedMessage}. Return whether or not the message
+     * update was applied successfully.
+     *
+     * Example: When editing a text message, an empty text is not valid. In that case, do not update
+     * the model, but return false. Otherwise, return true.)
+     *
+     * Note: Tasks (e.g. the OutgoingMessageUpdateTask) should not be scheduled by this method, this
+     * will be handled by the {@link CommonBaseMessageModelController} depending on the return type.
+     */
+
     protected abstract _editMessage(
         message: GuardedStoreHandle<TView>,
         editedMessage: UnifiedEditMessage,
-    ): void;
+    ): boolean;
 }
 
 /** @inheritdoc */
@@ -773,8 +784,10 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (editedMessage: UnifiedEditMessage) => {
             this.meta.run((handle) => {
-                this._editMessage(handle, editedMessage);
-                this._handleEditFromLocal(handle, editedMessage.lastEditedAt);
+                const modelUpdated = this._editMessage(handle, editedMessage);
+                if (modelUpdated) {
+                    this._scheduleOutgoingEditMessageTask(handle, editedMessage.lastEditedAt);
+                }
             });
         },
 
@@ -917,7 +930,10 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
         });
     }
 
-    private _handleEditFromLocal(storeHandle: GuardedStoreHandle<TView>, lastEditedAt: Date): void {
+    private _scheduleOutgoingEditMessageTask(
+        storeHandle: GuardedStoreHandle<TView>,
+        lastEditedAt: Date,
+    ): void {
         const task = new OutgoingEditMessageTask(
             this._services,
             this._conversation.getReceiver().get(),

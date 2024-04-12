@@ -111,7 +111,7 @@ export type AnyMessage<TVariant extends BundleProperty> = MessageFor<
  * A unified type that can be used to update a message model without knowing its exact type.
  */
 export type UnifiedEditMessage = Required<Pick<CommonBaseMessageView, 'lastEditedAt'>> & {
-    text: string;
+    readonly newText: string;
 };
 
 export type AnyMessageModel = AnyInboundMessageModel | AnyOutboundMessageModel;

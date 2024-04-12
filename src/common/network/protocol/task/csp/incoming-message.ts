@@ -819,7 +819,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
 
                 // Note: Protocol steps 3 and 4 are handled by the message controller
                 await message.get().controller.editMessage.fromRemote(handle, {
-                    text: instructions.updatedMessage.text,
+                    newText: instructions.updatedMessage.text,
                     lastEditedAt: instructions.updatedMessage.lastEditedAt,
                 });
 

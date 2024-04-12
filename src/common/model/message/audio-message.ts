@@ -159,15 +159,17 @@ export class InboundAudioMessageModelController
     protected override _editMessage(
         message: GuardedStoreHandle<InboundAudioMessage['view']>,
         editedMessage: UnifiedEditMessage,
-    ): void {
+    ): boolean {
         const change = {
             lastEditedAt: editedMessage.lastEditedAt,
-            caption: editedMessage.text,
+            caption: editedMessage.newText,
         };
         message.update((view) => {
             editMessageByMessageUid(this._services, this.uid, this._type, change);
             return change;
         });
+
+        return true;
     }
 }
 
@@ -228,15 +230,16 @@ export class OutboundAudioMessageModelController
     protected override _editMessage(
         message: GuardedStoreHandle<OutboundAudioMessage['view']>,
         editedMessage: UnifiedEditMessage,
-    ): void {
+    ): boolean {
         const change = {
             lastEditedAt: editedMessage.lastEditedAt,
-            caption: editedMessage.text,
+            caption: editedMessage.newText,
         };
         message.update((view) => {
             editMessageByMessageUid(this._services, this.uid, this._type, change);
             return change;
         });
+        return true;
     }
 }
 

@@ -158,15 +158,16 @@ export class InboundFileMessageModelController
     protected override _editMessage(
         message: GuardedStoreHandle<InboundFileMessage['view']>,
         editedMessage: UnifiedEditMessage,
-    ): void {
+    ): boolean {
         const change = {
             lastEditedAt: editedMessage.lastEditedAt,
-            caption: editedMessage.text,
+            caption: editedMessage.newText,
         };
         message.update((view) => {
             editMessageByMessageUid(this._services, this.uid, this._type, change);
             return change;
         });
+        return true;
     }
 }
 
@@ -227,15 +228,16 @@ export class OutboundFileMessageModelController
     protected override _editMessage(
         message: GuardedStoreHandle<OutboundFileMessage['view']>,
         editedMessage: UnifiedEditMessage,
-    ): void {
+    ): boolean {
         const change = {
             lastEditedAt: editedMessage.lastEditedAt,
-            caption: editedMessage.text,
+            caption: editedMessage.newText,
         };
         message.update((view) => {
             editMessageByMessageUid(this._services, this.uid, this._type, change);
             return change;
         });
+        return true;
     }
 }
 

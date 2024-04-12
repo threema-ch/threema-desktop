@@ -96,20 +96,21 @@ export class InboundTextMessageModelController
     protected override _editMessage(
         message: GuardedStoreHandle<InboundTextMessage['view']>,
         editedMessage: UnifiedEditMessage,
-    ): void {
-        if (editedMessage.text.trim() === '') {
+    ): boolean {
+        if (editedMessage.newText.trim() === '') {
             this._log.warn(
                 'Not applying edit on inbound message because the new text is empty. This is not allowed for text messages',
             );
-            return;
+            return false;
         }
         message.update((view) => {
             editMessageByMessageUid(this._services, this.uid, this._type, {
                 lastEditedAt: editedMessage.lastEditedAt,
-                text: editedMessage.text,
+                text: editedMessage.newText,
             });
             return editedMessage;
         });
+        return true;
     }
 }
 
@@ -121,20 +122,21 @@ export class OutboundTextMessageModelController
     protected override _editMessage(
         message: GuardedStoreHandle<OutboundTextMessage['view']>,
         editedMessage: UnifiedEditMessage,
-    ): void {
-        if (editedMessage.text.trim() === '') {
+    ): boolean {
+        if (editedMessage.newText.trim() === '') {
             this._log.warn(
                 'Not applying edit on outbound message because the new text is empty. This is not allowed for text messages',
             );
-            return;
+            return false;
         }
         message.update((view) => {
             editMessageByMessageUid(this._services, this.uid, this._type, {
                 lastEditedAt: editedMessage.lastEditedAt,
-                text: editedMessage.text,
+                text: editedMessage.newText,
             });
             return editedMessage;
         });
+        return true;
     }
 }
 

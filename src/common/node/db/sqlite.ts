@@ -1678,7 +1678,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         return result;
     }
 
-    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     private _getTableForFileType(type: MediaBasedMessageType): AnyMediaMessageDataTable {
         switch (type) {
             case 'file':

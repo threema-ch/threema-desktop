@@ -240,7 +240,7 @@ export class ReflectedOutgoingMessageTask
                 }
 
                 messageStore.get().controller.editMessage.fromSync({
-                    text: instructions.updatedMessage.text,
+                    newText: instructions.updatedMessage.text,
                     lastEditedAt: instructions.updatedMessage.lastEditedAt,
                 });
 
