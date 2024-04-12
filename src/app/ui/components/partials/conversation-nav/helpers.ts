@@ -40,7 +40,7 @@ export function getContextMenuItems(
 ): ContextMenuItemWithHandlerProps<ContextMenuItemHandlerProps>[] {
     return [
         {
-            disabled: item.lastMessage === undefined,
+            disabled: item.totalMessageCount === 0,
             handler: (props) => handleClear(item, props),
             label: i18n.t('messaging.action--empty-conversation', 'Empty Chat'),
             icon: {

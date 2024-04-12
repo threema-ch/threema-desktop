@@ -774,7 +774,10 @@ export class ConversationModelController implements ConversationController {
 
     /** @inheritdoc */
     public getMessageCount(): u53 {
-        return message.getConversationMessageCount(this._services, this._handle);
+        return (
+            message.getConversationMessageCount(this._services, this._handle) +
+            status.getConversationStatusMessageCount(this._services, this._handle)
+        );
     }
 
     /** @inheritdoc */
