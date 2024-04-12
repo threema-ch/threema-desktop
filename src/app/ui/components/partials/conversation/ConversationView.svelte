@@ -155,20 +155,31 @@
 
   function handleClickEditMessage(messageProperties: MessagePropsFromBackend): void {
     if (!receiverSupportsEditedMessages.supported) {
-      toast.addSimpleFailure(
-        $i18n.t(
-          'messaging.prose--edit-not-support',
-          'Cannot edit the message because the recipient’s app version does not support this feature.',
-        ),
-      );
+      if ($viewModelStore?.receiver.type === 'contact') {
+        toast.addSimpleFailure(
+          $i18n.t(
+            'messaging.prose--edit-not-support',
+            'Cannot edit the message because the recipient’s app version does not support this feature.',
+          ),
+        );
+      } else if ($viewModelStore?.receiver.type === 'group') {
+        toast.addSimpleFailure(
+          $i18n.t(
+            'messaging.prose--edit-not-support-group',
+            'Cannot edit the message because no group member supports this feature.',
+          ),
+        );
+      }
+
       return;
     } else if (receiverSupportsEditedMessages.notSupportedNames.length > 0) {
+      const numNotSupported = receiverSupportsEditedMessages.notSupportedNames.length;
       toast.addSimpleWarning(
         $i18n.t(
           'messaging.prose--edit-not-support-partial',
           'The following group members will not be able to see your edits: {names}. To see edits, they need to install the latest Threema version.',
           {
-            names: receiverSupportsEditedMessages.notSupportedNames.join(', '),
+            names: `${receiverSupportsEditedMessages.notSupportedNames.slice(0, 5).join(', ')} ${numNotSupported > 5 ? ',...' : ''}`,
           },
         ),
       );

@@ -413,6 +413,7 @@
     "markup--chat-empty-state": "This chat is linked with your mobile device. <1/>All future messages will appear here.",
     "prose--edit-message": "Edit Message",
     "prose--edit-not-support": "Cannot edit the message because the recipient’s app version does not support this feature.",
+    "prose--edit-not-support-group": "Cannot edit the message because no group member supports this feature.",
     "prose--edit-not-support-partial": "The following group members will not be able to see your edits: {names}. To see edits, they need to install the latest Threema version.",
     "prose--message-edited": "Edited",
     "prose--paste-image-in-edit": "It’s not possible to paste a file when editing a message.",
