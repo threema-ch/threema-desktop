@@ -40,6 +40,7 @@ import {
     SyncState,
     VerificationLevel,
     WorkVerificationLevel,
+    StatusMessageType,
 } from '~/common/enum';
 import {
     ensureFileId,
@@ -1824,10 +1825,12 @@ export function backendTests(
 
                 // Simple test case: Only two IDs, the first and the last incoming message
                 expect(
-                    db.getSortedMessageUids(
-                        conversation.uid,
-                        new Set([ensureMessageId(1000n), ensureMessageId(1001n)]),
-                    ),
+                    db
+                        .getSortedMessageUids(conversation.uid, [
+                            ensureMessageId(1000n),
+                            ensureMessageId(1001n),
+                        ])
+                        .map((res) => res.uid),
                     'simple case',
                 ).to.deep.equal([
                     messageUids.get(ensureMessageId(1001n)),
@@ -1835,10 +1838,9 @@ export function backendTests(
                 ]);
 
                 // All message IDs
-                const allUids = db.getSortedMessageUids(
-                    conversation.uid,
-                    new Set(messageUids.keys()),
-                );
+                const allUids = db
+                    .getSortedMessageUids(conversation.uid, [...messageUids.keys()])
+                    .map((res) => res.uid);
                 expect(allUids.length, 'all message IDs (size)').to.equal(messageUids.size);
                 expect(allUids.at(0), 'all message IDs (oldest)').to.equal(
                     messageUids.get(ensureMessageId(1001n)),
@@ -1854,7 +1856,9 @@ export function backendTests(
                     // Incoming messages after outgoing message
                     mixedMessageIds.add(ensureMessageId(1000n + i));
                 }
-                const mixedUids = db.getSortedMessageUids(conversation.uid, mixedMessageIds);
+                const mixedUids = db
+                    .getSortedMessageUids(conversation.uid, [...mixedMessageIds.keys()])
+                    .map((res) => res.uid);
                 expect(mixedUids.length, 'mixed incoming and outgoing (size)').to.equal(101);
                 expect(mixedUids.at(0), 'mixed incoming and outgoing (oldest)').to.equal(
                     messageUids.get(ensureMessageId(2000n)),
@@ -1880,35 +1884,36 @@ export function backendTests(
                 });
 
                 // Empty set
-                expect(
-                    db.getSortedMessageUids(conversation.uid, new Set()),
-                    'empty set',
-                ).to.deep.equal([]);
+                expect(db.getSortedMessageUids(conversation.uid, []), 'empty set').to.deep.equal(
+                    [],
+                );
 
                 // Set of invalid message IDs
                 expect(
-                    db.getSortedMessageUids(
-                        conversation.uid,
-                        new Set([ensureMessageId(999n), ensureMessageId(888n)]),
-                    ),
+                    db.getSortedMessageUids(conversation.uid, [
+                        ensureMessageId(999n),
+                        ensureMessageId(888n),
+                    ]),
                     'invalid message IDs',
                 ).to.deep.equal([]);
 
                 // Set of mixed valid and invalid message IDs
                 expect(
-                    db.getSortedMessageUids(
-                        conversation.uid,
-                        new Set([ensureMessageId(1n), ensureMessageId(888n)]),
-                    ),
+                    db
+                        .getSortedMessageUids(conversation.uid, [
+                            ensureMessageId(1n),
+                            ensureMessageId(888n),
+                        ])
+                        .map((res) => res.uid),
                     'mixed invalid message IDs',
                 ).to.deep.equal([messageUid]);
 
                 // Unknown conversation ID
                 expect(
-                    db.getSortedMessageUids(
-                        7697969n as DbConversationUid,
-                        new Set([ensureMessageId(999n), ensureMessageId(888n)]),
-                    ),
+                    db.getSortedMessageUids(7697969n as DbConversationUid, [
+                        ensureMessageId(999n),
+                        ensureMessageId(888n),
+                    ]),
                     'invalid message IDs',
                 ).to.deep.equal([]);
             });

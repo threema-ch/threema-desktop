@@ -49,16 +49,12 @@ import {
     TransactionScopeUtils,
     VerificationLevel,
     WorkVerificationLevel,
-    ReceiverType,
-    MessageTypeUtils,
-    StatusMessageTypeUtils,
 } from '~/common/enum';
 import {ConnectionClosed} from '~/common/error';
 import {InMemoryFileStorage} from '~/common/file-storage';
 import {type Logger, type LoggerFactory, NOOP_LOGGER, TagLogger} from '~/common/logging';
 import {BackendMediaService, type IFrontendMediaService} from '~/common/media';
 import type {
-    AnyReceiver,
     Contact,
     ContactInit,
     Group,
@@ -67,10 +63,7 @@ import type {
     ServicesForModel,
 } from '~/common/model';
 import {ContactModelRepository} from '~/common/model/contact';
-import {
-    ConversationModelRepository,
-    type ConversationModelStore,
-} from '~/common/model/conversation';
+import {ConversationModelRepository} from '~/common/model/conversation';
 import {GlobalPropertyRepository} from '~/common/model/global-property';
 import {GroupModelRepository} from '~/common/model/group';
 import {MessageModelRepository} from '~/common/model/message';
@@ -87,8 +80,7 @@ import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
 import type {ContactRepository} from '~/common/model/types/contact';
 import type {ConversationRepository} from '~/common/model/types/conversation';
 import type {GroupRepository} from '~/common/model/types/group';
-import type {AnyMessageModelStore, MessageRepository} from '~/common/model/types/message';
-import type {ReceiverStoreFor} from '~/common/model/types/receiver';
+import type {MessageRepository} from '~/common/model/types/message';
 import type {
     DevicesSettings,
     IGlobalPropertyRepository,
@@ -98,7 +90,6 @@ import type {
     CallsSettings,
     MediaSettings,
 } from '~/common/model/types/settings';
-import type {AnyStatusMessageModelStore} from '~/common/model/types/status';
 import type {User} from '~/common/model/types/user';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {CloseInfo} from '~/common/network';
@@ -165,7 +156,7 @@ import {
 } from '~/common/notification';
 import type {SystemDialog, SystemDialogHandle, SystemDialogService} from '~/common/system-dialog';
 import type {u8, u53, ReadonlyUint8Array} from '~/common/types';
-import {assert, unreachable, unwrap} from '~/common/utils/assert';
+import {assert, unwrap} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import type {Delayed} from '~/common/utils/delayed';
 import {
@@ -184,38 +175,8 @@ import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import type {AbortSubscriber} from '~/common/utils/signal';
 import type {LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-import type {IViewModelRepository} from '~/common/viewmodel';
-import {
-    getContactDetailViewModelBundle,
-    type ContactDetailViewModelBundle,
-} from '~/common/viewmodel/contact/detail';
-import {
-    getContactListViewModelBundle,
-    type ContactListViewModelBundle,
-} from '~/common/viewmodel/contact/list';
-import {
-    getContactListItemViewModelBundle,
-    type ContactListItemViewModelBundle,
-} from '~/common/viewmodel/contact/list/item';
-import {
-    getConversationListViewModelBundle,
-    type ConversationListViewModelBundle,
-} from '~/common/viewmodel/conversation/list';
-import {
-    getConversationListItemViewModelBundle,
-    type ConversationListItemViewModelBundle,
-} from '~/common/viewmodel/conversation/list/item';
-import type {ConversationViewModelBundle} from '~/common/viewmodel/conversation/main';
-import {
-    type ConversationMessageViewModelBundle,
-    getConversationMessageViewModelBundle,
-    getConversationStatusMesageViewModelBundle,
-    type ConversationAnyMessageViewModelBundle,
-    type ConversationStatusMessageViewModelBundle,
-} from '~/common/viewmodel/conversation/main/message';
-import {type DebugPanelViewModel, getDebugPanelViewModel} from '~/common/viewmodel/debug-panel';
-import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/viewmodel/profile';
-import {type SearchViewModelBundle, getSearchViewModelBundle} from '~/common/viewmodel/search/nav';
+import {ViewModelRepository} from '~/common/viewmodel';
+import {ViewModelCache} from '~/common/viewmodel/cache';
 import {assertCspPayloadType, assertD2mPayloadType} from '~/test/mocha/common/assertions';
 
 export class TestCrypto extends TweetNaClBackend {}
@@ -480,107 +441,6 @@ export class TestModelRepositories implements Repositories {
     }
 }
 
-export class TestViewModel implements IViewModelRepository {
-    public [TRANSFER_HANDLER] = FAKE_PROXY_HANDLER;
-
-    public constructor(private readonly _services: Omit<ServicesForBackend, 'viewModel'>) {}
-
-    public conversationList(): ConversationListViewModelBundle {
-        return getConversationListViewModelBundle(this._services, this);
-    }
-
-    public conversationListItem(
-        conversationModelStore: ConversationModelStore,
-    ): ConversationListItemViewModelBundle {
-        return getConversationListItemViewModelBundle(this._services, conversationModelStore);
-    }
-
-    public conversation(receiver: DbReceiverLookup): ConversationViewModelBundle | undefined {
-        return undefined;
-    }
-
-    public conversationMessage(
-        conversation: ConversationModelStore,
-        messageStore: AnyMessageModelStore,
-    ): ConversationMessageViewModelBundle {
-        return getConversationMessageViewModelBundle(
-            this._services,
-            messageStore,
-            conversation,
-            true,
-        );
-    }
-    public conversationStatusMessage(
-        conversation: ConversationModelStore,
-        messageStore: AnyStatusMessageModelStore,
-    ): ConversationStatusMessageViewModelBundle {
-        return getConversationStatusMesageViewModelBundle(this._services, messageStore);
-    }
-    public conversationAnyMessage(
-        conversation: ConversationModelStore,
-        messageStore: AnyMessageModelStore | AnyStatusMessageModelStore,
-    ): ConversationAnyMessageViewModelBundle {
-        if (MessageTypeUtils.containsString(messageStore.get().type)) {
-            return this.conversationMessage(conversation, messageStore as AnyMessageModelStore);
-        } else if (StatusMessageTypeUtils.containsString(messageStore.get().type)) {
-            return this.conversationStatusMessage(
-                conversation,
-                messageStore as AnyStatusMessageModelStore,
-            );
-        }
-
-        throw new Error('Tried to fetch a conversation message with an unknown type');
-    }
-
-    public contactList(): ContactListViewModelBundle {
-        return getContactListViewModelBundle(this._services, this);
-    }
-
-    public contactListItem<TReceiver extends AnyReceiver>(
-        receiverModelStore: ReceiverStoreFor<TReceiver>,
-    ): ContactListItemViewModelBundle<TReceiver> {
-        return getContactListItemViewModelBundle(this._services, receiverModelStore);
-    }
-
-    public contactDetail(
-        receiver: DbReceiverLookup,
-    ): ContactDetailViewModelBundle<AnyReceiver> | undefined {
-        let receiverModelStore: ReceiverStoreFor<AnyReceiver> | undefined;
-        switch (receiver.type) {
-            case ReceiverType.CONTACT:
-                receiverModelStore = this._services.model.contacts.getByUid(receiver.uid);
-                break;
-
-            case ReceiverType.DISTRIBUTION_LIST:
-                throw new Error('TODO(DESK-771): Implement distribution lists');
-
-            case ReceiverType.GROUP:
-                receiverModelStore = this._services.model.groups.getByUid(receiver.uid);
-                break;
-
-            default:
-                return unreachable(receiver);
-        }
-        if (receiverModelStore === undefined) {
-            return undefined;
-        }
-
-        return getContactDetailViewModelBundle(this._services, receiverModelStore);
-    }
-
-    public debugPanel(): DebugPanelViewModel {
-        return getDebugPanelViewModel(this._services);
-    }
-
-    public profile(): ProfileViewModelStore {
-        return getProfileViewModelStore(this._services);
-    }
-
-    public search(): SearchViewModelBundle {
-        return getSearchViewModelBundle(this._services);
-    }
-}
-
 export class TestNonceService implements INonceService {
     public checkAndRegisterNonce(scope: NonceScope, nonce: Nonce): INonceGuard {
         return {
@@ -772,13 +632,14 @@ export function makeTestServices(identity: IdentityString): TestServices {
         file,
         endpoint: {
             cache: () => endpointCache,
+            exposeProperties: (object: unknown) => object,
         } as unknown as EndpointService,
         taskManager,
         work: new TestWorkBackend(),
         volatileProtocolState: new VolatileProtocolStateBackend(),
     };
     const model = new TestModelRepositories(identity, partialServices);
-    const viewModel = new TestViewModel({...partialServices, model});
+    const viewModel = new ViewModelRepository({...partialServices, model}, new ViewModelCache());
     return {...partialServices, model, rawClientKeyBytes, viewModel};
 }
 
