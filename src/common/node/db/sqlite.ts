@@ -1731,6 +1731,21 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         messageUpdate: DbMessageEditFor<TMessageType>,
     ): void {
         const lastEditedAt = pick<DbMessageEditFor<TMessageType>>(messageUpdate, ['lastEditedAt']);
+
+        const typeFromDb = sync(
+            this._db
+                .selectFrom(tMessage)
+                .select({
+                    type: tMessage.messageType,
+                })
+                .where(tMessage.uid.equals(messageUid))
+                .executeSelectOne(),
+        );
+
+        assert(
+            typeFromDb.type === type,
+            'The given and the expected type of the edited message do not correspond',
+        );
         // Sqlite does not allow updating two tables in a single join transaction.
         // Therefore, we need to do this sequentially
         this._db.syncTransaction(() => {
