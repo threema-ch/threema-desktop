@@ -388,7 +388,7 @@ interface EditMessageInstructions extends BaseProcessingInstructions {
     readonly conversationId: ContactConversationId | GroupConversationId;
     readonly deliveryReceipt: false;
     readonly missingContactHandling: 'discard';
-    readonly updatedMessage: EditMessageFragment;
+    readonly updatedMessageFragment: EditMessageFragment;
     readonly reflectFragment: D2dIncomingMessageFragment;
 }
 
@@ -792,15 +792,25 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 }
                 const message = conversation
                     .get()
-                    .controller.getMessage(instructions.updatedMessage.messageId);
+                    .controller.getMessage(instructions.updatedMessageFragment.messageId);
 
                 // 2. If `message` is not defined or the sender is not the original sender of
                 //    `message`, discard the message and abort these steps.
-                if (message === undefined || message.ctx !== MessageDirection.INBOUND) {
+                if (message === undefined) {
                     this._log.warn(
                         `Discarding ${messageTypeDebug} message ${u64ToHexLe(
                             this._id,
-                        )} as it was not found or not inbound`,
+                        )} as the target message with ID ${u64ToHexLe(instructions.updatedMessageFragment.messageId)} was not found`,
+                        messageReferenceDebug,
+                    );
+                    return await this._discard(handle);
+                }
+
+                if (message.ctx !== MessageDirection.INBOUND) {
+                    this._log.warn(
+                        `Discarding ${messageTypeDebug} message ${u64ToHexLe(
+                            this._id,
+                        )} as the target message with ID ${u64ToHexLe(instructions.updatedMessageFragment.messageId)} was not inbound`,
                         messageReferenceDebug,
                     );
                     return await this._discard(handle);
@@ -819,8 +829,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
 
                 // Note: Protocol steps 3 and 4 are handled by the message controller
                 await message.get().controller.editMessage.fromRemote(handle, {
-                    newText: instructions.updatedMessage.text,
-                    lastEditedAt: instructions.updatedMessage.lastEditedAt,
+                    newText: instructions.updatedMessageFragment.newText,
+                    lastEditedAt: instructions.updatedMessageFragment.lastEditedAt,
                 });
 
                 break;
@@ -1716,10 +1726,10 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     conversationId: senderConversationId,
                     missingContactHandling: 'discard',
                     deliveryReceipt: false,
-                    updatedMessage: {
+                    updatedMessageFragment: {
                         messageId: ensureMessageId(intoU64(updatedMessage.messageId)),
                         lastEditedAt: clampedCreatedAt,
-                        text: updatedMessage.text,
+                        newText: updatedMessage.text,
                     },
                     reflectFragment: reflectFragmentFor(maybeCspE2eType),
                 };
@@ -1746,10 +1756,10 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     conversationId: groupConversationId,
                     missingContactHandling: 'discard',
                     deliveryReceipt: false,
-                    updatedMessage: {
+                    updatedMessageFragment: {
                         messageId: ensureMessageId(intoU64(updatedMessage.messageId)),
                         lastEditedAt: clampedCreatedAt,
-                        text: updatedMessage.text,
+                        newText: updatedMessage.text,
                     },
                     reflectFragment: reflectFragmentFor(maybeCspE2eType),
                 };

@@ -111,7 +111,7 @@
     isEmojiPickerVisible = !isEmojiPickerVisible;
   }
 
-  $: showAttachFilesButton = options.showAttachFilesButton;
+  $: showAttachFilesButton = options.showAttachFilesButton ?? true;
   $: isTextByteLengthVisible = textAreaByteLength >= import.meta.env.MAX_TEXT_MESSAGE_BYTES - 200;
   $: isMaxTextByteLengthExceeded = textAreaByteLength > import.meta.env.MAX_TEXT_MESSAGE_BYTES;
 

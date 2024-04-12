@@ -45,7 +45,7 @@ interface ValidatedCspE2eMessageType<
 /**
  * All possible validated message types.
  */
-export type ValidatedCspE2eTypes =
+export type ValidatedCspE2eTypesStructbuf =
     // Contact conversation messages
     | ValidatedCspE2eMessageType<CspE2eConversationType.TEXT, Text.Type>
     | ValidatedCspE2eMessageType<CspE2eConversationType.FILE, File.Type>

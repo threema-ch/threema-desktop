@@ -143,7 +143,6 @@ export class NotificationService {
                 body,
                 creator: {ignore: 'if-focused'},
             },
-            // We can take the messageId since for every conversation, there is at most one notification proxy.
             message.get().view.id.toString(),
         );
     }

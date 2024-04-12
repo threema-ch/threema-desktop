@@ -4,6 +4,7 @@
 
 import {CspE2eStatusUpdateType, ReceiverType} from '~/common/enum';
 import type {Conversation, Repositories} from '~/common/model';
+import type {UnifiedEditMessage} from '~/common/model/types/message';
 import type {InboundAudioMessage, OutboundAudioMessage} from '~/common/model/types/message/audio';
 import type {InboundFileMessage, OutboundFileMessage} from '~/common/model/types/message/file';
 import type {InboundImageMessage, OutboundImageMessage} from '~/common/model/types/message/image';
@@ -61,13 +62,9 @@ export type AnyOutboundMessageInitFragment =
     | OutboundVideoMessageInitFragment
     | OutboundAudioMessageInitFragment;
 
-// Important: In the functions where the database update is actually invoked, we need to switch on these types
-// because for media messages, the text ist called `caption` and not text`
-export interface EditMessageFragment {
+export type EditMessageFragment = UnifiedEditMessage & {
     messageId: MessageId;
-    text: string;
-    lastEditedAt: Date;
-}
+};
 
 /**
  * Get a conversation.

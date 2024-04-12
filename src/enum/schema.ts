@@ -365,7 +365,7 @@ export enum CspE2eDeliveryReceiptStatus {
 }
 
 /**
- * E2EE Message update
+ * E2EE 1:1 Message update (e.g. edit or delete)
  *
  * @generate name convert
  */
@@ -375,7 +375,7 @@ export enum CspE2eMessageUpdateType {
 }
 
 /**
- * E2EE Message update
+ * E2EE group Message update
  *
  * @generate name convert
  */

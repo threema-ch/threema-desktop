@@ -209,7 +209,7 @@ export class ReflectedOutgoingMessageTask
         // Process / save the message
         switch (instructions.messageCategory) {
             case 'edit-conversation-message': {
-                const conversation = getConversationById(model, instructions.conversationId);
+                const conversation = getConversationById(model, instructions.conversationId)?.get();
                 if (conversation === undefined) {
                     this._log.error(
                         `Discarding ${this._direction} ${messageTypeDebug} message because conversation was not found in database`,
@@ -218,18 +218,9 @@ export class ReflectedOutgoingMessageTask
                     return;
                 }
 
-                if (
-                    !conversation.get().controller.hasMessage(instructions.updatedMessage.messageId)
-                ) {
-                    this._log.warn(
-                        `Discarding ${this._direction} ${messageTypeDebug} message ${instructions.updatedMessage.messageId} as the message does not exist`,
-                        messageReferenceDebug,
-                    );
-                    return;
-                }
-                const messageStore = conversation
-                    .get()
-                    .controller.getMessage(instructions.updatedMessage.messageId);
+                const messageStore = conversation.controller.getMessage(
+                    instructions.updatedMessage.messageId,
+                );
 
                 if (messageStore === undefined) {
                     this._log.warn(
@@ -240,7 +231,7 @@ export class ReflectedOutgoingMessageTask
                 }
 
                 messageStore.get().controller.editMessage.fromSync({
-                    newText: instructions.updatedMessage.text,
+                    newText: instructions.updatedMessage.newText,
                     lastEditedAt: instructions.updatedMessage.lastEditedAt,
                 });
 
@@ -370,8 +361,8 @@ export class ReflectedOutgoingMessageTask
      */
     private _getInstructionsForMessage(
         validatedBody:
-            | structbuf.validate.csp.e2e.ValidatedCspE2eTypes
-            | protobuf.validate.csp_e2e.ValidatedCspE2eTypes,
+            | structbuf.validate.csp.e2e.ValidatedCspE2eTypesStructbuf
+            | protobuf.validate.csp_e2e.ValidatedCspE2eTypesProtobuf,
         messageId: MessageId,
         createdAt: Date,
         reflectedAt: Date,
@@ -577,14 +568,14 @@ export class ReflectedOutgoingMessageTask
                 };
                 return instructions;
             }
-
+            // Message update messages
             case CspE2eMessageUpdateType.EDIT_MESSAGE: {
                 assert(conversationId.type === ReceiverType.CONTACT);
                 const instructions: EditMessageInstructions = {
                     messageCategory: 'edit-conversation-message',
                     conversationId,
                     updatedMessage: {
-                        text: validatedBody.message.text,
+                        newText: validatedBody.message.text,
                         messageId: validatedBody.message.messageId,
                         lastEditedAt: createdAt,
                     },
@@ -592,6 +583,7 @@ export class ReflectedOutgoingMessageTask
                 return instructions;
             }
             case CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE: {
+                assert(conversationId.type === ReceiverType.GROUP);
                 const editMessage = protobuf.validate.csp_e2e.EditMessage.SCHEMA.parse(
                     protobuf.csp_e2e.EditMessage.decode(
                         validatedBody.message.innerData,
@@ -606,7 +598,7 @@ export class ReflectedOutgoingMessageTask
                         groupId: validatedBody.message.groupId,
                     },
                     updatedMessage: {
-                        text: editMessage.text,
+                        newText: editMessage.text,
                         messageId: editMessage.messageId,
                         lastEditedAt: createdAt,
                     },

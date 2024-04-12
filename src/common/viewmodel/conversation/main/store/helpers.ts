@@ -129,9 +129,9 @@ export function getLastMessage(
     };
 }
 
-function checkFeatureMaskSupportsEdit(fM: FeatureMask): boolean {
+function checkFeatureMaskSupportsEdit(featureMask: FeatureMask): boolean {
     // eslint-disable-next-line no-bitwise
-    return (fM & FEATURE_MASK_FLAG.EDIT_MESSAGE_SUPPORT) !== 0x00n;
+    return (featureMask & FEATURE_MASK_FLAG.EDIT_MESSAGE_SUPPORT) !== 0x00n;
 }
 
 /**

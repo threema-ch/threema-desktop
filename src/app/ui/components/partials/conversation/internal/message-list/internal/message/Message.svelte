@@ -307,13 +307,16 @@
   }
 
   let supportsEdit: boolean = false;
-  $: supportsEdit =
-    direction === 'outbound' &&
-    status.sent !== undefined &&
-    Date.now() - status.sent.at.getTime() < EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES * 60000 &&
-    // For audios we dont support edit yet
-    !(file !== undefined && file.type === 'audio') &&
-    import.meta.env.BUILD_ENVIRONMENT === 'sandbox';
+  $: supportsEdit = reactive(
+    () =>
+      import.meta.env.BUILD_ENVIRONMENT === 'sandbox' &&
+      direction === 'outbound' &&
+      status.sent !== undefined &&
+      // For audios we don't support edits yet
+      !(file !== undefined && file.type === 'audio') &&
+      Date.now() - status.sent.at.getTime() < EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES * 60000,
+    [$systemTime.current],
+  );
 
   $: timestamp = reactive(
     () => ({

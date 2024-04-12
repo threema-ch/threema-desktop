@@ -10,7 +10,6 @@ import type {Conversation} from '~/common/model';
 import type {AnyReceiver} from '~/common/model/types/receiver';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
-import {EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES} from '~/common/network/protocol/constants';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
     ACTIVE_TASK,
@@ -63,13 +62,6 @@ export class OutgoingEditMessageTask<TReceiver extends AnyReceiver>
             messageModel.view.sentAt !== undefined,
             'Cannot edit a message that has not been sent yet',
         );
-        if (
-            Date.now() - messageModel.view.sentAt.getTime() >
-            EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES * 60000
-        ) {
-            this._log.warn('Not editing message because grace period has expired');
-            return;
-        }
 
         // Encode message
         const encoder = protobuf.utils.encoder(protobuf.csp_e2e.EditMessage, {

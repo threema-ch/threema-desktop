@@ -60,6 +60,7 @@ function getConversationMessageViewModel(
             messageModel.view.direction === MessageDirection.INBOUND ? 'inbound' : 'outbound',
         file: getMessageFile(messageModel),
         id: messageModel.view.id,
+        lastEditedAt: messageModel.view.lastEditedAt,
         ordinal: messageModel.view.ordinal,
         quote: resolveQuote
             ? getMessageQuote(log, services, messageModel, conversationModelStore)
@@ -68,6 +69,5 @@ function getConversationMessageViewModel(
         status: getMessageStatus(messageModel),
         sender: getMessageSender(services, messageModel, getAndSubscribe),
         text: getMessageText(services, messageModel),
-        lastEditedAt: messageModel.view.lastEditedAt,
     };
 }

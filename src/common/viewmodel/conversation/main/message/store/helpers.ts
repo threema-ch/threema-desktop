@@ -127,13 +127,6 @@ export function getMessageStatus(
                   },
               }
             : {}),
-        ...(view.lastEditedAt !== undefined
-            ? {
-                  lastEdited: {
-                      at: view.lastEditedAt,
-                  },
-              }
-            : {}),
     };
 }
 

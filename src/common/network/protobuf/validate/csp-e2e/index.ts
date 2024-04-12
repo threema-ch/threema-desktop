@@ -18,8 +18,8 @@ interface ValidatedCspE2eMessageType<T extends CspE2eType, P> {
 /**
  * All possible validated message types.
  */
-export type ValidatedCspE2eTypes =
-    // Contact conversation messages
+export type ValidatedCspE2eTypesProtobuf =
+    // Message updates
     | ValidatedCspE2eMessageType<CspE2eMessageUpdateType.EDIT_MESSAGE, EditMessage.Type>
     | ValidatedCspE2eMessageType<
           CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE,

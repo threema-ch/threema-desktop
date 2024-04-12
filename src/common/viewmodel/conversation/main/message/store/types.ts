@@ -43,11 +43,11 @@ export interface ConversationMessageViewModel {
         readonly type: 'audio' | 'file' | 'image' | 'video';
     };
     readonly id: MessageId;
+    readonly lastEditedAt: Date | undefined;
     /**
      * Ordinal for message ordering in the conversation list.
      */
     readonly ordinal: u53;
-    readonly lastEditedAt: Date | undefined;
     readonly quote?: ConversationMessageViewModelBundle | 'not-found' | undefined;
     readonly reactions: ReactionData[];
     readonly sender?: AnyMessageSender;

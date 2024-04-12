@@ -30,10 +30,7 @@ import {hasProperty} from '~/common/utils/object';
 function unhandled(
     params:
         | {
-              maybeReflectedE2eType:
-                  | CspE2eConversationType
-                  | CspE2eMessageUpdateType
-                  | CspE2eGroupMessageUpdateType;
+              maybeReflectedE2eType: CspE2eConversationType;
           }
         | {
               maybeReflectedE2eType:
@@ -42,7 +39,7 @@ function unhandled(
                   | CspE2eGroupStatusUpdateType;
               body: Uint8Array;
           },
-): structbuf.validate.csp.e2e.ValidatedCspE2eTypes | undefined {
+): structbuf.validate.csp.e2e.ValidatedCspE2eTypesStructbuf | undefined {
     const text = placeholderTextForUnhandledMessage(params.maybeReflectedE2eType);
 
     if (text === undefined) {
@@ -149,8 +146,8 @@ export abstract class ReflectedMessageTaskBase<
         body: Uint8Array,
         messageTypeDebug: string,
     ):
-        | structbuf.validate.csp.e2e.ValidatedCspE2eTypes
-        | protobuf.validate.csp_e2e.ValidatedCspE2eTypes
+        | structbuf.validate.csp.e2e.ValidatedCspE2eTypesStructbuf
+        | protobuf.validate.csp_e2e.ValidatedCspE2eTypesProtobuf
         | undefined {
         try {
             const maybeReflectedE2eType = type satisfies ReflectedE2eType;
@@ -321,7 +318,7 @@ export abstract class ReflectedMessageTaskBase<
                         container: undefined,
                     };
                 }
-
+                // Message Update types
                 case CspE2eMessageUpdateType.EDIT_MESSAGE: {
                     const message = protobuf.validate.csp_e2e.EditMessage.SCHEMA.parse(
                         protobuf.csp_e2e.EditMessage.decode(body),
@@ -343,6 +340,13 @@ export abstract class ReflectedMessageTaskBase<
                         message: container,
                     };
                 }
+
+                case CspE2eMessageUpdateType.DELETE_MESSAGE: // TODO(DESK-1389)
+                case CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE: // TODO(DESK-1389)
+                    this._log.warn(
+                        `Discarding unsupported ${this._direction} ${messageTypeDebug} message`,
+                    );
+                    return undefined;
 
                 case CspE2eStatusUpdateType.TYPING_INDICATOR:
                     // TODO(DESK-589): Implement
@@ -376,9 +380,8 @@ export abstract class ReflectedMessageTaskBase<
                 case CspE2eGroupConversationType.GROUP_VIDEO: // TODO(DESK-586)
                 case CspE2eGroupConversationType.GROUP_POLL_SETUP: // TODO(DESK-244)
                 case CspE2eGroupConversationType.GROUP_POLL_VOTE: // TODO(DESK-244)
-                case CspE2eMessageUpdateType.DELETE_MESSAGE: // TODO(DESK-1389)
-                case CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE: // TODO(DESK-1389)
                     return unhandled({maybeReflectedE2eType, body});
+
                 default:
                     this._log.warn(
                         `Discarding unsupported ${this._direction} ${messageTypeDebug} message`,

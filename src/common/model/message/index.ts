@@ -19,6 +19,7 @@ import {
 import {deleteFilesInBackground} from '~/common/file-storage';
 import type {Logger} from '~/common/logging';
 import type {
+    AnyInboundMessageModelStore,
     AnyMessageModelStore,
     Contact,
     DirectedMessageFor,
@@ -615,7 +616,8 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
         ) => {
             this.meta.run((handle) => {
                 this._editMessage(handle, editedMessage);
-                const message = this.conversation().get().controller.getMessage(handle.view().id);
+                const conversation = this.conversation().get();
+                const message = conversation.controller.getMessage(handle.view().id);
                 assert(
                     message !== undefined,
                     'Existing messageId cannot reference undefined MessageModelStore',
@@ -624,13 +626,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
                     message.ctx === MessageDirection.INBOUND,
                     'Cannot reference an outbound message from an inbound controller',
                 );
-                this._services.notification
-                    .notifyMessageEdit(message, {
-                        receiver: this.conversation().get().controller.receiver(),
-                        view: this.conversation().get().view,
-                    })
-
-                    .catch(assertUnreachable);
+                this._updateNotificationForEditedMessage(message);
             });
         },
         fromSync: (editedMessage: UnifiedEditMessage) => {
@@ -732,6 +728,17 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
                 });
             }
         });
+    }
+
+    private _updateNotificationForEditedMessage(message: AnyInboundMessageModelStore): void {
+        const conversation = this.conversation().get();
+        this._services.notification
+            .notifyMessageEdit(message, {
+                receiver: conversation.controller.receiver(),
+                view: conversation.view,
+            })
+
+            .catch(assertUnreachable);
     }
 }
 
@@ -942,8 +949,8 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
             lastEditedAt,
         );
 
-        void this._services.taskManager.schedule(task).catch(() => {
-            // Ignore (task should persist)
+        this._services.taskManager.schedule(task).catch((error) => {
+            this._log.error(`Edit message task failed: ${error}`);
         });
     }
 }

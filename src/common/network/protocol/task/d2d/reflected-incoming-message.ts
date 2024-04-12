@@ -210,7 +210,7 @@ export class ReflectedIncomingMessageTask
         // Process / save the message
         switch (instructions.messageCategory) {
             case 'edit-conversation-message': {
-                const conversation = getConversationById(model, instructions.conversationId);
+                const conversation = getConversationById(model, instructions.conversationId)?.get();
                 if (conversation === undefined) {
                     this._log.error(
                         `Discarding ${this._direction} ${messageTypeDebug} message because conversation was not found in database`,
@@ -219,29 +219,20 @@ export class ReflectedIncomingMessageTask
                     return;
                 }
 
-                if (
-                    !conversation.get().controller.hasMessage(instructions.updatedMessage.messageId)
-                ) {
-                    this._log.warn(
-                        `Discarding ${this._direction} ${messageTypeDebug} message ${instructions.updatedMessage.messageId} as the message does not exist`,
-                        messageReferenceDebug,
-                    );
-                    return;
-                }
-                const messageStore = conversation
-                    .get()
-                    .controller.getMessage(instructions.updatedMessage.messageId);
+                const messageStore = conversation.controller.getMessage(
+                    instructions.updatedMessage.messageId,
+                );
 
                 if (messageStore === undefined) {
                     this._log.warn(
-                        `Discarding ${this._direction} ${messageTypeDebug} message ${instructions.updatedMessage.messageId} as the message does not exist`,
+                        `Discarding ${this._direction} ${messageTypeDebug} message as the target message with ID ${instructions.updatedMessage.messageId} does not exist`,
                         messageReferenceDebug,
                     );
                     return;
                 }
 
                 messageStore.get().controller.editMessage.fromSync({
-                    newText: instructions.updatedMessage.text,
+                    newText: instructions.updatedMessage.newText,
                     lastEditedAt: instructions.updatedMessage.lastEditedAt,
                 });
 
@@ -339,8 +330,8 @@ export class ReflectedIncomingMessageTask
      */
     private _getInstructionsForMessage(
         validatedBody:
-            | structbuf.validate.csp.e2e.ValidatedCspE2eTypes
-            | protobuf.validate.csp_e2e.ValidatedCspE2eTypes,
+            | structbuf.validate.csp.e2e.ValidatedCspE2eTypesStructbuf
+            | protobuf.validate.csp_e2e.ValidatedCspE2eTypesProtobuf,
         senderContact: LocalModelStore<Contact>,
         messageId: MessageId,
         createdAt: Date,
@@ -555,7 +546,7 @@ export class ReflectedIncomingMessageTask
                     messageCategory: 'edit-conversation-message',
                     conversationId: {type: ReceiverType.CONTACT, identity: senderIdentity},
                     updatedMessage: {
-                        text: validatedBody.message.text,
+                        newText: validatedBody.message.text,
                         messageId: validatedBody.message.messageId,
                         lastEditedAt: createdAt,
                     },
@@ -577,7 +568,7 @@ export class ReflectedIncomingMessageTask
                         groupId: validatedBody.message.groupId,
                     },
                     updatedMessage: {
-                        text: editMessage.text,
+                        newText: editMessage.text,
                         messageId: editMessage.messageId,
                         lastEditedAt: createdAt,
                     },

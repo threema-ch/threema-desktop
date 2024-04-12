@@ -98,17 +98,16 @@ export class InboundTextMessageModelController
         editedMessage: UnifiedEditMessage,
     ): boolean {
         if (editedMessage.newText.trim() === '') {
-            this._log.warn(
-                'Not applying edit on inbound message because the new text is empty. This is not allowed for text messages',
-            );
+            this._log.warn('Not applying edit on inbound message because the new text is empty');
             return false;
         }
+        const change = {
+            lastEditedAt: editedMessage.lastEditedAt,
+            text: editedMessage.newText,
+        };
         message.update((view) => {
-            editMessageByMessageUid(this._services, this.uid, this._type, {
-                lastEditedAt: editedMessage.lastEditedAt,
-                text: editedMessage.newText,
-            });
-            return editedMessage;
+            editMessageByMessageUid(this._services, this.uid, this._type, change);
+            return change;
         });
         return true;
     }
@@ -124,17 +123,16 @@ export class OutboundTextMessageModelController
         editedMessage: UnifiedEditMessage,
     ): boolean {
         if (editedMessage.newText.trim() === '') {
-            this._log.warn(
-                'Not applying edit on outbound message because the new text is empty. This is not allowed for text messages',
-            );
+            this._log.warn('Not applying edit on outbound message because the new text is empty.');
             return false;
         }
+        const change = {
+            lastEditedAt: editedMessage.lastEditedAt,
+            text: editedMessage.newText,
+        };
         message.update((view) => {
-            editMessageByMessageUid(this._services, this.uid, this._type, {
-                lastEditedAt: editedMessage.lastEditedAt,
-                text: editedMessage.newText,
-            });
-            return editedMessage;
+            editMessageByMessageUid(this._services, this.uid, this._type, change);
+            return change;
         });
         return true;
     }

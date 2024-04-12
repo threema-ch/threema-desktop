@@ -85,7 +85,9 @@
 
   let modalState: ModalState = {type: 'none'};
 
-  let receiverSupportsEditedMessages: {supports: false} | {supports: true; excludedNames: string[]};
+  let receiverSupportsEditedMessages:
+    | {supported: false}
+    | {supported: true; notSupportedNames: string[]};
 
   function handleClickDeleteMessage(event: CustomEvent<MessagePropsFromBackend>): void {
     viewModelController?.deleteMessage(event.detail.id).catch((error) => {
@@ -152,7 +154,7 @@
   }
 
   function handleClickEditMessage(messageProperties: MessagePropsFromBackend): void {
-    if (!receiverSupportsEditedMessages.supports) {
+    if (!receiverSupportsEditedMessages.supported) {
       toast.addSimpleFailure(
         $i18n.t(
           'messaging.prose--edit-not-support',
@@ -160,14 +162,13 @@
         ),
       );
       return;
-    } else if (receiverSupportsEditedMessages.excludedNames.length > 0) {
+    } else if (receiverSupportsEditedMessages.notSupportedNames.length > 0) {
       toast.addSimpleWarning(
         $i18n.t(
           'messaging.prose--edit-not-support-partial',
-          '"The following group members will not be able to see your edits: {names}. To see edits, they need to install the latest Threema version.',
-
+          'The following group members will not be able to see your edits: {names}. To see edits, they need to install the latest Threema version.',
           {
-            names: receiverSupportsEditedMessages.excludedNames.join(', '),
+            names: receiverSupportsEditedMessages.notSupportedNames.join(', '),
           },
         ),
       );
@@ -269,8 +270,8 @@
           ?.supportedFeatures.get(FEATURE_MASK_FLAG.EDIT_MESSAGE_SUPPORT);
         receiverSupportsEditedMessages =
           editFeature !== undefined
-            ? {supports: true, excludedNames: editFeature.notSupported}
-            : {supports: false};
+            ? {supported: true, notSupportedNames: editFeature.notSupported}
+            : {supported: false};
 
         // Set an `initiallyVisibleMessageId` if provided by the current route.
         initiallyVisibleMessageId = routeParams?.initialMessage?.messageId;
