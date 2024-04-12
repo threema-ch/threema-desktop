@@ -44,7 +44,7 @@
 
   const dispatch = createEventDispatcher<{
     clickquote: MessagePropsFromBackend;
-    clickdelete: MessagePropsFromBackend;
+    clickdelete: AnyMessagePropsFromBackend;
     clickedit: MessagePropsFromBackend;
   }>();
 
@@ -487,7 +487,12 @@
             on:completehighlightanimation={handleCompleteHighlightAnimation}
           />
         {:else}
-          <StatusMessage action={item.action} information={item.information} {services} />
+          <StatusMessage
+            action={item.action}
+            information={item.information}
+            {services}
+            on:clickdeleteoption={() => dispatch('clickdelete', item)}
+          />
         {/if}
       </div>
     </LazyList>

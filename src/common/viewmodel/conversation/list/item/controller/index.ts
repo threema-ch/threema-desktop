@@ -45,6 +45,7 @@ export class ConversationListItemViewModelController
 
     /** @inheritdoc */
     public async clear(): Promise<void> {
+        await this._conversation.get().controller.removeAllStatusMessages.fromLocal();
         return await this._conversation.get().controller.removeAllMessages.fromLocal();
     }
 

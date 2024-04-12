@@ -22,8 +22,12 @@ export interface ConversationViewModel {
     readonly isPrivate: boolean;
     readonly lastMessage:
         | {
-              readonly id: MessageId | StatusMessageId;
-              readonly direction: MessageDirection | 'none';
+              readonly id: MessageId;
+              readonly direction: MessageDirection;
+          }
+        | {
+              readonly id: StatusMessageId;
+              readonly direction: 'none';
           }
         | undefined;
     readonly messageSetStore: ConversationMessageSetStore;

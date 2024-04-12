@@ -15,7 +15,10 @@
   import MessageList from '~/app/ui/components/partials/conversation/internal/message-list/MessageList.svelte';
   import {getTextContent} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/helpers';
   import {transformMessageFileProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/transformers';
-  import type {MessagePropsFromBackend} from '~/app/ui/components/partials/conversation/internal/message-list/transformers';
+  import type {
+    AnyMessagePropsFromBackend,
+    MessagePropsFromBackend,
+  } from '~/app/ui/components/partials/conversation/internal/message-list/transformers';
   import TopBar from '~/app/ui/components/partials/conversation/internal/top-bar/TopBar.svelte';
   import type {ConversationViewProps} from '~/app/ui/components/partials/conversation/props';
   import type {
@@ -89,13 +92,27 @@
     | {supported: false}
     | {supported: true; notSupportedNames: string[]};
 
-  function handleClickDeleteMessage(event: CustomEvent<MessagePropsFromBackend>): void {
-    viewModelController?.deleteMessage(event.detail.id).catch((error) => {
-      log.error(`Could not delete message with id ${event.detail.id}`, error);
-      toast.addSimpleFailure(
-        $i18n.t('messaging.error--delete-message', 'Could not delete message'),
-      );
-    });
+  function handleClickDeleteMessage(event: CustomEvent<AnyMessagePropsFromBackend>): void {
+    switch (event.detail.type) {
+      case 'status':
+        viewModelController?.deleteStatusMessage(event.detail.id).catch((error) => {
+          log.error(`Could not delete status message with id ${event.detail.id}`, error);
+          toast.addSimpleFailure(
+            $i18n.t('messaging.error--delete-status-message', 'Could not delete status message'),
+          );
+        });
+        break;
+      case 'message':
+        viewModelController?.deleteMessage(event.detail.id).catch((error) => {
+          log.error(`Could not delete message with id ${event.detail.id}`, error);
+          toast.addSimpleFailure(
+            $i18n.t('messaging.error--delete-message', 'Could not delete message'),
+          );
+        });
+        break;
+      default:
+        unreachable(event.detail);
+    }
   }
 
   function getComposebarQuoteComponent(
