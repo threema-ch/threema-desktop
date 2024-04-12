@@ -488,6 +488,7 @@
           />
         {:else}
           <StatusMessage
+            boundary={element}
             action={item.action}
             information={item.information}
             {services}

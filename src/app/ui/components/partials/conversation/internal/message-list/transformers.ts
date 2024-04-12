@@ -19,7 +19,7 @@ import type {ConversationMessageSetStore} from '~/common/viewmodel/conversation/
  * Shape of props as they should be provided from the backend.
  */
 export type MessagePropsFromBackend = Omit<MessageProps, 'boundary' | 'conversation' | 'services'>;
-export type StatusPropsFromBackend = Omit<AnyStatusMessageProps, 'services'>;
+export type StatusPropsFromBackend = Omit<AnyStatusMessageProps, 'services' | 'boundary'>;
 export type AnyMessagePropsFromBackend = MessagePropsFromBackend | StatusPropsFromBackend;
 
 export function messageSetStoreToMessagePropsStore(

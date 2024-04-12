@@ -11,11 +11,15 @@
   import type {AnchorPoint, VirtualRect} from '~/app/ui/generic/popover/types';
   import {i18n} from '~/app/ui/i18n';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
+  import {unusedProp} from '~/common/utils/svelte-helpers';
 
   type $$Props = Omit<AnyStatusMessageProps, 'type' | 'id'>;
 
+  export let boundary: $$Props['boundary'] = undefined;
   export let action: SvelteNullableBinding<$$Props['action']> = undefined;
   export let information: $$Props['information'];
+  export let services: $$Props['services'];
+  unusedProp(services);
 
   let popover: SvelteNullableBinding<Popover> = null;
   let virtualTrigger: VirtualRect | undefined = undefined;
@@ -67,19 +71,10 @@
 <ContextMenuProvider
   bind:popover
   items={popoverItems}
+  container={boundary}
   triggerBehavior={virtualTrigger === undefined ? 'toggle' : 'open'}
   offset={{left: 0, top: 4}}
   {anchorPoints}
   reference={virtualTrigger}
   on:clicktrigger={() => (virtualTrigger = undefined)}
 ></ContextMenuProvider>
-
-<style lang="scss">
-  @use 'component' as *;
-
-  .container {
-    &:hover {
-      background-color: var(--cc-conversation-preview-background-color--hover);
-    }
-  }
-</style>
