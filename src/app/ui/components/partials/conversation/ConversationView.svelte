@@ -156,7 +156,7 @@
       toast.addSimpleFailure(
         $i18n.t(
           'messaging.prose--edit-not-support',
-          'Cannot edit the message because the receiver does not support this functionality.',
+          'Cannot edit the message because the recipient’s app version does not support this feature.',
         ),
       );
       return;
@@ -164,7 +164,7 @@
       toast.addSimpleWarning(
         $i18n.t(
           'messaging.prose--edit-not-support-partial',
-          'The following group members will not see your edits: {names}. To see edits, they must install the latest Threema version.',
+          '"The following group members will not be able to see your edits: {names}. To see edits, they need to install the latest Threema version.',
 
           {
             names: receiverSupportsEditedMessages.excludedNames.join(', '),
@@ -444,7 +444,7 @@
       toast.addSimpleFailure(
         $i18n.t(
           'messaging.prose--paste-image-in-edit',
-          'When editing a message, files cannot be pasted.',
+          'It’s not possible to paste a file when editing a message.',
         ),
       );
       return;
