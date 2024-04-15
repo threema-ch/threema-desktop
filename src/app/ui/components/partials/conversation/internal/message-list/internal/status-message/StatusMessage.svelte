@@ -35,11 +35,19 @@
     },
   };
 
-  const dispatch = createEventDispatcher<{clickdeleteoption: undefined}>();
+  const dispatch = createEventDispatcher<{
+    clickdeleteoption: undefined;
+    clickopendetailsoption: undefined;
+  }>();
 
   function handleClickDelete(): void {
     popover?.close();
     dispatch('clickdeleteoption');
+  }
+
+  function handleClickMessageDetails(): void {
+    popover?.close();
+    dispatch('clickopendetailsoption');
   }
 
   function handleContextMenuEvent(event: MouseEvent): void {
@@ -59,7 +67,7 @@
     }
   }
 
-  const popoverItems = getContextMenuItems($i18n, handleClickDelete);
+  const popoverItems = getContextMenuItems($i18n, handleClickMessageDetails, handleClickDelete);
 </script>
 
 <div use:contextmenu={handleContextMenuEvent}>

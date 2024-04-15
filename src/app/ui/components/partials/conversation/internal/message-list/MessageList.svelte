@@ -20,6 +20,7 @@
     type MessagePropsFromBackend,
     messageSetStoreToMessagePropsStore,
     type AnyMessagePropsFromBackend,
+    type StatusPropsFromBackend,
   } from '~/app/ui/components/partials/conversation/internal/message-list/transformers';
   import type {
     UnreadState,
@@ -198,6 +199,20 @@
         status: message.status,
         conversation,
         history: message.history,
+      },
+    };
+  }
+
+  function handleClickOpenStatusDetailsOption(message: StatusPropsFromBackend): void {
+    modalState = {
+      type: 'message-details',
+      props: {
+        conversation,
+        history: [],
+        lastEdited: undefined,
+        reactions: [],
+        services,
+        status: {created: {at: message.information.at}},
       },
     };
   }
@@ -493,6 +508,7 @@
             information={item.information}
             {services}
             on:clickdeleteoption={() => dispatch('clickdelete', item)}
+            on:clickopendetailsoption={() => handleClickOpenStatusDetailsOption(item)}
           />
         {/if}
       </div>

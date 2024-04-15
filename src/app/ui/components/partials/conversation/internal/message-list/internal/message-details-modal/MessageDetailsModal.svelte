@@ -16,9 +16,9 @@
 
   type $$Props = MessageDetailsModalProps;
 
-  export let direction: $$Props['direction'];
+  export let direction: $$Props['direction'] = undefined;
   export let file: $$Props['file'] = undefined;
-  export let id: $$Props['id'];
+  export let id: $$Props['id'] = undefined;
   export let lastEdited: $$Props['lastEdited'] = undefined;
   export let reactions: $$Props['reactions'];
   export let history: $$Props['history'];
@@ -139,13 +139,15 @@
           </KeyValueList.Item>
         {/if}
       </KeyValueList.Section>
-
-      <KeyValueList.Section>
-        <KeyValueList.Item key={$i18n.t('dialog--message-details.label--message-id', 'Message ID')}>
-          <Text text={u64ToHexLe(id)} selectable />
-        </KeyValueList.Item>
-      </KeyValueList.Section>
-
+      {#if id !== undefined}
+        <KeyValueList.Section>
+          <KeyValueList.Item
+            key={$i18n.t('dialog--message-details.label--message-id', 'Message ID')}
+          >
+            <Text text={u64ToHexLe(id)} selectable />
+          </KeyValueList.Item>
+        </KeyValueList.Section>
+      {/if}
       {#if file !== undefined}
         <KeyValueList.Section>
           <KeyValueList.Item key={$i18n.t('dialog--message-details.label--file-name', 'File Name')}>
@@ -163,51 +165,50 @@
           </KeyValueList.Item>
         </KeyValueList.Section>
       {/if}
-
-      <KeyValueList.Section>
-        <KeyValueList.Item key={$i18n.t('dialog--message-details.label--reactions', 'Reactions')}>
-          {#if reactions.length === 0}
-            -
-          {:else if conversation.receiver.type === 'contact'}
-            {@const reaction = reactions[0]}
-            {#if reaction !== undefined}
+      {#if reactions.length > 0}
+        <KeyValueList.Section>
+          <KeyValueList.Item key={$i18n.t('dialog--message-details.label--reactions', 'Reactions')}>
+            {#if conversation.receiver.type === 'contact'}
+              {@const reaction = reactions[0]}
+              {#if reaction !== undefined}
+                <div class="reaction">
+                  <div class={`thumb ${reaction.type}`}>
+                    <MdIcon theme="Filled"
+                      >{reaction.type === 'acknowledged' ? 'thumb_up' : 'thumb_down'}</MdIcon
+                    >
+                  </div>
+                  <div class="date">
+                    <Text text={formatDateLocalized(reaction.at, $i18n, 'extended', use24hTime)} />
+                  </div>
+                </div>
+              {/if}
+            {:else if acknowledgeReactions.length !== 0}
               <div class="reaction">
-                <div class={`thumb ${reaction.type}`}>
-                  <MdIcon theme="Filled"
-                    >{reaction.type === 'acknowledged' ? 'thumb_up' : 'thumb_down'}</MdIcon
+                <div class={'thumb acknowledged'}>
+                  <MdIcon theme={outboundReaction === 'acknowledged' ? 'Filled' : 'Outlined'}
+                    >{'thumb_up'}</MdIcon
                   >
                 </div>
                 <div class="date">
-                  <Text text={formatDateLocalized(reaction.at, $i18n, 'extended', use24hTime)} />
+                  <Text text={acknowledgeReactions.join(', ')} selectable />
                 </div>
               </div>
             {/if}
-          {:else if acknowledgeReactions.length !== 0}
-            <div class="reaction">
-              <div class={'thumb acknowledged'}>
-                <MdIcon theme={outboundReaction === 'acknowledged' ? 'Filled' : 'Outlined'}
-                  >{'thumb_up'}</MdIcon
-                >
+            {#if declineReactions.length !== 0}
+              <div class="reaction">
+                <div class={'thumb declined'}>
+                  <MdIcon theme={outboundReaction === 'declined' ? 'Filled' : 'Outlined'}
+                    >{'thumb_down'}</MdIcon
+                  >
+                </div>
+                <div class="date">
+                  <Text text={declineReactions.join(', ')} selectable />
+                </div>
               </div>
-              <div class="date">
-                <Text text={acknowledgeReactions.join(', ')} selectable />
-              </div>
-            </div>
-          {/if}
-          {#if declineReactions.length !== 0}
-            <div class="reaction">
-              <div class={'thumb declined'}>
-                <MdIcon theme={outboundReaction === 'declined' ? 'Filled' : 'Outlined'}
-                  >{'thumb_down'}</MdIcon
-                >
-              </div>
-              <div class="date">
-                <Text text={declineReactions.join(', ')} selectable />
-              </div>
-            </div>
-          {/if}
-        </KeyValueList.Item>
-      </KeyValueList.Section>
+            {/if}
+          </KeyValueList.Item>
+        </KeyValueList.Section>
+      {/if}
 
       {#if sortedHistory.length > 0 && import.meta.env.BUILD_ENVIRONMENT === 'sandbox'}
         <KeyValueList.Section
@@ -245,13 +246,11 @@
           </div>
         </KeyValueList.Section>
       {/if}
-
       {#if import.meta.env.DEBUG || import.meta.env.BUILD_ENVIRONMENT === 'sandbox'}
         <KeyValueList.Section title="Debug 🐞" options={{disableItemInset: true}}>
           <KeyValueList.Item key="Direction">
-            <Text text={direction} selectable />
+            <Text text={direction ?? 'None'} selectable />
           </KeyValueList.Item>
-
           {#if file !== undefined}
             <KeyValueList.Item key="File Type">
               <Text text={file.type} selectable />

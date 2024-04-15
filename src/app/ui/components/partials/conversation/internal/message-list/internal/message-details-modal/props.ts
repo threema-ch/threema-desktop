@@ -6,9 +6,9 @@ import type {MessageProps} from '~/app/ui/components/partials/conversation/inter
  */
 export interface MessageDetailsModalProps {
     readonly conversation: MessageProps['conversation'];
-    readonly direction: MessageProps['direction'];
+    readonly direction?: MessageProps['direction'];
     readonly file?: MessageProps['file'];
-    readonly id: MessageProps['id'];
+    readonly id?: MessageProps['id'];
     readonly lastEdited: MessageProps['lastEdited'];
     readonly reactions: Readonly<Reaction[]>;
     readonly history: Readonly<HistoryEntry[]>;
