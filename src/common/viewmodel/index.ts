@@ -1,11 +1,17 @@
 import type {ServicesForBackend} from '~/common/backend';
 import type {DbReceiverLookup} from '~/common/db';
+import {ReceiverType} from '~/common/enum';
 import type {AnyMessageModelStore, AnyReceiver} from '~/common/model';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import type {ReceiverStoreFor} from '~/common/model/types/receiver';
+import {unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {WeakValueMap} from '~/common/utils/map';
 import type {ViewModelCache} from '~/common/viewmodel/cache';
+import {
+    getContactDetailViewModelBundle,
+    type ContactDetailViewModelBundle,
+} from '~/common/viewmodel/contact/detail';
 import {
     getContactListViewModelBundle,
     type ContactListViewModelBundle,
@@ -87,6 +93,13 @@ export interface IViewModelRepository extends ProxyMarked {
         receiverModelStore: ReceiverStoreFor<TReceiver>,
     ) => ContactListItemViewModelBundle<TReceiver>;
 
+    /**
+     * Returns the {@link ContactDetailViewModelBundle} that belongs to the given {@link receiver}.
+     */
+    readonly contactDetail: (
+        receiver: DbReceiverLookup,
+    ) => ContactDetailViewModelBundle<AnyReceiver> | undefined;
+
     readonly debugPanel: () => DebugPanelViewModel;
     readonly profile: () => ProfileViewModelStore;
     readonly search: () => SearchViewModelBundle;
@@ -165,6 +178,39 @@ export class ViewModelRepository implements IViewModelRepository {
         return this._cache.contactListItem.getOrCreate(receiverModelStore, () =>
             getContactListItemViewModelBundle<AnyReceiver>(this._services, receiverModelStore),
         ) satisfies ContactListItemViewModelBundle<AnyReceiver> as unknown as ContactListItemViewModelBundle<TReceiver>;
+    }
+
+    /** @inheritdoc */
+    public contactDetail(
+        receiver: DbReceiverLookup,
+    ): ContactDetailViewModelBundle<AnyReceiver> | undefined {
+        let receiverModelStore: ReceiverStoreFor<AnyReceiver> | undefined;
+        switch (receiver.type) {
+            case ReceiverType.CONTACT:
+                receiverModelStore = this._services.model.contacts.getByUid(receiver.uid);
+                break;
+
+            case ReceiverType.DISTRIBUTION_LIST:
+                throw new Error('TODO(DESK-771): Implement distribution lists');
+
+            case ReceiverType.GROUP:
+                receiverModelStore = this._services.model.groups.getByUid(receiver.uid);
+                break;
+
+            default:
+                return unreachable(receiver);
+        }
+        if (receiverModelStore === undefined) {
+            return undefined;
+        }
+
+        return this._cache.contactDetail.getOrCreate(receiverModelStore, () => {
+            if (receiverModelStore === undefined) {
+                return undefined;
+            }
+
+            return getContactDetailViewModelBundle(this._services, receiverModelStore);
+        });
     }
 
     public groupListItems(): GroupListItemSetStore {

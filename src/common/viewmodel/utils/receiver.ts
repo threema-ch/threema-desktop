@@ -1,3 +1,4 @@
+import type {PublicKey} from '~/common/crypto';
 import type {
     DbContactReceiverLookup,
     DbDistributionListReceiverLookup,
@@ -10,7 +11,9 @@ import {
     GroupNotificationTriggerPolicy,
     GroupUserState,
     NotificationSoundPolicy,
+    ReadReceiptPolicy,
     ReceiverType,
+    TypingIndicatorPolicy,
     VerificationLevel,
     WorkVerificationLevel,
 } from '~/common/enum';
@@ -116,7 +119,7 @@ export function getCommonReceiverData(receiverModel: AnyReceiver): CommonReceive
                     uid: receiverModel.ctx,
                 },
                 name: receiverModel.view.displayName,
-                notificationPolicy: getContactNotificationPolicy(receiverModel),
+                notificationPolicy: getContactNotificationPolicyData(receiverModel),
             };
 
         case ReceiverType.GROUP:
@@ -129,7 +132,7 @@ export function getCommonReceiverData(receiverModel: AnyReceiver): CommonReceive
                     uid: receiverModel.ctx,
                 },
                 name: receiverModel.view.displayName,
-                notificationPolicy: getGroupNotificationPolicy(receiverModel),
+                notificationPolicy: getGroupNotificationPolicyData(receiverModel),
             };
 
         case ReceiverType.DISTRIBUTION_LIST:
@@ -143,7 +146,7 @@ export function getCommonReceiverData(receiverModel: AnyReceiver): CommonReceive
 /**
  * Returns the collected {@link SelfReceiverData} object for the user themself.
  */
-function getSelfReceiverData(
+export function getSelfReceiverData(
     services: Pick<ServicesForViewModel, 'model'>,
     getAndSubscribe: GetAndSubscribeFunction,
 ): SelfReceiverData {
@@ -188,6 +191,9 @@ function getContactReceiverData(
             uid: contactModel.ctx,
         },
         nickname: contactModel.view.nickname,
+        publicKey: contactModel.view.publicKey,
+        readReceiptPolicy: getContactReadReceiptPolicyData(contactModel),
+        typingIndicatorPolicy: getContactTypingIndicatorPolicyData(contactModel),
         verification: getContactVerificationData(contactModel),
     };
 }
@@ -289,20 +295,59 @@ function isContactReceiverInvalid(receiverModel: Contact): boolean {
     return receiverModel.view.activityState === ActivityState.INVALID;
 }
 
-export function getContactNotificationPolicy(receiverModel: Contact): NotificationPolicy {
-    let notifications: NotificationPolicy = 'default';
-    if (
-        receiverModel.view.notificationTriggerPolicyOverride?.policy ===
-        ContactNotificationTriggerPolicy.NEVER
-    ) {
-        notifications = 'never';
-    } else if (
-        receiverModel.view.notificationSoundPolicyOverride === NotificationSoundPolicy.MUTED
-    ) {
-        notifications = 'muted';
+function getContactNotificationPolicyData(contactModel: Contact): NotificationPolicyData {
+    const isMuted =
+        contactModel.view.notificationSoundPolicyOverride === NotificationSoundPolicy.MUTED;
+    if (contactModel.view.notificationTriggerPolicyOverride === undefined) {
+        return {
+            type: 'default',
+            isMuted,
+        };
     }
 
-    return notifications;
+    switch (contactModel.view.notificationTriggerPolicyOverride.policy) {
+        case ContactNotificationTriggerPolicy.NEVER:
+            return {
+                type: 'never',
+                expiresAt: contactModel.view.notificationTriggerPolicyOverride.expiresAt,
+                isMuted,
+            };
+
+        default:
+            return unreachable(contactModel.view.notificationTriggerPolicyOverride.policy);
+    }
+}
+
+function getContactReadReceiptPolicyData(contactModel: Contact): ReadReceiptPolicyData {
+    switch (contactModel.view.readReceiptPolicyOverride) {
+        case undefined:
+            return 'default';
+
+        case ReadReceiptPolicy.DONT_SEND_READ_RECEIPT:
+            return 'do-not-send';
+
+        case ReadReceiptPolicy.SEND_READ_RECEIPT:
+            return 'send';
+
+        default:
+            return unreachable(contactModel.view.readReceiptPolicyOverride);
+    }
+}
+
+function getContactTypingIndicatorPolicyData(contactModel: Contact): TypingIndicatorPolicyData {
+    switch (contactModel.view.typingIndicatorPolicyOverride) {
+        case undefined:
+            return 'default';
+
+        case TypingIndicatorPolicy.DONT_SEND_TYPING_INDICATOR:
+            return 'do-not-send';
+
+        case TypingIndicatorPolicy.SEND_TYPING_INDICATOR:
+            return 'send';
+
+        default:
+            return unreachable(contactModel.view.typingIndicatorPolicyOverride);
+    }
 }
 
 /**
@@ -408,18 +453,31 @@ function getGroupMemberData(
     return getContactReceiverData(services, receiverModel, getAndSubscribe);
 }
 
-export function getGroupNotificationPolicy(groupModel: Group): NotificationPolicy {
-    let notifications: NotificationPolicy = 'default';
-    if (
-        groupModel.view.notificationTriggerPolicyOverride?.policy ===
-        GroupNotificationTriggerPolicy.NEVER
-    ) {
-        notifications = 'never';
-    } else if (groupModel.view.notificationSoundPolicyOverride === NotificationSoundPolicy.MUTED) {
-        notifications = 'muted';
-    }
+function getGroupNotificationPolicyData(groupModel: Group): NotificationPolicyData {
+    const isMuted =
+        groupModel.view.notificationSoundPolicyOverride === NotificationSoundPolicy.MUTED;
 
-    return notifications;
+    switch (groupModel.view.notificationTriggerPolicyOverride?.policy) {
+        case GroupNotificationTriggerPolicy.MENTIONED:
+            return {
+                type: 'mentioned',
+                expiresAt: groupModel.view.notificationTriggerPolicyOverride.expiresAt,
+                isMuted,
+            };
+
+        case GroupNotificationTriggerPolicy.NEVER:
+            return {
+                type: 'never',
+                expiresAt: groupModel.view.notificationTriggerPolicyOverride.expiresAt,
+                isMuted,
+            };
+
+        default:
+            return {
+                type: 'default',
+                isMuted,
+            };
+    }
 }
 
 /**
@@ -454,12 +512,37 @@ export async function updateReceiverData<TReceiver extends AnyReceiver>(
     }
 }
 
+type NotificationPolicyData =
+    | DefaultNotificationPolicyData
+    | MentionedNotificationPolicyData
+    | NeverNotificationPolicyData;
+
+interface CommonNotificationPolicyData {
+    readonly isMuted: boolean;
+}
+
+interface DefaultNotificationPolicyData extends CommonNotificationPolicyData {
+    readonly type: 'default';
+}
+
+interface MentionedNotificationPolicyData extends CommonNotificationPolicyData {
+    readonly type: 'mentioned';
+    readonly expiresAt?: Date;
+}
+
+interface NeverNotificationPolicyData extends CommonNotificationPolicyData {
+    readonly type: 'never';
+    readonly expiresAt?: Date;
+}
+
+type ReadReceiptPolicyData = 'default' | 'send' | 'do-not-send';
+
+type TypingIndicatorPolicyData = 'default' | 'send' | 'do-not-send';
+
 interface VerificationData {
     readonly type: 'default' | 'shared-work-subscription';
     readonly level: 'unverified' | 'server-verified' | 'fully-verified';
 }
-
-type NotificationPolicy = 'default' | 'muted' | 'mentioned' | 'never';
 
 interface CommonReceiverData {
     /** Color used as the backdrop. */
@@ -473,7 +556,7 @@ interface CommonReceiverData {
     /** Full display name of the receiver. */
     readonly name: string;
     /** How the user wants to be notified of updates from this receiver. */
-    readonly notificationPolicy: NotificationPolicy;
+    readonly notificationPolicy: NotificationPolicyData;
 }
 
 interface SelfReceiverData extends Omit<CommonReceiverData, 'lookup' | 'notificationPolicy'> {
@@ -493,6 +576,9 @@ export interface ContactReceiverData extends CommonReceiverData {
     readonly lastName: string;
     readonly lookup: DbContactReceiverLookup;
     readonly nickname?: string;
+    readonly publicKey: PublicKey;
+    readonly readReceiptPolicy: ReadReceiptPolicyData;
+    readonly typingIndicatorPolicy: TypingIndicatorPolicyData;
     readonly verification: VerificationData;
 }
 

@@ -49,6 +49,7 @@ import {
     TransactionScopeUtils,
     VerificationLevel,
     WorkVerificationLevel,
+    ReceiverType,
 } from '~/common/enum';
 import {ConnectionClosed} from '~/common/error';
 import {InMemoryFileStorage} from '~/common/file-storage';
@@ -56,7 +57,6 @@ import {type Logger, type LoggerFactory, NOOP_LOGGER, TagLogger} from '~/common/
 import {BackendMediaService, type IFrontendMediaService} from '~/common/media';
 import type {
     AnyReceiver,
-    AnyReceiverStore,
     Contact,
     ContactInit,
     Group,
@@ -86,6 +86,7 @@ import type {ContactRepository} from '~/common/model/types/contact';
 import type {ConversationRepository} from '~/common/model/types/conversation';
 import type {GroupRepository} from '~/common/model/types/group';
 import type {AnyMessageModelStore, MessageRepository} from '~/common/model/types/message';
+import type {ReceiverStoreFor} from '~/common/model/types/receiver';
 import type {
     DevicesSettings,
     IGlobalPropertyRepository,
@@ -160,7 +161,7 @@ import {
 } from '~/common/notification';
 import type {SystemDialog, SystemDialogHandle, SystemDialogService} from '~/common/system-dialog';
 import type {u8, u53, ReadonlyUint8Array} from '~/common/types';
-import {assert, unwrap} from '~/common/utils/assert';
+import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import type {Delayed} from '~/common/utils/delayed';
 import {
@@ -180,6 +181,10 @@ import type {AbortSubscriber} from '~/common/utils/signal';
 import type {LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import type {IViewModelRepository} from '~/common/viewmodel';
+import {
+    getContactDetailViewModelBundle,
+    type ContactDetailViewModelBundle,
+} from '~/common/viewmodel/contact/detail';
 import {
     getContactListViewModelBundle,
     type ContactListViewModelBundle,
@@ -507,6 +512,32 @@ export class TestViewModel implements IViewModelRepository {
         receiverModelStore: ReceiverStoreFor<TReceiver>,
     ): ContactListItemViewModelBundle<TReceiver> {
         return getContactListItemViewModelBundle(this._services, receiverModelStore);
+    }
+
+    public contactDetail(
+        receiver: DbReceiverLookup,
+    ): ContactDetailViewModelBundle<AnyReceiver> | undefined {
+        let receiverModelStore: ReceiverStoreFor<AnyReceiver> | undefined;
+        switch (receiver.type) {
+            case ReceiverType.CONTACT:
+                receiverModelStore = this._services.model.contacts.getByUid(receiver.uid);
+                break;
+
+            case ReceiverType.DISTRIBUTION_LIST:
+                throw new Error('TODO(DESK-771): Implement distribution lists');
+
+            case ReceiverType.GROUP:
+                receiverModelStore = this._services.model.groups.getByUid(receiver.uid);
+                break;
+
+            default:
+                return unreachable(receiver);
+        }
+        if (receiverModelStore === undefined) {
+            return undefined;
+        }
+
+        return getContactDetailViewModelBundle(this._services, receiverModelStore);
     }
 
     public debugPanel(): DebugPanelViewModel {

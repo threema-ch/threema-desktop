@@ -2,6 +2,7 @@ import type {AnyMessageModelStore, AnyReceiver, AnyReceiverStore} from '~/common
 import type {ConversationModelStore} from '~/common/model/conversation';
 import {LazyWeakRef} from '~/common/model/utils/model-cache';
 import {WeakValueMap} from '~/common/utils/map';
+import type {ContactDetailViewModelBundle} from '~/common/viewmodel/contact/detail';
 import type {ContactListViewModelBundle} from '~/common/viewmodel/contact/list';
 import type {ContactListItemViewModelBundle} from '~/common/viewmodel/contact/list/item';
 import type {ConversationListViewModelBundle} from '~/common/viewmodel/conversation/list';
@@ -31,6 +32,10 @@ export class ViewModelCache {
     public readonly contactListItem = new WeakValueMap<
         AnyReceiverStore,
         ContactListItemViewModelBundle<AnyReceiver>
+    >();
+    public readonly contactDetail = new WeakValueMap<
+        AnyReceiverStore,
+        ContactDetailViewModelBundle<AnyReceiver>
     >();
 
     public readonly debugPanel = new LazyWeakRef<DebugPanelViewModel>();
