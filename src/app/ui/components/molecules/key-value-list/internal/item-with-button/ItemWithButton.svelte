@@ -72,16 +72,18 @@
       .header {
         display: flex;
         align-items: center;
-        justify-content: start;
+        justify-content: space-between;
         gap: rem(4px);
 
         .key {
           @extend %font-small-400;
+
           color: var(--t-text-e2-color);
         }
 
         .info {
           @extend %neutral-input;
+
           display: flex;
           align-items: center;
           justify-content: center;
