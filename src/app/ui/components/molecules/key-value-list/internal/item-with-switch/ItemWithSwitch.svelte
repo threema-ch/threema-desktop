@@ -66,7 +66,7 @@
 
   .item {
     @extend %neutral-input;
-    cursor: pointer;
+
     text-align: start;
 
     display: flex;
@@ -76,12 +76,16 @@
     padding: rem(10px) rem(16px);
     width: 100%;
 
-    &:hover {
-      background-color: var(--cc-conversation-preview-background-color--hover);
-    }
+    &:not(:disabled) {
+      cursor: pointer;
 
-    &:active {
-      background-color: var(--cc-conversation-preview-background-color--active);
+      &:hover {
+        background-color: var(--cc-conversation-preview-background-color--hover);
+      }
+
+      &:active {
+        background-color: var(--cc-conversation-preview-background-color--active);
+      }
     }
 
     .left {
