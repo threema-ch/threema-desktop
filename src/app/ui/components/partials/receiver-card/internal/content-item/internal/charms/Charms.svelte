@@ -8,14 +8,16 @@
   import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import ThreemaIcon from '~/app/ui/svelte-components/blocks/Icon/ThreemaIcon.svelte';
-  import {unreachable} from '~/common/utils/assert';
 
   type $$Props = CharmsProps;
 
   export let isBlocked: NonNullable<$$Props['isBlocked']> = false;
   export let isPinned: NonNullable<$$Props['isPinned']> = false;
   export let isPrivate: NonNullable<$$Props['isPrivate']> = false;
-  export let notificationPolicy: NonNullable<$$Props['notificationPolicy']> = 'default';
+  export let notificationPolicy: NonNullable<$$Props['notificationPolicy']> = {
+    type: 'default',
+    isMuted: false,
+  };
 
   const DEFAULT_CUTOUT = {
     diameter: 26,
@@ -24,6 +26,8 @@
       y: 50,
     },
   };
+
+  $: hasNotificationPolicy = notificationPolicy.type !== 'default' || notificationPolicy.isMuted;
 </script>
 
 <span class="container">
@@ -33,26 +37,24 @@
     </span>
   {/if}
 
-  {#if notificationPolicy !== 'default'}
+  {#if hasNotificationPolicy}
     {@const hasNeighborLeft = isBlocked}
 
     <RadialExclusionMaskProvider cutouts={hasNeighborLeft ? [DEFAULT_CUTOUT] : []}>
       <span class="charm notifications">
-        {#if notificationPolicy === 'muted'}
-          <MdIcon theme="Filled">notifications_off</MdIcon>
-        {:else if notificationPolicy === 'mentioned'}
+        {#if notificationPolicy.type === 'mentioned'}
           <MdIcon theme="Filled">alternate_email</MdIcon>
-        {:else if notificationPolicy === 'never'}
+        {:else if notificationPolicy.type === 'never'}
           <MdIcon theme="Filled">remove_circle</MdIcon>
-        {:else}
-          {unreachable(notificationPolicy)}
+        {:else if notificationPolicy.isMuted}
+          <MdIcon theme="Filled">notifications_off</MdIcon>
         {/if}
       </span>
     </RadialExclusionMaskProvider>
   {/if}
 
   {#if isPrivate}
-    {@const hasNeighborLeft = isBlocked || notificationPolicy !== 'default'}
+    {@const hasNeighborLeft = isBlocked || hasNotificationPolicy}
 
     <RadialExclusionMaskProvider cutouts={hasNeighborLeft ? [DEFAULT_CUTOUT] : []}>
       <span class="charm private">
@@ -62,7 +64,7 @@
   {/if}
 
   {#if isPinned}
-    {@const hasNeighborLeft = isBlocked || notificationPolicy !== 'default' || isPrivate}
+    {@const hasNeighborLeft = isBlocked || hasNotificationPolicy || isPrivate}
 
     <RadialExclusionMaskProvider cutouts={hasNeighborLeft ? [DEFAULT_CUTOUT] : []}>
       <span class="charm pinned">

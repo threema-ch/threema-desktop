@@ -7,6 +7,7 @@
 
   type $$Props = TextProps;
 
+  export let alignment: NonNullable<$$Props['alignment']> = 'inherit';
   export let color: NonNullable<$$Props['color']> = 'inherit';
   export let decoration: NonNullable<$$Props['decoration']> = 'inherit';
   export let ellipsis: NonNullable<$$Props['ellipsis']> = false;
@@ -18,7 +19,7 @@
 </script>
 
 <span
-  class={`text c-${color} d-${decoration} f-${family} s-${size}`}
+  class={`text a-${alignment} c-${color} d-${decoration} f-${family} s-${size}`}
   class:ellipsis
   class:selectable
   class:wrap
@@ -32,6 +33,19 @@
   .text {
     overflow-wrap: normal;
     white-space: nowrap;
+
+    // Alignment
+    &.a-start {
+      text-align: start;
+    }
+
+    &.a-center {
+      text-align: center;
+    }
+
+    &.a-end {
+      text-align: end;
+    }
 
     // Color variants
     &.c-mono-high {

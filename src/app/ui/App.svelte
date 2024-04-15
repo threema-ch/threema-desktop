@@ -2,8 +2,7 @@
   import {onMount, type SvelteComponent} from 'svelte';
 
   import type {AppServices} from '~/app/types';
-  import AsideContactDetails from '~/app/ui/aside/ContactDetails.svelte';
-  import AsideGroupDetails from '~/app/ui/aside/GroupDetails.svelte';
+  import ContactDetail from '~/app/ui/components/partials/contact-detail/ContactDetail.svelte';
   import ContactNav from '~/app/ui/components/partials/contact-nav/ContactNav.svelte';
   import ConversationView from '~/app/ui/components/partials/conversation/ConversationView.svelte';
   import ConversationNav from '~/app/ui/components/partials/conversation-nav/ConversationNav.svelte';
@@ -147,10 +146,8 @@
         asidePanelComponent = undefined;
         break;
       case 'contactDetails':
-        asidePanelComponent = AsideContactDetails;
-        break;
       case 'groupDetails':
-        asidePanelComponent = AsideGroupDetails;
+        asidePanelComponent = ContactDetail;
         break;
       default:
         unreachable(asideId, new Error('Unhandled aside panel router state'));

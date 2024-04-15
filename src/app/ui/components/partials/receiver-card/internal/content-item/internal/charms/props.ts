@@ -1,3 +1,5 @@
+import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
+
 /**
  * Props accepted by the `Charms` component.
  */
@@ -5,5 +7,5 @@ export interface CharmsProps {
     readonly isBlocked?: boolean;
     readonly isPinned?: boolean;
     readonly isPrivate?: boolean;
-    readonly notificationPolicy?: 'default' | 'muted' | 'mentioned' | 'never';
+    readonly notificationPolicy?: AnyReceiverData['notificationPolicy'];
 }
