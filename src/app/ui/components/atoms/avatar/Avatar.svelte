@@ -138,9 +138,9 @@
               top: ${y}%`}
     >
       {#if charm.content.type === 'text'}
-        <span>{charm.content.text}</span>
+        <div class="text">{charm.content.text}</div>
       {:else if charm.content.type === 'icon'}
-        <div title={charm.content.description}>
+        <div class="icon" title={charm.content.description}>
           <ThreemaIcon theme="Filled">{charm.content.icon}</ThreemaIcon>
         </div>
       {:else}
@@ -205,6 +205,13 @@
 
       &[data-content-type='icon'] {
         font-size: var(--cc-profile-picture-overlay-badge-icon-size);
+      }
+
+      .icon,
+      .text {
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
     }
 
