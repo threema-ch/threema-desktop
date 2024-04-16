@@ -46,12 +46,17 @@ export class ModelLifetimeGuard<in out TView> {
      *
      * This should be run when the controller removes the model's underlying data source.
      *
+     * Note: This updates the model a final time (after {@link fn} has been called) with the most
+     * recent data so that the deactivation is propagated.
+     *
      * @param fn The executor to run prior to deactivation.
      * @returns The result of the executor.
      */
     public deactivate<TReturn>(fn?: (handle: GuardedStoreHandle<TView>) => TReturn): TReturn {
-        const result = (fn?.(this._handle.unwrap()) ?? undefined) as TReturn;
+        const handle = this._handle.unwrap();
+        const result = (fn?.(handle) ?? undefined) as TReturn;
         this._handle = ModelLifetimeGuard._createDelayed();
+        handle.update((view) => view);
         return result;
     }
 
