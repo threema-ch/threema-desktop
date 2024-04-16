@@ -377,6 +377,8 @@
     overflow-wrap: anywhere;
     white-space: break-spaces;
 
+    -webkit-user-modify: read-write-plaintext-only;
+
     &:empty::before {
       content: attr(placeholder);
       display: block;
