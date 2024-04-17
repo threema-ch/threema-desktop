@@ -671,6 +671,7 @@
               firstUnreadMessageId: $viewModelStore.firstUnreadMessageId,
               id: $viewModelStore.id,
               initiallyVisibleMessageId,
+              isEditingSupported: receiverSupportsEditedMessages.supported,
               lastMessage: $viewModelStore.lastMessage,
               markAllMessagesAsRead: () => {
                 viewModelController

@@ -288,21 +288,22 @@
 
   $: htmlContent = getTextContent(text?.raw, text?.mentions, $i18n.t);
 
-  let supportsReactions: boolean;
+  let showReactionButtons: boolean;
   $: {
     const receiver = conversation.receiver;
 
     switch (receiver.type) {
       case 'contact':
-        supportsReactions = !receiver.isDisabled && !receiver.isBlocked && direction === 'inbound';
+        showReactionButtons =
+          !receiver.isDisabled && !receiver.isBlocked && direction === 'inbound';
         break;
 
       case 'group':
-        supportsReactions = !receiver.isDisabled && !receiver.isLeft;
+        showReactionButtons = !receiver.isDisabled && !receiver.isLeft;
         break;
 
       case 'distribution-list':
-        supportsReactions = false;
+        showReactionButtons = false;
         break;
 
       default:
@@ -310,13 +311,13 @@
     }
   }
 
-  let supportsEdit: boolean = false;
-  $: supportsEdit = reactive(
+  let showEditButton: boolean = false;
+  $: showEditButton = reactive(
     () =>
       import.meta.env.BUILD_ENVIRONMENT === 'sandbox' &&
       direction === 'outbound' &&
       status.sent !== undefined &&
-      // For audios we don't support edits yet
+      // For audio we don't support edits yet.
       !(file !== undefined && file.type === 'audio') &&
       Date.now() - status.sent.at.getTime() < EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES * 60000,
     [$systemTime.current],
@@ -359,16 +360,16 @@
       copySelection: true,
       copyImage: file !== undefined && file.type === 'image',
       copy: text !== undefined,
-      edit: supportsEdit,
+      edit: showEditButton ? {disabled: !conversation.isEditingSupported} : false,
       saveAsFile: file !== undefined,
-      acknowledge: supportsReactions
+      acknowledge: showReactionButtons
         ? {
             used: reactions.some(
               (reaction) => reaction.direction === 'outbound' && reaction.type === 'acknowledged',
             ),
           }
         : false,
-      decline: supportsReactions
+      decline: showReactionButtons
         ? {
             used: reactions.some(
               (reaction) => reaction.direction === 'outbound' && reaction.type === 'declined',
@@ -389,7 +390,7 @@
     on:clickacknowledgeoption={handleClickAcknowledgeOption}
     on:clickdeclineoption={handleClickDeclineOption}
     on:clickquoteoption
-    on:clickeditmessageoption
+    on:clickeditoption
     on:clickforwardoption
     on:clickopendetailsoption
     on:clickdeleteoption

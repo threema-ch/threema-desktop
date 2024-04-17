@@ -17,7 +17,11 @@ export interface MessageContextMenuProviderProps {
         readonly copySelection: boolean;
         readonly copyImage: boolean;
         readonly copy: boolean;
-        readonly edit: boolean;
+        readonly edit:
+            | false
+            | {
+                  disabled: boolean;
+              };
         readonly saveAsFile: boolean;
         readonly acknowledge:
             | false

@@ -471,7 +471,7 @@
           status={item.status}
           text={item.text}
           on:clickquoteoption={() => dispatch('clickquote', item)}
-          on:clickeditmessageoption={() => dispatch('clickedit', item)}
+          on:clickeditoption={() => dispatch('clickedit', item)}
           on:clickforwardoption={() => handleClickForwardOption(item)}
           on:clickopendetailsoption={() => handleClickOpenDetailsOption(item)}
           on:clickdeleteoption={() => dispatch('clickdelete', item)}

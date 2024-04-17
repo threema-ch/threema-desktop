@@ -66,7 +66,10 @@ export function getContextMenuItems({
     copyImage?: ContextMenuItemHandler;
     copySelection?: ContextMenuItemHandler;
     copy?: ContextMenuItemHandler;
-    edit?: ContextMenuItemHandler;
+    edit?: {
+        disabled?: boolean | 'pseudo';
+        handler: ContextMenuItemHandler;
+    };
     saveAsFile?: ContextMenuItemHandler;
     acknowledge?: {
         filled?: boolean;
@@ -177,8 +180,9 @@ export function getContextMenuItems({
         ...(edit !== undefined
             ? [
                   {
-                      handler: edit,
-                      icon: {name: 'edit'},
+                      disabled: edit.disabled,
+                      handler: edit.handler,
+                      icon: {name: edit.disabled === 'pseudo' ? 'warning' : 'edit'},
                       label: t('messaging.action--message-option-edit', 'Edit'),
                   },
               ]

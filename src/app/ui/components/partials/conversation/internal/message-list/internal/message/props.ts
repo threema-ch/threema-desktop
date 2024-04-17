@@ -19,7 +19,8 @@ export interface MessageProps {
     };
     readonly boundary?: MessageContextMenuProviderProps['boundary'];
     readonly conversation: {
-        receiver: AnyReceiverData;
+        readonly receiver: AnyReceiverData;
+        readonly isEditingSupported: boolean;
     };
     readonly direction: BasicMessageProps['direction'];
     readonly file?: Omit<NonNullable<BasicMessageProps['file']>, 'thumbnail'> & {

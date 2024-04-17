@@ -1,8 +1,9 @@
 <script lang="ts">
   /**
-   * Whether the item is disabled.
+   * Whether the item is disabled. Note: "pseudo" will look similar to a disabled item, but will
+   * still be clickable.
    */
-  export let disabled = false;
+  export let disabled: boolean | 'pseudo' = false;
 
   /**
    * Whether the item is selected or not.
@@ -17,8 +18,9 @@
     on:mouseenter
     on:mouseleave
     on:keyup
-    {disabled}
-    tabindex={disabled ? -1 : 0}
+    disabled={disabled === true}
+    tabindex={disabled === true ? -1 : 0}
+    class:disabled={disabled === 'pseudo'}
     class:is-selected={selected}
     type="button"
   >
@@ -37,9 +39,12 @@
   @use 'component' as *;
 
   button {
+    flex: 1 0 auto;
+
     display: flex;
     flex-direction: row;
     align-items: center;
+
     padding: var(--c-menu-item-padding, default);
     gap: var(--c-menu-item-gap, default);
     user-select: none;
@@ -83,7 +88,8 @@
       }
     }
 
-    &:disabled {
+    &:disabled,
+    &.disabled {
       opacity: var(--c-menu-item-opacity--disabled, default);
     }
   }
