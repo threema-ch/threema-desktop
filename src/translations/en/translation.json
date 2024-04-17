@@ -359,7 +359,7 @@
     "action--message-option-delete": "Delete",
     "action--message-option-details": "Message Details",
     "action--message-option-disagree": "Disagree",
-    "action--message-option-edit": "Edit Message",
+    "action--message-option-edit": "Edit",
     "action--message-option-forward": "Forward",
     "action--message-option-quote": "Quote",
     "action--message-option-save-as-file": "Save as File",

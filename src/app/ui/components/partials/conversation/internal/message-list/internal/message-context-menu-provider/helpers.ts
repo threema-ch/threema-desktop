@@ -119,15 +119,6 @@ export function getContextMenuItems({
                   },
               ]
             : []),
-        ...(edit !== undefined
-            ? [
-                  {
-                      handler: edit,
-                      icon: {name: 'edit'},
-                      label: t('messaging.action--message-option-edit', 'Edit Message'),
-                  },
-              ]
-            : []),
         ...(saveAsFile !== undefined
             ? [
                   {
@@ -183,12 +174,12 @@ export function getContextMenuItems({
                   },
               ]
             : []),
-        ...(openDetails !== undefined
+        ...(edit !== undefined
             ? [
                   {
-                      handler: openDetails,
-                      icon: {name: 'info'},
-                      label: t('messaging.action--message-option-details', 'Message Details'),
+                      handler: edit,
+                      icon: {name: 'edit'},
+                      label: t('messaging.action--message-option-edit', 'Edit'),
                   },
               ]
             : []),
@@ -198,6 +189,15 @@ export function getContextMenuItems({
                       handler: deleteMessage,
                       icon: {name: 'delete'},
                       label: t('messaging.action--message-option-delete', 'Delete'),
+                  },
+              ]
+            : []),
+        ...(openDetails !== undefined
+            ? [
+                  {
+                      handler: openDetails,
+                      icon: {name: 'info'},
+                      label: t('messaging.action--message-option-details', 'Message Details'),
                   },
               ]
             : []),
