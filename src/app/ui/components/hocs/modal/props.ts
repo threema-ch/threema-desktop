@@ -63,6 +63,12 @@ interface CardWrapperOptions extends CommonWrapperOptions {
      * current viewport size.
      */
     readonly minWidth?: u53;
+    /**
+     * Optional maximum width of the modal card, in pixels. Defaults to `undefined`. Note: The modal
+     * cannot overflow the viewport, and the given `maxWidth` is only used if it's smaller than the
+     * current viewport size.
+     */
+    readonly maxWidth?: u53;
     readonly title?: string;
 }
 

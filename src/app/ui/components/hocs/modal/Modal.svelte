@@ -162,9 +162,20 @@
 
           <slot />
         {:else if wrapper.type === 'card'}
-          {@const {actions = [], buttons = [], elevated = true, minWidth = 460, title} = wrapper}
+          {@const {
+            actions = [],
+            buttons = [],
+            elevated = true,
+            minWidth = 460,
+            maxWidth,
+            title,
+          } = wrapper}
 
-          <div class="card" class:elevated style={`--c-t-min-width: ${minWidth}px;`}>
+          <div
+            class="card"
+            class:elevated
+            style={`--c-t-min-width: ${minWidth}px;${maxWidth === undefined ? '' : ` --c-t-max-width: ${maxWidth}px;`}`}
+          >
             {#if title !== undefined || actions.length > 0}
               <div class="header">
                 {#if title !== undefined}
@@ -228,7 +239,7 @@
 <style lang="scss">
   @use 'component' as *;
 
-  $-vars: (min-width);
+  $-vars: (min-width, max-width);
   $-temp-vars: format-each($-vars, $prefix: --c-t-);
 
   .modal {
@@ -310,7 +321,7 @@
           border-radius: rem(8px);
 
           min-width: min(100%, var($-temp-vars, --c-t-min-width));
-          max-width: 100%;
+          max-width: min(100%, var($-temp-vars, --c-t-max-width));
           width: fit-content;
 
           min-height: auto;

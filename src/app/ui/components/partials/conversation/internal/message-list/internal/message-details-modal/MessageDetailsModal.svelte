@@ -78,6 +78,7 @@
         onClick: 'close',
       },
     ],
+    maxWidth: 460,
     title: $i18n.t('dialog--message-details.label--title', 'Message Details'),
   }}
   on:close
