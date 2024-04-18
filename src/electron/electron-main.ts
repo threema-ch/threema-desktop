@@ -327,7 +327,7 @@ function validateSenderFrame(senderFrame: Electron.WebFrameMain): void {
     if (import.meta.env.DEBUG && senderFrame.url.startsWith('http://localhost:')) {
         return;
     }
-    if (senderFrame.url.startsWith('file://')) {
+    if (senderFrame.url.startsWith('threemadesktop://')) {
         return;
     }
     throw new Error(
@@ -506,7 +506,7 @@ Version information:
     // Determine URL
     let appUrl: string;
     if (!import.meta.env.DEBUG) {
-        appUrl = `${pathToFileURL(path.join(__dirname, '..', 'app', 'index.html'))}`;
+        appUrl = 'threemadesktop://app';
     } else {
         appUrl = `${new URL(`http://localhost:${import.meta.env.DEV_SERVER_PORT}/`)}`;
     }
@@ -624,6 +624,43 @@ function main(
         // Set Electron menu
         electron.Menu.setApplicationMenu(buildElectronMenu());
         electron.app.setAboutPanelOptions(ABOUT_PANEL_OPTIONS);
+
+        electron.protocol.handle(
+            'threemadesktop',
+            async (req: GlobalRequest): Promise<GlobalResponse> => {
+                const {host, pathname} = new URL(req.url);
+                if (host !== 'app') {
+                    return new Response('Not allowed to access files from a non-local host', {
+                        status: 400,
+                    });
+                }
+
+                if (!pathname.startsWith('/')) {
+                    log.warn('Pathname does not start with a slash');
+                    return new Response('Pathname should be relative', {
+                        status: 400,
+                    });
+                }
+
+                if (pathname === '/') {
+                    return await electron.net.fetch(
+                        pathToFileURL(path.join(__dirname, '..', 'app', 'index.html')).toString(),
+                    );
+                }
+
+                const pathToServe = path.resolve(__dirname, '..', 'app', pathname.slice(1));
+                const relativePath = path.relative(__dirname, pathToServe);
+                const isSafe = relativePath.startsWith('../app/') && !path.isAbsolute(relativePath);
+                if (isSafe) {
+                    return await electron.net.fetch(pathToFileURL(pathToServe).toString());
+                }
+
+                log.warn('Tried to access the file system in an unsafe way.');
+                return new Response('File access is not safe', {
+                    status: 400,
+                });
+            },
+        );
 
         // Set up IPC message handlers
         electron.ipcMain
@@ -871,7 +908,6 @@ function main(
         log.debug(`Running in mode: ${import.meta.env.BUILD_MODE} with parameters:\n`, parameters);
         log.info(`Serving app from ${appUrl}`);
         window.loadURL(appUrl).catch((error) => log.error(`Unable to load URL ${appUrl}`, error));
-
         if (!import.meta.env.DEBUG) {
             // In release builds, we don't include the "Toggle Developer Tools" menu entry. Without the
             // menu entry, the corresponding keyboard shortcut (Ctrl+Shift+i) doesn't work anymore.
@@ -1131,6 +1167,17 @@ function main(
 setAssertFailLogger((error) => CONSOLE_LOGGER.trace(error));
 (async () => {
     const signal = {start: false};
+
+    electron.protocol.registerSchemesAsPrivileged([
+        {
+            scheme: 'threemadesktop',
+            privileges: {
+                standard: true,
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                supportFetchAPI: true,
+            },
+        },
+    ]);
 
     // Quit application when all windows are closed
     electron.app.on('window-all-closed', () => electron.app.quit());
