@@ -428,14 +428,6 @@ export const ROUTE_DEFINITIONS = {
         }),
     },
     modal: {
-        contactEdit: defineModal({
-            id: 'contactEdit',
-            params: PARAM_CONTACT_LOOKUP_SCHEMA,
-        }),
-        groupEdit: defineModal({
-            id: 'groupEdit',
-            params: PARAM_GROUP_LOOKUP_SCHEMA,
-        }),
         changePassword: defineModal({
             id: 'changePassword',
             params: undefined,

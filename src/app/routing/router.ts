@@ -238,8 +238,7 @@ export class Router extends WritableStore<RouterState> {
             nav.params !== current.nav.params ||
             aside?.id !== current.aside?.id ||
             aside?.params !== current.aside?.params ||
-            modal?.id !== current.modal?.id ||
-            modal?.params !== current.modal?.params
+            modal?.id !== current.modal?.id
         ) {
             this._log.debug(
                 `Router: Navigating to (${nav.id} ${main.id} ${aside?.id} ${modal?.id})`,

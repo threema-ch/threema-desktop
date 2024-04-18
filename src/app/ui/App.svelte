@@ -11,8 +11,6 @@
   import MainWelcome from '~/app/ui/components/partials/welcome/Welcome.svelte';
   import DebugPanel from '~/app/ui/debug/DebugPanel.svelte';
   import ChangePassword from '~/app/ui/modal/ChangePassword.svelte';
-  import ModalContactEdit from '~/app/ui/modal/ContactEdit.svelte';
-  import ModalGroupEdit from '~/app/ui/modal/GroupEdit.svelte';
   import NavContactAdd from '~/app/ui/nav/ContactAddNav.svelte';
   import NavContactAddDetail from '~/app/ui/nav/contact-add/ContactAddDetail.svelte';
   import NetworkAlert from '~/app/ui/notification/NetworkAlert.svelte';
@@ -156,12 +154,6 @@
     switch (modalId) {
       case undefined:
         modalComponent = undefined;
-        break;
-      case 'contactEdit':
-        modalComponent = ModalContactEdit;
-        break;
-      case 'groupEdit':
-        modalComponent = ModalGroupEdit;
         break;
       case 'changePassword':
         modalComponent = ChangePassword;

@@ -101,16 +101,12 @@ export function run(): void {
             router.assertRoutes('contactList', 'conversation', 'contactDetails', undefined);
 
             // Modal
-            router.replaceModal(
-                ROUTE_DEFINITIONS.modal.contactEdit.withTypedParams({
-                    contactUid: 1n as DbContactUid,
-                }),
-            );
-            router.assertRoutes('contactList', 'conversation', 'contactDetails', 'contactEdit');
+            router.replaceModal(ROUTE_DEFINITIONS.modal.changePassword.withoutParams());
+            router.assertRoutes('contactList', 'conversation', 'contactDetails', 'changePassword');
 
             // Close aside
             router.closeAside();
-            router.assertRoutes('contactList', 'conversation', undefined, 'contactEdit');
+            router.assertRoutes('contactList', 'conversation', undefined, 'changePassword');
 
             // Close modal
             router.closeModal();
