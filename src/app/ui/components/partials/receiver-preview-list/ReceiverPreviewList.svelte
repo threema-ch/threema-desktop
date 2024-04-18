@@ -2,6 +2,8 @@
   @component Renders a list of preview cards for the given receivers.
 -->
 <script lang="ts" generics="THandlerProps = never">
+  import {createEventDispatcher} from 'svelte';
+
   import type {ConversationRouteParams} from '~/app/ui/components/partials/conversation/types';
   import ReceiverPreview from '~/app/ui/components/partials/receiver-preview-list/internal/receiver-preview/ReceiverPreview.svelte';
   import type {ReceiverPreviewListProps} from '~/app/ui/components/partials/receiver-preview-list/props';
@@ -18,6 +20,7 @@
   export let contextMenuItems: $$Props['contextMenuItems'] = undefined;
   export let highlights: $$Props['highlights'] = undefined;
   export let items: $$Props['items'] = [];
+  export let options: NonNullable<$$Props['options']> = {};
   export let services: $$Props['services'];
 
   const {router} = services;
@@ -25,6 +28,10 @@
   let routeParams: ConversationRouteParams | undefined = undefined;
 
   let containerElement: SvelteNullableBinding<HTMLElement> = null;
+
+  const dispatch = createEventDispatcher<{
+    clickitem: DbReceiverLookup;
+  }>();
 
   function handleChangeRouterState(): void {
     const routerState = router.get();
@@ -42,7 +49,11 @@
     if (lookup === undefined) {
       return;
     }
+    dispatch('clickitem', lookup);
 
+    if (options.routeOnClick === false) {
+      return;
+    }
     if (active === true) {
       // Close conversation of the respective receiver if it was already open.
       router.goToWelcome();

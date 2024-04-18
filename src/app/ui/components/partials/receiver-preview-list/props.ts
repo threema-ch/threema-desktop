@@ -16,6 +16,13 @@ export interface ReceiverPreviewListProps<THandlerProps = undefined> {
      */
     readonly highlights?: string | string[];
     readonly items: ReceiverPreviewListItem<THandlerProps>[];
+    readonly options?: {
+        /**
+         * Whether to route to the respective receiver's conversation when it's clicked. Defaults to
+         * `true`.
+         */
+        readonly routeOnClick?: boolean;
+    };
     readonly services: Pick<AppServices, 'router' | 'settings' | 'profilePicture'>;
 }
 
