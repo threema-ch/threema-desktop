@@ -60,7 +60,7 @@ function getConversationMessageViewModel(
         direction:
             messageModel.view.direction === MessageDirection.INBOUND ? 'inbound' : 'outbound',
         file: getMessageFile(messageModel),
-        history: getMessageHistory(services, messageModel),
+        history: getMessageHistory(messageModel),
         id: messageModel.view.id,
         lastEditedAt: messageModel.view.lastEditedAt,
         ordinal: messageModel.view.ordinal,

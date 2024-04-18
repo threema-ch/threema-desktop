@@ -43,6 +43,8 @@ import {
     type MessageRepository,
     type UnifiedEditMessage,
     type MessageHistoryViewEntry,
+    type CommonBaseFileMessageView,
+    type UpdateFileBasedMessage,
 } from '~/common/model/types/message';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
@@ -482,6 +484,35 @@ export function all(
             },
         );
     });
+}
+
+/**
+ * Update the caption of a file-based message and persist the change in its edit history.
+ */
+export function updateFileBasedMessageCaption<TFileMessageView extends CommonBaseFileMessageView>(
+    services: ServicesForModel,
+    messageType: MessageType,
+    messageUid: DbMessageUid,
+    messageView: Readonly<TFileMessageView>,
+    editedMessage: UnifiedEditMessage,
+): UpdateFileBasedMessage {
+    const change: Pick<Required<CommonBaseFileMessageView>, 'lastEditedAt' | 'caption'> = {
+        lastEditedAt: editedMessage.lastEditedAt,
+        caption: editedMessage.newText,
+    };
+
+    editMessageByMessageUid(services, messageUid, messageType, change);
+
+    const newHistory: MessageHistoryViewEntry[] =
+        messageView.history.length === 0
+            ? [{text: messageView.caption ?? '', editedAt: messageView.createdAt}]
+            : [...messageView.history];
+    newHistory.push({
+        editedAt: editedMessage.lastEditedAt,
+        text: editedMessage.newText,
+    });
+
+    return {...change, history: newHistory};
 }
 
 abstract class CommonBaseMessageModelController<TView extends CommonBaseMessageView> {

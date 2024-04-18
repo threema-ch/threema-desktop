@@ -47,6 +47,7 @@ import type {
     DbCreateMessage,
     DbMessageReaction,
     DbMessageEditFor,
+    DbMessageLastEdit,
 } from '~/common/db';
 import {
     type GlobalPropertyKey,
@@ -118,16 +119,6 @@ type AnyMediaMessageDataTable =
     | typeof tMessageFileData
     | typeof tMessageAudioData
     | typeof tMessageVideoData;
-
-/*
- * Helper type for queries to the message database
- * Text can be undefined because it might be empty for file messages
- */
-interface QueryLastEditedInformation {
-    text?: string;
-    lastEditedAt?: Date;
-    createdAt: Date;
-}
 
 /**
  * Database backend backed by SQLite (with SQLCipher), using the BetterSqlCipher driver.
@@ -1268,16 +1259,17 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         )?.uid;
     }
 
+    // TODO Rewrite this query so that it uses distinct
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     private _getCommonMessageSelector() {
-        const tMessageLeftJoin = tMessageReaction.forUseInLeftJoin();
-        const tMessageHistoryJoin = tMessageHistory.forUseInLeftJoin();
+        const tMesssageReactionLeftJoin = tMessageReaction.forUseInLeftJoin();
+        const tMessageHistoryLeftJoin = tMessageHistory.forUseInLeftJoin();
         return this._db
             .selectFrom(tMessage)
-            .leftJoin(tMessageLeftJoin)
-            .on(tMessageLeftJoin.messageUid.equals(tMessage.uid))
-            .leftJoin(tMessageHistoryJoin)
-            .on(tMessageHistoryJoin.messageUid.equals(tMessage.uid))
+            .leftJoin(tMesssageReactionLeftJoin)
+            .on(tMesssageReactionLeftJoin.messageUid.equals(tMessage.uid))
+            .leftJoin(tMessageHistoryLeftJoin)
+            .on(tMessageHistoryLeftJoin.messageUid.equals(tMessage.uid))
             .select({
                 uid: tMessage.uid,
                 id: tMessage.messageId,
@@ -1295,16 +1287,16 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt).getTime(),
                 reactions: this._db
                     .aggregateAsArray({
-                        reaction: tMessageLeftJoin.reaction,
-                        reactionAt: tMessageLeftJoin.reactionAt,
-                        senderIdentity: tMessageLeftJoin.senderIdentity,
+                        reaction: tMesssageReactionLeftJoin.reaction,
+                        reactionAt: tMesssageReactionLeftJoin.reactionAt,
+                        senderIdentity: tMesssageReactionLeftJoin.senderIdentity,
                     })
                     .useEmptyArrayForNoValue(),
 
                 history: this._db
                     .aggregateAsArray({
-                        editedAt: tMessageHistoryJoin.editedAt,
-                        text: tMessageHistoryJoin.text,
+                        editedAt: tMessageHistoryLeftJoin.editedAt,
+                        text: tMessageHistoryLeftJoin.text,
                     })
                     .useEmptyArrayForNoValue(),
             })
@@ -1699,10 +1691,10 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         return result;
     }
 
-    private _getVideoMessageEditedInfo(
+    private _getLastVideoMessageEdit(
         table: typeof tMessageVideoData,
         messageUid: DbMessageUid,
-    ): QueryLastEditedInformation {
+    ): DbMessageLastEdit {
         const tLeftJoin = table.forUseInLeftJoin();
         return sync(
             this._db
@@ -1719,10 +1711,10 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         );
     }
 
-    private _getFileMessageEditedInfo(
+    private _getLastFileMessageEdit(
         table: typeof tMessageFileData,
         messageUid: DbMessageUid,
-    ): QueryLastEditedInformation {
+    ): DbMessageLastEdit {
         const tLeftJoin = table.forUseInLeftJoin();
         return sync(
             this._db
@@ -1739,10 +1731,10 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         );
     }
 
-    private _getAudioMessageEditedInfo(
+    private _getLastAudioMessageEdit(
         table: typeof tMessageAudioData,
         messageUid: DbMessageUid,
-    ): QueryLastEditedInformation {
+    ): DbMessageLastEdit {
         const tLeftJoin = table.forUseInLeftJoin();
         return sync(
             this._db
@@ -1759,10 +1751,10 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         );
     }
 
-    private _getImageMessageEditedInfo(
+    private _getLastImageMessageEdit(
         table: typeof tMessageImageData,
         messageUid: DbMessageUid,
-    ): QueryLastEditedInformation {
+    ): DbMessageLastEdit {
         const tLeftJoin = table.forUseInLeftJoin();
         return sync(
             this._db
@@ -1779,10 +1771,10 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         );
     }
 
-    private _getTextMessageEditedInfo(
+    private _getLastTextMessageEdit(
         table: typeof tMessageTextData,
         messageUid: DbMessageUid,
-    ): QueryLastEditedInformation {
+    ): DbMessageLastEdit {
         const tLeftJoin = table.forUseInLeftJoin();
         return sync(
             this._db
@@ -1799,25 +1791,24 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         );
     }
 
-    private _getLastEdit(type: MessageType, messageUid: DbMessageUid): QueryLastEditedInformation {
+    private _getLastEdit(type: MessageType, messageUid: DbMessageUid): DbMessageLastEdit {
         switch (type) {
             case 'text':
-                return this._getTextMessageEditedInfo(tMessageTextData, messageUid);
+                return this._getLastTextMessageEdit(tMessageTextData, messageUid);
             case 'file':
-                return this._getFileMessageEditedInfo(tMessageFileData, messageUid);
+                return this._getLastFileMessageEdit(tMessageFileData, messageUid);
             case 'image':
-                return this._getImageMessageEditedInfo(tMessageImageData, messageUid);
+                return this._getLastImageMessageEdit(tMessageImageData, messageUid);
             case 'video':
-                return this._getVideoMessageEditedInfo(tMessageVideoData, messageUid);
+                return this._getLastVideoMessageEdit(tMessageVideoData, messageUid);
             case 'audio':
-                return this._getAudioMessageEditedInfo(tMessageAudioData, messageUid);
+                return this._getLastAudioMessageEdit(tMessageAudioData, messageUid);
             default:
                 return unreachable(type);
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-    private _getTableForFileType(type: MediaBasedMessageType) {
+    private _getTableForFileType(type: MediaBasedMessageType): AnyMediaMessageDataTable {
         switch (type) {
             case 'file':
                 return tMessageFileData;
@@ -1892,7 +1883,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             // First, we need to check if the message has already been updated once
             const lastEdit = this._getLastEdit(type, messageUid);
 
-            // Message has never been edited before, move it to the version table
+            // Message has never been edited before, create a corresponding entry for the first
+            // version in the history database.
             if (lastEdit.lastEditedAt === undefined) {
                 sync(
                     this._db

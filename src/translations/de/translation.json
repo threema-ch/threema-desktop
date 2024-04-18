@@ -299,7 +299,7 @@
     "label--received-date": "Erhalten",
     "label--sent-date": "Gesendet",
     "label--title": "Nachrichtendetails",
-    "prose--empty-caption": "Keine Dateiüberschrift"
+    "prose--empty-caption": "Kein Text"
   },
   "dialog--server-alert": {
     "action--confirm": "OK"

@@ -9,7 +9,7 @@ import {MessageDirection, MessageType} from '~/common/enum';
 import {
     InboundBaseMessageModelController,
     OutboundBaseMessageModelController,
-    editMessageByMessageUid,
+    updateFileBasedMessageCaption,
 } from '~/common/model/message';
 import {
     loadOrDownloadBlob,
@@ -27,7 +27,6 @@ import type {
     BaseMessageView,
     CommonBaseMessageView,
     DirectedMessageFor,
-    MessageHistoryViewEntry,
     UnifiedEditMessage,
 } from '~/common/model/types/message';
 import type {
@@ -177,26 +176,15 @@ export class InboundImageMessageModelController
         message: GuardedStoreHandle<InboundImageMessage['view']>,
         editedMessage: UnifiedEditMessage,
     ): boolean {
-        const change = {
-            lastEditedAt: editedMessage.lastEditedAt,
-            caption: editedMessage.newText,
-        };
-        message.update((view) => {
-            editMessageByMessageUid(this._services, this.uid, this._type, {
-                lastEditedAt: editedMessage.lastEditedAt,
-                caption: editedMessage.newText,
-            });
-            const newHistory: MessageHistoryViewEntry[] =
-                view.history.length === 0
-                    ? [{text: view.caption ?? '', editedAt: view.createdAt}]
-                    : [...view.history];
-            newHistory.push({
-                editedAt: editedMessage.lastEditedAt,
-                text: editedMessage.newText,
-            });
-            return {...change, history: newHistory};
-        });
-
+        message.update((view) =>
+            updateFileBasedMessageCaption(
+                this._services,
+                this._type,
+                this.uid,
+                view,
+                editedMessage,
+            ),
+        );
         return true;
     }
 }
@@ -264,26 +252,15 @@ export class OutboundImageMessageModelController
         message: GuardedStoreHandle<OutboundImageMessage['view']>,
         editedMessage: UnifiedEditMessage,
     ): boolean {
-        const change = {
-            lastEditedAt: editedMessage.lastEditedAt,
-            caption: editedMessage.newText,
-        };
-        message.update((view) => {
-            editMessageByMessageUid(this._services, this.uid, this._type, {
-                lastEditedAt: editedMessage.lastEditedAt,
-                caption: editedMessage.newText,
-            });
-            const newHistory: MessageHistoryViewEntry[] =
-                view.history.length === 0
-                    ? [{text: view.caption ?? '', editedAt: view.createdAt}]
-                    : [...view.history];
-            newHistory.push({
-                editedAt: editedMessage.lastEditedAt,
-                text: editedMessage.newText,
-            });
-            return {...change, history: newHistory};
-        });
-
+        message.update((view) =>
+            updateFileBasedMessageCaption(
+                this._services,
+                this._type,
+                this.uid,
+                view,
+                editedMessage,
+            ),
+        );
         return true;
     }
 }

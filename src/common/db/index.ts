@@ -419,8 +419,7 @@ export interface DbMessageReaction {
 }
 
 /**
- * A table for message histories
- * Each entry describes a version of a message, referring to its text.
+ * A table for message histories Each entry describes a version of a message, referring to its text.
  */
 export interface DbMessageHistory {
     readonly uid: DbMessageHistoryUid;
@@ -429,8 +428,9 @@ export interface DbMessageHistory {
      */
     readonly editedAt: Date;
     /**
-     * The text that this edit has resulted in. It can be empty for non-text messages (i.e captions).
-     * It is the responsibility of the backend/frontend to make sure that text messages are not edited to be empty.
+     * The text that this edit has resulted in. It can be empty for non-text messages (i.e
+     * captions). It is the respons ibility of the backend/frontend to make sure that text messages
+     * are not edited to be empty.
      */
     readonly text?: string;
     /**
@@ -562,6 +562,16 @@ export type DbMessageFor<TType extends MessageType> = {
     video: DbVideoMessage;
     audio: DbAudioMessage;
 }[TType];
+
+/*
+ * Helper type for queries to the message database Text can be undefined because it might be empty
+ * for file messages
+ */
+export interface DbMessageLastEdit {
+    text?: string;
+    lastEditedAt?: Date;
+    createdAt: Date;
+}
 
 /**
  * A database message UID.

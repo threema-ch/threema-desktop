@@ -46,13 +46,14 @@
   export let lastEdited: $$Props['lastEdited'] = undefined;
   export let highlighted: $$Props['highlighted'] = undefined;
   export let history: $$Props['history'] = [];
-  unusedProp(history);
   export let quote: $$Props['quote'] = undefined;
   export let reactions: $$Props['reactions'];
   export let sender: $$Props['sender'] = undefined;
   export let services: $$Props['services'];
   export let status: $$Props['status'];
   export let text: $$Props['text'] = undefined;
+
+  unusedProp(history);
 
   const {
     router,
