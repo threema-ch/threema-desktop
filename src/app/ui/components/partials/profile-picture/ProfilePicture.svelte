@@ -27,15 +27,14 @@
 
   let profilePictureStore: IQueryableStore<Blob | undefined> = new ReadableStore(undefined);
 
-  function updateProfilePictureStore(
-    receiverType: DbReceiverLookup['type'],
-    receiverUid: DbReceiverLookup['uid'],
-  ): void {
+  function updateProfilePictureStore(lookup: DbReceiverLookup | 'self'): void {
+    if (lookup === 'self') {
+      profilePictureStore = services.profilePicture.getProfilePictureForSelf();
+      return;
+    }
+
     services.profilePicture
-      .getProfilePictureForReceiver({
-        type: receiverType,
-        uid: receiverUid,
-      } as DbReceiverLookup)
+      .getProfilePictureForReceiver(lookup)
       .then((store) => {
         if (store === undefined) {
           profilePictureStore = new ReadableStore(undefined);
@@ -150,12 +149,33 @@
 
   $: ({isClickable = false} = options);
 
-  $: updateProfilePictureStore(receiver.lookup.type, receiver.lookup.uid);
+  /**
+   * Updates only if the value of `receiver.lookup.type` or `receiver.lookup.uid` changes, not on
+   * every change of the `receiver` object.
+   */
+  let currentReceiverLookup: DbReceiverLookup | 'self' =
+    receiver.type === 'self'
+      ? 'self'
+      : // Cast is needed, because the linter is not able to infer that both types are identical.
+        (receiver.lookup satisfies DbReceiverLookup as DbReceiverLookup);
+  $: if (receiver.type === 'self') {
+    if (currentReceiverLookup !== 'self') {
+      currentReceiverLookup = 'self';
+    }
+  } else if (
+    currentReceiverLookup === 'self' ||
+    currentReceiverLookup.type !== receiver.lookup.type ||
+    currentReceiverLookup.uid !== receiver.lookup.uid
+  ) {
+    currentReceiverLookup = receiver.lookup;
+  }
+
+  $: updateProfilePictureStore(currentReceiverLookup);
 </script>
 
 <Avatar
   byteStore={profilePictureStore}
-  charms={getAvatarCharms(receiver)}
+  charms={receiver.type === 'self' ? [] : getAvatarCharms(receiver)}
   color={receiver.color}
   description={$i18n.t('contacts.hint--profile-picture', {
     name: receiver.name,
@@ -163,4 +183,5 @@
   disabled={!isClickable}
   initials={receiver.initials}
   size={getAvatarSizePxForSize(size)}
+  on:click
 />

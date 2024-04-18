@@ -1,7 +1,7 @@
 import type {AnyContentItemOptions} from '~/app/ui/components/partials/receiver-card/internal/content-item/types';
 import type {I18nType} from '~/app/ui/i18n-types';
 import {unreachable} from '~/common/utils/assert';
-import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
+import type {AnyReceiverData, AnyReceiverDataOrSelf} from '~/common/viewmodel/utils/receiver';
 
 export function getReceiverCardTopRightItemOptions(
     receiver: AnyReceiverData,
@@ -41,17 +41,27 @@ export function getReceiverCardTopRightItemOptions(
 }
 
 export function getReceiverCardBottomLeftItemOptions(
-    receiver: AnyReceiverData,
+    receiver: AnyReceiverDataOrSelf & {
+        readonly isCreator?: boolean;
+    },
 ): AnyContentItemOptions[] | undefined {
     switch (receiver.type) {
         case 'contact': {
-            const {isInactive, isInvalid, nickname} = receiver;
+            const {isCreator = false, isInactive, isInvalid, nickname} = receiver;
 
-            if (!isInactive && !isInvalid && nickname === undefined) {
+            if (!isCreator && !isInactive && !isInvalid && nickname === undefined) {
                 return undefined;
             }
 
             return [
+                ...(!isCreator
+                    ? []
+                    : [
+                          {
+                              type: 'tags',
+                              isCreator,
+                          } as const,
+                      ]),
                 ...(!isInactive && !isInvalid
                     ? []
                     : [
@@ -74,6 +84,10 @@ export function getReceiverCardBottomLeftItemOptions(
             ];
         }
 
+        // TODO(DESK-236): Implement distribution lists.
+        case 'distribution-list':
+            return undefined;
+
         case 'group': {
             const memberNames = [receiver.creator, ...receiver.members]
                 .map((member) => member.name)
@@ -92,9 +106,20 @@ export function getReceiverCardBottomLeftItemOptions(
                   ];
         }
 
-        // TODO(DESK-236): Implement distribution lists.
-        case 'distribution-list':
-            return undefined;
+        case 'self': {
+            const {isCreator = false} = receiver;
+
+            if (!isCreator) {
+                return undefined;
+            }
+
+            return [
+                {
+                    type: 'tags',
+                    isCreator,
+                } as const,
+            ];
+        }
 
         default:
             return unreachable(receiver);

@@ -37,8 +37,11 @@
     }
   }
 
-  function handleClickItem(event: MouseEvent, lookup: DbReceiverLookup, active?: boolean): void {
+  function handleClickItem(event: MouseEvent, lookup?: DbReceiverLookup, active?: boolean): void {
     event.preventDefault();
+    if (lookup === undefined) {
+      return;
+    }
 
     if (active === true) {
       // Close conversation of the respective receiver if it was already open.
@@ -52,11 +55,13 @@
 </script>
 
 <ul bind:this={containerElement} class="container">
-  {#each items as item (`${item.receiver.lookup.type}.${item.receiver.lookup.uid}`)}
+  {#each items as item (item.receiver.type === 'self' ? 'self' : `${item.receiver.lookup.type}.${item.receiver.lookup.uid}`)}
     {@const {receiver} = item}
     {@const active =
-      routeParams?.receiverLookup.type === receiver.lookup.type &&
-      routeParams.receiverLookup.uid === receiver.lookup.uid}
+      receiver.type === 'self'
+        ? false
+        : routeParams?.receiverLookup.type === receiver.lookup.type &&
+          routeParams.receiverLookup.uid === receiver.lookup.uid}
 
     <ReceiverPreview
       {active}
@@ -69,7 +74,12 @@
       {highlights}
       {receiver}
       {services}
-      on:click={(event) => handleClickItem(event.detail, receiver.lookup, active)}
+      on:click={(event) =>
+        handleClickItem(
+          event.detail,
+          receiver.type === 'self' ? undefined : receiver.lookup,
+          active,
+        )}
     />
   {/each}
 </ul>

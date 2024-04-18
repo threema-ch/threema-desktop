@@ -83,7 +83,9 @@
 
 <li
   class="container"
-  data-receiver={`${receiver.lookup.type}.${receiver.lookup.uid}`}
+  data-receiver={receiver.type === 'self'
+    ? 'self'
+    : `${receiver.lookup.type}.${receiver.lookup.uid}`}
   use:contextmenu={handleAlternativeClick}
 >
   <ContextMenuProvider
@@ -105,42 +107,67 @@
     on:clickitem={handleClickContextMenuItem}
     on:hasclosed={handleContextMenuHasClosed}
   >
-    <a href={getItemUrl(receiver.lookup)} class="item" class:active on:click={handleClick}>
-      <ReceiverCard
-        content={{
-          topLeft: [
-            {
-              type: 'receiver-name',
-              receiver,
-              highlights,
-            },
-          ],
-          topRight: getReceiverCardTopRightItemOptions(receiver, $i18n),
-          bottomLeft: getReceiverCardBottomLeftItemOptions(receiver),
-          bottomRight:
-            receiver.type === 'contact'
-              ? [
-                  {
-                    type: 'blocked-icon',
-                    isBlocked: receiver.isBlocked,
-                  },
-                  {
-                    type: 'text',
-                    text: {
-                      raw: receiver.identity,
+    {#if receiver.type === 'self'}
+      <span class="item self">
+        <ReceiverCard
+          content={{
+            topLeft: [
+              {
+                type: 'text',
+                text: {
+                  raw: $i18n.t('contacts.label--own-name'),
+                },
+              },
+            ],
+            bottomLeft: getReceiverCardBottomLeftItemOptions(receiver),
+          }}
+          options={{
+            isClickable: false,
+          }}
+          {receiver}
+          {services}
+          size="md"
+        />
+      </span>
+    {:else}
+      <!-- eslint-disable-next-line @typescript-eslint/no-unsafe-argument -->
+      <a href={getItemUrl(receiver.lookup)} class="item" class:active on:click={handleClick}>
+        <ReceiverCard
+          content={{
+            topLeft: [
+              {
+                type: 'receiver-name',
+                receiver,
+                highlights,
+              },
+            ],
+            topRight: getReceiverCardTopRightItemOptions(receiver, $i18n),
+            bottomLeft: getReceiverCardBottomLeftItemOptions(receiver),
+            bottomRight:
+              receiver.type === 'contact'
+                ? [
+                    {
+                      type: 'blocked-icon',
+                      isBlocked: receiver.isBlocked,
                     },
-                  },
-                ]
-              : undefined,
-        }}
-        options={{
-          isClickable: true,
-        }}
-        {receiver}
-        {services}
-        size="md"
-      />
-    </a>
+                    {
+                      type: 'text',
+                      text: {
+                        raw: receiver.identity,
+                      },
+                    },
+                  ]
+                : undefined,
+          }}
+          options={{
+            isClickable: true,
+          }}
+          {receiver}
+          {services}
+          size="md"
+        />
+      </a>
+    {/if}
   </ContextMenuProvider>
 </li>
 
@@ -163,17 +190,17 @@
       text-decoration: inherit;
       color: inherit;
 
-      &:hover {
+      &:not(.self):hover {
         cursor: pointer;
         background-color: var(--cc-conversation-preview-background-color--hover);
       }
 
-      &:focus-visible {
+      &:not(.self):focus-visible {
         box-shadow: inset 0em 0em 0em em(1px) var(--c-icon-button-naked-outer-border-color--focus);
         outline: none;
       }
 
-      &.active {
+      &:not(.self).active {
         background-color: var(--cc-conversation-preview-background-color--active);
       }
     }

@@ -1,6 +1,5 @@
 import type {ProfilePictureProps} from '~/app/ui/components/partials/profile-picture/props';
 import type {ContentItemProps} from '~/app/ui/components/partials/receiver-card/internal/content-item/props';
-import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
  * Props accepted by the `ReceiverCard` component.
@@ -23,11 +22,7 @@ export interface ReceiverCardProps {
         isClickable?: boolean;
     };
     /** Receiver to render a `ReceiverCard` for. */
-    readonly receiver: Pick<
-        AnyReceiverData,
-        'color' | 'initials' | 'isDisabled' | 'lookup' | 'name' | 'type'
-    > &
-        Pick<AnyReceiverData & {type: 'contact'}, 'badge'>;
+    readonly receiver: ProfilePictureProps['receiver'];
     readonly services: ProfilePictureProps['services'];
     /** Controls how large the avatar, text, and other elements appear. Defaults to `"md"`. */
     readonly size?: ProfilePictureProps['size'];

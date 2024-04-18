@@ -16,7 +16,7 @@ export interface ReceiverPreviewListProps<THandlerProps = undefined> {
      */
     readonly highlights?: string | string[];
     readonly items: ReceiverPreviewListItem<THandlerProps>[];
-    readonly services: AppServices;
+    readonly services: Pick<AppServices, 'router' | 'settings' | 'profilePicture'>;
 }
 
 export interface ReceiverPreviewListItem<THandlerProps>

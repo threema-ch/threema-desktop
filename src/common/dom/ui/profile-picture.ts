@@ -53,14 +53,14 @@ export class ProfilePictureService {
         const {type, uid} = receiverLookup;
 
         return await this._lock.with(async () => {
-            // Check the cache
+            // Check the cache.
             const cachedStore = this._cache.get(cacheKeyFor(receiverLookup));
             if (cachedStore !== undefined) {
                 return cachedStore;
             }
             this._log.debug(`Cache miss for ${ReceiverTypeUtils.nameOf(type)} with UID ${uid}`);
 
-            // Fetch the profile picture store for this receiver
+            // Fetch the profile picture store for this receiver.
             let profilePictureModelStore;
             switch (type) {
                 case ReceiverType.CONTACT: {
@@ -80,13 +80,13 @@ export class ProfilePictureService {
                     break;
                 }
                 case ReceiverType.DISTRIBUTION_LIST:
-                    // TODO(DESK-771): Support distribution lists
+                    // TODO(DESK-771): Support distribution lists.
                     return undefined;
                 default:
                     return unreachable(type);
             }
 
-            // Return a derived store which wraps the bytes in a `Blob`
+            // Return a derived store which wraps the bytes in a `Blob`.
             const blobStore = derive(
                 [profilePictureModelStore],
                 ([{currentValue: profilePictureModel}]) => {
@@ -100,9 +100,42 @@ export class ProfilePictureService {
                         ? undefined
                         : new Blob([bytes], {type: 'image/jpeg'});
                 },
+                {
+                    subscriptionMode: 'persistent',
+                },
             );
             this._cache.set(cacheKeyFor(receiverLookup), blobStore);
+
             return blobStore;
         });
+    }
+
+    /**
+     * Return the profile picture store for the user themself.
+     */
+    public getProfilePictureForSelf(): ProfilePictureBlobStore {
+        // Check the cache.
+        const cachedStore = this._cache.get('self');
+        if (cachedStore !== undefined) {
+            return cachedStore;
+        }
+        this._log.debug(`Cache miss for the user's own profile picture`);
+
+        const blobStore = derive(
+            [this._backend.user.profilePicture],
+            ([{currentValue: profilePicture}]) => {
+                this._log.debug(
+                    `Re-deriving profile picture store of the user's own profile picture`,
+                );
+                const bytes = profilePicture.picture;
+                return bytes === undefined ? undefined : new Blob([bytes], {type: 'image/jpeg'});
+            },
+            {
+                subscriptionMode: 'persistent',
+            },
+        );
+        this._cache.set('self', blobStore);
+
+        return blobStore;
     }
 }
