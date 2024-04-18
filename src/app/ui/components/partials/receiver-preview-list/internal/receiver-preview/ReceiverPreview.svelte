@@ -23,6 +23,7 @@
   export let active: $$Props['active'];
   export let contextMenuOptions: NonNullable<$$Props['contextMenuOptions']> = {items: []};
   export let highlights: $$Props['highlights'] = undefined;
+  export let options: NonNullable<$$Props['options']> = {};
   export let popover: $$Props['popover'] = undefined;
   export let receiver: $$Props['receiver'];
   export let services: $$Props['services'];
@@ -130,8 +131,8 @@
         />
       </span>
     {:else}
-      <!-- eslint-disable-next-line @typescript-eslint/no-unsafe-argument -->
-      <a href={getItemUrl(receiver.lookup)} class="item" class:active on:click={handleClick}>
+      <!-- eslint-disable-next-line @typescript-eslint/no-unsafe-argument --><!-- prettier-ignore -->
+      <a href={getItemUrl(receiver.lookup)} class="item" class:active={active && options.highlightWhenActive !== false} on:click={handleClick}>
         <ReceiverCard
           content={{
             topLeft: [

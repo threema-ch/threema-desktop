@@ -18,6 +18,11 @@ export interface ReceiverPreviewListProps<THandlerProps = undefined> {
     readonly items: ReceiverPreviewListItem<THandlerProps>[];
     readonly options?: {
         /**
+         * Whether receivers whose conversation is currently open should be marked as active.
+         * Defaults to `true`.
+         */
+        readonly highlightActiveReceiver?: boolean;
+        /**
          * Whether to route to the respective receiver's conversation when it's clicked. Defaults to
          * `true`.
          */

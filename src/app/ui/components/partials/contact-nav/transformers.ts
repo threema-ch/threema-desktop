@@ -1,15 +1,14 @@
+import type {AddressBookProps} from '~/app/ui/components/partials/address-book/props';
+import type {TabState} from '~/app/ui/components/partials/address-book/types';
 import type {
     ContextMenuItemHandlerProps,
     RemoteContactListViewModelStoreValue,
-    TabState,
 } from '~/app/ui/components/partials/contact-nav/types';
-import type {ReceiverPreviewListProps} from '~/app/ui/components/partials/receiver-preview-list/props';
 import type {AnyReceiver} from '~/common/model';
-import type {u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import type {Remote} from '~/common/utils/endpoint';
 import type {IQueryableStore} from '~/common/utils/store';
-import {derive, type GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
+import {derive} from '~/common/utils/store/derived-store';
 import type {ContactListItemViewModelBundle} from '~/common/viewmodel/contact/list/item';
 
 /**
@@ -19,26 +18,14 @@ import type {ContactListItemViewModelBundle} from '~/common/viewmodel/contact/li
 export function contactListViewModelStoreToReceiverPreviewListPropsStore(
     contactListViewModelStore: IQueryableStore<RemoteContactListViewModelStoreValue | undefined>,
     tabState: TabState,
-    /**
-     * An optional function to filter list items.
-     */
-    filter?: (
-        item: Omit<
-            ReceiverPreviewListProps<ContextMenuItemHandlerProps<AnyReceiver>>,
-            'services'
-        >['items'][u53],
-        getAndSubscribe: GetAndSubscribeFunction,
-    ) => boolean,
-): IQueryableStore<
-    Omit<ReceiverPreviewListProps<ContextMenuItemHandlerProps<AnyReceiver>>, 'services'> | undefined
-> {
+): IQueryableStore<AddressBookProps<ContextMenuItemHandlerProps<AnyReceiver>>['items']> {
     return derive(
         [contactListViewModelStore],
-        ([{currentValue: currentViewModel}], getAndSubscribe) => {
+        ([{currentValue: contactListViewModel}], getAndSubscribe) => {
             let filteredListItems: Remote<ContactListItemViewModelBundle<AnyReceiver>>[] = [];
             switch (tabState) {
                 case 'contact': {
-                    const contactListItemSetStore = currentViewModel?.contactListItemSetStore;
+                    const contactListItemSetStore = contactListViewModel?.contactListItemSetStore;
                     if (contactListItemSetStore === undefined) {
                         return undefined;
                     }
@@ -53,7 +40,7 @@ export function contactListViewModelStoreToReceiverPreviewListPropsStore(
 
                 case 'group': {
                     const groupContactListItemSetStore =
-                        currentViewModel?.groupContactListItemSetStore;
+                        contactListViewModel?.groupContactListItemSetStore;
                     if (groupContactListItemSetStore === undefined) {
                         return undefined;
                     }
@@ -67,7 +54,7 @@ export function contactListViewModelStoreToReceiverPreviewListPropsStore(
                 }
 
                 case 'work-subscription-contact': {
-                    const contactListItemSetStore = currentViewModel?.contactListItemSetStore;
+                    const contactListItemSetStore = contactListViewModel?.contactListItemSetStore;
                     if (contactListItemSetStore === undefined) {
                         return undefined;
                     }
@@ -86,17 +73,14 @@ export function contactListViewModelStoreToReceiverPreviewListPropsStore(
                     return unreachable(tabState);
             }
 
-            return {
-                items: filteredListItems
-                    .map((viewModelBundle) => ({
-                        handlerProps: {
-                            viewModelBundle,
-                        },
-                        receiver: getAndSubscribe(viewModelBundle.viewModelStore).receiver,
-                    }))
-                    .filter((item) => (filter === undefined ? true : filter(item, getAndSubscribe)))
-                    .sort((a, b) => a.receiver.name.localeCompare(b.receiver.name)),
-            };
+            return filteredListItems
+                .map((viewModelBundle) => ({
+                    handlerProps: {
+                        viewModelBundle,
+                    },
+                    receiver: getAndSubscribe(viewModelBundle.viewModelStore).receiver,
+                }))
+                .sort((a, b) => a.receiver.name.localeCompare(b.receiver.name));
         },
     );
 }

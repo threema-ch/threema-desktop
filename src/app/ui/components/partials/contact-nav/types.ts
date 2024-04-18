@@ -18,8 +18,6 @@ export interface ContextMenuItemHandlerProps<TReceiver extends AnyReceiver> {
     readonly viewModelBundle: Remote<ContactListItemViewModelBundle<TReceiver>>;
 }
 
-export type TabState = 'contact' | 'group' | 'work-subscription-contact';
-
 export type ModalState = NoneModalState | EditContactModalState;
 
 interface NoneModalState {

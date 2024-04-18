@@ -2,18 +2,13 @@
   @component Renders the contact navigation sidebar (i.e., the address book).
 -->
 <script lang="ts">
-  import {onMount, tick} from 'svelte';
+  import {onMount} from 'svelte';
 
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import SearchBar from '~/app/ui/components/molecules/search-bar/SearchBar.svelte';
-  import TabBar from '~/app/ui/components/molecules/tab-bar/TabBar.svelte';
-  import type {TabBarProps} from '~/app/ui/components/molecules/tab-bar/props';
-  import {
-    getContextMenuItems,
-    goToSettings,
-    isReceiverMatchingSearchTerm,
-  } from '~/app/ui/components/partials/contact-nav/helpers';
+  import AddressBook from '~/app/ui/components/partials/address-book/AddressBook.svelte';
+  import type {TabState} from '~/app/ui/components/partials/address-book/types';
+  import {goToSettings} from '~/app/ui/components/partials/contact-nav/helpers';
   import TopBar from '~/app/ui/components/partials/contact-nav/internal/top-bar/TopBar.svelte';
   import type {ContactNavProps} from '~/app/ui/components/partials/contact-nav/props';
   import {contactListViewModelStoreToReceiverPreviewListPropsStore} from '~/app/ui/components/partials/contact-nav/transformers';
@@ -21,19 +16,13 @@
     ContextMenuItemHandlerProps,
     ModalState,
     RemoteContactListViewModelStoreValue,
-    TabState,
   } from '~/app/ui/components/partials/contact-nav/types';
   import EditContactModal from '~/app/ui/components/partials/modals/edit-contact-modal/EditContactModal.svelte';
-  import ReceiverPreviewList from '~/app/ui/components/partials/receiver-preview-list/ReceiverPreviewList.svelte';
-  import type {ReceiverPreviewListItem} from '~/app/ui/components/partials/receiver-preview-list/props';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
-  import {scrollIntoViewIfNeededAsync} from '~/app/ui/utils/scroll';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
-  import type {DbReceiverLookup} from '~/common/db';
   import {display} from '~/common/dom/ui/state';
-  import {ConnectionState, InactiveContactsPolicy} from '~/common/enum';
+  import {ConnectionState} from '~/common/enum';
   import type {AnyReceiver} from '~/common/model';
   import {ensureError, unreachable} from '~/common/utils/assert';
   import {ReadableStore, type IQueryableStore} from '~/common/utils/store';
@@ -45,30 +34,21 @@
 
   export let services: $$Props['services'];
 
-  const {
-    backend,
-    router,
-    settings: {appearance},
-  } = services;
+  const {backend, router} = services;
 
   // ViewModelBundle containing all contacts.
   let viewModelStore: IQueryableStore<RemoteContactListViewModelStoreValue | undefined> =
     new ReadableStore(undefined);
 
   let modalState: ModalState = {type: 'none'};
-  let tabState: TabState = 'contact';
 
-  let searchBarComponent: SvelteNullableBinding<SearchBar> = null;
-  let searchTerm: string | undefined = undefined;
-
-  let receiverPreviewListComponent: SvelteNullableBinding<
-    ReceiverPreviewList<ContextMenuItemHandlerProps<AnyReceiver>>
+  let addressBookComponent: SvelteNullableBinding<
+    AddressBook<ContextMenuItemHandlerProps<AnyReceiver>>
   > = null;
-
-  let listElement: SvelteNullableBinding<HTMLElement> = null;
+  let addressBookTabState: TabState = 'contact';
 
   function handleHotkeyControlF(): void {
-    searchBarComponent?.focusAndSelect();
+    addressBookComponent?.focusAndSelectSearchBar();
   }
 
   function handleClickBackButton(): void {
@@ -77,10 +57,6 @@
 
   function handleClickSettingsButton(): void {
     goToSettings(router, $display);
-  }
-
-  function handleClickTab(newTabState: TabState): void {
-    tabState = newTabState;
   }
 
   function handleClickAdd(): void {
@@ -100,26 +76,8 @@
     router.replaceNav(ROUTE_DEFINITIONS.nav.contactAdd.withTypedParams({identity: undefined}));
   }
 
-  async function handleClearSearchBar(): Promise<void> {
-    /*
-     * Wait for any pending state changes to be applied before scrolling to the active conversation,
-     * because it might not be rendered before that (e.g., if a filter has been applied).
-     */
-    await tick();
-    await scrollToActiveItem();
-  }
-
-  function handleCloseModal(): void {
-    modalState = {
-      type: 'none',
-    };
-  }
-
-  function handleOpenEditModal(
-    item: ReceiverPreviewListItem<ContextMenuItemHandlerProps<AnyReceiver>>,
-    props: ContextMenuItemHandlerProps<AnyReceiver>,
-  ): void {
-    const {receiver} = item;
+  function handleClickEditItem(event: CustomEvent<ContextMenuItemHandlerProps<AnyReceiver>>): void {
+    const {receiver} = event.detail.viewModelBundle.viewModelStore.get();
     if (receiver.type !== 'contact') {
       return;
     }
@@ -130,7 +88,7 @@
         receiver: {
           ...receiver,
           edit: async (update) => {
-            await props.viewModelBundle.viewModelController.edit(update);
+            await event.detail.viewModelBundle.viewModelController.edit(update);
           },
         },
         services,
@@ -138,77 +96,16 @@
     };
   }
 
-  function getTabBarTabs(): TabBarProps<TabState>['tabs'] {
-    return [
-      {
-        id: 'contact',
-        icon: 'person',
-        onClick: handleClickTab,
-      },
-      {
-        id: 'group',
-        icon: 'group',
-        onClick: handleClickTab,
-      },
-      ...(import.meta.env.BUILD_VARIANT === 'work'
-        ? [
-            {
-              id: 'work-subscription-contact',
-              icon: 'work_outline',
-              onClick: handleClickTab,
-            } as const,
-          ]
-        : []),
-    ];
-  }
-
-  async function scrollToItem(lookup: DbReceiverLookup): Promise<void> {
-    await scrollIntoViewIfNeededAsync({
-      container: listElement,
-      element: listElement?.querySelector(
-        `ul > li[data-receiver="${`${lookup.type}.${lookup.uid}`}"]`,
-      ),
-      options: {
-        behavior: 'instant',
-        block: 'start',
-      },
-      timeoutMs: 100,
-    }).catch((error) => {
-      log.info(`Scroll to contact was not performed: ${error}`);
-    });
-  }
-
-  async function scrollToActiveItem(): Promise<void> {
-    const routerState = router.get();
-
-    if (routerState.main.id === 'conversation') {
-      await scrollToItem(routerState.main.params.receiverLookup);
-    }
+  function handleCloseModal(): void {
+    modalState = {
+      type: 'none',
+    };
   }
 
   // Current list items.
   $: receiverPreviewListPropsStore = contactListViewModelStoreToReceiverPreviewListPropsStore(
     viewModelStore,
-    tabState,
-    (item, getAndSubscribe) => {
-      const appearanceSettings = getAndSubscribe(appearance);
-      if (
-        appearanceSettings.view.inactiveContactsPolicy === InactiveContactsPolicy.HIDE &&
-        item.receiver.type === 'contact' &&
-        item.receiver.isInactive
-      ) {
-        return false;
-      }
-      if (item.receiver.type === 'self') {
-        return false;
-      }
-
-      if (searchTerm !== undefined && searchTerm !== '') {
-        return isReceiverMatchingSearchTerm(item.receiver, searchTerm);
-      }
-
-      return true;
-    },
+    addressBookTabState,
   );
 
   onMount(async () => {
@@ -226,7 +123,7 @@
         );
       });
 
-    await scrollToActiveItem();
+    await addressBookComponent?.scrollToActiveItem();
   });
 
   onMount(() => {
@@ -246,59 +143,15 @@
     />
   </div>
 
-  <div class="tab-bar">
-    <TabBar tabs={getTabBarTabs()} />
-  </div>
-
-  <div class="search">
-    <SearchBar
-      bind:this={searchBarComponent}
-      bind:term={searchTerm}
-      onRequestRefresh={() => {}}
-      placeholder={$i18n.t('search.label--search-input-placeholder', 'Search...')}
-      on:clear={handleClearSearchBar}
+  <div class="content">
+    <AddressBook
+      bind:this={addressBookComponent}
+      bind:tabState={addressBookTabState}
+      items={$receiverPreviewListPropsStore}
+      {services}
+      on:clickadd={handleClickAdd}
+      on:clickedititem={handleClickEditItem}
     />
-  </div>
-
-  {#if import.meta.env.BUILD_VARIANT === 'consumer' && tabState === 'contact'}
-    <button class="add" on:click={handleClickAdd}>
-      <div class="icon">
-        <MdIcon theme="Filled">add</MdIcon>
-      </div>
-      <div class="text">
-        {$i18n.t('contacts.action--add-contact', 'New Contact')}
-      </div>
-    </button>
-  {/if}
-
-  <div bind:this={listElement} class="list">
-    {#if $receiverPreviewListPropsStore !== undefined && $receiverPreviewListPropsStore.items.length > 0}
-      <!-- Suppress `any` type warnings, as the types are fine, but not recognized by the linter
-      in Svelte. -->
-      <!-- eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call -->
-      <ReceiverPreviewList
-        bind:this={receiverPreviewListComponent}
-        contextMenuItems={(item) => {
-          switch (item.receiver.type) {
-            case 'contact':
-              return getContextMenuItems(item, $i18n, handleOpenEditModal);
-
-            case 'distribution-list':
-            case 'group':
-            case 'self':
-              // Don't show a context menu for group and distribution-list receivers at this time.
-              return [];
-
-            default:
-              return unreachable(item.receiver);
-          }
-        }}
-        {...$receiverPreviewListPropsStore}
-        {services}
-      />
-    {:else}
-      <!-- No chats. -->
-    {/if}
   </div>
 </div>
 
@@ -320,68 +173,17 @@
 
     grid-template:
       'top-bar' min-content
-      'tab-bar' min-content
-      'search' min-content
-      'add' min-content
-      'list' 1fr
+      'content' 1fr
       / 100%;
 
     .top-bar {
       grid-area: top-bar;
     }
 
-    .tab-bar {
-      grid-area: tab-bar;
+    .content {
+      grid-area: content;
 
-      padding: 0 rem(16px) rem(16px);
-    }
-
-    .search {
-      grid-area: search;
-
-      padding: 0 rem(16px) rem(12px);
-    }
-
-    .add {
-      grid-area: add;
-
-      @extend %neutral-input;
-      @include def-var(--c-icon-font-size, #{rem(24px)});
-
-      padding: 0 rem(16px) rem(4px);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: start;
-      gap: rem(8px);
-
-      .icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: rem(48px);
-        height: rem(48px);
-        border-radius: 50%;
-        color: var(--t-color-primary);
-      }
-
-      &:hover {
-        .icon {
-          background-color: var(--cc-menu-item-icon-text-background-color--hover);
-        }
-      }
-
-      &:active {
-        .icon {
-          background-color: var(--cc-menu-item-icon-text-background-color--active);
-        }
-      }
-    }
-
-    .list {
-      grid-area: list;
-
-      overflow-y: scroll;
+      overflow: hidden;
     }
   }
 </style>

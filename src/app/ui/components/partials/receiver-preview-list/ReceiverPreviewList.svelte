@@ -83,6 +83,9 @@
             ...transformContextMenuItemsToContextMenuOptions(item, contextMenuItems),
           }}
       {highlights}
+      options={{
+        highlightWhenActive: options.highlightActiveReceiver,
+      }}
       {receiver}
       {services}
       on:click={(event) =>

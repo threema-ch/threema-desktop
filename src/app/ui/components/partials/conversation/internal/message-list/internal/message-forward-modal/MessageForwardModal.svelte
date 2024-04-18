@@ -1,21 +1,30 @@
 <!--
-  @component
-  Renders a modal to forward a message to another recipient.
+  @component Renders a modal to forward a message to another recipient.
 -->
 <script lang="ts">
+  import {onMount} from 'svelte';
+
+  import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
-  import SearchBar from '~/app/ui/components/molecules/search-bar/SearchBar.svelte';
-  import {getSearchInputPlaceholderForTab} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-forward-modal/helpers';
-  import ForwardRecipient from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-forward-modal/internal/forward-recipient/ForwardRecipient.svelte';
+  import AddressBook from '~/app/ui/components/partials/address-book/AddressBook.svelte';
+  import type {TabState} from '~/app/ui/components/partials/address-book/types';
+  import {contactListViewModelStoreToReceiverPreviewListPropsStore} from '~/app/ui/components/partials/contact-nav/transformers';
+  import type {
+    ContextMenuItemHandlerProps,
+    RemoteContactListViewModelStoreValue,
+  } from '~/app/ui/components/partials/contact-nav/types';
   import type {MessageForwardModalProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-forward-modal/props';
   import {i18n} from '~/app/ui/i18n';
-  import type {ContactTab} from '~/app/ui/nav';
-  import {filterContacts} from '~/app/ui/nav/receiver';
-  import ReceiverTabSwitcher from '~/app/ui/nav/receiver/ReceiverTabSwitcher.svelte';
+  import {toast} from '~/app/ui/snackbar';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import type {DbReceiverLookup} from '~/common/db';
-  import {WorkVerificationLevel} from '~/common/enum';
+  import type {AnyReceiver} from '~/common/model';
+  import {ensureError} from '~/common/utils/assert';
+  import {ReadableStore, type IQueryableStore} from '~/common/utils/store';
+
+  const {uiLogging} = globals.unwrap();
+  const log = uiLogging.logger('ui.component.message-forward-modal');
 
   type $$Props = MessageForwardModalProps;
 
@@ -25,36 +34,54 @@
 
   const {backend, router} = services;
 
+  // ViewModelBundle containing all contacts.
+  let viewModelStore: IQueryableStore<RemoteContactListViewModelStoreValue | undefined> =
+    new ReadableStore(undefined);
+
   let modalComponent: SvelteNullableBinding<Modal> = null;
 
-  let activeTab: ContactTab = 'private-contacts';
-  let searchTerm = '';
+  let addressBookComponent: SvelteNullableBinding<
+    AddressBook<ContextMenuItemHandlerProps<AnyReceiver>>
+  > = null;
+  let addressBookTabState: TabState = 'contact';
 
-  function forwardMessage({
-    messageId,
-    fromReceiver,
-    toReceiver,
-    appRouter,
-  }: {
-    messageId: typeof id;
-    fromReceiver: typeof receiverLookup;
-    toReceiver: DbReceiverLookup;
-    appRouter: typeof router;
-  }): void {
+  function handleClickItem(event: CustomEvent<DbReceiverLookup>): void {
     const messageToForward = {
-      receiverLookup: fromReceiver,
-      messageId,
+      receiverLookup,
+      messageId: id,
     };
 
-    appRouter.replaceMain(
+    router.replaceMain(
       ROUTE_DEFINITIONS.main.conversation.withTypedParams({
-        receiverLookup: toReceiver,
+        receiverLookup: event.detail,
         forwardedMessage: messageToForward,
       }),
     );
 
     modalComponent?.close();
   }
+
+  // Current list items.
+  $: receiverPreviewListPropsStore = contactListViewModelStoreToReceiverPreviewListPropsStore(
+    viewModelStore,
+    addressBookTabState,
+  );
+
+  onMount(async () => {
+    await backend.viewModel
+      .contactList()
+      .then((viewModelBundle) => {
+        // Replace `viewModelBundle`.
+        viewModelStore = viewModelBundle.viewModelStore;
+      })
+      .catch((error) => {
+        log.error(`Failed to load ContactListViewModelBundle: ${ensureError(error)}`);
+
+        toast.addSimpleFailure(
+          i18n.get().t('contacts.error--contact-list-load', 'Contacts could not be loaded'),
+        );
+      });
+  });
 </script>
 
 <Modal
@@ -68,44 +95,24 @@
       },
     ],
     title: $i18n.t('dialog--forward-message.label--title', 'Select Recipient'),
+    maxWidth: 460,
   }}
   on:close
 >
   <div class="content">
-    <div class="switch">
-      <ReceiverTabSwitcher bind:activeTab tmpShowGroup={false} />
-    </div>
-
-    <div class="search">
-      <SearchBar
-        bind:term={searchTerm}
-        placeholder={getSearchInputPlaceholderForTab(activeTab, $i18n.t)}
-      />
-    </div>
-
-    <div class="recipients">
-      {#await backend.model.contacts.getAll() then contacts}
-        {#await filterContacts(contacts.get(), searchTerm, activeTab === 'work-contacts' ? WorkVerificationLevel.WORK_SUBSCRIPTION_VERIFIED : undefined) then filtered}
-          {#each filtered.get() as contact (contact.id)}
-            <ForwardRecipient
-              {services}
-              {contact}
-              filter={searchTerm}
-              on:click={() =>
-                forwardMessage({
-                  messageId: id,
-                  fromReceiver: receiverLookup,
-                  toReceiver: {
-                    type: contact.type,
-                    uid: contact.ctx,
-                  },
-                  appRouter: router,
-                })}
-            />
-          {/each}
-        {/await}
-      {/await}
-    </div>
+    <AddressBook
+      bind:this={addressBookComponent}
+      bind:tabState={addressBookTabState}
+      items={$receiverPreviewListPropsStore}
+      options={{
+        allowReceiverCreation: false,
+        allowReceiverEditing: false,
+        highlightActiveReceiver: false,
+        routeOnClick: false,
+      }}
+      {services}
+      on:clickitem={handleClickItem}
+    />
   </div>
 </Modal>
 
@@ -117,26 +124,8 @@
     flex-direction: column;
     align-items: stretch;
     justify-content: start;
+
     height: 75vh;
-    overflow: auto;
-
-    .switch {
-      flex: none;
-      padding: 0 rem(16px);
-      margin-bottom: rem(16px);
-    }
-
-    .search {
-      flex: none;
-      padding: 0 rem(16px);
-      margin-bottom: rem(8px);
-    }
-
-    .recipients {
-      flex: 1;
-      display: grid;
-      overflow-y: auto;
-      align-content: start;
-    }
+    overflow: hidden;
   }
 </style>
