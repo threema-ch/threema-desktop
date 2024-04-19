@@ -1259,7 +1259,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         )?.uid;
     }
 
-    // TODO Rewrite this query so that it uses distinct
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     private _getCommonMessageSelector() {
         const tMesssageReactionLeftJoin = tMessageReaction.forUseInLeftJoin();
@@ -1286,7 +1285,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 // TODO(DESK-296): Deprecate ordinal in favor of a thread-based solution
                 ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt).getTime(),
                 reactions: this._db
-                    .aggregateAsArray({
+                    .aggregateAsArrayDistinct({
                         reaction: tMesssageReactionLeftJoin.reaction,
                         reactionAt: tMesssageReactionLeftJoin.reactionAt,
                         senderIdentity: tMesssageReactionLeftJoin.senderIdentity,
@@ -1294,7 +1293,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     .useEmptyArrayForNoValue(),
 
                 history: this._db
-                    .aggregateAsArray({
+                    .aggregateAsArrayDistinct({
                         editedAt: tMessageHistoryLeftJoin.editedAt,
                         text: tMessageHistoryLeftJoin.text,
                     })
