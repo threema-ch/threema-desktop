@@ -122,8 +122,6 @@
           i18n.get().t('contacts.error--contact-list-load', 'Contacts could not be loaded'),
         );
       });
-
-    await addressBookComponent?.scrollToActiveItem();
   });
 
   onMount(() => {
