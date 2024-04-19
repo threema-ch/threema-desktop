@@ -4,10 +4,6 @@
     "action--add-contact-cancel": "Abbrechen",
     "action--add-contact-from-work-directory": "Kontakt aus dem Unternehmensverzeichnis hinzufügen",
     "action--add-contact-next": "Weiter",
-    "action--add-distribution-list": "Neue Verteilerliste",
-    "action--add-group": "Neue Gruppe",
-    "action--delete": "Löschen",
-    "action--delete-contact": "Kontakt löschen",
     "action--edit": "Bearbeiten",
     "action--group-members-show-all": "Alle anzeigen",
     "action--group-members-show-less": "Weniger anzeigen",
@@ -16,8 +12,8 @@
     "error--add-contact-threema-id-is-own": "Ihre eigene Threema-ID kann nicht als Kontakt hinzugefügt werden. Tipp: Erstellen Sie eine Gruppe mit Ihnen als einziges Mitglied, um diesen Chat für persönliche Notizen zu verwenden.",
     "error--add-contact-threema-id-not-found": "Diese Threema-ID konnte nicht gefunden werden oder wurde gelöscht.",
     "error--add-contact-threema-id-unable-to-validate": "Kontakt konnte nicht auf Gültigkeit überprüft werden. Ist Ihr Gerät mit dem Internet verbunden?",
-    "error--delete-contact": "Der Kontakt «{name}» konnte nicht gelöscht werden",
-    "error--delete-group": "Die Gruppe «{name}» konnte nicht gelöscht werden",
+    "error--contact-detail-load": "Details konnten nicht geladen werden",
+    "error--contact-list-load": "Kontakte konnten nicht geladen werden",
     "hint--badge-consumer": "Dieser Kontakt nutzt die Threema-Version für Privatanwender.",
     "hint--badge-work": "Dieser Kontakt nutzt die Business-Lösung Threema Work.",
     "hint--own-profile-picture": "Mein Profilbild",
@@ -33,9 +29,7 @@
     "label--group-members-count-short": "{n, plural, =1 {1 Mitglied} other {# Mitglieder}}",
     "label--last-name": "Nachname",
     "label--nickname": "Nickname",
-    "label--own-initials": "ICH",
     "label--own-name": "Ich",
-    "label--search-distribution-lists": "Verteilerliste suchen",
     "label--search-groups": "Gruppe suchen",
     "label--search-private-contacts": "Kontakte suchen",
     "label--search-work-contacts": "Unternehmenskontakte suchen",
@@ -46,9 +40,7 @@
     "label--threema-id": "Threema-ID",
     "label--verification-level": "Vertrauensstufe",
     "prose--add-contact-instructions": "Bitte geben Sie die Threema-ID des Kontaktes ein, den Sie hinzufügen möchten:",
-    "prose--add-contact-instructions-work-directory": "Suchen Sie alternativ einen Kontakt im Unternehmensverzeichnis, um ihn zu Ihrer Kontaktliste hinzuzufügen:",
-    "success--delete-contact": "Kontakt «{name}» wurde gelöscht",
-    "success--delete-group": "Die Gruppe «{name}» wurde gelöscht"
+    "prose--add-contact-instructions-work-directory": "Suchen Sie alternativ einen Kontakt im Unternehmensverzeichnis, um ihn zu Ihrer Kontaktliste hinzuzufügen:"
   },
   "dialog--app-update": {
     "action--confirm": "OK",
@@ -81,12 +73,6 @@
     "label--send-as-file-option": "Als Datei senden (in Originalgrösse)",
     "label--title": "Datei an {name} senden"
   },
-  "dialog--delete-contact": {
-    "action--cancel": "Abbrechen",
-    "action--confirm": "Kontakt + Chatverlauf löschen",
-    "label--title": "«{name}» löschen",
-    "prose--prompt": "Möchten Sie diesen Kontakt und den entsprechenden Chat wirklich löschen?"
-  },
   "dialog--delete-conversation": {
     "action--cancel": "Abbrechen",
     "action--contact-conversation-confirm": "Chat löschen",
@@ -99,11 +85,6 @@
     "prose--group-conversation-member": "Sie werden jedoch ein Mitglied dieser Gruppe bleiben.",
     "prose--group-conversation-prompt": "Dadurch wird der Gruppenchat \"{name}\" und die darin enthaltenen Nachrichten auf diesem Gerät gelöscht (aber nicht auf Ihren verknüpften Geräten).",
     "success--delete-conversation": "Chat wurde erfolgreich gelöscht"
-  },
-  "dialog--delete-message": {
-    "action--cancel": "Abbrechen",
-    "action--confirm": "Nachricht löschen",
-    "label--title": "Nachricht von diesem Gerät löschen?"
   },
   "dialog--device-cookie": {
     "label--close": "Ohne Geräte-Cookie fortfahren",
@@ -127,23 +108,17 @@
   "dialog--edit-contact": {
     "action--cancel": "Abbrechen",
     "action--confirm": "OK",
+    "error--edit-contact": "Bearbeiten fehlgeschlagen",
     "label--first-name": "Vorname",
     "label--last-name": "Nachname",
-    "label--title": "{name} bearbeiten"
+    "label--title": "{name} bearbeiten",
+    "success--edit-contact": "Bearbeiten erfolgreich"
   },
   "dialog--edit-device-name": {
     "action--cancel": "Abbrechen",
     "action--confirm": "Bestätigen",
     "action--title": "Gerätenamen bearbeiten",
     "error--device-name-empty": "Gerätename darf nicht leer sein"
-  },
-  "dialog--edit-group": {
-    "action--cancel": "Abbrechen",
-    "action--confirm": "OK",
-    "error--group-name-empty": "Darf nicht leer sein",
-    "error--group-name-too-long": "Name ist zu lang",
-    "label--group-name": "Gruppenname",
-    "label--title": "{name} bearbeiten"
   },
   "dialog--empty-conversation": {
     "action--cancel": "Abbrechen",
@@ -170,17 +145,7 @@
     "prose--mediator-update-required-p1": "Diese Version von Threema ist nicht mit Ihrem Mediator-Server kompatibel. Der Server verwendet eine veraltete Protokollversion und muss zuerst aktualisiert werden.",
     "prose--mediator-update-required-p2": "Bitte kontaktieren Sie Ihren Server-Administrator."
   },
-  "dialog--error-delete-contact": {
-    "action--confirm": "OK",
-    "error--is-group-member": "«{name}» ist noch Mitglied einer Gruppe. Entfernen Sie den Kontakt von der Gruppe, oder löschen Sie die Gruppe.",
-    "label--title": "Kontakt kann nicht gelöscht werden"
-  },
   "dialog--forward-message": {
-    "hint--profile-picture": "Profilbild von {name}",
-    "label--search-distribution-lists": "Verteilerliste suchen",
-    "label--search-groups": "Gruppe suchen",
-    "label--search-private-contacts": "Kontakte suchen",
-    "label--search-work-contacts": "Unternehmenskontakte suchen",
     "label--title": "Empfänger auswählen"
   },
   "dialog--id-information": {
@@ -439,6 +404,7 @@
     "action--control-message-send": "Senden",
     "action--do-not-disturb-default": "Aus",
     "action--do-not-disturb-indefinite": "Ein",
+    "action--do-not-disturb-mentioned": "Benachrichtigen bei Erwähnung",
     "action--do-not-disturb-until": "Bis {date}",
     "action--play-notification-sound-default": "Ein",
     "action--play-notification-sound-off": "Aus",
@@ -459,7 +425,9 @@
     "label--threema-onprem-username": "Threema OnPrem-Benutzername",
     "label--threema-work-username": "Threema Work-Benutzername",
     "label--title": "Einstellungen",
-    "label--typing-indicator": "Melden, wenn ich tippe"
+    "label--typing-indicator": "Melden, wenn ich tippe",
+    "prose--do-not-disturb-mentioned-off": "Sie werden keine Benachrichtigungen erhalten",
+    "prose--do-not-disturb-mentioned-on": "Sie werden nur Benachrichtigungen erhalten, falls Sie erwähnt werden"
   },
   "settings--about": {
     "action--send-logs-to-support": "Logs an den Support senden",
