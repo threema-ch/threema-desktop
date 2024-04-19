@@ -17,7 +17,9 @@ import {
 import type {ConversationViewModel} from '~/common/viewmodel/conversation/main/store/types';
 import {getConversationReceiverData} from '~/common/viewmodel/utils/receiver';
 
-export type ConversationViewModelStore = LocalStore<ConversationViewModel & PropertiesMarked>;
+export type ConversationViewModelStore = LocalStore<
+    (ConversationViewModel & PropertiesMarked) | undefined
+>;
 
 /**
  * Partial store of a conversation's messages and status messages, as it should be provided by the viewmodel.
@@ -53,10 +55,14 @@ export function getConversationViewModelStore(
         conversationModelStore,
     );
 
+    const controllerActiveStore = conversationModelStore.get().controller.meta.active;
     return derive(
-        [conversationModelStore],
-        ([{currentValue: conversationModel}], getAndSubscribe) =>
-            endpoint.exposeProperties({
+        [conversationModelStore, controllerActiveStore],
+        ([{currentValue: conversationModel}, {currentValue: active}], getAndSubscribe) => {
+            if (!active) {
+                return undefined;
+            }
+            return endpoint.exposeProperties({
                 category: conversationModel.view.category,
                 firstUnreadMessageId: conversationModel.controller.getFirstUnreadMessageId(),
                 id: conversationModel.ctx,
@@ -69,6 +75,7 @@ export function getConversationViewModelStore(
                 supportedFeatures: getSupportedFeatures(conversationModel, services),
                 totalMessagesCount: conversationModel.controller.getMessageCount(),
                 unreadMessagesCount: conversationModel.view.unreadMessageCount,
-            }),
+            });
+        },
     );
 }

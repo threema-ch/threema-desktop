@@ -1,4 +1,6 @@
 import type {Logger} from '~/common/logging';
+import type {LocalModel, LocalModelController} from '~/common/model';
+import {LocalModelStore} from '~/common/model/utils/model-store';
 import type {u53} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
 import {TRANSFER_HANDLER} from '~/common/utils/endpoint';
@@ -540,6 +542,20 @@ function subscribeAndGetInitialState<TStoreValue>(
 ): StoreSubscriptionState<typeof store> {
     let firstSubscriptionValue: TStoreValue | typeof NO_STORE_VALUE = NO_STORE_VALUE;
     const unsubscriber = store.subscribe((value) => {
+        // We only propagate the last update of local model stores to the deriving stores if the
+        // controller is still active.
+        //
+        // TODO(DESK-1450): This might not be needed anymore, once all ViewModel stores check for
+        // store deactivation by making the value `undefined`.
+        if (store instanceof LocalModelStore) {
+            if (
+                !(
+                    value as LocalModel<unknown, LocalModelController<unknown>, unknown, unknown>
+                ).controller.meta.active.get()
+            ) {
+                return;
+            }
+        }
         if (firstSubscriptionValue === NO_STORE_VALUE) {
             // Callback runs for the first time.
             firstSubscriptionValue = value;

@@ -48,7 +48,12 @@
   import {assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
-  import {WritableStore, ReadableStore, type IQueryableStore} from '~/common/utils/store';
+  import {
+    WritableStore,
+    ReadableStore,
+    type IQueryableStore,
+    type StoreUnsubscriber,
+  } from '~/common/utils/store';
   import type {ConversationViewModelBundle} from '~/common/viewmodel/conversation/main';
   import type {SendMessageEventDetail} from '~/common/viewmodel/conversation/main/controller/types';
   import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
@@ -62,6 +67,8 @@
 
   const {router, backend} = services;
 
+  // Unsubscriber for the view model store
+  let viewModelStoreUnsubscriber: StoreUnsubscriber | undefined = undefined;
   // Params of the current route.
   let routeParams: ConversationRouteParams | undefined = undefined;
 
@@ -288,14 +295,21 @@
           throw new Error('ViewModelBundle returned by the repository was undefined');
         }
 
-        // Load draft if one exists for the new receiver.
-        draftStore = conversationDrafts.getOrCreateStore(
-          viewModelBundle.viewModelStore.get().receiver.lookup,
-        );
+        // If viewmodel value becomes undefined (meaning that the conversation has been deleted),
+        // navigate away to the welcome screen.
+        viewModelStoreUnsubscriber?.();
+        viewModelStoreUnsubscriber = viewModelBundle.viewModelStore.subscribe((value) => {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          if (value === undefined) {
+            router.goToWelcome();
+          }
+        });
 
-        // Replace `viewModelBundle`.
+        // Unpack bundle
         viewModelStore = viewModelBundle.viewModelStore;
         viewModelController = viewModelBundle.viewModelController;
+
+        // Check for edit support
         const editFeature = viewModelStore
           .get()
           ?.supportedFeatures.get(FEATURE_MASK_FLAG.EDIT_MESSAGE_SUPPORT);
@@ -307,8 +321,13 @@
         // Set an `initiallyVisibleMessageId` if provided by the current route.
         initiallyVisibleMessageId = routeParams?.initialMessage?.messageId;
 
-        // Get initial data belonging to the new conversation from the current route.
+        // Load draft if one exists for the new receiver.
+        if ($viewModelStore !== undefined) {
+          draftStore = conversationDrafts.getOrCreateStore($viewModelStore.receiver.lookup);
+        }
         const draft = draftStore.get();
+
+        // Get initial data belonging to the new conversation from the current route.
         const forwardedMessageText = (
           await getForwardedMessageViewModelBundle()
         )?.viewModelStore.get().text?.raw;
@@ -617,6 +636,7 @@
   onDestroy(() => {
     saveDraftAndClearComposeBar($viewModelStore?.receiver.lookup);
     window.removeEventListener('keydown', handleKeyDown);
+    viewModelStoreUnsubscriber?.();
   });
 </script>
 

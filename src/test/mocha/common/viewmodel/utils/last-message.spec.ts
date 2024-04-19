@@ -87,7 +87,7 @@ export function run(): void {
             });
 
             assert(viewModel !== undefined, 'Viewmodel should not be undefined');
-            const lastMessageStore = viewModel.viewModelStore.get().lastMessage;
+            const lastMessageStore = viewModel.viewModelStore.get()?.lastMessage;
             expect(
                 isMessageId(lastMessageStore?.id),
                 'Last message should be a standard message',
@@ -122,7 +122,7 @@ export function run(): void {
                 createdAt: lastMessageDate,
             });
 
-            const lastMessageStore = viewModel?.viewModelStore.get().lastMessage;
+            const lastMessageStore = viewModel?.viewModelStore.get()?.lastMessage;
             expect(isMessageId(lastMessageStore?.id)).to.eq(false);
             expect(isStatusMessageId(lastMessageStore?.id)).to.eq(true);
             expect(lastMessageStore?.direction).to.eq('none');
@@ -134,7 +134,7 @@ export function run(): void {
         });
 
         it('last message store when no message is present', function () {
-            const lastMessageStore = viewModel?.viewModelStore.get().lastMessage;
+            const lastMessageStore = viewModel?.viewModelStore.get()?.lastMessage;
             expect(lastMessageStore).to.be.undefined;
             expect(singleConversation.get().controller.lastMessageStore().get()).to.be.undefined;
             expect(singleConversation.get().controller.lastStatusMessageStore().get()).to.be
@@ -177,7 +177,7 @@ export function run(): void {
                 createdAt: lastStatusMessageDate,
             });
 
-            const lastStatusMessageStore = viewModel?.viewModelStore.get().lastMessage;
+            const lastStatusMessageStore = viewModel?.viewModelStore.get()?.lastMessage;
             expect(
                 isMessageId(lastStatusMessageStore?.id),
                 'last status message store Should not be a message ID',
@@ -209,7 +209,7 @@ export function run(): void {
             });
 
             assert(viewModel !== undefined, 'Viewmodel should not be undefined');
-            const lastMessageStore = viewModel.viewModelStore.get().lastMessage;
+            const lastMessageStore = viewModel.viewModelStore.get()?.lastMessage;
             expect(
                 isMessageId(lastMessageStore?.id),
                 'Last message should be a standard message',

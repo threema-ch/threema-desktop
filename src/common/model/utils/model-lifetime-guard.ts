@@ -1,6 +1,7 @@
 import type {GuardedStoreHandle} from '~/common/model/types/common';
 import type {UpdatedView, ViewUpdateFn} from '~/common/model/utils/model-store';
 import {Delayed} from '~/common/utils/delayed';
+import {WritableStore, type IQueryableStore} from '~/common/utils/store';
 
 /**
  * Glue between view and controller.
@@ -9,6 +10,7 @@ import {Delayed} from '~/common/utils/delayed';
  * the associated view has been removed from underlying storage.
  */
 export class ModelLifetimeGuard<in out TView> {
+    private readonly _isActiveStore = new WritableStore<boolean>(false);
     private _handle: Delayed<GuardedStoreHandle<TView>> = ModelLifetimeGuard._createDelayed();
 
     private static _createDelayed<TView>(): Delayed<GuardedStoreHandle<TView>> {
@@ -18,8 +20,8 @@ export class ModelLifetimeGuard<in out TView> {
     /**
      * Return whether or not this controller is activated.
      */
-    public get active(): boolean {
-        return this._handle.isSet();
+    public get active(): IQueryableStore<boolean> {
+        return this._isActiveStore;
     }
 
     /**
@@ -39,6 +41,7 @@ export class ModelLifetimeGuard<in out TView> {
                     return {...view, ...change} as UpdatedView<TView>;
                 }),
         });
+        this._isActiveStore.set(true);
     }
 
     /**
@@ -56,6 +59,7 @@ export class ModelLifetimeGuard<in out TView> {
         const handle = this._handle.unwrap();
         const result = (fn?.(handle) ?? undefined) as TReturn;
         this._handle = ModelLifetimeGuard._createDelayed();
+        this._isActiveStore.set(false);
         handle.update((view) => view);
         return result;
     }

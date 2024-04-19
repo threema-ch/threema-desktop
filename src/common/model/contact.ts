@@ -316,7 +316,7 @@ export class ContactModelController implements ContactController {
                 // Precondition: Abort if the contact has already been removed (and consequently
                 // disabled the contact's controller) or if the contact is still member of any
                 // group.
-                const precondition = (): boolean => this.meta.active && this._isRemovable();
+                const precondition = (): boolean => this.meta.active.get() && this._isRemovable();
 
                 // Reflect contact removal to other devices inside a transaction
                 const result = await taskManager.schedule(
@@ -413,7 +413,7 @@ export class ContactModelController implements ContactController {
             // Precondition: The contact was not updated in the meantime
             const currentVersion = this._versionSequence.current;
             const precondition = (): boolean =>
-                this.meta.active && this._versionSequence.current === currentVersion;
+                this.meta.active.get() && this._versionSequence.current === currentVersion;
 
             // Reflect contact to other devices inside a transaction
             const syncTask = new ReflectContactSyncTransactionTask(this._services, precondition, {

@@ -378,7 +378,7 @@ export class ConversationModelController implements ConversationController {
             const conversationChange: ConversationUpdateFromToSync = {visibility};
 
             // No need for a precondition to archive or pin
-            const precondition = (): boolean => this.meta.active;
+            const precondition = (): boolean => this.meta.active.get();
 
             let syncTask: ReflectContactSyncTransactionTask | ReflectGroupSyncTransactionTask;
 
@@ -874,7 +874,7 @@ export class ConversationModelController implements ConversationController {
 
             // Precondition: The conversation is archived
             const precondition = (): boolean =>
-                this.meta.active &&
+                this.meta.active.get() &&
                 conversation.view().visibility === ConversationVisibility.ARCHIVED;
 
             let syncTask: ReflectContactSyncTransactionTask | ReflectGroupSyncTransactionTask;
