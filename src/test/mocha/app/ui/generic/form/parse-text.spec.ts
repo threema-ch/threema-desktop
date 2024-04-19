@@ -88,7 +88,7 @@ export function run(): void {
         }
 
         function highlightHtmlTemplate(text: string): string {
-            return `<span class="parsed-text-highlight">${text}</span>`;
+            return `<span class="highlight-subtext">${text}</span>`;
         }
 
         function linkHtmlTemplate({url, text}: {url: string; text: string}): string {

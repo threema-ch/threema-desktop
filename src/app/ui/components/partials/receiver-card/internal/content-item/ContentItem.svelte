@@ -125,5 +125,33 @@
     .strikethrough {
       text-decoration: line-through;
     }
+
+    :global(.md-bold) {
+      @extend %markup-bold;
+    }
+
+    :global(.md-italic) {
+      @extend %markup-italic;
+    }
+
+    :global(.md-strike) {
+      @extend %markup-strike;
+    }
+
+    :global(.mention) {
+      @extend %mention;
+    }
+
+    :global(.mention.me) {
+      @extend %mention-me;
+    }
+
+    :global(.mention.all) {
+      @extend %mention-all;
+    }
+
+    :global(.highlight-subtext) {
+      @extend %highlight-subtext;
+    }
   }
 </style>

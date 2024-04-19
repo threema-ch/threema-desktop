@@ -84,5 +84,9 @@
     :global(.mention.all) {
       @extend %mention-all;
     }
+
+    :global(.highlight-subtext) {
+      @extend %highlight-subtext;
+    }
   }
 </style>

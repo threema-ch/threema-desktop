@@ -148,7 +148,7 @@ function getMentionHtml(
 }
 
 function getHighlightHtml(highlight: SanitizedHtml): SanitizedHtml {
-    return `<span class="parsed-text-highlight">${highlight}</span>` as SanitizedHtml;
+    return `<span class="highlight-subtext">${highlight}</span>` as SanitizedHtml;
 }
 
 /**

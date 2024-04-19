@@ -34,3 +34,8 @@ $-config: null !default;
   cursor: text;
   user-select: text;
 }
+
+%highlight-subtext {
+  background-color: var(--t-color-primary);
+  color: #ffffff;
+}
