@@ -121,6 +121,7 @@
   class="container"
   data-receiver={`${receiver.lookup.type}.${receiver.lookup.uid}`}
   use:contextmenu={handleAlternativeClick}
+  class:active
 >
   <ContextMenuProvider
     bind:popover
@@ -209,6 +210,15 @@
     align-items: stretch;
     justify-content: start;
 
+    &:hover {
+      cursor: pointer;
+      background-color: var(--cc-conversation-preview-background-color--hover);
+    }
+
+    &.active {
+      background-color: var(--cc-conversation-preview-background-color--active);
+    }
+
     .item {
       display: flex;
       flex-direction: column;
@@ -219,18 +229,9 @@
       text-decoration: inherit;
       color: inherit;
 
-      &:hover {
-        cursor: pointer;
-        background-color: var(--cc-conversation-preview-background-color--hover);
-      }
-
       &:focus-visible {
         box-shadow: inset 0em 0em 0em em(1px) var(--c-icon-button-naked-outer-border-color--focus);
         outline: none;
-      }
-
-      &.active {
-        background-color: var(--cc-conversation-preview-background-color--active);
       }
 
       :global(.draft) {
