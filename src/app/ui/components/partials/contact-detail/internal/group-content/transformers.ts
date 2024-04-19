@@ -1,14 +1,14 @@
 import type {ReceiverPreviewListProps} from '~/app/ui/components/partials/receiver-preview-list/props';
 import type {u53} from '~/common/types';
-import type {AnyReceiverData, AnyReceiverDataOrSelf} from '~/common/viewmodel/utils/receiver';
+import type {GroupReceiverData, SelfReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
  * Transforms an array of group members to a new store compatible with the shape of props expected
  * by `ReceiverPreviewList` component.
  */
 export function groupReceiverDataToReceiverPreviewListProps(
-    groupReceiverData: AnyReceiverData & {readonly type: 'group'},
-    selfReceiverData: AnyReceiverDataOrSelf & {readonly type: 'self'},
+    groupReceiverData: GroupReceiverData,
+    selfReceiverData: SelfReceiverData,
     /**
      * Max. number of items to include. If this is not provided, all items will be transformed.
      * Note: The creator and the user themself will always be included, even if the limit is lower.

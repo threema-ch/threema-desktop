@@ -12,7 +12,7 @@
   import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
   import {type IQueryableStore, ReadableStore} from '~/common/utils/store';
-  import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
+  import type {ContactReceiverData} from '~/common/viewmodel/utils/receiver';
 
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.profile-picture');
@@ -65,7 +65,7 @@
   }
 
   function getAvatarCharms(
-    currentReceiver: Pick<Extract<AnyReceiverData, {readonly type: 'contact'}>, 'badge'>,
+    currentReceiver: Pick<ContactReceiverData, 'badge'>,
   ): AvatarCharm[] | undefined {
     let receiverCharm: AvatarCharm[];
     switch (currentReceiver.badge) {

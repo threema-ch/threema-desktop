@@ -3,7 +3,7 @@ import type {IndicatorProps} from '~/app/ui/components/partials/receiver-card/in
 import type {TagsProps} from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/tags/props';
 import type {TimestampProps} from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/timestamp/props';
 import type {SanitizedHtml} from '~/app/ui/utils/text';
-import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
+import type {AnyReceiverData, ContactReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
  * Configuration options for a `ContentItem` in a `ReceiverCard`.
@@ -62,5 +62,5 @@ export interface TimestampContentItemOptions extends TimestampProps {
 
 export interface VerificationContentItemOptions {
     readonly type: 'verification-dots';
-    readonly receiver: Pick<AnyReceiverData & {type: 'contact'}, 'verification'>;
+    readonly receiver: Pick<ContactReceiverData, 'verification'>;
 }

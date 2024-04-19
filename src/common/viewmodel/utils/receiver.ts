@@ -559,7 +559,8 @@ interface CommonReceiverData {
     readonly notificationPolicy: NotificationPolicyData;
 }
 
-interface SelfReceiverData extends Omit<CommonReceiverData, 'lookup' | 'notificationPolicy'> {
+export interface SelfReceiverData
+    extends Omit<CommonReceiverData, 'lookup' | 'notificationPolicy'> {
     readonly type: 'self';
     readonly nickname?: string;
     readonly identity: IdentityString;

@@ -1,5 +1,5 @@
 import type {AnyReceiver} from '~/common/model';
-import type {AnyReceiverDataOrSelf, ReceiverDataFor} from '~/common/viewmodel/utils/receiver';
+import type {ReceiverDataFor, SelfReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
  * Data to be supplied to the UI layer as part of the `ViewModelStore`. This should be as close as
@@ -8,5 +8,5 @@ import type {AnyReceiverDataOrSelf, ReceiverDataFor} from '~/common/viewmodel/ut
  */
 export interface ContactDetailViewModel<TReceiver extends AnyReceiver> {
     readonly receiver: ReceiverDataFor<TReceiver>;
-    readonly user: AnyReceiverDataOrSelf & {readonly type: 'self'};
+    readonly user: SelfReceiverData;
 }
