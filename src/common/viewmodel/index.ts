@@ -37,10 +37,6 @@ import {
     type ConversationMessageViewModelBundle,
 } from '~/common/viewmodel/conversation/main/message';
 import {type DebugPanelViewModel, getDebugPanelViewModel} from '~/common/viewmodel/debug-panel';
-import {
-    getGroupListItemSetStore,
-    type GroupListItemSetStore,
-} from '~/common/viewmodel/group-list-item';
 import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/viewmodel/profile';
 import {getSearchViewModelBundle, type SearchViewModelBundle} from '~/common/viewmodel/search/nav';
 
@@ -211,12 +207,6 @@ export class ViewModelRepository implements IViewModelRepository {
 
             return getContactDetailViewModelBundle(this._services, receiverModelStore);
         });
-    }
-
-    public groupListItems(): GroupListItemSetStore {
-        return this._cache.groupListItem.derefOrCreate(() =>
-            getGroupListItemSetStore(this._services),
-        );
     }
 
     public profile(): ProfileViewModelStore {

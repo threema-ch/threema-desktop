@@ -1,60 +1,7 @@
-import type {
-    VerificationLevel,
-    VerificationLevelColors,
-} from '~/app/ui/svelte-components/threema/VerificationDots';
-import type {DbContactUid} from '~/common/db';
-
 /**
  * Status of a message.
  */
 export type MessageStatus = 'pending' | 'sent' | 'delivered' | 'read' | 'error';
-
-/**
- * Contact data.
- */
-export interface ContactData {
-    readonly uid: DbContactUid;
-    /**
-     * Optional badge of the receiver.
-     */
-    readonly badge?: ReceiverBadgeType;
-    /**
-     * Verification level.
-     */
-    readonly verificationLevel: VerificationLevel;
-    /**
-     * Verification level colors used.
-     */
-    readonly verificationLevelColors: VerificationLevelColors;
-    /**
-     * Whether this contact is being blocked.
-     */
-    readonly isBlocked: boolean;
-}
-
-/**
- * Group data.
- */
-export interface GroupData {
-    /**
-     * List of group members.
-     */
-    readonly members: string[];
-    /**
-     * List of group member names.
-     */
-    readonly memberNames: string[];
-}
-
-/**
- * Distribution list data.
- */
-export interface DistributionListData {
-    /**
-     * List of distribution list members.
-     */
-    readonly members: string[];
-}
 
 /**
  * Receiver badge types.

@@ -10,7 +10,6 @@ import type {ConversationListItemViewModelBundle} from '~/common/viewmodel/conve
 import type {ConversationViewModelBundle} from '~/common/viewmodel/conversation/main';
 import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
 import type {DebugPanelViewModel} from '~/common/viewmodel/debug-panel';
-import type {GroupListItemSetStore} from '~/common/viewmodel/group-list-item';
 import type {ProfileViewModelStore} from '~/common/viewmodel/profile';
 import type {SearchViewModelBundle} from '~/common/viewmodel/search/nav';
 
@@ -39,7 +38,6 @@ export class ViewModelCache {
     >();
 
     public readonly debugPanel = new LazyWeakRef<DebugPanelViewModel>();
-    public readonly groupListItem = new LazyWeakRef<GroupListItemSetStore>();
     public readonly profile = new LazyWeakRef<ProfileViewModelStore>();
     public readonly search = new LazyWeakRef<SearchViewModelBundle>();
 }
