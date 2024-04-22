@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
   import {getReceiverCardBottomLeftItemOptions} from '~/app/ui/components/partials/conversation/internal/top-bar/helpers';
@@ -16,6 +17,8 @@
   import {display} from '~/common/dom/ui/state';
   import {ReceiverType} from '~/common/enum';
   import {unreachable} from '~/common/utils/assert';
+
+  const log = globals.unwrap().uiLogging.logger('ui.component.conversation.top-bar');
 
   type $$Props = TopBarProps;
 
@@ -87,7 +90,23 @@
     popover?.close();
   }
 
-  function handleDeleteConversation(): void {
+  function handleClickPinUnpinConversation(): void {
+    if (conversation.isPinned) {
+      conversation.unpin().catch((error) => log.warn(`Failed to unpin: ${error}`));
+    } else {
+      conversation.pin().catch((error) => log.warn(`Failed to pin: ${error}`));
+    }
+  }
+
+  function handleClickArchiveUnarchiveConversation(): void {
+    if (conversation.isArchived) {
+      conversation.unarchive().catch((error) => log.warn(`Failed to unarchive: ${error}`));
+    } else {
+      conversation.archive().catch((error) => log.warn(`Failed to archive: ${error}`));
+    }
+  }
+
+  function handleClickDeleteConversation(): void {
     modalState = {
       type: 'delete-conversation',
       props: {
@@ -155,7 +174,7 @@
           },
         },
         {
-          handler: conversation.isPinned ? conversation.unpin : conversation.pin,
+          handler: handleClickPinUnpinConversation,
           label: conversation.isPinned
             ? $i18n.t('messaging.action--conversation-option-unpin', 'Unpin')
             : $i18n.t('messaging.action--conversation-option-pin', 'Pin'),
@@ -164,7 +183,7 @@
           },
         },
         {
-          handler: conversation.isArchived ? conversation.unarchive : conversation.archive,
+          handler: handleClickArchiveUnarchiveConversation,
           label: conversation.isArchived
             ? $i18n.t('messaging.action--conversation-option-unarchive', 'Unarchive')
             : $i18n.t('messaging.action--conversation-option-archive', 'Archive'),
@@ -173,7 +192,7 @@
           },
         },
         {
-          handler: () => handleDeleteConversation(),
+          handler: handleClickDeleteConversation,
           label: $i18n.t('messaging.action--conversation-option-delete'),
           icon: {
             name: 'delete_forever',

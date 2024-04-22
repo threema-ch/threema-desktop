@@ -672,8 +672,8 @@
               id: $viewModelStore.id,
               initiallyVisibleMessageId,
               lastMessage: $viewModelStore.lastMessage,
-              markAllMessagesAsRead: async () => {
-                await viewModelController
+              markAllMessagesAsRead: () => {
+                viewModelController
                   ?.markAllMessagesAsRead()
                   .catch((error) =>
                     log.error('Could not mark all messages as read in conversation', error),
