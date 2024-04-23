@@ -79,7 +79,35 @@ export class IncomingGroupSyncRequestTask
             });
         }
 
-        // 2. If the group is marked as left or the sender is not a member of the group, send a
+        // 2. If the last group-sync-request from the sender for this particular group (uniquely
+        //    identified by group id and creator) is less than 1h ago, log a notice, discard the
+        //    message and abort these steps.
+        const groupSyncTimestamp = new Date();
+        const lastGroupSyncTimestamp =
+            this._services.volatileProtocolState.getLastProcessedGroupSyncRequest(
+                view.groupId,
+                view.creatorIdentity,
+                senderIdentity,
+            );
+        if (
+            lastGroupSyncTimestamp !== undefined &&
+            groupSyncTimestamp.getTime() - lastGroupSyncTimestamp.getTime() < 3.6e6
+        ) {
+            this._log.info(
+                'Received a group sync request before the timer allows a new one. Discarding the message.',
+            );
+            return;
+        }
+
+        // The timer has ran out, we can now update it and handle the group sync request normally.
+        this._services.volatileProtocolState.setLastProcessedGroupSyncRequest(
+            view.groupId,
+            view.creatorIdentity,
+            senderIdentity,
+            groupSyncTimestamp,
+        );
+
+        // 3. If the group is marked as left or the sender is not a member of the group, send a
         //    group-setup with an empty members list back to the sender and abort these steps.
         if (view.userState !== GroupUserState.MEMBER) {
             this._log.info(
@@ -98,14 +126,14 @@ export class IncomingGroupSyncRequestTask
 
         this._log.info(`Syncing group to member ${senderIdentity}`);
 
-        // 3. Send a group-setup message with the current group members, followed by a group-name
+        // 4. Send a group-setup message with the current group members, followed by a group-name
         //    message to the sender.
         await sendGroupSetup(groupId, senderContact.get(), view.members, handle, this._services);
         await sendGroupName(groupId, senderContact.get(), view.name, handle, this._services);
 
-        // 4. If the group has a profile picture, send a set-profile-picture group control message
+        // 5. If the group has a profile picture, send a set-profile-picture group control message
         //    to the sender.
-        // 5. If the group has no profile picture, send a delete-profile-picture group control message to the sender.
+        // 6. If the group has no profile picture, send a delete-profile-picture group control message to the sender.
         const profilePictureView = group.get().controller.profilePicture.get().view;
         if (profilePictureView.picture !== undefined) {
             await sendGroupSetProfilePicture(

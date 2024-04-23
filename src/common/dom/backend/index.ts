@@ -70,6 +70,7 @@ import {
 import {type DirectoryBackend, DirectoryError} from '~/common/network/protocol/directory';
 import {DropDeviceTask} from '~/common/network/protocol/task/d2m/drop-device';
 import {TaskManager} from '~/common/network/protocol/task/manager';
+import {VolatileProtocolStateBackend} from '~/common/network/protocol/volatile-protocol-state';
 import {StubWorkBackend, type WorkBackend} from '~/common/network/protocol/work';
 import {ensureDeviceCookie, type DeviceCookie} from '~/common/network/types';
 import {
@@ -384,6 +385,7 @@ function initEarlyBackendServicesWithoutConfig(
     );
     const taskManager = new TaskManager({logging});
     const keyStorage = factories.keyStorage({crypto}, logging.logger('key-storage'));
+    const volatileProtocolState = new VolatileProtocolStateBackend();
 
     return {
         compressor,
@@ -396,6 +398,7 @@ function initEarlyBackendServicesWithoutConfig(
         systemDialog,
         systemInfo: backendInit.systemInfo,
         taskManager,
+        volatileProtocolState,
     };
 }
 
@@ -443,6 +446,7 @@ function initBackendServices(
         notification,
         taskManager,
         systemDialog,
+        volatileProtocolState,
     } = earlyServices;
 
     const workData = workCredentials === undefined ? undefined : {workCredentials};
@@ -471,6 +475,7 @@ function initBackendServices(
         notification,
         taskManager,
         systemDialog,
+        volatileProtocolState,
     });
     const viewModel = new ViewModelRepository(
         {model, config, crypto, endpoint, file, logging, device},
@@ -483,6 +488,7 @@ function initBackendServices(
         model,
         nonces,
         viewModel,
+        volatileProtocolState,
     };
 }
 

@@ -200,6 +200,116 @@ export function run(): void {
                 ]);
             });
         });
+
+        it('Prevent subsequent group sync requests from triggering a group setup', async function () {
+            const {crypto, model} = services;
+
+            // Add contacts
+            const sender = user1;
+            const member = user2;
+            const senderContactOrInit = addTestUserAsContact(model, sender);
+
+            const memberContact = addTestUserAsContact(model, member);
+
+            // Create group without user as member
+            const groupId = randomGroupId(crypto);
+            addTestGroup(model, {
+                groupId,
+                creatorIdentity: me,
+                members: [memberContact.ctx],
+            });
+
+            // Determine network expectations
+            const expectations = [];
+            // For unknown users, the user is first added and reflected
+
+            // Then an empty group setup must be reflected and sent
+            expectations.push(...sendGroupSetupToUser(services, sender, [], {reflect: false}));
+
+            expect(
+                services.volatileProtocolState.getLastProcessedGroupSyncRequest(
+                    groupId,
+                    me,
+                    senderContactOrInit.get().view.identity,
+                ),
+            ).to.be.undefined;
+
+            // Run task
+            await runTask(services, groupId, me, senderContactOrInit, expectations);
+
+            // The timestamp was set
+            const timestamp = services.volatileProtocolState.getLastProcessedGroupSyncRequest(
+                groupId,
+                me,
+                senderContactOrInit.get().view.identity,
+            );
+            expect(timestamp).to.not.be.undefined;
+
+            // Expect the second task to be discarded
+            // No expectations here since nothing is written
+            await runTask(services, groupId, me, senderContactOrInit, []);
+
+            // The timestamp was not updated by a rejected sync request
+            expect(
+                services.volatileProtocolState.getLastProcessedGroupSyncRequest(
+                    groupId,
+                    me,
+                    senderContactOrInit.get().view.identity,
+                ),
+            ).to.eq(timestamp);
+        });
+
+        it('Allow group sync requests when the preceeding one was more than an hour ago', async function () {
+            const {crypto, model} = services;
+
+            // Add contacts
+            const sender = user1;
+            const member = user2;
+            const senderContactOrInit = addTestUserAsContact(model, sender);
+
+            const memberContact = addTestUserAsContact(model, member);
+
+            // Create group without user as member
+            const groupId = randomGroupId(crypto);
+            addTestGroup(model, {
+                groupId,
+                creatorIdentity: me,
+                members: [memberContact.ctx],
+            });
+
+            // Determine network expectations
+            const expectations = [];
+            // For unknown users, the user is first added and reflected
+
+            // Then an empty group setup must be reflected and sent
+            expectations.push(...sendGroupSetupToUser(services, sender, [], {reflect: false}));
+            const now = new Date();
+            expect(
+                services.volatileProtocolState.getLastProcessedGroupSyncRequest(
+                    groupId,
+                    me,
+                    senderContactOrInit.get().view.identity,
+                ),
+            ).to.be.undefined;
+
+            services.volatileProtocolState.setLastProcessedGroupSyncRequest(
+                groupId,
+                me,
+                senderContactOrInit.get().view.identity,
+                new Date(now.setHours(now.getHours() - 1.05)),
+            );
+
+            // Th group-sync-request executes
+            await runTask(services, groupId, me, senderContactOrInit, expectations);
+
+            const timestamp = services.volatileProtocolState.getLastProcessedGroupSyncRequest(
+                groupId,
+                me,
+                senderContactOrInit.get().view.identity,
+            );
+            // Timestamp contains the new timestamp
+            expect(timestamp?.getTime()).to.be.greaterThan(now.getTime());
+        });
     });
 }
 

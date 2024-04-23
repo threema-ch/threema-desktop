@@ -71,10 +71,6 @@ export abstract class GroupSetupTaskBase<
                 this._log.info(`We were removed from the unknown group ${this._groupDebugString}`);
                 return;
             }
-
-            // 3.2 If the sender is blocked, send a group-leave message to the sender and all
-            //     provided members (including those who are blocked) and abort these steps.
-            //     TODO(DESK-560) (but only for CSP?)
         }
 
         // 4. If the group could be found

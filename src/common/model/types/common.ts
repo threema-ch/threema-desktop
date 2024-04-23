@@ -24,6 +24,7 @@ export type ServicesForModel = Pick<
     | 'nonces'
     | 'notification'
     | 'systemDialog'
+    | 'volatileProtocolState'
 > & {
     readonly db: DatabaseBackend;
     readonly taskManager: Pick<TaskManager, 'schedule'>;

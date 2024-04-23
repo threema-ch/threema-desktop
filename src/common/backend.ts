@@ -12,6 +12,7 @@ import type {Repositories} from '~/common/model';
 import type {BlobBackend} from '~/common/network/protocol/blob';
 import type {DirectoryBackend} from '~/common/network/protocol/directory';
 import type {TaskManager} from '~/common/network/protocol/task/manager';
+import type {VolatileProtocolState} from '~/common/network/protocol/volatile-protocol-state';
 import type {WorkBackend} from '~/common/network/protocol/work';
 import type {NotificationService} from '~/common/notification';
 import type {SystemDialogService} from '~/common/system-dialog';
@@ -40,6 +41,7 @@ export interface ServicesForBackend {
     readonly systemInfo: SystemInfo;
     readonly taskManager: TaskManager;
     readonly viewModel: IViewModelRepository;
+    readonly volatileProtocolState: VolatileProtocolState;
     readonly work: WorkBackend;
 }
 

@@ -50,11 +50,12 @@ export type ServicesForTasks = Pick<
     | 'directory'
     | 'file'
     | 'logging'
+    | 'media'
     | 'model'
     | 'nonces'
     | 'notification'
     | 'systemDialog'
-    | 'media'
+    | 'volatileProtocolState'
 >;
 
 /**

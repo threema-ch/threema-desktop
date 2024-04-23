@@ -130,6 +130,7 @@ import type {
 } from '~/common/network/protocol/task';
 import {_only_for_testing, TaskManager} from '~/common/network/protocol/task/manager';
 import {randomGroupId} from '~/common/network/protocol/utils';
+import {VolatileProtocolStateBackend} from '~/common/network/protocol/volatile-protocol-state';
 import type {WorkBackend, WorkLicenseStatus} from '~/common/network/protocol/work';
 import * as structbuf from '~/common/network/structbuf';
 import {
@@ -747,6 +748,7 @@ export function makeTestServices(identity: IdentityString): TestServices {
         } as unknown as EndpointService,
         taskManager,
         work: new TestWorkBackend(),
+        volatileProtocolState: new VolatileProtocolStateBackend(),
     };
     const model = new TestModelRepositories(identity, partialServices);
     const viewModel = new TestViewModel({...partialServices, model});
