@@ -363,13 +363,12 @@ package:source:
     - apt-get update
     - apt-get install -y flatpak jq lftp elfutils libyaml-dev libglib2.0-dev libcurl4-gnutls-dev libxml2-dev libxslt1-dev python3-aiohttp
     # Build current version of flatpak-builder
-    # TODO: Move off of build with patched `libglnx` (see: https://github.com/flatpak/flatpak-builder/issues/590).
     - apt-get install -y meson cmake debugedit appstream appstream-compose libjson-glib-dev libelf-dev libostree-dev
     - |
       pushd /opt/
-      wget https://github.com/flatpak/flatpak-builder/releases/download/1.4.2/flatpak-builder-1.4.2-fixed-libglnx.tar.xz
-      tar xf flatpak-builder-1.4.2-fixed-libglnx.tar.xz
-      cd flatpak-builder-1.4.2
+      wget https://github.com/flatpak/flatpak-builder/releases/download/1.4.3/flatpak-builder-1.4.3.tar.xz
+      tar xf flatpak-builder-1.4.3.tar.xz
+      cd flatpak-builder-1.4.3
       meson setup --prefix=/usr --buildtype=release -Ddocs=disabled _build
       meson install -C _build
       popd
