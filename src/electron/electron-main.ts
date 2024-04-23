@@ -964,15 +964,17 @@ function main(
             // The app is only served from one URL that may request permissions.
             // Only the main frame may request it and external URLs may not be loaded.
             if (!isValidAppUrl(contents.getURL())) {
-                return deny(`Permission request from unexpected URL ${contents.getURL()}`);
+                return deny(
+                    `Permission request from unexpected URL ${contents.getURL()}: ${permission}`,
+                );
             }
             if (!isValidAppUrl(details.requestingUrl)) {
                 return deny(
-                    `Permission request from unexpected requesting URL ${details.requestingUrl}`,
+                    `Permission request from unexpected requesting URL ${details.requestingUrl}: ${permission}`,
                 );
             }
             if (!details.isMainFrame) {
-                return deny(`Permission request from non-main thread`);
+                return deny(`Permission request from non-main thread: ${permission}`);
             }
 
             // Allow notifications
