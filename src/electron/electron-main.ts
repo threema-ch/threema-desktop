@@ -1168,14 +1168,26 @@ setAssertFailLogger((error) => CONSOLE_LOGGER.trace(error));
 (async () => {
     const signal = {start: false};
 
+    // Register custom threemadesktop:// protocol
+    //
+    // See https://www.electronjs.org/docs/latest/tutorial/security#18-avoid-usage-of-the-file-protocol-and-prefer-usage-of-custom-protocols
     electron.protocol.registerSchemesAsPrivileged([
         {
             scheme: 'threemadesktop',
+            /* eslint-disable @typescript-eslint/naming-convention */
             privileges: {
+                // Treat scheme as "standard-format" URL scheme. See https://chromium.googlesource.com/chromium/src/+/HEAD/url/url_util.h
                 standard: true,
-                // eslint-disable-next-line @typescript-eslint/naming-convention
+                // Treat scheme as a secure origin, i.e. don't trigger mixed content warnings with https
+                secure: true,
+                // Don't bypass CSP
+                bypassCSP: false,
+                // Allow using the fetch API
                 supportFetchAPI: true,
+                // We don't currently use service workers
+                allowServiceWorkers: false,
             },
+            /* eslint-enable @typescript-eslint/naming-convention */
         },
     ]);
 
