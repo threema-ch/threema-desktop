@@ -506,7 +506,7 @@ Version information:
     // Determine URL
     let appUrl: string;
     if (!import.meta.env.DEBUG) {
-        appUrl = 'threemadesktop://app';
+        appUrl = 'threemadesktop://app/';
     } else {
         appUrl = `${new URL(`http://localhost:${import.meta.env.DEV_SERVER_PORT}/`)}`;
     }
@@ -625,40 +625,58 @@ function main(
         electron.Menu.setApplicationMenu(buildElectronMenu());
         electron.app.setAboutPanelOptions(ABOUT_PANEL_OPTIONS);
 
+        // Generate error response (HTTP 400) for custom protocol handlers
+        function errorResponse(url: string, message: string): Response {
+            log.warn(`Request to "${url}" failed: ${message}`);
+            return new Response(message, {status: 400});
+        }
+
+        // Handle requests to custom threemadesktop:// protocol
         electron.protocol.handle(
             'threemadesktop',
             async (req: GlobalRequest): Promise<GlobalResponse> => {
                 const {host, pathname} = new URL(req.url);
+
+                log.debug(`-> ${req.method.toUpperCase()} ${req.url}`);
+
                 if (host !== 'app') {
-                    return new Response('Not allowed to access files from a non-local host', {
-                        status: 400,
-                    });
-                }
-
-                if (!pathname.startsWith('/')) {
-                    log.warn('Pathname does not start with a slash');
-                    return new Response('Pathname should be relative', {
-                        status: 400,
-                    });
-                }
-
-                if (pathname === '/') {
-                    return await electron.net.fetch(
-                        pathToFileURL(path.join(__dirname, '..', 'app', 'index.html')).toString(),
+                    return errorResponse(
+                        req.url,
+                        'Not allowed to access files from a host other than "app"',
                     );
                 }
 
+                if (!pathname.startsWith('/')) {
+                    return errorResponse(req.url, 'Pathname does not start with a slash');
+                }
+
+                // On requests to `threemadesktop://app/`, load application entrypoint
+                if (pathname === '/') {
+                    try {
+                        return await electron.net.fetch(
+                            pathToFileURL(
+                                path.join(__dirname, '..', 'app', 'index.html'),
+                            ).toString(),
+                        );
+                    } catch (error) {
+                        log.error(`Loading application entrypoint failed: ${error}`);
+                        throw error;
+                    }
+                }
+
+                // All other requests are treated as relative to the application directory
                 const pathToServe = path.resolve(__dirname, '..', 'app', pathname.slice(1));
                 const relativePath = path.relative(__dirname, pathToServe);
                 const isSafe = relativePath.startsWith('../app/') && !path.isAbsolute(relativePath);
                 if (isSafe) {
-                    return await electron.net.fetch(pathToFileURL(pathToServe).toString());
+                    try {
+                        return await electron.net.fetch(pathToFileURL(pathToServe).toString());
+                    } catch (error) {
+                        return errorResponse(req.url, 'Loading file path failed');
+                    }
                 }
 
-                log.warn('Tried to access the file system in an unsafe way.');
-                return new Response('File access is not safe', {
-                    status: 400,
-                });
+                return errorResponse(req.url, 'Disallowed file access');
             },
         );
 
