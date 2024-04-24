@@ -99,6 +99,11 @@ function getIndicatorElementForStatus(
             color: 'error',
         };
     }
+    if (status.received !== undefined) {
+        return {
+            icon: 'reply',
+        };
+    }
     if (status.read !== undefined) {
         return {
             icon: 'visibility',
@@ -113,9 +118,6 @@ function getIndicatorElementForStatus(
         return {
             icon: 'email',
         };
-    }
-    if (status.received !== undefined) {
-        return undefined;
     }
 
     return {
