@@ -13,7 +13,7 @@
   export let clickable: NonNullable<$$Props['clickable']> = false;
   export let direction: $$Props['direction'];
   export let highlighted: NonNullable<$$Props['highlighted']> = false;
-  export let padding: NonNullable<$$Props['padding']> = 'normal';
+  export let padding: NonNullable<$$Props['padding']> = 'md';
 
   const dispatch = createEventDispatcher<{
     completehighlightanimation: undefined;
@@ -69,16 +69,16 @@
       background-color: var(--mc-status-message-background-color);
     }
 
-    &.normal {
-      padding: rem(6px) rem(6px);
-    }
-
-    &.medium {
-      padding: rem(3px) rem(3px);
-    }
-
-    &.thin {
+    &.xs {
       padding: rem(2px);
+    }
+
+    &.sm {
+      padding: rem(4px) rem(8px);
+    }
+
+    &.md {
+      padding: rem(6px) rem(6px);
     }
 
     &::after {

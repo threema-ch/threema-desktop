@@ -33,6 +33,7 @@
   .text {
     overflow-wrap: normal;
     white-space: nowrap;
+    vertical-align: middle;
 
     // Alignment
     &.a-start {

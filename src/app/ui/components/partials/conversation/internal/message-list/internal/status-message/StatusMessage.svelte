@@ -11,26 +11,23 @@
   import type {AnchorPoint, VirtualRect} from '~/app/ui/generic/popover/types';
   import {i18n} from '~/app/ui/i18n';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
-  import {unusedProp} from '~/common/utils/svelte-helpers';
 
   type $$Props = Omit<AnyStatusMessageProps, 'type' | 'id'>;
 
   export let boundary: $$Props['boundary'] = undefined;
   export let action: SvelteNullableBinding<$$Props['action']> = undefined;
   export let information: $$Props['information'];
-  export let services: $$Props['services'];
-  unusedProp(services);
 
   let popover: SvelteNullableBinding<Popover> = null;
   let virtualTrigger: VirtualRect | undefined = undefined;
 
   const anchorPoints: AnchorPoint = {
     reference: {
-      horizontal: 'center',
+      horizontal: 'left',
       vertical: 'bottom',
     },
     popover: {
-      horizontal: 'center',
+      horizontal: 'left',
       vertical: 'top',
     },
   };
@@ -50,6 +47,10 @@
     dispatch('clickopendetailsoption');
   }
 
+  function handleClickTrigger(): void {
+    virtualTrigger = undefined;
+  }
+
   function handleContextMenuEvent(event: MouseEvent): void {
     if (event.type === 'contextmenu') {
       virtualTrigger = {
@@ -67,22 +68,42 @@
     }
   }
 
-  const popoverItems = getContextMenuItems($i18n, handleClickMessageDetails, handleClickDelete);
+  const menuItems = getContextMenuItems($i18n, handleClickMessageDetails, handleClickDelete);
 </script>
 
-<div use:contextmenu={handleContextMenuEvent}>
-  <Bubble padding="medium" direction={'none'} clickable={action !== undefined}>
-    <Text text={information.text} color="mono-low" wrap={true} size={'body-small'} selectable={true}
-    ></Text>
-  </Bubble>
+<div class="container">
+  <div class="message" use:contextmenu={handleContextMenuEvent}>
+    <Bubble padding="sm" direction="none" clickable={action !== undefined}>
+      <Text
+        text={information.text}
+        color="mono-low"
+        wrap={true}
+        size="body-small"
+        selectable={true}
+      />
+    </Bubble>
+  </div>
+
+  <ContextMenuProvider
+    bind:popover
+    {anchorPoints}
+    closeOnClickOutside={true}
+    container={boundary}
+    items={menuItems}
+    offset={{left: 0, top: 4}}
+    reference={virtualTrigger}
+    triggerBehavior={virtualTrigger === undefined ? 'toggle' : 'open'}
+    on:clicktrigger={handleClickTrigger}
+  />
 </div>
-<ContextMenuProvider
-  bind:popover
-  items={popoverItems}
-  container={boundary}
-  triggerBehavior={virtualTrigger === undefined ? 'toggle' : 'open'}
-  offset={{left: 0, top: 4}}
-  {anchorPoints}
-  reference={virtualTrigger}
-  on:clicktrigger={() => (virtualTrigger = undefined)}
-></ContextMenuProvider>
+
+<style lang="scss">
+  @use 'component' as *;
+
+  .container {
+    display: flex;
+    align-items: start;
+    justify-content: start;
+    gap: rem(4px);
+  }
+</style>

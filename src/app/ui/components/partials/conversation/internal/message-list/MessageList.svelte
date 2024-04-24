@@ -598,7 +598,7 @@
         align-items: center;
         justify-content: center;
 
-        :global(> *) {
+        :global(> .container) {
           max-width: min(rem(512px), 90%);
         }
       }

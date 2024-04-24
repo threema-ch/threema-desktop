@@ -14,7 +14,7 @@ export interface BubbleProps {
      */
     readonly highlighted?: boolean;
     /** The size of the padding between the bubble and its content. */
-    readonly padding?: 'normal' | 'thin' | 'medium';
+    readonly padding?: 'xs' | 'sm' | 'md';
 
     /** The direction of the message used for color shading. */
     readonly direction: MessageProps['direction'] | 'none';

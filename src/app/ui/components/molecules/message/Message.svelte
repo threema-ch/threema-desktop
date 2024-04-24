@@ -86,7 +86,7 @@
   {direction}
   {clickable}
   {highlighted}
-  padding={file?.thumbnail === undefined ? 'normal' : 'thin'}
+  padding={file?.thumbnail === undefined ? 'md' : 'xs'}
   on:click
   on:completehighlightanimation
 >
