@@ -380,7 +380,8 @@
         conversation.receiver.type === 'contact'
           ? !conversation.receiver.isBlocked
           : !conversation.receiver.isDisabled,
-      forward: text !== undefined,
+      // TODO(DESK-1400)
+      forward: text !== undefined && file === undefined,
       openDetails: true,
       deleteMessage: true,
     }}
