@@ -35,6 +35,8 @@ export function conversationSearchResultSetStoreToConversationPreviewListPropsSt
         [conversationSearchResultSetStore],
         ([{currentValue: conversationSearchResultSet}], getAndSubscribe) => ({
             items: [...conversationSearchResultSet]
+                // Remove deleted / hidden conversations.
+                .filter((conversation) => conversation.lastUpdate !== undefined)
                 .slice(0, limit)
                 .sort(conversationCompareFn)
                 .map((result) => {

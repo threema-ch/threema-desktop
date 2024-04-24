@@ -23,6 +23,10 @@ export function conversationListItemSetStoreToConversationPreviewListPropsStore(
         [conversationListItemSetStore],
         ([{currentValue: conversationListItemSet}], getAndSubscribe) => ({
             items: [...conversationListItemSet]
+                // Remove deleted / hidden conversations.
+                .filter(
+                    (conversation) => conversation.viewModelStore.get().lastUpdate !== undefined,
+                )
                 .sort((a, b) =>
                     conversationCompareFn(
                         getAndSubscribe(a.viewModelStore),
