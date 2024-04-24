@@ -41,7 +41,7 @@
     {@const hasNeighborLeft = isBlocked}
 
     <RadialExclusionMaskProvider cutouts={hasNeighborLeft ? [DEFAULT_CUTOUT] : []}>
-      <span class="charm notifications">
+      <span class="charm">
         {#if notificationPolicy.type === 'mentioned'}
           <MdIcon theme="Filled">alternate_email</MdIcon>
         {:else if notificationPolicy.type === 'never'}
@@ -57,7 +57,7 @@
     {@const hasNeighborLeft = isBlocked || hasNotificationPolicy}
 
     <RadialExclusionMaskProvider cutouts={hasNeighborLeft ? [DEFAULT_CUTOUT] : []}>
-      <span class="charm private">
+      <span class="charm">
         <ThreemaIcon theme="Filled">incognito</ThreemaIcon>
       </span>
     </RadialExclusionMaskProvider>
@@ -96,23 +96,11 @@
       font-size: rem(12px);
 
       &.blocked {
-        order: 4;
-
         color: red;
         font-weight: 900;
       }
 
-      &.notifications {
-        order: 3;
-      }
-
-      &.private {
-        order: 2;
-      }
-
       &.pinned {
-        order: 1;
-
         color: var(--cc-conversation-preview-properties-icon-pin-color);
       }
     }
