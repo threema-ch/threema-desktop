@@ -142,7 +142,7 @@
     "electron": "28.2.4",
     "electron-installer-dmg": "~4.0.0",
     "electron-packager": "~17.1.1",
-    "emojibase-data": "15.0.0",
+    "emojibase-data": "15.1.0",
     "es-module-lexer": "~1.1.0",
     "eslint": "~8.56.0",
     "eslint-config-prettier": "~9.1.0",
