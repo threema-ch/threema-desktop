@@ -62,7 +62,7 @@ import {
 import type {FileId} from '~/common/file-storage';
 import type {Logger} from '~/common/logging';
 import type {MediaBasedMessageType, TextBasedMessageType} from '~/common/model/types/message';
-import type {AnyStatusMessage} from '~/common/model/types/status';
+import type {AnyStatusMessageView} from '~/common/model/types/status';
 import type {GroupId, IdentityString, MessageId} from '~/common/network/types';
 import {type Settings, SETTINGS_CODEC} from '~/common/settings';
 import {STATUS_CODEC} from '~/common/status';
@@ -2867,7 +2867,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     /** @inheritdoc */
     public getStatusMessagesofConversation(
         conversationUid: DbConversationUid,
-    ): (AnyStatusMessage & {uid: DbStatusMessageUid})[] {
+    ): (AnyStatusMessageView & {uid: DbStatusMessageUid})[] {
         const queryResult = sync(
             this._db
                 .selectFrom(tStatusMessage)
@@ -2880,7 +2880,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 })
                 .executeSelectMany(),
         );
-        return queryResult.map((res): AnyStatusMessage & {uid: DbStatusMessageUid} => {
+        return queryResult.map((res): AnyStatusMessageView & {uid: DbStatusMessageUid} => {
             switch (res.type) {
                 case 'group-member-change':
                     return {

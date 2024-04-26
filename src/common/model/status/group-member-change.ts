@@ -3,7 +3,7 @@ import type {ServicesForModel} from '~/common/model/types/common';
 import type {
     BaseStatusMessageController,
     GroupMemberChangeStatusView,
-    GroupMemberChanges,
+    GroupMemberChange,
 } from '~/common/model/types/status';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
@@ -21,7 +21,7 @@ export class GroupMemberChangeStatusModelController
     ) {}
 }
 
-export class GroupMemberChangeStatusModelStore extends LocalModelStore<GroupMemberChanges> {
+export class GroupMemberChangeStatusModelStore extends LocalModelStore<GroupMemberChange> {
     public constructor(
         uid: DbStatusMessageUid,
         services: ServicesForModel,
@@ -29,7 +29,7 @@ export class GroupMemberChangeStatusModelStore extends LocalModelStore<GroupMemb
         view: GroupMemberChangeStatusView,
     ) {
         const {logging} = services;
-        const tag = 'status-messages.group-member-change';
+        const tag = 'status-message.group-member-change';
         super(
             view,
             new GroupMemberChangeStatusModelController(uid, services),

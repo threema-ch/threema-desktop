@@ -123,7 +123,7 @@ export type ConversationController = {
      */
     readonly removeMessage: ControllerUpdateFromLocal<[uid: MessageId]>;
     /**
-     * Remove all message from this conversation.
+     * Remove all messages from this conversation.
      *
      * The messages will be only removed from the device where the action is executed. I.e. this
      * action is not reflected.

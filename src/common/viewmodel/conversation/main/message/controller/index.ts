@@ -1,7 +1,7 @@
 import {MessageDirection, MessageReaction, MessageType} from '~/common/enum';
 import type {AnyMessageModelStore} from '~/common/model';
 import type {GroupMemberChangeStatusModelStore} from '~/common/model/status/group-member-change';
-import type {GroupNameChangeModelStore} from '~/common/model/status/group-name-change';
+import type {GroupNameChangeStatusModelStore} from '~/common/model/status/group-name-change';
 import {unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
@@ -120,5 +120,5 @@ export class GroupNameChangeViewModelController
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
-    public constructor(private readonly _statusMessage: GroupNameChangeModelStore) {}
+    public constructor(private readonly _statusMessage: GroupNameChangeStatusModelStore) {}
 }

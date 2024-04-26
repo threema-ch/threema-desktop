@@ -30,7 +30,6 @@ import type {
     IOutboundVideoMessageModelStore,
     OutboundVideoMessage,
 } from '~/common/model/types/message/video';
-import type {AnyStatusMessageModelStore} from '~/common/model/types/status';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
 import type {u53} from '~/common/types';
@@ -188,7 +187,6 @@ export type SetOfAnyLocalMessageModelStore = IDerivableSetStore<
     | LocalModelStore<OutboundVideoMessage['model']>
     | LocalModelStore<InboundAudioMessage['model']>
     | LocalModelStore<OutboundAudioMessage['model']>
-    | AnyStatusMessageModelStore
 >;
 export type SetOfAnyRemoteMessageModelStore = RemoteSetStore<
     | RemoteModelStore<InboundTextMessage['model']>

@@ -1,13 +1,13 @@
 import type {StatusMessageType} from '~/common/enum';
 import type {
-    AnyStatusMessage,
+    AnyStatusMessageView,
     GroupMemberChangeStatusView,
-    GroupNameChangeView,
+    GroupNameChangeStatusView,
 } from '~/common/model/types/status';
 import {GROUP_MEMBER_CHANGE_CODEC} from '~/common/status/group-member-change';
 import {GROUP_NAME_CHANGE_CODEC} from '~/common/status/group-name-change';
 
-export interface StatusMessagesCodec<TStatus extends AnyStatusMessage> {
+export interface StatusMessagesCodec<TStatus extends AnyStatusMessageView> {
     readonly encode: (status: TStatus['value']) => Uint8Array;
     readonly decode: (encoded: Uint8Array) => TStatus['value'];
 }
@@ -18,7 +18,7 @@ export type StatusMessageTypesCodec = {
     readonly [TKey in StatusMessageType]: TKey extends 'group-member-change'
         ? StatusMessagesCodec<GroupMemberChangeStatusView>
         : TKey extends 'group-name-change'
-          ? StatusMessagesCodec<GroupNameChangeView>
+          ? StatusMessagesCodec<GroupNameChangeStatusView>
           : never;
 };
 

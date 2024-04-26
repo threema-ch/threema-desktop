@@ -1,7 +1,5 @@
-import type {
-    AnyStatusMessageProps,
-    MessageProps,
-} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
+import type {MessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
+import type {StatusMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/props';
 import type {I18nType} from '~/app/ui/i18n-types';
 import {statusMessageUidToStatusMessageId} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
@@ -19,7 +17,7 @@ import type {ConversationMessageSetStore} from '~/common/viewmodel/conversation/
  * Shape of props as they should be provided from the backend.
  */
 export type MessagePropsFromBackend = Omit<MessageProps, 'boundary' | 'conversation' | 'services'>;
-export type StatusPropsFromBackend = Omit<AnyStatusMessageProps, 'services' | 'boundary'>;
+export type StatusPropsFromBackend = Omit<StatusMessageProps, 'services' | 'boundary'>;
 export type AnyMessagePropsFromBackend = MessagePropsFromBackend | StatusPropsFromBackend;
 
 export function messageSetStoreToMessagePropsStore(
@@ -54,7 +52,6 @@ export function messageSetStoreToMessagePropsStore(
                                       i18n,
                                   )
                                 : viewModel.quote;
-
                         return {
                             ...getMessageProps(value.viewModelController, viewModel, i18n),
                             ordinal: viewModel.ordinal,

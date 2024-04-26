@@ -38,7 +38,7 @@ import {
     getConversationMessageViewModelBundle,
     type ConversationMessageViewModelBundle,
     type ConversationStatusMessageViewModelBundle,
-    getConversationStatusMesageViewModelBundle,
+    getConversationStatusMessageViewModelBundle,
 } from '~/common/viewmodel/conversation/main/message';
 import {type DebugPanelViewModel, getDebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/viewmodel/profile';
@@ -261,7 +261,7 @@ export class ViewModelRepository implements IViewModelRepository {
                     >(),
             )
             .getOrCreate(messageStore, () =>
-                getConversationStatusMesageViewModelBundle(this._services, messageStore),
+                getConversationStatusMessageViewModelBundle(this._services, messageStore),
             );
     }
 

@@ -1,8 +1,6 @@
 import type {AppServices} from '~/app/types';
-import type {
-    AnyStatusMessageProps,
-    MessageProps,
-} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
+import type {MessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
+import type {StatusMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/props';
 import type {DbConversationUid} from '~/common/db';
 import type {MessageDirection} from '~/common/enum';
 import type {MessageId, StatusMessageId} from '~/common/network/types';
@@ -30,7 +28,7 @@ export interface MessageListProps {
         readonly initiallyVisibleMessageId?: MessageId;
         readonly lastMessage:
             | {
-                  readonly id: MessageProps['id'] | AnyStatusMessageProps['id'];
+                  readonly id: MessageProps['id'] | StatusMessageProps['id'];
                   readonly direction: MessageDirection | 'none';
               }
             | undefined;

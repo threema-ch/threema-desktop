@@ -7,12 +7,10 @@ import type {IdentityString} from '~/common/network/types';
 import type {u53} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
 
-export type StatusMessage = GroupMemberChangeStatusView;
-
 /**
  * The base status message with the mandatory fields all status messages must have.
  */
-interface BaseStatusMessage {
+interface BaseStatusMessageView {
     readonly conversationUid: DbConversationUid;
     readonly type: StatusMessageType;
     readonly createdAt: Date;
@@ -24,13 +22,13 @@ interface BaseStatusMessage {
  * BaseStatusMessage Controller with no functionality, whatsoever.
  * It is mainly used for creation of {@link LocalModelStores} of {@link StatusMessages}.
  */
-export type BaseStatusMessageController<TStatusMessageView extends BaseStatusMessage> = {
+export type BaseStatusMessageController<TStatusMessageView extends BaseStatusMessageView> = {
     readonly uid: UidOf<DbStatusMessage>;
     readonly meta: ModelLifetimeGuard<TStatusMessageView>;
 } & ProxyMarked;
 
 // Group Member Changes
-export interface GroupMemberChangeStatusView extends BaseStatusMessage {
+export interface GroupMemberChangeStatusView extends BaseStatusMessageView {
     readonly type: StatusMessageType.GROUP_MEMBER_CHANGE;
     readonly value: {
         // IDs that were added to the group.
@@ -40,7 +38,7 @@ export interface GroupMemberChangeStatusView extends BaseStatusMessage {
     };
 }
 
-export type GroupMemberChanges = LocalModel<
+export type GroupMemberChange = LocalModel<
     GroupMemberChangeStatusView,
     BaseStatusMessageController<GroupMemberChangeStatusView>,
     DbConversationUid,
@@ -48,7 +46,7 @@ export type GroupMemberChanges = LocalModel<
 >;
 
 // Group Name Changes
-export interface GroupNameChangeView extends BaseStatusMessage {
+export interface GroupNameChangeStatusView extends BaseStatusMessageView {
     readonly type: StatusMessageType.GROUP_NAME_CHANGE;
     readonly value: {
         // The old name of the group.
@@ -58,18 +56,18 @@ export interface GroupNameChangeView extends BaseStatusMessage {
     };
 }
 
-export type GroupNameChanges = LocalModel<
-    GroupNameChangeView,
-    BaseStatusMessageController<GroupNameChangeView>,
+export type GroupNameChange = LocalModel<
+    GroupNameChangeStatusView,
+    BaseStatusMessageController<GroupNameChangeStatusView>,
     DbConversationUid,
     StatusMessageType.GROUP_NAME_CHANGE
 >;
 
 // Union Types
-export type AnyStatusMessage = GroupMemberChangeStatusView | GroupNameChangeView;
+export type AnyStatusMessageView = GroupMemberChangeStatusView | GroupNameChangeStatusView;
 
-export type AnyStatusMessageModel = GroupMemberChanges | GroupNameChanges;
+export type AnyStatusMessageModel = GroupMemberChange | GroupNameChange;
 
 export type AnyStatusMessageModelStore =
-    | LocalModelStore<GroupMemberChanges>
-    | LocalModelStore<GroupNameChanges>;
+    | LocalModelStore<GroupMemberChange>
+    | LocalModelStore<GroupNameChange>;

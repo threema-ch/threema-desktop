@@ -19,7 +19,7 @@ import {getConversationReceiverData} from '~/common/viewmodel/utils/receiver';
 export type ConversationViewModelStore = LocalStore<ConversationViewModel & PropertiesMarked>;
 
 /**
- * Partial store of a conversation's and status messages, as it should be provided by the viewmodel.
+ * Partial store of a conversation's messages and status messages, as it should be provided by the viewmodel.
  *
  * Note: It is not guaranteed that all messages of the conversation are included (hence, "partial");
  * However, the following messages can be expected to be included:
@@ -30,7 +30,7 @@ export type ConversationViewModelStore = LocalStore<ConversationViewModel & Prop
  *   height.
  * - A large enough window of messages immediately before (and including) the last message to fill
  *   (at least) one realistic viewport height.
- * - As of now, all status messages of all catgegories in the current conversation.
+ * - As of now, all status messages of all categories in the current conversation.
  */
 export type ConversationMessageSetStore = LocalDerivedSetStore<
     SetOfAnyLocalMessageModelStore,

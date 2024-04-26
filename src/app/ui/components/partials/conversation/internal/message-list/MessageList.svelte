@@ -8,6 +8,7 @@
   import {globals} from '~/app/globals';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import LazyList from '~/app/ui/components/hocs/lazy-list/LazyList.svelte';
+  import type {LazyListProps} from '~/app/ui/components/hocs/lazy-list/props';
   import {Viewport} from '~/app/ui/components/partials/conversation/internal/message-list/helpers';
   import Message from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/Message.svelte';
   import MessageDetailsModal from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-details-modal/MessageDetailsModal.svelte';
@@ -158,14 +159,9 @@
    * Returns undefined if no such message was found.
    */
   export function getPropsFromBackend(messageId: MessageId): MessagePropsFromBackend | undefined {
-    const messageProps = $messagePropsStore.find((prop) => prop.id === messageId);
-
-    // This is a sanity check for the typechecker.
-    // Because `MessageId` can only match normal messages, the type will never evaluate to `status`.
-    if (messageProps?.type === 'message') {
-      return messageProps;
-    }
-    return undefined;
+    return $messagePropsStore.find(
+      (prop): prop is MessagePropsFromBackend => prop.id === messageId,
+    );
   }
 
   function handleClickScrollToBottom(): void {
@@ -349,7 +345,9 @@
     log.error(`An error occurred in LazyList: ${error.message}`);
   }
 
-  function handleItemAnchored(event: CustomEvent<AnyMessagePropsFromBackend>): void {
+  function handleItemAnchored(
+    event: CustomEvent<LazyListProps<AnyMessagePropsFromBackend>['items'][u53]>,
+  ): void {
     const messageId = event.detail.id;
 
     // If the `messageId` that was just anchored was marked for highlighting after animation, mark
@@ -368,11 +366,15 @@
     anchoredMessageId = undefined;
   }
 
-  function handleItemEntered(event: CustomEvent<AnyMessagePropsFromBackend>): void {
+  function handleItemEntered(
+    event: CustomEvent<LazyListProps<AnyMessagePropsFromBackend>['items'][u53]>,
+  ): void {
     viewport.addMessage(event.detail.id);
   }
 
-  function handleItemExited(event: CustomEvent<AnyMessagePropsFromBackend>): void {
+  function handleItemExited(
+    event: CustomEvent<LazyListProps<AnyMessagePropsFromBackend>['items'][u53]>,
+  ): void {
     viewport.deleteMessage(event.detail.id);
   }
 

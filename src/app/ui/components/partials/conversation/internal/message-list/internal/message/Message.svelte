@@ -38,7 +38,6 @@
   type $$Props = MessageProps;
 
   export let type: $$Props['type'] = 'message';
-  unusedProp(type);
   export let actions: $$Props['actions'];
   export let boundary: $$Props['boundary'] = undefined;
   export let conversation: $$Props['conversation'];
@@ -55,7 +54,7 @@
   export let status: $$Props['status'];
   export let text: $$Props['text'] = undefined;
 
-  unusedProp(history);
+  unusedProp(history, type);
 
   const {
     router,

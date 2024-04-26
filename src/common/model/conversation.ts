@@ -126,7 +126,7 @@ export function deactivateAndPurgeCacheCascade(
         // Deactivate and purge all currently cached messages of this conversation
         message.deactivateAndPurgeCache(controller.uid);
 
-        // Deactivate and purge all currently cached status messages
+        // Deactivate and purge all currently cached status messages of this conversation
         status.deactivateAndPurgeCache(controller.uid);
 
         // Purge the conversation from the conversation cache

@@ -31,7 +31,7 @@ import type {
     MediaBasedMessageType,
     TextBasedMessageType,
 } from '~/common/model/types/message';
-import type {AnyStatusMessage} from '~/common/model/types/status';
+import type {AnyStatusMessageView} from '~/common/model/types/status';
 import type {BlobId} from '~/common/network/protocol/blob';
 import type {
     FeatureMask,
@@ -1061,7 +1061,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      */
     readonly getStatusMessagesofConversation: (
         conversationUid: DbConversationUid,
-    ) => (AnyStatusMessage & {uid: DbStatusMessageUid})[];
+    ) => (AnyStatusMessageView & {uid: DbStatusMessageUid})[];
 
     /**
      * Update a property for a given key. It returns the property if the action was

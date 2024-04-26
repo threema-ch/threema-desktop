@@ -13,7 +13,7 @@ import {
     isMessageId,
     isStatusMessageId,
 } from '~/common/network/types';
-import {unreachable, assert, unwrap, assertUnreachable} from '~/common/utils/assert';
+import {unreachable, assert, assertUnreachable} from '~/common/utils/assert';
 import {type GetAndSubscribeFunction, derive} from '~/common/utils/store/derived-store';
 import {LocalSetBasedSetStore, LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
@@ -23,22 +23,26 @@ import type {
     FeatureMaskMap,
 } from '~/common/viewmodel/conversation/main/store/types';
 
-function calculateLastMessageId(
+function getLastMessageId(
     conversationModel: Conversation,
 ): MessageId | StatusMessageId | undefined {
-    // Always load window around last message.
-    const lastMessage = conversationModel.controller.lastMessageStore().get();
-    const lastStatusMessage = conversationModel.controller.lastStatusMessageStore().get();
+    const lastMessage = conversationModel.controller.lastMessageStore().get()?.get();
+    const lastStatusMessage = conversationModel.controller.lastStatusMessageStore().get()?.get();
 
-    if (lastMessage === undefined && lastStatusMessage === undefined) {
-        return undefined;
+    if (lastMessage !== undefined && lastStatusMessage !== undefined) {
+        return lastMessage.view.ordinal > lastStatusMessage.view.ordinal
+            ? lastMessage.view.id
+            : statusMessageUidToStatusMessageId(lastStatusMessage.controller.uid);
+    }
+    if (lastMessage !== undefined) {
+        return lastMessage.view.id;
+    }
+    if (lastStatusMessage !== undefined) {
+        return statusMessageUidToStatusMessageId(lastStatusMessage.controller.uid);
     }
 
-    // Since an ordinal is always positive, this ternary returns the ID of the later last (status) message.
-    // Since we checked that both cannot be undefined already, the unwrap cannot fail here.
-    return (lastMessage?.get().view.ordinal ?? -1) > (lastStatusMessage?.get().view.ordinal ?? -1)
-        ? lastMessage?.get().view.id
-        : statusMessageUidToStatusMessageId(unwrap(lastStatusMessage).get().controller.uid);
+    // If both are undefined, there is no message in the conversation and thus, no last message.
+    return undefined;
 }
 
 /**
@@ -105,14 +109,14 @@ export function getMessageSetStore(
                 }
             }
 
-            const newerLastMessageId = calculateLastMessageId(conversationModel);
+            const lastMessageId = getLastMessageId(conversationModel);
 
             let lastMessageWindowSet: Set<AnyMessageModelStore | AnyStatusMessageModelStore>;
 
-            if (newerLastMessageId !== undefined) {
+            if (lastMessageId !== undefined) {
                 lastMessageWindowSet =
                     conversationModel.controller.getMessagesWithSurroundingMessages(
-                        new Set([newerLastMessageId]),
+                        new Set([lastMessageId]),
                         defaultWindowSize,
                     );
             } else {
@@ -166,10 +170,11 @@ export function getLastMessage(
         return undefined;
     }
 
-    const lastMessageId = calculateLastMessageId(conversationModel);
+    const lastMessageId = getLastMessageId(conversationModel);
 
-    // The typechecker cannot infer this, but this cannot happen since the only way `calculateLastMessageId` returns undefined
-    // is when both stores are undefined, which we have already checked here.
+    // The type checker cannot infer this, but this cannot happen since the only way
+    // `getLastMessageId` returns undefined is when both stores are undefined, which we have already
+    // checked before.
     if (lastMessageId === undefined) {
         return undefined;
     }

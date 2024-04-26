@@ -2,7 +2,7 @@
  * Props accepted by the `LazyList` component.
  * Note: The element must have a unique ID that is unique over the whole list.
  */
-export interface LazyListProps<TProps extends {id: unknown}> {
+export interface LazyListProps<TProps extends {readonly id: unknown}> {
     /** Items to render as part of the `LazyList`. */
     readonly items: TProps[];
     /** Callback to handle errors that are caught in `LazyList`. */

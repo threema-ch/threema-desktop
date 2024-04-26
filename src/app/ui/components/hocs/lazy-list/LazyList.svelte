@@ -4,7 +4,7 @@
   The list also abstracts generic list functionality, like scrolling to an item, glueing, and
   observing items that enter and exit the view.
 -->
-<script lang="ts" generics="TProps extends {id: unknown}">
+<script lang="ts" generics="TProps extends {readonly id: unknown}">
   import {createEventDispatcher, onDestroy, onMount, tick} from 'svelte';
 
   import {intersection} from '~/app/ui/actions/intersection';

@@ -1,6 +1,6 @@
 import * as v from '@badrap/valita';
 
-import type {GroupNameChangeView} from '~/common/model/types/status';
+import type {GroupNameChangeStatusView} from '~/common/model/types/status';
 import * as proto from '~/common/node/status/status';
 import type {StatusMessagesCodec} from '~/common/status';
 
@@ -13,7 +13,7 @@ const GROUP_NAME_CHANGE = v
 
 export type GroupNameChange = v.Infer<typeof GROUP_NAME_CHANGE>;
 
-export const GROUP_NAME_CHANGE_CODEC: StatusMessagesCodec<GroupNameChangeView> = {
+export const GROUP_NAME_CHANGE_CODEC: StatusMessagesCodec<GroupNameChangeStatusView> = {
     encode: (status) =>
         proto.GroupNameChange.encode({
             oldName: status.oldName,

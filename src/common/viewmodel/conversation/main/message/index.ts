@@ -63,7 +63,7 @@ export function getConversationMessageViewModelBundle(
     });
 }
 
-export function getConversationStatusMesageViewModelBundle(
+export function getConversationStatusMessageViewModelBundle(
     services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
     statusMessageModelStore: AnyStatusMessageModelStore,
 ): ConversationStatusMessageViewModelBundle {

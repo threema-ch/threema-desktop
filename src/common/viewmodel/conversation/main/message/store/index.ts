@@ -3,7 +3,7 @@ import {MessageDirection} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import type {AnyMessageModel, AnyMessageModelStore} from '~/common/model/types/message';
-import type {AnyStatusMessage, AnyStatusMessageModelStore} from '~/common/model/types/status';
+import type {AnyStatusMessageView, AnyStatusMessageModelStore} from '~/common/model/types/status';
 import type {PropertiesMarked} from '~/common/utils/endpoint';
 import type {LocalStore} from '~/common/utils/store';
 import {type GetAndSubscribeFunction, derive} from '~/common/utils/store/derived-store';
@@ -24,7 +24,7 @@ export type ConversationMessageViewModelStore = LocalStore<
 >;
 
 export type StatusMessageViewModelStore = LocalStore<
-    AnyStatusMessage & {uid: DbStatusMessageUid} & PropertiesMarked
+    AnyStatusMessageView & {uid: DbStatusMessageUid} & PropertiesMarked
 >;
 
 export function getStatusMessageViewModelStore(

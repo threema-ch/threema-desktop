@@ -9,7 +9,7 @@ import type {
 import {Existence, StatusMessageType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import {GroupMemberChangeStatusModelStore} from '~/common/model/status/group-member-change';
-import {GroupNameChangeModelStore} from '~/common/model/status/group-name-change';
+import {GroupNameChangeStatusModelStore} from '~/common/model/status/group-name-change';
 import type {ServicesForModel} from '~/common/model/types/common';
 import type {ConversationControllerHandle} from '~/common/model/types/conversation';
 import type {
@@ -26,6 +26,7 @@ import {LazyMap} from '~/common/utils/map';
 import {omit} from '~/common/utils/object';
 import {LocalSetStore, type IDerivableSetStore} from '~/common/utils/store/set-store';
 
+// TODO(DESK-697)
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function createCaches() {
     return new LazyMap<
@@ -36,6 +37,9 @@ function createCaches() {
 
 let caches = createCaches();
 
+/**
+ * TODO(DESK-697): Remove this
+ */
 export function recreateCaches(): void {
     caches = createCaches();
 }
@@ -60,7 +64,7 @@ function deactivateStatusMessages(statusMessages: AnyStatusMessageModelStore[]):
     }
 }
 
-function statusMessageToView(message: DbStatusMessage): AnyStatusMessage {
+function statusMessageToView(message: DbStatusMessage): AnyStatusMessageView {
     const common = {
         ...omit(message, ['statusBytes']),
     };
@@ -86,7 +90,7 @@ function createStore(
     services: ServicesForModel,
     conversationUid: DbConversationUid,
     statusMessageUid: DbStatusMessageUid,
-    statusMessageView: AnyStatusMessage,
+    statusMessageView: AnyStatusMessageView,
 ): AnyStatusMessageModelStore {
     switch (statusMessageView.type) {
         case 'group-member-change':
@@ -97,7 +101,7 @@ function createStore(
                 statusMessageView,
             );
         case 'group-name-change':
-            return new GroupNameChangeModelStore(
+            return new GroupNameChangeStatusModelStore(
                 statusMessageUid,
                 services,
                 conversationUid,
@@ -112,7 +116,7 @@ export function createStatusMessageModelStore(
     services: ServicesForModel,
     conversationUid: DbConversationUid,
     statusMessageUid: DbStatusMessageUid,
-    statusMessageView: AnyStatusMessage,
+    statusMessageView: AnyStatusMessageView,
 ): AnyStatusMessageModelStore {
     return caches
         .get(conversationUid)
@@ -130,7 +134,7 @@ export function remove(
     const {db} = services;
     const statusMessage = db.getStatusMessageByUid(uid);
     if (statusMessage === undefined) {
-        log.warn('StatusmessageUid was not found in database');
+        log.warn('StatusMessageUid was not found in database');
         return;
     }
     if (statusMessage.conversationUid !== conversationUid) {
@@ -138,7 +142,7 @@ export function remove(
             'Tried to delete a non-matching conversation-status message pair. Not deleting the status message',
         );
         throw new Error(
-            `ConversationUid and StatusMessageUid missmatch. StatusUid belongs to conversation ${statusMessage.conversationUid} and not ${conversationUid}`,
+            `ConversationUid and StatusMessageUid mismatch. StatusUid belongs to conversation ${statusMessage.conversationUid} and not ${conversationUid}`,
         );
     }
     const {removed} = db.removeStatusMessage(statusMessage.uid);
