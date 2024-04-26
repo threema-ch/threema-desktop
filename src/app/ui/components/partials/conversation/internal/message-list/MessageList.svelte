@@ -208,7 +208,7 @@
         lastEdited: undefined,
         reactions: [],
         services,
-        status: {created: {at: message.information.at}},
+        status: {created: {at: message.at}},
       },
     };
   }
@@ -507,8 +507,7 @@
           <StatusMessage
             boundary={element}
             action={item.action}
-            information={item.information}
-            {services}
+            text={item.text}
             on:clickdeleteoption={() => dispatch('clickdelete', item)}
             on:clickopendetailsoption={() => handleClickOpenStatusDetailsOption(item)}
           />

@@ -1,23 +1,20 @@
 import type {MessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
 import type {StatusMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/props';
 import type {I18nType} from '~/app/ui/i18n-types';
-import {statusMessageUidToStatusMessageId} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import type {Remote} from '~/common/utils/endpoint';
 import type {IQueryableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {localeSort} from '~/common/utils/string';
-import type {
-    ConversationMessageViewModelBundle,
-    ConversationStatusMessageViewModelBundle,
-} from '~/common/viewmodel/conversation/main/message';
+import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
+import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/conversation/main/status-message';
 import type {ConversationMessageSetStore} from '~/common/viewmodel/conversation/main/store';
 
 /**
  * Shape of props as they should be provided from the backend.
  */
 export type MessagePropsFromBackend = Omit<MessageProps, 'boundary' | 'conversation' | 'services'>;
-export type StatusPropsFromBackend = Omit<StatusMessageProps, 'services' | 'boundary'>;
+export type StatusPropsFromBackend = Omit<StatusMessageProps, 'boundary'>;
 export type AnyMessagePropsFromBackend = MessagePropsFromBackend | StatusPropsFromBackend;
 
 export function messageSetStoreToMessagePropsStore(
@@ -27,22 +24,22 @@ export function messageSetStoreToMessagePropsStore(
     return derive([messageSetStore], ([{currentValue: messageSet}], getAndSubscribe) =>
         [...messageSet]
             .map((value): AnyMessagePropsFromBackend & {ordinal: number} => {
-                switch (value.type) {
+                const viewModel = getAndSubscribe(value.viewModelStore);
+                switch (viewModel.conversationMessageType) {
                     case 'status': {
-                        const viewModel = getAndSubscribe(value.viewModelStore);
                         return {
                             type: 'status',
-                            id: statusMessageUidToStatusMessageId(value.viewModelStore.get().uid),
-                            information: {
-                                text: getStatusMessageProps(viewModel, i18n),
-                                type: viewModel.type,
-                                at: viewModel.createdAt,
-                            },
+                            id: viewModel.id,
+                            text: getStatusMessageProps(viewModel, i18n),
+                            status: viewModel.type,
+                            at: viewModel.createdAt,
+
                             ordinal: viewModel.ordinal,
                         };
                     }
                     case 'message': {
-                        const viewModel = getAndSubscribe(value.viewModelStore);
+                        const controller =
+                            value.viewModelController as Remote<ConversationMessageViewModelBundle>['viewModelController'];
 
                         const quoteProps =
                             viewModel.quote !== undefined && viewModel.quote !== 'not-found'
@@ -53,13 +50,13 @@ export function messageSetStoreToMessagePropsStore(
                                   )
                                 : viewModel.quote;
                         return {
-                            ...getMessageProps(value.viewModelController, viewModel, i18n),
+                            ...getMessageProps(controller, viewModel, i18n),
                             ordinal: viewModel.ordinal,
                             quote: quoteProps,
                         };
                     }
                     default:
-                        return unreachable(value);
+                        return unreachable(viewModel);
                 }
             })
             .sort((a, b) => a.ordinal - b.ordinal),
@@ -149,9 +146,9 @@ export function getStatusMessageProps(
                 {
                     added,
                     removed,
-                    numAdded: String(numAdded),
-                    numRemoved: String(numRemoved),
-                    and: String(numAdded > 0 && numRemoved > 0 ? '1' : '0'),
+                    numAdded: `${numAdded}`,
+                    numRemoved: `${numRemoved}`,
+                    and: numAdded > 0 && numRemoved > 0 ? '1' : '0',
                 },
             );
         }

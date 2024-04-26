@@ -12,11 +12,11 @@
   import {i18n} from '~/app/ui/i18n';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
 
-  type $$Props = Omit<StatusMessageProps, 'type' | 'id'>;
+  type $$Props = Omit<StatusMessageProps, 'type' | 'id' | 'at' | 'status'>;
 
-  export let boundary: $$Props['boundary'] = undefined;
   export let action: SvelteNullableBinding<$$Props['action']> = undefined;
-  export let information: $$Props['information'];
+  export let boundary: $$Props['boundary'] = undefined;
+  export let text: $$Props['text'];
 
   let popover: SvelteNullableBinding<Popover> = null;
   let virtualTrigger: VirtualRect | undefined = undefined;
@@ -85,13 +85,7 @@
   <div class="container">
     <div class="message" use:contextmenu={handleContextMenuEvent}>
       <Bubble padding="sm" direction="none" clickable={action !== undefined}>
-        <Text
-          text={information.text}
-          color="mono-low"
-          wrap={true}
-          size="body-small"
-          selectable={true}
-        />
+        <Text {text} color="mono-low" wrap={true} size="body-small" selectable={true} />
       </Bubble>
     </div>
   </div>

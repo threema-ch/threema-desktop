@@ -166,14 +166,18 @@ export type ConversationController = {
      */
     readonly getAllMessages: () => SetOfAnyLocalMessageModelStore;
     /**
-     * Return a {@link LocalModelStore} for every (status) message in {@link anyMessageIds}, plus a number of
-     * additional older and newer (status) messages (the "context").
+     * Return a {@link LocalModelStore} for every (status) message in {@link anyMessageIds}, plus a
+     * number of additional older and newer (status) messages (the "context").
      *
      * @param anyMessageIds The reference (status) message IDs.
-     * @param contextSize The number of messages and status messages to load for each direction. Example: If
-     *   `contextSize` is 10 and the last message ID is the only entry in {@link anyMessageIds}, then at most
-     *   10 messages and 10 status messages will be returned. If `contextSize` is 25 and 5 messages in the middle of the
-     *   conversation are part of {@link anyMessageIds}, then at most 50 messages and 50 status messages + the five message in the middle (no matter if they are status or nomal messages) will be returned.
+     * @param contextSize The maximum number of the sum of messages and status messages to load for
+     *   each direction where the maximum number of loaded messages for both status and normal
+     *   messages is the same (i.e int(`contextSize` / 2)). Example: If `contextSize` is 20 and the
+     *   last message ID is the only entry in {@link anyMessageIds}, then at most 10 messages and 10
+     *   status messages will be returned. If `contextSize` is 50 and 5 messages in the middle of
+     *   the conversation are part of {@link anyMessageIds}, then at most 50 messages and 50 status
+     *   messages + the five message in the middle (no matter if they are status or nomal messages)
+     *   will be returned.
      */
     readonly getMessagesWithSurroundingMessages: (
         anyMessageIds: ReadonlySet<MessageId | StatusMessageId>,

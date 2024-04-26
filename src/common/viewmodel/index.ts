@@ -34,12 +34,13 @@ import {
     getConversationViewModelBundle,
 } from '~/common/viewmodel/conversation/main';
 import {
-    type ConversationAnyMessageViewModelBundle,
     getConversationMessageViewModelBundle,
     type ConversationMessageViewModelBundle,
-    type ConversationStatusMessageViewModelBundle,
-    getConversationStatusMessageViewModelBundle,
 } from '~/common/viewmodel/conversation/main/message';
+import {
+    getConversationStatusMessageViewModelBundle,
+    type ConversationStatusMessageViewModelBundle,
+} from '~/common/viewmodel/conversation/main/status-message';
 import {type DebugPanelViewModel, getDebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/viewmodel/profile';
 import {getSearchViewModelBundle, type SearchViewModelBundle} from '~/common/viewmodel/search/nav';
@@ -73,11 +74,14 @@ export interface IViewModelRepository extends ProxyMarked {
     /**
      * Returns the {@link ConversationAnyMessageViewModelBundle} that belongs to the given
      * {@link messageStore} in the given {@link conversation}.
+     *
+     * Note: This function guarantees that the returned `ViewModelBundle` matches the respective
+     * input type.
      */
     readonly conversationAnyMessage: (
         conversation: ConversationModelStore,
         messageStore: AnyMessageModelStore | AnyStatusMessageModelStore,
-    ) => ConversationAnyMessageViewModelBundle;
+    ) => ConversationMessageViewModelBundle | ConversationStatusMessageViewModelBundle;
     /**
      * Returns the {@link ConversationMessageViewModelBundle} that belongs to the given
      * {@link messageStore} in the given {@link conversation}. Note: If the message contains a
@@ -162,7 +166,7 @@ export class ViewModelRepository implements IViewModelRepository {
     public conversationAnyMessage(
         conversation: ConversationModelStore,
         messageStore: AnyMessageModelStore | AnyStatusMessageModelStore,
-    ): ConversationAnyMessageViewModelBundle {
+    ): ConversationMessageViewModelBundle | ConversationStatusMessageViewModelBundle {
         if (MessageTypeUtils.containsString(messageStore.get().type)) {
             return this.conversationMessage(conversation, messageStore as AnyMessageModelStore);
         } else if (StatusMessageTypeUtils.containsString(messageStore.get().type)) {
@@ -249,9 +253,9 @@ export class ViewModelRepository implements IViewModelRepository {
 
     public conversationStatusMessage(
         conversation: ConversationModelStore,
-        messageStore: AnyStatusMessageModelStore,
+        statusMessageStore: AnyStatusMessageModelStore,
     ): ConversationStatusMessageViewModelBundle {
-        return this._cache.conversationStatus
+        return this._cache.conversationStatusMessage
             .getOrCreate(
                 conversation,
                 () =>
@@ -260,8 +264,8 @@ export class ViewModelRepository implements IViewModelRepository {
                         ConversationStatusMessageViewModelBundle
                     >(),
             )
-            .getOrCreate(messageStore, () =>
-                getConversationStatusMessageViewModelBundle(this._services, messageStore),
+            .getOrCreate(statusMessageStore, () =>
+                getConversationStatusMessageViewModelBundle(this._services, statusMessageStore),
             );
     }
 

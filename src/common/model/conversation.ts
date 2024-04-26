@@ -646,6 +646,7 @@ export class ConversationModelController implements ConversationController {
         contextSize: u53,
     ): {standardMessages: {uid: DbMessageUid}[]; statusMessages: {uid: DbStatusMessageUid}[]} {
         const {db} = this._services;
+        const perMessageContextSize = Math.round(contextSize / 2);
         // No message in viewport so the viewport is empty
         if (standardMessageIds.length === 0 && statusMessagesIds.length === 0) {
             return {standardMessages: [], statusMessages: []};
@@ -658,7 +659,7 @@ export class ConversationModelController implements ConversationController {
         if (standardMessageIds.length > 0) {
             surroundingMessages = this._getSurroundingStandardMessages(
                 standardMessageIds,
-                contextSize,
+                perMessageContextSize,
             );
 
             standardMessages = surroundingMessages.list;
@@ -667,7 +668,7 @@ export class ConversationModelController implements ConversationController {
         if (statusMessagesIds.length > 0) {
             surroundingStatusMessages = this._getSurroundingStatusMessages(
                 statusMessagesIds,
-                contextSize,
+                perMessageContextSize,
             );
             statusMessages = surroundingStatusMessages.list;
         }
@@ -686,7 +687,7 @@ export class ConversationModelController implements ConversationController {
                         ordinal: surroundingStatusMessages.ordinals.newest,
                         direction: MessageQueryDirection.NEWER,
                     },
-                    contextSize,
+                    perMessageContextSize,
                 ),
                 ...db.getMessageUidsByOrdinalReference(
                     this.uid,
@@ -694,7 +695,7 @@ export class ConversationModelController implements ConversationController {
                         ordinal: surroundingStatusMessages.ordinals.oldest,
                         direction: MessageQueryDirection.OLDER,
                     },
-                    contextSize,
+                    perMessageContextSize,
                 ),
             ];
         }

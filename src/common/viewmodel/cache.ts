@@ -15,10 +15,8 @@ import type {ContactListItemViewModelBundle} from '~/common/viewmodel/contact/li
 import type {ConversationListViewModelBundle} from '~/common/viewmodel/conversation/list';
 import type {ConversationListItemViewModelBundle} from '~/common/viewmodel/conversation/list/item';
 import type {ConversationViewModelBundle} from '~/common/viewmodel/conversation/main';
-import type {
-    ConversationMessageViewModelBundle,
-    ConversationStatusMessageViewModelBundle,
-} from '~/common/viewmodel/conversation/main/message';
+import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
+import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/conversation/main/status-message';
 import type {DebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import type {ProfileViewModelStore} from '~/common/viewmodel/profile';
 import type {SearchViewModelBundle} from '~/common/viewmodel/search/nav';
@@ -29,7 +27,7 @@ export class ViewModelCache {
         ConversationModelStore,
         ConversationListItemViewModelBundle
     >();
-    public readonly conversationStatus = new WeakValueMap<
+    public readonly conversationStatusMessage = new WeakValueMap<
         LocalModelStore<Conversation>,
         WeakValueMap<AnyStatusMessageModelStore, ConversationStatusMessageViewModelBundle>
     >();

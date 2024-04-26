@@ -1,13 +1,14 @@
 import {ConversationCategory, ConversationVisibility} from '~/common/enum';
 import type {ConversationModelStore} from '~/common/model/conversation';
-import type {SetOfAnyLocalMessageModelStore} from '~/common/model/types/message';
+import type {SetOfAnyLocalMessageOrStatusMessageModelStore} from '~/common/model/types/message';
 import type {PropertiesMarked} from '~/common/utils/endpoint';
 import type {LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import type {LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
 import type {IConversationViewModelController} from '~/common/viewmodel/conversation/main/controller';
-import type {ConversationAnyMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
+import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
+import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/conversation/main/status-message';
 import {
     getLastMessage,
     getMessageSetStore,
@@ -33,8 +34,8 @@ export type ConversationViewModelStore = LocalStore<ConversationViewModel & Prop
  * - As of now, all status messages of all categories in the current conversation.
  */
 export type ConversationMessageSetStore = LocalDerivedSetStore<
-    SetOfAnyLocalMessageModelStore,
-    ConversationAnyMessageViewModelBundle
+    SetOfAnyLocalMessageOrStatusMessageModelStore,
+    ConversationMessageViewModelBundle | ConversationStatusMessageViewModelBundle
 >;
 
 export function getConversationViewModelStore(

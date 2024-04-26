@@ -12,6 +12,7 @@ import type {AnyMention} from '~/common/viewmodel/utils/mentions';
  * exist in the ui layer.
  */
 export interface ConversationMessageViewModel {
+    readonly conversationMessageType: 'message';
     readonly direction: 'inbound' | 'outbound';
     readonly file?: {
         readonly duration?: f64;
