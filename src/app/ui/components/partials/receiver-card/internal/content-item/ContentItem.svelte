@@ -97,7 +97,8 @@
     min-width: 0;
     max-width: 100%;
     text-overflow: ellipsis;
-    overflow: hidden;
+    overflow: clip;
+    overflow-clip-margin: rem(4px);
 
     &[data-type='blocked-icon'],
     &[data-type='charms'],
