@@ -953,7 +953,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     readonly getMessageUidsByOrdinalReference: (
         conversationUid: DbConversationUid,
         reference: {
-            readonly ordinal: Date;
+            readonly ordinal: u53;
             readonly direction: MessageQueryDirection;
         },
         limit?: u53,
@@ -1001,27 +1001,11 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     readonly getStatusMessageUidsByOrdinalReference: (
         conversationUid: DbConversationUid,
         reference: {
-            readonly ordinal: Date;
+            readonly ordinal: u53;
             readonly direction: MessageQueryDirection;
         },
         limit?: u53,
     ) => DbList<DbStatusMessage, 'uid'>;
-
-    /**
-     * Given a set of message IDs, return the corresponding UIDs as a sorted array (oldest first).
-     */
-    readonly getSortedMessageUids: (
-        conversationUid: DbConversationUid,
-        messageIds: MessageId[],
-    ) => {uid: DbMessageUid; ordinal: Date}[];
-
-    /**
-     * Given a set of message IDs, return the corresponding UIDs as a sorted array (oldest first).
-     */
-    readonly getSortedStatusMessageUids: (
-        conversationUid: DbConversationUid,
-        messageIds: DbStatusMessageUid[],
-    ) => {uid: DbStatusMessageUid; ordinal: Date}[];
 
     /**
      * Returns the message count of a conversation

@@ -2698,76 +2698,14 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public getSortedMessageUids(
-        conversationUid: DbConversationUid,
-        messageIds: MessageId[],
-    ): {uid: DbMessageUid; ordinal: Date}[] {
-        if (messageIds.length === 0) {
-            return [];
-        }
-
-        // Note: The database abstraction wants arrays, not sets
-
-        // Get sorted list of UIDs with ordinal
-        const messageUidsWithOrdinal = sync(
-            this._db
-                .selectFrom(tMessage)
-                .select({
-                    uid: tMessage.uid,
-                    ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt),
-                })
-                .where(
-                    tMessage.conversationUid
-                        .equals(conversationUid)
-                        .and(tMessage.messageId.in(messageIds)),
-                )
-                .orderBy('ordinal', 'asc')
-                .executeSelectMany(),
-        );
-
-        return messageUidsWithOrdinal;
-    }
-
-    /** @inheritdoc */
-    public getSortedStatusMessageUids(
-        conversationUid: DbConversationUid,
-        messageIds: DbStatusMessageUid[],
-    ): {uid: DbStatusMessageUid; ordinal: Date}[] {
-        if (messageIds.length === 0) {
-            return [];
-        }
-
-        // Note: The database abstraction wants arrays, not sets
-
-        // Get sorted list of UIDs with ordinal
-        const messageUidsWithOrdinal = sync(
-            this._db
-                .selectFrom(tStatusMessage)
-                .select({
-                    uid: tStatusMessage.uid,
-                    ordinal: tStatusMessage.createdAt,
-                })
-                .where(
-                    tStatusMessage.conversationUid
-                        .equals(conversationUid)
-                        .and(tStatusMessage.uid.in(messageIds)),
-                )
-                .orderBy('ordinal', 'asc')
-                .executeSelectMany(),
-        );
-
-        return messageUidsWithOrdinal;
-    }
-
-    /** @inheritdoc */
     public getMessageUidsByOrdinalReference(
         conversationUid: DbConversationUid,
-        reference: {readonly ordinal: Date; readonly direction: MessageQueryDirection},
+        reference: {readonly ordinal: u53; readonly direction: MessageQueryDirection},
         limit?: u53,
     ): DbList<DbAnyMessage, 'uid'> {
         return this._getMessagesByReferenceDateTime(
             conversationUid,
-            reference.ordinal,
+            new Date(reference.ordinal),
             reference.direction,
             limit,
         );
@@ -2776,12 +2714,12 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     /** @inheritdoc */
     public getStatusMessageUidsByOrdinalReference(
         conversationUid: DbConversationUid,
-        reference: {readonly ordinal: Date; readonly direction: MessageQueryDirection},
+        reference: {readonly ordinal: u53; readonly direction: MessageQueryDirection},
         limit?: u53,
     ): DbList<DbStatusMessage, 'uid'> {
         return this._getStatusMessagesByReferenceDateTime(
             conversationUid,
-            reference.ordinal,
+            new Date(reference.ordinal),
             reference.direction,
             limit,
         );

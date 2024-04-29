@@ -179,7 +179,7 @@ export function getByUid(
     return caches.get(conversation.uid).getOrAdd(uid, () => {
         // Lookup the message
         const message = db.getStatusMessageByUid(uid);
-        assert(message !== undefined, `Expected message with UID ${uid} to exist`);
+        assert(message !== undefined, `Expected status message with UID ${uid} to exist`);
 
         // Create a store
         return createStore(services, conversation.uid, uid, statusMessageToView(message));

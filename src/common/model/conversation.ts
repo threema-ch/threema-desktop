@@ -1,13 +1,5 @@
 /* eslint-disable @typescript-eslint/member-ordering */
-import type {
-    DbAnyMessage,
-    DbConversationUid,
-    DbMessageUid,
-    DbReceiverLookup,
-    DbStatusMessage,
-    DbStatusMessageUid,
-    UidOf,
-} from '~/common/db';
+import type {DbConversationUid, DbReceiverLookup, UidOf} from '~/common/db';
 import {
     AcquaintanceLevel,
     ConversationVisibility,
@@ -63,7 +55,7 @@ import {
     statusMessageIdtoStatusMessageUid,
 } from '~/common/network/types';
 import type {i53, Mutable, u53} from '~/common/types';
-import {assert, assertUnreachable, unreachable, unwrap} from '~/common/utils/assert';
+import {assert, assertUnreachable, isNotUndefined, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {AsyncLock} from '~/common/utils/lock';
 import {
@@ -562,206 +554,137 @@ export class ConversationModelController implements ConversationController {
         return this.meta.run(() => message.all(this._services, this._handle, MESSAGE_FACTORY));
     }
 
-    private _getSurroundingStandardMessages(
-        standardMessageIds: MessageId[],
-        contextSize: u53,
-    ): {list: Pick<DbAnyMessage, 'uid'>[]; ordinals?: {newest: Date; oldest: Date}} {
-        const {db} = this._services;
-        // Get sorted list of UIDs
-        const sortedUids = db
-            .getSortedMessageUids(this.uid, standardMessageIds)
-            .map((v) => ({uid: v.uid, ordinal: v.ordinal}));
-        if (sortedUids.length === 0) {
-            return {list: []};
-        }
-
-        // Add messages older than oldest message
-        const oldestUid = unwrap(sortedUids.at(0));
-        const olderMessages = [
-            ...this.meta.run(() =>
-                db.getMessageUids(this.uid, contextSize, {
-                    direction: MessageQueryDirection.OLDER,
-                    uid: oldestUid.uid,
-                }),
-            ),
-        ];
-
-        // Add messages newer than newest message
-        const newestUid = unwrap(sortedUids.at(-1));
-        const newerMessages = this.meta.run(() =>
-            db.getMessageUids(this.uid, contextSize, {
-                direction: MessageQueryDirection.NEWER,
-                uid: newestUid.uid,
-            }),
-        );
-
-        return {
-            list: [...olderMessages, ...sortedUids, ...newerMessages],
-            ordinals: {newest: newestUid.ordinal, oldest: oldestUid.ordinal},
-        };
-    }
-
-    private _getSurroundingStatusMessages(
-        statusMessageIds: DbStatusMessageUid[],
-        contextSize: u53,
-    ): {list: Pick<DbStatusMessage, 'uid'>[]; ordinals?: {newest: Date; oldest: Date}} {
-        const {db} = this._services;
-        // Get sorted list of UIDs
-        const sortedUids = db
-            .getSortedStatusMessageUids(this.uid, statusMessageIds)
-            .map((v) => ({uid: v.uid, ordinal: v.ordinal}));
-        if (sortedUids.length === 0) {
-            return {list: []};
-        }
-
-        // Add messages older than oldest message
-        const oldestUid = unwrap(sortedUids.at(0));
-        const olderMessages = [
-            ...this.meta.run(() =>
-                db.getStatusMessageUids(this.uid, contextSize, {
-                    direction: MessageQueryDirection.OLDER,
-                    uid: oldestUid.uid,
-                }),
-            ),
-        ];
-
-        // Add messages newer than newest message
-        const newestUid = unwrap(sortedUids.at(-1));
-        const newerMessages = this.meta.run(() =>
-            db.getStatusMessageUids(this.uid, contextSize, {
-                direction: MessageQueryDirection.NEWER,
-                uid: newestUid.uid,
-            }),
-        );
-
-        return {
-            list: [...olderMessages, ...sortedUids, ...newerMessages],
-            ordinals: {newest: newestUid.ordinal, oldest: oldestUid.ordinal},
-        };
-    }
-
-    private _getAnySurroundingMessages(
-        standardMessageIds: MessageId[],
-        statusMessagesIds: DbStatusMessageUid[],
-        contextSize: u53,
-    ): {standardMessages: {uid: DbMessageUid}[]; statusMessages: {uid: DbStatusMessageUid}[]} {
-        const {db} = this._services;
-        const perMessageContextSize = Math.round(contextSize / 2);
-        // No message in viewport so the viewport is empty
-        if (standardMessageIds.length === 0 && statusMessagesIds.length === 0) {
-            return {standardMessages: [], statusMessages: []};
-        }
-
-        let standardMessages: {uid: DbMessageUid}[] | undefined = undefined;
-        let statusMessages: {uid: DbStatusMessageUid}[] | undefined = undefined;
-        let surroundingMessages;
-        let surroundingStatusMessages;
-        if (standardMessageIds.length > 0) {
-            surroundingMessages = this._getSurroundingStandardMessages(
-                standardMessageIds,
-                perMessageContextSize,
-            );
-
-            standardMessages = surroundingMessages.list;
-        }
-
-        if (statusMessagesIds.length > 0) {
-            surroundingStatusMessages = this._getSurroundingStatusMessages(
-                statusMessagesIds,
-                perMessageContextSize,
-            );
-            statusMessages = surroundingStatusMessages.list;
-        }
-
-        // If there are no messages in the view port, we need to fetch the message context anyway.
-        // To that end, we take the newest and oldest status message in the viewport as a reference
-        if (standardMessages === undefined) {
-            assert(
-                surroundingStatusMessages?.ordinals !== undefined,
-                'Ordinals have to present if standard messages are undefined',
-            );
-            standardMessages = [
-                ...db.getMessageUidsByOrdinalReference(
-                    this.uid,
-                    {
-                        ordinal: surroundingStatusMessages.ordinals.newest,
-                        direction: MessageQueryDirection.NEWER,
-                    },
-                    perMessageContextSize,
-                ),
-                ...db.getMessageUidsByOrdinalReference(
-                    this.uid,
-                    {
-                        ordinal: surroundingStatusMessages.ordinals.oldest,
-                        direction: MessageQueryDirection.OLDER,
-                    },
-                    perMessageContextSize,
-                ),
-            ];
-        }
-
-        // If there are no status messages in the view port, we need to fetch the status message context anyway.
-        // To that end, we take the newest and oldest message in the viewport as a reference
-        if (statusMessages === undefined) {
-            assert(
-                surroundingMessages?.ordinals !== undefined,
-                'Ordinals have to present if standard messages are undefined',
-            );
-            statusMessages = [
-                ...db.getStatusMessageUidsByOrdinalReference(
-                    this.uid,
-                    {
-                        ordinal: surroundingMessages.ordinals.newest,
-                        direction: MessageQueryDirection.NEWER,
-                    },
-                    contextSize,
-                ),
-                ...db.getStatusMessageUidsByOrdinalReference(
-                    this.uid,
-                    {
-                        ordinal: surroundingMessages.ordinals.oldest,
-                        direction: MessageQueryDirection.OLDER,
-                    },
-                    contextSize,
-                ),
-            ];
-        }
-
-        return {standardMessages, statusMessages};
-    }
-
     /** @inheritdoc */
     public getMessagesWithSurroundingMessages(
         anyMessageIds: ReadonlySet<MessageId | StatusMessageId>,
         contextSize: u53,
     ): Set<AnyMessageModelStore | AnyStatusMessageModelStore> {
-        const spreadMessageIds = [...anyMessageIds];
-        const standardMessageIds = spreadMessageIds.filter(isMessageId);
-        const statusMessageIds = spreadMessageIds
-            .filter(isStatusMessageId)
-            .map(statusMessageIdtoStatusMessageUid);
+        const {db} = this._services;
+
         return this.meta.run(() => {
-            // Get sorted list of UIDs
-            const messageArray = this._getAnySurroundingMessages(
-                standardMessageIds,
-                statusMessageIds,
-                contextSize,
+            // If the viewport is empty, do nothing
+            if (anyMessageIds.size === 0) {
+                return new Set();
+            }
+
+            const perMessageTypeContextSize = Math.round(contextSize / 2);
+
+            // Get all visible messages and their ordinals.
+            const spreadMessageIds = [...anyMessageIds];
+            const visibleMessages = spreadMessageIds
+                .filter(isMessageId)
+                .map((messageId) =>
+                    message.getByMessageId(
+                        this._services,
+                        this._handle,
+                        MESSAGE_FACTORY,
+                        messageId,
+                    ),
+                )
+                .filter(isNotUndefined);
+            const standardMessageOrdinals = visibleMessages.map((m) => m.get().view.ordinal);
+
+            // Get all visible stauts messages and their ordinals.
+            const visibileStatusMessages = spreadMessageIds
+                .filter(isStatusMessageId)
+                .map((statusMessageId) =>
+                    status.checkExistenceAndGetByUid(
+                        this._services,
+                        this._handle,
+                        statusMessageIdtoStatusMessageUid(statusMessageId),
+                    ),
+                )
+                .filter(isNotUndefined);
+            const statusMessageOrdinals = visibileStatusMessages.map((s) => s.get().view.ordinal);
+
+            // This is the very special case that the messages where already deleted but the viewport re-derive triggers again.
+            if (standardMessageOrdinals.length === 0 && statusMessageOrdinals.length === 0) {
+                return new Set();
+            }
+
+            // Calculate the min (max) ordinals of all (status) messages in the current viewport.
+            const minOrdinal = Math.min(
+                Math.min(...standardMessageOrdinals),
+                Math.min(...statusMessageOrdinals),
+            );
+            const maxOrdinal = Math.max(
+                Math.max(...standardMessageOrdinals),
+                Math.max(...statusMessageOrdinals),
             );
 
-            // Return the mixed fetched set of status and standard messages in the current viewport context
-            return new Set([
-                ...messageArray.standardMessages.map((dbMessageListing) =>
+            // Fetch all messages in the current viewport context.
+            const oldestMessages = db
+                .getMessageUidsByOrdinalReference(
+                    this.uid,
+                    {
+                        ordinal: minOrdinal,
+                        direction: MessageQueryDirection.OLDER,
+                    },
+                    perMessageTypeContextSize,
+                )
+                .map((m) =>
                     message.getByUid(
                         this._services,
                         this._handle,
                         MESSAGE_FACTORY,
-                        dbMessageListing.uid,
+                        m.uid,
                         Existence.ENSURED,
                     ),
-                ),
-                ...messageArray.statusMessages.map((dbMessageListings) =>
-                    status.getByUid(this._services, this._handle, dbMessageListings.uid),
-                ),
+                );
+            const newestMessages = db
+                .getMessageUidsByOrdinalReference(
+                    this.uid,
+                    {
+                        ordinal: maxOrdinal,
+                        direction: MessageQueryDirection.NEWER,
+                    },
+                    perMessageTypeContextSize,
+                )
+                .map((m) =>
+                    message.getByUid(
+                        this._services,
+                        this._handle,
+                        MESSAGE_FACTORY,
+                        m.uid,
+                        Existence.ENSURED,
+                    ),
+                );
+
+            // Fetch all status messages in the current viewport context.
+            const oldestStatusMessages = db
+                .getStatusMessageUidsByOrdinalReference(
+                    this.uid,
+                    {
+                        ordinal: minOrdinal,
+                        direction: MessageQueryDirection.OLDER,
+                    },
+                    perMessageTypeContextSize,
+                )
+                .map((s) =>
+                    status.getByUid(this._services, this._handle, s.uid, Existence.ENSURED),
+                );
+
+            const newestStatusMessages = db
+                .getStatusMessageUidsByOrdinalReference(
+                    this.uid,
+                    {
+                        ordinal: maxOrdinal,
+                        direction: MessageQueryDirection.NEWER,
+                    },
+                    perMessageTypeContextSize,
+                )
+                .map((s) =>
+                    status.getByUid(this._services, this._handle, s.uid, Existence.ENSURED),
+                );
+
+            // Return the mixed fetched set of status and standard messages in the current viewport context
+            return new Set([
+                ...oldestMessages,
+                ...oldestStatusMessages,
+                ...visibleMessages,
+                ...visibileStatusMessages,
+                ...newestMessages,
+                ...newestStatusMessages,
             ]);
         });
     }

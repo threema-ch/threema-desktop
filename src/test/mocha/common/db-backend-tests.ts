@@ -1775,8 +1775,8 @@ export function backendTests(
             });
         });
 
-        describe('getSortedMessageUids', function () {
-            it('returns correctly sorted UIDs by ordinal', function () {
+        describe('getMessageByOrdinalReference', function () {
+            it('gets all uids older/newer than a reference with/without limit', function () {
                 const contactUid = makeContact(db, {identity: 'TESTTEST'});
                 const conversation = db.getConversationOfReceiver({
                     type: ReceiverType.CONTACT,
@@ -1784,138 +1784,93 @@ export function backendTests(
                 });
                 assert(conversation !== undefined);
 
+                const messageUids = new Map<DbMessageUid, MessageId>();
+
                 const now = new Date();
 
-                const messageUids = new Map<MessageId, DbMessageUid>();
-
-                // Add latest message first to ensure order by UID or `processedAt` is different
-                messageUids.set(
-                    ensureMessageId(1000n),
-                    createTextMessage(db, {
-                        id: 1000n,
-                        conversationUid: conversation.uid,
-                        text: 'a message',
-                        processedAt: new Date(now.getTime() + 1001 * 10),
-                    }),
-                );
+                let referenceTimestamp: u53 | undefined = undefined;
 
                 // Add 999 incoming messages
                 for (let i = 1; i < 1000; i++) {
                     const messageId = ensureMessageId(1000n + BigInt(i));
+                    if (i === 250) {
+                        referenceTimestamp = now.getTime() + i * 10 - 5;
+                    }
                     const messageUid = createTextMessage(db, {
                         id: messageId,
                         conversationUid: conversation.uid,
                         text: 'a message',
                         processedAt: new Date(now.getTime() + i * 10),
                     });
-                    messageUids.set(messageId, messageUid);
+                    messageUids.set(messageUid, messageId);
                 }
 
-                // Add an outgoing message in the middle
-                messageUids.set(
-                    ensureMessageId(2000n),
-                    createTextMessage(db, {
-                        id: 2000n,
-                        conversationUid: conversation.uid,
-                        text: 'a message',
-                        createdAt: new Date(now.getTime() + 5005),
-                        processedAt: undefined,
-                    }),
-                );
+                assert(referenceTimestamp !== undefined);
 
-                // Simple test case: Only two IDs, the first and the last incoming message
-                expect(
-                    db
-                        .getSortedMessageUids(conversation.uid, [
-                            ensureMessageId(1000n),
-                            ensureMessageId(1001n),
-                        ])
-                        .map((res) => res.uid),
-                    'simple case',
-                ).to.deep.equal([
-                    messageUids.get(ensureMessageId(1001n)),
-                    messageUids.get(ensureMessageId(1000n)),
-                ]);
-
-                // All message IDs
-                const allUids = db
-                    .getSortedMessageUids(conversation.uid, [...messageUids.keys()])
-                    .map((res) => res.uid);
-                expect(allUids.length, 'all message IDs (size)').to.equal(messageUids.size);
-                expect(allUids.at(0), 'all message IDs (oldest)').to.equal(
-                    messageUids.get(ensureMessageId(1001n)),
-                );
-                expect(allUids.at(-1), 'all message IDs (newest)').to.equal(
-                    messageUids.get(ensureMessageId(1000n)),
-                );
-
-                // Mixed incoming and outgoing
-                const mixedMessageIds = new Set<MessageId>();
-                mixedMessageIds.add(ensureMessageId(2000n)); // Outgoing message
-                for (let i = 501n; i <= 600n; i++) {
-                    // Incoming messages after outgoing message
-                    mixedMessageIds.add(ensureMessageId(1000n + i));
-                }
-                const mixedUids = db
-                    .getSortedMessageUids(conversation.uid, [...mixedMessageIds.keys()])
-                    .map((res) => res.uid);
-                expect(mixedUids.length, 'mixed incoming and outgoing (size)').to.equal(101);
-                expect(mixedUids.at(0), 'mixed incoming and outgoing (oldest)').to.equal(
-                    messageUids.get(ensureMessageId(2000n)),
-                );
-                expect(mixedUids.at(-1), 'mixed incoming and outgoing (newest)').to.equal(
-                    messageUids.get(ensureMessageId(1600n)),
-                );
-            });
-
-            it('handles edge cases correctly', function () {
-                const contactUid = makeContact(db, {identity: 'TESTTEST'});
-                const conversation = db.getConversationOfReceiver({
-                    type: ReceiverType.CONTACT,
-                    uid: contactUid,
-                });
-                assert(conversation !== undefined);
-                const messageUid = createTextMessage(db, {
-                    id: 1n,
-                    conversationUid: conversation.uid,
-                    text: 'a message',
-                    createdAt: new Date(),
-                    processedAt: undefined,
+                const older = db.getMessageUidsByOrdinalReference(conversation.uid, {
+                    ordinal: referenceTimestamp,
+                    direction: MessageQueryDirection.OLDER,
                 });
 
-                // Empty set
-                expect(db.getSortedMessageUids(conversation.uid, []), 'empty set').to.deep.equal(
-                    [],
+                const newer = db.getMessageUidsByOrdinalReference(conversation.uid, {
+                    ordinal: referenceTimestamp,
+                    direction: MessageQueryDirection.NEWER,
+                });
+
+                expect(older.length).to.eq(249);
+                expect(newer.length).to.eq(750);
+                expect(
+                    older.filter((m) => {
+                        const messageId = messageUids.get(m.uid);
+                        return messageId !== undefined && messageId > 1250n;
+                    }).length,
+                    'There must not be a returned value that is newer than the reference',
+                ).to.eq(0);
+                expect(
+                    newer.filter((m) => {
+                        const messageId = messageUids.get(m.uid);
+                        return messageId !== undefined && messageId < 1250n;
+                    }).length,
+                    'There must not be a returned value that is older than the reference',
+                ).to.eq(0);
+
+                const newerLimited = db.getMessageUidsByOrdinalReference(
+                    conversation.uid,
+                    {
+                        ordinal: referenceTimestamp,
+                        direction: MessageQueryDirection.NEWER,
+                    },
+                    50,
                 );
 
-                // Set of invalid message IDs
                 expect(
-                    db.getSortedMessageUids(conversation.uid, [
-                        ensureMessageId(999n),
-                        ensureMessageId(888n),
-                    ]),
-                    'invalid message IDs',
-                ).to.deep.equal([]);
+                    newerLimited.length,
+                    'The number of messsages must not succeed the limit given',
+                ).to.eq(50);
+                expect(
+                    newerLimited.filter((m) => {
+                        const messageId = messageUids.get(m.uid);
+                        return messageId !== undefined && messageId >= 1250n;
+                    }).length,
+                ).to.eq(50);
 
-                // Set of mixed valid and invalid message IDs
-                expect(
-                    db
-                        .getSortedMessageUids(conversation.uid, [
-                            ensureMessageId(1n),
-                            ensureMessageId(888n),
-                        ])
-                        .map((res) => res.uid),
-                    'mixed invalid message IDs',
-                ).to.deep.equal([messageUid]);
+                // Trying to fetch more messages than there are should return the number of messages
+                const oldest = db.getMessageUidsByOrdinalReference(
+                    conversation.uid,
+                    {
+                        ordinal: referenceTimestamp,
+                        direction: MessageQueryDirection.OLDER,
+                    },
+                    400,
+                );
 
-                // Unknown conversation ID
+                expect(oldest.length).to.eq(249);
                 expect(
-                    db.getSortedMessageUids(7697969n as DbConversationUid, [
-                        ensureMessageId(999n),
-                        ensureMessageId(888n),
-                    ]),
-                    'invalid message IDs',
-                ).to.deep.equal([]);
+                    oldest.filter((m) => {
+                        const messageId = messageUids.get(m.uid);
+                        return messageId !== undefined && messageId > 1250n;
+                    }).length,
+                ).to.eq(0);
             });
         });
     });
