@@ -1,6 +1,6 @@
 import type {ServicesForBackend} from '~/common/backend';
 import type {DbReceiverLookup} from '~/common/db';
-import {MessageTypeUtils, ReceiverType, StatusMessageTypeUtils} from '~/common/enum';
+import {ReceiverType} from '~/common/enum';
 import type {AnyMessageModelStore, AnyReceiver} from '~/common/model';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import type {ReceiverStoreFor} from '~/common/model/types/receiver';
@@ -72,17 +72,6 @@ export interface IViewModelRepository extends ProxyMarked {
     readonly conversation: (receiver: DbReceiverLookup) => ConversationViewModelBundle | undefined;
 
     /**
-     * Returns the {@link ConversationAnyMessageViewModelBundle} that belongs to the given
-     * {@link messageStore} in the given {@link conversation}.
-     *
-     * Note: This function guarantees that the returned `ViewModelBundle` matches the respective
-     * input type.
-     */
-    readonly conversationAnyMessage: (
-        conversation: ConversationModelStore,
-        messageStore: AnyMessageModelStore | AnyStatusMessageModelStore,
-    ) => ConversationMessageViewModelBundle | ConversationStatusMessageViewModelBundle;
-    /**
      * Returns the {@link ConversationMessageViewModelBundle} that belongs to the given
      * {@link messageStore} in the given {@link conversation}. Note: If the message contains a
      * quote, it will always be resolved.
@@ -91,6 +80,15 @@ export interface IViewModelRepository extends ProxyMarked {
         conversation: ConversationModelStore,
         messageStore: AnyMessageModelStore,
     ) => ConversationMessageViewModelBundle;
+
+    /**
+     * Returns the {@link ConversationStatusMessageViewModelBundle} that belongs to the given
+     * {@link messageStore} in the given {@link conversation}.
+     */
+    readonly conversationStatusMessage: (
+        conversation: ConversationModelStore,
+        messageStore: AnyStatusMessageModelStore,
+    ) => ConversationStatusMessageViewModelBundle;
 
     /**
      * Returns the {@link ContactListViewModelBundle}.
@@ -111,15 +109,6 @@ export interface IViewModelRepository extends ProxyMarked {
     readonly contactDetail: (
         receiver: DbReceiverLookup,
     ) => ContactDetailViewModelBundle<AnyReceiver> | undefined;
-
-    /**
-     * Returns the {@link ConversationStatusMessageViewModelBundle} that belongs to the given
-     * {@link messageStore} in the given {@link conversation}.
-     */
-    readonly conversationStatusMessage: (
-        conversation: ConversationModelStore,
-        messageStore: AnyStatusMessageModelStore,
-    ) => ConversationStatusMessageViewModelBundle;
 
     readonly debugPanel: () => DebugPanelViewModel;
     readonly profile: () => ProfileViewModelStore;
@@ -163,22 +152,6 @@ export class ViewModelRepository implements IViewModelRepository {
         );
     }
 
-    public conversationAnyMessage(
-        conversation: ConversationModelStore,
-        messageStore: AnyMessageModelStore | AnyStatusMessageModelStore,
-    ): ConversationMessageViewModelBundle | ConversationStatusMessageViewModelBundle {
-        if (MessageTypeUtils.containsString(messageStore.get().type)) {
-            return this.conversationMessage(conversation, messageStore as AnyMessageModelStore);
-        } else if (StatusMessageTypeUtils.containsString(messageStore.get().type)) {
-            return this.conversationStatusMessage(
-                conversation,
-                messageStore as AnyStatusMessageModelStore,
-            );
-        }
-
-        throw new Error('Tried to fetch a conversation message with an unknown type');
-    }
-
     /** @inheritdoc */
     public conversationMessage(
         conversation: ConversationModelStore,
@@ -197,6 +170,24 @@ export class ViewModelRepository implements IViewModelRepository {
                     // Always resolve contained quotes.
                     true,
                 ),
+            );
+    }
+
+    public conversationStatusMessage(
+        conversation: ConversationModelStore,
+        statusMessageStore: AnyStatusMessageModelStore,
+    ): ConversationStatusMessageViewModelBundle {
+        return this._cache.conversationStatusMessage
+            .getOrCreate(
+                conversation,
+                () =>
+                    new WeakValueMap<
+                        AnyStatusMessageModelStore,
+                        ConversationStatusMessageViewModelBundle
+                    >(),
+            )
+            .getOrCreate(statusMessageStore, () =>
+                getConversationStatusMessageViewModelBundle(this._services, statusMessageStore),
             );
     }
 
@@ -249,24 +240,6 @@ export class ViewModelRepository implements IViewModelRepository {
 
             return getContactDetailViewModelBundle(this._services, receiverModelStore);
         });
-    }
-
-    public conversationStatusMessage(
-        conversation: ConversationModelStore,
-        statusMessageStore: AnyStatusMessageModelStore,
-    ): ConversationStatusMessageViewModelBundle {
-        return this._cache.conversationStatusMessage
-            .getOrCreate(
-                conversation,
-                () =>
-                    new WeakValueMap<
-                        AnyStatusMessageModelStore,
-                        ConversationStatusMessageViewModelBundle
-                    >(),
-            )
-            .getOrCreate(statusMessageStore, () =>
-                getConversationStatusMessageViewModelBundle(this._services, statusMessageStore),
-            );
     }
 
     public profile(): ProfileViewModelStore {

@@ -57,7 +57,7 @@ function getConversationMessageViewModel(
     resolveQuote: boolean,
 ): ConversationMessageViewModel {
     return {
-        conversationMessageType: 'message',
+        type: 'message',
         direction:
             messageModel.view.direction === MessageDirection.INBOUND ? 'inbound' : 'outbound',
         file: getMessageFile(messageModel),

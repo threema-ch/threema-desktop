@@ -1,4 +1,4 @@
-import {ReceiverType} from '~/common/enum';
+import {MessageTypeUtils, ReceiverType, StatusMessageTypeUtils} from '~/common/enum';
 import type {Conversation} from '~/common/model';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import type {AnyMessageModelStore} from '~/common/model/types/message';
@@ -136,8 +136,21 @@ export function getMessageSetStore(
     // Fetch the view model for every message in the set store.
     const conversationMessageSetStore = new LocalDerivedSetStore(
         deltaSetStore,
-        (messageStore) =>
-            viewModelRepository.conversationAnyMessage(conversationModelStore, messageStore),
+        (messageStore) => {
+            if (MessageTypeUtils.containsString(messageStore.get().type)) {
+                return viewModelRepository.conversationMessage(
+                    conversationModelStore,
+                    messageStore as AnyMessageModelStore,
+                );
+            } else if (StatusMessageTypeUtils.containsString(messageStore.get().type)) {
+                return viewModelRepository.conversationStatusMessage(
+                    conversationModelStore,
+                    messageStore as AnyStatusMessageModelStore,
+                );
+            }
+
+            throw new Error('Tried to fetch a conversation message with an unknown type');
+        },
         storeOptions,
     );
 

@@ -1,5 +1,5 @@
 import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
-import type {IdentityString} from '~/common/network/types';
+import type {AnyStatusMessageStatus} from '~/common/viewmodel/conversation/main/status-message/store/types';
 
 /**
  * Props accepted by the `StatusMessage` component.
@@ -12,20 +12,4 @@ export interface StatusMessageProps {
      */
     readonly boundary?: SvelteNullableBinding<HTMLElement>;
     readonly status: AnyStatusMessageStatus;
-}
-
-type AnyStatusMessageStatus =
-    | GroupMemberChangeStatusMessageStatus
-    | GroupNameChangeStatusMessageStatus;
-
-export interface GroupMemberChangeStatusMessageStatus {
-    readonly type: 'group-member-change';
-    readonly added: IdentityString[];
-    readonly removed: IdentityString[];
-}
-
-export interface GroupNameChangeStatusMessageStatus {
-    readonly type: 'group-name-change';
-    readonly oldName: string;
-    readonly newName: string;
 }

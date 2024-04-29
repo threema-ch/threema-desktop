@@ -1,53 +1,27 @@
-import type {Logger} from '~/common/logging';
-import type {AnyStatusMessageModelStore, AnyStatusMessageView} from '~/common/model/types/status';
-import {statusMessageUidToStatusMessageId, type StatusMessageId} from '~/common/network/types';
+import type {AnyStatusMessageModelStore} from '~/common/model/types/status';
 import {unreachable} from '~/common/utils/assert';
 import type {PropertiesMarked} from '~/common/utils/endpoint';
-import type {LocalStore} from '~/common/utils/store';
-import {derive} from '~/common/utils/store/derived-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
 import {
     GroupMemberChangeViewModelController,
     GroupNameChangeViewModelController,
     type IConversationStatusMessageViewModelController,
 } from '~/common/viewmodel/conversation/main/status-message/controller';
+import {
+    getConversationStatusMessageViewModelStore,
+    type ConversationStatusMessageViewModelStore,
+} from '~/common/viewmodel/conversation/main/status-message/store';
 
-export type ConversationStatusMessageViewModelBundle = {
+export interface ConversationStatusMessageViewModelBundle extends PropertiesMarked {
     readonly viewModelController: IConversationStatusMessageViewModelController;
-    readonly viewModelStore: StatusMessageViewModelStore;
-} & PropertiesMarked;
-
-export type StatusMessageViewModelStore = LocalStore<
-    AnyStatusMessageView & {
-        id: StatusMessageId;
-        conversationMessageType: 'status';
-    } & PropertiesMarked
->;
-
-export function getStatusMessageViewModelStore(
-    log: Logger,
-    services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
-    statusMessageModelStore: AnyStatusMessageModelStore,
-): StatusMessageViewModelStore {
-    const {endpoint} = services;
-
-    // eslint-disable-next-line arrow-body-style
-    return derive([statusMessageModelStore], ([{currentValue: statusMessageModel}]) =>
-        endpoint.exposeProperties({
-            ...statusMessageModel.view,
-            conversationMessageType: 'status',
-            // Needed for a unique distinguisher in the frontend.
-            id: statusMessageUidToStatusMessageId(statusMessageModel.controller.uid),
-        }),
-    );
+    readonly viewModelStore: ConversationStatusMessageViewModelStore;
 }
 
 export function getConversationStatusMessageViewModelBundle(
-    services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
+    services: Pick<ServicesForViewModel, 'endpoint'>,
     statusMessageModelStore: AnyStatusMessageModelStore,
 ): ConversationStatusMessageViewModelBundle {
-    const {endpoint, logging} = services;
-    const log = logging.logger('viewmodel.conversation.message');
+    const {endpoint} = services;
 
     let viewModelController: IConversationStatusMessageViewModelController;
     switch (statusMessageModelStore.type) {
@@ -60,7 +34,10 @@ export function getConversationStatusMessageViewModelBundle(
         default:
             return unreachable(statusMessageModelStore);
     }
-    const viewModelStore = getStatusMessageViewModelStore(log, services, statusMessageModelStore);
+    const viewModelStore = getConversationStatusMessageViewModelStore(
+        services,
+        statusMessageModelStore,
+    );
 
     return endpoint.exposeProperties({
         viewModelController,

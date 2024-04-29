@@ -11,10 +11,10 @@ import {
     type ConversationMessageViewModelStore,
 } from '~/common/viewmodel/conversation/main/message/store';
 
-export type ConversationMessageViewModelBundle = {
+export interface ConversationMessageViewModelBundle extends PropertiesMarked {
     readonly viewModelController: IConversationMessageViewModelController;
     readonly viewModelStore: ConversationMessageViewModelStore;
-} & PropertiesMarked;
+}
 
 export function getConversationMessageViewModelBundle(
     services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,

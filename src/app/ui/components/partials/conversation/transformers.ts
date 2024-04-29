@@ -26,8 +26,8 @@ export function messageSetStoreToMessageListMessagesStore(
         [...messageSet]
             .map((value): AnyMessageListMessage & {readonly ordinal: u53} => {
                 const viewModel = getAndSubscribe(value.viewModelStore);
-                switch (viewModel.conversationMessageType) {
-                    case 'status': {
+                switch (viewModel.type) {
+                    case 'status-message': {
                         return {
                             ...getStatusMessageProps(viewModel),
                             ordinal: viewModel.ordinal,
@@ -69,7 +69,7 @@ function getMessageProps(
     i18n: I18nType,
 ): Omit<MessageListMessage, 'quote'> {
     return {
-        type: 'message',
+        type: viewModel.type,
         actions: {
             acknowledge: async () => {
                 await viewModelController.acknowledge();
@@ -133,34 +133,9 @@ function getStatusMessageProps(
     >,
 ): MessageListStatusMessage {
     return {
-        type: 'status-message',
+        type: viewModel.type,
         id: viewModel.id,
-        created: {at: viewModel.createdAt},
-        status: getStatusMessageStatusProps(viewModel),
+        created: viewModel.created,
+        status: viewModel.status,
     };
-}
-
-function getStatusMessageStatusProps(
-    viewModel: ReturnType<
-        Remote<ConversationStatusMessageViewModelBundle>['viewModelStore']['get']
-    >,
-): MessageListStatusMessage['status'] {
-    switch (viewModel.type) {
-        case 'group-member-change':
-            return {
-                type: 'group-member-change',
-                added: viewModel.value.added,
-                removed: viewModel.value.removed,
-            };
-
-        case 'group-name-change':
-            return {
-                type: 'group-name-change',
-                newName: viewModel.value.newName,
-                oldName: viewModel.value.oldName,
-            };
-
-        default:
-            return unreachable(viewModel);
-    }
 }
