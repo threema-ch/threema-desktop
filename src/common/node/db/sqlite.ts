@@ -148,7 +148,10 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         // Determine verbose logging adapter for (mostly) echoed SQL commands
         let verbose;
         if (import.meta.env.DEBUG && import.meta.env.VERBOSE_LOGGING.DB) {
-            verbose = (message: string, ...args: readonly unknown[]) => {
+            verbose = (message?: unknown, ...args: readonly unknown[]) => {
+                if (typeof message !== 'string') {
+                    return;
+                }
                 if (message.startsWith('PRAGMA key')) {
                     this._log.debug('PRAGMA key <redacted>');
                     return;

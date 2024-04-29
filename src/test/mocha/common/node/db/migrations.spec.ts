@@ -4,6 +4,7 @@ import DatabaseConstructor, {type Database} from 'better-sqlcipher';
 import {type Logger, NOOP_LOGGER} from '~/common/logging';
 import {MigrationHelper} from '~/common/node/db/migrations';
 import type {u53} from '~/common/types';
+import {assert, unwrap} from '~/common/utils/assert';
 
 // Should match the values in `migrations.ts`: If we (accidentally or on purpose) change the name of
 // a column in `migrations.ts` that will break existing apps with an existing database table.
@@ -38,19 +39,24 @@ export function run(): void {
         // Helper functions
         function tableExists(database: Database, tableName: string): boolean {
             return (
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
                 database
-                    .prepare(
-                        `SELECT COUNT(*) AS count FROM sqlite_master WHERE type='table' AND name='${tableName}'`,
-                    )
+                    .prepare<
+                        [],
+                        {readonly count: u53}
+                    >(`SELECT COUNT(*) AS count FROM sqlite_master WHERE type='table' AND name='${tableName}'`)
                     .get()?.count === 1
             );
         }
         function migrationCacheEntryCount(database: Database): u53 {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-            return database
-                .prepare(`SELECT COUNT(*) AS count FROM ${MIGRATION_CACHE.TABLE_NAME}`)
-                .get().count;
+            return unwrap(
+                database
+                    .prepare<
+                        [],
+                        {readonly count: u53}
+                    >(`SELECT COUNT(*) AS count FROM ${MIGRATION_CACHE.TABLE_NAME}`)
+                    .get()?.count,
+                'Missing count',
+            );
         }
         function currentDbVersion(database: Database): u53 {
             return Number(db.pragma('user_version', {simple: true}));
@@ -92,22 +98,27 @@ export function run(): void {
             const applied = migrationHelper.migrate(db, 2);
             expect(applied).to.equal(2);
             expect(tableExists(db, MIGRATION_CACHE.TABLE_NAME)).to.be.true;
+            interface MigrationCacheRow {
+                readonly [MIGRATION_CACHE.COL_NUMBER]: u53;
+                readonly [MIGRATION_CACHE.COL_UP_SQL]: string;
+                readonly [MIGRATION_CACHE.COL_DOWN_SQL]: string;
+            }
             const migrations = db
-                .prepare(
+                .prepare<[], MigrationCacheRow>(
                     `SELECT ${MIGRATION_CACHE.COL_NUMBER}, ${MIGRATION_CACHE.COL_UP_SQL}, ${MIGRATION_CACHE.COL_DOWN_SQL}
                     FROM ${MIGRATION_CACHE.TABLE_NAME}
                     ORDER BY number asc`,
                 )
                 .all();
-            /* eslint-disable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return */
             expect(migrations.map((m) => m.number)).to.deep.equal([1, 2]);
+            assert(migrations[0] !== undefined);
             expect(migrations[0].upSql).not.to.be.empty;
             expect(migrations[0].downSql).not.to.be.empty;
             expect(migrations[0].upSql).not.to.equal(migrations[0].downSql);
+            assert(migrations[1] !== undefined);
             expect(migrations[1].upSql).not.to.be.empty;
             expect(migrations[1].downSql).not.to.be.empty;
             expect(migrations[1].upSql).not.to.equal(migrations[1].downSql);
-            /* eslint-enable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return */
         });
 
         it('overwrites existing migrations in migration cache', () => {
@@ -128,18 +139,21 @@ export function run(): void {
             // Apply other migrations, this should overwrite existing entries in the cache
             const applied2 = migrationHelper.migrate(db, 2);
             expect(applied2).to.equal(1);
-            /* eslint-disable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-assignment */
+            interface MigrationCacheRow {
+                readonly [MIGRATION_CACHE.COL_NAME]: string;
+                readonly [MIGRATION_CACHE.COL_UP_SQL]: string;
+                readonly [MIGRATION_CACHE.COL_DOWN_SQL]: string;
+            }
             const migration = db
-                .prepare(
+                .prepare<[], MigrationCacheRow>(
                     `SELECT ${MIGRATION_CACHE.COL_NAME}, ${MIGRATION_CACHE.COL_UP_SQL}, ${MIGRATION_CACHE.COL_DOWN_SQL}
                     FROM ${MIGRATION_CACHE.TABLE_NAME}
                     WHERE number = 2`,
                 )
                 .get();
-            expect(migration.name).not.to.equal('fake');
-            expect(migration.upSql).not.to.equal('SELECT 1');
-            expect(migration.downSql).not.to.equal('SELECT 1');
-            /* eslint-enable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-assignment */
+            expect(migration?.name).not.to.equal('fake');
+            expect(migration?.upSql).not.to.equal('SELECT 1');
+            expect(migration?.downSql).not.to.equal('SELECT 1');
         });
 
         it('removes migrations from cache after down-migration', () => {
