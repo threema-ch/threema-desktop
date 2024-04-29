@@ -1,6 +1,10 @@
-import type {MessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
-import type {StatusMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/props';
+import type {
+    AnyMessageListMessage,
+    MessageListMessage,
+    MessageListStatusMessage,
+} from '~/app/ui/components/partials/conversation/internal/message-list/props';
 import type {I18nType} from '~/app/ui/i18n-types';
+import type {u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import type {Remote} from '~/common/utils/endpoint';
 import type {IQueryableStore} from '~/common/utils/store';
@@ -11,33 +15,28 @@ import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/
 import type {ConversationMessageSetStore} from '~/common/viewmodel/conversation/main/store';
 
 /**
- * Shape of props as they should be provided from the backend.
+ * Transform the {@link ConversationMessageSetStore} sent from the backend to
+ * {@link AnyMessageListMessage}s expected by the `MessageList` component.
  */
-export type MessagePropsFromBackend = Omit<MessageProps, 'boundary' | 'conversation' | 'services'>;
-export type StatusPropsFromBackend = Omit<StatusMessageProps, 'boundary'>;
-export type AnyMessagePropsFromBackend = MessagePropsFromBackend | StatusPropsFromBackend;
-
-export function messageSetStoreToMessagePropsStore(
+export function messageSetStoreToMessageListMessagesStore(
     messageSetStore: Remote<ConversationMessageSetStore>,
     i18n: I18nType,
-): IQueryableStore<AnyMessagePropsFromBackend[]> {
+): IQueryableStore<AnyMessageListMessage[]> {
     return derive([messageSetStore], ([{currentValue: messageSet}], getAndSubscribe) =>
         [...messageSet]
-            .map((value): AnyMessagePropsFromBackend & {ordinal: number} => {
+            .map((value): AnyMessageListMessage & {readonly ordinal: u53} => {
                 const viewModel = getAndSubscribe(value.viewModelStore);
                 switch (viewModel.conversationMessageType) {
                     case 'status': {
                         return {
-                            type: 'status',
-                            id: viewModel.id,
-                            text: getStatusMessageProps(viewModel, i18n),
-                            status: viewModel.type,
-                            at: viewModel.createdAt,
-
+                            ...getStatusMessageProps(viewModel),
                             ordinal: viewModel.ordinal,
                         };
                     }
+
                     case 'message': {
+                        // If the `viewModel` is of type `"message"`, the controller (which is part
+                        // of the same bundle) must be as well.
                         const controller =
                             value.viewModelController as Remote<ConversationMessageViewModelBundle>['viewModelController'];
 
@@ -55,6 +54,7 @@ export function messageSetStoreToMessagePropsStore(
                             quote: quoteProps,
                         };
                     }
+
                     default:
                         return unreachable(viewModel);
                 }
@@ -67,7 +67,7 @@ function getMessageProps(
     viewModelController: Remote<ConversationMessageViewModelBundle>['viewModelController'],
     viewModel: ReturnType<Remote<ConversationMessageViewModelBundle>['viewModelStore']['get']>,
     i18n: I18nType,
-): Omit<MessagePropsFromBackend, 'quote'> {
+): Omit<MessageListMessage, 'quote'> {
     return {
         type: 'message',
         actions: {
@@ -99,7 +99,7 @@ function getMessageProps(
 function getMessageFileProps(
     viewModelController: Remote<ConversationMessageViewModelBundle>['viewModelController'],
     viewModel: ReturnType<Remote<ConversationMessageViewModelBundle>['viewModelStore']['get']>,
-): MessagePropsFromBackend['file'] {
+): MessageListMessage['file'] {
     if (viewModel.file !== undefined) {
         return {
             ...viewModel.file,
@@ -113,7 +113,7 @@ function getMessageFileProps(
 export function getMessageReactionsProps(
     viewModel: ReturnType<Remote<ConversationMessageViewModelBundle>['viewModelStore']['get']>,
     i18n: I18nType,
-): MessagePropsFromBackend['reactions'] {
+): MessageListMessage['reactions'] {
     return viewModel.reactions
         .map((reaction) => ({
             ...reaction,
@@ -127,48 +127,39 @@ export function getMessageReactionsProps(
         .sort((a, b) => localeSort(a.sender.name, b.sender.name));
 }
 
-export function getStatusMessageProps(
+function getStatusMessageProps(
     viewModel: ReturnType<
         Remote<ConversationStatusMessageViewModelBundle>['viewModelStore']['get']
     >,
-    i18n: I18nType,
-): string {
-    switch (viewModel.type) {
-        case 'group-member-change': {
-            const added = viewModel.value.added.join(', ');
-            const removed = viewModel.value.removed.join(',');
-            const numAdded = viewModel.value.added.length;
-            const numRemoved = viewModel.value.removed.length;
-            return i18n.t(
-                'status.prose--group-member-change',
-                '{numAdded, plural, =0 {} =1 {{added} was added to the group} other {{added} were added to the group}}{and, plural, =0 { } other {, and}} {numRemoved, plural, =0 {} =1 {{removed} was removed from the group} other {{removed} were removed from the group}}',
+): MessageListStatusMessage {
+    return {
+        type: 'status-message',
+        id: viewModel.id,
+        created: {at: viewModel.createdAt},
+        status: getStatusMessageStatusProps(viewModel),
+    };
+}
 
-                {
-                    added,
-                    removed,
-                    numAdded: `${numAdded}`,
-                    numRemoved: `${numRemoved}`,
-                    and: numAdded > 0 && numRemoved > 0 ? '1' : '0',
-                },
-            );
-        }
-        case 'group-name-change': {
-            const value = viewModel.value;
-            if (value.oldName === '') {
-                return i18n.t(
-                    'status.prose--group-created-name',
-                    'Group created with name "{new}"',
-                    {
-                        new: value.newName,
-                    },
-                );
-            }
-            return i18n.t(
-                'status.prose--group-name-change',
-                'The group name was changed from "{old}" to "{new}"',
-                {old: value.oldName, new: value.newName},
-            );
-        }
+function getStatusMessageStatusProps(
+    viewModel: ReturnType<
+        Remote<ConversationStatusMessageViewModelBundle>['viewModelStore']['get']
+    >,
+): MessageListStatusMessage['status'] {
+    switch (viewModel.type) {
+        case 'group-member-change':
+            return {
+                type: 'group-member-change',
+                added: viewModel.value.added,
+                removed: viewModel.value.removed,
+            };
+
+        case 'group-name-change':
+            return {
+                type: 'group-name-change',
+                newName: viewModel.value.newName,
+                oldName: viewModel.value.oldName,
+            };
+
         default:
             return unreachable(viewModel);
     }

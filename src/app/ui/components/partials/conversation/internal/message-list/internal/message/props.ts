@@ -12,7 +12,6 @@ import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
  * Props accepted by the `Message` component.
  */
 export interface MessageProps {
-    readonly type: 'message';
     readonly actions: {
         readonly acknowledge: () => Promise<void>;
         readonly decline: () => Promise<void>;
@@ -45,9 +44,8 @@ export interface MessageProps {
      * animation is completed.
      */
     readonly highlighted?: BasicMessageProps['highlighted'];
-    readonly history: MessageDetailsModalProps['history'];
     readonly id: MessageId;
-    readonly lastEdited: BasicMessageProps['lastEdited'];
+    readonly lastEdited?: BasicMessageProps['lastEdited'];
     readonly quote?: Omit<MessageProps, 'boundary' | 'conversation' | 'services'> | 'not-found';
     readonly reactions: BasicMessageProps['reactions'] & MessageDetailsModalProps['reactions'];
     readonly sender?: NonNullable<BasicMessageProps['sender']> &

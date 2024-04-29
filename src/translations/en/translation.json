@@ -496,8 +496,8 @@
     "prose--subtitle": "Password"
   },
   "status": {
-    "prose--group-created-name": "Group created with name \"{new}\"",
-    "prose--group-member-change": "{numAdded, plural, =0 {} =1 {{added} was added to the group} other {{added} were added to the group}}{and, plural, =0 { } other {, and}} {numRemoved, plural, =0 {} =1 {{removed} was removed from the group} other {{removed} were removed from the group}}",
+    "prose--group-created-name": "Group created with name \"{name}\"",
+    "prose--group-member-change": "{addedCount, plural, =0 {} =1 {{addedMembers} was added to the group} other {{addedMembers} were added to the group}}{and, plural, =0 {} other {, and }}{removedCount, plural, =0 {} =1 {{removedMembers} was removed from the group} other {{removedMembers} were removed from the group}}",
     "prose--group-name-change": "The group name was changed from \"{old}\" to \"{new}\""
   },
   "system": {

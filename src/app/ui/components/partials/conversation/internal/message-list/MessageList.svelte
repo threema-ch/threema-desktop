@@ -16,13 +16,12 @@
   import MessageMediaViewerModal from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-media-viewer-modal/MessageMediaViewerModal.svelte';
   import StatusMessage from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/StatusMessage.svelte';
   import UnreadMessagesIndicator from '~/app/ui/components/partials/conversation/internal/message-list/internal/unread-messages-indicator/UnreadMessagesIndicator.svelte';
-  import type {MessageListProps} from '~/app/ui/components/partials/conversation/internal/message-list/props';
-  import {
-    type MessagePropsFromBackend,
-    messageSetStoreToMessagePropsStore,
-    type AnyMessagePropsFromBackend,
-    type StatusPropsFromBackend,
-  } from '~/app/ui/components/partials/conversation/internal/message-list/transformers';
+  import type {
+    AnyMessageListMessage,
+    MessageListMessage,
+    MessageListProps,
+    MessageListStatusMessage,
+  } from '~/app/ui/components/partials/conversation/internal/message-list/props';
   import type {
     UnreadState,
     ModalState,
@@ -41,17 +40,17 @@
   type $$Props = MessageListProps;
 
   export let conversation: $$Props['conversation'];
-  export let messageSetStore: $$Props['messageSetStore'];
+  export let messagesStore: $$Props['messagesStore'];
   export let services: $$Props['services'];
 
   const dispatch = createEventDispatcher<{
-    clickquote: MessagePropsFromBackend;
-    clickdelete: AnyMessagePropsFromBackend;
-    clickedit: MessagePropsFromBackend;
+    clickquote: MessageListMessage;
+    clickdelete: AnyMessageListMessage;
+    clickedit: MessageListMessage;
   }>();
 
   let element: HTMLElement;
-  let lazyListComponent: SvelteNullableBinding<LazyList<AnyMessagePropsFromBackend>> = null;
+  let lazyListComponent: SvelteNullableBinding<LazyList<AnyMessageListMessage>> = null;
   let viewport = new Viewport(
     log,
     conversation.setCurrentViewportMessages,
@@ -120,7 +119,7 @@
    * Scrolls the view to the message with the given id.
    */
   export async function scrollToMessage(
-    id: AnyMessagePropsFromBackend['id'],
+    id: AnyMessageListMessage['id'],
     options?: ScrollIntoViewOptions & {
       /** Whether to play an animation after scrolling to highlight the target element. */
       readonly highlightOnScrollEnd?: boolean;
@@ -135,7 +134,7 @@
     }
 
     // If the message is already loaded, scroll to it directly.
-    if (messagePropsStore.get().find((message) => message.id === id)) {
+    if (messagesStore.get().find((message) => message.id === id)) {
       await lazyListComponent.scrollToItem(id, options);
       return;
     }
@@ -154,16 +153,6 @@
     }
   }
 
-  /**
-   * Given a `MessageId`, finds the corresponding props in the message props store.
-   * Returns undefined if no such message was found.
-   */
-  export function getPropsFromBackend(messageId: MessageId): MessagePropsFromBackend | undefined {
-    return $messagePropsStore.find(
-      (prop): prop is MessagePropsFromBackend => prop.id === messageId,
-    );
-  }
-
   function handleClickScrollToBottom(): void {
     scrollToLast({
       behavior: 'smooth',
@@ -171,7 +160,7 @@
     }).catch(assertUnreachable);
   }
 
-  function handleClickForwardOption(message: MessagePropsFromBackend): void {
+  function handleClickForwardOption(message: MessageListMessage): void {
     modalState = {
       type: 'message-forward',
       props: {
@@ -182,7 +171,7 @@
     };
   }
 
-  function handleClickOpenDetailsOption(message: MessagePropsFromBackend): void {
+  function handleClickOpenDetailsOption(message: MessageListMessage): void {
     modalState = {
       type: 'message-details',
       props: {
@@ -199,21 +188,20 @@
     };
   }
 
-  function handleClickOpenStatusDetailsOption(message: StatusPropsFromBackend): void {
+  function handleClickOpenStatusDetailsOption(message: MessageListStatusMessage): void {
     modalState = {
       type: 'message-details',
       props: {
         conversation,
         history: [],
-        lastEdited: undefined,
         reactions: [],
         services,
-        status: {created: {at: message.at}},
+        status: {created: message.created},
       },
     };
   }
 
-  function handleClickThumbnail(message: MessagePropsFromBackend): void {
+  function handleClickThumbnail(message: MessageListMessage): void {
     if (message.file !== undefined) {
       switch (message.file.type) {
         case 'audio':
@@ -234,7 +222,7 @@
                * TS doesn't manage to narrow the type, but we can be sure that the file type is
                * `image` or `video` at this point.
                */
-              file: message.file as NonNullable<MessagePropsFromBackend['file']> & {
+              file: message.file as NonNullable<MessageListMessage['file']> & {
                 readonly type: 'image' | 'video';
               },
             },
@@ -253,7 +241,7 @@
     }
   }
 
-  function handleClickQuote(message: MessagePropsFromBackend): void {
+  function handleClickQuote(message: MessageListMessage): void {
     switch (message.quote) {
       case undefined:
       case 'not-found':
@@ -346,7 +334,7 @@
   }
 
   function handleItemAnchored(
-    event: CustomEvent<LazyListProps<AnyMessagePropsFromBackend>['items'][u53]>,
+    event: CustomEvent<LazyListProps<AnyMessageListMessage>['items'][u53]>,
   ): void {
     const messageId = event.detail.id;
 
@@ -367,13 +355,13 @@
   }
 
   function handleItemEntered(
-    event: CustomEvent<LazyListProps<AnyMessagePropsFromBackend>['items'][u53]>,
+    event: CustomEvent<LazyListProps<AnyMessageListMessage>['items'][u53]>,
   ): void {
     viewport.addMessage(event.detail.id);
   }
 
   function handleItemExited(
-    event: CustomEvent<LazyListProps<AnyMessagePropsFromBackend>['items'][u53]>,
+    event: CustomEvent<LazyListProps<AnyMessageListMessage>['items'][u53]>,
   ): void {
     viewport.deleteMessage(event.detail.id);
   }
@@ -418,8 +406,6 @@
     conversation.markAllMessagesAsRead();
   }
 
-  $: messagePropsStore = messageSetStoreToMessagePropsStore(messageSetStore, $i18n);
-
   $: reactive(handleChangeConversation, [currentConversationId]);
   $: reactive(handleChangeApplicationFocus, [$appVisibility]);
   $: reactive(handleChangeConversationOrLastMessage, [currentConversationId, currentLastMessage]);
@@ -434,7 +420,7 @@
     <MdIcon theme="Outlined">arrow_downward</MdIcon>
   </button>
 
-  {#if $messagePropsStore.length === 0}
+  {#if $messagesStore.length === 0}
     <div class="empty-chat">
       <div class="notice">
         <div class="icon"><MdIcon theme="Outlined">info</MdIcon></div>
@@ -453,7 +439,7 @@
   {:else}
     <LazyList
       bind:this={lazyListComponent}
-      items={$messagePropsStore}
+      items={$messagesStore}
       onError={handleLazyListError}
       visibleItemId={anchoredMessageId}
       on:itemanchored={handleItemAnchored}
@@ -484,7 +470,6 @@
             direction={item.direction}
             file={item.file}
             highlighted={item.id === highlightedMessageId}
-            history={item.history}
             id={item.id}
             lastEdited={item.lastEdited}
             quote={item.quote}
@@ -493,7 +478,6 @@
             {services}
             status={item.status}
             text={item.text}
-            type={item.type}
             on:clickquoteoption={() => dispatch('clickquote', item)}
             on:clickeditoption={() => dispatch('clickedit', item)}
             on:clickforwardoption={() => handleClickForwardOption(item)}
@@ -503,14 +487,15 @@
             on:clickquote={() => handleClickQuote(item)}
             on:completehighlightanimation={handleCompleteHighlightAnimation}
           />
-        {:else}
+        {:else if item.type === 'status-message'}
           <StatusMessage
             boundary={element}
-            action={item.action}
-            text={item.text}
+            status={item.status}
             on:clickdeleteoption={() => dispatch('clickdelete', item)}
             on:clickopendetailsoption={() => handleClickOpenStatusDetailsOption(item)}
           />
+        {:else}
+          {unreachable(item)}
         {/if}
       </div>
     </LazyList>

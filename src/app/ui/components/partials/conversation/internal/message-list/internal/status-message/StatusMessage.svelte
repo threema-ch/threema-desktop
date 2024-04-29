@@ -5,18 +5,20 @@
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
   import Bubble from '~/app/ui/components/molecules/message/internal/bubble/Bubble.svelte';
-  import {getContextMenuItems} from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/helpers';
+  import {
+    getContextMenuItems,
+    getStatusMessageTextForStatus,
+  } from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/helpers';
   import type {StatusMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/props';
   import type Popover from '~/app/ui/generic/popover/Popover.svelte';
   import type {AnchorPoint, VirtualRect} from '~/app/ui/generic/popover/types';
   import {i18n} from '~/app/ui/i18n';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
 
-  type $$Props = Omit<StatusMessageProps, 'type' | 'id' | 'at' | 'status'>;
+  type $$Props = StatusMessageProps;
 
-  export let action: SvelteNullableBinding<$$Props['action']> = undefined;
   export let boundary: $$Props['boundary'] = undefined;
-  export let text: $$Props['text'];
+  export let status: $$Props['status'];
 
   let popover: SvelteNullableBinding<Popover> = null;
   let virtualTrigger: VirtualRect | undefined = undefined;
@@ -84,8 +86,14 @@
 >
   <div class="container">
     <div class="message" use:contextmenu={handleContextMenuEvent}>
-      <Bubble padding="sm" direction="none" clickable={action !== undefined}>
-        <Text {text} color="mono-low" wrap={true} size="body-small" selectable={true} />
+      <Bubble padding="sm" direction="none">
+        <Text
+          text={getStatusMessageTextForStatus(status, $i18n)}
+          color="mono-low"
+          wrap={true}
+          size="body-small"
+          selectable={true}
+        />
       </Bubble>
     </div>
   </div>

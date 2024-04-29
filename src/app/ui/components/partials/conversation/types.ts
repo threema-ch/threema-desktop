@@ -3,7 +3,7 @@ import type * as v from '@badrap/valita';
 import type {ROUTE_DEFINITIONS} from '~/app/routing/routes';
 import type {QuoteProps} from '~/app/ui/components/molecules/message/internal/quote/props';
 import type {ComposeBarProps} from '~/app/ui/components/partials/conversation/internal/compose-bar/props';
-import type {MessagePropsFromBackend} from '~/app/ui/components/partials/conversation/internal/message-list/transformers';
+import type {MessageListMessage} from '~/app/ui/components/partials/conversation/internal/message-list/props';
 import type {MediaFile} from '~/app/ui/modal/media-message';
 import type {MessageId} from '~/common/network/types';
 import type {Remote} from '~/common/utils/endpoint';
@@ -25,12 +25,6 @@ export type RemoteConversationViewModelStoreValue = ReturnType<
 
 export type ModalState = NoneModalState | ClearConversationModalState;
 
-export type EditedMessage = Pick<MessagePropsFromBackend, 'actions' | 'id' | 'text'>;
-export interface QuotedMessage {
-    readonly id: MessageId;
-    readonly props: QuoteProps;
-}
-
 interface NoneModalState {
     readonly type: 'none';
 }
@@ -42,6 +36,12 @@ interface ClearConversationModalState {
         readonly mediaFiles: MediaFile[];
         readonly visible: boolean;
     };
+}
+
+export type EditedMessage = Pick<MessageListMessage, 'actions' | 'id' | 'text'>;
+export interface QuotedMessage {
+    readonly id: MessageId;
+    readonly props: QuoteProps;
 }
 
 /**

@@ -1,12 +1,12 @@
 import type {AppServices} from '~/app/types';
 import type {MessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
+import type {MessageDetailsModalProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-details-modal/props';
 import type {StatusMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/props';
 import type {DbConversationUid} from '~/common/db';
 import type {MessageDirection} from '~/common/enum';
 import type {MessageId, StatusMessageId} from '~/common/network/types';
 import type {u53} from '~/common/types';
-import type {Remote} from '~/common/utils/endpoint';
-import type {ConversationMessageSetStore} from '~/common/viewmodel/conversation/main/store';
+import type {IQueryableStore} from '~/common/utils/store';
 
 /**
  * Props accepted by the `MessageList` component.
@@ -28,7 +28,7 @@ export interface MessageListProps {
         readonly initiallyVisibleMessageId?: MessageId;
         readonly lastMessage:
             | {
-                  readonly id: MessageProps['id'] | StatusMessageProps['id'];
+                  readonly id: AnyMessageListMessage['id'];
                   readonly direction: MessageDirection | 'none';
               }
             | undefined;
@@ -38,8 +38,33 @@ export interface MessageListProps {
         ) => Promise<unknown>;
         readonly unreadMessagesCount: u53;
     };
-    /** ViewModel of the set of messages belonging to this conversation. */
-    readonly messageSetStore: Remote<ConversationMessageSetStore>;
+    /** Store of messages belonging to this conversation. */
+    readonly messagesStore: IQueryableStore<AnyMessageListMessage[]>;
     /** `AppServices` bundle to pass through to child components. */
     readonly services: AppServices;
+}
+
+/**
+ * Union of single message types that are part of a `MessageList`.
+ */
+export type AnyMessageListMessage = MessageListMessage | MessageListStatusMessage;
+
+/**
+ * Type of a regular message that is part of a `MessageList`.
+ */
+export interface MessageListMessage
+    extends Omit<MessageProps, 'boundary' | 'conversation' | 'services'> {
+    readonly type: 'message';
+    readonly history: MessageDetailsModalProps['history'];
+}
+
+/**
+ * Type of a status message that is part of a `MessageList`.
+ */
+export interface MessageListStatusMessage extends Omit<StatusMessageProps, 'boundary'> {
+    readonly type: 'status-message';
+    readonly created: {
+        readonly at: Date;
+    };
+    readonly id: StatusMessageId;
 }

@@ -16,11 +16,12 @@
   import {getTextContent} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/helpers';
   import {transformMessageFileProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/transformers';
   import type {
-    AnyMessagePropsFromBackend,
-    MessagePropsFromBackend,
-  } from '~/app/ui/components/partials/conversation/internal/message-list/transformers';
+    AnyMessageListMessage,
+    MessageListMessage,
+  } from '~/app/ui/components/partials/conversation/internal/message-list/props';
   import TopBar from '~/app/ui/components/partials/conversation/internal/top-bar/TopBar.svelte';
   import type {ConversationViewProps} from '~/app/ui/components/partials/conversation/props';
+  import {messageSetStoreToMessageListMessagesStore} from '~/app/ui/components/partials/conversation/transformers';
   import type {
     ComposeBarState,
     ConversationRouteParams,
@@ -92,16 +93,8 @@
     | {supported: false}
     | {supported: true; notSupportedNames: string[]};
 
-  function handleClickDeleteMessage(event: CustomEvent<AnyMessagePropsFromBackend>): void {
+  function handleClickDeleteMessage(event: CustomEvent<AnyMessageListMessage>): void {
     switch (event.detail.type) {
-      case 'status':
-        viewModelController?.deleteStatusMessage(event.detail.id).catch((error) => {
-          log.error(`Could not delete status message with id ${event.detail.id}`, error);
-          toast.addSimpleFailure(
-            $i18n.t('messaging.error--delete-status-message', 'Could not delete status message'),
-          );
-        });
-        break;
       case 'message':
         viewModelController?.deleteMessage(event.detail.id).catch((error) => {
           log.error(`Could not delete message with id ${event.detail.id}`, error);
@@ -110,13 +103,23 @@
           );
         });
         break;
+
+      case 'status-message':
+        viewModelController?.deleteStatusMessage(event.detail.id).catch((error) => {
+          log.error(`Could not delete status message with id ${event.detail.id}`, error);
+          toast.addSimpleFailure(
+            $i18n.t('messaging.error--delete-status-message', 'Could not delete status message'),
+          );
+        });
+        break;
+
       default:
         unreachable(event.detail);
     }
   }
 
-  function getComposebarQuoteComponent(
-    quotedMessageProps: MessagePropsFromBackend,
+  function getComposeBarQuoteComponent(
+    quotedMessageProps: MessageListMessage,
   ): QuotedMessage | undefined {
     const conversationReceiverLookup = viewModelStore.get()?.receiver.lookup;
 
@@ -158,11 +161,11 @@
     };
   }
 
-  function handleClickQuoteMessage(event: CustomEvent<MessagePropsFromBackend>): void {
+  function handleClickQuoteMessage(event: CustomEvent<MessageListMessage>): void {
     if (composeBarState.type === 'edit') {
       composeBarComponent?.clear();
     }
-    const quotedMessage = getComposebarQuoteComponent(event.detail);
+    const quotedMessage = getComposeBarQuoteComponent(event.detail);
     if (quotedMessage === undefined) {
       composeBarState = {type: 'insert', quotedMessage: undefined, editedMessage: undefined};
       return;
@@ -170,7 +173,7 @@
     composeBarState = {type: 'insert', quotedMessage, editedMessage: undefined};
   }
 
-  function handleClickEditMessage(messageProperties: MessagePropsFromBackend): void {
+  function handleClickEditMessage(messageProperties: MessageListMessage): void {
     if (!receiverSupportsEditedMessages.supported) {
       if ($viewModelStore?.receiver.type === 'contact') {
         toast.addSimpleFailure(
@@ -210,7 +213,7 @@
       actions: messageProperties.actions,
       text: messageProperties.text,
     };
-    const quotedMessage = getComposebarQuoteComponent(messageProperties);
+    const quotedMessage = getComposeBarQuoteComponent(messageProperties);
     if (quotedMessage === undefined) {
       composeBarState = {type: 'insert', quotedMessage: undefined, editedMessage: undefined};
       return;
@@ -565,12 +568,16 @@
       modalState.type === 'none' &&
       composeBarState.quotedMessage === undefined &&
       (composeBarComponent?.getText() === undefined || composeBarComponent.getText() === '') &&
-      // TODO(DESK-1401) Revert the commit that added this comment.
+      // TODO(DESK-1401): Revert the commit that added this comment.
       import.meta.env.BUILD_ENVIRONMENT === 'sandbox'
     ) {
-      const messageToEdit = messageListComponent?.getPropsFromBackend(
-        $viewModelStore.lastMessage.id,
-      );
+      const lastMessage = $viewModelStore.lastMessage;
+
+      // Because `lastMessage` must have a direction, if we find a match, we can be certain that
+      // it's a `MessageListMessage` and not a `MessageListStatusMessage`.
+      const messageToEdit = messagesStore
+        ?.get()
+        .find((message): message is MessageListMessage => message.id === lastMessage.id);
 
       if (
         messageToEdit?.status.sent !== undefined &&
@@ -598,6 +605,11 @@
     ($viewModelStore?.receiver.type === 'contact' && $viewModelStore.receiver.isBlocked) ||
     ($viewModelStore?.receiver.type === 'group' && $viewModelStore.receiver.isLeft);
 
+  $: messagesStore =
+    $viewModelStore === undefined
+      ? undefined
+      : messageSetStoreToMessageListMessagesStore($viewModelStore.messageSetStore, $i18n);
+
   onMount(() => {
     window.addEventListener('keydown', handleKeyDown);
   });
@@ -608,7 +620,7 @@
   });
 </script>
 
-{#if $viewModelStore !== undefined && viewModelController !== undefined}
+{#if $viewModelStore !== undefined && viewModelController !== undefined && messagesStore !== undefined}
   <DropZoneProvider
     overlay={{
       message: $i18n.t('messaging.hint--drop-files-to-send', 'Drop files here to send'),
@@ -702,7 +714,7 @@
               setCurrentViewportMessages: viewModelController.setCurrentViewportMessages,
               unreadMessagesCount: $viewModelStore.unreadMessagesCount,
             }}
-            messageSetStore={$viewModelStore.messageSetStore}
+            {messagesStore}
             {services}
             on:clickdelete={handleClickDeleteMessage}
             on:clickquote={handleClickQuoteMessage}

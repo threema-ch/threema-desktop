@@ -30,14 +30,12 @@
   import {EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES} from '~/common/network/protocol/constants';
   import {assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
   import {type IQueryableStore, ReadableStore} from '~/common/utils/store';
-  import {unusedProp} from '~/common/utils/svelte-helpers';
 
   const {uiLogging, systemTime} = globals.unwrap();
   const log = uiLogging.logger('ui.component.message');
 
   type $$Props = MessageProps;
 
-  export let type: $$Props['type'] = 'message';
   export let actions: $$Props['actions'];
   export let boundary: $$Props['boundary'] = undefined;
   export let conversation: $$Props['conversation'];
@@ -46,15 +44,12 @@
   export let id: $$Props['id'];
   export let lastEdited: $$Props['lastEdited'] = undefined;
   export let highlighted: $$Props['highlighted'] = undefined;
-  export let history: $$Props['history'] = [];
   export let quote: $$Props['quote'] = undefined;
   export let reactions: $$Props['reactions'];
   export let sender: $$Props['sender'] = undefined;
   export let services: $$Props['services'];
   export let status: $$Props['status'];
   export let text: $$Props['text'] = undefined;
-
-  unusedProp(history, type);
 
   const {
     router,
