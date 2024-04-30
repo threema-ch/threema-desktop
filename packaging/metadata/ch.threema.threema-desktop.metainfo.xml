@@ -44,6 +44,14 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta32" date="2024-04-30">
+            <description>
+                <p>Fixes:</p>
+                <ul>
+                    <li>Fixed a bug that prevented the application from starting on Windows</li>
+                </ul>
+            </description>
+        </release>
         <release version="2.0~publicbeta31" date="2024-04-29">
             <description>
                 <p>New features:</p>
