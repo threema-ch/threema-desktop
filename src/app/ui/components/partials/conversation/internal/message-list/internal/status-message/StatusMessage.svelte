@@ -73,31 +73,31 @@
   const menuItems = getContextMenuItems($i18n, handleClickMessageDetails, handleClickDelete);
 </script>
 
-<ContextMenuProvider
-  bind:popover
-  {anchorPoints}
-  closeOnClickOutside={true}
-  container={boundary}
-  items={menuItems}
-  offset={{left: 0, top: 4}}
-  reference={virtualTrigger}
-  triggerBehavior={virtualTrigger === undefined ? 'toggle' : 'open'}
-  on:clicktrigger={handleClickTrigger}
->
-  <div class="container">
-    <div class="message" use:contextmenu={handleContextMenuEvent}>
-      <Bubble padding="sm" direction="none">
-        <Text
-          text={getStatusMessageTextForStatus(status, $i18n)}
-          color="mono-low"
-          wrap={true}
-          size="body-small"
-          selectable={true}
-        />
-      </Bubble>
-    </div>
+<div class="container">
+  <div class="message" use:contextmenu={handleContextMenuEvent}>
+    <Bubble padding="sm" direction="none">
+      <Text
+        text={getStatusMessageTextForStatus(status, $i18n)}
+        color="mono-low"
+        wrap={true}
+        size="body-small"
+        selectable={true}
+      />
+    </Bubble>
   </div>
-</ContextMenuProvider>
+
+  <ContextMenuProvider
+    bind:popover
+    {anchorPoints}
+    closeOnClickOutside={true}
+    container={boundary}
+    items={menuItems}
+    offset={{left: 0, top: 4}}
+    reference={virtualTrigger}
+    triggerBehavior={virtualTrigger === undefined ? 'toggle' : 'open'}
+    on:clicktrigger={handleClickTrigger}
+  />
+</div>
 
 <style lang="scss">
   @use 'component' as *;
