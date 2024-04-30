@@ -79,14 +79,10 @@ export function getMessageSetStore(
             // not have any adverse effects (except for a slight inefficiency in the IPC and
             // database layers).
 
-            // Subscribe to the "last conversation update" store. This ensures that the active
-            // messages are re-derived whenever a message is added to or removed from the
-            // conversation.
-            getAndSubscribe(conversationModel.controller.lastConversationUpdateStore());
-
-            // Subscribe to last "status message update" store so that the conversation content is updated
-            // when a new status message comes in.
-            getAndSubscribe(conversationModel.controller.conversationRefreshTriggerStore());
+            // Subscribe to the "last conversation modification" store. This ensures that the active
+            // messages are re-derived whenever a conversation is modified (e.g. when a message or
+            // status message is added to or removed from the conversation).
+            getAndSubscribe(conversationModel.controller.lastModificationStore());
 
             // Get active messages plus surrounding messages.
             let visibleMessagesWindowSet =

@@ -60,6 +60,7 @@ export type ConversationController = {
      * A store that contains the last message sent or received in this conversation (or none, if there has never been a conversation message).
      */
     readonly lastMessageStore: () => LocalStore<AnyMessageModelStore | undefined>;
+
     /**
      * A store that contains the last (newest) status message (or none, if there has never been a status message).
      */
@@ -71,19 +72,13 @@ export type ConversationController = {
      *
      * Things that update the store:
      *
-     * - A message is added
-     * - A message is removed
-     * - The conversation is cleared
+     * - A message or status message is added.
+     * - A message or status message is removed.
+     * - The conversation is cleared.
      *
      * Note that changes to an existing message do not trigger an update to this store.
      */
-    readonly lastConversationUpdateStore: () => LocalStore<Date>;
-
-    /**
-     * Return a store that can be updated when a refresh of the conversation is needed without any side-effects.
-     * In contrast to {@link lastConversationUpdateStore}, this does e.g not trigger a reordering of the previews.
-     */
-    readonly conversationRefreshTriggerStore: () => LocalStore<Date>;
+    readonly lastModificationStore: () => LocalStore<Date>;
 
     /**
      * Update a conversation.
@@ -95,6 +90,7 @@ export type ConversationController = {
         ControllerUpdateFromSource<[change: ConversationUpdate, unreadMessageCountDelta?: i53]>,
         'fromLocal' | 'fromRemote'
     >;
+
     /**
      * Update the visibility of a conversation.
      */
@@ -102,11 +98,14 @@ export type ConversationController = {
         ControllerUpdateFromSource<[visibility: ConversationVisibility]>,
         'fromRemote' | 'fromSync'
     >;
+
     /**
      * Add a new message to this conversation.
      *
      * The message will be stored in the database. If `source` is `TriggerSource.LOCAL`, the
      * outgoing message task will be triggered.
+     *
+     * Note: This triggers an update of the `_lastModificationStore`.
      */
     readonly addMessage: ControllerCustomUpdateFromSource<
         [init: DirectedMessageFor<MessageDirection.OUTBOUND, MessageType, 'init'>],
@@ -120,25 +119,32 @@ export type ConversationController = {
      *
      * The message will be only removed from the device where the action is executed. I.e. this
      * action is not reflected.
+     *
+     * Note: This triggers an update of the `_lastModificationStore`.
      */
     readonly removeMessage: ControllerUpdateFromLocal<[uid: MessageId]>;
+
     /**
      * Remove all messages from this conversation.
      *
      * The messages will be only removed from the device where the action is executed. I.e. this
      * action is not reflected.
+     *
+     * Note: This triggers an update of the `_lastModificationStore`.
      */
     readonly removeAllMessages: ControllerUpdateFromLocal;
 
     /**
      * Remove a status message from this conversation. This is a local action, i.e it is not reflected.
-     * This triggers a refresh of the `_conversationRefreshTriggerStore`.
+     *
+     * Note: This triggers an update of the `_lastModificationStore`.
      */
     readonly removeStatusMessage: ControllerUpdateFromLocal<[uid: StatusMessageId]>;
 
     /**
      * Remove all status messages from this conversation. This is a local action, i.e it is not reflected.
-     * This triggers a refresh of the `_conversationRefreshTriggerStore`.
+     *
+     * Note: This triggers an update of the `_lastModificationStore`.
      */
     readonly removeAllStatusMessages: ControllerUpdateFromLocal;
 
@@ -146,6 +152,8 @@ export type ConversationController = {
      * Create a status message and add it to the DB.
      * The status message can be of any type.
      * Status are triggered locally and do not have side-effects on linked devices.
+     *
+     * Note: This triggers an update of the `_lastModificationStore`.
      */
     readonly createStatusMessage: (
         statusMessage:
@@ -157,14 +165,17 @@ export type ConversationController = {
      * Return whether the message with the specified id exists in the this conversation.
      */
     readonly hasMessage: (id: MessageId) => boolean;
+
     /**
      * Return a {@link LocalModelStore} of the message with the specified id.
      */
     readonly getMessage: (id: MessageId) => AnyMessageModelStore | undefined;
+
     /**
      * Return a {@link LocalModelStore} of every message in the current conversation.
      */
     readonly getAllMessages: () => SetOfAnyLocalMessageModelStore;
+
     /**
      * Return a {@link LocalModelStore} for every (status) message in {@link anyMessageIds}, plus a
      * number of additional older and newer (status) messages (the "context").
@@ -194,11 +205,13 @@ export type ConversationController = {
      * @returns The number of messages in this conversation
      */
     readonly getMessageCount: () => u53;
+
     /**
      * Return id of the first (i.e. oldest) unread message, or `undefined` if all messages in the
      * conversation have been read.
      */
     readonly getFirstUnreadMessageId: () => MessageId | undefined;
+
     /**
      * The user read (i.e. opened) the conversation on the current device.
      */

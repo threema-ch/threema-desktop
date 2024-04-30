@@ -434,10 +434,10 @@ export class ConversationModelController implements ConversationController {
     // Stores
     private readonly _lastMessageStore: WritableStore<AnyMessageModelStore | undefined>;
     private readonly _lastStatusMessageStore: WritableStore<AnyStatusMessageModelStore | undefined>;
-    private readonly _lastConversationUpdateStore: WritableStore<Date>;
-    // This store is used to notify subscribers that the conversation should be refreshed without touching lastUpdate.
-    // This is e.g. used for status messages.
-    private readonly _conversationRefreshTriggerStore: WritableStore<Date>;
+    // This store is used to notify subscribers that the conversation was updated and potentially
+    // stale data should be refreshed. This is e.g. used for subscribers to react to added or
+    // removed messages.
+    private readonly _lastModificationStore: WritableStore<Date>;
 
     public constructor(
         private readonly _services: ServicesForModel,
@@ -463,8 +463,7 @@ export class ConversationModelController implements ConversationController {
             status.getLastStatusMessage(_services, this._handle),
         );
 
-        this._lastConversationUpdateStore = new WritableStore(new Date());
-        this._conversationRefreshTriggerStore = new WritableStore(new Date());
+        this._lastModificationStore = new WritableStore(new Date());
     }
 
     /**
@@ -518,13 +517,8 @@ export class ConversationModelController implements ConversationController {
     }
 
     /** @inheritdoc */
-    public lastConversationUpdateStore(): LocalStore<Date> {
-        return this._lastConversationUpdateStore;
-    }
-
-    /** @inheritdoc */
-    public conversationRefreshTriggerStore(): LocalStore<Date> {
-        return this._conversationRefreshTriggerStore;
+    public lastModificationStore(): LocalStore<Date> {
+        return this._lastModificationStore;
     }
 
     public decrementUnreadMessageCount(): void {
@@ -991,8 +985,8 @@ export class ConversationModelController implements ConversationController {
     /**
      * Update the stores that depend on conversation changes:
      *
-     * - Update {@link _lastMessageStore} with the last message of the conversation
-     * - Update {@link _lastConversationUpdateStore} with the current timestamp
+     * - Update {@link _lastMessageStore} with the last message of the conversation.
+     * - Update {@link _lastModificationStore} with the current timestamp.
      */
     private _updateStoresOnConversationUpdate(): void {
         // Note: Update the "last message" store before updating the "last conversation update"
@@ -1001,7 +995,7 @@ export class ConversationModelController implements ConversationController {
         this._lastMessageStore.set(
             message.getLastMessage(this._services, this._handle, MESSAGE_FACTORY),
         );
-        this._lastConversationUpdateStore.set(new Date());
+        this._lastModificationStore.set(new Date());
     }
 
     private _updateStatusStoresOnConversationUpdate(): void {
@@ -1009,7 +1003,7 @@ export class ConversationModelController implements ConversationController {
         // store. This way, when subscribing to conversation updates, the last message can be
         // fetched from the "last message" store and will already be correct.
         this._lastStatusMessageStore.set(status.getLastStatusMessage(this._services, this._handle));
-        this._conversationRefreshTriggerStore.set(new Date());
+        this._lastModificationStore.set(new Date());
     }
 }
 
