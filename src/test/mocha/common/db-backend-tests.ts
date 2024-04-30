@@ -1587,11 +1587,26 @@ export function backendTests(
                     conversation2: DbConversation & DbUnreadMessageCountMixin,
                 ];
                 message: readonly [
-                    messageUid1: DbMessageUid,
-                    messageUid2: DbMessageUid,
-                    messageUid3: DbMessageUid,
-                    messageUid4: DbMessageUid,
-                    messageUid5: DbMessageUid,
+                    message1: {
+                        readonly uid: DbMessageUid;
+                        readonly ordinal: u53;
+                    },
+                    message2: {
+                        readonly uid: DbMessageUid;
+                        readonly ordinal: u53;
+                    },
+                    message3: {
+                        readonly uid: DbMessageUid;
+                        readonly ordinal: u53;
+                    },
+                    message4: {
+                        readonly uid: DbMessageUid;
+                        readonly ordinal: u53;
+                    },
+                    message5: {
+                        readonly uid: DbMessageUid;
+                        readonly ordinal: u53;
+                    },
                 ];
             } {
                 // Add contacts and get conversations.
@@ -1616,24 +1631,35 @@ export function backendTests(
                     text: 'A',
                     processedAt: new Date(1),
                 });
+                const message1 = db.getMessageByUid(messageUid1);
+                assert(message1 !== undefined);
+
                 const messageUid2 = createTextMessage(db, {
                     id: 1001n,
                     conversationUid: conversation1.uid,
                     text: 'B',
                     processedAt: new Date(2),
                 });
+                const message2 = db.getMessageByUid(messageUid2);
+                assert(message2 !== undefined);
+
                 const messageUid3 = createTextMessage(db, {
                     id: 1002n,
                     conversationUid: conversation1.uid,
                     text: 'C',
                     processedAt: new Date(3),
                 });
+                const message3 = db.getMessageByUid(messageUid3);
+                assert(message3 !== undefined);
+
                 const messageUid4 = createTextMessage(db, {
                     id: 1003n,
                     conversationUid: conversation1.uid,
                     text: 'D',
                     processedAt: new Date(4),
                 });
+                const message4 = db.getMessageByUid(messageUid4);
+                assert(message4 !== undefined);
 
                 // Conversation 2
                 const messageUid5 = createTextMessage(db, {
@@ -1642,10 +1668,12 @@ export function backendTests(
                     text: 'E',
                     processedAt: new Date(5),
                 });
+                const message5 = db.getMessageByUid(messageUid5);
+                assert(message5 !== undefined);
 
                 return {
                     conversation: [conversation1, conversation2],
-                    message: [messageUid1, messageUid2, messageUid3, messageUid4, messageUid5],
+                    message: [message1, message2, message3, message4, message5],
                 };
             }
 
@@ -1670,47 +1698,12 @@ export function backendTests(
                     {
                         description: 'Get max 10 latest messages from conversation 1',
                         params: [conversation[0].uid, 10],
-                        result: [message[0], message[1], message[2], message[3]],
+                        result: [message[0].uid, message[1].uid, message[2].uid, message[3].uid],
                     },
                     {
                         description: 'Get max 2 latest messages from conversation 1',
                         params: [conversation[0].uid, 2],
-                        result: [message[2], message[3]],
-                    },
-                ]);
-            });
-
-            it('returns only results from the same conversation', function () {
-                const {conversation, message} = setupConversations();
-
-                testGetMessageUidsQuery([
-                    {
-                        description:
-                            'Get messages from conversation 1 with a reference UID that does not belong to this conversation',
-                        params: [
-                            conversation[0].uid,
-                            10,
-                            {
-                                // UID from `conversation2`.
-                                uid: message[4],
-                                direction: MessageQueryDirection.OLDER,
-                            },
-                        ],
-                        result: [],
-                    },
-                    {
-                        description:
-                            'Get messages from conversation 1 with a non-existing reference UID',
-                        params: [
-                            conversation[0].uid,
-                            10,
-                            {
-                                // Non-existing UID.
-                                uid: 9234234n as DbMessageUid,
-                                direction: MessageQueryDirection.OLDER,
-                            },
-                        ],
-                        result: [],
+                        result: [message[2].uid, message[3].uid],
                     },
                 ]);
             });
@@ -1721,62 +1714,60 @@ export function backendTests(
                 testGetMessageUidsQuery([
                     {
                         description:
-                            'Get 10 messages from conversation 1 that are older than `messageUid1` (as this is the oldest, it should be the only one returned)',
+                            'Get 10 messages from conversation 1 that are older than `message1` (as this is the oldest, it should be the only one returned)',
                         params: [
                             conversation[0].uid,
                             10,
                             {
-                                uid: message[0],
                                 direction: MessageQueryDirection.OLDER,
+                                ordinal: message[0].ordinal,
                             },
                         ],
-                        result: [message[0]],
+                        result: [message[0].uid],
                     },
                     {
                         description:
-                            'Get 10 messages from conversation 1 that are newer than `messageUid2` (as this is the second-oldest, it should be the only one not returned in the result)',
+                            'Get 10 messages from conversation 1 that are newer than `message2` (as this is the second-oldest, it should be the only one not returned in the result)',
                         params: [
                             conversation[0].uid,
                             10,
                             {
-                                uid: message[1],
                                 direction: MessageQueryDirection.NEWER,
+                                ordinal: message[1].ordinal,
                             },
                         ],
-                        result: [message[1], message[2], message[3]],
+                        result: [message[1].uid, message[2].uid, message[3].uid],
                     },
                     {
                         description:
-                            'Get 2 messages from conversation 1 that are older than `messageUid2`',
+                            'Get 2 messages from conversation 1 that are older than `message2`',
                         params: [
                             conversation[0].uid,
                             2,
                             {
-                                uid: message[1],
                                 direction: MessageQueryDirection.OLDER,
+                                ordinal: message[1].ordinal,
                             },
                         ],
-                        result: [message[0], message[1]],
+                        result: [message[0].uid, message[1].uid],
                     },
                     {
                         description:
-                            'Get 2 messages from conversation 1 that are newer than `messageUid2`',
+                            'Get 2 messages from conversation 1 that are newer than `message2`',
                         params: [
                             conversation[0].uid,
                             2,
                             {
-                                uid: message[1],
                                 direction: MessageQueryDirection.NEWER,
+                                ordinal: message[1].ordinal,
                             },
                         ],
-                        result: [message[1], message[2]],
+                        result: [message[1].uid, message[2].uid],
                     },
                 ]);
             });
-        });
 
-        describe('getMessageByOrdinalReference', function () {
-            it('gets all uids older/newer than a reference with/without limit', function () {
+            it('respects limit and reference direction', function () {
                 const contactUid = makeContact(db, {identity: 'TESTTEST'});
                 const conversation = db.getConversationOfReceiver({
                     type: ReceiverType.CONTACT,
@@ -1807,12 +1798,12 @@ export function backendTests(
 
                 assert(referenceTimestamp !== undefined);
 
-                const older = db.getMessageUidsByOrdinalReference(conversation.uid, {
+                const older = db.getMessageUids(conversation.uid, Number.MAX_SAFE_INTEGER, {
                     ordinal: referenceTimestamp,
                     direction: MessageQueryDirection.OLDER,
                 });
 
-                const newer = db.getMessageUidsByOrdinalReference(conversation.uid, {
+                const newer = db.getMessageUids(conversation.uid, Number.MAX_SAFE_INTEGER, {
                     ordinal: referenceTimestamp,
                     direction: MessageQueryDirection.NEWER,
                 });
@@ -1834,18 +1825,14 @@ export function backendTests(
                     'There must not be a returned value that is older than the reference',
                 ).to.eq(0);
 
-                const newerLimited = db.getMessageUidsByOrdinalReference(
-                    conversation.uid,
-                    {
-                        ordinal: referenceTimestamp,
-                        direction: MessageQueryDirection.NEWER,
-                    },
-                    50,
-                );
+                const newerLimited = db.getMessageUids(conversation.uid, 50, {
+                    ordinal: referenceTimestamp,
+                    direction: MessageQueryDirection.NEWER,
+                });
 
                 expect(
                     newerLimited.length,
-                    'The number of messsages must not succeed the limit given',
+                    'The number of messages must not succeed the limit given',
                 ).to.eq(50);
                 expect(
                     newerLimited.filter((m) => {
@@ -1855,14 +1842,10 @@ export function backendTests(
                 ).to.eq(50);
 
                 // Trying to fetch more messages than there are should return the number of messages
-                const oldest = db.getMessageUidsByOrdinalReference(
-                    conversation.uid,
-                    {
-                        ordinal: referenceTimestamp,
-                        direction: MessageQueryDirection.OLDER,
-                    },
-                    400,
-                );
+                const oldest = db.getMessageUids(conversation.uid, 400, {
+                    ordinal: referenceTimestamp,
+                    direction: MessageQueryDirection.OLDER,
+                });
 
                 expect(oldest.length).to.eq(249);
                 expect(

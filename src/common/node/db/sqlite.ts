@@ -2495,12 +2495,14 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         );
     }
 
-    private _getMessagesByReferenceDateTime(
+    private _getMessagesByOrdinal(
         conversationUid: DbConversationUid,
-        referenceMessageDateTime: Date,
+        ordinal: u53,
         direction: MessageQueryDirection,
         limit?: u53,
     ): DbList<DbAnyMessage, 'uid'> {
+        const referenceMessageDateTime = new Date(ordinal);
+
         // Determine ordering and dynamic WHERE clause: Filter by conversation
         // and by processedAt timestamp.
         let processedAtCondition;
@@ -2547,15 +2549,16 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         );
     }
 
-    private _getStatusMessagesByReferenceDateTime(
+    private _getStatusMessagesByOrdinal(
         conversationUid: DbConversationUid,
-        referenceMessageDateTime: Date,
+        ordinal: u53,
         direction: MessageQueryDirection,
         limit?: u53,
     ): DbList<DbStatusMessage, 'uid'> {
+        const referenceMessageDateTime = new Date(ordinal);
+
         // Determine ordering and dynamic WHERE clause: Filter by conversation
         // and by processedAt timestamp.
-
         let createdAtCondition;
         let orderByMode: 'asc' | 'desc';
         switch (direction) {
@@ -2596,7 +2599,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         conversationUid: DbConversationUid,
         limit?: u53,
         reference?: {
-            readonly uid: DbMessageUid;
+            readonly ordinal: u53;
             readonly direction: MessageQueryDirection;
         },
     ): DbList<DbAnyMessage, 'uid'> {
@@ -2620,25 +2623,9 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             );
         }
 
-        const referenceMessageDateTime = sync(
-            this._db
-                .selectFrom(tMessage)
-                .where(
-                    tMessage.conversationUid
-                        .equals(conversationUid)
-                        .and(tMessage.uid.equals(reference.uid)),
-                )
-                .selectOneColumn(tMessage.processedAt.valueWhenNull(tMessage.createdAt))
-                .executeSelectNoneOrOne(),
-        );
-
-        if (referenceMessageDateTime === null) {
-            return [];
-        }
-
-        return this._getMessagesByReferenceDateTime(
+        return this._getMessagesByOrdinal(
             conversationUid,
-            referenceMessageDateTime,
+            reference.ordinal,
             reference.direction,
             limit,
         );
@@ -2649,7 +2636,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         conversationUid: DbConversationUid,
         limit?: u53,
         reference?: {
-            readonly uid: DbStatusMessageUid;
+            readonly ordinal: u53;
             readonly direction: MessageQueryDirection;
         },
     ): DbList<DbStatusMessage, 'uid'> {
@@ -2673,53 +2660,9 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             );
         }
 
-        const referenceMessageDateTime = sync(
-            this._db
-                .selectFrom(tStatusMessage)
-                .where(
-                    tStatusMessage.conversationUid
-                        .equals(conversationUid)
-                        .and(tStatusMessage.uid.equals(reference.uid)),
-                )
-                .selectOneColumn(tStatusMessage.createdAt)
-                .executeSelectNoneOrOne(),
-        );
-
-        if (referenceMessageDateTime === null) {
-            return [];
-        }
-
-        return this._getStatusMessagesByReferenceDateTime(
+        return this._getStatusMessagesByOrdinal(
             conversationUid,
-            referenceMessageDateTime,
-            reference.direction,
-            limit,
-        );
-    }
-
-    /** @inheritdoc */
-    public getMessageUidsByOrdinalReference(
-        conversationUid: DbConversationUid,
-        reference: {readonly ordinal: u53; readonly direction: MessageQueryDirection},
-        limit?: u53,
-    ): DbList<DbAnyMessage, 'uid'> {
-        return this._getMessagesByReferenceDateTime(
-            conversationUid,
-            new Date(reference.ordinal),
-            reference.direction,
-            limit,
-        );
-    }
-
-    /** @inheritdoc */
-    public getStatusMessageUidsByOrdinalReference(
-        conversationUid: DbConversationUid,
-        reference: {readonly ordinal: u53; readonly direction: MessageQueryDirection},
-        limit?: u53,
-    ): DbList<DbStatusMessage, 'uid'> {
-        return this._getStatusMessagesByReferenceDateTime(
-            conversationUid,
-            new Date(reference.ordinal),
+            reference.ordinal,
             reference.direction,
             limit,
         );

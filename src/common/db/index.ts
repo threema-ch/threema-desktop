@@ -925,7 +925,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      * @param conversationUid {@link DbConversationUid} of the conversation to search in.
      * @param limit The length of the list of results to return. Note: Possibly smaller, if there
      *   are fewer messages in the conversation than `limit`.
-     * @param reference The reference message to fetch around.
+     * @param reference The reference ordinal to fetch around.
      * @returns List of message UIDs.
      *
      *   Note: If the combination of reference and conversationUid does not match, no message is returned.
@@ -934,29 +934,9 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
         conversationUid: DbConversationUid,
         limit?: u53,
         reference?: {
-            readonly uid: DbMessageUid;
             readonly direction: MessageQueryDirection;
-        },
-    ) => DbList<DbAnyMessage, 'uid'>;
-
-    /**
-     * Return `limit` amount (or all, or none) message UIDs associated to a conversation according to a reference
-     * which defines a point in time and a query direction.
-     *
-     * The timestamp to which a message is compared is `createdAt` or `processedAt` if the former is null.
-     *
-     * If no message is found that matches the condition, an empty list is returned.
-     *
-     * Note: The reference need not be found in the table. It can be any point in time without any relation to the entries of the
-     * status message table whatsoever.
-     */
-    readonly getMessageUidsByOrdinalReference: (
-        conversationUid: DbConversationUid,
-        reference: {
             readonly ordinal: u53;
-            readonly direction: MessageQueryDirection;
         },
-        limit?: u53,
     ) => DbList<DbAnyMessage, 'uid'>;
 
     /**
@@ -973,7 +953,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      * @param conversationUid {@link DbConversationUid} of the conversation to search in.
      * @param limit The length of the list of results to return. Note: Possibly smaller, if there
      *   are fewer status messages in the conversation than `limit`.
-     * @param reference The reference status message to fetch around.
+     * @param reference The reference ordinal to fetch around.
      * @returns List of status message UIDs.
      *
      *   Note: If the combination of reference and conversationUid does not match, no status message is returned.
@@ -982,29 +962,9 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
         conversationUid: DbConversationUid,
         limit?: u53,
         reference?: {
-            readonly uid: DbStatusMessageUid;
             readonly direction: MessageQueryDirection;
-        },
-    ) => DbList<DbStatusMessage, 'uid'>;
-
-    /**
-     * Return `limit` amount (or all, or none) status message UIDs associated to a conversation according to a reference
-     * which defines a point in time and a query direction.
-     *
-     * The timestamp to which a status message is compared is `createdAt` or `processedAt` if the former is null.
-     *
-     * If no message is found that matches the condition, an empty list is returned.
-     *
-     * Note: The reference need not be found in the table. It can be any point in time without any relation to the entries of the
-     * status message table whatsoever.
-     */
-    readonly getStatusMessageUidsByOrdinalReference: (
-        conversationUid: DbConversationUid,
-        reference: {
             readonly ordinal: u53;
-            readonly direction: MessageQueryDirection;
         },
-        limit?: u53,
     ) => DbList<DbStatusMessage, 'uid'>;
 
     /**

@@ -614,14 +614,10 @@ export class ConversationModelController implements ConversationController {
 
             // Fetch all messages in the current viewport context.
             const oldestMessages = db
-                .getMessageUidsByOrdinalReference(
-                    this.uid,
-                    {
-                        ordinal: minOrdinal,
-                        direction: MessageQueryDirection.OLDER,
-                    },
-                    perMessageTypeContextSize,
-                )
+                .getMessageUids(this.uid, perMessageTypeContextSize, {
+                    ordinal: minOrdinal,
+                    direction: MessageQueryDirection.OLDER,
+                })
                 .map((m) =>
                     message.getByUid(
                         this._services,
@@ -631,15 +627,12 @@ export class ConversationModelController implements ConversationController {
                         Existence.ENSURED,
                     ),
                 );
+
             const newestMessages = db
-                .getMessageUidsByOrdinalReference(
-                    this.uid,
-                    {
-                        ordinal: maxOrdinal,
-                        direction: MessageQueryDirection.NEWER,
-                    },
-                    perMessageTypeContextSize,
-                )
+                .getMessageUids(this.uid, perMessageTypeContextSize, {
+                    ordinal: maxOrdinal,
+                    direction: MessageQueryDirection.NEWER,
+                })
                 .map((m) =>
                     message.getByUid(
                         this._services,
@@ -652,27 +645,19 @@ export class ConversationModelController implements ConversationController {
 
             // Fetch all status messages in the current viewport context.
             const oldestStatusMessages = db
-                .getStatusMessageUidsByOrdinalReference(
-                    this.uid,
-                    {
-                        ordinal: minOrdinal,
-                        direction: MessageQueryDirection.OLDER,
-                    },
-                    perMessageTypeContextSize,
-                )
+                .getStatusMessageUids(this.uid, perMessageTypeContextSize, {
+                    ordinal: minOrdinal,
+                    direction: MessageQueryDirection.OLDER,
+                })
                 .map((s) =>
                     status.getByUid(this._services, this._handle, s.uid, Existence.ENSURED),
                 );
 
             const newestStatusMessages = db
-                .getStatusMessageUidsByOrdinalReference(
-                    this.uid,
-                    {
-                        ordinal: maxOrdinal,
-                        direction: MessageQueryDirection.NEWER,
-                    },
-                    perMessageTypeContextSize,
-                )
+                .getStatusMessageUids(this.uid, perMessageTypeContextSize, {
+                    ordinal: maxOrdinal,
+                    direction: MessageQueryDirection.NEWER,
+                })
                 .map((s) =>
                     status.getByUid(this._services, this._handle, s.uid, Existence.ENSURED),
                 );
