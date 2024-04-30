@@ -286,8 +286,8 @@ export class ConversationModelController implements ConversationController {
     /** @inheritdoc */
     public createStatusMessage(
         statusMessage:
-            | Omit<GroupMemberChangeStatusView, 'conversationUid' | 'ordinal'>
-            | Omit<GroupNameChangeStatusView, 'conversationUid' | 'ordinal'>,
+            | Omit<GroupMemberChangeStatusView, 'conversationUid' | 'id' | 'ordinal'>
+            | Omit<GroupNameChangeStatusView, 'conversationUid' | 'id' | 'ordinal'>,
     ): AnyStatusMessageModelStore {
         const statusMessageModelStore = status.createStatusMessage(this._services, {
             ...statusMessage,

@@ -367,6 +367,7 @@ export function statusMessageIdtoStatusMessageUid(id: StatusMessageId): DbStatus
 export function statusMessageUidToStatusMessageId(uid: DbStatusMessageUid): StatusMessageId {
     return ensureStatusMessageId(uid.toString());
 }
+
 /**
  * A 64-bit group ID.
  */

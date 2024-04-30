@@ -3,7 +3,7 @@ import type {StatusMessageType} from '~/common/enum';
 import type {LocalModel} from '~/common/model/types/common';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
-import type {IdentityString} from '~/common/network/types';
+import type {IdentityString, StatusMessageId} from '~/common/network/types';
 import type {u53} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
 
@@ -12,10 +12,11 @@ import type {ProxyMarked} from '~/common/utils/endpoint';
  */
 interface BaseStatusMessageView {
     readonly conversationUid: DbConversationUid;
-    readonly type: StatusMessageType;
     readonly createdAt: Date;
-    readonly value: unknown;
+    readonly id: StatusMessageId;
     readonly ordinal: u53;
+    readonly type: StatusMessageType;
+    readonly value: unknown;
 }
 
 /**

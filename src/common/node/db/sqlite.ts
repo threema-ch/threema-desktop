@@ -50,6 +50,7 @@ import type {
     DbMessageLastEdit,
     DbStatusMessage,
     DbStatusMessageUid,
+    DbCreateStatusMessage,
 } from '~/common/db';
 import {
     type GlobalPropertyKey,
@@ -63,7 +64,12 @@ import type {FileId} from '~/common/file-storage';
 import type {Logger} from '~/common/logging';
 import type {MediaBasedMessageType, TextBasedMessageType} from '~/common/model/types/message';
 import type {AnyStatusMessageView} from '~/common/model/types/status';
-import type {GroupId, IdentityString, MessageId} from '~/common/network/types';
+import {
+    statusMessageUidToStatusMessageId,
+    type GroupId,
+    type IdentityString,
+    type MessageId,
+} from '~/common/network/types';
 import {type Settings, SETTINGS_CODEC} from '~/common/settings';
 import {STATUS_CODEC} from '~/common/status';
 import type {u53} from '~/common/types';
@@ -1650,11 +1656,20 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     ordinal: tStatusMessage.createdAtTimestamp,
                 })
                 .where(tStatusMessage.uid.equals(uid))
-                .executeSelectNoneOrOne(),
+                .executeSelectNoneOrOne()
+                .then((value) =>
+                    value === null
+                        ? null
+                        : {
+                              ...value,
+                              id: statusMessageUidToStatusMessageId(value.uid),
+                          },
+                ),
         );
         if (statusMessage === null) {
             return undefined;
         }
+
         return statusMessage;
     }
 
@@ -1671,6 +1686,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         if (common === null) {
             return undefined;
         }
+
         return this._getMessage(common);
     }
 
@@ -1692,7 +1708,15 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 // TODO(DESK-296): Order correctly
                 .orderBy('createdAt', 'desc')
                 .limit(1)
-                .executeSelectNoneOrOne(),
+                .executeSelectNoneOrOne()
+                .then((value) =>
+                    value === null
+                        ? null
+                        : {
+                              ...value,
+                              id: statusMessageUidToStatusMessageId(value.uid),
+                          },
+                ),
         );
         if (statusMessage === null) {
             return undefined;
@@ -2733,7 +2757,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
 
     /** @inheritdoc */
     public addStatusMessage(
-        statusMessage: DbCreateMessage<DbStatusMessage>,
+        statusMessage: DbCreateStatusMessage<DbStatusMessage>,
     ): DbCreated<DbStatusMessage> {
         const uid = sync(
             this._db
@@ -2773,24 +2797,26 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             switch (res.type) {
                 case 'group-member-change':
                     return {
-                        value: STATUS_CODEC[res.type].decode(res.statusBytes),
-                        type: res.type,
-                        createdAt: res.createdAt,
                         conversationUid,
-                        uid: res.uid,
+                        createdAt: res.createdAt,
+                        id: statusMessageUidToStatusMessageId(res.uid),
                         // Note: This must be compatible with the ordinal of messages.
                         ordinal: res.createdAtTimestamp,
+                        type: res.type,
+                        uid: res.uid,
+                        value: STATUS_CODEC[res.type].decode(res.statusBytes),
                     };
 
                 case 'group-name-change':
                     return {
-                        value: STATUS_CODEC[res.type].decode(res.statusBytes),
-                        type: res.type,
-                        createdAt: res.createdAt,
                         conversationUid,
-                        uid: res.uid,
+                        createdAt: res.createdAt,
+                        id: statusMessageUidToStatusMessageId(res.uid),
                         // Note: This must be compatible with the ordinal of messages.
                         ordinal: res.createdAtTimestamp,
+                        type: res.type,
+                        uid: res.uid,
+                        value: STATUS_CODEC[res.type].decode(res.statusBytes),
                     };
 
                 default:

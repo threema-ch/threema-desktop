@@ -4,7 +4,7 @@ import type {
     DbConversationUid,
     UidOf,
     DbStatusMessageUid,
-    DbCreateMessage,
+    DbCreateStatusMessage,
 } from '~/common/db';
 import {Existence, StatusMessageType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
@@ -234,8 +234,8 @@ export function getConversationStatusMessageCount(
 export function createStatusMessage(
     services: ServicesForModel,
     statusMessage:
-        | Omit<GroupMemberChangeStatusView, 'ordinal'>
-        | Omit<GroupNameChangeStatusView, 'ordinal'>,
+        | Omit<GroupMemberChangeStatusView, 'id' | 'ordinal'>
+        | Omit<GroupNameChangeStatusView, 'id' | 'ordinal'>,
 ): AnyStatusMessageModelStore {
     const {db} = services;
 
@@ -251,7 +251,7 @@ export function createStatusMessage(
             return unreachable(statusMessage);
     }
 
-    const dbCreate: DbCreateMessage<DbStatusMessage> = {
+    const dbCreate: DbCreateStatusMessage<DbStatusMessage> = {
         conversationUid: statusMessage.conversationUid,
         createdAt: statusMessage.createdAt,
         statusBytes,

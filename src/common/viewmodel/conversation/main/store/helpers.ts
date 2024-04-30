@@ -7,7 +7,6 @@ import {getDebugTagForReceiver} from '~/common/model/utils/debug-tags';
 import {
     FEATURE_MASK_FLAG,
     type FeatureMask,
-    statusMessageUidToStatusMessageId,
     type StatusMessageId,
     type MessageId,
     isMessageId,
@@ -32,13 +31,13 @@ function getLastMessageId(
     if (lastMessage !== undefined && lastStatusMessage !== undefined) {
         return lastMessage.view.ordinal > lastStatusMessage.view.ordinal
             ? lastMessage.view.id
-            : statusMessageUidToStatusMessageId(lastStatusMessage.controller.uid);
+            : lastStatusMessage.view.id;
     }
     if (lastMessage !== undefined) {
         return lastMessage.view.id;
     }
     if (lastStatusMessage !== undefined) {
-        return statusMessageUidToStatusMessageId(lastStatusMessage.controller.uid);
+        return lastStatusMessage.view.id;
     }
 
     // If both are undefined, there is no message in the conversation and thus, no last message.

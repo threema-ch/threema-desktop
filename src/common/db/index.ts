@@ -39,6 +39,7 @@ import type {
     IdentityString,
     MessageId,
     Nickname,
+    StatusMessageId,
 } from '~/common/network/types';
 import type {RawBlobKey} from '~/common/network/types/keys';
 import type {Settings} from '~/common/settings';
@@ -583,11 +584,20 @@ export type DbStatusMessageUid = WeakOpaque<DbUid, {readonly DbStatusMessageUid:
 export interface DbStatusMessage {
     readonly createdAt: Date;
     readonly conversationUid: DbConversationUid;
+    /**
+     * Unique identifier of a status message.
+     */
+    readonly id: StatusMessageId;
     readonly ordinal: u53;
     readonly statusBytes: ReadonlyUint8Array;
     readonly type: StatusMessageType;
     readonly uid: DbStatusMessageUid;
 }
+
+/**
+ * Data required to create a status message entry.
+ */
+export type DbCreateStatusMessage<T extends DbTable> = Omit<DbCreate<T>, 'id' | 'ordinal'>;
 
 /**
  * A database message UID.
@@ -997,7 +1007,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      * Add a status message to the db.
      */
     readonly addStatusMessage: (
-        statusMessage: DbCreateMessage<DbStatusMessage>,
+        statusMessage: DbCreateStatusMessage<DbStatusMessage>,
     ) => DbCreated<DbStatusMessage>;
 
     /**

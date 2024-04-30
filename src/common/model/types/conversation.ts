@@ -149,8 +149,8 @@ export type ConversationController = {
      */
     readonly createStatusMessage: (
         statusMessage:
-            | Omit<GroupMemberChangeStatusView, 'conversationUid' | 'ordinal'>
-            | Omit<GroupNameChangeStatusView, 'conversationUid' | 'ordinal'>,
+            | Omit<GroupMemberChangeStatusView, 'conversationUid' | 'id' | 'ordinal'>
+            | Omit<GroupNameChangeStatusView, 'conversationUid' | 'id' | 'ordinal'>,
     ) => AnyStatusMessageModelStore;
 
     /**

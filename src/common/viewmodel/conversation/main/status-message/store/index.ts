@@ -1,5 +1,4 @@
 import type {AnyStatusMessageModel, AnyStatusMessageModelStore} from '~/common/model/types/status';
-import {statusMessageUidToStatusMessageId} from '~/common/network/types';
 import type {PropertiesMarked} from '~/common/utils/endpoint';
 import type {LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
@@ -33,7 +32,7 @@ function getConversationStatusMessageViewModel(
     return {
         type: 'status-message',
         created: {at: statusMessageModel.view.createdAt},
-        id: statusMessageUidToStatusMessageId(statusMessageModel.controller.uid),
+        id: statusMessageModel.view.id,
         ordinal: statusMessageModel.view.ordinal,
         status: getStatusMessageStatus(statusMessageModel),
     };
