@@ -667,7 +667,9 @@ function main(
                 // All other requests are treated as relative to the application directory
                 const pathToServe = path.resolve(__dirname, '..', 'app', pathname.slice(1));
                 const relativePath = path.relative(__dirname, pathToServe);
-                const isSafe = relativePath.startsWith('../app/') && !path.isAbsolute(relativePath);
+                const isSafe =
+                    relativePath.startsWith(`..${path.sep}app${path.sep}`) &&
+                    !path.isAbsolute(relativePath);
                 if (isSafe) {
                     try {
                         return await electron.net.fetch(pathToFileURL(pathToServe).toString());
