@@ -927,6 +927,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     senderContactUid: message.senderContactUid,
                     conversationUid: message.conversationUid,
                     createdAt: message.createdAt,
+                    createdAtTimestamp: message.createdAt.getTime(),
                     processedAt: message.processedAt,
                     readAt: message.readAt,
                     raw: message.raw,
@@ -1287,6 +1288,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 senderContactUid: tMessage.senderContactUid,
                 conversationUid: tMessage.conversationUid,
                 createdAt: tMessage.createdAt,
+                createdAtTimestamp: tMessage.createdAtTimestamp,
                 processedAt: tMessage.processedAt,
                 deliveredAt: tMessage.deliveredAt,
                 readAt: tMessage.readAt,
@@ -1295,7 +1297,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 threadId: tMessage.threadId,
                 lastEditedAt: tMessage.lastEditedAt,
                 // TODO(DESK-296): Deprecate ordinal in favor of a thread-based solution
-                ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt).getTime(),
+                ordinal: tMessage.processedAtTimestamp.valueWhenNull(tMessage.createdAtTimestamp),
                 reactions: this._db
                     .aggregateAsArrayDistinct({
                         reaction: tMesssageReactionLeftJoin.reaction,
@@ -1569,7 +1571,9 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .select({
                     conversationUid: tMessage.conversationUid,
                     id: tMessage.messageId,
-                    ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt).getTime(),
+                    ordinal: tMessage.processedAtTimestamp.valueWhenNull(
+                        tMessage.createdAtTimestamp,
+                    ),
                     uid: tMessage.uid,
                 })
                 .where(
@@ -1640,9 +1644,10 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     type: tStatusMessage.type,
                     conversationUid: tStatusMessage.conversationUid,
                     createdAt: tStatusMessage.createdAt,
+                    createdAtTimestamp: tStatusMessage.createdAtTimestamp,
                     statusBytes: tStatusMessage.statusBytes,
                     uid: tStatusMessage.uid,
-                    ordinal: tStatusMessage.createdAt.getTime(),
+                    ordinal: tStatusMessage.createdAtTimestamp,
                 })
                 .where(tStatusMessage.uid.equals(uid))
                 .executeSelectNoneOrOne(),
@@ -1678,9 +1683,10 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     type: tStatusMessage.type,
                     conversationUid: tStatusMessage.conversationUid,
                     createdAt: tStatusMessage.createdAt,
+                    createdAtTimestamp: tStatusMessage.createdAtTimestamp,
                     statusBytes: tStatusMessage.statusBytes,
                     uid: tStatusMessage.uid,
-                    ordinal: tStatusMessage.createdAt.getTime(),
+                    ordinal: tStatusMessage.createdAtTimestamp,
                 })
                 .where(tStatusMessage.conversationUid.equals(conversationUid))
                 // TODO(DESK-296): Order correctly
@@ -1764,6 +1770,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     text: tLeftJoin.caption,
                     lastEditedAt: tMessage.lastEditedAt,
                     createdAt: tMessage.createdAt,
+                    createdAtTimestamp: tMessage.createdAtTimestamp,
                 })
                 .where(tMessage.uid.equals(messageUid))
                 .executeSelectOne(),
@@ -1784,6 +1791,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     text: tLeftJoin.caption,
                     lastEditedAt: tMessage.lastEditedAt,
                     createdAt: tMessage.createdAt,
+                    createdAtTimestamp: tMessage.createdAtTimestamp,
                 })
                 .where(tMessage.uid.equals(messageUid))
                 .executeSelectOne(),
@@ -1804,6 +1812,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     text: tLeftJoin.caption,
                     lastEditedAt: tMessage.lastEditedAt,
                     createdAt: tMessage.createdAt,
+                    createdAtTimestamp: tMessage.createdAtTimestamp,
                 })
                 .where(tMessage.uid.equals(messageUid))
                 .executeSelectOne(),
@@ -1824,6 +1833,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     text: tLeftJoin.caption,
                     lastEditedAt: tMessage.lastEditedAt,
                     createdAt: tMessage.createdAt,
+                    createdAtTimestamp: tMessage.createdAtTimestamp,
                 })
                 .where(tMessage.uid.equals(messageUid))
                 .executeSelectOne(),
@@ -1844,6 +1854,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     text: tLeftJoin.text,
                     lastEditedAt: tMessage.lastEditedAt,
                     createdAt: tMessage.createdAt,
+                    createdAtTimestamp: tMessage.createdAtTimestamp,
                 })
                 .where(tMessage.uid.equals(messageUid))
                 .executeSelectOne(),
@@ -2501,8 +2512,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         direction: MessageQueryDirection,
         limit?: u53,
     ): DbList<DbAnyMessage, 'uid'> {
-        const referenceMessageDateTime = new Date(ordinal);
-
         // Determine ordering and dynamic WHERE clause: Filter by conversation
         // and by processedAt timestamp.
         let processedAtCondition;
@@ -2510,26 +2519,24 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         switch (direction) {
             case MessageQueryDirection.OLDER:
                 orderByMode = 'desc';
-                processedAtCondition = tMessage.processedAt
-                    .lessOrEquals(referenceMessageDateTime)
-                    .or(
-                        // Handle case that processedAt was not (yet) set (outbound messages)
-                        tMessage.processedAt
-                            .isNull()
-                            .and(tMessage.createdAt.lessOrEquals(referenceMessageDateTime)),
-                    );
+                processedAtCondition = tMessage.processedAtTimestamp.lessOrEquals(ordinal).or(
+                    // Handle case that processedAt was not (yet) set (outbound messages)
+                    tMessage.processedAtTimestamp
+                        .isNull()
+                        .and(tMessage.createdAtTimestamp.lessOrEquals(ordinal)),
+                );
                 break;
+
             case MessageQueryDirection.NEWER:
                 orderByMode = 'asc';
-                processedAtCondition = tMessage.processedAt
-                    .greaterOrEquals(referenceMessageDateTime)
-                    .or(
-                        // Handle case that processedAt was not (yet) set (outbound messages)
-                        tMessage.processedAt
-                            .isNull()
-                            .and(tMessage.createdAt.greaterOrEquals(referenceMessageDateTime)),
-                    );
+                processedAtCondition = tMessage.processedAtTimestamp.greaterOrEquals(ordinal).or(
+                    // Handle case that processedAt was not (yet) set (outbound messages)
+                    tMessage.processedAtTimestamp
+                        .isNull()
+                        .and(tMessage.createdAtTimestamp.greaterOrEquals(ordinal)),
+                );
                 break;
+
             default:
                 unreachable(direction);
         }
@@ -2539,7 +2546,9 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .selectFrom(tMessage)
                 .select({
                     uid: tMessage.uid,
-                    ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt),
+                    ordinal: tMessage.processedAtTimestamp.valueWhenNull(
+                        tMessage.createdAtTimestamp,
+                    ),
                 })
                 .where(tMessage.conversationUid.equals(conversationUid).and(processedAtCondition))
                 // TODO(DESK-296): Order correctly
@@ -2555,8 +2564,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         direction: MessageQueryDirection,
         limit?: u53,
     ): DbList<DbStatusMessage, 'uid'> {
-        const referenceMessageDateTime = new Date(ordinal);
-
         // Determine ordering and dynamic WHERE clause: Filter by conversation
         // and by processedAt timestamp.
         let createdAtCondition;
@@ -2564,13 +2571,11 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         switch (direction) {
             case MessageQueryDirection.OLDER:
                 orderByMode = 'desc';
-                createdAtCondition =
-                    tStatusMessage.createdAt.lessOrEquals(referenceMessageDateTime);
+                createdAtCondition = tStatusMessage.createdAtTimestamp.lessOrEquals(ordinal);
                 break;
             case MessageQueryDirection.NEWER:
                 orderByMode = 'asc';
-                createdAtCondition =
-                    tStatusMessage.createdAt.greaterOrEquals(referenceMessageDateTime);
+                createdAtCondition = tStatusMessage.createdAtTimestamp.greaterOrEquals(ordinal);
 
                 break;
             default:
@@ -2582,7 +2587,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .selectFrom(tStatusMessage)
                 .select({
                     uid: tStatusMessage.uid,
-                    ordinal: tStatusMessage.createdAt,
+                    ordinal: tStatusMessage.createdAtTimestamp,
                 })
                 .where(
                     tStatusMessage.conversationUid.equals(conversationUid).and(createdAtCondition),
@@ -2606,7 +2611,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         // Fields to select
         const selectFields = {
             uid: tMessage.uid,
-            ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt),
+            ordinal: tMessage.processedAtTimestamp.valueWhenNull(tMessage.createdAtTimestamp),
         };
 
         // If the reference UID is undefined, we start at the newest message.
@@ -2643,7 +2648,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         // Fields to select
         const selectFields = {
             uid: tStatusMessage.uid,
-            ordinal: tStatusMessage.createdAt,
+            ordinal: tStatusMessage.createdAtTimestamp,
         };
 
         // If the reference UID is undefined, we start at the newest message.
@@ -2738,6 +2743,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     type: statusMessage.type,
                     statusBytes: statusMessage.statusBytes as Uint8Array,
                     createdAt: statusMessage.createdAt,
+                    createdAtTimestamp: statusMessage.createdAt.getTime(),
                 })
                 .returningLastInsertedId()
                 .executeInsert(),
@@ -2756,11 +2762,13 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .select({
                     type: tStatusMessage.type,
                     createdAt: tStatusMessage.createdAt,
+                    createdAtTimestamp: tStatusMessage.createdAtTimestamp,
                     statusBytes: tStatusMessage.statusBytes,
                     uid: tStatusMessage.uid,
                 })
                 .executeSelectMany(),
         );
+
         return queryResult.map((res): AnyStatusMessageView & {uid: DbStatusMessageUid} => {
             switch (res.type) {
                 case 'group-member-change':
@@ -2770,9 +2778,10 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         createdAt: res.createdAt,
                         conversationUid,
                         uid: res.uid,
-                        // Note: This must be compatible with the ordinal of messages
-                        ordinal: res.createdAt.getTime(),
+                        // Note: This must be compatible with the ordinal of messages.
+                        ordinal: res.createdAtTimestamp,
                     };
+
                 case 'group-name-change':
                     return {
                         value: STATUS_CODEC[res.type].decode(res.statusBytes),
@@ -2780,9 +2789,10 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         createdAt: res.createdAt,
                         conversationUid,
                         uid: res.uid,
-                        // Note: This must be compatible with the ordinal of messages
-                        ordinal: res.createdAt.getTime(),
+                        // Note: This must be compatible with the ordinal of messages.
+                        ordinal: res.createdAtTimestamp,
                     };
+
                 default:
                     return unreachable(res.type);
             }

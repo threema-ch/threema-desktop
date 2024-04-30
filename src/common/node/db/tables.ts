@@ -535,6 +535,17 @@ export const tMessage = new (class TMessage extends Table<DBConnection, 'TMessag
     public createdAt = this.column('createdAt', 'localDateTime');
 
     /**
+     * Alias for `createdAt`. Numeric timestamp (unix epoch millis) for when the message...
+     *
+     * - Outbound: ...has been created on the local device.
+     * - Inbound: ...has been created on the remote device.
+     *
+     * Note: For inbound messages, this timestamp may have an arbitrary value as it's controlled by
+     *       the sender.
+     */
+    public createdAtTimestamp = this.column<u53>('createdAt', 'customComparable', CUSTOM_TYPES.U53);
+
+    /**
      * Optional timestamp for when the message...
      *
      * - Outbound: ...has been delivered to and acknowledged by the chat server.
@@ -548,6 +559,26 @@ export const tMessage = new (class TMessage extends Table<DBConnection, 'TMessag
      *       depending on the message direction.
      */
     public processedAt = this.optionalColumn('processedAt', 'localDateTime');
+
+    /**
+     * Alias for `processedAt`. Optional numeric timestamp (unix epoch millis) for when the
+     * message...
+     *
+     * - Outbound: ...has been delivered to and acknowledged by the chat server.
+     * - Inbound: ...has been received from the chat server and reflected to the mediator server by
+     *     the leader device.
+     *
+     * Note: The value is always known for inbound messages but not known until acknowledged for
+     *       outbound messages.
+     *
+     * Note: In the models, this is split up into the virtual fields `sentAt` and `receivedAt`,
+     *       depending on the message direction.
+     */
+    public processedAtTimestamp = this.optionalColumn<u53>(
+        'processedAt',
+        'customComparable',
+        CUSTOM_TYPES.U53,
+    );
 
     /**
      * Optional timestamp for when the outbound message has been delivered to the recipient and the
@@ -1205,7 +1236,16 @@ export const tStatusMessage = new (class TStatusMessages extends Table<
 
     public statusBytes = this.column<Uint8Array>('statusBytes', 'custom', CUSTOM_TYPES.UINT8ARRAY);
 
+    /**
+     * Timestamp for when the message has been created on the local device.
+     */
     public createdAt = this.column('createdAt', 'localDateTime');
+
+    /**
+     * Alias for `createdAt`. Numeric timestamp (unix epoch millis) for when the message has been
+     * created on the local device.
+     */
+    public createdAtTimestamp = this.column<u53>('createdAt', 'customComparable', CUSTOM_TYPES.U53);
 
     public constructor() {
         super('statusMessages');
