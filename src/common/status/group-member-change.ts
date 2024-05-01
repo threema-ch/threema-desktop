@@ -1,6 +1,6 @@
 import * as v from '@badrap/valita';
 
-import type {GroupMemberChangeStatusView} from '~/common/model/types/status';
+import type {GroupMemberChangeStatus} from '~/common/model/types/status';
 import {ensureIdentityString} from '~/common/network/types';
 import * as proto from '~/common/node/status/status';
 import type {StatusMessagesCodec} from '~/common/status';
@@ -14,7 +14,7 @@ const GROUP_MEMBER_CHANGE_SCHEMA = v
 
 export type GroupMemberChange = v.Infer<typeof GROUP_MEMBER_CHANGE_SCHEMA>;
 
-export const GROUP_MEMBER_CHANGE_CODEC: StatusMessagesCodec<GroupMemberChangeStatusView> = {
+export const GROUP_MEMBER_CHANGE_CODEC: StatusMessagesCodec<GroupMemberChangeStatus> = {
     encode: (status) =>
         proto.GroupMemberChange.encode({
             added: status.added,

@@ -33,8 +33,8 @@ import type {
 import type {AnyReceiver, AnyReceiverStore} from '~/common/model/types/receiver';
 import type {
     AnyStatusMessageModelStore,
-    GroupNameChangeStatusView,
-    GroupMemberChangeStatusView,
+    GroupMemberChangeStatus,
+    GroupNameChangeStatus,
 } from '~/common/model/types/status';
 import {getDebugTagForReceiver} from '~/common/model/utils/debug-tags';
 import {LazyWeakRef, LocalModelStoreCache} from '~/common/model/utils/model-cache';
@@ -286,8 +286,8 @@ export class ConversationModelController implements ConversationController {
     /** @inheritdoc */
     public createStatusMessage(
         statusMessage:
-            | Omit<GroupMemberChangeStatusView, 'conversationUid' | 'id' | 'ordinal'>
-            | Omit<GroupNameChangeStatusView, 'conversationUid' | 'id' | 'ordinal'>,
+            | Omit<GroupMemberChangeStatus['view'], 'conversationUid' | 'id' | 'ordinal'>
+            | Omit<GroupNameChangeStatus['view'], 'conversationUid' | 'id' | 'ordinal'>,
     ): AnyStatusMessageModelStore {
         const statusMessageModelStore = status.createStatusMessage(this._services, {
             ...statusMessage,

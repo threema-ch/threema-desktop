@@ -15,13 +15,17 @@ import type {ConversationControllerHandle} from '~/common/model/types/conversati
 import type {
     AnyStatusMessageModelStore,
     AnyStatusMessageView,
-    GroupMemberChangeStatusView,
-    GroupNameChangeStatusView,
+    GroupMemberChangeStatus,
+    GroupNameChangeStatus,
+    StatusMessageController,
+    StatusMessageView,
 } from '~/common/model/types/status';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
+import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {STATUS_CODEC} from '~/common/status';
 import type {u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
+import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {LazyMap} from '~/common/utils/map';
 import {omit} from '~/common/utils/object';
 import {LocalSetStore, type IDerivableSetStore} from '~/common/utils/store/set-store';
@@ -234,8 +238,8 @@ export function getConversationStatusMessageCount(
 export function createStatusMessage(
     services: ServicesForModel,
     statusMessage:
-        | Omit<GroupMemberChangeStatusView, 'id' | 'ordinal'>
-        | Omit<GroupNameChangeStatusView, 'id' | 'ordinal'>,
+        | Omit<GroupMemberChangeStatus['view'], 'id' | 'ordinal'>
+        | Omit<GroupNameChangeStatus['view'], 'id' | 'ordinal'>,
 ): AnyStatusMessageModelStore {
     const {db} = services;
 
@@ -291,4 +295,16 @@ export function allStatusMessagesOfConversation(
             },
         );
     });
+}
+
+export class GenericStatusModelController<TType extends StatusMessageType, TValue>
+    implements StatusMessageController<TType, TValue>
+{
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
+    public readonly meta = new ModelLifetimeGuard<StatusMessageView<TType, TValue>>();
+
+    public constructor(
+        public readonly uid: UidOf<DbStatusMessage>,
+        private readonly _services: ServicesForModel,
+    ) {}
 }

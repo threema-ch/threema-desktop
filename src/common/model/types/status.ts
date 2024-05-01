@@ -10,65 +10,78 @@ import type {ProxyMarked} from '~/common/utils/endpoint';
 /**
  * The base status message with the mandatory fields all status messages must have.
  */
-interface BaseStatusMessageView {
+export interface StatusMessageView<TType extends StatusMessageType, TValue> {
+    /**
+     * UID of the associated conversation.
+     */
     readonly conversationUid: DbConversationUid;
+    /**
+     * Date when this status message was created.
+     */
     readonly createdAt: Date;
+    /**
+     * Unique identifier of this status message.
+     */
     readonly id: StatusMessageId;
+    /**
+     * Ordinal for message ordering. Note: Higher `ordinal` means the message is newer.
+     */
     readonly ordinal: u53;
-    readonly type: StatusMessageType;
-    readonly value: unknown;
+    /**
+     * Status message type.
+     */
+    readonly type: TType;
+    /**
+     * Structured data associated with this status message.
+     */
+    readonly value: TValue;
 }
 
 /**
  * BaseStatusMessage Controller with no functionality, whatsoever.
  * It is mainly used for creation of {@link LocalModelStores} of {@link StatusMessages}.
  */
-export type BaseStatusMessageController<TStatusMessageView extends BaseStatusMessageView> = {
+export type StatusMessageController<TType extends StatusMessageType, TValue> = {
     readonly uid: UidOf<DbStatusMessage>;
-    readonly meta: ModelLifetimeGuard<TStatusMessageView>;
+    readonly meta: ModelLifetimeGuard<StatusMessageView<TType, TValue>>;
 } & ProxyMarked;
 
-// Group Member Changes
-export interface GroupMemberChangeStatusView extends BaseStatusMessageView {
-    readonly type: StatusMessageType.GROUP_MEMBER_CHANGE;
-    readonly value: {
-        // IDs that were added to the group.
-        readonly added: IdentityString[];
-        // IDs that were removed from the group.
-        readonly removed: IdentityString[];
-    };
-}
-
-export type GroupMemberChange = LocalModel<
-    GroupMemberChangeStatusView,
-    BaseStatusMessageController<GroupMemberChangeStatusView>,
+type StatusModel<TType extends StatusMessageType, TValue> = LocalModel<
+    StatusMessageView<TType, TValue>,
+    StatusMessageController<TType, TValue>,
     DbConversationUid,
-    StatusMessageType.GROUP_MEMBER_CHANGE
+    TType
 >;
 
-// Group Name Changes
-export interface GroupNameChangeStatusView extends BaseStatusMessageView {
-    readonly type: StatusMessageType.GROUP_NAME_CHANGE;
-    readonly value: {
-        // The old name of the group.
-        readonly oldName: string;
-        // The new name of the group.
-        readonly newName: string;
-    };
-}
+/**
+ * Status message that indicates a change in group members.
+ */
+export type GroupMemberChangeStatus = StatusModel<
+    StatusMessageType.GROUP_MEMBER_CHANGE,
+    {
+        /** IDs that were added to the group. */
+        readonly added: IdentityString[];
+        /** IDs that were removed from the group. */
+        readonly removed: IdentityString[];
+    }
+>;
 
-export type GroupNameChange = LocalModel<
-    GroupNameChangeStatusView,
-    BaseStatusMessageController<GroupNameChangeStatusView>,
-    DbConversationUid,
-    StatusMessageType.GROUP_NAME_CHANGE
+/**
+ * Status message that indicates a changed group name.
+ */
+export type GroupNameChangeStatus = StatusModel<
+    StatusMessageType.GROUP_NAME_CHANGE,
+    {
+        /** The old name of the group. */
+        readonly oldName: string;
+        /** The new name of the group. */
+        readonly newName: string;
+    }
 >;
 
 // Union Types
-export type AnyStatusMessageView = GroupMemberChangeStatusView | GroupNameChangeStatusView;
-
-export type AnyStatusMessageModel = GroupMemberChange | GroupNameChange;
-
+export type AnyStatusMessageView = GroupMemberChangeStatus['view'] | GroupNameChangeStatus['view'];
+export type AnyStatusMessageModel = GroupMemberChangeStatus | GroupNameChangeStatus;
 export type AnyStatusMessageModelStore =
-    | LocalModelStore<GroupMemberChange>
-    | LocalModelStore<GroupNameChange>;
+    | LocalModelStore<GroupMemberChangeStatus>
+    | LocalModelStore<GroupNameChangeStatus>;

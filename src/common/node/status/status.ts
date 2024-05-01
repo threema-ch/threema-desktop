@@ -11,7 +11,7 @@ export interface GroupMemberChange {
 export interface GroupNameChange {
     /** Old group name */
     oldName: string;
-    /** new group name */
+    /** New group name */
     newName: string;
 }
 

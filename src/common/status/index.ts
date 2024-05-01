@@ -1,24 +1,24 @@
 import type {StatusMessageType} from '~/common/enum';
 import type {
-    AnyStatusMessageView,
-    GroupMemberChangeStatusView,
-    GroupNameChangeStatusView,
+    AnyStatusMessageModel,
+    GroupMemberChangeStatus,
+    GroupNameChangeStatus,
 } from '~/common/model/types/status';
 import {GROUP_MEMBER_CHANGE_CODEC} from '~/common/status/group-member-change';
 import {GROUP_NAME_CHANGE_CODEC} from '~/common/status/group-name-change';
 
-export interface StatusMessagesCodec<TStatus extends AnyStatusMessageView> {
-    readonly encode: (status: TStatus['value']) => Uint8Array;
-    readonly decode: (encoded: Uint8Array) => TStatus['value'];
+export interface StatusMessagesCodec<TStatusModel extends AnyStatusMessageModel> {
+    readonly encode: (status: TStatusModel['view']['value']) => Uint8Array;
+    readonly decode: (encoded: Uint8Array) => TStatusModel['view']['value'];
 }
 
 // Map the status types to their corresponding codecs.
-// Note: This must represent with all implemented status messages.
+// Note: This must cover all implemented status messages.
 export type StatusMessageTypesCodec = {
     readonly [TKey in StatusMessageType]: TKey extends 'group-member-change'
-        ? StatusMessagesCodec<GroupMemberChangeStatusView>
+        ? StatusMessagesCodec<GroupMemberChangeStatus>
         : TKey extends 'group-name-change'
-          ? StatusMessagesCodec<GroupNameChangeStatusView>
+          ? StatusMessagesCodec<GroupNameChangeStatus>
           : never;
 };
 

@@ -20,8 +20,8 @@ import type {
 import type {AnyReceiverStore} from '~/common/model/types/receiver';
 import type {
     AnyStatusMessageModelStore,
-    GroupMemberChangeStatusView,
-    GroupNameChangeStatusView,
+    GroupMemberChangeStatus,
+    GroupNameChangeStatus,
 } from '~/common/model/types/status';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
@@ -157,8 +157,8 @@ export type ConversationController = {
      */
     readonly createStatusMessage: (
         statusMessage:
-            | Omit<GroupMemberChangeStatusView, 'conversationUid' | 'id' | 'ordinal'>
-            | Omit<GroupNameChangeStatusView, 'conversationUid' | 'id' | 'ordinal'>,
+            | Omit<GroupMemberChangeStatus['view'], 'conversationUid' | 'id' | 'ordinal'>
+            | Omit<GroupNameChangeStatus['view'], 'conversationUid' | 'id' | 'ordinal'>,
     ) => AnyStatusMessageModelStore;
 
     /**

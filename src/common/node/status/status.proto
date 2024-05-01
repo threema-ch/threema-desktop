@@ -11,6 +11,6 @@ message GroupMemberChange {
 message GroupNameChange {
     // Old group name
     string old_name = 1;
-    // new group name
+    // New group name
     string new_name = 2;
 }
