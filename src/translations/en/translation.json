@@ -367,6 +367,8 @@
     "error--send-file-miscellaneous-errors": "Some files contain errors",
     "hint--drop-files-to-send": "Drop files here to send",
     "hint--media-thumbnail": "Media preview",
+    "label--call-join": "Join",
+    "label--call-joined": "Joined",
     "label--compose-area": "Write a message…",
     "label--default-audio-message-preview": "Voice Message",
     "label--default-file-message-preview": "File",

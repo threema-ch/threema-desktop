@@ -2,6 +2,8 @@
   @component Renders a list of preview cards for the given conversations.
 -->
 <script lang="ts" generics="THandlerProps = never">
+  import {createEventDispatcher} from 'svelte';
+
   import type {ConversationRouteParams} from '~/app/ui/components/partials/conversation/types';
   import ConversationPreview from '~/app/ui/components/partials/conversation-preview-list/internal/conversation-preview/ConversationPreview.svelte';
   import type {ConversationPreviewListProps} from '~/app/ui/components/partials/conversation-preview-list/props';
@@ -26,6 +28,11 @@
 
   let containerElement: SvelteNullableBinding<HTMLElement> = null;
 
+  const dispatch = createEventDispatcher<{
+    // eslint-disable-next-line no-undef
+    clickjoincall: THandlerProps;
+  }>();
+
   function handleChangeRouterState(): void {
     const routerState = router.get();
 
@@ -48,6 +55,13 @@
     }
   }
 
+  // eslint-disable-next-line no-undef
+  function handleClickJoinCall(event: MouseEvent, handlerProps: THandlerProps): void {
+    event.preventDefault();
+
+    dispatch('clickjoincall', handlerProps);
+  }
+
   $: reactive(handleChangeRouterState, [$router]);
 </script>
 
@@ -58,8 +72,10 @@
       routeParams?.receiverLookup.type === receiver.lookup.type &&
       routeParams.receiverLookup.uid === receiver.lookup.uid}
 
+    <!-- eslint-disable @typescript-eslint/no-unsafe-argument -->
     <ConversationPreview
       {active}
+      call={item.call}
       contextMenuOptions={contextMenuItems === undefined
         ? undefined
         : {
@@ -76,7 +92,9 @@
       {totalMessageCount}
       {unreadMessageCount}
       on:click={(event) => handleClickItem(event.detail, receiver.lookup, active)}
+      on:clickjoincall={(event) => handleClickJoinCall(event.detail, item.handlerProps)}
     />
+    <!-- eslint-enable @typescript-eslint/no-unsafe-argument -->
   {/each}
 </ul>
 

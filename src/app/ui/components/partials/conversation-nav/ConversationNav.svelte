@@ -93,6 +93,11 @@
     searchResultListComponent?.refresh();
   }
 
+  function handleClickJoinCall(event: CustomEvent<ContextMenuItemHandlerProps>): void {
+    // TODO(DESK-1447): Handle joining group call (example below).
+    // event.detail.viewModelBundle.viewModelController.joinCall();
+  }
+
   function handleCloseModal(): void {
     modalState = {
       type: 'none',
@@ -281,6 +286,7 @@
             getContextMenuItems(item, $i18n, log, handleOpenClearModal, handleOpenDeleteModal)}
           {...$conversationPreviewListProps}
           {services}
+          on:clickjoincall={handleClickJoinCall}
         />
         <!-- eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call -->
       {:else}

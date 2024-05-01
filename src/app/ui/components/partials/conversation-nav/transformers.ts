@@ -43,6 +43,11 @@ export function conversationListItemSetStoreToConversationPreviewListPropsStore(
                             : getAndSubscribe(lastMessageViewModelStore);
 
                     return {
+                        // TODO(DESK-1447): Pass current call status (example below).
+                        // call: {
+                        //     isJoined: true,
+                        //     startedAt: new Date()
+                        // },
                         handlerProps: {
                             viewModelBundle,
                         },

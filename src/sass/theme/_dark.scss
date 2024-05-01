@@ -113,6 +113,11 @@
       conversation-preview-draft-text: theme.$alert-red,
       conversation-preview-properties-background:
         color.scale(theme.$dark-background, $lightness: -28%),
+      conversation-preview-properties-call-background-color: -g($branding, primary-color-500),
+      conversation-preview-properties-call-background-color--hover: -g($branding, primary-color-600),
+      conversation-preview-properties-call-text-color: #ffffff,
+      conversation-preview-properties-call-joined-background-color: -g($branding, primary-color-500),
+      conversation-preview-properties-call-joined-text-color: #ffffff,
       conversation-preview-properties-icon: theme.$dark-text-e2,
       conversation-preview-properties-icon-pin: theme.$pin-yellow,
       conversation-preview-message-text: theme.$dark-text-e2,

@@ -29,6 +29,7 @@
   type $$Props = ConversationPreviewProps;
 
   export let active: $$Props['active'];
+  export let call: $$Props['call'] = undefined;
   export let contextMenuOptions: NonNullable<$$Props['contextMenuOptions']> = {items: []};
   export let highlights: $$Props['highlights'] = undefined;
   export let isArchived: $$Props['isArchived'];
@@ -155,6 +156,7 @@
           topRight: [
             {
               type: 'charms',
+              call,
               isBlocked: receiver.type === 'contact' && receiver.isBlocked,
               isPinned,
               isPrivate,
@@ -196,6 +198,7 @@
         {services}
         size="md"
         {unreadMessageCount}
+        on:clickjoincall
       />
     </a>
   </ContextMenuProvider>

@@ -47,7 +47,7 @@
         {#if topRight.length > 0}
           <div class={`right items`}>
             {#each topRight as itemOptions}
-              <ContentItem options={itemOptions} />
+              <ContentItem options={itemOptions} on:clickjoincall />
             {/each}
           </div>
         {/if}

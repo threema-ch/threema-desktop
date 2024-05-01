@@ -196,6 +196,11 @@ $brandings: (
     --cc-conversation-preview-draft-text-color: -g($cc, conversation-preview-draft-text),
     --cc-conversation-preview-properties-background-color:
     color-conforms(-g($cc, conversation-preview-properties-background), $alpha: false),
+    --cc-conversation-preview-properties-call-background-color: -g($cc, conversation-preview-properties-call-background-color),
+    --cc-conversation-preview-properties-call-background-color--hover: -g($cc, conversation-preview-properties-call-background-color--hover),
+    --cc-conversation-preview-properties-call-text-color: -g($cc, conversation-preview-properties-call-text-color),
+    --cc-conversation-preview-properties-call-joined-background-color: -g($cc, conversation-preview-properties-call-joined-background-color),
+    --cc-conversation-preview-properties-call-joined-text-color: -g($cc, conversation-preview-properties-call-joined-text-color),
     --cc-conversation-preview-properties-icon-color:
     -g($cc, conversation-preview-properties-icon),
     --cc-conversation-preview-properties-icon-pin-color:

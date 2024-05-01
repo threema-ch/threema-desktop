@@ -28,10 +28,12 @@
     {/if}
   {:else if options.type === 'charms'}
     <Charms
+      call={options.call}
       isBlocked={options.isBlocked}
       isPinned={options.isPinned}
       isPrivate={options.isPrivate}
       notificationPolicy={options.notificationPolicy}
+      on:clickjoincall
     />
   {:else if options.type === 'receiver-name'}
     {@const textContentItemOptions = getTextContentItemOptionsFromReceiverNameContentItemOptions(
@@ -98,7 +100,7 @@
     max-width: 100%;
     text-overflow: ellipsis;
     overflow: clip;
-    overflow-clip-margin: rem(4px);
+    overflow-clip-margin: rem(20px);
 
     &[data-type='blocked-icon'],
     &[data-type='charms'],

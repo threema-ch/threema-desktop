@@ -1,4 +1,5 @@
 import type {I18nType} from '~/app/ui/i18n-types';
+import type {u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {isToday, isWithinCurrentYear, isWithinLastWeek, isYesterday} from '~/common/utils/date';
 
@@ -135,4 +136,46 @@ function formatDateLocalizedAuto(
     // Example EN: "Jul 7, 2023, 1:44 PM"
     // Example DE: "7. Jul 2023, 13:44"
     return formatter.format(date);
+}
+
+/**
+ * Format the difference between two `Date`s as `DD:HH:MM:SS`. Note: Units that are larger than
+ * needed to format the difference will be cut off (e.g., a difference of 9 minutes will result in
+ * `"9:00"`, not `"00:00:09:00"`).
+ *
+ * @param from `Date` that denotes the start of the duration.
+ * @param to `Date` that denotes the end of the duration.
+ * @returns Formatted duration as a string.
+ */
+export function formatDurationBetween(from: Date, to: Date): string {
+    const totalMs = to.getTime() - from.getTime();
+    const totalMsAbs = Math.abs(totalMs);
+    const isNegative = totalMs <= -1000;
+
+    const days = Math.trunc(totalMsAbs / 86400000);
+    const hours = Math.trunc(totalMsAbs / 3600000) % 24;
+    const minutes = Math.trunc(totalMsAbs / 60000) % 60;
+    const seconds = Math.trunc(totalMsAbs / 1000) % 60;
+
+    if (days > 0) {
+        return `${isNegative ? '-' : ''}${days}:${padDurationComponent(hours)}:${padDurationComponent(minutes)}:${padDurationComponent(seconds)}`;
+    } else if (hours > 0) {
+        return `${isNegative ? '-' : ''}${hours}:${padDurationComponent(minutes)}:${padDurationComponent(seconds)}`;
+    }
+
+    return `${isNegative ? '-' : ''}${minutes}:${padDurationComponent(seconds)}`;
+}
+
+/**
+ * Converts the given value to a string and adds leading zeroes to reach the given length.
+ *
+ * @param value The value to pad.
+ * @param length Length of the resulting string.
+ * @returns The padded string of the given length.
+ */
+function padDurationComponent(value: u53, length: u53 = 2): string {
+    const s = value.toString();
+    const zeroes = length - s.length + 1;
+
+    return new Array(zeroes).join('0').concat(s);
 }

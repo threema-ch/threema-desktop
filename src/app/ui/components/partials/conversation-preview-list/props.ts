@@ -22,8 +22,8 @@ export interface ConversationPreviewListProps<THandlerProps = undefined> {
 export interface ConversationPreviewListItem<THandlerProps>
     extends Omit<ConversationPreviewProps, 'active' | 'contextMenuOptions' | 'services'> {
     /**
-     * Additional data belonging to a list item, which will be passed to to each context menu item
-     * handler callback.
+     * Additional data which the component will pass to callbacks (e.g., events or context menu
+     * clicks).
      */
     readonly handlerProps: THandlerProps;
 }
