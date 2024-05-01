@@ -1301,7 +1301,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 type: tMessage.messageType,
                 threadId: tMessage.threadId,
                 lastEditedAt: tMessage.lastEditedAt,
-                // TODO(DESK-296): Deprecate ordinal in favor of a thread-based solution
+                // TODO(DESK-1445): Implement ordinal using virtual columns
                 ordinal: tMessage.processedAtTimestamp.valueWhenNull(tMessage.createdAtTimestamp),
                 reactions: this._db
                     .aggregateAsArrayDistinct({
@@ -1665,11 +1665,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                           },
                 ),
         );
-        if (statusMessage === null) {
-            return undefined;
-        }
-
-        return statusMessage;
+        return statusMessage ?? undefined;
     }
 
     /** @inheritdoc */
@@ -1704,7 +1700,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     ordinal: tStatusMessage.createdAtTimestamp,
                 })
                 .where(tStatusMessage.conversationUid.equals(conversationUid))
-                // TODO(DESK-296): Order correctly
                 .orderBy('createdAt', 'desc')
                 .limit(1)
                 .executeSelectNoneOrOne()
@@ -1717,11 +1712,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                           },
                 ),
         );
-        if (statusMessage === null) {
-            return undefined;
-        }
-
-        return statusMessage;
+        return statusMessage ?? undefined;
     }
 
     /** @inheritdoc */
@@ -1793,7 +1784,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     text: tLeftJoin.caption,
                     lastEditedAt: tMessage.lastEditedAt,
                     createdAt: tMessage.createdAt,
-                    createdAtTimestamp: tMessage.createdAtTimestamp,
                 })
                 .where(tMessage.uid.equals(messageUid))
                 .executeSelectOne(),
@@ -1814,7 +1804,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     text: tLeftJoin.caption,
                     lastEditedAt: tMessage.lastEditedAt,
                     createdAt: tMessage.createdAt,
-                    createdAtTimestamp: tMessage.createdAtTimestamp,
                 })
                 .where(tMessage.uid.equals(messageUid))
                 .executeSelectOne(),
@@ -1835,7 +1824,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     text: tLeftJoin.caption,
                     lastEditedAt: tMessage.lastEditedAt,
                     createdAt: tMessage.createdAt,
-                    createdAtTimestamp: tMessage.createdAtTimestamp,
                 })
                 .where(tMessage.uid.equals(messageUid))
                 .executeSelectOne(),
@@ -1856,7 +1844,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     text: tLeftJoin.caption,
                     lastEditedAt: tMessage.lastEditedAt,
                     createdAt: tMessage.createdAt,
-                    createdAtTimestamp: tMessage.createdAtTimestamp,
                 })
                 .where(tMessage.uid.equals(messageUid))
                 .executeSelectOne(),
@@ -1877,7 +1864,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     text: tLeftJoin.text,
                     lastEditedAt: tMessage.lastEditedAt,
                     createdAt: tMessage.createdAt,
-                    createdAtTimestamp: tMessage.createdAtTimestamp,
                 })
                 .where(tMessage.uid.equals(messageUid))
                 .executeSelectOne(),
@@ -2489,15 +2475,14 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public removeStatusMessage(uid: DbRemove<DbStatusMessage>): {removed: boolean} {
+    public removeStatusMessage(uid: DbRemove<DbStatusMessage>): boolean {
         const removed = sync(
             this._db
                 .deleteFrom(tStatusMessage)
                 .where(tStatusMessage.uid.equals(uid))
                 .executeDelete(),
         );
-
-        return {removed: removed === 1};
+        return removed > 0;
     }
 
     /** @inheritdoc */
@@ -2569,6 +2554,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .selectFrom(tMessage)
                 .select({
                     uid: tMessage.uid,
+                    // TODO(DESK-1445): Implement ordinal using virtual columns
                     ordinal: tMessage.processedAtTimestamp.valueWhenNull(
                         tMessage.createdAtTimestamp,
                     ),
@@ -2615,7 +2601,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .where(
                     tStatusMessage.conversationUid.equals(conversationUid).and(createdAtCondition),
                 )
-                // TODO(DESK-296): Order correctly
                 .orderBy('ordinal', orderByMode)
                 .limitIfValue(limit)
                 .executeSelectMany(),
@@ -2681,7 +2666,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     .selectFrom(tStatusMessage)
                     .select(selectFields)
                     .where(tStatusMessage.conversationUid.equals(conversationUid))
-                    // TODO(DESK-296): Order correctly
                     .orderBy('ordinal', 'desc')
                     .limitIfValue(limit)
                     .executeSelectMany(),
@@ -2755,7 +2739,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public addStatusMessage(
+    public createStatusMessage(
         statusMessage: DbCreateStatusMessage<DbStatusMessage>,
     ): DbCreated<DbStatusMessage> {
         const uid = sync(
@@ -2764,7 +2748,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .set({
                     conversationUid: statusMessage.conversationUid,
                     type: statusMessage.type,
-                    statusBytes: statusMessage.statusBytes as Uint8Array,
+                    statusBytes: statusMessage.statusBytes,
                     createdAt: statusMessage.createdAt,
                 })
                 .returningLastInsertedId()
@@ -2774,7 +2758,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public getStatusMessagesofConversation(
+    public getStatusMessagesOfConversation(
         conversationUid: DbConversationUid,
     ): (AnyStatusMessageView & {uid: DbStatusMessageUid})[] {
         const queryResult = sync(
@@ -2802,7 +2786,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         ordinal: res.createdAtTimestamp,
                         type: res.type,
                         uid: res.uid,
-                        value: STATUS_CODEC[res.type].decode(res.statusBytes),
+                        value: STATUS_CODEC[res.type].decode(res.statusBytes as Uint8Array),
                     };
 
                 case 'group-name-change':
@@ -2814,7 +2798,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         ordinal: res.createdAtTimestamp,
                         type: res.type,
                         uid: res.uid,
-                        value: STATUS_CODEC[res.type].decode(res.statusBytes),
+                        value: STATUS_CODEC[res.type].decode(res.statusBytes as Uint8Array),
                     };
 
                 default:

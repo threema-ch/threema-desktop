@@ -696,6 +696,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
 
     /**
      * Remove the specified group, its conversation and all associated messages.
+     *
      * Return whether the group was found and removed.
      */
     readonly removeGroup: (uid: DbRemove<DbGroup>) => boolean;
@@ -795,6 +796,13 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     ) => DbCreated<DbAudioMessage>;
 
     /**
+     * Add a status message to the db.
+     */
+    readonly createStatusMessage: (
+        statusMessage: DbCreateStatusMessage<DbStatusMessage>,
+    ) => DbCreated<DbStatusMessage>;
+
+    /**
      * If the message ID exists in the conversation, return its UID.
      */
     readonly hasMessageById: (
@@ -803,7 +811,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     ) => DbHas<DbAnyMessage>;
 
     /**
-     * Returns true if the status message uid exists in this conversation.
+     * Returns true if the status message UID exists in this conversation.
      */
     readonly hasStatusMessageByUid: (
         conversationUid: DbConversationUid,
@@ -812,7 +820,9 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
 
     /**
      * Return identifiers (`conversationUid`, `id`, and `uid`) of all matching messages that contain
-     * the given text (case-insensitive). Note: Quoted content will not be searched.
+     * the given text (case-insensitive).
+     *
+     * Note: Quoted content will not be searched.
      */
     readonly getMessageIdentifiersByText: (
         text: string,
@@ -825,7 +835,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     readonly getMessageByUid: (uid: DbMessageUid) => DbGet<DbAnyMessage>;
 
     /**
-     * Get the status message with the specified UID
+     * Get the status message with the specified UID.
      */
     readonly getStatusMessageByUid: (uid: DbStatusMessageUid) => DbGet<DbStatusMessage>;
 
@@ -837,11 +847,19 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     /**
      * Get the last (most recent) status message of the conversation.
      */
-    readonly getLastStatusMessage: (conversaitonUid: DbConversationUid) => DbGet<DbStatusMessage>;
+    readonly getLastStatusMessage: (conversationUid: DbConversationUid) => DbGet<DbStatusMessage>;
+
     /**
      * Get the first (oldest), unread message of the conversation.
      */
     readonly getFirstUnreadMessage: (conversationUid: DbConversationUid) => DbGet<DbAnyMessage>;
+
+    /**
+     * Get all status messages of the conversation.
+     */
+    readonly getStatusMessagesOfConversation: (
+        conversationUid: DbConversationUid,
+    ) => (AnyStatusMessageView & {uid: DbStatusMessageUid})[];
 
     /**
      * Update the specified message. Fields that are missing will be ignored.
@@ -864,6 +882,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
 
     /**
      * Edit the text of an existing message of any type.
+     *
      * Updates the main message table's `lastEditedAt` field of the corresponding message.
      */
     readonly editMessage: <TMessageType extends MessageType>(
@@ -904,14 +923,16 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     ) => {removed: u53; deletedFileIds: FileId[]};
 
     /**
-     * Delete a status message given a uid.
-     * Returns whether a status message was deleted or not.
+     * Delete a status message given a UID.
+     *
+     * @returns whether a status message was deleted or not
      */
-    readonly removeStatusMessage: (uid: DbRemove<DbStatusMessage>) => {removed: boolean};
+    readonly removeStatusMessage: (uid: DbRemove<DbStatusMessage>) => boolean;
 
     /**
      * Remove all status messages of a given conversation, no matter the type.
-     * The function returns the number of deleted status messages.
+     *
+     * @returns the number of deleted status messages
      */
     readonly removeAllStatusMessagesOfConversation: (uid: DbConversationUid) => u53;
 
@@ -936,9 +957,8 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      * @param limit The length of the list of results to return. Note: Possibly smaller, if there
      *   are fewer messages in the conversation than `limit`.
      * @param reference The reference ordinal to fetch around.
-     * @returns List of message UIDs.
-     *
-     *   Note: If the combination of reference and conversationUid does not match, no message is returned.
+     * @returns List of message UIDs. If the combination of reference and conversationUid does not
+     *   match, no message is returned.
      */
     readonly getMessageUids: (
         conversationUid: DbConversationUid,
@@ -956,17 +976,16 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      *   reference status message (and also including the reference message itself).
      * - If no reference status message is defined: fetch list of the newest status messages.
      *
-     * TODO(DESK-296): Order correctly. Right now, the order of status messages returned is undefined. Find
-     * out whether there is a logical order (older-to-newer or newer-to-old) that can be used as-is.
-     * Take threading ID into account for sorting.
+     * TODO(DESK-296): Order correctly. Right now, the order of status messages returned is
+     * undefined. Find out whether there is a logical order (older-to-newer or newer-to-old) that
+     * can be used as-is. Take threading ID into account for sorting.
      *
      * @param conversationUid {@link DbConversationUid} of the conversation to search in.
      * @param limit The length of the list of results to return. Note: Possibly smaller, if there
      *   are fewer status messages in the conversation than `limit`.
      * @param reference The reference ordinal to fetch around.
-     * @returns List of status message UIDs.
-     *
-     *   Note: If the combination of reference and conversationUid does not match, no status message is returned.
+     * @returns List of status message UIDs. If the combination of reference and conversationUid
+     *   does not match, no status message is returned.
      */
     readonly getStatusMessageUids: (
         conversationUid: DbConversationUid,
@@ -978,12 +997,12 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     ) => DbList<DbStatusMessage, 'uid'>;
 
     /**
-     * Returns the message count of a conversation
+     * Return the message count of a conversation
      */
     readonly getConversationMessageCount: (conversationUid: DbConversationUid) => u53;
 
     /**
-     * Returns the status message count of a conversation
+     * Return the status message count of a conversation
      */
     readonly getConversationStatusMessageCount: (conversationUid: DbConversationUid) => u53;
 
@@ -1002,20 +1021,6 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     readonly getSettings: <TKey extends keyof Settings>(
         category: TKey,
     ) => Settings[TKey] | undefined;
-
-    /**
-     * Add a status message to the db.
-     */
-    readonly addStatusMessage: (
-        statusMessage: DbCreateStatusMessage<DbStatusMessage>,
-    ) => DbCreated<DbStatusMessage>;
-
-    /**
-     * Get the status messages of all types for a given conversation.
-     */
-    readonly getStatusMessagesofConversation: (
-        conversationUid: DbConversationUid,
-    ) => (AnyStatusMessageView & {uid: DbStatusMessageUid})[];
 
     /**
      * Update a property for a given key. It returns the property if the action was

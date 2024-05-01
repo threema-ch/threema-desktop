@@ -149,7 +149,7 @@ export function remove(
             `ConversationUid and StatusMessageUid mismatch. StatusUid belongs to conversation ${statusMessage.conversationUid} and not ${conversationUid}`,
         );
     }
-    const {removed} = db.removeStatusMessage(statusMessage.uid);
+    const removed = db.removeStatusMessage(statusMessage.uid);
 
     if (!removed) {
         throw new Error(`Could not delete status message with ${uid} from database`);
@@ -262,7 +262,7 @@ export function createStatusMessage(
         type: statusMessage.type,
     };
 
-    const uid = db.addStatusMessage(dbCreate);
+    const uid = db.createStatusMessage(dbCreate);
     const fullStatusMessage = db.getStatusMessageByUid(uid);
     assert(fullStatusMessage !== undefined);
 

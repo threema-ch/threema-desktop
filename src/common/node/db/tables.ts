@@ -535,13 +535,8 @@ export const tMessage = new (class TMessage extends Table<DBConnection, 'TMessag
     public createdAt = this.column('createdAt', 'localDateTime');
 
     /**
-     * Alias for `createdAt`. Numeric timestamp (unix epoch millis) for when the message...
-     *
-     * - Outbound: ...has been created on the local device.
-     * - Inbound: ...has been created on the remote device.
-     *
-     * Note: For inbound messages, this timestamp may have an arbitrary value as it's controlled by
-     *       the sender.
+     * Alias for `createdAt`, but returns numeric timestamp (unix timestamp in milliseconds) instead
+     * of a `Date`.
      */
     public createdAtTimestamp = this.virtualColumnFromFragment<u53>(
         'customInt',
@@ -565,18 +560,8 @@ export const tMessage = new (class TMessage extends Table<DBConnection, 'TMessag
     public processedAt = this.optionalColumn('processedAt', 'localDateTime');
 
     /**
-     * Alias for `processedAt`. Optional numeric timestamp (unix epoch millis) for when the
-     * message...
-     *
-     * - Outbound: ...has been delivered to and acknowledged by the chat server.
-     * - Inbound: ...has been received from the chat server and reflected to the mediator server by
-     *     the leader device.
-     *
-     * Note: The value is always known for inbound messages but not known until acknowledged for
-     *       outbound messages.
-     *
-     * Note: In the models, this is split up into the virtual fields `sentAt` and `receivedAt`,
-     *       depending on the message direction.
+     * Alias for `processedAt`, but returns numeric timestamp (unix timestamp in milliseconds)
+     * instead of a `Date`.
      */
     public processedAtTimestamp = this.virtualColumnFromFragment<u53>(
         'customInt',
@@ -1212,7 +1197,9 @@ export const tSettings = new (class TSettings extends Table<DBConnection, 'TSett
     }
 })();
 
-/** Key value based Status messages*/
+/**
+ * A status message in a conversation.
+ */
 export const tStatusMessage = new (class TStatusMessages extends Table<
     DBConnection,
     'TStatusMessages'
@@ -1232,13 +1219,24 @@ export const tStatusMessage = new (class TStatusMessages extends Table<
         CUSTOM_TYPES.CONVERSATION_UID,
     );
 
+    /**
+     * Status message type.
+     */
     public type = this.column<StatusMessageType>(
         'type',
         'custom',
         CUSTOM_TYPES.STATUS_MESSAGE_TYPE,
     );
 
-    public statusBytes = this.column<Uint8Array>('statusBytes', 'custom', CUSTOM_TYPES.UINT8ARRAY);
+    /**
+     * Bytes of a protobuf-encoded status message (e.g. {@link GroupMemberChange} or
+     * {@link GroupNameChange}).
+     */
+    public statusBytes = this.column<ReadonlyUint8Array>(
+        'statusBytes',
+        'custom',
+        CUSTOM_TYPES.UINT8ARRAY,
+    );
 
     /**
      * Timestamp for when the message has been created on the local device.
@@ -1246,8 +1244,8 @@ export const tStatusMessage = new (class TStatusMessages extends Table<
     public createdAt = this.column('createdAt', 'localDateTime');
 
     /**
-     * Alias for `createdAt`. Numeric timestamp (unix epoch millis) for when the message has been
-     * created on the local device.
+     * Alias for `createdAt`, but returns numeric timestamp (unix timestamp in milliseconds) instead
+     * of a `Date`.
      */
     public createdAtTimestamp = this.virtualColumnFromFragment<u53>(
         'customInt',

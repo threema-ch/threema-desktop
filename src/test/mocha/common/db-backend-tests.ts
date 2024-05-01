@@ -2019,7 +2019,7 @@ export function backendTests(
             assert(conversation1 !== undefined);
             assert(conversation2 !== undefined);
 
-            db.addStatusMessage({
+            db.createStatusMessage({
                 type: 'group-member-change',
                 conversationUid: conversation1.uid,
                 createdAt: new Date(),
@@ -2029,7 +2029,7 @@ export function backendTests(
                 }),
             });
 
-            db.addStatusMessage({
+            db.createStatusMessage({
                 type: 'group-name-change',
                 conversationUid: conversation1.uid,
                 createdAt: new Date(),
@@ -2038,7 +2038,7 @@ export function backendTests(
                     newName: 'new',
                 }),
             });
-            const statusMessages = db.getStatusMessagesofConversation(conversation1.uid);
+            const statusMessages = db.getStatusMessagesOfConversation(conversation1.uid);
             expect(statusMessages.length).to.eq(2);
             expect(
                 statusMessages.filter((s) => s.type === StatusMessageType.GROUP_MEMBER_CHANGE)
@@ -2074,7 +2074,7 @@ export function backendTests(
             assert(conversation1 !== undefined);
             assert(conversation2 !== undefined);
 
-            db.addStatusMessage({
+            db.createStatusMessage({
                 type: 'group-member-change',
                 conversationUid: conversation1.uid,
                 createdAt: new Date(),
@@ -2084,7 +2084,7 @@ export function backendTests(
                 }),
             });
 
-            db.addStatusMessage({
+            db.createStatusMessage({
                 type: 'group-name-change',
                 conversationUid: conversation1.uid,
                 createdAt: new Date(),
@@ -2093,17 +2093,17 @@ export function backendTests(
                     newName: 'new',
                 }),
             });
-            const statusMessages = db.getStatusMessagesofConversation(conversation1.uid);
+            const statusMessages = db.getStatusMessagesOfConversation(conversation1.uid);
 
             const statusMessage = statusMessages[0];
             assert(statusMessage !== undefined);
             db.removeStatusMessage(statusMessage.uid);
 
-            const newStatusMessages = db.getStatusMessagesofConversation(conversation1.uid);
+            const newStatusMessages = db.getStatusMessagesOfConversation(conversation1.uid);
             expect(newStatusMessages.length).to.eql(1);
             expect(newStatusMessages[0]?.type).to.not.eq(statusMessage.type);
 
-            db.addStatusMessage({
+            db.createStatusMessage({
                 type: 'group-name-change',
                 conversationUid: conversation1.uid,
                 createdAt: new Date(),
@@ -2113,7 +2113,7 @@ export function backendTests(
                 }),
             });
 
-            db.addStatusMessage({
+            db.createStatusMessage({
                 type: 'group-name-change',
                 conversationUid: conversation2.uid,
                 createdAt: new Date(),
@@ -2122,13 +2122,13 @@ export function backendTests(
                     newName: 'new second conversation',
                 }),
             });
-            expect(db.getStatusMessagesofConversation(conversation1.uid).length).to.eq(2);
-            expect(db.getStatusMessagesofConversation(conversation2.uid).length).to.eq(1);
+            expect(db.getStatusMessagesOfConversation(conversation1.uid).length).to.eq(2);
+            expect(db.getStatusMessagesOfConversation(conversation2.uid).length).to.eq(1);
 
             db.removeAllStatusMessagesOfConversation(conversation1.uid);
-            expect(db.getStatusMessagesofConversation(conversation1.uid).length).to.eq(0);
+            expect(db.getStatusMessagesOfConversation(conversation1.uid).length).to.eq(0);
 
-            const conv2Status = db.getStatusMessagesofConversation(conversation2.uid);
+            const conv2Status = db.getStatusMessagesOfConversation(conversation2.uid);
             expect(conv2Status.length).to.eq(1);
             expect(conv2Status[0]?.value).to.deep.eq({
                 oldName: 'second conversation',
