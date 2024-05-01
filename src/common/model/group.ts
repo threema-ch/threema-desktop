@@ -369,22 +369,11 @@ class GroupMemberModelController implements GroupMemberController {
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (contactUids: DbContactUid[]) => {
             this._log.debug('GroupMemberModelController: Add members from local');
+            if (contactUids.length === 0) {
+                return;
+            }
             this._add(contactUids);
-            const group = getByUid(this._services, this._group.uid, Existence.ENSURED);
-            const groupConversation = group.get().controller.conversation().get();
-            const createdAt = new Date();
-            groupConversation.controller.createStatusMessage({
-                type: 'group-member-change',
-                value: {
-                    added: contactUids.map(
-                        (uid) =>
-                            contact.getByUid(this._services, uid, Existence.ENSURED).get().view
-                                .identity,
-                    ),
-                    removed: [],
-                },
-                createdAt,
-            });
+            this._addGroupStatusMessage(contactUids, []);
         },
     };
 
@@ -394,7 +383,12 @@ class GroupMemberModelController implements GroupMemberController {
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (contactUids: DbContactUid[]) => {
             this._log.debug('GroupMemberModelController: Remove members from local');
-            return this._remove(contactUids);
+            if (contactUids.length === 0) {
+                return 0;
+            }
+            const count = this._remove(contactUids);
+            this._addGroupStatusMessage([], contactUids);
+            return count;
         },
         fromRemote: async (
             handle: ActiveTaskCodecHandle<'volatile'>,
@@ -402,27 +396,21 @@ class GroupMemberModelController implements GroupMemberController {
             // eslint-disable-next-line @typescript-eslint/require-await
         ) => {
             this._log.debug('GroupMemberModelController: Remove members from remote');
-            const num = this._remove(contactUids);
-            const group = getByUid(this._services, this._group.uid, Existence.ENSURED);
-            const groupConversation = group.get().controller.conversation().get();
-            const createdAt = new Date();
-            groupConversation.controller.createStatusMessage({
-                type: 'group-member-change',
-                value: {
-                    added: [],
-                    removed: contactUids.map(
-                        (uid) =>
-                            contact.getByUid(this._services, uid, Existence.ENSURED).get().view
-                                .identity,
-                    ),
-                },
-                createdAt,
-            });
-            return num;
+            if (contactUids.length === 0) {
+                return 0;
+            }
+            const count = this._remove(contactUids);
+            this._addGroupStatusMessage([], contactUids);
+            return count;
         },
         fromSync: (contactUids: DbContactUid[]) => {
             this._log.debug('GroupMemberModelController: Remove members from sync');
-            return this._remove(contactUids);
+            if (contactUids.length === 0) {
+                return 0;
+            }
+            const count = this._remove(contactUids);
+            this._addGroupStatusMessage([], contactUids);
+            return count;
         },
     };
 
@@ -432,26 +420,11 @@ class GroupMemberModelController implements GroupMemberController {
         fromSync: (contactUids: DbContactUid[]) => {
             this._log.debug('GroupMemberModelController: Set members from sync');
             const [added, removed] = this._diff(contactUids);
+            if (added.length === 0 && removed.length === 0) {
+                return;
+            }
             this._set(added, removed);
-            const group = getByUid(this._services, this._group.uid, Existence.ENSURED);
-            const groupConversation = group.get().controller.conversation().get();
-            const createdAt = new Date();
-            groupConversation.controller.createStatusMessage({
-                type: 'group-member-change',
-                value: {
-                    added: added.map(
-                        (uid) =>
-                            contact.getByUid(this._services, uid, Existence.ENSURED).get().view
-                                .identity,
-                    ),
-                    removed: removed.map(
-                        (uid) =>
-                            contact.getByUid(this._services, uid, Existence.ENSURED).get().view
-                                .identity,
-                    ),
-                },
-                createdAt,
-            });
+            this._addGroupStatusMessage(added, removed);
         },
         fromRemote: async (
             handle: ActiveTaskCodecHandle<'volatile'>,
@@ -460,26 +433,11 @@ class GroupMemberModelController implements GroupMemberController {
         ) => {
             this._log.debug('GroupMemberModelController: Set members from remote');
             const [added, removed] = this._diff(contactUids);
+            if (added.length === 0 && removed.length === 0) {
+                return;
+            }
             this._set(added, removed);
-            const group = getByUid(this._services, this._group.uid, Existence.ENSURED);
-            const groupConversation = group.get().controller.conversation().get();
-            const createdAt = new Date();
-            groupConversation.controller.createStatusMessage({
-                type: 'group-member-change',
-                value: {
-                    added: added.map(
-                        (uid) =>
-                            contact.getByUid(this._services, uid, Existence.ENSURED).get().view
-                                .identity,
-                    ),
-                    removed: removed.map(
-                        (uid) =>
-                            contact.getByUid(this._services, uid, Existence.ENSURED).get().view
-                                .identity,
-                    ),
-                },
-                createdAt,
-            });
+            this._addGroupStatusMessage(added, removed);
         },
     };
 
@@ -563,6 +521,28 @@ class GroupMemberModelController implements GroupMemberController {
     private _set(added: DbContactUid[], removed: DbContactUid[]): void {
         this._remove(removed);
         this._add(added);
+    }
+
+    private _addGroupStatusMessage(added: DbContactUid[], removed: DbContactUid[]): void {
+        const group = getByUid(this._services, this._group.uid, Existence.ENSURED);
+        const groupConversation = group.get().controller.conversation().get();
+        const createdAt = new Date();
+        groupConversation.controller.createStatusMessage({
+            type: 'group-member-change',
+            value: {
+                added: added.map(
+                    (uid) =>
+                        contact.getByUid(this._services, uid, Existence.ENSURED).get().view
+                            .identity,
+                ),
+                removed: removed.map(
+                    (uid) =>
+                        contact.getByUid(this._services, uid, Existence.ENSURED).get().view
+                            .identity,
+                ),
+            },
+            createdAt,
+        });
     }
 }
 
