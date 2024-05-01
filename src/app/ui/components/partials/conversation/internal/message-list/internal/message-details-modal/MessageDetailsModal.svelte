@@ -10,12 +10,14 @@
   import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {formatDateLocalized} from '~/app/ui/utils/timestamp';
+  import {isMessageId, isStatusMessageId} from '~/common/network/types';
   import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
   import {u64ToHexLe} from '~/common/utils/number';
 
   type $$Props = MessageDetailsModalProps;
 
+  export let conversation: $$Props['conversation'];
   export let direction: $$Props['direction'] = undefined;
   export let file: $$Props['file'] = undefined;
   export let id: $$Props['id'] = undefined;
@@ -24,7 +26,7 @@
   export let history: $$Props['history'];
   export let services: $$Props['services'];
   export let status: $$Props['status'];
-  export let conversation: $$Props['conversation'];
+  export let statusMessageType: $$Props['statusMessageType'] = undefined;
 
   const {
     settings: {appearance},
@@ -139,7 +141,7 @@
           </KeyValueList.Item>
         {/if}
       </KeyValueList.Section>
-      {#if id !== undefined}
+      {#if isMessageId(id)}
         <KeyValueList.Section>
           <KeyValueList.Item
             key={$i18n.t('dialog--message-details.label--message-id', 'Message ID')}
@@ -248,6 +250,16 @@
       {/if}
       {#if import.meta.env.DEBUG || import.meta.env.BUILD_ENVIRONMENT === 'sandbox'}
         <KeyValueList.Section title="Debug 🐞" options={{disableItemInset: true}}>
+          {#if isStatusMessageId(id)}
+            <KeyValueList.Item key="Status Message ID">
+              <Text text={id} selectable />
+            </KeyValueList.Item>
+          {/if}
+          {#if statusMessageType !== undefined}
+            <KeyValueList.Item key="Status Message Type">
+              <Text text={statusMessageType} selectable />
+            </KeyValueList.Item>
+          {/if}
           <KeyValueList.Item key="Direction">
             <Text text={direction ?? 'None'} selectable />
           </KeyValueList.Item>

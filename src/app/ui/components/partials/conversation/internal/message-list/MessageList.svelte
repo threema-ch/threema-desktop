@@ -175,15 +175,15 @@
     modalState = {
       type: 'message-details',
       props: {
+        conversation,
         direction: message.direction,
         file: message.file,
+        history: message.history,
         id: message.id,
         lastEdited: message.lastEdited,
         reactions: message.reactions,
         services,
         status: message.status,
-        conversation,
-        history: message.history,
       },
     };
   }
@@ -194,9 +194,11 @@
       props: {
         conversation,
         history: [],
+        id: message.id,
         reactions: [],
         services,
         status: {created: message.created},
+        statusMessageType: message.status.type,
       },
     };
   }
