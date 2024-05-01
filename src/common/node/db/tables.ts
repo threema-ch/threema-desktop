@@ -543,7 +543,11 @@ export const tMessage = new (class TMessage extends Table<DBConnection, 'TMessag
      * Note: For inbound messages, this timestamp may have an arbitrary value as it's controlled by
      *       the sender.
      */
-    public createdAtTimestamp = this.column<u53>('createdAt', 'customComparable', CUSTOM_TYPES.U53);
+    public createdAtTimestamp = this.virtualColumnFromFragment<u53>(
+        'customInt',
+        CUSTOM_TYPES.U53,
+        (fragment) => fragment.sql`${this.createdAt}`,
+    );
 
     /**
      * Optional timestamp for when the message...
@@ -574,10 +578,10 @@ export const tMessage = new (class TMessage extends Table<DBConnection, 'TMessag
      * Note: In the models, this is split up into the virtual fields `sentAt` and `receivedAt`,
      *       depending on the message direction.
      */
-    public processedAtTimestamp = this.optionalColumn<u53>(
-        'processedAt',
-        'customComparable',
+    public processedAtTimestamp = this.virtualColumnFromFragment<u53>(
+        'customInt',
         CUSTOM_TYPES.U53,
+        (fragment) => fragment.sql`${this.processedAt}`,
     );
 
     /**
@@ -1245,7 +1249,11 @@ export const tStatusMessage = new (class TStatusMessages extends Table<
      * Alias for `createdAt`. Numeric timestamp (unix epoch millis) for when the message has been
      * created on the local device.
      */
-    public createdAtTimestamp = this.column<u53>('createdAt', 'customComparable', CUSTOM_TYPES.U53);
+    public createdAtTimestamp = this.virtualColumnFromFragment<u53>(
+        'customInt',
+        CUSTOM_TYPES.U53,
+        (fragment) => fragment.sql`${this.createdAt}`,
+    );
 
     public constructor() {
         super('statusMessages');

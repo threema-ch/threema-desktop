@@ -933,7 +933,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     senderContactUid: message.senderContactUid,
                     conversationUid: message.conversationUid,
                     createdAt: message.createdAt,
-                    createdAtTimestamp: message.createdAt.getTime(),
                     processedAt: message.processedAt,
                     readAt: message.readAt,
                     raw: message.raw,
@@ -2767,7 +2766,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     type: statusMessage.type,
                     statusBytes: statusMessage.statusBytes as Uint8Array,
                     createdAt: statusMessage.createdAt,
-                    createdAtTimestamp: statusMessage.createdAt.getTime(),
                 })
                 .returningLastInsertedId()
                 .executeInsert(),
