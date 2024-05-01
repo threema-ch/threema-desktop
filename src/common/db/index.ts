@@ -31,7 +31,6 @@ import type {
     MediaBasedMessageType,
     TextBasedMessageType,
 } from '~/common/model/types/message';
-import type {AnyStatusMessageView} from '~/common/model/types/status';
 import type {BlobId} from '~/common/network/protocol/blob';
 import type {
     FeatureMask,
@@ -859,7 +858,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      */
     readonly getStatusMessagesOfConversation: (
         conversationUid: DbConversationUid,
-    ) => (AnyStatusMessageView & {uid: DbStatusMessageUid})[];
+    ) => Omit<DbStatusMessage, 'conversationUid' | 'id' | 'ordinal'>[];
 
     /**
      * Update the specified message. Fields that are missing will be ignored.

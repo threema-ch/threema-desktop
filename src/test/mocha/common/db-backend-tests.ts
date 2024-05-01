@@ -2130,7 +2130,9 @@ export function backendTests(
 
             const conv2Status = db.getStatusMessagesOfConversation(conversation2.uid);
             expect(conv2Status.length).to.eq(1);
-            expect(conv2Status[0]?.value).to.deep.eq({
+            expect(
+                STATUS_CODEC['group-name-change'].decode(conv2Status[0]?.statusBytes as Uint8Array),
+            ).to.deep.eq({
                 oldName: 'second conversation',
                 newName: 'new second conversation',
             });

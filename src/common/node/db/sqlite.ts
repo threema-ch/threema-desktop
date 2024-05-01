@@ -63,7 +63,6 @@ import {
 import type {FileId} from '~/common/file-storage';
 import type {Logger} from '~/common/logging';
 import type {MediaBasedMessageType, TextBasedMessageType} from '~/common/model/types/message';
-import type {AnyStatusMessageView} from '~/common/model/types/status';
 import {
     statusMessageUidToStatusMessageId,
     type GroupId,
@@ -71,7 +70,6 @@ import {
     type MessageId,
 } from '~/common/network/types';
 import {type Settings, SETTINGS_CODEC} from '~/common/settings';
-import {STATUS_CODEC} from '~/common/status';
 import type {u53} from '~/common/types';
 import {chunk} from '~/common/utils/array';
 import {assert, assertUnreachable, isNotUndefined, unreachable} from '~/common/utils/assert';
@@ -2760,51 +2758,20 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     /** @inheritdoc */
     public getStatusMessagesOfConversation(
         conversationUid: DbConversationUid,
-    ): (AnyStatusMessageView & {uid: DbStatusMessageUid})[] {
-        const queryResult = sync(
+    ): Omit<DbStatusMessage, 'conversationUid' | 'id' | 'ordinal'>[] {
+        return sync(
             this._db
                 .selectFrom(tStatusMessage)
                 .where(tStatusMessage.conversationUid.equals(conversationUid))
                 .select({
+                    uid: tStatusMessage.uid,
                     type: tStatusMessage.type,
                     createdAt: tStatusMessage.createdAt,
                     createdAtTimestamp: tStatusMessage.createdAtTimestamp,
                     statusBytes: tStatusMessage.statusBytes,
-                    uid: tStatusMessage.uid,
                 })
                 .executeSelectMany(),
         );
-
-        return queryResult.map((res): AnyStatusMessageView & {uid: DbStatusMessageUid} => {
-            switch (res.type) {
-                case 'group-member-change':
-                    return {
-                        conversationUid,
-                        createdAt: res.createdAt,
-                        id: statusMessageUidToStatusMessageId(res.uid),
-                        // Note: This must be compatible with the ordinal of messages.
-                        ordinal: res.createdAtTimestamp,
-                        type: res.type,
-                        uid: res.uid,
-                        value: STATUS_CODEC[res.type].decode(res.statusBytes as Uint8Array),
-                    };
-
-                case 'group-name-change':
-                    return {
-                        conversationUid,
-                        createdAt: res.createdAt,
-                        id: statusMessageUidToStatusMessageId(res.uid),
-                        // Note: This must be compatible with the ordinal of messages.
-                        ordinal: res.createdAtTimestamp,
-                        type: res.type,
-                        uid: res.uid,
-                        value: STATUS_CODEC[res.type].decode(res.statusBytes as Uint8Array),
-                    };
-
-                default:
-                    return unreachable(res.type);
-            }
-        });
     }
 
     /** @inheritdoc */
