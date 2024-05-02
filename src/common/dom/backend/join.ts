@@ -11,6 +11,7 @@ import {DeviceJoinError, RendezvousCloseError} from '~/common/error';
 import {FileStorageError, type StoredFileHandle} from '~/common/file-storage';
 import type {Logger} from '~/common/logging';
 import type {Repositories} from '~/common/model';
+import type {ContactModelStore} from '~/common/model/contact';
 import {groupDebugString} from '~/common/model/group';
 import type {ProfileSettingsUpdate} from '~/common/model/types/settings';
 import * as protobuf from '~/common/network/protobuf';
@@ -387,22 +388,16 @@ export class DeviceJoinProtocol {
                 memberUids.push(contact.ctx);
             }
 
-            // Explicitly add creator to members list
-            // TODO(DESK-558): Remove this
-            if (
-                group.groupIdentity.creatorIdentity !== ownIdentity &&
-                !group.memberIdentities.identities.includes(group.groupIdentity.creatorIdentity)
-            ) {
-                const creator = repositories.contacts.getByIdentity(
-                    group.groupIdentity.creatorIdentity,
-                );
+            let creator: ContactModelStore | undefined = undefined;
+            // Get the creator uid if the user is not the creator.
+            if (group.groupIdentity.creatorIdentity !== ownIdentity) {
+                creator = repositories.contacts.getByIdentity(group.groupIdentity.creatorIdentity);
                 if (creator === undefined) {
                     throw new DeviceJoinError(
                         {kind: 'protocol'},
                         `Group ${groupDebugString} could not be imported, creator ${group.groupIdentity.creatorIdentity} not found in database`,
                     );
                 }
-                memberUids.push(creator.ctx);
             }
 
             // Add group
@@ -415,6 +410,7 @@ export class DeviceJoinProtocol {
                 mapValitaDefaultsToUndefined({
                     groupId: group.groupIdentity.groupId,
                     creatorIdentity: group.groupIdentity.creatorIdentity,
+                    creatorUid: creator?.get().ctx ?? undefined,
                     createdAt: group.createdAt,
                     lastUpdate: lastUpdateAt,
                     name: group.name,

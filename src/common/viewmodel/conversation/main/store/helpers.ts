@@ -232,7 +232,7 @@ function supportsFeature(
     services: Pick<ServicesForViewModel, 'device' | 'logging' | 'model'>,
     feature: keyof typeof FEATURE_MASK_FLAG,
 ): {supported: 'none' | 'all'} | {supported: 'partial'; notSupportedNames: string[]} {
-    const {device, logging, model} = services;
+    const {logging, model} = services;
     const log = logging.logger('viewmodel.conversation.supportsEditMessage');
 
     // Display names of contacts that don't support message editing
@@ -250,11 +250,9 @@ function supportsFeature(
         case ReceiverType.GROUP: {
             // Check whether group members support editing
             //
-            // Note: Right now, the list of members includes the group creator (if the user isn't
-            // the creator). TODO(DESK-558): Ensure that the creator is included in this check!
-            const memberIdentities = receiver
-                .get()
-                .view.members.filter((identity) => identity !== device.identity.string);
+            // Note: Right now, the list of members does not include the group creator, nor does it
+            // include the user.
+            const memberIdentities = receiver.get().view.members;
             for (const identity of memberIdentities) {
                 const member = model.contacts.getByIdentity(identity)?.get();
                 if (member === undefined) {
@@ -263,6 +261,16 @@ function supportsFeature(
                 }
                 if (!checkFeatureMaskSupportsFeature(member.view.featureMask, feature)) {
                     notSupportedNames.push(member.view.displayName);
+                }
+            }
+
+            const groupCreator = receiver.get().controller.creator();
+            // The user is not the creator, hence we need to check the creator's feature mask as well.
+            if (groupCreator !== 'me') {
+                if (
+                    !checkFeatureMaskSupportsFeature(groupCreator.get().view.featureMask, feature)
+                ) {
+                    notSupportedNames.push(groupCreator.get().view.displayName);
                 }
             }
 

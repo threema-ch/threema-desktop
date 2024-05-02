@@ -210,6 +210,7 @@ export type DbGroupMemberUid = WeakOpaque<DbUid, {readonly DbGroupMemberUid: uni
  */
 export type DbGroup = {
     readonly groupId: GroupId;
+    readonly creatorUid: DbContactUid | undefined;
     readonly creatorIdentity: IdentityString;
     readonly createdAt: Date;
     readonly colorIndex: u8;
@@ -696,8 +697,10 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
 
     /**
      * If the group with the specified id and creator exists, return its UID.
+     *
+     * Note: If the creator is undefined, this function will assume that the user is the creator.
      */
-    readonly hasGroupByIdAndCreator: (id: GroupId, creator: IdentityString) => DbHas<DbGroup>;
+    readonly hasGroupByIdAndCreator: (id: GroupId, creatorUid?: DbContactUid) => DbHas<DbGroup>;
 
     /**
      * Get the group with the specified UID.
@@ -729,7 +732,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     /**
      * Return the uids of all groups a contact is member of.
      */
-    readonly getAllActiveGroupUidsByMember: (contactUid: DbContactUid) => DbList<DbGroup, 'uid'>;
+    readonly getAllSharedGroupsByContact: (contactUid: DbContactUid) => DbList<DbGroup, 'uid'>;
 
     /**
      * Return whether the specified contact is part of the specified group.

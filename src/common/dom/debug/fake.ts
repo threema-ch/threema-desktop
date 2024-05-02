@@ -35,6 +35,7 @@ import type {Logger} from '~/common/logging';
 import type {Contact} from '~/common/model';
 import type {ContactModelStore} from '~/common/model/contact';
 import type {GroupModelStore} from '~/common/model/group';
+import type {GroupCreator} from '~/common/model/types/group';
 import {type IdentityStringOrMe, OWN_IDENTITY_ALIAS} from '~/common/model/types/message';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {BLOB_ID_LENGTH, ensureBlobId} from '~/common/network/protocol/blob';
@@ -502,9 +503,12 @@ export async function importScreenshotData(
 
     // Add groups
     for (const group of data.groups) {
-        const isCreator = group.creator === OWN_IDENTITY;
         const creatorIdentity =
             group.creator === OWN_IDENTITY ? device.identity.string : group.creator;
+        const creator: GroupCreator =
+            group.creator === OWN_IDENTITY
+                ? {creatorIsUser: true}
+                : {creatorIsUser: false, creatorIdentity: group.creator};
 
         // Look up group contacts
         const groupMemberUids = [];
@@ -521,7 +525,7 @@ export async function importScreenshotData(
 
         // Create group
         const groupName = getTranslatedValue(group.name, locale);
-        if (model.groups.getByGroupIdAndCreator(group.id, creatorIdentity)) {
+        if (model.groups.getByGroupIdAndCreator(group.id, creator)) {
             // Group already exists
             log.warn(`Skipping group ${groupName}, already exists`);
             continue;
@@ -542,7 +546,8 @@ export async function importScreenshotData(
                     groupId: group.id,
                     creatorIdentity,
                 }),
-                userState: isMember || isCreator ? GroupUserState.MEMBER : GroupUserState.LEFT,
+                userState:
+                    isMember || creator.creatorIsUser ? GroupUserState.MEMBER : GroupUserState.LEFT,
                 category: ConversationCategory.DEFAULT,
                 visibility: ConversationVisibility.SHOW,
             },

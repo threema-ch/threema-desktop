@@ -19,6 +19,7 @@ import type {
     Group,
     GroupController,
     GroupControllerHandle,
+    GroupCreator,
     GroupInit,
     GroupMemberController,
     GroupRepository,
@@ -127,6 +128,9 @@ export function getGroupInitials(group: Pick<GroupView, 'name' | 'groupId'>): st
 /**
  * Add a group member entry.
  *
+ * Note: If the `DbContactUid` is the creator of the group or is already in the member list, no
+ * database operation will be performed.
+ *
  * @throws if group or contact does not exist
  */
 function addGroupMember(
@@ -196,12 +200,12 @@ function getGroupMemberIdentities(
     services: ServicesForModel,
     groupUid: DbGroupUid,
 ): IdentityString[] {
-    const {db, model} = services;
+    const {db} = services;
     const groupMembers = db.getAllGroupMemberContactUids(groupUid).map(({uid}) => uid);
 
-    return [...model.contacts.getAll().get()]
-        .filter(({ctx: currentContactUid}) => groupMembers.includes(currentContactUid))
-        .map((modelStore) => modelStore.get().view.identity);
+    return groupMembers.map(
+        (member) => contact.getByUid(services, member, Existence.ENSURED).get().view.identity,
+    );
 }
 
 function create(
@@ -210,30 +214,25 @@ function create(
     memberUids: DbContactUid[],
 ): LocalModelStore<Group> {
     const {db} = services;
+
+    let creatorUid: DbContactUid | undefined = undefined;
+    if (init.creatorIdentity !== services.device.identity.string) {
+        // Ensure that admin is part of members as well
+        creatorUid = db.hasContactByIdentity(init.creatorIdentity);
+        assert(creatorUid !== undefined, 'Creator UID not found when adding group');
+    }
     // Create the group
     const group: DbCreate<DbGroup> & DbCreateConversationMixin = {
         ...init,
         type: ReceiverType.GROUP,
+        creatorUid,
     };
     const uid = db.createGroup(group);
 
     // Add members
     addGroupMembers(services, uid, memberUids);
-    if (init.creatorIdentity !== services.device.identity.string) {
-        // Ensure that admin is part of members as well
-        // TODO(DESK-558): Remove this block
-        const creatorUid = db.hasContactByIdentity(init.creatorIdentity);
-        assert(creatorUid !== undefined, 'Creator UID not found when adding group');
-        addGroupMember(services, uid, creatorUid);
-    }
+
     const memberIdentities = getGroupMemberIdentities(services, uid);
-    if (init.creatorIdentity !== services.device.identity.string) {
-        // TODO(DESK-558): Remove this block
-        assert(
-            memberIdentities.includes(init.creatorIdentity),
-            'Admin is not part of group members',
-        );
-    }
     const view = {
         ...group,
         displayName: getDisplayName({...group}, memberIdentities, services),
@@ -327,12 +326,20 @@ export function getByUid(
 function getByGroupIdAndCreator(
     services: ServicesForModel,
     id: GroupId,
-    creator: IdentityString,
+    creator: GroupCreator,
 ): LocalModelStore<Group> | undefined {
     const {db} = services;
 
+    let contactUid: DbContactUid | undefined = undefined;
+    if (!creator.creatorIsUser) {
+        contactUid = db.hasContactByIdentity(creator.creatorIdentity);
+        if (contactUid === undefined) {
+            return undefined;
+        }
+    }
+
     // Check if the group exists, then return the store
-    const uid = db.hasGroupByIdAndCreator(id, creator);
+    const uid = db.hasGroupByIdAndCreator(id, contactUid);
     if (uid === undefined) {
         return undefined;
     }
@@ -766,6 +773,26 @@ export class GroupModelController implements GroupController {
     }
 
     /** @inheritdoc */
+    public creator(): LocalModelStore<Contact> | 'me' {
+        return this.meta.run((handle) => {
+            if (handle.view().creatorIdentity === this._services.device.identity.string) {
+                return 'me';
+            }
+            const creator = this._services.model.contacts.getByIdentity(
+                handle.view().creatorIdentity,
+            );
+
+            if (creator === undefined) {
+                this._log.error(
+                    `The group ${handle.view().name} with Id ${handle.view().groupId} has a creator ${handle.view().creatorIdentity} that was not found in the database`,
+                );
+                throw new Error('The group creator was not found in the database');
+            }
+            return creator;
+        });
+    }
+
+    /** @inheritdoc */
     public conversation(): LocalModelStore<Conversation> {
         return this._conversation();
     }
@@ -967,7 +994,7 @@ export class GroupModelRepository implements GroupRepository {
     /** @inheritdoc */
     public getByGroupIdAndCreator(
         id: GroupId,
-        creator: IdentityString,
+        creator: GroupCreator,
     ): LocalModelStore<Group> | undefined {
         return getByGroupIdAndCreator(this._services, id, creator);
     }

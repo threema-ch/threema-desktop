@@ -470,43 +470,31 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             // Delete all inactive groups where the contact to be deleted is the creator. Note: This
             // will not update the corresponding stores, so that the UI might be inconsistent until
             // reload.
-            // TODO(DESK-770): Do not automatically delete this groups.
-            const identityOfContactToRemove = sync(
+            // TODO(DESK-770): Do not automatically delete these groups.
+            const groupUids = sync(
                 this._db
-                    .selectFrom(tContact)
-                    .where(tContact.uid.equals(uid))
-                    .selectOneColumn(tContact.identity)
-                    .executeSelectNoneOrOne(),
+                    .selectFrom(tGroup)
+                    .where(
+                        tGroup.creatorUid
+                            .equals(uid)
+                            .and(tGroup.userState.notEquals(GroupUserState.MEMBER)),
+                    )
+                    .selectOneColumn(tGroup.uid)
+                    .executeSelectMany(),
             );
-            if (identityOfContactToRemove !== null) {
-                const groupUids = sync(
+            for (const groupUid of groupUids) {
+                // Remove the conversation first. This implicitly removes any associated messages.
+                sync(
                     this._db
-                        .selectFrom(tGroup)
-                        .where(
-                            tGroup.creatorIdentity
-                                .equals(identityOfContactToRemove)
-                                .and(tGroup.userState.notEquals(GroupUserState.MEMBER)),
-                        )
-                        .selectOneColumn(tGroup.uid)
-                        .executeSelectMany(),
+                        .deleteFrom(tConversation)
+                        .where(tConversation.groupUid.equals(groupUid))
+                        .executeDelete(),
                 );
-                for (const groupUid of groupUids) {
-                    // Remove the conversation first. This implicitly removes any associated messages.
-                    sync(
-                        this._db
-                            .deleteFrom(tConversation)
-                            .where(tConversation.groupUid.equals(groupUid))
-                            .executeDelete(),
-                    );
 
-                    // Now, remove the group
-                    sync(
-                        this._db
-                            .deleteFrom(tGroup)
-                            .where(tGroup.uid.equals(groupUid))
-                            .executeDelete(),
-                    );
-                }
+                // Now, remove the group
+                sync(
+                    this._db.deleteFrom(tGroup).where(tGroup.uid.equals(groupUid)).executeDelete(),
+                );
             }
 
             // Now, remove the contact
@@ -599,12 +587,21 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public hasGroupByIdAndCreator(groupdId: GroupId, creator: IdentityString): DbHas<DbGroup> {
+    public hasGroupByIdAndCreator(groupdId: GroupId, creator?: DbContactUid): DbHas<DbGroup> {
+        if (creator === undefined) {
+            return sync(
+                this._db
+                    .selectFrom(tGroup)
+                    .select({uid: tGroup.uid})
+                    .where(tGroup.groupId.equals(groupdId).and(tGroup.creatorUid.isNull()))
+                    .executeSelectNoneOrOne(),
+            )?.uid;
+        }
         return sync(
             this._db
                 .selectFrom(tGroup)
                 .select({uid: tGroup.uid})
-                .where(tGroup.groupId.equals(groupdId).and(tGroup.creatorIdentity.equals(creator)))
+                .where(tGroup.groupId.equals(groupdId).and(tGroup.creatorUid.equals(creator)))
                 .executeSelectNoneOrOne(),
         )?.uid;
     }
@@ -616,6 +613,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .selectFrom(tGroup)
                 .select({
                     uid: tGroup.uid,
+                    creatorUid: tGroup.creatorUid,
                     creatorIdentity: tGroup.creatorIdentity,
                     groupId: tGroup.groupId,
                     name: tGroup.name,
@@ -643,6 +641,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         return {
             ...group,
             type: ReceiverType.GROUP,
+            creatorUid: group.creatorUid ?? undefined,
         };
     }
 
@@ -693,19 +692,21 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public getAllActiveGroupUidsByMember(contactUid: DbContactUid): DbList<DbGroup, 'uid'> {
+    public getAllSharedGroupsByContact(contactUid: DbContactUid): DbList<DbGroup, 'uid'> {
+        const groupMemberLeftJoin = tGroupMember.forUseInLeftJoin();
         return sync(
             this._db
-                .selectFrom(tGroupMember)
-                .innerJoin(tGroup)
+                .selectFrom(tGroup)
+                .leftJoin(groupMemberLeftJoin)
                 .on(
                     // TODO(DESK-770): Do not take into account only active groups
                     tGroup.uid
-                        .equals(tGroupMember.groupUid)
+                        .equals(groupMemberLeftJoin.groupUid)
                         .and(tGroup.userState.equals(GroupUserState.MEMBER)),
                 )
-                .select({uid: tGroupMember.groupUid})
-                .where(tGroupMember.contactUid.equals(contactUid))
+                .select({uid: tGroup.uid})
+                .where(groupMemberLeftJoin.contactUid.equals(contactUid))
+                .or(tGroup.creatorUid.equals(contactUid))
                 .executeSelectMany(),
         );
     }
@@ -723,11 +724,38 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 )
                 .executeSelectNoneOrOne(),
         );
-        return membershipRecord !== null;
+        let isCreator = false;
+        if (membershipRecord === null) {
+            isCreator =
+                sync(
+                    this._db
+                        .selectFrom(tGroup)
+                        .select({creatorUid: tGroup.creatorUid})
+                        .where(tGroup.uid.equals(groupUid))
+                        .executeSelectNoneOrOne(),
+                )?.creatorUid === contactUid;
+        }
+
+        return membershipRecord !== null || isCreator;
     }
 
     /** @inheritdoc */
     public createGroupMember(groupUid: DbGroupUid, contactUid: DbContactUid): void {
+        const creatorUid = sync(
+            this._db
+                .selectFrom(tGroup)
+                .select({creatorUid: tGroup.creatorUid})
+                .where(tGroup.uid.equals(groupUid))
+                .executeSelectNoneOrOne(),
+        );
+
+        if (creatorUid === contactUid) {
+            this._log.warn(
+                'Cannot add a group creator to the group member list. Aborting the operation.',
+            );
+            return;
+        }
+
         sync(
             this._db
                 .insertInto(tGroupMember)

@@ -11,6 +11,7 @@ import type {
     ControllerUpdateFromSync,
     LocalModel,
 } from '~/common/model/types/common';
+import type {Contact} from '~/common/model/types/contact';
 import type {ConversationInitMixin} from '~/common/model/types/conversation';
 import type {ReceiverController} from '~/common/model/types/receiver';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
@@ -36,8 +37,25 @@ export interface GroupView {
         readonly expiresAt?: Date;
     };
     readonly notificationSoundPolicyOverride?: NotificationSoundPolicy;
+
+    /**
+     * The member set contains all members of the group that are not the creator. The creator must
+     * never be in the member set!
+     *
+     * The sole exception is the `user` who is never found in the member set. Its state
+     * within the group is entirely managed by `userState`.
+     */
     readonly members: IdentityString[];
 }
+
+/**
+ * A group creator can either be the user or any other contact. If it is not the user, the identity
+ * is needed to fetch the corresponding contact.
+ */
+export type GroupCreator =
+    | {creatorIsUser: false; creatorIdentity: IdentityString}
+    | {creatorIsUser: true};
+
 export type GroupInit = Omit<GroupView, 'displayName' | 'members' | 'color'> &
     ConversationInitMixin;
 export type GroupUpdate = Partial<
@@ -65,6 +83,8 @@ export type GroupUpdateFromToSync = Pick<
 >;
 
 export type GroupController = ReceiverController & {
+    readonly uid: UidOf<DbGroup>;
+
     readonly meta: ModelLifetimeGuard<GroupView>;
 
     /**
@@ -113,6 +133,13 @@ export type GroupController = ReceiverController & {
      * group by the creator.
      */
     readonly join: Omit<ControllerUpdateFromSource, 'fromLocal'>;
+
+    /**
+     * Get the creator of this group. If the user is the creator, return a special string `me`.
+     *
+     * @throws If the creator is neither the user, nor can it be found in the database.
+     */
+    readonly creator: () => LocalModelStore<Contact> | 'me';
 } & ProxyMarked;
 export interface GroupControllerHandle {
     /**
@@ -175,7 +202,7 @@ export type GroupRepository = {
     /**
      * Add a group and handle the protocol flow according to the source.
      *
-     * TODO(DESK-558): Handle the member list with models.
+     * TODO(DESK-577): Handle the member list with models.
      *
      * @param init The group data
      * @param members The members list (including the creator)
@@ -185,9 +212,14 @@ export type GroupRepository = {
         LocalModelStore<Group>
     >;
     readonly getByUid: (uid: DbGroupUid) => LocalModelStore<Group> | undefined;
+
+    /**
+     * Fetches the group determined by the group creator and the `groupId`. Returns undefined if
+     * such a group does not exist.
+     */
     readonly getByGroupIdAndCreator: (
         groupId: GroupId,
-        creator: IdentityString,
+        creator: GroupCreator,
     ) => LocalModelStore<Group> | undefined;
     readonly getAll: () => LocalSetStore<LocalModelStore<Group>>;
 } & ProxyMarked;
