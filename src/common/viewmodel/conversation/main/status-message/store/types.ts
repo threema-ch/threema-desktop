@@ -1,4 +1,4 @@
-import type {IdentityString, StatusMessageId} from '~/common/network/types';
+import type {StatusMessageId} from '~/common/network/types';
 import type {u53} from '~/common/types';
 
 /**
@@ -25,8 +25,8 @@ export type AnyStatusMessageStatus =
 
 interface GroupMemberChangeStatusMessageStatus {
     readonly type: 'group-member-change';
-    readonly added: IdentityString[];
-    readonly removed: IdentityString[];
+    readonly added: string[];
+    readonly removed: string[];
 }
 
 interface GroupNameChangeStatusMessageStatus {

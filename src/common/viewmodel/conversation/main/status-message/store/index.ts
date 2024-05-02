@@ -11,14 +11,14 @@ export type ConversationStatusMessageViewModelStore = LocalStore<
 >;
 
 export function getConversationStatusMessageViewModelStore(
-    services: Pick<ServicesForViewModel, 'endpoint'>,
+    services: Pick<ServicesForViewModel, 'endpoint' | 'model'>,
     statusMessageModelStore: AnyStatusMessageModelStore,
 ): ConversationStatusMessageViewModelStore {
     const {endpoint} = services;
 
     return derive([statusMessageModelStore], ([{currentValue: statusMessageModel}]) => {
         const conversationStatusMessageViewModel: ConversationStatusMessageViewModel =
-            getConversationStatusMessageViewModel(statusMessageModel);
+            getConversationStatusMessageViewModel(services, statusMessageModel);
 
         return endpoint.exposeProperties({
             ...conversationStatusMessageViewModel,
@@ -27,6 +27,7 @@ export function getConversationStatusMessageViewModelStore(
 }
 
 function getConversationStatusMessageViewModel(
+    services: Pick<ServicesForViewModel, 'model'>,
     statusMessageModel: AnyStatusMessageModel,
 ): ConversationStatusMessageViewModel {
     return {
@@ -34,6 +35,6 @@ function getConversationStatusMessageViewModel(
         created: {at: statusMessageModel.view.createdAt},
         id: statusMessageModel.view.id,
         ordinal: statusMessageModel.view.ordinal,
-        status: getStatusMessageStatus(statusMessageModel),
+        status: getStatusMessageStatus(services, statusMessageModel),
     };
 }
