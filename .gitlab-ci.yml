@@ -3,6 +3,7 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   NODE_VERSION: '20.11.1'
   PROTOC_VERSION: '23.4'
+  RUST_VERSION: '1.78.0'
   FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR: 'true'
 
 default:
@@ -47,6 +48,20 @@ stages:
 .before_script_show_versions: &before_script_show_versions
   - node --version
   - npm --version
+
+# Generic "before script" that installs Cargo binaries on Linux x64
+.before_script_install_cargo: &before_script_install_cargo
+  - |
+    mkdir /rust
+    pushd /rust
+    export RUST_ARCHIVE=rust-${RUST_VERSION}-x86_64-unknown-linux-gnu.tar.gz
+    export RUST_DOWNLOAD_URL=https://static.rust-lang.org/dist/$RUST_ARCHIVE
+    curl --proto '=https' --tlsv1.2 -fsOSL $RUST_DOWNLOAD_URL
+    curl --proto '=https' --tlsv1.2 -s $RUST_DOWNLOAD_URL.sha256 | sha256sum -c -
+    tar -C /rust -xzf $RUST_ARCHIVE --strip-components=1
+    rm $RUST_ARCHIVE
+    ./install.sh
+    popd
 
 # Generic "before script" for Windows to set up nvm
 .before_script_windows: &before_script_windows
@@ -109,7 +124,7 @@ flatpak-source-generator:
 launcher:
   stage: build
   needs: []
-  image: rust:1.76
+  image: rust:${RUST_VERSION}
   script:
     - cd src/launcher/ && cargo check
   variables:
@@ -584,6 +599,8 @@ package:linux-binary-buildonly:
   parallel:
     matrix:
       - FLAVOR: [consumer-sandbox, consumer-live, work-sandbox, work-live, work-onprem]
+  before_script:
+    - *before_script_install_cargo
   script:
     # Install dependencies
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
