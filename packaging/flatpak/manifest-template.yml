@@ -62,7 +62,7 @@ modules:
             # --enable-features="WaylandWindowDecorations" \
             #
             # See https://github.com/electron/electron/issues/37531
-            /app/main/threema-desktop-launcher --target-bin /app/bin/zypak-wrapper.sh /app/main/ThreemaDesktop "$@"
+            /app/main/threema-desktop-launcher --launcher-target-bin /app/bin/zypak-wrapper.sh /app/main/ThreemaDesktop "$@"
     build-commands:
       # Build and install launcher binary
       - cd src/launcher/ && cargo --offline fetch --manifest-path Cargo.toml --verbose

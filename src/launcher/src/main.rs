@@ -53,11 +53,14 @@ macro_rules! print_error {
 fn print_usage_and_exit(launcher_path: &str) -> ! {
     if cfg!(feature = "allow_path_override") {
         print_error!(
-            "Usage: {} [-h|--help] [--version] [--target-bin <path>] [args...]",
+            "Usage: {} [--launcher-help] [--launcher-version] [--launcher-target-bin <path>] [args...]",
             launcher_path
         );
     } else {
-        print_error!("Usage: {} [-h|--help] [--version] [args...]", launcher_path);
+        print_error!(
+            "Usage: {} [--launcher-help] [--launcher-version] [args...]",
+            launcher_path
+        );
     }
     process::exit(EXIT_CODE_LAUNCHER_ERROR);
 }
@@ -161,20 +164,20 @@ fn main() {
     let launcher_path = args.remove(0);
 
     // Show help or version
-    if args.iter().any(|arg| arg == "-h" || arg == "--help") {
+    if args.iter().any(|arg| arg == "--launcher-help") {
         print_usage_and_exit(&launcher_path);
     }
-    if args.iter().any(|arg| arg == "--version") {
+    if args.iter().any(|arg| arg == "--launcher-version") {
         process::exit(0);
     }
 
     // Determine target binary path.
     //
-    // If overridden through "--target-bin <path>" parameter, use that path.
+    // If overridden through "--launcher-target-bin <path>" parameter, use that path.
     // Otherwise, fall back to a default binary name adjacent to the launcher.
     let mut target_path_override = None;
     if cfg!(feature = "allow_path_override") {
-        if let Some(i) = args.iter().position(|arg| arg == "--target-bin") {
+        if let Some(i) = args.iter().position(|arg| arg == "--launcher-target-bin") {
             if args.len() > i + 1 {
                 args.remove(i);
                 target_path_override = Some(args.remove(i));
