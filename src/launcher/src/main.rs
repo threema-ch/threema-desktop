@@ -2,8 +2,9 @@
 
 use std::{
     env, fs,
+    io::{stderr, stdout, IsTerminal},
     path::{Path, PathBuf},
-    process::{self, Command, Output, Stdio},
+    process::{self, Command, Stdio},
     time::Duration,
 };
 
@@ -214,22 +215,49 @@ fn main() {
     println!("Profile directory: {profile_directory:?}");
 
     loop {
-        // Launch child process and wait for completion
         let now = time::OffsetDateTime::now_utc();
         println!("Current timestamp (UTC): {now}");
         println!("------");
-        let exit_code = match Command::new(&target_path)
+
+        // Launch child process
+        //
+        // Note: If we just use `Stdio::inherit()` for stdout/stderr, then we get crashes from the
+        // NodeJS console logger when it tries to write to stdout while stdout is not writable (e.g.
+        // when not launching the application from a terminal).
+        //
+        // This is avoided by using the `is_terminal()` check, however we lose the ability to pipe
+        // output to a file or to another application. But that's not a big issue since we have a
+        // file logger.
+        let mut child = match Command::new(&target_path)
             .args(&args)
-            .stdout(Stdio::inherit())
-            .stderr(Stdio::inherit())
-            .output()
+            .stdin(Stdio::null())
+            .stdout(if stdout().is_terminal() {
+                Stdio::inherit()
+            } else {
+                Stdio::null()
+            })
+            .stderr(if stderr().is_terminal() {
+                Stdio::inherit()
+            } else {
+                Stdio::null()
+            })
+            .spawn()
         {
-            Ok(Output { status, .. }) => {
+            Ok(child) => child,
+            Err(e) => {
+                print_error!("Failed to launch target binary: {}", e);
+                process::exit(EXIT_CODE_LAUNCHER_ERROR);
+            }
+        };
+
+        // Wait for completion
+        let exit_code = match child.wait() {
+            Ok(status) => {
                 println!("Target binary exited with status {status}");
                 status.code()
             }
             Err(e) => {
-                print_error!("Failed to launch target binary: {}", e);
+                print_error!("Error while waiting for child process: {}", e);
                 process::exit(EXIT_CODE_LAUNCHER_ERROR);
             }
         };
@@ -237,8 +265,7 @@ fn main() {
         // Perform some actions depending on exit code
         match exit_code {
             Some(EXIT_CODE_EXIT) => {
-                // Successful closing
-                break;
+                break; // Successful closing
             }
             Some(EXIT_CODE_RESTART) => {
                 println!("------");
