@@ -24,6 +24,7 @@ const VALID_BUILD_FLAVORS: [&str; 5] = [
 ];
 
 // Exit codes
+const EXIT_CODE_EXIT: i32 = 0;
 const EXIT_CODE_RESTART: i32 = 8;
 const EXIT_CODE_DELETE_PROFILE_AND_RESTART: i32 = 9;
 const EXIT_CODE_LAUNCHER_ERROR: i32 = 20;
@@ -235,6 +236,10 @@ fn main() {
 
         // Perform some actions depending on exit code
         match exit_code {
+            Some(EXIT_CODE_EXIT) => {
+                // Successful closing
+                break;
+            }
             Some(EXIT_CODE_RESTART) => {
                 println!("------");
                 println!("Restarting");
