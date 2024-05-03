@@ -161,11 +161,13 @@ export function makeGroup(
     },
     members?: DbContactUid[],
 ): DbGroupUid {
+    const uid = db.hasContactByIdentity(init.creatorIdentity);
     const groupUid = db.createGroup({
         type: ReceiverType.GROUP,
         groupId: init.groupId ?? randomGroupId(crypto),
         creatorIdentity: init.creatorIdentity,
         createdAt: init.createdAt ?? new Date(),
+        creatorUid: uid,
         name: init.name ?? randomString(crypto, 8),
         colorIndex: 0,
         userState: init.userState ?? GroupUserState.MEMBER,
@@ -814,7 +816,6 @@ export function backendTests(
 
         it('hasGroupByIdAndCreator / removeGroup', function () {
             const identity1 = ensureIdentityString('MEMEMEME');
-            const identity2 = ensureIdentityString('ZZZZZZZZ');
 
             // Add a group with no members
             const uid = makeGroup(db, {creatorIdentity: identity1}, []);
@@ -823,16 +824,16 @@ export function backendTests(
             assert(group !== undefined);
 
             // Existing group is found
-            expect(db.hasGroupByIdAndCreator(group.groupId, identity1)).to.equal(uid);
+            expect(db.hasGroupByIdAndCreator(group.groupId, group.creatorUid)).to.equal(uid);
 
             // Other combinations are not found
-            expect(db.hasGroupByIdAndCreator(group.groupId, identity2)).to.be.undefined;
-            expect(db.hasGroupByIdAndCreator(99999n as GroupId, identity1)).to.be.undefined;
+            expect(db.hasGroupByIdAndCreator(group.groupId, 9999n as DbContactUid)).to.be.undefined;
+            expect(db.hasGroupByIdAndCreator(99999n as GroupId, group.creatorUid)).to.be.undefined;
 
             // Once group is gone, not found
             expect(db.removeGroup(uid)).to.be.true;
             expect(db.removeGroup(uid)).to.be.false;
-            expect(db.hasGroupByIdAndCreator(group.groupId, identity1)).to.be.undefined;
+            expect(db.hasGroupByIdAndCreator(group.groupId, group.creatorUid)).to.be.undefined;
         });
 
         it('getGroupByUid', function () {

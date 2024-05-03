@@ -232,13 +232,13 @@ export function groupLeaveTests(
         });
 
         // Ensure that user1 is member of the group
-        assertGroupHasMembers(services, groupId, me, [member.identity.string]);
+        assertGroupHasMembers(services, groupId, {creatorIsUser: true}, [member.identity.string]);
 
         // Run task: Leave from member
         await runTask(services, groupId, creator, memberContact, [], mode, 'Leave from member');
 
         // Ensure that group member was removed
-        assertGroupHasMembers(services, groupId, me, []);
+        assertGroupHasMembers(services, groupId, {creatorIsUser: true}, []);
 
         // Run task: Leave from non-member
         await runTask(
@@ -252,7 +252,7 @@ export function groupLeaveTests(
         );
 
         // No changes to member list
-        assertGroupHasMembers(services, groupId, me, []);
+        assertGroupHasMembers(services, groupId, {creatorIsUser: true}, []);
     });
 }
 
