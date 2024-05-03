@@ -1,5 +1,6 @@
 import type {Logger} from '~/common/logging';
 import {groupDebugString} from '~/common/model/group';
+import type {GroupCreator} from '~/common/model/types/group';
 import type {
     ComposableTask,
     PassiveTaskCodecHandle,
@@ -43,8 +44,13 @@ export class ReflectedGroupNameTask implements ComposableTask<PassiveTaskCodecHa
         const groupId = this._container.groupId;
         const groupName = this._groupName.name;
 
+        const creator: GroupCreator =
+            creatorIdentity === this._services.device.identity.string
+                ? {creatorIsUser: true}
+                : {creatorIsUser: false, creatorIdentity};
+
         // Look up group
-        const group = model.groups.getByGroupIdAndCreator(groupId, creatorIdentity);
+        const group = model.groups.getByGroupIdAndCreator(groupId, creator);
         if (group === undefined) {
             this._log.debug(`Abort processing of group name message for unknown group`);
             return;

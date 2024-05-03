@@ -1,5 +1,6 @@
 import type {Logger} from '~/common/logging';
 import type {Group} from '~/common/model';
+import type {GroupCreator} from '~/common/model/types/group';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {
@@ -54,10 +55,11 @@ export class ReflectedGroupSyncTask implements PassiveTask<void> {
             default:
                 unreachable(validatedMessage);
         }
-        const group = model.groups.getByGroupIdAndCreator(
-            groupIdentity.groupId,
-            groupIdentity.creatorIdentity,
-        );
+        const creator: GroupCreator =
+            groupIdentity.creatorIdentity === this._services.device.identity.string
+                ? {creatorIsUser: true}
+                : {creatorIsUser: false, creatorIdentity: groupIdentity.creatorIdentity};
+        const group = model.groups.getByGroupIdAndCreator(groupIdentity.groupId, creator);
 
         // Execute group message action
         switch (validatedMessage.action) {

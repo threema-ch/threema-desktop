@@ -48,8 +48,6 @@ export abstract class DeliveryReceiptTaskBase<
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public async run(handle: TTaskCodecHandleType): Promise<void> {
-        const {model} = this._services;
-
         // Validate message
         const statusName = CspE2eDeliveryReceiptStatusUtils.nameOf(
             this._validatedDeliveryReceipt.status,
@@ -61,7 +59,7 @@ export abstract class DeliveryReceiptTaskBase<
         );
 
         // Look up conversation
-        const conversation = getConversationById(model, this._conversationId);
+        const conversation = getConversationById(this._services, this._conversationId);
         if (conversation === undefined) {
             this._log.warn(`Conversation not found, aborting`);
             return;

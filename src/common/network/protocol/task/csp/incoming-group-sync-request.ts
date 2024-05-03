@@ -2,6 +2,7 @@ import {AcquaintanceLevel, GroupUserState} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact, ContactInit} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
+import type {GroupCreator} from '~/common/model/types/group';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import type {
     ActiveTaskCodecHandle,
@@ -59,8 +60,13 @@ export class IncomingGroupSyncRequestTask
         const creatorIdentity = device.identity.string;
         const groupId = this._container.groupId;
 
+        const creator: GroupCreator =
+            creatorIdentity === device.identity.string
+                ? {creatorIsUser: true}
+                : {creatorIsUser: false, creatorIdentity};
+
         // 1. Look up the group. If the group could not be found, abort these steps.
-        const group = model.groups.getByGroupIdAndCreator(groupId, creatorIdentity);
+        const group = model.groups.getByGroupIdAndCreator(groupId, creator);
         if (group === undefined) {
             this._log.info('Received group sync request for an unknown group. Discarding.');
             return;

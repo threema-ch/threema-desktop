@@ -1,6 +1,7 @@
 import {MessageDirection, MessageType, ReceiverType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Conversation} from '~/common/model/types/conversation';
+import type {GroupCreator} from '~/common/model/types/group';
 import type {AnyInboundNonDeletedMessageModelStore} from '~/common/model/types/message';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import type {
@@ -50,9 +51,17 @@ export class IncomingMessageContentUpdateTask
                 break;
             case ReceiverType.GROUP:
                 {
+                    const creator: GroupCreator =
+                        this._conversationId.creatorIdentity ===
+                        this._services.device.identity.string
+                            ? {creatorIsUser: true}
+                            : {
+                                  creatorIsUser: false,
+                                  creatorIdentity: this._conversationId.creatorIdentity,
+                              };
                     const group = model.groups.getByGroupIdAndCreator(
                         this._conversationId.groupId,
-                        this._conversationId.creatorIdentity,
+                        creator,
                     );
                     if (group === undefined) {
                         this._log.warn(

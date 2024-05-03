@@ -3,7 +3,8 @@
  */
 
 import {CspE2eStatusUpdateType, ReceiverType} from '~/common/enum';
-import type {Conversation, Repositories} from '~/common/model';
+import type {Conversation} from '~/common/model';
+import type {GroupCreator} from '~/common/model/types/group';
 import type {InboundAudioMessage, OutboundAudioMessage} from '~/common/model/types/message/audio';
 import type {
     InboundDeletedMessage,
@@ -15,6 +16,7 @@ import type {InboundTextMessage, OutboundTextMessage} from '~/common/model/types
 import type {InboundVideoMessage, OutboundVideoMessage} from '~/common/model/types/message/video';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {CspE2eType} from '~/common/network/protocol';
+import type {ServicesForTasks} from '~/common/network/protocol/task';
 import * as structbuf from '~/common/network/structbuf';
 import type {ConversationId, MessageId} from '~/common/network/types';
 import type {Mutable} from '~/common/types';
@@ -79,9 +81,10 @@ export type AnyOutboundMessageInitFragment =
  * @returns the conversation, or `undefined` if not found in the database.
  */
 export function getConversationById(
-    model: Repositories,
+    services: Pick<ServicesForTasks, 'device' | 'model'>,
     conversationId: ConversationId,
 ): LocalModelStore<Conversation> | undefined {
+    const {device, model} = services;
     switch (conversationId.type) {
         case ReceiverType.CONTACT: {
             const contact = model.contacts.getByIdentity(conversationId.identity);
@@ -91,10 +94,11 @@ export function getConversationById(
             return contact.get().controller.conversation();
         }
         case ReceiverType.GROUP: {
-            const group = model.groups.getByGroupIdAndCreator(
-                conversationId.groupId,
-                conversationId.creatorIdentity,
-            );
+            const creator: GroupCreator =
+                conversationId.creatorIdentity === device.identity.string
+                    ? {creatorIsUser: true}
+                    : {creatorIsUser: false, creatorIdentity: conversationId.creatorIdentity};
+            const group = model.groups.getByGroupIdAndCreator(conversationId.groupId, creator);
             if (group === undefined) {
                 return undefined;
             }

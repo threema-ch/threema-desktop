@@ -63,7 +63,7 @@ export class ReflectedOutgoingGroupSetupTask
         memberIdentities.delete(creatorIdentity);
 
         // Look up group
-        const group = model.groups.getByGroupIdAndCreator(groupId, creatorIdentity)?.get();
+        const group = model.groups.getByGroupIdAndCreator(groupId, {creatorIsUser: true})?.get();
 
         // Look up group member contacts
         const memberUids: DbContactUid[] = [];

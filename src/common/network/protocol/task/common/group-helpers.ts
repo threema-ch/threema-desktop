@@ -12,6 +12,7 @@ import {
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact, ContactInit, Group} from '~/common/model';
+import type {GroupCreator} from '~/common/model/types/group';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {encryptAndUploadBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
@@ -47,16 +48,19 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
     log: Logger,
 ): Promise<{group: LocalModelStore<Group>; senderContact: LocalModelStore<Contact>} | undefined> {
     const {device, model} = services;
-    const userIsCreator = creatorIdentity === device.identity.string;
+    const creator: GroupCreator =
+        creatorIdentity === device.identity.string
+            ? {creatorIsUser: true}
+            : {creatorIsUser: false, creatorIdentity};
 
     // 1. Look up the group
-    const group = model.groups.getByGroupIdAndCreator(groupId, creatorIdentity);
+    const group = model.groups.getByGroupIdAndCreator(groupId, creator);
 
     // 2. If the group could not be found:
     if (group === undefined) {
         // 2.1 If the user is the creator of the group (as alleged by the received message), discard
         //     the received message and abort these steps.
-        if (userIsCreator) {
+        if (creator.creatorIsUser) {
             log.debug(
                 'Discarding group message in unknown group where we are supposedly the creator',
             );
@@ -65,8 +69,8 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
 
         // 2.2 Send a group-sync-request to the group creator, discard the received message and
         //     abort these steps.
-        let creator = model.contacts.getByIdentity(creatorIdentity)?.get();
-        if (creator === undefined) {
+        let creatorModel = model.contacts.getByIdentity(creatorIdentity)?.get();
+        if (creatorModel === undefined) {
             // Creator contact not found. Note: If group message is wrapped in
             // `group-creator-container`, this situation should never happen. If the message is
             // wrapped in `group-member-container`, then this could be possible.
@@ -78,9 +82,9 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
                 return undefined;
             }
             assert(addedContacts.length === 1, 'addedContacts contained more than one contact');
-            creator = unwrap(addedContacts[0]).get();
+            creatorModel = unwrap(addedContacts[0]).get();
         }
-        await sendGroupSyncRequest(groupId, creator, handle, services);
+        await sendGroupSyncRequest(groupId, creatorModel, handle, services);
         return undefined;
     }
 
@@ -103,7 +107,7 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
         case GroupUserState.KICKED: {
             // 3.1 If the user is the creator of the group, send a group-setup with an empty members
             //     list back to the sender, discard the received message and abort these steps.
-            if (userIsCreator) {
+            if (creator.creatorIsUser) {
                 await sendEmptyGroupSetup(groupId, senderContact.get(), handle, services);
                 return undefined;
             }
@@ -124,7 +128,7 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
     if (!senderIsMember) {
         // 4.1 If the user is the creator of the group, send a [`group-setup`](ref:e2e.group-setup)
         //     with an empty members list back to the sender.
-        if (userIsCreator) {
+        if (creator.creatorIsUser) {
             await sendEmptyGroupSetup(groupId, senderContact.get(), handle, services);
         }
 

@@ -8,6 +8,7 @@ import {
 import type {Logger} from '~/common/logging';
 import type {Group, GroupInit} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
+import type {GroupCreator} from '~/common/model/types/group';
 import type {
     ActiveTaskCodecHandle,
     ComposableTask,
@@ -59,8 +60,13 @@ export abstract class GroupSetupTaskBase<
         const memberIdentities = new Set(this._groupSetup.members); // Set to avoid duplicates
         memberIdentities.delete(creatorIdentity); // Creator is an implicit member
 
+        const creator: GroupCreator =
+            creatorIdentity === device.identity.string
+                ? {creatorIsUser: true}
+                : {creatorIsUser: false, creatorIdentity};
+
         // 2. Look up group
-        const group = model.groups.getByGroupIdAndCreator(groupId, creatorIdentity)?.get();
+        const group = model.groups.getByGroupIdAndCreator(groupId, creator)?.get();
 
         // 3. If the group could not be found
         if (group === undefined) {
@@ -114,13 +120,10 @@ export abstract class GroupSetupTaskBase<
         }
 
         // Add creator explicitly as member
-        // TODO(DESK-558): Make group creator an implicit member and remove this line
         const creatorContact = model.contacts.getByIdentity(creatorIdentity)?.get();
         // Creator contact must exist, because the message could not have been decrypted
         // without having a contact for the sender.
         assert(creatorContact !== undefined);
-        memberUids.push(creatorContact.ctx);
-
         // Create missing contacts (with acquaintance level "GROUP").
         if (identitiesToAdd.length > 0) {
             memberUids.push(...(await this._handleMissingGroupMembers(handle, identitiesToAdd)));

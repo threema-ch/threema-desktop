@@ -211,7 +211,10 @@ function getGroupReceiverData(
     getAndSubscribe: GetAndSubscribeFunction,
 ): GroupReceiverData {
     const groupCreatorData = getGroupCreatorData(services, groupModel, getAndSubscribe);
-
+    const userIsCreator = groupCreatorData.identity === services.model.user.identity;
+    const isLeft = isGroupReceiverLeft(groupModel);
+    const selfReceiverData: SelfReceiverData[] =
+        !userIsCreator && !isLeft ? [getSelfReceiverData(services, getAndSubscribe)] : [];
     return {
         type: 'group',
         ...getCommonReceiverData(groupModel),
@@ -221,26 +224,29 @@ function getGroupReceiverData(
             type: groupModel.type,
             uid: groupModel.ctx,
         },
-        members: groupModel.view.members
-            .map((identity) => getGroupMemberData(services, identity, getAndSubscribe))
-            .filter(
-                // As all `undefined` items are removed using the filter, the remeining items are of
-                // type `ContactReceiverData`.
-                (member): member is SelfReceiverData | ContactReceiverData => {
-                    // If group member data is `undefined`, discard item from the members array.
-                    if (member === undefined) {
-                        return false;
-                    }
+        members: [
+            ...groupModel.view.members
+                .map((identity) => getGroupMemberData(services, identity, getAndSubscribe))
+                .filter(
+                    // As all `undefined` items are removed using the filter, the remaining items are of
+                    // type `ContactReceiverData`.
+                    (member): member is ContactReceiverData => {
+                        // If group member data is `undefined`, discard item from the members array.
+                        if (member === undefined) {
+                            return false;
+                        }
 
-                    // If this member is the creator, remove it from the members array.
-                    if (member.identity === groupCreatorData.identity) {
-                        return false;
-                    }
+                        // If this member is the creator, remove it from the members array.
+                        if (member.identity === groupCreatorData.identity) {
+                            return false;
+                        }
 
-                    return true;
-                },
-            ),
-        isLeft: isGroupReceiverLeft(groupModel),
+                        return true;
+                    },
+                ),
+            ...selfReceiverData,
+        ],
+        isLeft,
     };
 }
 
@@ -441,12 +447,7 @@ function getGroupMemberData(
     services: Pick<ServicesForViewModel, 'model'>,
     identity: IdentityString,
     getAndSubscribe: GetAndSubscribeFunction,
-): SelfReceiverData | ContactReceiverData | undefined {
-    // If the user is the creator of the group, return the user's data.
-    if (identity === services.model.user.identity) {
-        return getSelfReceiverData(services, getAndSubscribe);
-    }
-
+): ContactReceiverData | undefined {
     const receiverModelStore = services.model.contacts.getByIdentity(identity);
     if (receiverModelStore === undefined) {
         return undefined;

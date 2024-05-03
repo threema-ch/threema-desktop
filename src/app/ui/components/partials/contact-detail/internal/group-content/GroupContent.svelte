@@ -19,7 +19,6 @@
 
   export let receiver: $$Props['receiver'];
   export let services: $$Props['services'];
-  export let user: $$Props['user'];
 
   const DEFAULT_LIMIT = 4;
 
@@ -41,16 +40,12 @@
     currentLimit = DEFAULT_LIMIT;
   }
 
-  // Current list items.
-  $: receiverPreviewListProps = groupReceiverDataToReceiverPreviewListProps(
-    receiver,
-    user,
-    currentLimit,
-  );
-
   $: totalMemberCount = getGroupReceiverDataMemberCount(receiver);
 
   $: reactive(handleChangeReceiver, [receiver]);
+
+  // Current list items.
+  $: receiverPreviewListProps = groupReceiverDataToReceiverPreviewListProps(receiver, currentLimit);
 </script>
 
 <div class="container">
@@ -87,20 +82,17 @@
 
     {#if receiverPreviewListProps.items.length > 0}
       <ReceiverPreviewList {...receiverPreviewListProps} {services} />
-
       {#if totalMemberCount > DEFAULT_LIMIT}
         <button class="expand" on:click={handleClickToggleExpand}>
           {#if currentLimit === undefined}
             <span class="icon">
               <MdIcon theme="Outlined">expand_less</MdIcon>
             </span>
-
             {$i18n.t('contacts.action--group-members-show-less', 'Show less')}
           {:else}
             <span class="icon">
               <MdIcon theme="Outlined">expand_more</MdIcon>
             </span>
-
             {$i18n.t('contacts.action--group-members-show-all', 'Show all')}
           {/if}
         </button>

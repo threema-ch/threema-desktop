@@ -210,7 +210,10 @@ export class ReflectedIncomingMessageTask
         switch (instructions.messageCategory) {
             case 'conversation-message': {
                 // Get conversation
-                const conversation = getConversationById(model, instructions.conversationId);
+                const conversation = getConversationById(
+                    this._services,
+                    instructions.conversationId,
+                );
                 if (conversation === undefined) {
                     this._log.error(
                         `Discarding ${this._direction} ${messageTypeDebug} message because conversation was not found in database`,

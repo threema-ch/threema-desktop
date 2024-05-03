@@ -1,5 +1,6 @@
 import type {Logger} from '~/common/logging';
 import {groupDebugString} from '~/common/model/group';
+import type {GroupCreator} from '~/common/model/types/group';
 import {downloadAndDecryptBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
 import type {
@@ -50,8 +51,13 @@ export class ReflectedGroupProfilePictureTask
         const creatorIdentity = this._senderIdentity;
         const groupId = this._container.groupId;
 
+        const creator: GroupCreator =
+            creatorIdentity === this._services.device.identity.string
+                ? {creatorIsUser: true}
+                : {creatorIsUser: false, creatorIdentity};
+
         // Look up group
-        const group = model.groups.getByGroupIdAndCreator(groupId, creatorIdentity);
+        const group = model.groups.getByGroupIdAndCreator(groupId, creator);
         if (group === undefined) {
             this._log.error(
                 `Abort processing of group ${action} profile picture message for unknown group`,

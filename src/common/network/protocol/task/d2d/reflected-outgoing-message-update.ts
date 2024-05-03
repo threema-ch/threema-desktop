@@ -34,8 +34,6 @@ export class ReflectedOutgoingMessageUpdateTask implements PassiveTask<void> {
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public async run(handle: PassiveTaskCodecHandle): Promise<void> {
-        const {model} = this._services;
-
         // Validate the Protobuf message
         let validatedMessage;
         try {
@@ -59,7 +57,7 @@ export class ReflectedOutgoingMessageUpdateTask implements PassiveTask<void> {
 
             // Retrieve conversation
             const conversationId = toCommonConversationId(d2dConversationId);
-            const conversation = getConversationById(model, conversationId);
+            const conversation = getConversationById(this._services, conversationId);
             if (conversation === undefined) {
                 this._log.warn(`Skipping message update due to missing conversation`);
                 continue;

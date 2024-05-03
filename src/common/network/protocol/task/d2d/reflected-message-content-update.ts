@@ -32,9 +32,7 @@ export class ReflectedMessageContentUpdateTask
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public async run(handle: PassiveTaskCodecHandle): Promise<void> {
-        const {model} = this._services;
-
-        const conversation = getConversationById(model, this._conversationId);
+        const conversation = getConversationById(this._services, this._conversationId);
         if (conversation === undefined) {
             this._log.error(
                 `Discarding ${this._expectedMessageDirection} message with Id ${this._messageId} because conversation was not found in database`,

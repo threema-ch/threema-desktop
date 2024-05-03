@@ -218,7 +218,6 @@
         <GroupContent
           receiver={$viewModelStore.receiver}
           {services}
-          user={$viewModelStore.user}
           on:clickprofilepicture={handleOpenProfilePictureModal}
         />
       {:else}

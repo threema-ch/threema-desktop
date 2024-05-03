@@ -154,7 +154,7 @@
             receiver,
           },
         ],
-        bottomLeft: getReceiverCardBottomLeftItemOptions(receiver),
+        bottomLeft: getReceiverCardBottomLeftItemOptions(receiver, $i18n),
       }}
       options={{
         isClickable: true,

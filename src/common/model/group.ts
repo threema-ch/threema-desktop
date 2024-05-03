@@ -217,7 +217,7 @@ function create(
 
     let creatorUid: DbContactUid | undefined = undefined;
     if (init.creatorIdentity !== services.device.identity.string) {
-        // Ensure that admin is part of members as well
+        // Ensure that the creator exists in the database already.
         creatorUid = db.hasContactByIdentity(init.creatorIdentity);
         assert(creatorUid !== undefined, 'Creator UID not found when adding group');
     }
@@ -380,7 +380,7 @@ class GroupMemberModelController implements GroupMemberController {
                 return;
             }
             this._add(contactUids);
-            this._addGroupStatusMessage(contactUids, []);
+            this._addGroupMemberChangeStatusMessage(contactUids, []);
         },
     };
 
@@ -394,7 +394,7 @@ class GroupMemberModelController implements GroupMemberController {
                 return 0;
             }
             const count = this._remove(contactUids);
-            this._addGroupStatusMessage([], contactUids);
+            this._addGroupMemberChangeStatusMessage([], contactUids);
             return count;
         },
         fromRemote: async (
@@ -407,7 +407,7 @@ class GroupMemberModelController implements GroupMemberController {
                 return 0;
             }
             const count = this._remove(contactUids);
-            this._addGroupStatusMessage([], contactUids);
+            this._addGroupMemberChangeStatusMessage([], contactUids);
             return count;
         },
         fromSync: (contactUids: DbContactUid[]) => {
@@ -416,7 +416,7 @@ class GroupMemberModelController implements GroupMemberController {
                 return 0;
             }
             const count = this._remove(contactUids);
-            this._addGroupStatusMessage([], contactUids);
+            this._addGroupMemberChangeStatusMessage([], contactUids);
             return count;
         },
     };
@@ -431,7 +431,7 @@ class GroupMemberModelController implements GroupMemberController {
                 return;
             }
             this._set(added, removed);
-            this._addGroupStatusMessage(added, removed);
+            this._addGroupMemberChangeStatusMessage(added, removed);
         },
         fromRemote: async (
             handle: ActiveTaskCodecHandle<'volatile'>,
@@ -444,7 +444,7 @@ class GroupMemberModelController implements GroupMemberController {
                 return;
             }
             this._set(added, removed);
-            this._addGroupStatusMessage(added, removed);
+            this._addGroupMemberChangeStatusMessage(added, removed);
         },
     };
 
@@ -530,7 +530,10 @@ class GroupMemberModelController implements GroupMemberController {
         this._add(added);
     }
 
-    private _addGroupStatusMessage(added: DbContactUid[], removed: DbContactUid[]): void {
+    private _addGroupMemberChangeStatusMessage(
+        added: DbContactUid[],
+        removed: DbContactUid[],
+    ): void {
         const group = getByUid(this._services, this._group.uid, Existence.ENSURED);
         const groupConversation = group.get().controller.conversation().get();
         const createdAt = new Date();
@@ -738,7 +741,7 @@ export class GroupModelController implements GroupController {
     /**
      * Instantiate the GroupModelController.
      *
-     * IMPORTANT: The caller must ensure that `uid` and `_identity` arguments both refer to the same
+     * IMPORTANT: The caller must ensure that `uid` and `_groupId` arguments both refer to the same
      *            group, otherwise the behavior is undefined.
      */
     public constructor(
