@@ -82,11 +82,11 @@ export const NOOP_LOGGER = new NoopLogger();
  */
 export class ConsoleLogger implements Logger {
     public readonly prefix: undefined;
-    public readonly debug = console.debug;
-    public readonly trace = console.trace;
-    public readonly info = console.info;
-    public readonly warn = console.warn;
-    public readonly error = console.error;
+    public readonly trace: LogRecordFn = this._forward.bind(this, 'trace');
+    public readonly debug: LogRecordFn = this._forward.bind(this, 'debug');
+    public readonly info: LogRecordFn = this._forward.bind(this, 'info');
+    public readonly warn: LogRecordFn = this._forward.bind(this, 'warn');
+    public readonly error: LogRecordFn = this._forward.bind(this, 'error');
 
     /**
      * Works like {@link assert} but also logs a failed assertion to the
@@ -97,6 +97,17 @@ export class ConsoleLogger implements Logger {
             const message = `Assertion failed: ${data.join(' ')}`;
             this.error(message);
             throw new Error(message);
+        }
+    }
+
+    private _forward(
+        level: 'trace' | 'debug' | 'info' | 'warn' | 'error',
+        ...data: readonly unknown[]
+    ): void {
+        try {
+            console[level](...data);
+        } catch {
+            // We tried ¯\_(ツ)_/¯
         }
     }
 }

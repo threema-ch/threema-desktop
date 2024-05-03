@@ -114,8 +114,6 @@ const APP_NAME_AND_VERSION = (() => {
 })();
 
 // Start with the console logger, will be replaced upon initialisation.
-//
-// Note: This is the only global that is allowed since we use logging everywhere!
 let log: Logger = CONSOLE_LOGGER;
 
 /**
