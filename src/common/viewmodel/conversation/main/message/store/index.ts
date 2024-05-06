@@ -85,7 +85,7 @@ function getConversationMessageViewModel(
         lastEditedAt: messageModel.view.lastEditedAt,
         ordinal: messageModel.view.ordinal,
         quote: resolveQuote
-            ? getMessageQuote(log, services, messageModel, conversationModelStore)
+            ? getMessageQuote(log, services, messageModel, conversationModelStore, getAndSubscribe)
             : undefined,
         reactions: getMessageReactions(services, messageModel),
         status: getMessageStatus(messageModel),

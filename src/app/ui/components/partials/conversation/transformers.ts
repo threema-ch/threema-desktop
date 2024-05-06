@@ -97,7 +97,13 @@ function getMessageProps(
         reactions: getMessageReactionsProps(viewModel, i18n),
         sender: viewModel.sender,
         status: viewModel.status,
-        text: viewModel.text,
+        text:
+            viewModel.deletedAt === undefined
+                ? viewModel.text
+                : {
+                      raw: i18n.t('messaging.prose--message deleted', 'This message was deleted'),
+                      mentions: undefined,
+                  },
         history: viewModel.history.map((val) => ({
             at: val.editedAt,
             text: val.text,

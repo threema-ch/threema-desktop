@@ -124,6 +124,15 @@ export function getMessageSearchResults(
                 if (!conversationModel.controller.meta.active.get()) {
                     return undefined;
                 }
+
+                const isMessageActive = getAndSubscribe(
+                    messageModelStore.get().controller.meta.active,
+                );
+
+                if (!isMessageActive) {
+                    return undefined;
+                }
+
                 return endpoint.exposeProperties({
                     conversation: {
                         receiver: getConversationReceiverData(

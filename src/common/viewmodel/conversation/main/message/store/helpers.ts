@@ -29,6 +29,7 @@ export function getMessageQuote(
     services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
     messageModel: AnyMessageModel,
     conversationModelStore: ConversationModelStore,
+    getAndSubscribe: GetAndSubscribeFunction,
 ): StandardConversationMessageViewModel['quote'] {
     if (messageModel.type !== MessageType.TEXT) {
         // Quotes are only permitted in text messages.
@@ -43,6 +44,12 @@ export function getMessageQuote(
     const quotedMessageModelStore = conversationModelStore
         .get()
         .controller.getMessage(messageModel.view.quotedMessageId);
+
+    // If the message quoted by this message was deleted, ignore it.
+    if (quotedMessageModelStore?.get().view.deletedAt !== undefined) {
+        return undefined;
+    }
+
     if (quotedMessageModelStore === undefined) {
         log.info(
             `Quoted message id ${u64ToHexLe(
@@ -50,6 +57,17 @@ export function getMessageQuote(
             )} could not be found (quote message ${u64ToHexLe(messageModel.view.id)})`,
         );
         return 'not-found';
+    }
+
+    // If the quoted message was deactivated, e.g. by a deletion, don't show it any more. This is
+    // necessary so that the stale reference of the old message can be cleared. Hence, the UI can be
+    // completely reactive even when quoted messages are deleted.
+    const isQuotedMessageActive = getAndSubscribe(
+        quotedMessageModelStore.get().controller.meta.active,
+    );
+
+    if (!isQuotedMessageActive) {
+        return undefined;
     }
 
     return getConversationMessageViewModelBundle(
