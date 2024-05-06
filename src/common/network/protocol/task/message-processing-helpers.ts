@@ -4,7 +4,6 @@
 
 import {CspE2eStatusUpdateType, ReceiverType} from '~/common/enum';
 import type {Conversation, Repositories} from '~/common/model';
-import type {UnifiedEditMessage} from '~/common/model/types/message';
 import type {InboundAudioMessage, OutboundAudioMessage} from '~/common/model/types/message/audio';
 import type {
     InboundDeletedMessage,
@@ -74,14 +73,6 @@ export type AnyOutboundMessageInitFragment =
     | OutboundVideoMessageInitFragment
     | OutboundAudioMessageInitFragment;
 
-export type EditMessageFragment = UnifiedEditMessage & {
-    messageId: MessageId;
-};
-
-export interface DeleteMessageFragment {
-    messageId: MessageId;
-    deletedAt: Date;
-}
 /**
  * Get a conversation.
  *

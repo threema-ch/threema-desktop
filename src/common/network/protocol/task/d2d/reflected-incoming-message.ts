@@ -5,7 +5,7 @@ import {
     CspE2eGroupConversationType,
     CspE2eStatusUpdateType,
     MessageDirection,
-    MessageType,
+    type MessageType,
     NonceScope,
     ReceiverType,
     CspE2eGroupStatusUpdateType,
@@ -32,6 +32,7 @@ import {
 import {getTextForLocation} from '~/common/network/protocol/task/common/location';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/reflected-delivery-receipt';
+import {ReflectedMessageContentUpdateTask} from '~/common/network/protocol/task/d2d/reflected-message-content-update';
 import {
     type AnyInboundMessageInitFragment,
     getConversationById,
@@ -41,8 +42,6 @@ import {
     type InboundTextMessageInitFragment,
     type InboundVideoMessageInitFragment,
     messageReferenceDebugFor,
-    type EditMessageFragment,
-    type DeleteMessageFragment,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import * as structbuf from '~/common/network/structbuf';
 import type {
@@ -53,7 +52,6 @@ import type {
 } from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
-import {u64ToHexLe} from '~/common/utils/number';
 
 import {ReflectedGroupNameTask} from './reflected-group-name';
 import {ReflectedGroupProfilePictureTask} from './reflected-group-profile-picture';
@@ -72,9 +70,8 @@ type CommonInboundMessageInitFragment = Omit<
 type MessageProcessingInstructions =
     | ConversationMessageInstructions
     | GroupControlMessageInstructions
-    | StatusUpdateInstructions
-    | EditMessageInstructions
-    | DeleteMessageInstructions;
+    | MessageContentUpdateInstructions
+    | StatusUpdateInstructions;
 
 interface BaseProcessingInstructions {
     /**
@@ -92,22 +89,16 @@ interface ConversationMessageInstructions extends BaseProcessingInstructions {
     readonly initFragment: AnyInboundMessageInitFragment;
 }
 
-interface EditMessageInstructions extends BaseProcessingInstructions {
-    readonly messageCategory: 'edit-conversation-message';
-    readonly conversationId: ContactConversationId | GroupConversationId;
-    readonly updatedMessageFragment: EditMessageFragment;
-}
-interface DeleteMessageInstructions extends BaseProcessingInstructions {
-    readonly messageCategory: 'delete-conversation-message';
-    readonly conversationId: ContactConversationId | GroupConversationId;
-    readonly updatedMessageFragment: DeleteMessageFragment;
-}
-
 interface GroupControlMessageInstructions extends BaseProcessingInstructions {
     readonly messageCategory: 'group-control';
     /**
      * The subtask to run for processing the group control message.
      */
+    readonly task: ComposableTask<PassiveTaskCodecHandle, unknown>;
+}
+
+interface MessageContentUpdateInstructions extends BaseProcessingInstructions {
+    readonly messageCategory: 'message-content-update';
     readonly task: ComposableTask<PassiveTaskCodecHandle, unknown>;
 }
 
@@ -217,59 +208,6 @@ export class ReflectedIncomingMessageTask
 
         // Process / save the message
         switch (instructions.messageCategory) {
-            case 'delete-conversation-message':
-            case 'edit-conversation-message': {
-                const conversation = getConversationById(model, instructions.conversationId)?.get();
-                if (conversation === undefined) {
-                    this._log.error(
-                        `Discarding ${this._direction} ${messageTypeDebug} message because conversation was not found in database`,
-                        messageReferenceDebug,
-                    );
-                    return;
-                }
-
-                const messageStore = conversation.controller.getMessage(
-                    instructions.updatedMessageFragment.messageId,
-                );
-
-                if (messageStore === undefined) {
-                    this._log.warn(
-                        `Discarding ${this._direction} ${messageTypeDebug} message as the target message with ID ${instructions.updatedMessageFragment.messageId} does not exist`,
-                        messageReferenceDebug,
-                    );
-                    return;
-                }
-
-                if (messageStore.type === MessageType.DELETED) {
-                    this._log.warn(
-                        `Discarding ${messageTypeDebug} message ${u64ToHexLe(
-                            messageStore.get().view.id,
-                        )} as the referenced message was already deleted.`,
-                    );
-                    return;
-                }
-
-                switch (instructions.messageCategory) {
-                    case 'delete-conversation-message':
-                        conversation.controller.deleteMessage.fromSync(
-                            instructions.updatedMessageFragment.messageId,
-                            instructions.updatedMessageFragment.deletedAt,
-                        );
-
-                        break;
-                    case 'edit-conversation-message':
-                        messageStore.get().controller.editMessage.fromSync({
-                            newText: instructions.updatedMessageFragment.newText,
-                            lastEditedAt: instructions.updatedMessageFragment.lastEditedAt,
-                        });
-                        break;
-                    default:
-                        unreachable(instructions);
-                }
-
-                return;
-            }
-
             case 'conversation-message': {
                 // Get conversation
                 const conversation = getConversationById(model, instructions.conversationId);
@@ -337,6 +275,7 @@ export class ReflectedIncomingMessageTask
             }
 
             case 'group-control':
+            case 'message-content-update':
             case 'status-update': {
                 this._log.debug('Running the sub-task');
                 await instructions.task.run(handle);
@@ -572,15 +511,19 @@ export class ReflectedIncomingMessageTask
                 return instructions;
             }
 
+            // Message content update messages
             case CspE2eMessageUpdateType.EDIT_MESSAGE: {
-                const instructions: EditMessageInstructions = {
-                    messageCategory: 'edit-conversation-message',
-                    conversationId: {type: ReceiverType.CONTACT, identity: senderIdentity},
-                    updatedMessageFragment: {
-                        newText: validatedBody.message.text,
-                        messageId: validatedBody.message.messageId,
-                        lastEditedAt: createdAt,
-                    },
+                const instructions: MessageContentUpdateInstructions = {
+                    messageCategory: 'message-content-update',
+                    task: new ReflectedMessageContentUpdateTask(
+                        this._services,
+                        validatedBody.message.messageId,
+                        {type: ReceiverType.CONTACT, identity: senderIdentity},
+                        {type: 'edit', newText: validatedBody.message.text},
+                        createdAt,
+                        MessageDirection.INBOUND,
+                        this._log,
+                    ),
                 };
                 return instructions;
             }
@@ -591,31 +534,40 @@ export class ReflectedIncomingMessageTask
                         validatedBody.message.innerData.byteLength,
                     ),
                 );
-                const instructions: EditMessageInstructions = {
-                    messageCategory: 'edit-conversation-message',
-                    conversationId: {
-                        type: ReceiverType.GROUP,
-                        creatorIdentity: validatedBody.message.creatorIdentity,
-                        groupId: validatedBody.message.groupId,
-                    },
-                    updatedMessageFragment: {
-                        newText: editMessage.text,
-                        messageId: editMessage.messageId,
-                        lastEditedAt: createdAt,
-                    },
+
+                const instructions: MessageContentUpdateInstructions = {
+                    messageCategory: 'message-content-update',
+                    task: new ReflectedMessageContentUpdateTask(
+                        this._services,
+                        editMessage.messageId,
+                        {
+                            type: ReceiverType.GROUP,
+                            creatorIdentity: validatedBody.message.creatorIdentity,
+                            groupId: validatedBody.message.groupId,
+                        },
+                        {type: 'edit', newText: editMessage.text},
+                        createdAt,
+                        MessageDirection.INBOUND,
+                        this._log,
+                    ),
                 };
                 return instructions;
             }
 
             case CspE2eMessageUpdateType.DELETE_MESSAGE: {
-                const instructions: DeleteMessageInstructions = {
-                    messageCategory: 'delete-conversation-message',
-                    conversationId: {type: ReceiverType.CONTACT, identity: senderIdentity},
-                    updatedMessageFragment: {
-                        messageId: validatedBody.message.messageId,
-                        deletedAt: createdAt,
-                    },
+                const instructions: MessageContentUpdateInstructions = {
+                    messageCategory: 'message-content-update',
+                    task: new ReflectedMessageContentUpdateTask(
+                        this._services,
+                        validatedBody.message.messageId,
+                        {type: ReceiverType.CONTACT, identity: senderIdentity},
+                        {type: 'delete'},
+                        createdAt,
+                        MessageDirection.INBOUND,
+                        this._log,
+                    ),
                 };
+
                 return instructions;
             }
 
@@ -626,17 +578,21 @@ export class ReflectedIncomingMessageTask
                         validatedBody.message.innerData.byteLength,
                     ),
                 );
-                const instructions: DeleteMessageInstructions = {
-                    messageCategory: 'delete-conversation-message',
-                    conversationId: {
-                        type: ReceiverType.GROUP,
-                        creatorIdentity: validatedBody.message.creatorIdentity,
-                        groupId: validatedBody.message.groupId,
-                    },
-                    updatedMessageFragment: {
-                        messageId: deletedMessage.messageId,
-                        deletedAt: createdAt,
-                    },
+                const instructions: MessageContentUpdateInstructions = {
+                    messageCategory: 'message-content-update',
+                    task: new ReflectedMessageContentUpdateTask(
+                        this._services,
+                        deletedMessage.messageId,
+                        {
+                            type: ReceiverType.GROUP,
+                            creatorIdentity: validatedBody.message.creatorIdentity,
+                            groupId: validatedBody.message.groupId,
+                        },
+                        {type: 'delete'},
+                        createdAt,
+                        MessageDirection.INBOUND,
+                        this._log,
+                    ),
                 };
                 return instructions;
             }

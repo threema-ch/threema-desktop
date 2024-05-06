@@ -69,6 +69,7 @@ import {
 import {commonGroupReceiveSteps} from '~/common/network/protocol/task/common/group-helpers';
 import {getTextForLocation} from '~/common/network/protocol/task/common/location';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
+import {IncomingMessageContentUpdateTask} from '~/common/network/protocol/task/csp/incoming-message-content-update';
 import {
     messageReferenceDebugFor,
     type AnyInboundMessageInitFragment,
@@ -77,8 +78,6 @@ import {
     type InboundImageMessageInitFragment,
     type InboundTextMessageInitFragment,
     type InboundVideoMessageInitFragment,
-    type EditMessageFragment,
-    type DeleteMessageFragment,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
@@ -301,7 +300,7 @@ function getD2dIncomingMessage(
 type ContactOrInitFragment = LocalModelStore<Contact> | Omit<ContactInit, 'nickname'>;
 
 /** An existing contact or everything we need to create a contact. */
-type ContactOrInit = LocalModelStore<Contact> | ContactInit;
+export type ContactOrInit = LocalModelStore<Contact> | ContactInit;
 
 /**
  * The message processing instructions determine how an incoming message should be processed.
@@ -312,9 +311,8 @@ type MessageProcessingInstructions =
     | GroupControlMessageInstructions
     | StatusUpdateInstructions
     | ForwardSecurityMessageInstructions
-    | EditMessageInstructions
-    | UnhandledMessageInstructions
-    | DeleteMessageInstructions;
+    | MessageUpdateInstructions
+    | UnhandledMessageInstructions;
 
 interface BaseProcessingInstructions {
     /**
@@ -386,22 +384,13 @@ interface ForwardSecurityMessageInstructions extends BaseProcessingInstructions 
     readonly task: ComposableTask<ActiveTaskCodecHandle<'volatile'>, unknown>;
 }
 
-interface EditMessageInstructions extends BaseProcessingInstructions {
-    readonly messageCategory: 'edit-conversation-message';
+interface MessageUpdateInstructions extends BaseProcessingInstructions {
+    readonly messageCategory: 'message-content-update';
     readonly conversationId: ContactConversationId | GroupConversationId;
     readonly deliveryReceipt: false;
     readonly missingContactHandling: 'discard';
-    readonly updatedMessageFragment: EditMessageFragment;
     readonly reflectFragment: D2dIncomingMessageFragment;
-}
-
-interface DeleteMessageInstructions extends BaseProcessingInstructions {
-    readonly messageCategory: 'delete-conversation-message';
-    readonly conversationId: ContactConversationId | GroupConversationId;
-    readonly deliveryReceipt: false;
-    readonly missingContactHandling: 'discard';
-    readonly updatedMessageFragment: DeleteMessageFragment;
-    readonly reflectFragment: D2dIncomingMessageFragment;
+    readonly task: ComposableTask<ActiveTaskCodecHandle<'volatile'>, unknown>;
 }
 
 interface UnhandledMessageInstructions extends BaseProcessingInstructions {
@@ -696,8 +685,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         if (
             ((instructions.messageCategory === 'conversation-message' ||
                 instructions.messageCategory === 'status-update' ||
-                instructions.messageCategory === 'edit-conversation-message' ||
-                instructions.messageCategory === 'delete-conversation-message') &&
+                instructions.messageCategory === 'message-content-update') &&
                 instructions.conversationId.type === ReceiverType.GROUP) ||
             (instructions.messageCategory === 'unhandled' &&
                 instructions.conversationId.type === ReceiverType.GROUP &&
@@ -766,8 +754,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         instructions.initFragment.receivedAt = incomingMessageReflectedAt;
                     }
                     break;
-                case 'edit-conversation-message':
-                case 'delete-conversation-message':
+                case 'message-content-update':
                 case 'status-update':
                 case 'contact-control':
                 case 'group-control':
@@ -779,103 +766,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         let conversation: LocalModelStore<Conversation>;
         // Process / save the message
         switch (instructions.messageCategory) {
-            case 'delete-conversation-message':
-            case 'edit-conversation-message': {
-                // 1. Lookup the message with message_id originally sent by the sender within the
-                //    associated conversation and let message be the result.
-                assert(
-                    senderContactOrInit instanceof LocalModelStore,
-                    'Contact should have been created by IncomingMessageTask, but was not',
-                );
-                if (instructions.conversationId.type === ReceiverType.CONTACT) {
-                    conversation = senderContactOrInit.get().controller.conversation();
-                } else {
-                    group = model.groups.getByGroupIdAndCreator(
-                        instructions.conversationId.groupId,
-                        instructions.conversationId.creatorIdentity,
-                    );
-                    if (group === undefined) {
-                        this._log.warn(
-                            `Discarding ${messageTypeDebug} message ${u64ToHexLe(
-                                this._id,
-                            )} as the referenced group does not exist`,
-                            messageReferenceDebug,
-                        );
-                        return await this._discard(handle);
-                    }
-                    conversation = group.get().controller.conversation();
-                }
-                const message = conversation
-                    .get()
-                    .controller.getMessage(instructions.updatedMessageFragment.messageId);
-
-                // 2. If `message` is not defined or the sender is not the original sender of
-                //    `message`, discard the message and abort these steps.
-                if (message === undefined) {
-                    this._log.warn(
-                        `Discarding ${messageTypeDebug} message ${u64ToHexLe(
-                            this._id,
-                        )} as the target message with ID ${u64ToHexLe(instructions.updatedMessageFragment.messageId)} was not found`,
-                        messageReferenceDebug,
-                    );
-                    return await this._discard(handle);
-                }
-
-                if (message.ctx !== MessageDirection.INBOUND) {
-                    this._log.warn(
-                        `Discarding ${messageTypeDebug} message ${u64ToHexLe(
-                            this._id,
-                        )} as the target message with ID ${u64ToHexLe(instructions.updatedMessageFragment.messageId)} was not inbound`,
-                        messageReferenceDebug,
-                    );
-                    return await this._discard(handle);
-                }
-
-                // 3. If `message` is not editable (see the associated _Edit applies to_
-                // property), discard the message and abort these steps.
-                if (message.type === MessageType.DELETED) {
-                    this._log.warn(
-                        `Discarding ${messageTypeDebug} message ${u64ToHexLe(
-                            this._id,
-                        )} as the referenced message was already deleted.`,
-                    );
-                    return await this._discard(handle);
-                }
-
-                const messageSender = message.get().controller.sender();
-                if (messageSender.ctx !== senderContactOrInit.ctx) {
-                    this._log.warn(
-                        `Discarding ${messageTypeDebug} message ${u64ToHexLe(
-                            this._id,
-                        )} as the original sender and the editor do not match`,
-                        messageReferenceDebug,
-                    );
-                    return await this._discard(handle);
-                }
-
-                switch (instructions.messageCategory) {
-                    case 'delete-conversation-message':
-                        await conversation
-                            .get()
-                            .controller.deleteMessage.fromRemote(
-                                handle,
-                                instructions.updatedMessageFragment.messageId,
-                                instructions.updatedMessageFragment.deletedAt,
-                            );
-
-                        break;
-                    case 'edit-conversation-message':
-                        await message.get().controller.editMessage.fromRemote(handle, {
-                            newText: instructions.updatedMessageFragment.newText,
-                            lastEditedAt: instructions.updatedMessageFragment.lastEditedAt,
-                        });
-                        break;
-                    default:
-                        unreachable(instructions);
-                }
-
-                break;
-            }
             case 'conversation-message':
             case 'unhandled': {
                 // Assert that sender contact exists:
@@ -963,6 +853,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             }
             case 'contact-control':
             case 'group-control':
+            case 'message-content-update':
             case 'status-update':
             case 'forward-security':
                 this._log.debug('Running the sub-task');
@@ -1762,17 +1653,21 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 const updatedMessage = protobuf.csp_e2e.EditMessage.decode(
                     cspMessageBody as Uint8Array,
                 );
-                const instructions: EditMessageInstructions = {
-                    messageCategory: 'edit-conversation-message',
+                const instructions: MessageUpdateInstructions = {
+                    messageCategory: 'message-content-update',
                     conversationId: senderConversationId,
                     missingContactHandling: 'discard',
                     deliveryReceipt: false,
-                    updatedMessageFragment: {
-                        messageId: ensureMessageId(intoU64(updatedMessage.messageId)),
-                        lastEditedAt: clampedCreatedAt,
-                        newText: updatedMessage.text,
-                    },
                     reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    task: new IncomingMessageContentUpdateTask(
+                        this._services,
+                        ensureMessageId(intoU64(updatedMessage.messageId)),
+                        senderConversationId,
+                        {type: 'edit', newText: updatedMessage.text},
+                        clampedCreatedAt,
+                        senderContactOrInit,
+                        this._log,
+                    ),
                 };
                 return instructions;
             }
@@ -1792,18 +1687,23 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     creatorIdentity: validatedContainer.creatorIdentity,
                 };
 
-                const instructions: EditMessageInstructions = {
-                    messageCategory: 'edit-conversation-message',
+                const instructions: MessageUpdateInstructions = {
+                    messageCategory: 'message-content-update',
                     conversationId: groupConversationId,
                     missingContactHandling: 'discard',
                     deliveryReceipt: false,
-                    updatedMessageFragment: {
-                        messageId: ensureMessageId(intoU64(updatedMessage.messageId)),
-                        lastEditedAt: clampedCreatedAt,
-                        newText: updatedMessage.text,
-                    },
                     reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    task: new IncomingMessageContentUpdateTask(
+                        this._services,
+                        ensureMessageId(intoU64(updatedMessage.messageId)),
+                        groupConversationId,
+                        {type: 'edit', newText: updatedMessage.text},
+                        clampedCreatedAt,
+                        senderContactOrInit,
+                        this._log,
+                    ),
                 };
+
                 return instructions;
             }
 
@@ -1811,16 +1711,21 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 const deletedMessage = protobuf.csp_e2e.DeleteMessage.decode(
                     cspMessageBody as Uint8Array,
                 );
-                const instructions: DeleteMessageInstructions = {
-                    messageCategory: 'delete-conversation-message',
+                const instructions: MessageUpdateInstructions = {
+                    messageCategory: 'message-content-update',
                     conversationId: senderConversationId,
                     missingContactHandling: 'discard',
                     deliveryReceipt: false,
-                    updatedMessageFragment: {
-                        messageId: ensureMessageId(intoU64(deletedMessage.messageId)),
-                        deletedAt: clampedCreatedAt,
-                    },
                     reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    task: new IncomingMessageContentUpdateTask(
+                        this._services,
+                        ensureMessageId(intoU64(deletedMessage.messageId)),
+                        senderConversationId,
+                        {type: 'delete'},
+                        clampedCreatedAt,
+                        senderContactOrInit,
+                        this._log,
+                    ),
                 };
                 return instructions;
             }
@@ -1830,7 +1735,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
                         structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
                     );
-                const updatedMessage = protobuf.csp_e2e.DeleteMessage.decode(
+                const deletedMessage = protobuf.csp_e2e.DeleteMessage.decode(
                     validatedContainer.innerData,
                 );
 
@@ -1839,17 +1744,21 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     groupId: validatedContainer.groupId,
                     creatorIdentity: validatedContainer.creatorIdentity,
                 };
-
-                const instructions: DeleteMessageInstructions = {
-                    messageCategory: 'delete-conversation-message',
-                    conversationId: groupConversationId,
+                const instructions: MessageUpdateInstructions = {
+                    messageCategory: 'message-content-update',
+                    conversationId: senderConversationId,
                     missingContactHandling: 'discard',
                     deliveryReceipt: false,
-                    updatedMessageFragment: {
-                        messageId: ensureMessageId(intoU64(updatedMessage.messageId)),
-                        deletedAt: clampedCreatedAt,
-                    },
                     reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    task: new IncomingMessageContentUpdateTask(
+                        this._services,
+                        ensureMessageId(intoU64(deletedMessage.messageId)),
+                        groupConversationId,
+                        {type: 'delete'},
+                        clampedCreatedAt,
+                        senderContactOrInit,
+                        this._log,
+                    ),
                 };
                 return instructions;
             }
