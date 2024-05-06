@@ -116,6 +116,7 @@
       profile-picture-button-counter-background-color: -g($branding, primary-color-50),
       profile-picture-button-counter-text-color: -g($branding, primary-color-600),
       // Conversation
+      conversation-header-background-color: rgba(#ffffff, 0.8),
       conversation-message-options-caret-color: rgba(#000000, 88%),
       // Conversation preview
       conversation-preview-draft-text: theme.$alert-red,

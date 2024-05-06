@@ -846,14 +846,35 @@
     height: 100%;
 
     .header {
+      z-index: 1;
+
       grid-area: header;
+
+      background-color: var(--cc-conversation-header-background-color);
+      backdrop-filter: blur(10px);
+
+      border-bottom: 1px solid var(--t-panel-gap-color);
     }
 
     .messages {
+      z-index: 0;
+
       grid-area: messages;
+
+      grid-row-start: header;
+      grid-column-start: header;
+      grid-row-end: messages;
+      grid-column-end: messages;
+
+      & :global(> .chat > .list) {
+        padding-top: calc(rem(64px) + rem(8px));
+        scroll-padding-top: calc(rem(64px) + rem(8px));
+      }
     }
 
     .private {
+      z-index: 2;
+
       grid-row-start: messages;
       grid-column-start: messages;
       grid-row-end: footer;
@@ -882,6 +903,8 @@
     }
 
     .footer {
+      z-index: 1;
+
       grid-area: footer;
       border-top: rem(1px) var(--t-panel-gap-color) solid;
       box-sizing: border-box;
