@@ -45,11 +45,18 @@
   let delayedConnectionState: ConnectionState | undefined = undefined;
   let updateDelayedConnectionStateTimerCanceller: TimerCanceller | undefined = undefined;
 
+  // Activity display state
+  let activityDisplayState: 'collapsed' | 'expanded' = 'collapsed';
+
   // Set initial display mode and manage the layout
   onMount(() => {
     displayModeObserver.update();
     return manageLayout({display, router}, layout);
   });
+
+  function handleClickToggleExpandActivity(): void {
+    activityDisplayState = activityDisplayState === 'collapsed' ? 'expanded' : 'collapsed';
+  }
 
   function toggleDebugPanel(): void {
     $debugPanelState = $debugPanelState === 'show' ? 'hide' : 'show';
@@ -210,15 +217,19 @@
 
       <!-- Aside Panel -->
       {#if asidePanelComponent !== undefined}
-        <aside>
+        <aside class="aside">
           <svelte:component this={asidePanelComponent} {services} />
         </aside>
       {/if}
 
       <!-- Activities panel -->
       {#if activityComponent !== undefined}
-        <aside>
-          <svelte:component this={activityComponent} {services} />
+        <aside class={`activity ${activityDisplayState}`}>
+          <svelte:component
+            this={activityComponent}
+            {services}
+            on:clicktoggleexpand={handleClickToggleExpandActivity}
+          />
         </aside>
       {/if}
 
@@ -277,8 +288,16 @@
       background-color: var(--t-main-background-color);
     }
 
-    aside {
+    .aside {
       @extend %-panel;
+      background-color: var(--t-aside-background-color);
+      overflow-y: auto;
+    }
+
+    .activity {
+      @extend %-panel;
+      display: block;
+      container: activity / inline-size;
       background-color: var(--t-aside-background-color);
       overflow-y: auto;
     }
@@ -294,21 +313,41 @@
         'main' 100%
         / 100%;
 
-      &[data-layout='nav'] {
-        nav {
+      &:has(.activity.collapsed) {
+        grid-template:
+          'main activity' 100%
+          / 1fr rem(64px);
+
+        .activity {
+          grid-area: activity;
+        }
+      }
+
+      // Activity is expanded (covers entire view).
+      &:has(.activity.expanded) {
+        .activity {
           @include show(main);
         }
       }
 
-      &[data-layout='main'] {
-        main {
-          @include show(main);
+      // Activity is hidden or collapsed.
+      &:not(:has(.activity.expanded)) {
+        &[data-layout='nav'] {
+          nav {
+            @include show(main);
+          }
         }
-      }
 
-      &[data-layout='aside'] {
-        aside {
-          @include show(main);
+        &[data-layout='main'] {
+          main {
+            @include show(main);
+          }
+        }
+
+        &[data-layout='aside'] {
+          .aside {
+            @include show(main);
+          }
         }
       }
     }
@@ -319,37 +358,78 @@
         'nav main' 100%
         / #{rem(308px)} 1fr;
 
-      &[data-layout='nav-main'] {
-        nav {
-          @include show(nav);
-        }
-        main {
-          @include show(main);
+      &:has(.activity.collapsed) {
+        grid-template:
+          'nav main activity' 100%
+          / #{rem(308px)} 1fr rem(64px);
+
+        .activity {
+          grid-area: activity;
         }
       }
 
-      &[data-layout='nav-aside'] {
-        nav {
-          @include show(nav);
+      // Activity is expanded (covers entire view).
+      &:has(.activity.expanded) {
+        .activity {
+          grid-area: nav / nav / main / main;
         }
-        aside {
-          @include show(main);
+      }
+
+      // Activity is hidden or collapsed.
+      &:not(:has(.activity.expanded)) {
+        &[data-layout='nav-main'] {
+          nav {
+            @include show(nav);
+          }
+          main {
+            @include show(main);
+          }
+        }
+
+        &[data-layout='nav-aside'] {
+          nav {
+            @include show(nav);
+          }
+          .aside {
+            @include show(main);
+          }
         }
       }
     }
 
     // Large
     &[data-display='large'] {
-      grid-template:
-        'nav main' 100%
-        / minmax(rem(308px), rem(400px)) 1fr;
-
       &[data-layout='nav-main'] {
-        nav {
-          @include show(nav);
+        grid-template:
+          'nav main' 100%
+          / minmax(rem(308px), rem(400px)) 1fr;
+
+        &:has(.activity.collapsed) {
+          grid-template:
+            'nav main activity' 100%
+            / minmax(rem(308px), rem(400px)) 1fr rem(308px);
+
+          .activity {
+            grid-area: activity;
+          }
         }
-        main {
-          @include show(main);
+
+        // Activity is expanded (covers entire view).
+        &:has(.activity.expanded) {
+          .activity {
+            grid-area: nav / nav / main / main;
+          }
+        }
+
+        // Activity is hidden or collapsed.
+        &:not(:has(.activity.expanded)) {
+          nav {
+            @include show(nav);
+          }
+
+          main {
+            @include show(main);
+          }
         }
       }
 
@@ -358,23 +438,51 @@
           'nav main aside' 100%
           / minmax(rem(308px), rem(400px)) minmax(rem(410px), 1fr) rem(308px);
 
-        nav {
-          @include show(nav);
-        }
-        main {
-          @include show(main);
-        }
-        aside {
-          @include show(aside);
-        }
-      }
+        &:has(.activity.collapsed) {
+          grid-template:
+            'nav main aside activity' 100%
+            / minmax(rem(308px), rem(400px)) 1fr rem(308px) rem(64px);
 
-      @media screen and (min-width: rem(1280px)) {
-        &[data-display='large'] {
-          &[data-layout='nav-main-aside'] {
-            grid-template:
-              'nav main aside' 100%
-              / #{rem(400px)} 1fr minmax(rem(308px), rem(400px));
+          .activity {
+            grid-area: activity;
+          }
+        }
+
+        // Activity is expanded (covers entire view).
+        &:has(.activity.expanded) {
+          .activity {
+            grid-area: nav / nav / aside / aside;
+          }
+        }
+
+        // Activity is hidden or collapsed.
+        &:not(:has(.activity.expanded)) {
+          nav {
+            @include show(nav);
+          }
+
+          main {
+            @include show(main);
+          }
+
+          .aside {
+            @include show(aside);
+          }
+        }
+
+        @media screen and (min-width: rem(1280px)) {
+          &[data-display='large'] {
+            &[data-layout='nav-main-aside'] {
+              grid-template:
+                'nav main aside' 100%
+                / #{rem(400px)} 1fr minmax(rem(308px), rem(400px));
+
+              &:has(.activity.collapsed) {
+                grid-template:
+                  'nav main aside activity' 100%
+                  / #{rem(400px)} 1fr #{rem(308px)} #{rem(308px)};
+              }
+            }
           }
         }
       }
