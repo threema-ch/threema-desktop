@@ -93,6 +93,16 @@ const PARAM_IDENTITY_DATA_SCHEMA = v.object({
 });
 
 /**
+ * Information needed to look up a group call.
+ */
+const PARAM_GROUP_CALL_LOOKUP_SCHEMA = v.object({
+    groupUid: v
+        .bigint()
+        .map(ensureU64)
+        .map((value) => value as DbGroupUid),
+});
+
+/**
  * Path definition.
  */
 interface RoutePath {
@@ -314,6 +324,12 @@ function defineModal<const TRoute extends RawRouteDefinition>(
     return defineImplementation(route);
 }
 
+function defineActivity<const TRoute extends RawRouteDefinition>(
+    route: TRoute,
+): RouteDefinition<TRoute> {
+    return defineImplementation(route);
+}
+
 /**
  * If `value` is not undefined, apply the `parseInt` function and ensure that the value is not too
  * large to fit in an u53.
@@ -433,6 +449,12 @@ export const ROUTE_DEFINITIONS = {
             params: undefined,
         }),
     },
+    activity: {
+        groupCall: defineActivity({
+            id: 'groupCall',
+            params: PARAM_GROUP_CALL_LOOKUP_SCHEMA,
+        }),
+    },
 };
 /* eslint-enable prefer-regex-literals */
 
@@ -458,6 +480,11 @@ export interface RouteInstances {
             (typeof ROUTE_DEFINITIONS.modal)[K]
         >;
     };
+    activity: {
+        [K in keyof typeof ROUTE_DEFINITIONS.activity]: RouteInstance<
+            (typeof ROUTE_DEFINITIONS.activity)[K]
+        >;
+    };
 }
 
 /**
@@ -468,6 +495,7 @@ export interface AnyRouteInstance {
     main: RouteInstances['main'][keyof typeof ROUTE_DEFINITIONS.main];
     aside: RouteInstances['aside'][keyof typeof ROUTE_DEFINITIONS.aside] | undefined;
     modal: RouteInstances['modal'][keyof typeof ROUTE_DEFINITIONS.modal] | undefined;
+    activity: RouteInstances['activity'][keyof typeof ROUTE_DEFINITIONS.activity] | undefined;
 }
 
 /**

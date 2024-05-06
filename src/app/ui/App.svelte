@@ -105,6 +105,11 @@
         services: AppServicesForSvelte;
       }>
     | undefined;
+  let activityComponent:
+    | typeof SvelteComponent<{
+        services: AppServices;
+      }>
+    | undefined;
   $: {
     switch ($router.nav.id) {
       case 'conversationList':
@@ -161,6 +166,18 @@
       default:
         unreachable(modalId, new Error('Unhandled modal router state'));
     }
+    const activityId = $router.activity?.id;
+    switch (activityId) {
+      case undefined:
+        activityComponent = undefined;
+        break;
+      case 'groupCall':
+        // TODO(DESK-1408): Add group call view.
+        activityComponent = undefined;
+        break;
+      default:
+        unreachable(activityId, new Error('Unhandled activity router state'));
+    }
   }
 
   $: updateDelayedConnectionState($connectionState as unknown as ConnectionState, 3000);
@@ -195,6 +212,13 @@
       {#if asidePanelComponent !== undefined}
         <aside>
           <svelte:component this={asidePanelComponent} {services} />
+        </aside>
+      {/if}
+
+      <!-- Activities panel -->
+      {#if activityComponent !== undefined}
+        <aside>
+          <svelte:component this={activityComponent} {services} />
         </aside>
       {/if}
 

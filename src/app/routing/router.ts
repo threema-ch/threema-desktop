@@ -15,6 +15,7 @@ export interface RouterState {
     main: AnyRouteInstance['main'];
     aside: AnyRouteInstance['aside'] | undefined;
     modal: AnyRouteInstance['modal'] | undefined;
+    activity: AnyRouteInstance['activity'] | undefined;
 }
 
 /**
@@ -25,6 +26,7 @@ const INITIAL_STATE: RouterState = {
     main: ROUTE_DEFINITIONS.main.welcome.withoutParams(),
     aside: undefined,
     modal: undefined,
+    activity: undefined,
 };
 
 /**
@@ -109,7 +111,13 @@ function stateFromUrlFragment(fragment: string, log: Logger): RouterState | unde
             //       conversation list). Once we need to set the nav panel based on the main panel
             //       (e.g. for the settings), we need to change this logic. (For example, every
             //       route path could specify the required nav panel.)
-            return {nav: INITIAL_STATE.nav, main: instance, aside: undefined, modal: undefined};
+            return {
+                nav: INITIAL_STATE.nav,
+                main: instance,
+                aside: undefined,
+                modal: undefined,
+                activity: undefined,
+            };
         }
     }
 
@@ -229,6 +237,7 @@ export class Router extends WritableStore<RouterState> {
         main: AnyRouteInstance['main'],
         aside: AnyRouteInstance['aside'] | undefined,
         modal?: AnyRouteInstance['modal'],
+        activity?: AnyRouteInstance['activity'],
     ): void {
         const current = this.get();
         if (
@@ -238,12 +247,14 @@ export class Router extends WritableStore<RouterState> {
             nav.params !== current.nav.params ||
             aside?.id !== current.aside?.id ||
             aside?.params !== current.aside?.params ||
-            modal?.id !== current.modal?.id
+            modal?.id !== current.modal?.id ||
+            activity?.id !== current.activity?.id ||
+            activity?.params !== current.activity?.params
         ) {
             this._log.debug(
-                `Router: Navigating to (${nav.id} ${main.id} ${aside?.id} ${modal?.id})`,
+                `Router: Navigating to (${nav.id} ${main.id} ${aside?.id} ${modal?.id} ${activity?.id})`,
             );
-            this._setState({nav, main, aside, modal});
+            this._setState({nav, main, aside, modal, activity});
         }
     }
 
