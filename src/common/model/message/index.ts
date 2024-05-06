@@ -638,28 +638,6 @@ export abstract class CommonBaseInteractableMessageModelController<
         super(uid, _type, conversation, services);
     }
 
-    protected _read(
-        message: GuardedStoreHandle<TView>,
-        view: Readonly<TView>,
-        readAt: Date,
-        direction: MessageDirection,
-    ): void {
-        const isUnread = view.readAt === undefined;
-        const isInbound = direction === MessageDirection.INBOUND;
-
-        // Update the message
-        message.update(() => {
-            const change = {readAt};
-            update(this._services, this._log, this._conversation.uid, this.uid, this._type, change);
-            return change as Partial<TView>;
-        });
-
-        // Update the unread count of the conversation
-        if (isUnread && isInbound) {
-            this._conversation.decrementUnreadMessageCount();
-        }
-    }
-
     protected _reaction(
         message: GuardedStoreHandle<TView>,
         view: Readonly<TView>,
@@ -682,6 +660,28 @@ export abstract class CommonBaseInteractableMessageModelController<
             createOrUpdateReaction(this._services, this.uid, messageReaction);
             return change as Partial<TView>;
         });
+    }
+
+    protected _read(
+        message: GuardedStoreHandle<TView>,
+        view: Readonly<TView>,
+        readAt: Date,
+        direction: MessageDirection,
+    ): void {
+        const isUnread = view.readAt === undefined;
+        const isInbound = direction === MessageDirection.INBOUND;
+
+        // Update the message
+        message.update(() => {
+            const change = {readAt};
+            update(this._services, this._log, this._conversation.uid, this.uid, this._type, change);
+            return change as Partial<TView>;
+        });
+
+        // Update the unread count of the conversation
+        if (isUnread && isInbound) {
+            this._conversation.decrementUnreadMessageCount();
+        }
     }
 
     /**

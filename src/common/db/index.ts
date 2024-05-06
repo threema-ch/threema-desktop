@@ -891,6 +891,16 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     ) => {deletedFileIds: FileId[]};
 
     /**
+     * Updates the `deliveredAt` and `readAt` timestamp of a deleted message.
+     *
+     * Returns false if the message could not be found or if it was not deleted.
+     */
+    readonly updateDeletedMessageTimestamps: (
+        messageUid: DbMessageUid,
+        timestamps: {deliveredAt: Date} | {readAt: Date},
+    ) => boolean;
+
+    /**
      * Create or update the reaction to a specified message.
      */
     readonly createOrUpdateMessageReaction: (reaction: DbCreate<DbMessageReaction>) => void;

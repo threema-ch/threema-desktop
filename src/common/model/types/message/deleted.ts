@@ -1,5 +1,9 @@
 import type {MessageDirection, MessageType} from '~/common/enum';
-import type {LocalModel} from '~/common/model/types/common';
+import type {
+    ControllerUpdateFromSource,
+    ControllerUpdateFromSync,
+    LocalModel,
+} from '~/common/model/types/common';
 import type {Contact} from '~/common/model/types/contact';
 import type {
     CommonBaseMessageController,
@@ -31,10 +35,31 @@ export type OutboundDeletedMessageInit = OutboundBaseMessageInit<MessageType.DEL
 
 export type InboundDeletedMessageController =
     CommonBaseMessageController<InboundDeletedMessageView> & {
+        /**
+         * The user read the message on a linked device.
+         *
+         * Note: This interface does not allow updating `fromLocal`, because when viewing a
+         *       conversation on the local device, the _entire_ conversation should be marked as
+         *       read. Thus, use `ConversationController.read.fromLocal` instead.
+         */
+        readonly read: ControllerUpdateFromSync<[readAt: Date]>;
+
         readonly sender: () => LocalModelStore<Contact>;
     };
 export type OutboundDeletedMessageController =
-    CommonBaseMessageController<OutboundDeletedMessageView>;
+    CommonBaseMessageController<OutboundDeletedMessageView> & {
+        /**
+         * The message was delivered to the recipient.
+         *
+         * (Note: On the protocol level, this corresponds to a delivery receipt of type "received".)
+         */
+        readonly delivered: Omit<ControllerUpdateFromSource<[deliveredAt: Date]>, 'fromLocal'>;
+
+        /**
+         * The receiver read the message.
+         */
+        readonly read: Omit<ControllerUpdateFromSource<[readAt: Date]>, 'fromLocal'>;
+    };
 
 export type OutboundDeletedMessageModel = LocalModel<
     OutboundDeletedMessageView,

@@ -2268,6 +2268,23 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         }, this._log);
     }
 
+    /** @inheritdoc */
+    public updateDeletedMessageTimestamps(
+        messageUid: DbMessageUid,
+        timestamps: {deliveredAt?: Date} | {readAt: Date},
+    ): boolean {
+        const rowsUpdated = sync(
+            this._db
+                .update(tMessage)
+                .set(timestamps)
+                .where(tMessage.uid.equals(messageUid))
+                .and(tMessage.messageType.equals(MessageType.DELETED))
+                .executeUpdate(),
+        );
+
+        return rowsUpdated > 0;
+    }
+
     private _processFileDataChanges<TDbMediaMessage extends DbAnyMediaMessage>(
         message: Partial<TDbMediaMessage> & Pick<DbAnyMediaMessage, 'type' | 'uid'>,
         update: UpdateSetsForDbMessage<TDbMediaMessage>,

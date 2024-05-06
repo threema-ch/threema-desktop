@@ -38,14 +38,6 @@ export class ReflectedDeliveryReceiptTask extends DeliveryReceiptTaskBase<Passiv
         message: AnyOutboundMessageModel,
         deliveredAt: Date,
     ): void {
-        if (message.type === MessageType.DELETED) {
-            this._log.warn(
-                `Skipping message update for ${u64ToHexLe(
-                    message.view.id,
-                )} because it was already deleted`,
-            );
-            return;
-        }
         message.controller.delivered.fromSync(deliveredAt);
     }
 
@@ -54,14 +46,6 @@ export class ReflectedDeliveryReceiptTask extends DeliveryReceiptTaskBase<Passiv
         message: AnyMessageModel,
         readAt: Date,
     ): void {
-        if (message.type === MessageType.DELETED) {
-            this._log.warn(
-                `Skipping message update for ${u64ToHexLe(
-                    message.view.id,
-                )} because it was already deleted`,
-            );
-            return;
-        }
         message.controller.read.fromSync(readAt);
     }
 

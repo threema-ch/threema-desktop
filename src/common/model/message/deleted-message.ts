@@ -16,6 +16,7 @@ import type {
 } from '~/common/model/types/message/deleted';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
@@ -80,12 +81,42 @@ export function getDeletedMessageModelStore(
     }
 }
 
+/**
+ * Update the timestamp of a deleted message. It is the responsibility of the caller to make sure
+ * the message direction and the updated timestamps match.
+ *
+ * @throws if the message was not found or not deleted yet.
+ *
+ * Note: ReceivedAt is not necessary here, since a normal message always preceeds a delete message.
+ * Therefore, the received at timestamp will be updated before the message can be deleted.
+ */
+function update(
+    services: ServicesForModel,
+    uid: DbMessageUid,
+    change: {readAt: Date} | {deliveredAt: Date},
+): void {
+    const updated = services.db.updateDeletedMessageTimestamps(uid, change);
+    if (!updated) {
+        throw new Error(
+            `Could not update timestamp of deleted message with UID ${uid} from database because its type was not "deleted" or it could not be found.`,
+        );
+    }
+}
+
 class InboundDeletedMessageModelController
     extends CommonBaseMessageController<InboundDeletedMessageView>
     implements InboundDeletedMessageController
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public override readonly meta = new ModelLifetimeGuard<InboundDeletedMessageView>();
+
+    public readonly read: OutboundDeletedMessageController['read'] = {
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
+        fromSync: (readAt: Date) => this._handleRead(readAt),
+        // eslint-disable-next-line @typescript-eslint/require-await
+        fromRemote: async (handle: ActiveTaskCodecHandle<'volatile'>, readAt: Date) =>
+            this._handleRead(readAt),
+    };
 
     public constructor(
         uid: UidOf<DbDeletedMessage>,
@@ -101,6 +132,23 @@ class InboundDeletedMessageModelController
     public sender(): LocalModelStore<Contact> {
         return this._sender;
     }
+
+    private _handleRead(readAt: Date): void {
+        this.meta.run((handle) => {
+            // Ignore if already marked as read
+            if (handle.view().readAt !== undefined) {
+                return;
+            }
+            // Update the message
+            handle.update(() => {
+                const change = {readAt};
+                update(this._services, this.uid, {readAt});
+                return change;
+            });
+
+            this._conversation.decrementUnreadMessageCount();
+        });
+    }
 }
 
 class OutboundDeletedMessageModelController
@@ -109,6 +157,52 @@ class OutboundDeletedMessageModelController
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public override readonly meta = new ModelLifetimeGuard<OutboundDeletedMessageView>();
+
+    public readonly delivered: OutboundDeletedMessageController['delivered'] = {
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
+        fromSync: (deliveredAt: Date) => this._handleDelivered(deliveredAt),
+        // eslint-disable-next-line @typescript-eslint/require-await
+        fromRemote: async (handle: ActiveTaskCodecHandle<'volatile'>, deliveredAt: Date) =>
+            this._handleDelivered(deliveredAt),
+    };
+
+    public readonly read: OutboundDeletedMessageController['read'] = {
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
+        fromSync: (readAt: Date) => this._handleRead(readAt),
+        // eslint-disable-next-line @typescript-eslint/require-await
+        fromRemote: async (handle: ActiveTaskCodecHandle<'volatile'>, readAt: Date) =>
+            this._handleRead(readAt),
+    };
+
+    private _handleRead(readAt: Date): void {
+        this.meta.run((handle) => {
+            // Ignore if already marked as read
+            if (handle.view().readAt !== undefined) {
+                return;
+            }
+            // Update the message
+            handle.update(() => {
+                const change = {readAt};
+                update(this._services, this.uid, {readAt});
+                return change;
+            });
+        });
+    }
+
+    private _handleDelivered(deliveredAt: Date): void {
+        this.meta.run((handle) => {
+            // Ignore if already marked as delivered
+            if (handle.view().deliveredAt !== undefined) {
+                return;
+            }
+            // Update the message
+            handle.update(() => {
+                const change = {deliveredAt};
+                update(this._services, this.uid, {deliveredAt});
+                return change;
+            });
+        });
+    }
 }
 
 export class InboundDeletedMessageModelStore extends LocalModelStore<
