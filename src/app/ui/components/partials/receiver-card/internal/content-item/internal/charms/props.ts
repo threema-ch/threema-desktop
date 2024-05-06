@@ -1,3 +1,4 @@
+import type {AnyCallProps} from '~/common/viewmodel/utils/call';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
@@ -9,15 +10,4 @@ export interface CharmsProps {
     readonly isPinned?: boolean;
     readonly isPrivate?: boolean;
     readonly notificationPolicy?: AnyReceiverData['notificationPolicy'];
-}
-
-type AnyCallProps = ActiveCallProps | JoinedCallProps;
-
-interface ActiveCallProps {
-    readonly isJoined: false;
-}
-
-interface JoinedCallProps {
-    readonly isJoined: true;
-    readonly startedAt: Date;
 }

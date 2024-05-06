@@ -1,4 +1,6 @@
 <script lang="ts">
+  import {createEventDispatcher} from 'svelte';
+
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
@@ -7,6 +9,7 @@
   import type {ModalState} from '~/app/ui/components/partials/conversation/internal/top-bar/types';
   import ClearConversationModal from '~/app/ui/components/partials/modals/clear-conversation-modal/ClearConversationModal.svelte';
   import DeleteConversationModal from '~/app/ui/components/partials/modals/delete-conversation-modal/DeleteConversationModal.svelte';
+  import ProfilePictureButton from '~/app/ui/components/partials/profile-picture-button/ProfilePictureButton.svelte';
   import ReceiverCard from '~/app/ui/components/partials/receiver-card/ReceiverCard.svelte';
   import type Popover from '~/app/ui/generic/popover/Popover.svelte';
   import type {AnchorPoint, Offset} from '~/app/ui/generic/popover/types';
@@ -22,6 +25,7 @@
 
   type $$Props = TopBarProps;
 
+  export let call: $$Props['call'] = undefined;
   export let conversation: $$Props['conversation'];
   export let receiver: $$Props['receiver'];
   export let services: $$Props['services'];
@@ -49,6 +53,10 @@
 
   let modalState: ModalState = {type: 'none'};
 
+  const dispatch = createEventDispatcher<{
+    clickjoincall: MouseEvent;
+  }>();
+
   function handleClickBack(): void {
     router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withoutParams());
   }
@@ -74,6 +82,10 @@
       default:
         unreachable(receiver.lookup, new Error('Unhandled receiverLookup type'));
     }
+  }
+
+  function handleClickJoinCall(event: MouseEvent): void {
+    dispatch('clickjoincall', event);
   }
 
   function handleClickEmptyChatOption(): void {
@@ -161,6 +173,16 @@
       </div>
     {/if}
 
+    {#if call?.isJoined === false}
+      <ProfilePictureButton
+        icon="add"
+        label={$i18n.t('messaging.label--call-join-long', 'Join Call')}
+        receivers={call.members}
+        {services}
+        on:click={handleClickJoinCall}
+      />
+    {/if}
+
     <ContextMenuProvider
       bind:popover
       {anchorPoints}
@@ -231,7 +253,9 @@
     align-items: center;
     justify-content: space-between;
     gap: rem(8px);
-    padding: rem(12px) rem(8px) rem(12px) rem(8px);
+
+    height: rem(64px);
+    padding: 0 rem(8px);
 
     .left {
       flex: 0 0 auto;

@@ -41,6 +41,18 @@ $brandings: (
     --t-color-primary: -g($b, primary-background),
     --t-color-success: -g($t, success),
 
+    // Palette
+    --t-color-primary-50: -g($b, primary-color-50),
+    --t-color-primary-100: -g($b, primary-color-100),
+    --t-color-primary-200: -g($b, primary-color-200),
+    --t-color-primary-300: -g($b, primary-color-300),
+    --t-color-primary-400: -g($b, primary-color-400),
+    --t-color-primary-500: -g($b, primary-color-500),
+    --t-color-primary-600: -g($b, primary-color-600),
+    --t-color-primary-700: -g($b, primary-color-700),
+    --t-color-primary-800: -g($b, primary-color-800),
+    --t-color-primary-900: -g($b, primary-color-900),
+
     // Main panels
     --t-panel-gap-color: color-conforms(-g($t, panel-gap), $alpha: false),
     --t-nav-background-color: color-conforms(-g($t, nav-background), $alpha: false),
@@ -176,6 +188,13 @@ $brandings: (
     -g($cc, profile-picture-overlay-badge-icon-consumer),
     --cc-profile-picture-overlay-badge-icon-work-color:
     -g($cc, profile-picture-overlay-badge-icon-work),
+
+    // ProfilePictureButton
+    --cc-profile-picture-button-background-color: -g($cc, profile-picture-button-background-color),
+    --cc-profile-picture-button-box-shadow-color: -g($cc, profile-picture-button-box-shadow-color),
+    --cc-profile-picture-button-box-shadow-color--hover: -g($cc, profile-picture-button-box-shadow-color--hover),
+    --cc-profile-picture-button-counter-background-color: -g($cc, profile-picture-button-counter-background-color),
+    --cc-profile-picture-button-counter-text-color: -g($cc, profile-picture-button-counter-text-color),
 
     // Conversation
     --cc-conversation-message-options-caret-color: -g($cc, conversation-message-options-caret-color),

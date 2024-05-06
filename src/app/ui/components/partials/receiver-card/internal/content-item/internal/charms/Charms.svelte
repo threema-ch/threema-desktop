@@ -87,7 +87,7 @@
           {#if currentDuration === undefined}
             <!-- This should never happen, but if there is an active call but no duration somehow,
             show a default label. -->
-            <span>{$i18n.t('messaging.label--call-joined', 'Joined')}</span>
+            <span>{$i18n.t('messaging.label--call-joined-short', 'Joined')}</span>
           {:else}
             <span
               class="timer"
@@ -96,7 +96,7 @@
             >
           {/if}
         {:else}
-          <span>{$i18n.t('messaging.label--call-join', 'Join')}</span>
+          <span>{$i18n.t('messaging.label--call-join-short', 'Join')}</span>
         {/if}
       </button>
     </span>

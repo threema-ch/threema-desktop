@@ -66,7 +66,12 @@
 
   function getAvatarCharms(
     currentReceiver: Pick<ContactReceiverData, 'badge'>,
-  ): AvatarCharm[] | undefined {
+    hideCharms: boolean | undefined,
+  ): AvatarCharm[] {
+    if (hideCharms === true) {
+      return [];
+    }
+
     let receiverCharm: AvatarCharm[];
     switch (currentReceiver.badge) {
       case 'contact-consumer':
@@ -175,7 +180,7 @@
 
 <Avatar
   byteStore={profilePictureStore}
-  charms={receiver.type === 'self' ? [] : getAvatarCharms(receiver)}
+  charms={receiver.type === 'self' ? [] : getAvatarCharms(receiver, options.hideCharms)}
   color={receiver.color}
   description={$i18n.t('contacts.hint--profile-picture', {
     name: receiver.name,

@@ -100,6 +100,11 @@
     | {supported: false}
     | {supported: true; notSupportedNames: string[]};
 
+  function handleClickJoinCall(event: CustomEvent<MouseEvent>): void {
+    // TODO(DESK-1447): Handle joining group call (example below).
+    // viewModelController?.joinCall();
+  }
+
   function handleClickDeleteMessage(event: CustomEvent<AnyMessageListMessage>): void {
     switch (event.detail.type) {
       case 'message':
@@ -649,6 +654,16 @@
   >
     <div class="conversation">
       <div class="header">
+        <!-- TODO(DESK-1447): Pass call state to `TopBar` (illustrative example below). Note:
+        `members` should be replaced with the actual members of the group call, not all group
+        members. -->
+        <!-- 
+          call={{
+            isJoined: false,
+            members:
+              $viewModelStore.receiver.type === 'group' ? $viewModelStore.receiver.members : [],
+          }} 
+        -->
         <TopBar
           conversation={{
             archive: async () => {
@@ -692,6 +707,7 @@
           }}
           receiver={$viewModelStore.receiver}
           {services}
+          on:clickjoincall={handleClickJoinCall}
         />
       </div>
 
@@ -823,7 +839,7 @@
     position: relative;
     display: grid;
     grid-template:
-      'header' min-content
+      'header' rem(64px)
       'messages' minmax(0, 1fr)
       'footer' min-content
       / 100%;

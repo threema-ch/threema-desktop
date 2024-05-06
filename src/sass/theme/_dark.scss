@@ -107,6 +107,12 @@
       profile-picture-overlay-badge-icon: theme.$dark-text-e2,
       profile-picture-overlay-badge-icon-consumer: theme.$consumer-green-600,
       profile-picture-overlay-badge-icon-work: theme.$work-blue-800,
+      // ProfilePictureButton
+      profile-picture-button-background-color: color.scale(theme.$dark-background, $lightness: -32%),
+      profile-picture-button-box-shadow-color: none,
+      profile-picture-button-box-shadow-color--hover: 0px 8px 18px rgba(0, 0, 0, 0.12),
+      profile-picture-button-counter-background-color: rgba(-g($branding, primary-color-900), 25%),
+      profile-picture-button-counter-text-color: -g($branding, primary-color-600),
       // Conversation
       conversation-message-options-caret-color: rgba(#ffffff, 88%),
       // Conversation preview

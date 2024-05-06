@@ -12,6 +12,11 @@ import type {
 export interface ProfilePictureProps {
     readonly options?: {
         /**
+         * Whether to hide all charms that would be automatically added, based on the receiver's
+         * data (e.g., app flavor indicator or unread count indicator). Defaults to `false`.
+         */
+        hideCharms?: boolean;
+        /**
          * Whether the `ProfilePicture` is clickable and should emit `on:click` events. Defaults to
          * `false`.
          */
