@@ -182,7 +182,7 @@ export function getContextMenuItems({
                   {
                       disabled: edit.disabled,
                       handler: edit.handler,
-                      icon: {name: edit.disabled === 'pseudo' ? 'warning' : 'edit'},
+                      icon: {name: 'edit'},
                       label: t('messaging.action--message-option-edit', 'Edit'),
                   },
               ]
