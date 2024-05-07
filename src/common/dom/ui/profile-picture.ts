@@ -72,11 +72,11 @@ export class ProfilePictureService {
                     break;
                 }
                 case ReceiverType.GROUP: {
-                    const groupStore = await this._backend.model.groups.getByUid(uid);
-                    if (groupStore === undefined) {
+                    profilePictureModelStore =
+                        await this._backend.model.groups.getProfilePicture(uid);
+                    if (profilePictureModelStore === undefined) {
                         return undefined;
                     }
-                    profilePictureModelStore = await groupStore.get().controller.profilePicture;
                     break;
                 }
                 case ReceiverType.DISTRIBUTION_LIST:

@@ -13,6 +13,7 @@ import type {
 } from '~/common/model/types/common';
 import type {Contact} from '~/common/model/types/contact';
 import type {ConversationInitMixin} from '~/common/model/types/conversation';
+import type {ProfilePicture} from '~/common/model/types/profile-picture';
 import type {ReceiverController} from '~/common/model/types/receiver';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
@@ -197,11 +198,28 @@ export type GroupRepository = {
         [init: GroupInit, members: DbContactUid[]],
         LocalModelStore<Group>
     >;
+
+    /**
+     * Return the `LocalModelStore` of a group.
+     *
+     * Note: The group view is not transferrable, therefore, this function cannot be called from the
+     * frontend.
+     */
     readonly getByUid: (uid: DbGroupUid) => LocalModelStore<Group> | undefined;
+
+    /**
+     * Return the profile picture of a group.
+     *
+     * Returns undefined if the group was not found.
+     */
+    readonly getProfilePicture: (uid: DbGroupUid) => LocalModelStore<ProfilePicture> | undefined;
 
     /**
      * Fetches the group determined by the group creator and the `groupId`. Returns undefined if
      * such a group does not exist.
+     *
+     * Note: The group view is not transferrable, therefore, this function cannot be called from the
+     * frontend.
      */
     readonly getByGroupIdAndCreator: (
         groupId: GroupId,

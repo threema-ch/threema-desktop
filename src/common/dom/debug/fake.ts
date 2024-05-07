@@ -276,7 +276,7 @@ export async function generateFakeGroupConversation({
     const group = model.groups.add.fromSync(
         {
             groupId: randomU64(crypto) as GroupId,
-            creatorIdentity: model.user.identity,
+            creator: 'me',
             createdAt: new Date(),
             name: randomChoice<string>(crypto, ['groupsoup', 'OMG a group!', 'Grubb3']),
             colorIndex: randomU8(crypto),
@@ -537,7 +537,7 @@ export async function importScreenshotData(
         const groupModel = model.groups.add.fromSync(
             {
                 groupId: group.id,
-                creatorIdentity,
+                creator: 'me',
                 name: groupName,
                 createdAt,
                 lastUpdate: createdAt,

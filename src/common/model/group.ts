@@ -1023,6 +1023,10 @@ export class GroupModelRepository implements GroupRepository {
     public getAll(): LocalSetStore<LocalModelStore<Group>> {
         return all(this._services);
     }
+
+    public getProfilePicture(uid: DbGroupUid): LocalModelStore<ProfilePicture> | undefined {
+        return this.getByUid(uid)?.get().controller.profilePicture;
+    }
 }
 
 /**

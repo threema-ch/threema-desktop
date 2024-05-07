@@ -22,6 +22,7 @@ import {getGroupInitials} from '~/common/model/group';
 import type {Conversation} from '~/common/model/types/conversation';
 import type {AnyReceiver} from '~/common/model/types/receiver';
 import {getUserInitials} from '~/common/model/user';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {IdentityString} from '~/common/network/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import type {IdColor} from '~/common/utils/id-color';
@@ -226,7 +227,7 @@ function getGroupReceiverData(
         },
         members: [
             ...groupModel.view.members
-                .map((identity) => getGroupMemberData(services, identity, getAndSubscribe))
+                .map((member) => getGroupMemberData(services, member, getAndSubscribe))
                 .filter(
                     // As all `undefined` items are removed using the filter, the remaining items are of
                     // type `ContactReceiverData`.
@@ -421,21 +422,16 @@ function getGroupCreatorData(
     groupModel: Group,
     getAndSubscribe: GetAndSubscribeFunction,
 ): SelfReceiverData | ContactReceiverData {
-    const creatorIdentity = groupModel.view.creatorIdentity;
-    const creatorModelStore = services.model.contacts.getByIdentity(creatorIdentity);
+    const creator = groupModel.view.creator;
 
     // If the user is the creator of the group, return the user's data.
-    if (creatorIdentity === services.model.user.identity) {
+    if (creator === 'me') {
         return getSelfReceiverData(services, getAndSubscribe);
     }
 
     // Since a group must have a creator, we assume that the contact model store of
     // `creatorIdentity` is never `undefined`.
-    assert(
-        creatorModelStore !== undefined,
-        `The group creator with id ${creatorIdentity} must exist as contact.`,
-    );
-    const creatorModel: Contact = getAndSubscribe(creatorModelStore);
+    const creatorModel: Contact = getAndSubscribe(creator);
 
     return getContactReceiverData(services, creatorModel, getAndSubscribe);
 }
@@ -445,13 +441,9 @@ function getGroupCreatorData(
  */
 function getGroupMemberData(
     services: Pick<ServicesForViewModel, 'model'>,
-    identity: IdentityString,
+    receiverModelStore: LocalModelStore<Contact>,
     getAndSubscribe: GetAndSubscribeFunction,
 ): ContactReceiverData | undefined {
-    const receiverModelStore = services.model.contacts.getByIdentity(identity);
-    if (receiverModelStore === undefined) {
-        return undefined;
-    }
     const receiverModel = getAndSubscribe(receiverModelStore);
 
     return getContactReceiverData(services, receiverModel, getAndSubscribe);

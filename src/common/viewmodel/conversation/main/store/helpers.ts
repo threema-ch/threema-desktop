@@ -266,7 +266,7 @@ function supportsFeature(
                 }
             }
 
-            const groupCreator = receiver.get().controller.creator();
+            const groupCreator = receiver.get().view.creator;
             // The user is not the creator, hence we need to check the creator's feature mask as well.
             if (groupCreator !== 'me') {
                 if (
