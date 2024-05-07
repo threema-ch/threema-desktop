@@ -35,11 +35,12 @@ const appApi: ElectronIpc = {
         ipcRenderer.send(ElectronIpcCommand.SET_FILE_LOGGING_ENABLED_AND_RESTART, enabled),
     deleteProfileAndRestartApp: () =>
         ipcRenderer.send(ElectronIpcCommand.DELETE_PROFILE_AND_RESTART),
+    restartApp: () => ipcRenderer.send(ElectronIpcCommand.RESTART_APP),
+    closeApp: () => ipcRenderer.send(ElectronIpcCommand.CLOSE_APP),
     createProfileSnapshot: () => ipcRenderer.send(ElectronIpcCommand.CREATE_PROFILE_SNAPSHOT),
     removeOldProfiles: () => ipcRenderer.send(ElectronIpcCommand.REMOVE_OLD_PROFILES),
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     getLatestProfilePath: () => ipcRenderer.sendSync(ElectronIpcCommand.GET_LATEST_PROFILE_PATH),
-    closeApp: () => ipcRenderer.send(ElectronIpcCommand.CLOSE_APP),
     updateAppBadge: (totalUnreadMessageCount: u53) =>
         ipcRenderer.send(ElectronIpcCommand.UPDATE_APP_BADGE, totalUnreadMessageCount),
     updatePublicKeyPins: (publicKeyPins: DomainCertificatePin[]) =>

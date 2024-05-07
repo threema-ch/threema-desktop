@@ -653,6 +653,10 @@ function main(
                 validateSenderFrame(event.senderFrame);
                 restartApplication({deleteProfile: true});
             })
+            .on(ElectronIpcCommand.RESTART_APP, (event: electron.IpcMainEvent) => {
+                validateSenderFrame(event.senderFrame);
+                restartApplication({deleteProfile: false});
+            })
             .on(ElectronIpcCommand.CLOSE_APP, (event: electron.IpcMainEvent) => {
                 validateSenderFrame(event.senderFrame);
                 electron.app.quit();

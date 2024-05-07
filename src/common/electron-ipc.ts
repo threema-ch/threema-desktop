@@ -59,10 +59,19 @@ export interface ElectronIpc {
      * Return logging information, e.g. log file paths and sizes.
      */
     readonly getLogInformation: () => Promise<LogInfo>;
+
     /**
      * Enable or disable file logging and restart.
      */
     readonly setFileLoggingEnabledAndRestart: (enabled: boolean) => void;
+
+    /**
+     * Restart the application.
+     *
+     * Restarting is done using `app.exit(...)`, which means that the application will be
+     * force-closed immediately.
+     */
+    readonly restartApp: () => void;
 
     /**
      * Delete the user profile and restart the application.
@@ -71,6 +80,11 @@ export interface ElectronIpc {
      * force-closed immediately.
      */
     readonly deleteProfileAndRestartApp: () => void;
+
+    /**
+     * Close the application.
+     */
+    readonly closeApp: () => void;
 
     /**
      * Copy the current profile to the root app path for restoration, adding a timestamp to the
@@ -87,11 +101,6 @@ export interface ElectronIpc {
      * Find all old profiles at the root of the app path, and return the newest one.
      */
     readonly getLatestProfilePath: () => string | undefined;
-
-    /**
-     * Close the application.
-     */
-    readonly closeApp: () => void;
 
     /**
      * Update the public key pins after the start of the app,
