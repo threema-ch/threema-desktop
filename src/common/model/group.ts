@@ -42,6 +42,7 @@ import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {idColorIndexToString} from '~/common/utils/id-color';
 import {AsyncLock} from '~/common/utils/lock';
 import {u64ToHexLe} from '~/common/utils/number';
+import {omit} from '~/common/utils/object';
 import {
     createExactPropertyValidator,
     type Exact,
@@ -56,7 +57,7 @@ let cache = new LocalModelStoreCache<DbGroupUid, LocalModelStore<Group>>();
 
 const ensureExactGroupInit = createExactPropertyValidator<GroupInit>('GroupInit', {
     groupId: REQUIRED,
-    creatorIdentity: REQUIRED,
+    creator: REQUIRED,
     createdAt: REQUIRED,
     name: REQUIRED,
     colorIndex: REQUIRED,
@@ -95,23 +96,20 @@ const ensureExactGroupUpdateFromToSync = createExactPropertyValidator<GroupUpdat
  * Get the display name of a group.
  */
 export function getDisplayName(
-    group: Pick<DbGroup, 'name' | 'creatorIdentity'>,
-    groupMembers: IdentityString[],
-    services: Pick<ServicesForModel, 'device'>,
+    groupName: string,
+    creatorIdentity: IdentityString,
+    groupMembers: Set<LocalModelStore<Contact>>,
+    services: Pick<ServicesForModel, 'model'>,
 ): string {
-    if (group.name !== '') {
-        return group.name;
+    if (groupName !== '') {
+        return groupName;
     }
     // Use members as fallback.
     //
     // Sorting: Creator first, then members, then our own identity last.
-    // TODO(DESK-550): Use displayName of contact
-    const memberIdentitiesSet = new Set(groupMembers);
-    memberIdentitiesSet.delete(group.creatorIdentity);
-    memberIdentitiesSet.delete(services.device.identity.string);
-    const identities = [...memberIdentitiesSet.values()].sort(undefined);
-    identities.unshift(group.creatorIdentity);
-    identities.push(services.device.identity.string);
+    const identities = [...groupMembers].map((member) => member.get().view.displayName).sort();
+    identities.unshift(creatorIdentity);
+    identities.push(services.model.user.displayName.get());
     return identities.join(', ');
 }
 
@@ -196,15 +194,15 @@ function removeGroupMembers(
  *
  * TODO(DESK-577): This will be superseded by a new store with this ticket.
  */
-function getGroupMemberIdentities(
+function getGroupMembers(
     services: ServicesForModel,
     groupUid: DbGroupUid,
-): IdentityString[] {
+): Set<LocalModelStore<Contact>> {
     const {db} = services;
-    const groupMembers = db.getAllGroupMemberContactUids(groupUid).map(({uid}) => uid);
+    const groupMemberUids = db.getAllGroupMemberContactUids(groupUid).map(({uid}) => uid);
 
-    return groupMembers.map(
-        (member) => contact.getByUid(services, member, Existence.ENSURED).get().view.identity,
+    return new Set(
+        groupMemberUids.map((uid) => contact.getByUid(services, uid, Existence.ENSURED)),
     );
 }
 
@@ -216,14 +214,15 @@ function create(
     const {db} = services;
 
     let creatorUid: DbContactUid | undefined = undefined;
-    if (init.creatorIdentity !== services.device.identity.string) {
+    if (init.creator !== 'me') {
         // Ensure that the creator exists in the database already.
-        creatorUid = db.hasContactByIdentity(init.creatorIdentity);
+        creatorUid = db.hasContactByIdentity(init.creator.get().view.identity);
         assert(creatorUid !== undefined, 'Creator UID not found when adding group');
     }
+
     // Create the group
     const group: DbCreate<DbGroup> & DbCreateConversationMixin = {
-        ...init,
+        ...omit(init, ['creator']),
         type: ReceiverType.GROUP,
         creatorUid,
     };
@@ -232,12 +231,23 @@ function create(
     // Add members
     addGroupMembers(services, uid, memberUids);
 
-    const memberIdentities = getGroupMemberIdentities(services, uid);
-    const view = {
-        ...group,
-        displayName: getDisplayName({...group}, memberIdentities, services),
-        members: memberIdentities,
+    const creatorIdentity =
+        init.creator === 'me' ? services.device.identity.string : init.creator.get().view.identity;
+
+    const members = getGroupMembers(services, uid);
+
+    const view: GroupView = {
         color: idColorIndexToString(group.colorIndex),
+        colorIndex: group.colorIndex,
+        createdAt: group.createdAt,
+        creator: init.creator,
+        groupId: group.groupId,
+        name: group.name,
+        userState: group.userState,
+        notificationSoundPolicyOverride: group.notificationSoundPolicyOverride,
+        notificationTriggerPolicyOverride: group.notificationTriggerPolicyOverride,
+        displayName: getDisplayName(group.name, creatorIdentity, members, services),
+        members,
     };
 
     // Extract profile picture fields
@@ -304,12 +314,26 @@ export function getByUid(
         }
 
         // Look up members
-        const memberIdentities = getGroupMemberIdentities(services, uid);
-        const view = {
-            ...group,
-            displayName: getDisplayName(group, memberIdentities, services),
-            members: memberIdentities,
+        const members = getGroupMembers(services, uid);
+        const creator =
+            group.creatorUid === undefined
+                ? 'me'
+                : contact.getByUid(services, group.creatorUid, Existence.ENSURED);
+        const creatorIdentity =
+            creator === 'me' ? services.device.identity.string : creator.get().view.identity;
+
+        const view: GroupView = {
             color: idColorIndexToString(group.colorIndex),
+            colorIndex: group.colorIndex,
+            createdAt: group.createdAt,
+            creator,
+            groupId: group.groupId,
+            name: group.name,
+            userState: group.userState,
+            notificationSoundPolicyOverride: group.notificationSoundPolicyOverride,
+            notificationTriggerPolicyOverride: group.notificationTriggerPolicyOverride,
+            displayName: getDisplayName(group.name, creatorIdentity, members, services),
+            members,
         };
 
         // Extract profile picture fields
@@ -465,8 +489,8 @@ class GroupMemberModelController implements GroupMemberController {
     }
 
     /** @inheritdoc */
-    public identities(): IdentityString[] {
-        return getGroupMemberIdentities(this._services, this._group.uid);
+    public members(): Set<LocalModelStore<Contact>> {
+        return getGroupMembers(this._services, this._group.uid);
     }
 
     private _add(contactUids: DbContactUid[]): void {
@@ -474,7 +498,7 @@ class GroupMemberModelController implements GroupMemberController {
             addGroupMembers(this._services, this._group.uid, contactUids);
             this._group.version.next();
             Object.assign(view, {
-                members: getGroupMemberIdentities(this._services, this._group.uid),
+                members: getGroupMembers(this._services, this._group.uid),
             });
             return view;
         });
@@ -495,7 +519,7 @@ class GroupMemberModelController implements GroupMemberController {
             if (removedCount > 0) {
                 this._group.version.next();
                 Object.assign(view, {
-                    members: getGroupMemberIdentities(this._services, this._group.uid),
+                    members: getGroupMembers(this._services, this._group.uid),
                 });
             }
             return view;
@@ -747,7 +771,7 @@ export class GroupModelController implements GroupController {
     public constructor(
         private readonly _services: ServicesForModel,
         public readonly uid: DbGroupUid,
-        private readonly _creator: IdentityString,
+        private readonly _creatorIdentiy: IdentityString,
         private readonly _groupId: GroupId,
         initialProfilePictureData: GroupProfilePictureFields,
     ) {
@@ -755,9 +779,10 @@ export class GroupModelController implements GroupController {
             type: ReceiverType.GROUP,
             uid: this.uid,
         };
-        this._groupDebugString = groupDebugString(_creator, _groupId);
+
+        this._groupDebugString = groupDebugString(this._creatorIdentiy, _groupId);
         this._log = _services.logging.logger(`model.group.${uid}`);
-        this.notificationTag = getNotificationTagForGroup(_creator, _groupId);
+        this.notificationTag = getNotificationTagForGroup(this._creatorIdentiy, _groupId);
         this.members = new GroupMemberModelController(
             _services,
             {
@@ -769,7 +794,7 @@ export class GroupModelController implements GroupController {
         );
         this.profilePicture = this._services.model.profilePictures.getForGroup(
             this.uid,
-            this._creator,
+            this._creatorIdentiy,
             this._groupId,
             initialProfilePictureData,
         );
@@ -777,22 +802,12 @@ export class GroupModelController implements GroupController {
 
     /** @inheritdoc */
     public creator(): LocalModelStore<Contact> | 'me' {
-        return this.meta.run((handle) => {
-            if (handle.view().creatorIdentity === this._services.device.identity.string) {
-                return 'me';
-            }
-            const creator = this._services.model.contacts.getByIdentity(
-                handle.view().creatorIdentity,
-            );
+        return this.meta.run((handle) => handle.view().creator);
+    }
 
-            if (creator === undefined) {
-                this._log.error(
-                    `The group ${handle.view().name} with Id ${handle.view().groupId} has a creator ${handle.view().creatorIdentity} that was not found in the database`,
-                );
-                throw new Error('The group creator was not found in the database');
-            }
-            return creator;
-        });
+    /** @inheritdoc */
+    public getCreatorIdentity(): IdentityString {
+        return this._creatorIdentiy;
     }
 
     /** @inheritdoc */
@@ -809,16 +824,14 @@ export class GroupModelController implements GroupController {
             this._versionSequence.next();
             const derivedChange: Mutable<Partial<GroupView>, 'displayName'> = {...change};
 
-            const identities = getGroupMemberIdentities(this._services, this.uid);
+            const members = getGroupMembers(this._services, this.uid);
 
             // Update display name, if necessary
             if (derivedChange.name !== undefined) {
                 derivedChange.displayName = getDisplayName(
-                    {
-                        name: derivedChange.name,
-                        creatorIdentity: this._creator,
-                    },
-                    identities,
+                    derivedChange.name,
+                    this._creatorIdentiy,
+                    members,
                     this._services,
                 );
             }
@@ -851,7 +864,7 @@ export class GroupModelController implements GroupController {
             const syncTask = new ReflectGroupSyncTransactionTask(this._services, precondition, {
                 type: 'update',
                 groupId: this._groupId,
-                creatorIdentity: this._creator,
+                creatorIdentity: this._creatorIdentiy,
                 group: groupUpdate,
                 conversation: conversationUpdate,
             });
@@ -929,6 +942,10 @@ export class GroupModelStore extends LocalModelStore<Group> {
         uid: DbGroupUid,
         initialGrofilePictureData: GroupProfilePictureFields,
     ) {
+        const creatorIdentity =
+            group.creator === 'me'
+                ? services.device.identity.string
+                : group.creator.get().view.identity;
         const {logging} = services;
         const tag = `group.${uid}`;
         super(
@@ -936,7 +953,7 @@ export class GroupModelStore extends LocalModelStore<Group> {
             new GroupModelController(
                 services,
                 uid,
-                group.creatorIdentity,
+                creatorIdentity,
                 group.groupId,
                 initialGrofilePictureData,
             ),

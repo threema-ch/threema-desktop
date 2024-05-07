@@ -563,6 +563,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     public createGroup(group: DbCreate<DbGroup> & DbCreateConversationMixin): DbGroupUid {
         return this._db.syncTransaction(() => {
             // Create the group first
+
             const uid = sync(
                 this._db
                     .insertInto(tGroup)
@@ -615,7 +616,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .select({
                     uid: tGroup.uid,
                     creatorUid: tGroup.creatorUid,
-                    creatorIdentity: tGroup.creatorIdentity,
                     groupId: tGroup.groupId,
                     name: tGroup.name,
                     createdAt: tGroup.createdAt,

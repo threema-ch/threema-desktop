@@ -25,7 +25,7 @@ import type {LocalSetStore} from '~/common/utils/store/set-store';
 
 export interface GroupView {
     readonly groupId: GroupId;
-    readonly creatorIdentity: IdentityString;
+    readonly creator: LocalModelStore<Contact> | 'me';
     readonly createdAt: Date;
     readonly name: string;
     readonly displayName: string;
@@ -42,10 +42,10 @@ export interface GroupView {
      * The member set contains all members of the group that are not the creator. The creator must
      * never be in the member set!
      *
-     * The sole exception is the `user` who is never found in the member set. Its state
+     * The sole exception is the `User` who is never found in the member list. Its state
      * within the group is entirely managed by `userState`.
      */
-    readonly members: IdentityString[];
+    readonly members: Set<LocalModelStore<Contact>>;
 }
 
 /**
@@ -61,13 +61,7 @@ export type GroupInit = Omit<GroupView, 'displayName' | 'members' | 'color'> &
 export type GroupUpdate = Partial<
     Omit<
         GroupView,
-        | 'groupId'
-        | 'creatorIdentity'
-        | 'createdAt'
-        | 'displayName'
-        | 'colorIndex'
-        | 'color'
-        | 'members'
+        'groupId' | 'creator' | 'createdAt' | 'displayName' | 'colorIndex' | 'color' | 'members'
     >
 >;
 export type GroupUpdateFromLocal = Pick<
@@ -129,17 +123,9 @@ export type GroupController = ReceiverController & {
     readonly dissolve: Omit<ControllerUpdateFromSource, 'fromLocal' | 'fromRemote'>;
 
     /**
-     * Mark group membership as {@link GroupUserState.MEMBER}. This means that we were added to the
-     * group by the creator.
+     * Return the identity string of the creator.
      */
-    readonly join: Omit<ControllerUpdateFromSource, 'fromLocal'>;
-
-    /**
-     * Get the creator of this group. If the user is the creator, return a special string `me`.
-     *
-     * @throws If the creator is neither the user, nor can it be found in the database.
-     */
-    readonly creator: () => LocalModelStore<Contact> | 'me';
+    readonly getCreatorIdentity: () => IdentityString;
 } & ProxyMarked;
 export interface GroupControllerHandle {
     /**
@@ -190,9 +176,9 @@ export type GroupMemberController = {
     readonly set: Omit<ControllerUpdateFromSource<[contactUids: DbContactUid[]]>, 'fromLocal'>;
 
     /**
-     * Return list of unique member identities (excluding the current user).
+     * Return list of unique member identities (excluding the current user) and the creator.
      */
-    readonly identities: () => IdentityString[];
+    readonly members: () => Set<LocalModelStore<Contact>>;
 } & ProxyMarked;
 
 /**

@@ -252,7 +252,9 @@ function supportsFeature(
             //
             // Note: Right now, the list of members does not include the group creator, nor does it
             // include the user.
-            const memberIdentities = receiver.get().view.members;
+            const memberIdentities = receiver
+                .get()
+                .view.members.map((member) => member.get().view.identity);
             for (const identity of memberIdentities) {
                 const member = model.contacts.getByIdentity(identity)?.get();
                 if (member === undefined) {

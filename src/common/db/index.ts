@@ -211,7 +211,6 @@ export type DbGroupMemberUid = WeakOpaque<DbUid, {readonly DbGroupMemberUid: uni
 export type DbGroup = {
     readonly groupId: GroupId;
     readonly creatorUid: DbContactUid | undefined;
-    readonly creatorIdentity: IdentityString;
     readonly createdAt: Date;
     readonly colorIndex: u8;
     name: string;

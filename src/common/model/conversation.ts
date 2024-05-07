@@ -585,12 +585,17 @@ export class ConversationModelController implements ConversationController {
         switch (model.type) {
             case ReceiverType.CONTACT:
                 return {type: ReceiverType.CONTACT, identity: model.view.identity};
-            case ReceiverType.GROUP:
+            case ReceiverType.GROUP: {
+                const creatorIdentity =
+                    model.view.creator === 'me'
+                        ? this._services.device.identity.string
+                        : model.view.creator.get().view.identity;
                 return {
                     type: ReceiverType.GROUP,
-                    creatorIdentity: model.view.creatorIdentity,
+                    creatorIdentity,
                     groupId: model.view.groupId,
                 };
+            }
             case ReceiverType.DISTRIBUTION_LIST:
                 // TODO(DESK-236): Implement distribution list
                 throw new Error('TODO(DESK-236): Implement distribution list');

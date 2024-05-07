@@ -270,15 +270,6 @@ export const tGroup = new (class TGroup extends Table<DBConnection, 'TGroup'> {
     );
 
     /**
-     * Identity of the group creator.
-     */
-    public creatorIdentity = this.column<IdentityString>(
-        'creatorIdentity',
-        'custom',
-        CUSTOM_TYPES.IDENTITY,
-    );
-
-    /**
      * Group ID, 8 bytes.
      */
     public groupId = this.column<GroupId>('groupId', 'custom', CUSTOM_TYPES.GROUP_ID);
