@@ -6,6 +6,7 @@
   import ContactNav from '~/app/ui/components/partials/contact-nav/ContactNav.svelte';
   import ConversationView from '~/app/ui/components/partials/conversation/ConversationView.svelte';
   import ConversationNav from '~/app/ui/components/partials/conversation-nav/ConversationNav.svelte';
+  import GroupCallActivity from '~/app/ui/components/partials/group-call-activity/GroupCallActivity.svelte';
   import Settings from '~/app/ui/components/partials/settings/Settings.svelte';
   import NavSettingsList from '~/app/ui/components/partials/settings-nav/SettingsNav.svelte';
   import MainWelcome from '~/app/ui/components/partials/welcome/Welcome.svelte';
@@ -114,6 +115,7 @@
     | undefined;
   let activityComponent:
     | typeof SvelteComponent<{
+        isExpanded: boolean;
         services: AppServices;
       }>
     | undefined;
@@ -179,8 +181,7 @@
         activityComponent = undefined;
         break;
       case 'groupCall':
-        // TODO(DESK-1408): Add group call view.
-        activityComponent = undefined;
+        activityComponent = GroupCallActivity;
         break;
       default:
         unreachable(activityId, new Error('Unhandled activity router state'));
@@ -227,6 +228,7 @@
         <aside class={`activity ${activityDisplayState}`}>
           <svelte:component
             this={activityComponent}
+            isExpanded={activityDisplayState === 'expanded'}
             {services}
             on:clicktoggleexpand={handleClickToggleExpandActivity}
           />
@@ -268,9 +270,7 @@
   .app {
     height: 100%;
     display: grid;
-    gap: rem(1px);
     color: var(--t-text-e1-color);
-    background-color: var(--t-panel-gap-color);
     overflow: hidden;
 
     %-panel {
@@ -281,6 +281,7 @@
 
     nav {
       @extend %-panel;
+      border-right: 1px solid var(--t-panel-gap-color);
     }
 
     main {
@@ -291,15 +292,15 @@
     .aside {
       @extend %-panel;
       background-color: var(--t-aside-background-color);
-      overflow-y: auto;
+      border-left: 1px solid var(--t-panel-gap-color);
     }
 
     .activity {
       @extend %-panel;
-      display: block;
+      display: grid;
       container: activity / inline-size;
       background-color: var(--t-aside-background-color);
-      overflow-y: auto;
+      border-left: 1px solid var(--t-panel-gap-color);
     }
 
     @mixin show($area) {
@@ -327,6 +328,7 @@
       &:has(.activity.expanded) {
         .activity {
           @include show(main);
+          border-left: none;
         }
       }
 
@@ -372,6 +374,7 @@
       &:has(.activity.expanded) {
         .activity {
           grid-area: nav / nav / main / main;
+          border-left: none;
         }
       }
 
@@ -418,6 +421,7 @@
         &:has(.activity.expanded) {
           .activity {
             grid-area: nav / nav / main / main;
+            border-left: none;
           }
         }
 
@@ -452,6 +456,7 @@
         &:has(.activity.expanded) {
           .activity {
             grid-area: nav / nav / aside / aside;
+            border-left: none;
           }
         }
 

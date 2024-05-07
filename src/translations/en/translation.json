@@ -381,6 +381,7 @@
     "hint--media-thumbnail": "Media preview",
     "label--call-join-long": "Join Call",
     "label--call-join-short": "Join",
+    "label--call-participant-count": "{n, plural, =0 {No Participants} =1 {1 Participant} other {# Participants}}",
     "label--compose-area": "Write a message…",
     "label--default-audio-message-preview": "Voice Message",
     "label--default-file-message-preview": "File",

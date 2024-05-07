@@ -175,6 +175,13 @@
       media-message-miniatures-text-color: theme.$dark-text-e1,
       // Linking Wizard
       linking-wizard-error-message-background: theme.$grey-900,
+      // Call Activity Sidebar
+      call-sidebar-title-color: theme.$dark-text-e1,
+      call-sidebar--expanded-title-color: theme.$dark-text-e1,
+      call-sidebar-subtitle-color: theme.$dark-text-e2,
+      call-sidebar--expanded-subtitle-color: theme.$dark-text-e2,
+      call-sidebar-action-icon-color: theme.$dark-text-e1,
+      call-sidebar--expanded-action-icon-color: theme.$dark-text-e1,
     ),
     debug-components: (
       // Top bar

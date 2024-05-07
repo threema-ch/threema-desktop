@@ -252,6 +252,14 @@ $config: config-merge(components.$config, (
 
       // Linking Wizard
       --cc-linking-wizard-error-message-background,
+
+      // Call Activity Sidebar
+      --cc-call-sidebar-title-color,
+      --cc-call-sidebar--expanded-title-color,
+      --cc-call-sidebar-subtitle-color,
+      --cc-call-sidebar--expanded-subtitle-color,
+      --cc-call-sidebar-action-icon-color,
+      --cc-call-sidebar--expanded-action-icon-color,
     ),
 
     debug-components: (

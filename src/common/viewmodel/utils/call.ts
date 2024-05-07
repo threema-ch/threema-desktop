@@ -7,6 +7,7 @@ interface BaseCallProps {
      * Contacts that are currently part of the call.
      */
     readonly members: ContactReceiverData[];
+    readonly startedAt: Date;
 }
 
 interface ActiveCallProps extends BaseCallProps {
@@ -15,7 +16,6 @@ interface ActiveCallProps extends BaseCallProps {
 
 interface JoinedCallProps extends BaseCallProps {
     readonly isJoined: true;
-    readonly startedAt: Date;
 }
 
 // TODO(DESK-1447): Add utility functions to abstract gathering call details, because this might be
