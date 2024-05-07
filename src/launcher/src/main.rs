@@ -41,14 +41,38 @@ fn init_terminal() {
 #[cfg(not(windows))]
 fn init_terminal() {}
 
-/// Print an error in red.
+/// Print a log if stdout is a terminal.
+#[macro_export]
+macro_rules! print_log {
+    () => {{
+        if stdout().is_terminal() {
+            println!();
+        }
+    }};
+    ($msg:expr) => {{
+        if stdout().is_terminal() {
+            println!($msg);
+        }
+    }};
+    ($msg:expr, $($args:expr),* $(,)?) => {{
+        if stdout().is_terminal() {
+            println!($msg, $($args),*);
+        }
+    }}
+}
+
+/// Print an error in red if stderr is a terminal.
 #[macro_export]
 macro_rules! print_error {
     ($msg:expr) => {{
-        eprintln!("{}", $msg.bright_red());
+        if stderr().is_terminal() {
+            eprintln!("{}", $msg.bright_red());
+        }
     }};
     ($msg:expr, $($args:expr),* $(,)?) => {{
-        eprintln!("{}", format!($msg, $($args),*).bright_red());
+        if stderr().is_terminal() {
+            eprintln!("{}", format!($msg, $($args),*).bright_red());
+        }
     }}
 }
 
@@ -152,12 +176,12 @@ fn main() {
     } else {
         "green"
     };
-    println!("{}", " _____ _                         ".color(color));
-    println!("{}", "|_   _| |_ ___ ___ ___ _____ ___ ".color(color));
-    println!("{}", "  | | |   |  _| -_| -_|     | .'|".color(color));
-    println!("{}", "  |_| |_|_|_| |___|___|_|_|_|__,|".color(color));
-    println!();
-    println!("Desktop launcher v{VERSION} ({BUILD_FLAVOR})");
+    print_log!("{}", " _____ _                         ".color(color));
+    print_log!("{}", "|_   _| |_ ___ ___ ___ _____ ___ ".color(color));
+    print_log!("{}", "  | | |   |  _| -_| -_|     | .'|".color(color));
+    print_log!("{}", "  |_| |_|_|_| |___|___|_|_|_|__,|".color(color));
+    print_log!();
+    print_log!("Desktop launcher v{} ({})", VERSION, BUILD_FLAVOR);
 
     // Get args
     let mut args: Vec<String> = env::args().collect();
@@ -198,7 +222,7 @@ fn main() {
             process::exit(EXIT_CODE_LAUNCHER_ERROR);
         }
     };
-    println!("Launching Threema Desktop through {target_path:?}");
+    print_log!("Launching Threema Desktop through {:?}", target_path);
 
     // Ensure that target path exists
     if !target_path.exists() {
@@ -212,12 +236,12 @@ fn main() {
 
     // Determine profile directory
     let profile_directory = determine_profile_directory(args.as_slice());
-    println!("Profile directory: {profile_directory:?}");
+    print_log!("Profile directory: {:?}", profile_directory);
 
     loop {
         let now = time::OffsetDateTime::now_utc();
-        println!("Current timestamp (UTC): {now}");
-        println!("------");
+        print_log!("Current timestamp (UTC): {}", now);
+        print_log!("------");
 
         // Launch child process
         //
@@ -253,7 +277,7 @@ fn main() {
         // Wait for completion
         let exit_code = match child.wait() {
             Ok(status) => {
-                println!("Target binary exited with status {status}");
+                print_log!("Target binary exited with status {}", status);
                 status.code()
             }
             Err(e) => {
@@ -268,13 +292,13 @@ fn main() {
                 break; // Successful closing
             }
             Some(EXIT_CODE_RESTART) => {
-                println!("------");
-                println!("Restarting");
+                print_log!("------");
+                print_log!("Restarting");
                 continue;
             }
             Some(EXIT_CODE_DELETE_PROFILE_AND_RESTART) => {
-                println!("------");
-                println!(
+                print_log!("------");
+                print_log!(
                     "{}",
                     format!("Removing profile directory at {profile_directory:?}!").yellow()
                 );
@@ -283,7 +307,7 @@ fn main() {
                     std::thread::sleep(Duration::from_millis(DELAY_BEFORE_ERROR_EXIT_MS));
                     process::exit(EXIT_CODE_LAUNCHER_ERROR);
                 }
-                println!("Restarting");
+                print_log!("Restarting");
                 continue;
             }
             Some(other) => {
