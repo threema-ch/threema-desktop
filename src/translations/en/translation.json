@@ -381,7 +381,6 @@
     "hint--media-thumbnail": "Media preview",
     "label--call-join-long": "Join Call",
     "label--call-join-short": "Join",
-    "label--call-joined-short": "Joined",
     "label--compose-area": "Write a message…",
     "label--default-audio-message-preview": "Voice Message",
     "label--default-file-message-preview": "File",

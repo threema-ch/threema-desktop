@@ -1,18 +1,16 @@
 <!--
-  @component 
-  Renders icons to display the current preferences of a conversation.
+  @component Renders icons to display the current preferences of a conversation.
 -->
 <script lang="ts">
-  import {createEventDispatcher, onDestroy} from 'svelte';
+  import {createEventDispatcher} from 'svelte';
 
+  import Timer from '~/app/ui/components/atoms/timer/Timer.svelte';
   import RadialExclusionMaskProvider from '~/app/ui/components/hocs/radial-exclusion-mask-provider/RadialExclusionMaskProvider.svelte';
   import type {CharmsProps} from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/charms/props';
   import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import ThreemaIcon from '~/app/ui/svelte-components/blocks/Icon/ThreemaIcon.svelte';
-  import {formatDurationBetween} from '~/app/ui/utils/timestamp';
   import type {u53} from '~/common/types';
-  import {TIMER, type TimerCanceller} from '~/common/utils/timer';
 
   type $$Props = CharmsProps;
 
@@ -33,9 +31,6 @@
     },
   };
 
-  let now: Date = new Date();
-  let nowUpdateCanceller: TimerCanceller | undefined;
-
   const dispatch = createEventDispatcher<{
     clickjoincall: MouseEvent;
   }>();
@@ -50,31 +45,11 @@
     }
   }
 
-  function handleChangeCall(currentCall: typeof call): void {
-    nowUpdateCanceller?.();
-
-    // Only start a timer if there is an active, joined call.
-    if (currentCall?.isJoined === true) {
-      nowUpdateCanceller = TIMER.repeat(() => {
-        now = new Date();
-      }, 1000);
-    }
-  }
-
   function getNumberCountOf(timestamp: string): u53 {
     return timestamp.length - timestamp.split(':').length + 1;
   }
 
   $: hasNotificationPolicy = notificationPolicy.type !== 'default' || notificationPolicy.isMuted;
-  $: currentDuration =
-    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-    call !== undefined && call.isJoined ? formatDurationBetween(call.startedAt, now) : undefined;
-
-  $: handleChangeCall(call);
-
-  onDestroy(() => {
-    nowUpdateCanceller?.();
-  });
 </script>
 
 <span class="container">
@@ -85,17 +60,16 @@
           <MdIcon theme="Filled">call</MdIcon>
         </span>
         {#if call.isJoined}
-          {#if currentDuration === undefined}
-            <!-- This should never happen, but if there is an active call but no duration somehow,
-            show a default label. -->
-            <span>{$i18n.t('messaging.label--call-joined-short', 'Joined')}</span>
-          {:else}
+          <Timer from={call.startedAt}>
             <span
+              slot="default"
+              let:current
               class="timer"
-              style={`--c-t-number-count: ${getNumberCountOf(currentDuration)}ch;`}
-              >{currentDuration}</span
+              style={`--c-t-number-count: ${getNumberCountOf(current)}ch;`}
             >
-          {/if}
+              {current}
+            </span>
+          </Timer>
         {:else}
           <span>{$i18n.t('messaging.label--call-join-short', 'Join')}</span>
         {/if}
