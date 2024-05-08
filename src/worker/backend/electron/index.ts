@@ -15,6 +15,7 @@ import {
     TeeLogger,
 } from '~/common/logging';
 import {ZlibCompressor} from '~/common/node/compressor';
+import type {DbMigrationSupplements} from '~/common/node/db/migrations';
 import {SqliteDatabaseBackend} from '~/common/node/db/sqlite';
 import {loadElectronSettings} from '~/common/node/electron-settings';
 import {FileSystemFileStorage} from '~/common/node/file-storage/system-file-storage';
@@ -109,6 +110,7 @@ export async function run(): Promise<void> {
         db: (
             services: ServicesForDatabaseFactory,
             log: Logger,
+            migrationSupplementaryInformation: DbMigrationSupplements,
             key: RawDatabaseKey,
             shouldExist: boolean,
         ) => {
@@ -132,7 +134,12 @@ export async function run(): Promise<void> {
             }
 
             // Instantiate backend
-            const backend = SqliteDatabaseBackend.create(log, databasePath, key);
+            const backend = SqliteDatabaseBackend.create(
+                log,
+                migrationSupplementaryInformation,
+                databasePath,
+                key,
+            );
 
             // Run migrations
             backend.runMigrations();

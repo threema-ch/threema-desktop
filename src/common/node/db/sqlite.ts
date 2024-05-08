@@ -90,7 +90,7 @@ import {bytesToHex} from '~/common/utils/byte';
 import {hasProperty, omit, pick} from '~/common/utils/object';
 
 import {CUSTOM_TYPES, DBConnection} from './connection';
-import {MigrationHelper} from './migrations';
+import {MigrationHelper, type DbMigrationSupplements} from './migrations';
 import {BetterSqlCipherQueryRunner} from './query-runner';
 import {sync} from './sync';
 import {
@@ -276,11 +276,12 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
      */
     public static create(
         log: Logger,
+        supplementaryMigrationInformation: DbMigrationSupplements,
         dbPath: string,
         dbKey: RawDatabaseKey,
     ): SqliteDatabaseBackend {
         // Instantiate migration helper
-        const migrationHelper = MigrationHelper.create(log);
+        const migrationHelper = MigrationHelper.create(log, supplementaryMigrationInformation);
 
         // Instantiate backend
         const backend = new SqliteDatabaseBackend(log, migrationHelper, dbPath, dbKey);

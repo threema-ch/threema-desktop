@@ -6,8 +6,16 @@ import * as v from '@badrap/valita';
 import type {Database} from 'better-sqlcipher';
 import {MigrationError} from '~/common/error';
 import type {Logger} from '~/common/logging';
+import type {IdentityString} from '~/common/network/types';
 import {ensureU53, ensureU64, type u53, u64ToU53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
+
+/**
+ * Inject additional information which are not stored in the database for the migrations.
+ */
+export interface DbMigrationSupplements {
+    identity: IdentityString;
+}
 
 // Dynamically import all migration files.
 // This is done using the glob import feature in vite:
@@ -96,42 +104,68 @@ class Migration {
     }
 
     /**
-     * Run up-migration.
+     * Run up-migration, applying query preprocessing steps. Writes the processed query into the
+     * migration cache.
      */
-    public migrateUp(db: Database, log: Logger): void {
-        this._migrate(db, log, this.up, (transactionDb) => {
-            // After applying up-migration, cache it in the database
-            const result = transactionDb
-                .prepare(
-                    `INSERT OR REPLACE INTO ${MIGRATION_CACHE.TABLE_NAME} (
+    public migrateUp(db: Database, log: Logger, preprocessQuery?: (query: string) => string): void {
+        this._migrate(
+            db,
+            log,
+            this.up,
+            (transactionDb) => {
+                // After applying up-migration, cache it in the database
+                const result = transactionDb
+                    .prepare(
+                        `INSERT OR REPLACE INTO ${MIGRATION_CACHE.TABLE_NAME} (
                         ${MIGRATION_CACHE.COL_NUMBER},
                         ${MIGRATION_CACHE.COL_NAME},
                         ${MIGRATION_CACHE.COL_UP_SQL},
                         ${MIGRATION_CACHE.COL_DOWN_SQL}
                     ) VALUES (?, ?, ?, ?);`,
-                )
-                .run(this.number, this.up.name, this.up.contents, this.down.contents);
-            if (result.changes !== 1) {
-                throw new Error(
-                    `Expected migration cache insertion to affect 1 row, but affected ${result.changes}`,
-                );
-            }
-        });
+                    )
+                    .run(
+                        this.number,
+                        this.up.name,
+                        this._applyPreprocessing(this.up.contents, preprocessQuery),
+                        this._applyPreprocessing(this.down.contents, preprocessQuery),
+                    );
+                if (result.changes !== 1) {
+                    throw new Error(
+                        `Expected migration cache insertion to affect 1 row, but affected ${result.changes}`,
+                    );
+                }
+            },
+            preprocessQuery,
+        );
     }
 
     /**
      * Run down-migration.
      */
-    public migrateDown(db: Database, log: Logger): void {
-        this._migrate(db, log, this.down, (transactionDb) => {
-            // After applying down-migration, remove cache entry from database
-            transactionDb
-                .prepare(
-                    `DELETE FROM ${MIGRATION_CACHE.TABLE_NAME}
+    public migrateDown(
+        db: Database,
+        log: Logger,
+        preprocessQuery?: (query: string) => string,
+    ): void {
+        this._migrate(
+            db,
+            log,
+            this.down,
+            (transactionDb) => {
+                // After applying down-migration, remove cache entry from database
+                transactionDb
+                    .prepare(
+                        `DELETE FROM ${MIGRATION_CACHE.TABLE_NAME}
                     WHERE ${MIGRATION_CACHE.COL_NUMBER} = ?`,
-                )
-                .run(this.number);
-        });
+                    )
+                    .run(this.number);
+            },
+            preprocessQuery,
+        );
+    }
+
+    private _applyPreprocessing(query: string, preprocess?: (query: string) => string): string {
+        return preprocess?.(query) ?? query;
     }
 
     /**
@@ -148,13 +182,16 @@ class Migration {
         log: Logger,
         file: MigrationFile,
         postExec?: (transactionDb: Database) => void,
+        preprocess?: (query: string) => string,
     ): void {
         // Execute SQL in database in a transaction
         log.debug(`Running ${file.direction}-migration ${file.number} (${file.name})…`);
         const before = process.hrtime.bigint();
         db.transaction((sql: string) => {
+            // Transform the query
+            const processedQuery = preprocess?.(sql) ?? sql;
             // Run migration
-            db.exec(sql);
+            db.exec(processedQuery);
             // Post exec
             postExec?.(db);
             // Update version
@@ -259,6 +296,7 @@ class MigrationBuilder {
 export class MigrationHelper {
     private constructor(
         private readonly _log: Logger,
+        private readonly _supplementaryInformation: DbMigrationSupplements,
         private readonly _migrations: Map<u53, Migration>,
         private readonly _maxEmbeddedMigrationNumber: u53,
     ) {}
@@ -268,7 +306,10 @@ export class MigrationHelper {
      *
      * @throws {MigrationError} if something went wrong during loading of the migrations.
      */
-    public static create(log: Logger): MigrationHelper {
+    public static create(
+        log: Logger,
+        supplementaryInformation: DbMigrationSupplements,
+    ): MigrationHelper {
         // Filter and parse valid embedded migration files
         const builders = new Map<u53, MigrationBuilder>();
         let maxMigrationNumber = 0;
@@ -293,7 +334,7 @@ export class MigrationHelper {
         }
         log.info(`Loaded ${migrations.size} db migrations`);
 
-        return new MigrationHelper(log, migrations, maxMigrationNumber);
+        return new MigrationHelper(log, supplementaryInformation, migrations, maxMigrationNumber);
     }
 
     /**
@@ -388,7 +429,7 @@ export class MigrationHelper {
             }
 
             try {
-                migration.migrateUp(db, this._log);
+                migration.migrateUp(db, this._log, this._preprocessSqlQuery.bind(this));
             } catch (error) {
                 throw new MigrationError(`Running the up-migration ${version} failed`, {
                     from: error,
@@ -415,7 +456,7 @@ export class MigrationHelper {
             }
 
             try {
-                migration.migrateDown(db, this._log);
+                migration.migrateDown(db, this._log, this._preprocessSqlQuery.bind(this));
             } catch (error) {
                 throw new MigrationError(`Running the down-migration ${version} failed`, {
                     from: error,
@@ -425,5 +466,9 @@ export class MigrationHelper {
         }
 
         return count;
+    }
+
+    private _preprocessSqlQuery(rawQuery: string): string {
+        return rawQuery.replace('{identity}', this._supplementaryInformation.identity);
     }
 }

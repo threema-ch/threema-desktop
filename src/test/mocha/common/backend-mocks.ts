@@ -217,7 +217,12 @@ export class TestTweetNaClBackend extends TweetNaClBackend {
 export function initSqliteBackend(logger: Logger): SqliteDatabaseBackend {
     // Instantiate SQLite backend, backed by in-memory table
     const dbKey = wrapRawDatabaseKey(new Uint8Array(32));
-    const backend = SqliteDatabaseBackend.create(logger, ':memory:', dbKey);
+    const backend = SqliteDatabaseBackend.create(
+        logger,
+        {identity: ensureIdentityString('MEMEMEME')},
+        ':memory:',
+        dbKey,
+    );
 
     // Run migrations
     backend.runMigrations();

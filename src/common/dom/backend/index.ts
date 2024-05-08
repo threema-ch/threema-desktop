@@ -81,6 +81,7 @@ import {
     wrapRawClientKey,
     wrapRawDeviceGroupKey,
 } from '~/common/network/types/keys';
+import type {DbMigrationSupplements} from '~/common/node/db/migrations';
 import type {ThreemaWorkCredentials} from '~/common/node/key-storage/key-storage-file';
 import {type NotificationCreator, NotificationService} from '~/common/notification';
 import type {SystemDialogService} from '~/common/system-dialog';
@@ -219,6 +220,7 @@ export interface FactoriesForBackend {
     readonly db: (
         services: ServicesForDatabaseFactory,
         log: Logger,
+        supplementaryMigrationInformation: DbMigrationSupplements,
         key: RawDatabaseKey,
         shouldExist: boolean,
     ) => DatabaseBackend;
@@ -791,6 +793,7 @@ export class Backend {
         const db = factories.db(
             {config},
             logging.logger('db'),
+            {identity: keyStorageContents.identityData.identity},
             keyStorageContents.databaseKey,
             true,
         );
@@ -1086,7 +1089,13 @@ export class Backend {
         const databaseKeyForKeyStorage = wrapRawDatabaseKey(databaseKey.unwrap().slice());
 
         // Create database
-        const db = factories.db({config}, logging.logger('db'), databaseKey, false);
+        const db = factories.db(
+            {config},
+            logging.logger('db'),
+            {identity: joinResult.identity},
+            databaseKey,
+            false,
+        );
 
         // Create nonces service and import nonces from joinResult
         const nonces = new NonceService(

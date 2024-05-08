@@ -2,6 +2,7 @@ import {expect} from 'chai';
 
 import DatabaseConstructor, {type Database} from 'better-sqlcipher';
 import {type Logger, NOOP_LOGGER} from '~/common/logging';
+import {ensureIdentityString} from '~/common/network/types';
 import {MigrationHelper} from '~/common/node/db/migrations';
 import type {u53} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
@@ -30,7 +31,9 @@ export function run(): void {
         const log: Logger = NOOP_LOGGER;
         this.beforeEach(() => {
             db = new DatabaseConstructor(':memory:');
-            migrationHelper = MigrationHelper.create(log);
+            migrationHelper = MigrationHelper.create(log, {
+                identity: ensureIdentityString('MEMEMEME'),
+            });
         });
         this.afterEach(() => {
             db.close();
@@ -195,7 +198,9 @@ export function run(): void {
             // Now let's recreate the migration helper. This simulates the state after a downgrade:
             // The latest migration was applied (and cached in the database), but does not exist in
             // the migration list of the current app.
-            const migrationHelperAfterDowngrade = MigrationHelper.create(log);
+            const migrationHelperAfterDowngrade = MigrationHelper.create(log, {
+                identity: ensureIdentityString('MEMEMEME'),
+            });
 
             // Downgrade to latest bundled migration version!
             const migrationsApplied = migrationHelperAfterDowngrade.migrate(db);
