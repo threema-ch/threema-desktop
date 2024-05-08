@@ -49,7 +49,7 @@ export function run(): void {
             const groupId = randomGroupId(crypto);
             const group = addTestGroup(model, {
                 groupId,
-                creatorIdentity: creator.identity.string,
+                creator: creatorContact,
                 name: 'AAA',
                 members: [creatorContact.ctx],
             });

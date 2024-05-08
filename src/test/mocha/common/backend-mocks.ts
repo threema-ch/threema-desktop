@@ -1118,7 +1118,7 @@ export function addTestUserToFakeDirectory(directory: TestDirectoryBackend, user
  * A test group. Simplified version of a full group view.
  */
 export interface TestGroup {
-    creatorIdentity: IdentityString;
+    creator: LocalModelStore<Contact> | 'me';
     members: DbContactUid[];
     // Default: Random
     groupId?: GroupId;
@@ -1140,7 +1140,7 @@ export function addTestGroup(
     const crypto = new TestTweetNaClBackend();
     return repositories.groups.add.fromSync(
         {
-            creatorIdentity: group.creatorIdentity,
+            creator: group.creator,
             groupId: group.groupId ?? randomGroupId(crypto),
             name: group.name ?? '',
             colorIndex: 0,

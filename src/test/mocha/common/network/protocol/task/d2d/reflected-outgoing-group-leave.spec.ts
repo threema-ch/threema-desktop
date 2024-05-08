@@ -78,7 +78,7 @@ export function run(): void {
             const creator = user2.identity.string;
             addTestGroup(model, {
                 groupId,
-                creatorIdentity: creator,
+                creator: user2Model,
                 name: 'Kulupu pi Toki Pona',
                 userState: GroupUserState.KICKED,
                 members: [user1Model.ctx, user2Model.ctx],
@@ -108,7 +108,7 @@ export function run(): void {
             const creator = user2.identity.string;
             addTestGroup(model, {
                 groupId,
-                creatorIdentity: creator,
+                creator: user2Model,
                 name: 'Kulupu pi Toki Pona',
                 userState: GroupUserState.MEMBER,
                 members: [user1Model.ctx, user2Model.ctx],
@@ -138,7 +138,7 @@ export function run(): void {
             const creator = me;
             addTestGroup(model, {
                 groupId,
-                creatorIdentity: creator,
+                creator: 'me',
                 name: 'mi wile toki e toki pona',
                 userState: GroupUserState.MEMBER,
                 members: [user1Model.ctx, user2Model.ctx],
@@ -153,10 +153,9 @@ export function run(): void {
             });
             assert(group !== undefined, 'Group not found');
             expect(group.get().view.userState, 'Wrong user state').to.equal(GroupUserState.LEFT);
-            expect(group.get().view.members).to.have.members([
-                user1.identity.string,
-                user2.identity.string,
-            ]);
+            expect(
+                [...group.get().view.members].map((member) => member.get().view.identity),
+            ).to.have.members([user1.identity.string, user2.identity.string]);
         });
     });
 }

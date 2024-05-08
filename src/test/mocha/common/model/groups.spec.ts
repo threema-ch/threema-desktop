@@ -25,7 +25,7 @@ export function run(): void {
             services = makeTestServices(me.identity.string);
             contact = addTestUserAsContact(services.model, anotherUser);
             group = addTestGroup(services.model, {
-                creatorIdentity: me.identity.string,
+                creator: 'me',
                 members: [contact.ctx],
                 createdAt: new Date(),
             });
@@ -45,17 +45,22 @@ export function run(): void {
 
             const members = group.get().view.members;
 
-            expect(members).to.have.members(['USER0002', 'USER0001']);
+            expect([...members].map((member) => member.get().view.identity)).to.have.members([
+                'USER0002',
+                'USER0001',
+            ]);
 
             await group.get().controller.members.remove.fromLocal([contact.ctx]);
 
             const members2 = group.get().view.members;
-            expect(members2).to.have.members(['USER0002']);
+            expect([...members2].map((member) => member.get().view.identity)).to.have.members([
+                'USER0002',
+            ]);
         });
 
         it('add the creator/a member that is already in the group', async function () {
             const group2 = addTestGroup(services.model, {
-                creatorIdentity: contact.get().view.identity,
+                creator: contact,
                 members: [],
                 createdAt: new Date(),
             });

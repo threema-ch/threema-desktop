@@ -193,9 +193,9 @@ export function run(): void {
 
         it('should call OutgoingCspMessageTask correctly for a group text message', async function () {
             const {model, crypto} = services;
-            const user = addTestUserAsContact(model, user1).get();
+            const user = addTestUserAsContact(model, user1);
             const receiver = addTestGroup(model, {
-                creatorIdentity: user.view.identity,
+                creator: user,
                 members: [user.ctx],
             }).get();
             const {message, messageStore} = addOutgoingTestMessageForReceiver(
@@ -233,7 +233,7 @@ export function run(): void {
                         const decodedGroupMemberContainer =
                             structbuf.csp.e2e.GroupMemberContainer.decode(encodedMessage);
                         const {innerData, creatorIdentity, groupId} = decodedGroupMemberContainer;
-                        expect(UTF8.decode(creatorIdentity)).to.equal(user.view.identity);
+                        expect(UTF8.decode(creatorIdentity)).to.equal(user.get().view.identity);
                         expect(groupId).to.equal(receiver.view.groupId);
 
                         const decodedMessage = structbuf.csp.e2e.Text.decode(innerData);

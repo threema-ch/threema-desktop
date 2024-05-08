@@ -112,7 +112,7 @@ export function run(): void {
                 groupMembers.push(userUid);
             }
             testGroup = {
-                creatorIdentity: me,
+                creator: 'me',
                 members: groupMembers,
             };
             const groupModelStore = addTestGroup(services.model, testGroup);

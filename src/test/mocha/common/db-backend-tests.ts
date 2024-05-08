@@ -149,8 +149,8 @@ export function makeGroup(
     db: DatabaseBackend,
     init: {
         groupId?: DbGroup['groupId'];
-        creatorIdentity: DbGroup['creatorIdentity'];
         createdAt?: DbGroup['createdAt'];
+        creatorUid: DbGroup['creatorUid'];
         name?: DbGroup['name'];
         userState?: DbGroup['userState'];
         notificationTriggerPolicyOverride?: DbGroup['notificationTriggerPolicyOverride'];
@@ -161,13 +161,11 @@ export function makeGroup(
     },
     members?: DbContactUid[],
 ): DbGroupUid {
-    const uid = db.hasContactByIdentity(init.creatorIdentity);
     const groupUid = db.createGroup({
         type: ReceiverType.GROUP,
         groupId: init.groupId ?? randomGroupId(crypto),
-        creatorIdentity: init.creatorIdentity,
         createdAt: init.createdAt ?? new Date(),
-        creatorUid: uid,
+        creatorUid: init.creatorUid,
         name: init.name ?? randomString(crypto, 8),
         colorIndex: 0,
         userState: init.userState ?? GroupUserState.MEMBER,
@@ -740,7 +738,7 @@ export function backendTests(
             });
 
             // Add a group with no members
-            const groupUid1 = makeGroup(db, {creatorIdentity: ensureIdentityString('MEMEMEME')});
+            const groupUid1 = makeGroup(db, {creatorUid: undefined});
             expect(
                 db.getAllGroupUids().map((group) => group.uid),
                 'with one group',
@@ -748,22 +746,14 @@ export function backendTests(
 
             // Add another group
             const members = [contactUid1, contactUid2];
-            const groupUid2 = makeGroup(
-                db,
-                {creatorIdentity: ensureIdentityString('MEMEMEME')},
-                members,
-            );
+            const groupUid2 = makeGroup(db, {creatorUid: undefined}, members);
             expect(
                 db.getAllGroupUids().map((group) => group.uid),
                 'with two groups',
             ).to.have.same.members([groupUid1, groupUid2]);
 
             // Multiple "identical" groups are fine
-            const groupUid3 = makeGroup(
-                db,
-                {creatorIdentity: ensureIdentityString('MEMEMEME')},
-                members,
-            );
+            const groupUid3 = makeGroup(db, {creatorUid: undefined}, members);
             expect(
                 db.getAllGroupUids().map((group) => group.uid),
                 'with two groups',
@@ -784,7 +774,7 @@ export function backendTests(
             });
 
             // Add a group with no members
-            const groupUid = makeGroup(db, {creatorIdentity: ensureIdentityString('MEMEMEME')}, []);
+            const groupUid = makeGroup(db, {creatorUid: undefined}, []);
             expect(getGroupMemberUids(groupUid)).to.have.same.members([]);
 
             // Add a member
@@ -815,10 +805,8 @@ export function backendTests(
         });
 
         it('hasGroupByIdAndCreator / removeGroup', function () {
-            const identity1 = ensureIdentityString('MEMEMEME');
-
             // Add a group with no members
-            const uid = makeGroup(db, {creatorIdentity: identity1}, []);
+            const uid = makeGroup(db, {creatorUid: undefined}, []);
             const group = db.getGroupByUid(uid);
             expect(group).not.to.be.undefined;
             assert(group !== undefined);
@@ -837,13 +825,12 @@ export function backendTests(
         });
 
         it('getGroupByUid', function () {
-            const identity1 = ensureIdentityString('MEMEMEME');
             const now = new Date();
 
             // Add a group with a notification trigger policy override.
             // We test this specially because in SQLite this nested object is flattened.
             const uid = makeGroup(db, {
-                creatorIdentity: identity1,
+                creatorUid: undefined,
                 notificationTriggerPolicyOverride: {
                     policy: GroupNotificationTriggerPolicy.NEVER,
                     expiresAt: now,
@@ -870,7 +857,7 @@ export function backendTests(
             const groupUid = makeGroup(
                 db,
                 {
-                    creatorIdentity: ensureIdentityString('MEMEMEME'),
+                    creatorUid: undefined,
                 },
                 [contactUid],
             );
@@ -2049,18 +2036,18 @@ export function backendTests(
 
     describe('statusMessages', function () {
         it('add status messages to db', function () {
-            makeContact(db, {
+            const uid1 = makeContact(db, {
                 identity: 'LKJHGFDS',
             });
 
-            makeContact(db, {
+            const uid2 = makeContact(db, {
                 identity: 'TESTTESA',
                 visibility: ConversationVisibility.PINNED,
             });
 
-            const groupUid1 = makeGroup(db, {creatorIdentity: ensureIdentityString('TESTTEST')});
+            const groupUid1 = makeGroup(db, {creatorUid: uid1});
 
-            const groupUid2 = makeGroup(db, {creatorIdentity: ensureIdentityString('TESTTESA')});
+            const groupUid2 = makeGroup(db, {creatorUid: uid2});
 
             // Ensure that an associated conversation exists for each contact
             // and that the conversation properties landed there
@@ -2104,18 +2091,18 @@ export function backendTests(
         });
 
         it('remove status messages from the db', function () {
-            makeContact(db, {
+            const uid1 = makeContact(db, {
                 identity: 'LKJHGFDS',
             });
 
-            makeContact(db, {
+            const uid2 = makeContact(db, {
                 identity: 'TESTTESA',
                 visibility: ConversationVisibility.PINNED,
             });
 
-            const groupUid1 = makeGroup(db, {creatorIdentity: ensureIdentityString('TESTTEST')});
+            const groupUid1 = makeGroup(db, {creatorUid: uid1});
 
-            const groupUid2 = makeGroup(db, {creatorIdentity: ensureIdentityString('TESTTESA')});
+            const groupUid2 = makeGroup(db, {creatorUid: uid2});
 
             // Ensure that an associated conversation exists for each contact
             // and that the conversation properties landed there

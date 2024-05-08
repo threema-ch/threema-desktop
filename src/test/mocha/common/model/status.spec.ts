@@ -26,7 +26,7 @@ export function run(): void {
             contact = addTestUserAsContact(services.model, anotherUser);
             conversation = contact.get().controller.conversation();
             addTestGroup(services.model, {
-                creatorIdentity: me.identity.string,
+                creator: 'me',
                 members: [contact.ctx],
                 createdAt: new Date(),
             });

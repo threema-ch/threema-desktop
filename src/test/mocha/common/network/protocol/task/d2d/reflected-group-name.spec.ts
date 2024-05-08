@@ -43,15 +43,15 @@ export function run(): void {
 
             // Add creator contact
             const creator = user1;
-            const creatorUid = addTestUserAsContact(model, creator).ctx;
+            const creatorModel = addTestUserAsContact(model, creator);
 
             // Add group, we are not the creator
             const groupId = randomGroupId(crypto);
             const group = addTestGroup(model, {
                 groupId,
-                creatorIdentity: user1.identity.string,
+                creator: creatorModel,
                 name: 'AAA',
-                members: [creatorUid],
+                members: [],
             });
 
             // Ensure that group name is AAA
@@ -93,7 +93,7 @@ export function run(): void {
             const groupId = randomGroupId(crypto);
             const group = addTestGroup(model, {
                 groupId,
-                creatorIdentity: me,
+                creator: 'me',
                 name: 'AAA',
                 members: [user1Uid],
             });

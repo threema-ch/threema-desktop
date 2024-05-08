@@ -104,7 +104,9 @@ export function assertGroupHasMembers(
 ): void {
     const group = services.model.groups.getByGroupIdAndCreator(groupId, creator);
     assert(group !== undefined, 'Group not found');
-    expect(group.get().view.members).to.have.members(expectedMembers);
+    expect(
+        [...group.get().view.members].map((member) => member.get().view.identity),
+    ).to.have.members(expectedMembers);
 }
 
 /**

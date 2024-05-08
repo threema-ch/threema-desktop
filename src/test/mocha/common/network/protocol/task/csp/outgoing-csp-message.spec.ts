@@ -592,8 +592,9 @@ export function run(): void {
             const testExpectations = params.testExpectations ?? (() => []);
 
             // Add creator to contacts if necessary
+            let creatorContact: LocalModelStore<Contact> | 'me' = 'me';
             if (creator !== 'self') {
-                addTestUserAsContact(model, creator);
+                creatorContact = addTestUserAsContact(model, creator);
             }
 
             // Add group members to DB
@@ -604,7 +605,7 @@ export function run(): void {
             const groupStore = addTestGroup(model, {
                 groupId,
                 name,
-                creatorIdentity: creator === 'self' ? me : creator.identity.string,
+                creator: creatorContact,
                 createdAt: new Date(),
                 userState: GroupUserState.MEMBER,
                 members: memberStores.map((store) => store.ctx),
@@ -881,7 +882,7 @@ export function run(): void {
                 const group = model.groups.add.fromSync(
                     {
                         groupId,
-                        creatorIdentity: me,
+                        creator: 'me',
                         createdAt: new Date(),
                         name: 'Chüngelizüchter Pfäffikon',
                         userState: GroupUserState.MEMBER,
@@ -945,7 +946,7 @@ export function run(): void {
                 const group = model.groups.add.fromSync(
                     {
                         groupId,
-                        creatorIdentity: me,
+                        creator: 'me',
                         createdAt: new Date(),
                         name: 'Chüngelizüchter Pfäffikon 🐇',
                         userState: GroupUserState.MEMBER,

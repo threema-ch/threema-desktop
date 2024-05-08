@@ -971,7 +971,7 @@ export function run(): void {
                 addTestUserAsContact(model, user2);
 
                 // Group created by user1
-                const groupUid = makeGroup(model.db, {creatorIdentity: user1.identity.string});
+                const groupUid = makeGroup(model.db, {creatorUid: contact1.ctx});
                 const group = unwrap(model.groups.getByUid(groupUid));
                 const groupConversation = group.get().controller.conversation();
                 group.get().controller.members.set.fromSync([contact1.ctx]);
@@ -986,7 +986,9 @@ export function run(): void {
                         me,
                         CspE2eGroupConversationType.GROUP_TEXT,
                         structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
-                            creatorIdentity: UTF8.encode(group.get().view.creatorIdentity),
+                            creatorIdentity: UTF8.encode(
+                                group.get().controller.getCreatorIdentity(),
+                            ),
                             groupId: group.get().view.groupId,
                             innerData: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
                                 text: UTF8.encode(messageText),
@@ -1096,9 +1098,7 @@ export function run(): void {
                 });
 
                 // Group created by user1
-                const groupUid = makeGroup(model.db, {creatorIdentity: user1.identity.string}, [
-                    contact2.ctx,
-                ]);
+                const groupUid = makeGroup(model.db, {creatorUid: contact1.ctx}, [contact2.ctx]);
                 const group = unwrap(model.groups.getByUid(groupUid));
                 const groupConversation = group.get().controller.conversation();
                 group.get().controller.members.set.fromSync([contact1.ctx]);
@@ -1113,7 +1113,9 @@ export function run(): void {
                         me,
                         CspE2eGroupConversationType.GROUP_TEXT,
                         structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
-                            creatorIdentity: UTF8.encode(group.get().view.creatorIdentity),
+                            creatorIdentity: UTF8.encode(
+                                group.get().controller.getCreatorIdentity(),
+                            ),
                             groupId: group.get().view.groupId,
                             innerData: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
                                 text: UTF8.encode(messageText),
@@ -1185,7 +1187,7 @@ export function run(): void {
                 const groupId = randomGroupId(crypto);
                 const group = addTestGroup(model, {
                     groupId,
-                    creatorIdentity: user1.identity.string,
+                    creator: creatorContact,
                     name: 'AAA',
                     members: [creatorContact.ctx],
                 });

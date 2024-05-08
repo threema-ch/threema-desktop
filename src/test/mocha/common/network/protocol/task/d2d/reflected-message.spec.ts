@@ -73,7 +73,7 @@ export function run(): void {
             groupId = randomGroupId(services.crypto);
             const group = addTestGroup(services.model, {
                 groupId,
-                creatorIdentity: user1.identity.string,
+                creator: user,
                 name: 'Group of the group members',
                 members: [user.ctx],
             });
@@ -599,7 +599,7 @@ export function run(): void {
                 const groupId2 = randomGroupId(services.crypto);
                 const group2 = addTestGroup(services.model, {
                     groupId: groupId2,
-                    creatorIdentity: user1.identity.string,
+                    creator: user,
                     name: 'Group 2 of the group members',
                     members: [user.ctx],
                 });
