@@ -7,6 +7,7 @@
   import LazyImage from '~/app/ui/components/atoms/lazy-image/LazyImage.svelte';
   import RadialExclusionMaskProvider from '~/app/ui/components/hocs/radial-exclusion-mask-provider/RadialExclusionMaskProvider.svelte';
   import type {RadialExclusionMaskProviderProps} from '~/app/ui/components/hocs/radial-exclusion-mask-provider/props';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import ThreemaIcon from '~/app/ui/svelte-components/blocks/Icon/ThreemaIcon.svelte';
   import type {f64, u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
@@ -142,7 +143,13 @@
         <div class="text">{charm.content.text}</div>
       {:else if charm.content.type === 'icon'}
         <div class="icon" title={charm.content.description}>
-          <ThreemaIcon theme="Filled">{charm.content.icon}</ThreemaIcon>
+          {#if charm.content.family === 'threema' || charm.content.family === undefined}
+            <ThreemaIcon theme="Filled">{charm.content.icon}</ThreemaIcon>
+          {:else if charm.content.family === 'material'}
+            <MdIcon theme="Filled">{charm.content.icon}</MdIcon>
+          {:else}
+            {unreachable(charm.content.family)}
+          {/if}
         </div>
       {:else}
         {unreachable(charm.content)}

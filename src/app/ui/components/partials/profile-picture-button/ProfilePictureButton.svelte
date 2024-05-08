@@ -40,7 +40,7 @@
       {#if index === 0}
         <ProfilePicture
           options={{
-            hideCharms: true,
+            hideDefaultCharms: true,
             isClickable: true,
           }}
           {receiver}
@@ -51,7 +51,7 @@
         <RadialExclusionMaskProvider cutouts={[DEFAULT_CUTOUT]}>
           <ProfilePicture
             options={{
-              hideCharms: true,
+              hideDefaultCharms: true,
               isClickable: true,
             }}
             {receiver}

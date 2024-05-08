@@ -19,6 +19,7 @@
 
   type $$Props = ProfilePictureProps;
 
+  export let extraCharms: NonNullable<$$Props['extraCharms']> = [];
   export let options: NonNullable<$$Props['options']> = {};
   export let receiver: $$Props['receiver'];
   export let services: $$Props['services'];
@@ -66,9 +67,9 @@
 
   function getAvatarCharms(
     currentReceiver: Pick<ContactReceiverData, 'badge'>,
-    hideCharms: boolean | undefined,
+    hideDefaultCharms: boolean | undefined,
   ): AvatarCharm[] {
-    if (hideCharms === true) {
+    if (hideDefaultCharms === true) {
       return [];
     }
 
@@ -180,7 +181,10 @@
 
 <Avatar
   byteStore={profilePictureStore}
-  charms={receiver.type === 'self' ? [] : getAvatarCharms(receiver, options.hideCharms)}
+  charms={[
+    ...(receiver.type === 'self' ? [] : getAvatarCharms(receiver, options.hideDefaultCharms)),
+    ...extraCharms,
+  ]}
   color={receiver.color}
   description={$i18n.t('contacts.hint--profile-picture', {
     name: receiver.name,

@@ -118,8 +118,26 @@
       <!-- TODO(DESK-1447): Pass in real data from ViewModel. -->
       {#each demoFeeds as profilePicture}
         <ProfilePicture
+          extraCharms={[
+            {
+              content: {
+                type: 'icon',
+                icon: profilePicture.isAudioEnabled ? 'mic' : 'mic_off',
+                family: 'material',
+              },
+              position: 135,
+              style: {
+                type: 'cutout',
+                contentColor: 'white',
+                gap: 2,
+                backgroundColor: profilePicture.isAudioEnabled
+                  ? 'var(--t-color-primary-600)'
+                  : 'red',
+              },
+            },
+          ]}
           options={{
-            hideCharms: true,
+            hideDefaultCharms: true,
             isClickable: false,
           }}
           receiver={profilePicture.receiver}

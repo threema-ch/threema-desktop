@@ -60,6 +60,10 @@ interface IconCharmContent {
     readonly type: 'icon';
     readonly icon: string;
     readonly description?: string;
+    /**
+     * The icon family to use. Defaults to `"threema"`.
+     */
+    readonly family?: 'material' | 'threema';
 }
 
 interface TextCharmContent {
