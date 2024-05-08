@@ -81,7 +81,7 @@ export function run(): void {
                 creator: user2Model,
                 name: 'Kulupu pi Toki Pona',
                 userState: GroupUserState.KICKED,
-                members: [user1Model.ctx, user2Model.ctx],
+                members: [user1Model, user2Model],
             });
 
             // Run task
@@ -111,7 +111,7 @@ export function run(): void {
                 creator: user2Model,
                 name: 'Kulupu pi Toki Pona',
                 userState: GroupUserState.MEMBER,
-                members: [user1Model.ctx, user2Model.ctx],
+                members: [user1Model, user2Model],
             });
 
             // Run task
@@ -141,7 +141,7 @@ export function run(): void {
                 creator: 'me',
                 name: 'mi wile toki e toki pona',
                 userState: GroupUserState.MEMBER,
-                members: [user1Model.ctx, user2Model.ctx],
+                members: [user1Model, user2Model],
             });
 
             // Run task

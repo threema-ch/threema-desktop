@@ -51,7 +51,7 @@ export function run(): void {
                 groupId,
                 creator: creatorContact,
                 name: 'AAA',
-                members: [creatorContact.ctx],
+                members: [creatorContact],
             });
 
             // Ensure that group name is AAA

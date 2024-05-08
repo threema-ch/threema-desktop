@@ -196,7 +196,7 @@ export function run(): void {
             const user = addTestUserAsContact(model, user1);
             const receiver = addTestGroup(model, {
                 creator: user,
-                members: [user.ctx],
+                members: [user],
             }).get();
             const {message, messageStore} = addOutgoingTestMessageForReceiver(
                 receiver,

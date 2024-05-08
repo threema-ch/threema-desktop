@@ -26,12 +26,7 @@ import {deriveDeviceGroupKeys} from '~/common/crypto/device-group-keys';
 import type {INonceGuard, INonceService} from '~/common/crypto/nonce';
 import {randomU64} from '~/common/crypto/random';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
-import {
-    type DatabaseBackend,
-    type DbContactUid,
-    type DbReceiverLookup,
-    wrapRawDatabaseKey,
-} from '~/common/db';
+import {type DatabaseBackend, type DbReceiverLookup, wrapRawDatabaseKey} from '~/common/db';
 import type {Device} from '~/common/device';
 import type {SystemInfo} from '~/common/electron-ipc';
 import {
@@ -1119,7 +1114,7 @@ export function addTestUserToFakeDirectory(directory: TestDirectoryBackend, user
  */
 export interface TestGroup {
     creator: LocalModelStore<Contact> | 'me';
-    members: DbContactUid[];
+    members: LocalModelStore<Contact>[];
     // Default: Random
     groupId?: GroupId;
     // Default: ""

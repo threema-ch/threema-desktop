@@ -779,26 +779,35 @@ export function backendTests(
 
             // Add a member
             db.createGroupMember(groupUid, contactUid1);
-            expect(getGroupMemberUids(groupUid)).to.have.same.members([contactUid1]);
+            expect(
+                getGroupMemberUids(groupUid),
+                'Added the first group member',
+            ).to.have.same.members([contactUid1]);
 
             // Add another member
             db.createGroupMember(groupUid, contactUid2);
-            expect(getGroupMemberUids(groupUid)).to.have.same.members([contactUid1, contactUid2]);
+            expect(
+                getGroupMemberUids(groupUid),
+                'Added the second group member',
+            ).to.have.same.members([contactUid1, contactUid2]);
 
-            // Re-adding same member is disallowed
-            expect(() => db.createGroupMember(groupUid, contactUid2)).to.throw;
+            // Re-adding same member does nothing
+            db.createGroupMember(groupUid, contactUid2);
+            expect(getGroupMemberUids(groupUid)).to.have.same.members([contactUid1, contactUid2]);
 
             // Adding a non-existing contact as member is disallowed (foreign key checks)
             expect(() => db.createGroupMember(groupUid, 99999n as DbContactUid)).to.throw;
 
             // Remove an existing member
-            expect(db.removeGroupMember(groupUid, contactUid1)).to.be.true;
+            db.removeGroupMember(groupUid, contactUid1);
             expect(getGroupMemberUids(groupUid)).to.have.same.members([contactUid2]);
 
             // Removing a non-existing member from an existing group, or a member from a
-            // non-existing group, is OK but returns false
-            expect(db.removeGroupMember(groupUid, 99999n as DbContactUid)).to.be.false;
-            expect(db.removeGroupMember(99999n as DbGroupUid, contactUid1)).to.be.false;
+            // non-existing group, is OK but does nothing
+            db.removeGroupMember(groupUid, 99999n as DbContactUid);
+            db.removeGroupMember(99999n as DbGroupUid, contactUid1);
+
+            expect(getGroupMemberUids(groupUid)).to.have.same.members([contactUid2]);
 
             // Adding members to a non-existing group is disallowed
             expect(() => db.createGroupMember(99999n as DbGroupUid, contactUid1)).to.throw;

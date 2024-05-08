@@ -87,7 +87,7 @@ export function run(): void {
             const {crypto, model} = services;
 
             // Add member contact
-            const user1Uid = addTestUserAsContact(model, user1).ctx;
+            const user1Model = addTestUserAsContact(model, user1);
 
             // Add group, we're the creator
             const groupId = randomGroupId(crypto);
@@ -95,7 +95,7 @@ export function run(): void {
                 groupId,
                 creator: 'me',
                 name: 'AAA',
-                members: [user1Uid],
+                members: [user1Model],
             });
 
             // Ensure that group name is AAA

@@ -183,7 +183,7 @@ export function groupLeaveTests(
                 groupId,
                 creator: 'me',
                 userState: GroupUserState.MEMBER,
-                members: [memberContact.ctx],
+                members: [memberContact],
             });
 
             // Ensure that sender contact does not yet exist
@@ -228,7 +228,7 @@ export function groupLeaveTests(
             creator: 'me',
             name: 'Chüngelizüchter Pfäffikon',
             userState: GroupUserState.MEMBER,
-            members: [memberContact.ctx],
+            members: [memberContact],
         });
 
         // Ensure that user1 is member of the group

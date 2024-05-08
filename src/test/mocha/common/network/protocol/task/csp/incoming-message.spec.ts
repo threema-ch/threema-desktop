@@ -974,7 +974,7 @@ export function run(): void {
                 const groupUid = makeGroup(model.db, {creatorUid: contact1.ctx});
                 const group = unwrap(model.groups.getByUid(groupUid));
                 const groupConversation = group.get().controller.conversation();
-                group.get().controller.members.set.fromSync([contact1.ctx]);
+                group.get().controller.setMembers.fromSync([contact1]);
 
                 function makeGroupMessage(
                     sender: TestUser,
@@ -1101,7 +1101,7 @@ export function run(): void {
                 const groupUid = makeGroup(model.db, {creatorUid: contact1.ctx}, [contact2.ctx]);
                 const group = unwrap(model.groups.getByUid(groupUid));
                 const groupConversation = group.get().controller.conversation();
-                group.get().controller.members.set.fromSync([contact1.ctx]);
+                group.get().controller.setMembers.fromSync([contact1]);
 
                 function makeGroupMessage(
                     sender: TestUser,
@@ -1189,7 +1189,7 @@ export function run(): void {
                     groupId,
                     creator: creatorContact,
                     name: 'AAA',
-                    members: [creatorContact.ctx],
+                    members: [creatorContact],
                 });
 
                 // Ensure that group name is AAA

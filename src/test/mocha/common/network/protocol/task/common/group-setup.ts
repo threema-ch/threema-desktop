@@ -239,7 +239,7 @@ export function groupSetupTests(
             creator: creatorModel,
             userState: GroupUserState.MEMBER,
             createdAt: groupCreatedAt,
-            members: [creatorModel.ctx],
+            members: [creatorModel],
         });
 
         // Create group setup message. Members: user1, user2, me
@@ -291,7 +291,7 @@ export function groupSetupTests(
             creator: creatorModel,
             userState: GroupUserState.MEMBER,
             createdAt: groupCreatedAt,
-            members: [creatorModel.ctx, memberModel.ctx],
+            members: [creatorModel, memberModel],
         });
 
         // Create group setup message with empty member list (we were kicked)
@@ -344,7 +344,7 @@ export function groupSetupTests(
             creator: creatorModel,
             userState: GroupUserState.LEFT,
             createdAt: groupCreatedAt,
-            members: [creatorModel.ctx],
+            members: [creatorModel],
         });
 
         // Create group setup message where both we and user 2 are members

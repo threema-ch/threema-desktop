@@ -608,7 +608,7 @@ export function run(): void {
                 creator: creatorContact,
                 createdAt: new Date(),
                 userState: GroupUserState.MEMBER,
-                members: memberStores.map((store) => store.ctx),
+                members: memberStores,
             });
 
             // Create new OutgoingMessageTask
@@ -890,7 +890,7 @@ export function run(): void {
                         visibility: ConversationVisibility.SHOW,
                         colorIndex: 0,
                     },
-                    [user1store.ctx, user2store.ctx],
+                    [user1store, user2store],
                 );
 
                 const cspMessageFlags = CspMessageFlags.forMessageType('text');
@@ -954,7 +954,7 @@ export function run(): void {
                         visibility: ConversationVisibility.SHOW,
                         colorIndex: 0,
                     },
-                    [user1store.ctx, user2store.ctx],
+                    [user1store, user2store],
                 );
 
                 // Create new OutgoingMessageTask

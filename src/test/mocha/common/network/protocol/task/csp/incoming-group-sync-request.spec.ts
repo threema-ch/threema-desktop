@@ -3,7 +3,7 @@ import {expect} from 'chai';
 import type {ServicesForBackend} from '~/common/backend';
 import {GroupUserState, GroupUserStateUtils} from '~/common/enum';
 import type {Contact, ContactInit} from '~/common/model';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {IncomingGroupSyncRequestTask} from '~/common/network/protocol/task/csp/incoming-group-sync-request';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import type {GroupCreatorContainer} from '~/common/network/structbuf/validate/csp/e2e';
@@ -92,7 +92,7 @@ export function run(): void {
                     groupId,
                     creator: 'me',
                     userState,
-                    members: [senderContact.ctx, memberContact.ctx],
+                    members: [senderContact, memberContact],
                 });
 
                 // Run task
@@ -124,7 +124,7 @@ export function run(): void {
                 addTestGroup(model, {
                     groupId,
                     creator: 'me',
-                    members: [memberContact.ctx],
+                    members: [memberContact],
                 });
 
                 // Determine network expectations
@@ -168,7 +168,7 @@ export function run(): void {
                     groupId,
                     name: groupName,
                     creator: 'me',
-                    members: [senderContact.ctx, memberContact.ctx],
+                    members: [senderContact, memberContact],
                 });
 
                 // Potentially add a profile picture to the group
@@ -216,7 +216,7 @@ export function run(): void {
             addTestGroup(model, {
                 groupId,
                 creator: 'me',
-                members: [memberContact.ctx],
+                members: [memberContact],
             });
 
             // Determine network expectations
@@ -274,7 +274,7 @@ export function run(): void {
             addTestGroup(model, {
                 groupId,
                 creator: 'me',
-                members: [memberContact.ctx],
+                members: [memberContact],
             });
 
             // Determine network expectations

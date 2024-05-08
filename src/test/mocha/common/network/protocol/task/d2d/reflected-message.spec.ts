@@ -75,7 +75,7 @@ export function run(): void {
                 groupId,
                 creator: user,
                 name: 'Group of the group members',
-                members: [user.ctx],
+                members: [user],
             });
             groupConversation = group.get().controller.conversation();
         });
@@ -601,7 +601,7 @@ export function run(): void {
                     groupId: groupId2,
                     creator: user,
                     name: 'Group 2 of the group members',
-                    members: [user.ctx],
+                    members: [user],
                 });
                 const groupConversation2 = group2.get().controller.conversation();
 

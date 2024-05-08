@@ -11,6 +11,7 @@ import {
 import type {
     AnyOutboundMessageModel,
     AnyOutboundNonDeletedMessageModelStore,
+    Contact,
     ContactView,
     Conversation,
 } from '~/common/model';
@@ -106,9 +107,9 @@ export function run(): void {
             singleConversationReceiverIdentity = receiverView.identity;
 
             // Set up a group for testing of group reactions
-            const groupMembers: DbContactUid[] = [];
+            const groupMembers: LocalModelStore<Contact>[] = [];
             for (const testUser of testUsers.slice(1)) {
-                const userUid = addTestUserAsContact(services.model, testUser).ctx;
+                const userUid = addTestUserAsContact(services.model, testUser);
                 groupMembers.push(userUid);
             }
             testGroup = {
@@ -421,7 +422,7 @@ export function run(): void {
         });
 
         it('should register multiple incoming reactions on an outbound message in a group conversation', async function () {
-            const {crypto, model} = services;
+            const {crypto} = services;
             const handle = new TestHandle(services, []);
 
             // Add outbound message
@@ -440,8 +441,7 @@ export function run(): void {
             expect(msg.get().view.reactions, 'Message should not yet have a reaction').to.be.empty;
 
             const reactions = testGroup.members.map((value, idx) => {
-                const senderIdentity = model.contacts.getByUid(value)?.get().view.identity;
-                assert(senderIdentity !== undefined, 'Sender identity should not be unknown');
+                const senderIdentity = value.get().view.identity;
                 return {
                     status:
                         idx % 2 === 0
@@ -601,7 +601,7 @@ export function run(): void {
         // This is essentially the same test as for an outbound message
         // Implicitly, we test here too if we accept incoming reactions of the sender of a message on his/her own message
         it('should register multiple incoming reactions on an inbound message in a group conversation', async function () {
-            const {crypto, model} = services;
+            const {crypto} = services;
             const handle = new TestHandle(services, []);
 
             // Add inbound message
@@ -614,7 +614,7 @@ export function run(): void {
                 type: 'text',
                 id: messageId,
                 text: `Message with ID ${messageId}`,
-                sender,
+                sender: sender.ctx,
                 createdAt: new Date(),
                 receivedAt: originalReceivedAt,
                 raw: new Uint8Array(0),
@@ -626,8 +626,7 @@ export function run(): void {
             assert(msg.get().view.reactions.length === 0, 'Message should not yet have a reaction');
 
             const reactions = testGroup.members.map((value, idx) => {
-                const senderIdentity = model.contacts.getByUid(value)?.get().view.identity;
-                assert(senderIdentity !== undefined);
+                const senderIdentity = value.get().view.identity;
                 return {
                     status:
                         idx % 2 === 0
