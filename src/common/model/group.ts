@@ -12,16 +12,14 @@ import * as contact from '~/common/model/contact';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import * as conversation from '~/common/model/conversation';
 import type {GroupProfilePictureFields} from '~/common/model/profile-picture';
-import type {ServicesForModel} from '~/common/model/types/common';
+import type {GuardedStoreHandle, ServicesForModel} from '~/common/model/types/common';
 import type {Contact} from '~/common/model/types/contact';
 import type {Conversation, ConversationUpdateFromToSync} from '~/common/model/types/conversation';
 import type {
     Group,
     GroupController,
-    GroupControllerHandle,
     GroupCreator,
     GroupInit,
-    GroupMemberController,
     GroupRepository,
     GroupUpdate,
     GroupUpdateFromLocal,
@@ -128,88 +126,90 @@ export function getGroupInitials(group: Pick<GroupView, 'name' | 'groupId'>): st
  *
  * Note: If the `DbContactUid` is the creator of the group or is already in the member list, no
  * database operation will be performed.
- *
- * @throws if group or contact does not exist
  */
 function addGroupMember(
     services: ServicesForModel,
     groupUid: DbGroupUid,
-    contactUid: DbContactUid,
-): LocalModelStore<Contact> {
+    contactsToAdd: LocalModelStore<Contact>,
+): u53 {
     const {db} = services;
-
     // Add membership - if the contact is not a member in the db already:
-    if (!db.hasGroupMember(groupUid, contactUid)) {
-        db.createGroupMember(groupUid, contactUid);
-    }
-
-    return contact.getByUid(services, contactUid, Existence.ENSURED);
+    return db.createGroupMember(groupUid, contactsToAdd.ctx);
 }
 
 /**
  * Add multiple group member entries.
  *
- * @throws if group or contact does not exist
+ * Returns the number of members that were added.
  */
 function addGroupMembers(
     services: ServicesForModel,
     groupUid: DbGroupUid,
-    contactUids: DbContactUid[],
-): LocalModelStore<Contact>[] {
-    return contactUids.map((contactUid) => addGroupMember(services, groupUid, contactUid));
+    contactsToAdd: LocalModelStore<Contact>[],
+): u53 {
+    return contactsToAdd.reduce(
+        (count, contactToAdd) => count + addGroupMember(services, groupUid, contactToAdd),
+        0,
+    );
 }
 
 /**
- * Remove a group member entry.
- *
- * @returns true if a membership was removed, false if it did not exist.
- */
-function removeGroupMember(
-    services: ServicesForModel,
-    groupUid: DbGroupUid,
-    contactUid: DbContactUid,
-): boolean {
-    return services.db.removeGroupMember(groupUid, contactUid);
-}
-
-/**
- * Remove multiple group member entries.
- *
- * @throws if group or contact does not exist
- */
-function removeGroupMembers(
-    services: ServicesForModel,
-    groupUid: DbGroupUid,
-    contactUids: DbContactUid[],
-): [contactUid: DbContactUid, removed: boolean][] {
-    return contactUids.map((contactUid) => [
-        contactUid,
-        removeGroupMember(services, groupUid, contactUid),
-    ]);
-}
-
-/**
- * Retrieve the current group members from the database.
- * Note that this is not a store, so contact changes are not subscribed here.
- *
- * TODO(DESK-577): This will be superseded by a new store with this ticket.
+ * Return all group members, excluding the creator.
  */
 function getGroupMembers(
     services: ServicesForModel,
     groupUid: DbGroupUid,
 ): Set<LocalModelStore<Contact>> {
-    const {db} = services;
-    const groupMemberUids = db.getAllGroupMemberContactUids(groupUid).map(({uid}) => uid);
-
+    const memberUids = services.db.getAllGroupMemberContactUids(groupUid);
     return new Set(
-        groupMemberUids.map((uid) => contact.getByUid(services, uid, Existence.ENSURED)),
+        memberUids.map((member) => contact.getByUid(services, member.uid, Existence.ENSURED)),
+    );
+}
+
+/**
+ * Returns true if the member contact is a member (or the creator) of the specified group.
+ */
+function hasGroupMember(
+    services: ServicesForModel,
+    groupUid: DbGroupUid,
+    memberContact: LocalModelStore<Contact>,
+): boolean {
+    return services.db.hasGroupMember(groupUid, memberContact.ctx);
+}
+
+/**
+ * Remove a group member from a group.
+ *
+ * Note: If a given contact is not in the member list, it will be ignored.
+ */
+function removeGroupMember(
+    services: ServicesForModel,
+    groupUid: DbGroupUid,
+    contactsToRemove: LocalModelStore<Contact>,
+): u53 {
+    return services.db.removeGroupMember(groupUid, contactsToRemove.ctx);
+}
+
+/**
+ * Remove multiple group member from a group.
+ *
+ * Returns the number of removed group memmbers.
+ */
+function removeGroupMembers(
+    services: ServicesForModel,
+    groupUid: DbGroupUid,
+    contactsToRemove: LocalModelStore<Contact>[],
+): u53 {
+    return contactsToRemove.reduce(
+        (count, contactToRemove) => count + removeGroupMember(services, groupUid, contactToRemove),
+        0,
     );
 }
 
 function create(
     services: ServicesForModel,
     init: Exact<GroupInit>,
-    memberUids: DbContactUid[],
+    membersToAdd: LocalModelStore<Contact>[],
 ): LocalModelStore<Group> {
     const {db} = services;
 
@@ -229,7 +229,7 @@ function create(
     const uid = db.createGroup(group);
 
     // Add members
-    addGroupMembers(services, uid, memberUids);
+    addGroupMembers(services, uid, membersToAdd);
 
     const creatorIdentity =
         init.creator === 'me' ? services.device.identity.string : init.creator.get().view.identity;
@@ -391,206 +391,102 @@ function all(services: ServicesForModel): LocalSetStore<LocalModelStore<Group>> 
 }
 
 /** @inheritdoc */
-class GroupMemberModelController implements GroupMemberController {
-    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-
-    /** @inheritdoc */
-    public readonly add: GroupMemberController['add'] = {
-        [TRANSFER_HANDLER]: PROXY_HANDLER,
-        // eslint-disable-next-line @typescript-eslint/require-await
-        fromLocal: async (contactUids: DbContactUid[]) => {
-            this._log.debug('GroupMemberModelController: Add members from local');
-            if (contactUids.length === 0) {
-                return;
-            }
-            this._add(contactUids);
-            this._addGroupMemberChangeStatusMessage(contactUids, []);
-        },
-    };
-
-    /** @inheritdoc */
-    public readonly remove: GroupMemberController['remove'] = {
-        [TRANSFER_HANDLER]: PROXY_HANDLER,
-        // eslint-disable-next-line @typescript-eslint/require-await
-        fromLocal: async (contactUids: DbContactUid[]) => {
-            this._log.debug('GroupMemberModelController: Remove members from local');
-            if (contactUids.length === 0) {
-                return 0;
-            }
-            const count = this._remove(contactUids);
-            this._addGroupMemberChangeStatusMessage([], contactUids);
-            return count;
-        },
-        fromRemote: async (
-            handle: ActiveTaskCodecHandle<'volatile'>,
-            contactUids: DbContactUid[],
-            // eslint-disable-next-line @typescript-eslint/require-await
-        ) => {
-            this._log.debug('GroupMemberModelController: Remove members from remote');
-            if (contactUids.length === 0) {
-                return 0;
-            }
-            const count = this._remove(contactUids);
-            this._addGroupMemberChangeStatusMessage([], contactUids);
-            return count;
-        },
-        fromSync: (contactUids: DbContactUid[]) => {
-            this._log.debug('GroupMemberModelController: Remove members from sync');
-            if (contactUids.length === 0) {
-                return 0;
-            }
-            const count = this._remove(contactUids);
-            this._addGroupMemberChangeStatusMessage([], contactUids);
-            return count;
-        },
-    };
-
-    /** @inheritdoc */
-    public readonly set: GroupMemberController['set'] = {
-        [TRANSFER_HANDLER]: PROXY_HANDLER,
-        fromSync: (contactUids: DbContactUid[]) => {
-            this._log.debug('GroupMemberModelController: Set members from sync');
-            const [added, removed] = this._diff(contactUids);
-            if (added.length === 0 && removed.length === 0) {
-                return;
-            }
-            this._set(added, removed);
-            this._addGroupMemberChangeStatusMessage(added, removed);
-        },
-        fromRemote: async (
-            handle: ActiveTaskCodecHandle<'volatile'>,
-            contactUids: DbContactUid[],
-            // eslint-disable-next-line @typescript-eslint/require-await
-        ) => {
-            this._log.debug('GroupMemberModelController: Set members from remote');
-            const [added, removed] = this._diff(contactUids);
-            if (added.length === 0 && removed.length === 0) {
-                return;
-            }
-            this._set(added, removed);
-            this._addGroupMemberChangeStatusMessage(added, removed);
-        },
-    };
-
-    private readonly _log: Logger;
-
-    public constructor(
-        private readonly _services: ServicesForModel,
-        private readonly _group: GroupControllerHandle,
-        private readonly _meta: ModelLifetimeGuard<GroupView>,
-    ) {
-        this._log = _services.logging.logger(`model.group.${_group.uid}.members`);
-    }
-
-    /** @inheritdoc */
-    public has(contactUid: DbContactUid): boolean {
-        const {db} = this._services;
-        return db.hasGroupMember(this._group.uid, contactUid);
-    }
-
-    /** @inheritdoc */
-    public members(): Set<LocalModelStore<Contact>> {
-        return getGroupMembers(this._services, this._group.uid);
-    }
-
-    private _add(contactUids: DbContactUid[]): void {
-        this._meta.update((view) => {
-            addGroupMembers(this._services, this._group.uid, contactUids);
-            this._group.version.next();
-            Object.assign(view, {
-                members: getGroupMembers(this._services, this._group.uid),
-            });
-            return view;
-        });
-    }
-
-    /**
-     * Remove the specified contacts from the group member list.
-     *
-     * Return the number of contacts that were previously part of the group and that were removed.
-     */
-    private _remove(contactUids: DbContactUid[]): u53 {
-        let removedCount = 0;
-        this._meta.update((view) => {
-            const removalInfo = removeGroupMembers(this._services, this._group.uid, contactUids);
-            removedCount = removalInfo
-                .map(([_, removed]) => (removed ? 1 : 0) as u53)
-                .reduce((total, current) => total + current, 0);
-            if (removedCount > 0) {
-                this._group.version.next();
-                Object.assign(view, {
-                    members: getGroupMembers(this._services, this._group.uid),
-                });
-            }
-            return view;
-        });
-        return removedCount;
-    }
-
-    /**
-     * Calculate difference between {@param contactUids} and the database state.
-     */
-    private _diff(contactUids: DbContactUid[]): [added: DbContactUid[], removed: DbContactUid[]] {
-        // Get current group members
-        const currentGroupMembers = this._services.db.getAllGroupMemberContactUids(this._group.uid);
-        const added = contactUids.filter(
-            (contactUid) =>
-                currentGroupMembers.find(
-                    ({uid: currentMemberUid}) => currentMemberUid === contactUid,
-                ) === undefined,
-        );
-        const removed = currentGroupMembers
-            .map(({uid}) => uid)
-            .filter(
-                (currentMemberUid) =>
-                    contactUids.find((contactUid) => contactUid === currentMemberUid) === undefined,
-            );
-
-        return [added, removed];
-    }
-
-    private _set(added: DbContactUid[], removed: DbContactUid[]): void {
-        this._remove(removed);
-        this._add(added);
-    }
-
-    private _addGroupMemberChangeStatusMessage(
-        added: DbContactUid[],
-        removed: DbContactUid[],
-    ): void {
-        const group = getByUid(this._services, this._group.uid, Existence.ENSURED);
-        const groupConversation = group.get().controller.conversation().get();
-        const createdAt = new Date();
-        groupConversation.controller.createStatusMessage({
-            type: 'group-member-change',
-            value: {
-                added: added.map(
-                    (uid) =>
-                        contact.getByUid(this._services, uid, Existence.ENSURED).get().view
-                            .identity,
-                ),
-                removed: removed.map(
-                    (uid) =>
-                        contact.getByUid(this._services, uid, Existence.ENSURED).get().view
-                            .identity,
-                ),
-            },
-            createdAt,
-        });
-    }
-}
-
-/** @inheritdoc */
 export class GroupModelController implements GroupController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly meta = new ModelLifetimeGuard<GroupView>();
     public readonly notificationTag: NotificationTag;
 
     /** @inheritdoc */
-    public readonly members: GroupMemberModelController;
+    public readonly profilePicture: LocalModelStore<ProfilePicture>;
+
+    public readonly addMembers: GroupController['addMembers'] = {
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
+        // TODO(DESK-165): Reflect changes here.
+        // eslint-disable-next-line @typescript-eslint/require-await
+        fromLocal: async (contacts: LocalModelStore<Contact>[]) => {
+            this._log.debug('GroupMemberModelController: Add members from local');
+            if (contacts.length === 0) {
+                return 0;
+            }
+
+            return this.meta.run((handle) => {
+                const oldMembers = handle.view().members;
+                const numAdded = this._addMembers(handle, contacts);
+
+                // If not all members were added for some reason, filter them out
+                let added = contacts;
+                if (numAdded !== contacts.length) {
+                    const newMembers = handle.view().members;
+                    added = contacts.filter((c) => !oldMembers.has(c) && newMembers.has(c));
+                }
+                if (added.length > 0) {
+                    this._versionSequence.next();
+                }
+                this._addGroupMemberChangeStatusMessage(added, []);
+
+                return added.length;
+            });
+        },
+    };
 
     /** @inheritdoc */
-    public readonly profilePicture: LocalModelStore<ProfilePicture>;
+    public readonly removeMembers: GroupController['removeMembers'] = {
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
+
+        // TODO(DESK-517): Reflect changes here.
+        // eslint-disable-next-line @typescript-eslint/require-await
+        fromLocal: async (contacts: LocalModelStore<Contact>[]) => {
+            this._log.debug('GroupMemberModelController: Remove members from local');
+            return this._removeMembersAndUpdate(TriggerSource.LOCAL, contacts);
+        },
+        fromRemote: async (
+            handle: ActiveTaskCodecHandle<'volatile'>,
+            contacts: LocalModelStore<Contact>[],
+            // eslint-disable-next-line @typescript-eslint/require-await
+        ) => {
+            this._log.debug('GroupMemberModelController: Remove members from remote');
+            return this._removeMembersAndUpdate(TriggerSource.REMOTE, contacts);
+        },
+        fromSync: (contacts: LocalModelStore<Contact>[]) => {
+            this._log.debug('GroupMemberModelController: Remove members from sync');
+            return this._removeMembersAndUpdate(TriggerSource.REMOTE, contacts);
+        },
+    };
+
+    /** @inheritdoc */
+    public readonly setMembers: GroupController['setMembers'] = {
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
+        fromSync: (contacts: LocalModelStore<Contact>[]) => {
+            this._log.debug('GroupMemberModelController: Set members from sync');
+            return this.meta.run((handle) => {
+                const {added, removed} = this._diff(handle, contacts);
+                if (added.length === 0 && removed.length === 0) {
+                    return {added: 0, removed: 0};
+                }
+                this._set(handle, [...added], [...removed]);
+                this._versionSequence.next();
+                this._addGroupMemberChangeStatusMessage(added, removed);
+                return {added: added.length, removed: removed.length};
+            });
+        },
+        fromRemote: async (
+            handle: ActiveTaskCodecHandle<'volatile'>,
+            contacts: LocalModelStore<Contact>[],
+            // eslint-disable-next-line @typescript-eslint/require-await
+        ) => {
+            this._log.debug('GroupMemberModelController: Set members from remote');
+            return this.meta.run((guardedHandle) => {
+                const {added, removed} = this._diff(guardedHandle, contacts);
+                if (added.length === 0 && removed.length === 0) {
+                    return {added: 0, removed: 0};
+                }
+                this._set(guardedHandle, [...added], [...removed]);
+                this._versionSequence.next();
+                this._addGroupMemberChangeStatusMessage(added, removed);
+                return {added: added.length, removed: removed.length};
+            });
+        },
+    };
 
     /** @inheritdoc */
     public readonly update: GroupController['update'] = {
@@ -783,15 +679,6 @@ export class GroupModelController implements GroupController {
         this._groupDebugString = groupDebugString(this._creatorIdentiy, _groupId);
         this._log = _services.logging.logger(`model.group.${uid}`);
         this.notificationTag = getNotificationTagForGroup(this._creatorIdentiy, _groupId);
-        this.members = new GroupMemberModelController(
-            _services,
-            {
-                uid,
-                debugString: this._groupDebugString,
-                version: this._versionSequence,
-            },
-            this.meta,
-        );
         this.profilePicture = this._services.model.profilePictures.getForGroup(
             this.uid,
             this._creatorIdentiy,
@@ -801,8 +688,21 @@ export class GroupModelController implements GroupController {
     }
 
     /** @inheritdoc */
+    public conversation(): LocalModelStore<Conversation> {
+        return this._conversation();
+    }
+
+    /** @inheritdoc */
     public creator(): LocalModelStore<Contact> | 'me' {
         return this.meta.run((handle) => handle.view().creator);
+    }
+
+    /** @inheritdoc */
+    public hasMember(memberContact: LocalModelStore<Contact> | 'me'): boolean {
+        if (memberContact === 'me') {
+            return this.meta.run((handle) => handle.view().userState === GroupUserState.MEMBER);
+        }
+        return hasGroupMember(this._services, this.uid, memberContact);
     }
 
     /** @inheritdoc */
@@ -810,9 +710,117 @@ export class GroupModelController implements GroupController {
         return this._creatorIdentiy;
     }
 
-    /** @inheritdoc */
-    public conversation(): LocalModelStore<Conversation> {
-        return this._conversation();
+    private _addMembers(
+        handle: GuardedStoreHandle<GroupView>,
+        contacts: LocalModelStore<Contact>[],
+    ): u53 {
+        const numAdded = addGroupMembers(this._services, this.uid, contacts);
+        handle.update(() => {
+            const members = getGroupMembers(this._services, this.uid);
+            return {members: new Set(members)};
+        });
+
+        return numAdded;
+    }
+
+    private _diff(
+        guardedHandle: GuardedStoreHandle<GroupView>,
+        contacts: Set<LocalModelStore<Contact>>,
+    ): {
+        added: LocalModelStore<Contact>[];
+        removed: LocalModelStore<Contact>[];
+    } {
+        const currentMembers = guardedHandle.view().members;
+        const creator = guardedHandle.view().creator;
+        const added = new Set<LocalModelStore<Contact>>();
+        const removed = new Set<LocalModelStore<Contact>>();
+        for (const c of contacts) {
+            // If the contact's reference is the creator, do nothing.
+            if (c === creator) {
+                this._log.warn('Cannot add a member which is the creator, ignoring it.');
+                continue;
+            }
+            if (!currentMembers.has(c)) {
+                added.add(c);
+            }
+        }
+
+        for (const m of currentMembers) {
+            if (m === creator) {
+                this._log.warn('Cannot remove a member which is the creator, ignoring it.');
+                continue;
+            }
+            if (!contacts.has(m)) {
+                removed.add(m);
+            }
+        }
+
+        return {added: [...added], removed: [...removed]};
+    }
+
+    /**
+     * Remove the specified contacts from the group member list.
+     *
+     */
+    private _removeMembers(contacts: LocalModelStore<Contact>[]): u53 {
+        return this.meta.run(() => {
+            const numRemoved = removeGroupMembers(this._services, this.uid, contacts);
+            this.meta.update(() => {
+                const members = getGroupMembers(this._services, this.uid);
+                return {members: new Set(members)};
+            });
+
+            return numRemoved;
+        });
+    }
+
+    private _removeMembersAndUpdate(
+        triggerSource: TriggerSource,
+        contacts: LocalModelStore<Contact>[],
+    ): u53 {
+        if (contacts.length === 0) {
+            return 0;
+        }
+        const oldMembers = this.meta.run((handle) => handle.view().members);
+        const numRemoved = this._removeMembers(contacts);
+
+        // If not all members were added for some reason, filter them out
+        let removed = contacts;
+        if (numRemoved !== contacts.length) {
+            const newMembers = this.meta.run((handle) => handle.view().members);
+
+            removed = contacts.filter((c) => oldMembers.has(c) && !newMembers.has(c));
+        }
+        if (removed.length > 0) {
+            this._versionSequence.next();
+        }
+
+        switch (triggerSource) {
+            case TriggerSource.LOCAL:
+                // TODO(DESK-1331: Add reflection task)
+                break;
+            case TriggerSource.REMOTE:
+            case TriggerSource.SYNC:
+                break;
+            default:
+                unreachable(triggerSource);
+        }
+        this._addGroupMemberChangeStatusMessage([], removed);
+
+        return numRemoved;
+    }
+
+    private _set(
+        handle: GuardedStoreHandle<GroupView>,
+        added: LocalModelStore<Contact>[],
+        removed: LocalModelStore<Contact>[],
+    ): void {
+        handle.update(() => {
+            removeGroupMembers(this._services, this.uid, removed);
+            addGroupMembers(this._services, this.uid, added);
+            const members = getGroupMembers(this._services, this.uid);
+            return {members: new Set(members)};
+        });
     }
 
     /**
@@ -926,6 +934,23 @@ export class GroupModelController implements GroupController {
             ),
         );
     }
+
+    private _addGroupMemberChangeStatusMessage(
+        added: LocalModelStore<Contact>[],
+        removed: LocalModelStore<Contact>[],
+    ): void {
+        const groupConversation = this.conversation().get();
+        const createdAt = new Date();
+
+        groupConversation.controller.createStatusMessage({
+            type: 'group-member-change',
+            value: {
+                added: added.map((c) => c.get().view.identity),
+                removed: removed.map((c) => c.get().view.identity),
+            },
+            createdAt,
+        });
+    }
 }
 
 /** @inheritdoc */
@@ -977,18 +1002,18 @@ export class GroupModelRepository implements GroupRepository {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
 
         // eslint-disable-next-line @typescript-eslint/require-await
-        fromLocal: async (init: GroupInit, members: DbContactUid[]) => {
+        fromLocal: async (init: GroupInit, members: LocalModelStore<Contact>[]) => {
             this._log.debug('Add group from local');
             return create(this._services, ensureExactGroupInit(init), members);
         },
 
         // eslint-disable-next-line @typescript-eslint/require-await
-        fromRemote: async (handle, init: GroupInit, members: DbContactUid[]) => {
+        fromRemote: async (handle, init: GroupInit, members: LocalModelStore<Contact>[]) => {
             this._log.debug('Add group from remote');
             return create(this._services, ensureExactGroupInit(init), members);
         },
 
-        fromSync: (init: GroupInit, members: DbContactUid[]) => {
+        fromSync: (init: GroupInit, members: LocalModelStore<Contact>[]) => {
             this._log.debug('Add group from sync');
             return create(this._services, ensureExactGroupInit(init), members);
         },

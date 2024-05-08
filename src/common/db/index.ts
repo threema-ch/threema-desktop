@@ -724,7 +724,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     readonly getAllGroupUids: () => DbList<DbGroup, 'uid'>;
 
     /**
-     * Return the uids of all members of a group.
+     * Return the uids of all members of a group excluding the creator.
      */
     readonly getAllGroupMemberContactUids: (groupUid: DbGroupUid) => DbList<DbContact, 'uid'>;
 
@@ -735,23 +735,25 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
 
     /**
      * Return whether the specified contact is part of the specified group.
+     *
+     * Note: This function will also return true if the `contactUid` belongs to the creator.
      */
     readonly hasGroupMember: (groupUid: DbGroupUid, contactUid: DbContactUid) => boolean;
 
     /**
-     * Add a group member to a group.
+     * Add a group member to a group. If the contact is the creator or a member already, this
+     * function has no side effects.
      *
-     * @throws if group or contact does not exist
-     * @throws if this group membership already exists
+     * Returns the number of added group members.
      */
-    readonly createGroupMember: (groupUid: DbGroupUid, contactUid: DbContactUid) => void;
+    readonly createGroupMember: (groupUid: DbGroupUid, contactUid: DbContactUid) => u53;
 
     /**
-     * Remove a group membership. Return whether a membership was found and removed.
+     * Remove a group membership.
      *
      * TODO(DESK-538): When contact with AcquaintanceLevel.GROUP is removed from the last group, delete it
      */
-    readonly removeGroupMember: (groupUid: DbGroupUid, contactUid: DbContactUid) => boolean;
+    readonly removeGroupMember: (groupUid: DbGroupUid, contactUid: DbContactUid) => u53;
 
     /**
      * Return the conversation with the specified UID, including the unread message count.

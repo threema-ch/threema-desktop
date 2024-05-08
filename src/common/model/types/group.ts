@@ -1,4 +1,4 @@
-import type {DbContactUid, DbGroup, DbGroupUid, UidOf} from '~/common/db';
+import type {DbGroup, DbGroupUid, UidOf} from '~/common/db';
 import type {
     GroupNotificationTriggerPolicy,
     GroupUserState,
@@ -83,9 +83,40 @@ export type GroupController = ReceiverController & {
     readonly meta: ModelLifetimeGuard<GroupView>;
 
     /**
-     * Manage group members.
+     * Add given contacts to the group (if they are not in it already).
+     *
+     * Returns the number of added contacts.
+     *
+     * Note: If the creator is in the list, it will be ignored.
      */
-    readonly members: GroupMemberController;
+    readonly addMembers: ControllerUpdateFromLocal<[contacts: LocalModelStore<Contact>[]], u53>;
+
+    /**
+     * Remove the given contacts from a group (if they are in it).
+     *
+     * Returns the number of removed contacts.
+     *
+     * Note: If the creator is in the list, it will be ignored.
+     */
+    readonly removeMembers: ControllerUpdateFromSource<[contacts: LocalModelStore<Contact>[]], u53>;
+
+    /**
+     * Set the group member. This function calculates the diff of the given contacts towards the
+     * group. To that end, it will add all contacts that are not in the group yet to the group and
+     * remove the ones that are already in the group.
+     *
+     * Returns the number of added
+     * and removed contacts. It is the responsibility of the caller to react adequately to the number of changes made to the group.
+     *
+     * Note: If the creator is in the list, it will be ignored.
+     */
+    readonly setMembers: Omit<
+        ControllerUpdateFromSource<
+            [contacts: LocalModelStore<Contact>[]],
+            {added: u53; removed: u53}
+        >,
+        'fromLocal'
+    >;
 
     /**
      * Update group properties that only come from a sync or only trigger a sync.
@@ -127,6 +158,11 @@ export type GroupController = ReceiverController & {
      * Return the identity string of the creator.
      */
     readonly getCreatorIdentity: () => IdentityString;
+
+    /**
+     * Returns true if the given contact is a member (or the creator) of this group.
+     */
+    readonly hasMember: (memberContact: LocalModelStore<Contact> | 'me') => boolean;
 } & ProxyMarked;
 export interface GroupControllerHandle {
     /**
@@ -147,41 +183,6 @@ export interface GroupControllerHandle {
 
 export type Group = LocalModel<GroupView, GroupController, UidOf<DbGroup>, ReceiverType.GROUP>;
 
-export type GroupMemberController = {
-    /**
-     * Return whether the specified contact is part of the member list.
-     */
-    readonly has: (contactUid: DbContactUid) => boolean;
-
-    /**
-     * Add multiple members to a group.
-     * Triggered by interaction locally on this client.
-     *
-     * @throws if group or contact does not exist
-     */
-    readonly add: ControllerUpdateFromLocal<[contactUids: DbContactUid[]]>;
-
-    /**
-     * Remove multiple members from the group. Return the number of members that were actually
-     * removed.
-     */
-    readonly remove: ControllerUpdateFromSource<[contactUids: DbContactUid[]], u53>;
-
-    /**
-     * Set member list to a specific state.
-     * Triggered by synchronization.
-     * Triggered by a remote update.
-     *
-     * This updates the differences in the database.
-     */
-    readonly set: Omit<ControllerUpdateFromSource<[contactUids: DbContactUid[]]>, 'fromLocal'>;
-
-    /**
-     * Return list of unique member identities (excluding the current user) and the creator.
-     */
-    readonly members: () => Set<LocalModelStore<Contact>>;
-} & ProxyMarked;
-
 /**
  * Groups storage
  */
@@ -195,7 +196,7 @@ export type GroupRepository = {
      * @param members The members list (including the creator)
      */
     readonly add: ControllerUpdateFromSource<
-        [init: GroupInit, members: DbContactUid[]],
+        [init: GroupInit, members: LocalModelStore<Contact>[]],
         LocalModelStore<Group>
     >;
 

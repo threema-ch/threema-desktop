@@ -741,47 +741,36 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public createGroupMember(groupUid: DbGroupUid, contactUid: DbContactUid): void {
-        const creatorUid = sync(
-            this._db
-                .selectFrom(tGroup)
-                .select({creatorUid: tGroup.creatorUid})
-                .where(tGroup.uid.equals(groupUid))
-                .executeSelectNoneOrOne(),
-        );
-
-        if (creatorUid === contactUid) {
+    public createGroupMember(groupUid: DbGroupUid, contactUid: DbContactUid): u53 {
+        if (this.hasGroupMember(groupUid, contactUid)) {
             this._log.warn(
-                'Cannot add a group creator to the group member list. Aborting the operation.',
+                'Cannot add a group member to a group that is already included in its members or is its admin. Aborting the operation',
             );
-            return;
+            return 0;
         }
 
-        sync(
+        return sync(
             this._db
                 .insertInto(tGroupMember)
                 .set({
                     contactUid,
                     groupUid,
                 })
-                .returningLastInsertedId()
                 .executeInsert(),
         );
     }
 
     /** @inheritdoc */
-    public removeGroupMember(groupUid: DbGroupUid, contactUid: DbContactUid): boolean {
-        return (
-            sync(
-                this._db
-                    .deleteFrom(tGroupMember)
-                    .where(
-                        tGroupMember.groupUid
-                            .equals(groupUid)
-                            .and(tGroupMember.contactUid.equals(contactUid)),
-                    )
-                    .executeDelete(),
-            ) > 0
+    public removeGroupMember(groupUid: DbGroupUid, contactUid: DbContactUid): u53 {
+        return sync(
+            this._db
+                .deleteFrom(tGroupMember)
+                .where(
+                    tGroupMember.groupUid
+                        .equals(groupUid)
+                        .and(tGroupMember.contactUid.equals(contactUid)),
+                )
+                .executeDelete(),
         );
     }
 
