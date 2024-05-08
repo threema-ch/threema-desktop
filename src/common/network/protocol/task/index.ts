@@ -367,12 +367,13 @@ export function placeholderTextForUnhandledMessage(
  *   `false` otherwise.
  */
 export function shouldSendGroupMessageToCreator(
+    services: Pick<ServicesForTasks, 'device'>,
     groupName: string,
-    groupCreatorIdentity: IdentityString,
+    creatorIdentity: IdentityString,
     messageType: CspE2eType,
 ): boolean {
     // Non-gateway group creators always receive all messages
-    const isGroupManagedByGateway = groupCreatorIdentity.startsWith('*');
+    const isGroupManagedByGateway = creatorIdentity.startsWith('*');
     if (!isGroupManagedByGateway) {
         return true;
     }

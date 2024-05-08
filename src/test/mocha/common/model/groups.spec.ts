@@ -32,7 +32,7 @@ export function run(): void {
         });
 
         it('get the correct creator from the group', function () {
-            const creator = group.get().controller.creator();
+            const creator = group.get().view.creator;
             expect(creator, 'Creator should be me').to.eq('me');
         });
 
@@ -62,7 +62,7 @@ export function run(): void {
 
             expect(group2.get().view.userState).to.eq(GroupUserState.MEMBER);
             expect(group2.get().view.members).to.be.empty;
-            const creator = group2.get().controller.creator();
+            const creator = group2.get().view.creator;
             assert(creator !== 'me');
 
             await group2.get().controller.members.add.fromLocal([creator.ctx]);

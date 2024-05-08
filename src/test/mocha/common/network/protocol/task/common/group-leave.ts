@@ -181,7 +181,7 @@ export function groupLeaveTests(
             const creator = me;
             addTestGroup(model, {
                 groupId,
-                creatorIdentity: creator,
+                creator: 'me',
                 userState: GroupUserState.MEMBER,
                 members: [memberContact.ctx],
             });
@@ -225,7 +225,7 @@ export function groupLeaveTests(
         const creator = me;
         addTestGroup(model, {
             groupId,
-            creatorIdentity: creator,
+            creator: 'me',
             name: 'Chüngelizüchter Pfäffikon',
             userState: GroupUserState.MEMBER,
             members: [memberContact.ctx],

@@ -226,9 +226,10 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
         }
 
         if (this._receiverModel.type === ReceiverType.GROUP) {
+            const creatorIdentity = this._receiverModel.controller.getCreatorIdentity();
             return structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
                 groupId: this._receiverModel.view.groupId,
-                creatorIdentity: UTF8.encode(this._receiverModel.view.creatorIdentity),
+                creatorIdentity: UTF8.encode(creatorIdentity),
                 innerData: encoder,
             });
         }

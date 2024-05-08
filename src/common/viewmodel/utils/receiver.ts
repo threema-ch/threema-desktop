@@ -24,7 +24,7 @@ import type {AnyReceiver} from '~/common/model/types/receiver';
 import {getUserInitials} from '~/common/model/user';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {IdentityString} from '~/common/network/types';
-import {assert, unreachable} from '~/common/utils/assert';
+import {assert, isNotUndefined, unreachable} from '~/common/utils/assert';
 import type {IdColor} from '~/common/utils/id-color';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
@@ -226,25 +226,9 @@ function getGroupReceiverData(
             uid: groupModel.ctx,
         },
         members: [
-            ...groupModel.view.members
+            ...[...groupModel.view.members]
                 .map((member) => getGroupMemberData(services, member, getAndSubscribe))
-                .filter(
-                    // As all `undefined` items are removed using the filter, the remaining items are of
-                    // type `ContactReceiverData`.
-                    (member): member is ContactReceiverData => {
-                        // If group member data is `undefined`, discard item from the members array.
-                        if (member === undefined) {
-                            return false;
-                        }
-
-                        // If this member is the creator, remove it from the members array.
-                        if (member.identity === groupCreatorData.identity) {
-                            return false;
-                        }
-
-                        return true;
-                    },
-                ),
+                .filter(isNotUndefined),
             ...selfReceiverData,
         ],
         isLeft,

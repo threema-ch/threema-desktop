@@ -120,7 +120,7 @@ export abstract class GroupSetupTaskBase<
         }
 
         // Add creator explicitly as member
-        const creatorContact = model.contacts.getByIdentity(creatorIdentity)?.get();
+        const creatorContact = model.contacts.getByIdentity(creatorIdentity);
         // Creator contact must exist, because the message could not have been decrypted
         // without having a contact for the sender.
         assert(creatorContact !== undefined);
@@ -152,7 +152,7 @@ export abstract class GroupSetupTaskBase<
                 handle,
                 {
                     groupId,
-                    creatorIdentity,
+                    creator: creatorContact,
                     // Name will be updated by group name message
                     name: '',
                     colorIndex: idColorIndex({type: ReceiverType.GROUP, creatorIdentity, groupId}),

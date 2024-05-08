@@ -114,7 +114,7 @@ export class ReflectedOutgoingGroupSetupTask
             model.groups.add.fromSync(
                 {
                     groupId,
-                    creatorIdentity,
+                    creator: 'me',
                     createdAt: this._reflectedAt,
                     name: '', // Will be updated by group name message
                     colorIndex: idColorIndex({type: ReceiverType.GROUP, creatorIdentity, groupId}),

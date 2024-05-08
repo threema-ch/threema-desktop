@@ -147,7 +147,7 @@ export class OutgoingDeliveryReceiptTask<TReceiver extends AnyReceiver>
             type: CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT,
             encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
                 groupId: group.view.groupId,
-                creatorIdentity: UTF8.encode(group.view.creatorIdentity),
+                creatorIdentity: UTF8.encode(group.controller.getCreatorIdentity()),
                 innerData: structbuf.bridge.encoder(structbuf.csp.e2e.DeliveryReceipt, {
                     messageIds,
                     status: this._status,

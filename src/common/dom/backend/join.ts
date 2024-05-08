@@ -409,8 +409,7 @@ export class DeviceJoinProtocol {
             const groupModelStore = repositories.groups.add.fromSync(
                 mapValitaDefaultsToUndefined({
                     groupId: group.groupIdentity.groupId,
-                    creatorIdentity: group.groupIdentity.creatorIdentity,
-                    creatorUid: creator?.get().ctx ?? undefined,
+                    creator: creator ?? 'me',
                     createdAt: group.createdAt,
                     lastUpdate: lastUpdateAt,
                     name: group.name,

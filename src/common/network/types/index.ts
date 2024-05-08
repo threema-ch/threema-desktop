@@ -540,7 +540,7 @@ export function conversationIdForReceiver(receiver: AnyReceiver): ConversationId
         case ReceiverType.GROUP:
             return {
                 type: ReceiverType.GROUP,
-                creatorIdentity: receiver.view.creatorIdentity,
+                creatorIdentity: receiver.controller.getCreatorIdentity(),
                 groupId: receiver.view.groupId,
             };
         case ReceiverType.DISTRIBUTION_LIST:

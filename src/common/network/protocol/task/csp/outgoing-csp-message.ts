@@ -226,12 +226,13 @@ export class OutgoingCspMessageTask<
         if (
             this._receiver.type === ReceiverType.GROUP &&
             !shouldSendGroupMessageToCreator(
+                this._services,
                 this._receiver.view.name,
-                this._receiver.view.creatorIdentity,
+                this._receiver.controller.getCreatorIdentity(),
                 type,
             )
         ) {
-            const creatorIdentity = this._receiver.view.creatorIdentity;
+            const creatorIdentity = this._receiver.controller.getCreatorIdentity();
             receivers = new Set(
                 [...allReceivers].filter((receiver) => receiver.view.identity !== creatorIdentity),
             );
@@ -492,7 +493,6 @@ export class OutgoingCspMessageTask<
      * @returns Contact Models of receiver.
      */
     private _getReceiverContacts(): Set<Contact> {
-        const {model} = this._services;
         switch (this._receiver.type) {
             case ReceiverType.CONTACT:
                 return new Set<Contact>([this._receiver]);
@@ -501,23 +501,13 @@ export class OutgoingCspMessageTask<
                 const receivers: Contact[] = [];
 
                 // Get group creator if it is not us
-                const creatorIdentity = this._receiver.view.creatorIdentity;
-                if (creatorIdentity !== model.user.identity) {
-                    // TODO(DESK-544): Fetch the group creator from sqlite reference
-                    const creator = model.contacts.getByIdentity(creatorIdentity);
-                    assert(
-                        creator !== undefined,
-                        `The group creator with id ${creatorIdentity} must exist as contact.`,
-                    );
+                const creator = this._receiver.view.creator;
+                if (creator !== 'me') {
                     receivers.push(creator.get());
                 }
 
-                // TODO(DESK-577): Get contact model for group members directly from controller
-                for (const memberIdentity of this._receiver.view.members) {
-                    const contact = model.contacts.getByIdentity(memberIdentity)?.get();
-                    if (contact !== undefined) {
-                        receivers.push(contact);
-                    }
+                for (const member of this._receiver.view.members) {
+                    receivers.push(member.get());
                 }
 
                 // Sort contacts to have a deterministic message sending order
@@ -546,15 +536,17 @@ export class OutgoingCspMessageTask<
                     group: undefined,
                     distributionList: undefined,
                 });
-            case ReceiverType.GROUP:
+            case ReceiverType.GROUP: {
+                const creatorIdentity = this._receiver.controller.getCreatorIdentity();
                 return protobuf.utils.creator(protobuf.d2d.ConversationId, {
                     contact: undefined,
                     group: protobuf.utils.creator(protobuf.common.GroupIdentity, {
-                        creatorIdentity: this._receiver.view.creatorIdentity,
+                        creatorIdentity,
                         groupId: intoUnsignedLong(this._receiver.view.groupId),
                     }),
                     distributionList: undefined,
                 });
+            }
             case ReceiverType.DISTRIBUTION_LIST:
                 throw new Error(
                     `TODO(DESK-237): Support for distribution list receivers not yet implemented.`,

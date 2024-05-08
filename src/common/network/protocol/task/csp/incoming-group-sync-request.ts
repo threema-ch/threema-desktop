@@ -60,10 +60,7 @@ export class IncomingGroupSyncRequestTask
         const creatorIdentity = device.identity.string;
         const groupId = this._container.groupId;
 
-        const creator: GroupCreator =
-            creatorIdentity === device.identity.string
-                ? {creatorIsUser: true}
-                : {creatorIsUser: false, creatorIdentity};
+        const creator: GroupCreator = {creatorIsUser: true};
 
         // 1. Look up the group. If the group could not be found, abort these steps.
         const group = model.groups.getByGroupIdAndCreator(groupId, creator);
@@ -92,7 +89,7 @@ export class IncomingGroupSyncRequestTask
         const lastGroupSyncTimestamp =
             this._services.volatileProtocolState.getLastProcessedGroupSyncRequest(
                 view.groupId,
-                view.creatorIdentity,
+                creatorIdentity,
                 senderIdentity,
             );
         if (
@@ -108,10 +105,12 @@ export class IncomingGroupSyncRequestTask
         // The timer has ran out, we can now update it and handle the group sync request normally.
         this._services.volatileProtocolState.setLastProcessedGroupSyncRequest(
             view.groupId,
-            view.creatorIdentity,
+            creatorIdentity,
             senderIdentity,
             groupSyncTimestamp,
         );
+
+        const memberIdentities = [...view.members].map((member) => member.get().view.identity);
 
         // 3. If the group is marked as left or the sender is not a member of the group, send a
         //    group-setup with an empty members list back to the sender and abort these steps.
@@ -122,7 +121,7 @@ export class IncomingGroupSyncRequestTask
             await sendEmptyGroupSetup(groupId, senderContact.get(), handle, this._services);
             return;
         }
-        if (!view.members.includes(senderIdentity)) {
+        if (!memberIdentities.includes(senderIdentity)) {
             this._log.info(
                 'Received a group sync request from a non-member. Returning empty group setup message.',
             );
@@ -134,7 +133,13 @@ export class IncomingGroupSyncRequestTask
 
         // 4. Send a group-setup message with the current group members, followed by a group-name
         //    message to the sender.
-        await sendGroupSetup(groupId, senderContact.get(), view.members, handle, this._services);
+        await sendGroupSetup(
+            groupId,
+            senderContact.get(),
+            memberIdentities,
+            handle,
+            this._services,
+        );
         await sendGroupName(groupId, senderContact.get(), view.name, handle, this._services);
 
         // 5. If the group has a profile picture, send a set-profile-picture group control message
