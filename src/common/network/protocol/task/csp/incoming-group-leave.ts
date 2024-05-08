@@ -1,7 +1,6 @@
 /**
  * Incoming group leave task.
  */
-import type {DbContactUid} from '~/common/db';
 import {AcquaintanceLevel} from '~/common/enum';
 import type {Contact, ContactInit, Group} from '~/common/model';
 import {LocalModelStore} from '~/common/model/utils/model-store';
@@ -88,12 +87,12 @@ export class IncomingGroupLeaveTask extends GroupLeaveTaskBase<ActiveTaskCodecHa
     /** @inheritdoc */
     protected async _removeMemberFromGroup(
         handle: ActiveTaskCodecHandle<'volatile'>,
-        memberUid: DbContactUid,
+        member: LocalModelStore<Contact>,
         group: LocalModelStore<Group>,
     ): Promise<boolean> {
         const removedCount = await group
             .get()
-            .controller.members.remove.fromRemote(handle, [memberUid]);
+            .controller.removeMembers.fromRemote(handle, [member]);
         return removedCount > 0;
     }
 }

@@ -1,5 +1,5 @@
-import type {DbContactUid} from '~/common/db';
-import type {Group, GroupInit} from '~/common/model';
+import type {Contact, Group, GroupInit} from '~/common/model';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import type {ActiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
 import {addGroupContacts} from '~/common/network/protocol/task/common/group-helpers';
@@ -51,16 +51,16 @@ export class IncomingGroupSetupTask extends GroupSetupTaskBase<ActiveTaskCodecHa
     protected async _setMembers(
         handle: ActiveTaskCodecHandle<'volatile'>,
         group: Group,
-        memberUids: DbContactUid[],
+        members: LocalModelStore<Contact>[],
     ): Promise<void> {
-        await group.controller.members.set.fromRemote(handle, memberUids);
+        await group.controller.setMembers.fromRemote(handle, members);
     }
 
     /** @inheritdoc */
     protected async _addGroup(
         handle: ActiveTaskCodecHandle<'volatile'>,
         init: Omit<GroupInit, 'createdAt'>,
-        memberUids: DbContactUid[],
+        members: LocalModelStore<Contact>[],
         reflectedAt: Date | undefined,
     ): Promise<void> {
         if (reflectedAt === undefined) {
@@ -72,7 +72,7 @@ export class IncomingGroupSetupTask extends GroupSetupTaskBase<ActiveTaskCodecHa
         await this._services.model.groups.add.fromRemote(
             handle,
             {...init, createdAt: reflectedAt},
-            memberUids,
+            members,
         );
     }
 
@@ -80,13 +80,7 @@ export class IncomingGroupSetupTask extends GroupSetupTaskBase<ActiveTaskCodecHa
     protected async _handleMissingGroupMembers(
         handle: ActiveTaskCodecHandle<'volatile'>,
         identitiesToAdd: IdentityString[],
-    ): Promise<DbContactUid[]> {
-        const createdContactStores = await addGroupContacts(
-            identitiesToAdd,
-            handle,
-            this._services,
-            this._log,
-        );
-        return createdContactStores.map((store) => store.get().ctx);
+    ): Promise<LocalModelStore<Contact>[]> {
+        return await addGroupContacts(identitiesToAdd, handle, this._services, this._log);
     }
 }

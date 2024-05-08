@@ -124,7 +124,7 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
     }
 
     // 4. If the sender is not a member of the group:
-    const senderIsMember = group.get().controller.members.has(senderContact.ctx);
+    const senderIsMember = group.get().controller.hasMember(senderContact);
     if (!senderIsMember) {
         // 4.1 If the user is the creator of the group, send a [`group-setup`](ref:e2e.group-setup)
         //     with an empty members list back to the sender.

@@ -85,7 +85,9 @@ export class OutgoingDeleteMessageTask<TReceiver extends AnyReceiver>
                     structbuf.csp.e2e.GroupMemberContainer,
                     {
                         groupId: this._receiverModel.view.groupId,
-                        creatorIdentity: UTF8.encode(this._receiverModel.view.creatorIdentity),
+                        creatorIdentity: UTF8.encode(
+                            this._receiverModel.controller.getCreatorIdentity(),
+                        ),
                         innerData: encoder,
                     },
                 );

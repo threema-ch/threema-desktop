@@ -2,7 +2,6 @@ import type {I18nLocales} from '~/app/ui/i18n-types';
 import type {ServicesForBackend} from '~/common/backend';
 import {type CryptoBackend, ensurePublicKey} from '~/common/crypto';
 import {randomChoice, randomString, randomU8, randomU64} from '~/common/crypto/random';
-import type {DbContactUid} from '~/common/db';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {
     getTranslatedValue,
@@ -265,11 +264,9 @@ export async function generateFakeGroupConversation({
         throw new Error('To generate a group, please add some contacts');
     }
 
-    const contactUids: DbContactUid[] = [];
     const contactObjects: LocalModelStore<Contact>[] = [];
 
     contacts.get().forEach((contact) => {
-        contactUids.push(contact.get().ctx);
         contactObjects.push(contact);
     });
 
@@ -288,7 +285,7 @@ export async function generateFakeGroupConversation({
             category: ConversationCategory.DEFAULT,
             visibility: ConversationVisibility.SHOW,
         },
-        contactUids,
+        contactObjects,
     );
 
     // Add message(s)
@@ -520,7 +517,7 @@ export async function importScreenshotData(
             }
             const contact = model.contacts.getByIdentity(member);
             assert(contact !== undefined, `Group contact not found for identity ${member}`);
-            groupMemberUids.push(contact.ctx);
+            groupMemberUids.push(contact);
         }
 
         // Create group

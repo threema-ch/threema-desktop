@@ -1,7 +1,6 @@
 /**
  * Incoming group leave task.
  */
-import type {DbContactUid} from '~/common/db';
 import type {Contact, Group} from '~/common/model';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import type {PassiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
@@ -53,10 +52,10 @@ export class ReflectedIncomingGroupLeaveTask extends GroupLeaveTaskBase<PassiveT
     // eslint-disable-next-line @typescript-eslint/require-await
     protected async _removeMemberFromGroup(
         handle: PassiveTaskCodecHandle,
-        memberUid: DbContactUid,
+        member: LocalModelStore<Contact>,
         group: LocalModelStore<Group>,
     ): Promise<boolean> {
-        const removedCount = group.get().controller.members.remove.fromSync([memberUid]);
+        const removedCount = group.get().controller.removeMembers.fromSync([member]);
         return removedCount > 0;
     }
 }

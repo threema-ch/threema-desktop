@@ -1,4 +1,3 @@
-import type {DbContactUid} from '~/common/db';
 import {
     ActivityState,
     ConversationCategory,
@@ -8,7 +7,9 @@ import {
 } from '~/common/enum';
 import {ProtocolError} from '~/common/error';
 import type {Logger} from '~/common/logging';
+import type {Contact} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {
     ComposableTask,
     PassiveTaskCodecHandle,
@@ -66,7 +67,7 @@ export class ReflectedOutgoingGroupSetupTask
         const group = model.groups.getByGroupIdAndCreator(groupId, {creatorIsUser: true})?.get();
 
         // Look up group member contacts
-        const memberUids: DbContactUid[] = [];
+        const memberContacts: LocalModelStore<Contact>[] = [];
         for (const identity of memberIdentities) {
             const contact = model.contacts.getByIdentity(identity);
             if (contact === undefined) {
@@ -92,13 +93,13 @@ export class ReflectedOutgoingGroupSetupTask
                     'unrecoverable',
                 );
             }
-            memberUids.push(contact.ctx);
+            memberContacts.push(contact);
         }
 
         // Update group if the group exists already
         if (group !== undefined) {
             // Update member list
-            group.controller.members.set.fromSync(memberUids);
+            group.controller.setMembers.fromSync(memberContacts);
             this._log.info(`Group ${this._groupDebugString} member list updated`);
 
             // If group was previously marked as left, re-join it.
@@ -122,10 +123,10 @@ export class ReflectedOutgoingGroupSetupTask
                     category: ConversationCategory.DEFAULT,
                     visibility: ConversationVisibility.SHOW,
                 },
-                memberUids,
+                memberContacts,
             );
             this._log.info(
-                `Group ${this._groupDebugString} with ${memberUids.length + 1} member(s) added`,
+                `Group ${this._groupDebugString} with ${memberContacts.length + 1} member(s) added`,
             );
         }
     }

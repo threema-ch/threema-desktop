@@ -385,7 +385,7 @@ export class DeviceJoinProtocol {
                         `Group ${groupDebugString} could not be imported, member ${member} not found in database`,
                     );
                 }
-                memberUids.push(contact.ctx);
+                memberUids.push(contact);
             }
 
             let creator: ContactModelStore | undefined = undefined;

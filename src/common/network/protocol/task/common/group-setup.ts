@@ -1,4 +1,3 @@
-import type {DbContactUid} from '~/common/db';
 import {
     ConversationCategory,
     ConversationVisibility,
@@ -6,9 +5,10 @@ import {
     ReceiverType,
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import type {Group, GroupInit} from '~/common/model';
+import type {Contact, Group, GroupInit} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
 import type {GroupCreator} from '~/common/model/types/group';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {
     ActiveTaskCodecHandle,
     ComposableTask,
@@ -103,17 +103,18 @@ export abstract class GroupSetupTaskBase<
         //    contact.)
 
         // Look up group member contacts
-        const memberUids: DbContactUid[] = [];
+        const memberContacts: LocalModelStore<Contact>[] = [];
         const identitiesToAdd: IdentityString[] = [];
         for (const identity of memberIdentities) {
             if (identity === device.identity.string) {
                 // Our own identity is not a valid contact
                 continue;
             }
+
             const contact = model.contacts.getByIdentity(identity);
             if (contact !== undefined) {
                 // Contact found
-                memberUids.push(contact.ctx);
+                memberContacts.push(contact);
             } else {
                 identitiesToAdd.push(identity);
             }
@@ -126,7 +127,9 @@ export abstract class GroupSetupTaskBase<
         assert(creatorContact !== undefined);
         // Create missing contacts (with acquaintance level "GROUP").
         if (identitiesToAdd.length > 0) {
-            memberUids.push(...(await this._handleMissingGroupMembers(handle, identitiesToAdd)));
+            memberContacts.push(
+                ...(await this._handleMissingGroupMembers(handle, identitiesToAdd)),
+            );
         }
 
         // Now that contacts were created, reflect the group setup message. (This will be a no-op
@@ -138,7 +141,7 @@ export abstract class GroupSetupTaskBase<
         // Update group if the group exists already
         if (group !== undefined) {
             // Update member list
-            await this._setMembers(handle, group, memberUids);
+            await this._setMembers(handle, group, memberContacts);
             this._log.info(`Group ${this._groupDebugString} member list updated`);
 
             // 7. If group was previously marked as left, re-join it
@@ -160,11 +163,11 @@ export abstract class GroupSetupTaskBase<
                     category: ConversationCategory.DEFAULT,
                     visibility: ConversationVisibility.SHOW,
                 },
-                memberUids,
+                memberContacts,
                 reflectedAt,
             );
             this._log.info(
-                `Group ${this._groupDebugString} with ${memberUids.length + 1} member(s) added`,
+                `Group ${this._groupDebugString} with ${memberContacts.length + 1} member(s) added`,
             );
         }
     }
@@ -197,7 +200,7 @@ export abstract class GroupSetupTaskBase<
     protected abstract _setMembers(
         handle: TTaskCodecHandleType,
         group: Group,
-        memberUids: DbContactUid[],
+        memberUids: LocalModelStore<Contact>[],
     ): Promise<void>;
 
     /**
@@ -212,7 +215,7 @@ export abstract class GroupSetupTaskBase<
     protected abstract _addGroup(
         handle: TTaskCodecHandleType,
         init: Omit<GroupInit, 'createdAt'>,
-        members: DbContactUid[],
+        members: LocalModelStore<Contact>[],
         reflectedAt: Date | undefined,
     ): Promise<void>;
 
@@ -222,5 +225,5 @@ export abstract class GroupSetupTaskBase<
     protected abstract _handleMissingGroupMembers(
         handle: TTaskCodecHandleType,
         identitiesToAdd: IdentityString[],
-    ): Promise<DbContactUid[]>;
+    ): Promise<LocalModelStore<Contact>[]>;
 }

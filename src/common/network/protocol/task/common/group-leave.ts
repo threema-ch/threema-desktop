@@ -1,7 +1,6 @@
 /**
  * Incoming group leave task.
  */
-import type {DbContactUid} from '~/common/db';
 import {GroupUserState} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact, ContactInit, Group} from '~/common/model';
@@ -87,7 +86,7 @@ export abstract class GroupLeaveTaskBase<
         const senderContact = await this._handleMissingSenderContact(handle);
 
         // 4. Remove the member from the local group
-        const removed = await this._removeMemberFromGroup(handle, senderContact.ctx, group);
+        const removed = await this._removeMemberFromGroup(handle, senderContact, group);
         if (removed) {
             this._log.info(
                 `Group member ${senderIdentity} left the group ${this._groupDebugString}`,
@@ -122,7 +121,7 @@ export abstract class GroupLeaveTaskBase<
      */
     protected abstract _removeMemberFromGroup(
         handle: TTaskCodecHandleType,
-        memberUid: DbContactUid,
+        member: LocalModelStore<Contact>,
         group: LocalModelStore<Group>,
     ): Promise<boolean>;
 }

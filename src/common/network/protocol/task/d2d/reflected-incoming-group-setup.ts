@@ -1,7 +1,7 @@
-import type {DbContactUid} from '~/common/db';
 import {ActivityState} from '~/common/enum';
 import {ProtocolError} from '~/common/error';
-import type {Group, GroupInit} from '~/common/model';
+import type {Contact, Group, GroupInit} from '~/common/model';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {PassiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
 import {GroupSetupTaskBase} from '~/common/network/protocol/task/common/group-setup';
 import type {GroupCreatorContainer, GroupSetup} from '~/common/network/structbuf/validate/csp/e2e';
@@ -55,9 +55,9 @@ export class ReflectedIncomingGroupSetupTask extends GroupSetupTaskBase<PassiveT
     protected async _setMembers(
         handle: PassiveTaskCodecHandle,
         group: Group,
-        memberUids: DbContactUid[],
+        memberUids: LocalModelStore<Contact>[],
     ): Promise<void> {
-        group.controller.members.set.fromSync(memberUids);
+        group.controller.setMembers.fromSync(memberUids);
     }
 
     /** @inheritdoc */
@@ -65,19 +65,16 @@ export class ReflectedIncomingGroupSetupTask extends GroupSetupTaskBase<PassiveT
     protected async _addGroup(
         handle: PassiveTaskCodecHandle,
         init: Omit<GroupInit, 'createdAt'>,
-        memberUids: DbContactUid[],
+        members: LocalModelStore<Contact>[],
     ): Promise<void> {
-        this._services.model.groups.add.fromSync(
-            {...init, createdAt: this._reflectedAt},
-            memberUids,
-        );
+        this._services.model.groups.add.fromSync({...init, createdAt: this._reflectedAt}, members);
     }
 
     /** @inheritdoc */
     protected async _handleMissingGroupMembers(
         handle: PassiveTaskCodecHandle,
         identitiesToAdd: IdentityString[],
-    ): Promise<DbContactUid[]> {
+    ): Promise<LocalModelStore<Contact>[]> {
         // If a contact is not known, the only possible reason is that the contact is revoked/invalid.
         const identityData = await this._services.directory.identities(identitiesToAdd);
         for (const identity of identitiesToAdd) {
