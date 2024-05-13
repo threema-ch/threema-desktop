@@ -31,6 +31,7 @@ export class IncomingGroupNameTask
         private readonly _senderContactOrInit: LocalModelStore<Contact> | ContactInit,
         private readonly _container: GroupCreatorContainer.Type,
         private readonly _groupName: GroupName.Type,
+        private readonly _clampedCreatedAt: Date,
     ) {
         const messageIdHex = u64ToHexLe(messageId);
         this._log = _services.logging.logger(`network.protocol.task.in-group-name.${messageIdHex}`);
@@ -70,7 +71,7 @@ export class IncomingGroupNameTask
         const group = receiveStepsResult.group;
 
         // Update group name
-        await group.get().controller.name.fromRemote(handle, groupName);
+        await group.get().controller.name.fromRemote(handle, groupName, this._clampedCreatedAt);
         this._log.info(`Group ${this._groupDebugString} name updated to "${groupName}"`);
     }
 }

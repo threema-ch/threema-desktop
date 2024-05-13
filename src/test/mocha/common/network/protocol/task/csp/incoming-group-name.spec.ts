@@ -74,6 +74,7 @@ export function run(): void {
                 creatorContact,
                 container,
                 name,
+                new Date(),
             );
             const handle = new TestHandle(services, []);
             await task.run(handle);

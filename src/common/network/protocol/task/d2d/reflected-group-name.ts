@@ -23,6 +23,7 @@ export class ReflectedGroupNameTask implements ComposableTask<PassiveTaskCodecHa
         private readonly _senderIdentity: IdentityString,
         private readonly _container: GroupCreatorContainer.Type,
         private readonly _groupName: GroupName.Type,
+        private readonly _reflectedAt: Date,
     ) {
         const messageIdHex = u64ToHexLe(messageId);
         this._log = _services.logging.logger(
@@ -57,7 +58,7 @@ export class ReflectedGroupNameTask implements ComposableTask<PassiveTaskCodecHa
         }
 
         // Update group name
-        group.get().controller.name.fromSync(groupName);
+        group.get().controller.name.fromSync(groupName, this._reflectedAt);
         this._log.info(`Group ${this._groupDebugString} name updated to "${groupName}"`);
     }
 }

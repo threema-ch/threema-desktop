@@ -431,6 +431,7 @@ export class ReflectedIncomingMessageTask
                         senderIdentity,
                         validatedBody.container,
                         validatedBody.message,
+                        reflectedAt,
                     ),
                 };
                 return instructions;
@@ -469,6 +470,7 @@ export class ReflectedIncomingMessageTask
                         messageId,
                         senderContact,
                         validatedBody.container,
+                        reflectedAt,
                     ),
                 };
                 return instructions;

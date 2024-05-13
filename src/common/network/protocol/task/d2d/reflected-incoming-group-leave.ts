@@ -20,6 +20,7 @@ export class ReflectedIncomingGroupLeaveTask extends GroupLeaveTaskBase<PassiveT
         messageId: MessageId,
         senderContact: LocalModelStore<Contact>,
         container: GroupMemberContainer.Type,
+        private readonly _createdAt: Date,
     ) {
         super(services, messageId, senderContact, container, 'reflected-in-group-leave');
     }
@@ -55,7 +56,9 @@ export class ReflectedIncomingGroupLeaveTask extends GroupLeaveTaskBase<PassiveT
         member: LocalModelStore<Contact>,
         group: LocalModelStore<Group>,
     ): Promise<boolean> {
-        const removedCount = group.get().controller.removeMembers.fromSync([member]);
+        const removedCount = group
+            .get()
+            .controller.removeMembers.fromSync([member], this._createdAt);
         return removedCount > 0;
     }
 }

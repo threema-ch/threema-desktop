@@ -89,7 +89,10 @@ export type GroupController = ReceiverController & {
      *
      * Note: If the creator is in the list, it will be ignored.
      */
-    readonly addMembers: ControllerUpdateFromLocal<[contacts: LocalModelStore<Contact>[]], u53>;
+    readonly addMembers: ControllerUpdateFromLocal<
+        [contacts: LocalModelStore<Contact>[], createdAt: Date],
+        u53
+    >;
 
     /**
      * Remove the given contacts from a group (if they are in it).
@@ -98,7 +101,10 @@ export type GroupController = ReceiverController & {
      *
      * Note: If the creator is in the list, it will be ignored.
      */
-    readonly removeMembers: ControllerUpdateFromSource<[contacts: LocalModelStore<Contact>[]], u53>;
+    readonly removeMembers: ControllerUpdateFromSource<
+        [contacts: LocalModelStore<Contact>[], createdAt: Date],
+        u53
+    >;
 
     /**
      * Set the group member. This function calculates the diff of the given contacts towards the
@@ -112,7 +118,11 @@ export type GroupController = ReceiverController & {
      */
     readonly setMembers: Omit<
         ControllerUpdateFromSource<
-            [contacts: LocalModelStore<Contact>[], newUserState?: GroupUserState.MEMBER],
+            [
+                contacts: LocalModelStore<Contact>[],
+                createdAt: Date,
+                newUserState?: GroupUserState.MEMBER,
+            ],
             {added: u53; removed: u53}
         >,
         'fromLocal'
@@ -127,7 +137,7 @@ export type GroupController = ReceiverController & {
     /**
      * Update update a group's name.
      */
-    readonly name: ControllerUpdateFromSource<[name: string]>;
+    readonly name: ControllerUpdateFromSource<[name: string, createdAt: Date]>;
 
     /**
      * Remove the group and the corresponding conversation, and deactivate the controller. In case

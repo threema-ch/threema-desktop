@@ -1421,6 +1421,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         validatedContainer,
                         validatedGroupSetup,
                         reflectGroupSetup,
+                        clampedCreatedAt,
                     ),
                     reflectFragment: 'deferred',
                 };
@@ -1449,6 +1450,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         senderContactOrInit,
                         validatedContainer,
                         validatedGroupName,
+                        clampedCreatedAt,
                     ),
                     reflectFragment: reflectFragmentFor(maybeCspE2eType),
                 };
@@ -1523,6 +1525,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         messageId,
                         senderContactOrInit,
                         validatedContainer,
+                        clampedCreatedAt,
                     ),
                     reflectFragment: reflectFragmentFor(maybeCspE2eType),
                 };

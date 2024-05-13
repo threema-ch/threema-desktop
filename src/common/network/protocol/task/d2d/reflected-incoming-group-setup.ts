@@ -52,7 +52,7 @@ export class ReflectedIncomingGroupSetupTask extends GroupSetupTaskBase<PassiveT
         memberUids: LocalModelStore<Contact>[],
         newUserState?: GroupUserState.MEMBER,
     ): Promise<void> {
-        group.controller.setMembers.fromSync(memberUids, newUserState);
+        group.controller.setMembers.fromSync(memberUids, this._reflectedAt, newUserState);
     }
 
     /** @inheritdoc */

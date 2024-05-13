@@ -23,6 +23,7 @@ export class IncomingGroupLeaveTask extends GroupLeaveTaskBase<ActiveTaskCodecHa
         messageId: MessageId,
         senderContactOrInit: LocalModelStore<Contact> | ContactInit,
         container: GroupMemberContainer.Type,
+        private readonly _createdAt: Date,
     ) {
         super(services, messageId, senderContactOrInit, container, 'in-group-leave');
     }
@@ -92,7 +93,7 @@ export class IncomingGroupLeaveTask extends GroupLeaveTaskBase<ActiveTaskCodecHa
     ): Promise<boolean> {
         const removedCount = await group
             .get()
-            .controller.removeMembers.fromRemote(handle, [member]);
+            .controller.removeMembers.fromRemote(handle, [member], this._createdAt);
         return removedCount > 0;
     }
 }

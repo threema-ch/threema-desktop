@@ -41,7 +41,7 @@ export function run(): void {
 
             const thirdContact = addTestUserAsContact(services.model, thirdUser);
 
-            await group.get().controller.addMembers.fromLocal([thirdContact]);
+            await group.get().controller.addMembers.fromLocal([thirdContact], new Date());
 
             const members = group.get().view.members;
 
@@ -50,7 +50,7 @@ export function run(): void {
                 'USER0001',
             ]);
 
-            await group.get().controller.removeMembers.fromLocal([contact]);
+            await group.get().controller.removeMembers.fromLocal([contact], new Date());
 
             const members2 = group.get().view.members;
             expect([...members2].map((member) => member.get().view.identity)).to.have.members([
@@ -70,7 +70,9 @@ export function run(): void {
             const creator = group2.get().view.creator;
             assert(creator !== 'me');
 
-            const numAdded = await group2.get().controller.addMembers.fromLocal([creator]);
+            const numAdded = await group2
+                .get()
+                .controller.addMembers.fromLocal([creator], new Date());
             expect(numAdded).to.eq(0);
             expect(group2.get().view.members).to.be.empty;
         });
@@ -81,7 +83,7 @@ export function run(): void {
 
             const {added, removed} = group
                 .get()
-                .controller.setMembers.fromSync([contact, thirdContact]);
+                .controller.setMembers.fromSync([contact, thirdContact], new Date());
 
             const members = group.get().view.members;
 
@@ -95,7 +97,7 @@ export function run(): void {
 
             const {added: added2, removed: removed2} = group
                 .get()
-                .controller.setMembers.fromSync([]);
+                .controller.setMembers.fromSync([], new Date());
 
             const members2 = group.get().view.members;
 
@@ -111,7 +113,10 @@ export function run(): void {
 
             const {added, removed} = group
                 .get()
-                .controller.setMembers.fromSync([contact, thirdContact, contact, thirdContact]);
+                .controller.setMembers.fromSync(
+                    [contact, thirdContact, contact, thirdContact],
+                    new Date(),
+                );
 
             const members = group.get().view.members;
 
@@ -131,7 +136,9 @@ export function run(): void {
                 createdAt: new Date(),
             });
 
-            const {added, removed} = group2.get().controller.setMembers.fromSync([contact]);
+            const {added, removed} = group2
+                .get()
+                .controller.setMembers.fromSync([contact], new Date());
 
             expect(group2.get().view.members).to.be.empty;
 
@@ -160,7 +167,7 @@ export function run(): void {
 
             const {added} = group2
                 .get()
-                .controller.setMembers.fromSync([thirdContact], GroupUserState.MEMBER);
+                .controller.setMembers.fromSync([thirdContact], new Date(), GroupUserState.MEMBER);
 
             expect(group2.get().view.userState).to.eq(GroupUserState.MEMBER);
 

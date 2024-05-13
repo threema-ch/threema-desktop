@@ -22,6 +22,7 @@ export class IncomingGroupSetupTask extends GroupSetupTaskBase<ActiveTaskCodecHa
         container: GroupCreatorContainer.Type,
         groupSetup: GroupSetup.Type,
         private readonly _reflectGroupSetup: protobuf.d2d.IncomingMessage,
+        private readonly _createdAt: Date,
     ) {
         super(services, messageId, senderIdentity, container, groupSetup, 'in-group-setup');
     }
@@ -50,7 +51,12 @@ export class IncomingGroupSetupTask extends GroupSetupTaskBase<ActiveTaskCodecHa
         members: LocalModelStore<Contact>[],
         newUserState?: GroupUserState.MEMBER,
     ): Promise<void> {
-        await group.controller.setMembers.fromRemote(handle, members, newUserState);
+        await group.controller.setMembers.fromRemote(
+            handle,
+            members,
+            this._createdAt,
+            newUserState,
+        );
     }
 
     /** @inheritdoc */

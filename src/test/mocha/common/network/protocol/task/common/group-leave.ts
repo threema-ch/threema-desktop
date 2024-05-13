@@ -282,7 +282,13 @@ async function runTask(
     // Run task
     let task;
     if (mode === 'csp') {
-        task = new IncomingGroupLeaveTask(services, messageId, senderContactOrInit, container);
+        task = new IncomingGroupLeaveTask(
+            services,
+            messageId,
+            senderContactOrInit,
+            container,
+            new Date(),
+        );
     } else {
         assert(senderContactOrInit instanceof LocalModelStore, 'Sender must be a contact');
         task = new ReflectedIncomingGroupLeaveTask(
@@ -290,6 +296,7 @@ async function runTask(
             messageId,
             senderContactOrInit,
             container,
+            new Date(),
         );
     }
     const handle = new TestHandle(services, expectations);

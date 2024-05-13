@@ -421,6 +421,7 @@ async function runTask(
                   container,
                   groupSetup,
                   reflectIncomingGroupSetup,
+                  new Date(),
               )
             : new ReflectedIncomingGroupSetupTask(
                   services,

@@ -106,6 +106,7 @@ export class ReflectedOutgoingGroupSetupTask
             //       in the UI. However, apply the update just to be on the safe side.
             group.controller.setMembers.fromSync(
                 memberContacts,
+                this._reflectedAt,
                 previousUserState !== GroupUserState.MEMBER ? GroupUserState.MEMBER : undefined,
             );
             this._log.info(`Group ${this._groupDebugString} member list updated`);

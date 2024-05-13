@@ -403,7 +403,7 @@ export class GroupModelController implements GroupController {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // TODO(DESK-165): Reflect changes here.
         // eslint-disable-next-line @typescript-eslint/require-await
-        fromLocal: async (contacts: LocalModelStore<Contact>[]) => {
+        fromLocal: async (contacts: LocalModelStore<Contact>[], createdAt: Date) => {
             this._log.debug('GroupMemberModelController: Add members from local');
             if (contacts.length === 0) {
                 return 0;
@@ -422,7 +422,7 @@ export class GroupModelController implements GroupController {
                 if (added.length > 0) {
                     this._versionSequence.next();
                 }
-                this._addGroupMemberChangeStatusMessage(added, []);
+                this._addGroupMemberChangeStatusMessage(added, [], createdAt);
 
                 return added.length;
             });
@@ -435,13 +435,14 @@ export class GroupModelController implements GroupController {
 
         // TODO(DESK-517): Reflect changes here.
         // eslint-disable-next-line @typescript-eslint/require-await
-        fromLocal: async (contacts: LocalModelStore<Contact>[]) => {
+        fromLocal: async (contacts: LocalModelStore<Contact>[], createdAt: Date) => {
             this._log.debug('GroupMemberModelController: Remove members from local');
             return this.meta.run((handle) => {
                 const numRemoved = this._removeMembersAndUpdate(
                     handle,
                     TriggerSource.LOCAL,
                     contacts,
+                    createdAt,
                 );
                 if (numRemoved > 0) {
                     this._versionSequence.next();
@@ -452,6 +453,7 @@ export class GroupModelController implements GroupController {
         fromRemote: async (
             handle: ActiveTaskCodecHandle<'volatile'>,
             contacts: LocalModelStore<Contact>[],
+            createdAt: Date,
             // eslint-disable-next-line @typescript-eslint/require-await
         ) => {
             this._log.debug('GroupMemberModelController: Remove members from remote');
@@ -460,6 +462,7 @@ export class GroupModelController implements GroupController {
                     guardedHandle,
                     TriggerSource.REMOTE,
                     contacts,
+                    createdAt,
                 );
                 if (numRemoved === 0) {
                     this._versionSequence.next();
@@ -467,13 +470,14 @@ export class GroupModelController implements GroupController {
                 return numRemoved;
             });
         },
-        fromSync: (contacts: LocalModelStore<Contact>[]) => {
+        fromSync: (contacts: LocalModelStore<Contact>[], createdAt: Date) => {
             this._log.debug('GroupMemberModelController: Remove members from sync');
             return this.meta.run((handle) => {
                 const numRemoved = this._removeMembersAndUpdate(
                     handle,
                     TriggerSource.REMOTE,
                     contacts,
+                    createdAt,
                 );
                 if (numRemoved > 0) {
                     this._versionSequence.next();
@@ -486,19 +490,31 @@ export class GroupModelController implements GroupController {
     /** @inheritdoc */
     public readonly setMembers: GroupController['setMembers'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
-        fromSync: (contacts: LocalModelStore<Contact>[], newUserState?: GroupUserState.MEMBER) => {
+        fromSync: (
+            contacts: LocalModelStore<Contact>[],
+            createdAt: Date,
+            newUserState?: GroupUserState.MEMBER,
+        ) => {
             this._log.debug('GroupMemberModelController: Set members from sync');
-            return this.meta.run((handle) => this._diffAndSet(handle, contacts, newUserState));
+            return this.meta.run((handle) =>
+                this._diffAndSet(handle, contacts, createdAt, newUserState),
+            );
         },
         fromRemote: async (
             handle: ActiveTaskCodecHandle<'volatile'>,
             contacts: LocalModelStore<Contact>[],
+            createdAt: Date,
             newUserState?: GroupUserState.MEMBER,
             // eslint-disable-next-line @typescript-eslint/require-await
         ) => {
             this._log.debug('GroupMemberModelController: Set members from remote');
             return this.meta.run((guardedHandle) => {
-                const {added, removed} = this._diffAndSet(guardedHandle, contacts, newUserState);
+                const {added, removed} = this._diffAndSet(
+                    guardedHandle,
+                    contacts,
+                    createdAt,
+                    newUserState,
+                );
                 if (added + removed > 0) {
                     this._versionSequence.next();
                 }
@@ -538,68 +554,31 @@ export class GroupModelController implements GroupController {
     public readonly name: GroupController['name'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
-        fromLocal: async (name) => {
+        fromLocal: async (name, createdAt) => {
             this._log.debug('GroupModelController: Change name from local');
             this.meta.run((handle) => {
-                const oldName = handle.view().name === '' ? '' : handle.view().displayName;
-                this._update(handle, {name});
-                const createdAt = new Date();
-                if (oldName !== name) {
+                const changed = this._updateName(handle, name, createdAt);
+                if (changed) {
                     this._versionSequence.next();
-                    this.conversation()
-                        .get()
-                        .controller.createStatusMessage({
-                            type: 'group-name-change',
-                            value: {
-                                oldName,
-                                newName: name,
-                            },
-                            createdAt,
-                        });
                 }
             });
         },
         // eslint-disable-next-line @typescript-eslint/require-await
-        fromRemote: async (handle, name) => {
+        fromRemote: async (handle, name, createdAt) => {
             this._log.debug('GroupModelController: Change name from remote');
             this.meta.run((guardedHandle) => {
-                const oldName =
-                    guardedHandle.view().name === '' ? '' : guardedHandle.view().displayName;
-                this._update(guardedHandle, {name});
-                const createdAt = new Date();
-                if (oldName !== name) {
+                const changed = this._updateName(guardedHandle, name, createdAt);
+                if (changed) {
                     this._versionSequence.next();
-                    this.conversation()
-                        .get()
-                        .controller.createStatusMessage({
-                            type: 'group-name-change',
-                            value: {
-                                oldName,
-                                newName: name,
-                            },
-                            createdAt,
-                        });
                 }
             });
         },
-        fromSync: (name: string) => {
+        fromSync: (name, createdAt) => {
             this._log.debug('GroupModelController: Change name from sync');
             this.meta.run((handle) => {
-                const oldName = handle.view().name === '' ? '' : handle.view().displayName;
-                this._update(handle, {name});
-                const createdAt = new Date();
-                if (oldName !== name) {
+                const changed = this._updateName(handle, name, createdAt);
+                if (changed) {
                     this._versionSequence.next();
-                    this.conversation()
-                        .get()
-                        .controller.createStatusMessage({
-                            type: 'group-name-change',
-                            value: {
-                                oldName,
-                                newName: name,
-                            },
-                            createdAt,
-                        });
                 }
             });
         },
@@ -790,6 +769,7 @@ export class GroupModelController implements GroupController {
     private _diffAndSet(
         guardedHandle: GuardedStoreHandle<GroupView>,
         contacts: LocalModelStore<Contact>[],
+        createdAt: Date,
         newUserState?: GroupUserState.MEMBER,
     ): {added: u53; removed: u53} {
         let userAdded = 0;
@@ -802,7 +782,7 @@ export class GroupModelController implements GroupController {
             return {added: userAdded, removed: 0};
         }
         this._set(guardedHandle, [...added], [...removed]);
-        this._addGroupMemberChangeStatusMessage(added, removed);
+        this._addGroupMemberChangeStatusMessage(added, removed, createdAt);
         return {added: added.length + userAdded, removed: removed.length};
     }
 
@@ -827,6 +807,7 @@ export class GroupModelController implements GroupController {
         handle: GuardedStoreHandle<GroupView>,
         triggerSource: TriggerSource,
         contacts: LocalModelStore<Contact>[],
+        createdAt: Date,
     ): u53 {
         if (contacts.length === 0) {
             return 0;
@@ -851,7 +832,7 @@ export class GroupModelController implements GroupController {
             default:
                 unreachable(triggerSource);
         }
-        this._addGroupMemberChangeStatusMessage([], removed);
+        this._addGroupMemberChangeStatusMessage([], removed, createdAt);
 
         return numRemoved;
     }
@@ -891,6 +872,31 @@ export class GroupModelController implements GroupController {
 
             return derivedChange;
         });
+    }
+
+    /**
+     * Update the group name and create the corresponding status message.
+     */
+    private _updateName(
+        handle: GuardedStoreHandle<GroupView>,
+        name: string,
+        createdAt: Date,
+    ): boolean {
+        const oldName = handle.view().name === '' ? '' : handle.view().displayName;
+        this._update(handle, {name});
+        if (oldName !== name) {
+            this.conversation()
+                .get()
+                .controller.createStatusMessage({
+                    type: 'group-name-change',
+                    value: {
+                        oldName,
+                        newName: name,
+                    },
+                    createdAt,
+                });
+        }
+        return oldName !== name;
     }
 
     /**
@@ -983,9 +989,9 @@ export class GroupModelController implements GroupController {
     private _addGroupMemberChangeStatusMessage(
         added: LocalModelStore<Contact>[],
         removed: LocalModelStore<Contact>[],
+        createdAt: Date,
     ): void {
         const groupConversation = this.conversation().get();
-        const createdAt = new Date();
 
         groupConversation.controller.createStatusMessage({
             type: 'group-member-change',

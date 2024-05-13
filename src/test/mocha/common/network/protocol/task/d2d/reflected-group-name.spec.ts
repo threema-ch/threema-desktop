@@ -74,6 +74,7 @@ export function run(): void {
                 creator.identity.string,
                 container,
                 name,
+                new Date(),
             );
             const handle = new TestHandle(services, []);
             await task.run(handle);
@@ -118,6 +119,7 @@ export function run(): void {
                 me,
                 container,
                 name,
+                new Date(),
             );
             const handle = new TestHandle(services, []);
             await task.run(handle);
