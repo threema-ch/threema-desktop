@@ -1,3 +1,4 @@
+import type {GroupUserState} from '~/common/enum';
 import type {Contact, Group, GroupInit} from '~/common/model';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
@@ -43,17 +44,13 @@ export class IncomingGroupSetupTask extends GroupSetupTaskBase<ActiveTaskCodecHa
     }
 
     /** @inheritdoc */
-    protected async _join(handle: ActiveTaskCodecHandle<'volatile'>, group: Group): Promise<void> {
-        await group.controller.join.fromRemote(handle);
-    }
-
-    /** @inheritdoc */
     protected async _setMembers(
         handle: ActiveTaskCodecHandle<'volatile'>,
         group: Group,
         members: LocalModelStore<Contact>[],
+        newUserState?: GroupUserState.MEMBER,
     ): Promise<void> {
-        await group.controller.setMembers.fromRemote(handle, members);
+        await group.controller.setMembers.fromRemote(handle, members, newUserState);
     }
 
     /** @inheritdoc */

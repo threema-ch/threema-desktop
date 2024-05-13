@@ -344,7 +344,7 @@ export function groupSetupTests(
             creator: creatorModel,
             userState: GroupUserState.LEFT,
             createdAt: groupCreatedAt,
-            members: [creatorModel],
+            members: [],
         });
 
         // Create group setup message where both we and user 2 are members
@@ -370,6 +370,7 @@ export function groupSetupTests(
         expect([...view.members].map((m) => m.get().view.identity)).to.have.members([
             member.identity.string,
         ]);
+
         expect(view.userState).to.equal(GroupUserState.MEMBER);
 
         // Group creation date should not change

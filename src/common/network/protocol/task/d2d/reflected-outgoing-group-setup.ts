@@ -99,15 +99,17 @@ export class ReflectedOutgoingGroupSetupTask
         // Update group if the group exists already
         if (group !== undefined) {
             // Update member list
-            group.controller.setMembers.fromSync(memberContacts);
-            this._log.info(`Group ${this._groupDebugString} member list updated`);
-
+            const previousUserState = group.view.userState;
             // If group was previously marked as left, re-join it.
             //
             // Note: This is not expected to happen, because a disbanded group cannot be reactivated
             //       in the UI. However, apply the update just to be on the safe side.
-            if (group.view.userState !== GroupUserState.MEMBER) {
-                group.controller.join.fromSync();
+            group.controller.setMembers.fromSync(
+                memberContacts,
+                previousUserState !== GroupUserState.MEMBER ? GroupUserState.MEMBER : undefined,
+            );
+            this._log.info(`Group ${this._groupDebugString} member list updated`);
+            if (previousUserState !== GroupUserState.MEMBER) {
                 this._log.info(`Group ${this._groupDebugString} re-joined`);
             }
         } else {

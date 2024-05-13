@@ -1,4 +1,4 @@
-import {ActivityState} from '~/common/enum';
+import {ActivityState, type GroupUserState} from '~/common/enum';
 import {ProtocolError} from '~/common/error';
 import type {Contact, Group, GroupInit} from '~/common/model';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
@@ -46,18 +46,13 @@ export class ReflectedIncomingGroupSetupTask extends GroupSetupTaskBase<PassiveT
 
     /** @inheritdoc */
     // eslint-disable-next-line @typescript-eslint/require-await
-    protected async _join(handle: PassiveTaskCodecHandle, group: Group): Promise<void> {
-        group.controller.join.fromSync();
-    }
-
-    /** @inheritdoc */
-    // eslint-disable-next-line @typescript-eslint/require-await
     protected async _setMembers(
         handle: PassiveTaskCodecHandle,
         group: Group,
         memberUids: LocalModelStore<Contact>[],
+        newUserState?: GroupUserState.MEMBER,
     ): Promise<void> {
-        group.controller.setMembers.fromSync(memberUids);
+        group.controller.setMembers.fromSync(memberUids, newUserState);
     }
 
     /** @inheritdoc */

@@ -140,5 +140,35 @@ export function run(): void {
 
             expect(group2.get().view.members).to.be.empty;
         });
+
+        it('Atomically rejoin the group with a member update', function () {
+            const group2 = addTestGroup(services.model, {
+                creator: contact,
+                members: [],
+                createdAt: new Date(),
+            });
+
+            expect(group2.get().view.userState).to.eq(GroupUserState.MEMBER);
+            expect(group2.get().view.members).to.be.empty;
+
+            const thirdUser = makeTestUser('USER0002');
+            const thirdContact = addTestUserAsContact(services.model, thirdUser);
+
+            group2.get().controller.kick.fromSync();
+
+            expect(group2.get().view.userState).to.eq(GroupUserState.KICKED);
+
+            const {added} = group2
+                .get()
+                .controller.setMembers.fromSync([thirdContact], GroupUserState.MEMBER);
+
+            expect(group2.get().view.userState).to.eq(GroupUserState.MEMBER);
+
+            expect(
+                [...group2.get().view.members].map((member) => member.get().view.identity),
+            ).to.have.members(['USER0002']);
+
+            expect(added).to.eq(2);
+        });
     });
 }

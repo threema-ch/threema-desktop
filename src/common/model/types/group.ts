@@ -103,7 +103,7 @@ export type GroupController = ReceiverController & {
     /**
      * Set the group member. This function calculates the diff of the given contacts towards the
      * group. To that end, it will add all contacts that are not in the group yet to the group and
-     * remove the ones that are already in the group.
+     * remove the ones that are already in the group. If `newUserState` is set, the user will be added to the group (if they were not previously a member).
      *
      * Returns the number of added
      * and removed contacts. It is the responsibility of the caller to react adequately to the number of changes made to the group.
@@ -112,7 +112,7 @@ export type GroupController = ReceiverController & {
      */
     readonly setMembers: Omit<
         ControllerUpdateFromSource<
-            [contacts: LocalModelStore<Contact>[]],
+            [contacts: LocalModelStore<Contact>[], newUserState?: GroupUserState.MEMBER],
             {added: u53; removed: u53}
         >,
         'fromLocal'
@@ -189,8 +189,6 @@ export type Group = LocalModel<GroupView, GroupController, UidOf<DbGroup>, Recei
 export type GroupRepository = {
     /**
      * Add a group and handle the protocol flow according to the source.
-     *
-     * TODO(DESK-577): Handle the member list with models.
      *
      * @param init The group data
      * @param members The members list (including the creator)

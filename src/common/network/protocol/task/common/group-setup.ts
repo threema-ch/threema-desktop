@@ -141,12 +141,17 @@ export abstract class GroupSetupTaskBase<
         // Update group if the group exists already
         if (group !== undefined) {
             // Update member list
-            await this._setMembers(handle, group, memberContacts);
-            this._log.info(`Group ${this._groupDebugString} member list updated`);
+            const previousUserState = group.view.userState;
 
             // 7. If group was previously marked as left, re-join it
-            if (group.view.userState !== GroupUserState.MEMBER) {
-                await this._join(handle, group);
+            await this._setMembers(
+                handle,
+                group,
+                memberContacts,
+                previousUserState !== GroupUserState.MEMBER ? GroupUserState.MEMBER : undefined,
+            );
+            this._log.info(`Group ${this._groupDebugString} member list updated`);
+            if (previousUserState !== GroupUserState.MEMBER) {
                 this._log.info(`Group ${this._groupDebugString} re-joined`);
             }
         } else {
@@ -190,17 +195,13 @@ export abstract class GroupSetupTaskBase<
     protected abstract _kick(handle: TTaskCodecHandleType, group: Group): Promise<void>;
 
     /**
-     * Mark the specified group as joined.
-     */
-    protected abstract _join(handle: TTaskCodecHandleType, group: Group): Promise<void>;
-
-    /**
      * Replace the member list for the specified group.
      */
     protected abstract _setMembers(
         handle: TTaskCodecHandleType,
         group: Group,
         memberUids: LocalModelStore<Contact>[],
+        newUserState?: GroupUserState.MEMBER,
     ): Promise<void>;
 
     /**
