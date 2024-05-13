@@ -143,8 +143,9 @@ export function run(): void {
 
         it('last message store when a mixture of status and normal messages is present', function () {
             const {crypto} = services;
+
+            const now = Date.now();
             for (let i = 0; i < 10; i += 1) {
-                const createdAt = new Date();
                 if (i % 2 === 0) {
                     singleConversation.get().controller.createStatusMessage({
                         type: 'group-name-change',
@@ -152,22 +153,21 @@ export function run(): void {
                             oldName: 'bli',
                             newName: 'blub',
                         },
-                        createdAt,
+                        createdAt: new Date(now + i * 20),
                     });
                 } else {
                     const messageId = randomMessageId(crypto);
-                    const cA = new Date();
                     singleConversation.get().controller.addMessage.fromSync({
                         direction: MessageDirection.OUTBOUND,
                         type: 'text',
                         id: messageId,
                         text: `Message with ID ${messageId}`,
-                        createdAt: cA,
+                        createdAt: new Date(now + i * 20 + 10),
                     });
                 }
             }
 
-            const lastStatusMessageDate = new Date();
+            const lastStatusMessageDate = new Date(now + 3000);
             singleConversation.get().controller.createStatusMessage({
                 type: 'group-name-change',
                 value: {
@@ -199,7 +199,7 @@ export function run(): void {
 
             const messageId = randomMessageId(crypto);
 
-            const lastMessageDate = new Date();
+            const lastMessageDate = new Date(now + 10000);
             singleConversation.get().controller.addMessage.fromSync({
                 direction: MessageDirection.OUTBOUND,
                 type: 'text',
