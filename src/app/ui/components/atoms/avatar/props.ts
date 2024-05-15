@@ -16,12 +16,17 @@ export interface AvatarProps {
     readonly color: ProfilePictureColor;
     /** Description of the avatar, used for accessibility. */
     readonly description: string;
-    /**
-     * Whether clicking on the avatar should be disabled. Defaults to `false`.
-     */
-    readonly disabled?: boolean;
     /** Fallback initials if the image is not provided or unavailable. */
     readonly initials: string;
+    /**
+     * Whether the `Avatar` is clickable and should emit `on:click` events. Defaults to `true`.
+     */
+    readonly isClickable?: boolean;
+    /**
+     * Whether the `Avatar` is focusable (usually with the `Tab` key). Defaults to `true`. Note:
+     * Doesn't have any effect if `isClickable` is set to `false`.
+     */
+    readonly isFocusable?: boolean;
     /** Size the avatar should render at. */
     readonly size: u53;
 }

@@ -15,12 +15,17 @@ export interface ProfilePictureProps {
          * Whether to hide all charms that would be automatically added, based on the receiver's
          * data (e.g., app flavor indicator or unread count indicator). Defaults to `false`.
          */
-        hideCharms?: boolean;
+        readonly hideCharms?: boolean;
         /**
          * Whether the `ProfilePicture` is clickable and should emit `on:click` events. Defaults to
          * `false`.
          */
-        isClickable?: boolean;
+        readonly isClickable?: boolean;
+        /**
+         * Whether the `ProfilePicture` is focusable (usually with the `Tab` key). Defaults to
+         * `false`. Note: Doesn't have any effect if `isClickable` is set to `false`.
+         */
+        readonly isFocusable?: boolean;
     };
     /** Receiver to render a `ProfilePicture` for. */
     readonly receiver:

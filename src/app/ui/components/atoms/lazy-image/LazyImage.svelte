@@ -21,7 +21,8 @@
   export let constraints: $$Props['constraints'];
   export let description: $$Props['description'];
   export let dimensions: $$Props['dimensions'] = undefined;
-  export let disabled: NonNullable<$$Props['disabled']> = true;
+  export let isClickable: NonNullable<$$Props['isClickable']> = false;
+  export let isFocusable: NonNullable<$$Props['isFocusable']> = false;
   export let responsive: NonNullable<$$Props['responsive']> = false;
 
   let image: LazyImageContent = {
@@ -94,7 +95,7 @@
 
 <button
   class={`image ${image.state}`}
-  class:clickable={!disabled}
+  class:clickable={isClickable}
   class:responsive
   style={`--c-t-image-aspect-ratio: ${preferredAspectRatio};
           --c-t-image-min-width: ${constraints.min.width}px;
@@ -103,7 +104,8 @@
           --c-t-image-height: ${preferredDisplay.values.height}px;
           --c-t-image-max-width: ${constraints.max.width}px;
           --c-t-image-max-height: ${constraints.max.height}px`}
-  {disabled}
+  disabled={!isClickable}
+  tabindex={isFocusable ? 0 : -1}
   on:click
 >
   {#if image.state === 'loading'}
@@ -139,6 +141,7 @@
 
   .image {
     @extend %neutral-input;
+
     display: inline-flex;
     margin: 0;
     padding: 0;

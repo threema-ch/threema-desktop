@@ -152,7 +152,7 @@
     return [...receiverCharm, ...unreadMessageCountCharm];
   }
 
-  $: ({isClickable = false} = options);
+  $: ({isClickable = false, isFocusable = false} = options);
 
   /**
    * Updates only if the value of `receiver.lookup.type` or `receiver.lookup.uid` changes, not on
@@ -185,8 +185,9 @@
   description={$i18n.t('contacts.hint--profile-picture', {
     name: receiver.name,
   })}
-  disabled={!isClickable}
   initials={receiver.initials}
+  {isClickable}
+  {isFocusable}
   size={getAvatarSizePxForSize(size)}
   on:click
 />

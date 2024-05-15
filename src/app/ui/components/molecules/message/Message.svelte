@@ -204,7 +204,8 @@
               }}
               description={alt}
               dimensions={file.thumbnail.expectedDimensions}
-              disabled={false}
+              isClickable={true}
+              isFocusable={true}
               responsive={true}
               on:click={handleClickThumbnail}
             />

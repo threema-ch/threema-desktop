@@ -193,6 +193,7 @@
         }}
         options={{
           isClickable: true,
+          isFocusable: false,
         }}
         {receiver}
         {services}

@@ -25,9 +25,14 @@ export interface LazyImageProps {
      */
     readonly dimensions?: Dimensions;
     /**
-     * Whether clicking on the image should be disabled. Defaults to `true`.
+     * Whether the `LazyImage` is clickable and should emit `on:click` events. Defaults to `false`.
      */
-    readonly disabled?: boolean;
+    readonly isClickable?: boolean;
+    /**
+     * Whether the `LazyImage` is focusable (usually with the `Tab` key). Defaults to `false`. Note:
+     * Doesn't have any effect if `isClickable` is set to `false`.
+     */
+    readonly isFocusable?: boolean;
     /**
      * Whether the image should be responsive, i.e. it should not exceed 100% of the parent's width
      * or height. Defaults to `false`.

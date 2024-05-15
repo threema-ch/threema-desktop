@@ -17,10 +17,15 @@
   export let unreadMessageCount: NonNullable<$$Props['unreadMessageCount']> = 0;
 
   $: ({topLeft = [], topRight = [], bottomLeft = [], bottomRight = []} = content);
-  $: ({isClickable = false} = options);
+  $: ({isClickable = false, isFocusable = false} = options);
 </script>
 
-<button class={`container ${size}`} disabled={!isClickable} on:click>
+<button
+  class={`container ${size}`}
+  disabled={!isClickable}
+  tabindex={isFocusable ? 0 : -1}
+  on:click
+>
   <span class="profile-picture">
     <ProfilePicture
       {receiver}

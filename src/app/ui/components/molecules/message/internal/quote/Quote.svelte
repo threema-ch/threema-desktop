@@ -84,7 +84,8 @@
             }}
             description={alt}
             dimensions={file.thumbnail.expectedDimensions}
-            disabled={!clickable}
+            isClickable={clickable}
+            isFocusable={clickable}
           />
         </span>
       {:else}

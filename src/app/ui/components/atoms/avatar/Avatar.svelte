@@ -17,8 +17,9 @@
   export let charms: NonNullable<$$Props['charms']> = [];
   export let color: $$Props['color'];
   export let description: $$Props['description'];
-  export let disabled: NonNullable<$$Props['disabled']> = false;
   export let initials: $$Props['initials'];
+  export let isClickable: NonNullable<$$Props['isClickable']> = true;
+  export let isFocusable: NonNullable<$$Props['isFocusable']> = true;
   export let size: $$Props['size'];
 
   const DEFAULT_OFFSET_PX = {x: 0, y: 0};
@@ -165,7 +166,8 @@
         }}
         {description}
         dimensions={undefined}
-        {disabled}
+        {isClickable}
+        {isFocusable}
         on:click
       >
         <span slot="failed">

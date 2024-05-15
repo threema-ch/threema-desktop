@@ -19,7 +19,12 @@ export interface ReceiverCardProps {
          * Whether the `ReceiverCard` is clickable and should emit `on:click` events. Defaults to
          * `false`.
          */
-        isClickable?: boolean;
+        readonly isClickable?: boolean;
+        /**
+         * Whether the `ReceiverCard` is focusable (usually with the `Tab` key). Defaults to
+         * `false`. Note: Doesn't have any effect if `isClickable` is set to `false`.
+         */
+        readonly isFocusable?: boolean;
     };
     /** Receiver to render a `ReceiverCard` for. */
     readonly receiver: ProfilePictureProps['receiver'];
