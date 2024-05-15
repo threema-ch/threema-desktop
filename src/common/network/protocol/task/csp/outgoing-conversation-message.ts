@@ -76,7 +76,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
      * @throws Error if the conversation for the receiver cannot be found
      * @throws Error if the message does not exist in the conversation.
      * @throws Error if the message is not an outbound message.
-     * @throws Error if the message was deleted
+     * @throws Error if the message was deleted.
      */
     public static fromLookup<TReceiver extends AnyReceiver>(
         services: ServicesForTasks,

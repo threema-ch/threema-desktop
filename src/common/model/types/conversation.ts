@@ -123,7 +123,7 @@ export type ConversationController = {
      *
      * Note: This triggers an update of the `_lastModificationStore`.
      */
-    readonly removeMessage: ControllerUpdateFromLocal<[uid: MessageId]>;
+    readonly removeMessageLocally: ControllerUpdateFromLocal<[uid: MessageId]>;
 
     /**
      * Remove all messages from this conversation.
@@ -162,11 +162,13 @@ export type ConversationController = {
             | Omit<GroupNameChangeStatus['view'], 'conversationUid' | 'id' | 'ordinal'>,
     ) => AnyStatusMessageModelStore;
 
-    /*
+    /**
      * Mark a message as deleted. Contrarily to `removeMessage`, this function deletes all text and
      * additional data from the message and marks it as deleted, disabling any interaction with the
      * message expect for removing it. This operation is irreversible and is reflected to all
      * devices, as well as sent to all recipients of the current conversation.
+     *
+     * @throws if the message could not be found.
      */
     readonly deleteMessage: ControllerUpdateFromSource<[uid: MessageId, deletedAt: Date]>;
     /**

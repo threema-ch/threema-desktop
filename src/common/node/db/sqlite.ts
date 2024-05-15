@@ -2690,7 +2690,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public deleteMessage(
+    public markMessageAsDeleted(
         conversationUid: DbConversationUid,
         uid: DbMessageUid,
         deletedAt: Date,

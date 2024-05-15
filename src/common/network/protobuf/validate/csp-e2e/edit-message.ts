@@ -8,10 +8,12 @@ import {MESSAGE_ID_SCHEMA} from '~/common/network/protobuf/validate/helpers';
 
 export const SCHEMA = validator(
     csp_e2e.EditMessage,
-    v.object({
-        messageId: MESSAGE_ID_SCHEMA,
-        text: v.string(),
-    }),
+    v
+        .object({
+            messageId: MESSAGE_ID_SCHEMA,
+            text: v.string(),
+        })
+        .rest(v.unknown()),
 );
 
 /** Validated Scheme for {@link csp_e2e.EditMessage} */

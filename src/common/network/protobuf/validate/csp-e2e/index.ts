@@ -2,12 +2,11 @@ import type {CspE2eGroupMessageUpdateType, CspE2eMessageUpdateType} from '~/comm
 import type {CspE2eType} from '~/common/network/protocol';
 import type {GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
 
-import type * as DeleteMessage from './delete-message';
-import type * as EditMessage from './edit-message';
+import * as DeleteMessage from './delete-message';
+import * as EditMessage from './edit-message';
+import * as MessageMetadata from './message-metadata';
 
-export * as MessageMetadata from './message-metadata';
-export * as DeleteMessage from './delete-message';
-export * as EditMessage from './edit-message';
+export {DeleteMessage, EditMessage, MessageMetadata};
 
 /**
  * A validated message with its payload type.

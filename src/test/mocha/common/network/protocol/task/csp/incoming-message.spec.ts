@@ -1298,7 +1298,7 @@ export function run(): void {
                 NetworkExpectationFactory.writeIncomingMessageAck(),
             ]);
 
-            const updateText = 'This secret messsage  was edited';
+            const updateText = 'This secret message was edited';
             const editMessageTask = createNewEditMessageTask(
                 services,
                 user1,
@@ -1332,7 +1332,7 @@ export function run(): void {
 
                 const updatedMessageAsTextMessage = updatedMessage as AnyTextMessageModelStore;
                 expect(updatedMessageAsTextMessage.get().view.text).to.equal(
-                    'This secret messsage  was edited',
+                    'This secret message was edited',
                 );
             });
 

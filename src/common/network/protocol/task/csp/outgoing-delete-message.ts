@@ -18,7 +18,7 @@ import {
 } from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
-import {assert} from '~/common/utils/assert';
+import {assert, unreachable} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {intoUnsignedLong, u64ToHexLe} from '~/common/utils/number';
 
@@ -65,46 +65,55 @@ export class OutgoingDeleteMessageTask<TReceiver extends AnyReceiver>
 
         // Note: Here, we assume that a feature mask check and a check whether edit has actually changed anything have already happened.
         let task;
-        if (this._receiverModel.type === ReceiverType.CONTACT) {
-            const messageProperties = {
-                type: CspE2eMessageUpdateType.DELETE_MESSAGE as ValidCspMessageTypeForReceiver<TReceiver>,
-                encoder,
-                cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
-                messageId: deleteMessageWrapperId,
-                createdAt: this._deletedAt,
-                allowUserProfileDistribution: false,
-            };
 
-            task = new OutgoingCspMessageTask(
-                this._services,
-                this._receiverModel,
-                messageProperties,
-            );
-        } else if (this._receiverModel.type === ReceiverType.GROUP) {
-            const groupEncoder = structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
-                groupId: this._receiverModel.view.groupId,
-                creatorIdentity: UTF8.encode(this._receiverModel.view.creatorIdentity),
-                innerData: encoder,
-            });
-            const messageProperties = {
-                type: CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE as ValidCspMessageTypeForReceiver<TReceiver>,
-                encoder: groupEncoder,
-                cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
-                messageId: deleteMessageWrapperId,
-                createdAt: this._deletedAt,
-                allowUserProfileDistribution: false,
-            } as const;
+        switch (this._receiverModel.type) {
+            case ReceiverType.CONTACT: {
+                const messageProperties = {
+                    type: CspE2eMessageUpdateType.DELETE_MESSAGE as ValidCspMessageTypeForReceiver<TReceiver>,
+                    encoder,
+                    cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
+                    messageId: deleteMessageWrapperId,
+                    createdAt: this._deletedAt,
+                    allowUserProfileDistribution: false,
+                };
 
-            task = new OutgoingCspMessageTask(
-                this._services,
-                this._receiverModel,
-                messageProperties,
-            );
+                task = new OutgoingCspMessageTask(
+                    this._services,
+                    this._receiverModel,
+                    messageProperties,
+                );
+                break;
+            }
+            case ReceiverType.GROUP: {
+                const groupEncoder = structbuf.bridge.encoder(
+                    structbuf.csp.e2e.GroupMemberContainer,
+                    {
+                        groupId: this._receiverModel.view.groupId,
+                        creatorIdentity: UTF8.encode(this._receiverModel.view.creatorIdentity),
+                        innerData: encoder,
+                    },
+                );
+                const messageProperties = {
+                    type: CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE as ValidCspMessageTypeForReceiver<TReceiver>,
+                    encoder: groupEncoder,
+                    cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
+                    messageId: deleteMessageWrapperId,
+                    createdAt: this._deletedAt,
+                    allowUserProfileDistribution: false,
+                } as const;
 
-            // TODO(DESK-597)
-        } else {
-            this._log.warn('Distribution Lists not implemented yet');
-            return;
+                task = new OutgoingCspMessageTask(
+                    this._services,
+                    this._receiverModel,
+                    messageProperties,
+                );
+                break;
+            }
+            case ReceiverType.DISTRIBUTION_LIST:
+                this._log.warn('Distribution Lists not implemented yet');
+                return;
+            default:
+                unreachable(this._receiverModel);
         }
 
         await task.run(handle);

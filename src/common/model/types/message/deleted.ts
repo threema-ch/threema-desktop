@@ -15,24 +15,35 @@ import type {
 } from '~/common/model/types/message/common';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 
+// View
+
+interface CommonDeletedMessageView extends Required<Pick<CommonBaseMessageView, 'deletedAt'>> {
+    readonly history: [];
+    readonly lastEditedAt: undefined;
+    readonly reactions: [];
+}
 export type InboundDeletedMessageView = InboundBaseMessageView &
-    Required<Pick<CommonBaseMessageView, 'deletedAt'>> & {
-        readonly history: [];
-        readonly lastEditedAt: undefined;
-        readonly reactions: [];
+    CommonDeletedMessageView & {
         readonly raw: undefined;
     };
+export type OutboundDeletedMessageView = OutboundBaseMessageView & CommonDeletedMessageView;
 
-export type OutboundDeletedMessageView = OutboundBaseMessageView &
-    Required<Pick<CommonBaseMessageView, 'deletedAt'>> & {
-        readonly history: [];
-        readonly lastEditedAt: undefined;
-        readonly reactions: [];
-    };
+// Init
 
+/**
+ * Fields needed to create a new inbound deleted message.
+ */
 export type InboundDeletedMessageInit = InboundBaseMessageInit<MessageType.DELETED>;
+/**
+ * Fields needed to create a new outbound deleted message.
+ */
 export type OutboundDeletedMessageInit = OutboundBaseMessageInit<MessageType.DELETED>;
 
+// Controller
+
+/**
+ * Controller for inbound deleted messages.
+ */
 export type InboundDeletedMessageController =
     CommonBaseMessageController<InboundDeletedMessageView> & {
         /**
@@ -44,8 +55,14 @@ export type InboundDeletedMessageController =
          */
         readonly read: ControllerUpdateFromSync<[readAt: Date]>;
 
+        /**
+         * Return the sender of this message.
+         */
         readonly sender: () => LocalModelStore<Contact>;
     };
+/**
+ * Controller for outbound deleted messages.
+ */
 export type OutboundDeletedMessageController =
     CommonBaseMessageController<OutboundDeletedMessageView> & {
         /**
@@ -61,23 +78,35 @@ export type OutboundDeletedMessageController =
         readonly read: Omit<ControllerUpdateFromSource<[readAt: Date]>, 'fromLocal'>;
     };
 
-export type OutboundDeletedMessageModel = LocalModel<
-    OutboundDeletedMessageView,
-    OutboundDeletedMessageController,
-    MessageDirection.OUTBOUND,
-    MessageType.DELETED
->;
+// Model
 
+/**
+ * Inbound deleted message model.
+ */
 export type InboundDeletedMessageModel = LocalModel<
     InboundDeletedMessageView,
     InboundDeletedMessageController,
     MessageDirection.INBOUND,
     MessageType.DELETED
 >;
-
 export type InboundDeletedMessageModelStore = LocalModelStore<InboundDeletedMessageModel>;
+
+/**
+ * Outbound deleted message model.
+ */
+export type OutboundDeletedMessageModel = LocalModel<
+    OutboundDeletedMessageView,
+    OutboundDeletedMessageController,
+    MessageDirection.OUTBOUND,
+    MessageType.DELETED
+>;
 export type OutboundDeletedMessageModelStore = LocalModelStore<OutboundDeletedMessageModel>;
 
+// Bundle
+
+/**
+ * Combined types related to an inbound deleted message.
+ */
 export interface InboundDeletedMessage {
     readonly view: InboundDeletedMessageView;
     readonly init: InboundDeletedMessageInit;
@@ -85,6 +114,10 @@ export interface InboundDeletedMessage {
     readonly model: InboundDeletedMessageModel;
     readonly store: InboundDeletedMessageModelStore;
 }
+
+/**
+ * Combined types related to an outbound deleted message.
+ */
 export interface OutboundDeletedMessage {
     readonly view: OutboundDeletedMessageView;
     readonly init: OutboundDeletedMessageInit;

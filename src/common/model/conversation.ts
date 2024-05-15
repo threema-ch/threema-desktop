@@ -306,7 +306,7 @@ export class ConversationModelController implements ConversationController {
     }
 
     /** @inheritdoc */
-    public readonly removeMessage: ConversationController['removeMessage'] = {
+    public readonly removeMessageLocally: ConversationController['removeMessageLocally'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (uid: MessageId) => {

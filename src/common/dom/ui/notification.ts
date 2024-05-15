@@ -55,24 +55,16 @@ export class FrontendNotificationCreator implements NotificationCreator {
         const {tag} = options;
 
         // Check if we shouldn't show notifications if the application is focused
-        if (
-            notification.options.creator.ignore === 'if-focused' &&
-            appVisibility.get() === 'focused'
-        ) {
+        if (options.creator.ignore === 'if-focused' && appVisibility.get() === 'focused') {
             return undefined;
         }
 
         // Create notification
+        let proxyNotification: ProxyNotification;
         switch (notification.type) {
             case 'generic': {
-                const proxyNotification = new ProxyNotification(
-                    notification.title,
-                    options,
-                    identifier,
-                );
-                this._notifications.set(tag, proxyNotification);
-                proxyNotification.addEventListener('close', () => this._notifications.delete(tag));
-                return proxyNotification;
+                proxyNotification = new ProxyNotification(notification.title, options, identifier);
+                break;
             }
             case 'new-message': {
                 const title = this._createNewMessageTitle(
@@ -80,15 +72,18 @@ export class FrontendNotificationCreator implements NotificationCreator {
                     notification.receiverConversation,
                     notification.senderName,
                 );
-                const proxyNotification = new ProxyNotification(title, options, identifier);
-                this._notifications.set(tag, proxyNotification);
-                proxyNotification.addEventListener('close', () => this._notifications.delete(tag));
-                return proxyNotification;
+                proxyNotification = new ProxyNotification(title, options, identifier);
+
+                break;
             }
 
             default:
                 return unreachable(notification);
         }
+
+        this._notifications.set(tag, proxyNotification);
+        proxyNotification.addEventListener('close', () => this._notifications.delete(tag));
+        return proxyNotification;
     }
 
     public update(notification: CustomNotification): NotificationHandle | undefined {
@@ -161,7 +156,7 @@ export class FrontendNotificationCreator implements NotificationCreator {
                 .get()
                 .t(
                     'messaging.prose--notification-title-single',
-                    '{n, plural, =1 {new message} other {{n} new messages}} from {recipientName}',
+                    '{n, plural, =1 {New message} other {{n} new messages}} from {recipientName}',
                     {
                         n: unreadCount.toString(),
                         recipientName,
@@ -173,7 +168,7 @@ export class FrontendNotificationCreator implements NotificationCreator {
             .get()
             .t(
                 'messaging.prose--notification-title-group',
-                '{n, plural, =1 {new message from {senderName}} other {{n} new messages}} in group {recipientName}',
+                '{n, plural, =1 {New message from {senderName}} other {{n} new messages}} in group {recipientName}',
                 {
                     n: unreadCount.toString(),
                     senderName,

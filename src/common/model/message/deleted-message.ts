@@ -20,10 +20,13 @@ import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
-export function commonToDeletedView<TMessageDirection extends MessageDirection>(
+export function commonViewToDeletedView<TMessageDirection extends MessageDirection>(
     common: BaseMessageView<TMessageDirection>,
 ): InboundDeletedMessageView | OutboundDeletedMessageView {
-    assert(common.deletedAt !== undefined);
+    assert(
+        common.deletedAt !== undefined,
+        'Cannot create a deleted view of a message that was not deleted',
+    );
 
     switch (common.direction) {
         case MessageDirection.INBOUND:
@@ -98,11 +101,18 @@ function update(
     const updated = services.db.updateDeletedMessageTimestamps(uid, change);
     if (!updated) {
         throw new Error(
-            `Could not update timestamp of deleted message with UID ${uid} from database because its type was not "deleted" or it could not be found.`,
+            `Could not update timestamp of message with UID ${uid} from database because its type was not "deleted" or it could not be found.`,
         );
     }
 }
 
+/**
+ * Controller for inbound deleted messages.
+ *
+ * Note: This extends `CommonBaseMessageController` and not `InboundBaseMessageModelController`
+ * because many actions that are valid for regular messages (e.g. reactions) are not valid on
+ * deleted messages.
+ */
 class InboundDeletedMessageModelController
     extends CommonBaseMessageController<InboundDeletedMessageView>
     implements InboundDeletedMessageController
@@ -151,6 +161,13 @@ class InboundDeletedMessageModelController
     }
 }
 
+/**
+ * Controller for outbound deleted messages.
+ *
+ * Note: This extends `CommonBaseMessageController` and not `OutboundBaseMessageModelController`
+ * because many actions that are valid for regular messages (e.g. reactions or edits) are not valid on
+ * deleted messages.
+ */
 class OutboundDeletedMessageModelController
     extends CommonBaseMessageController<OutboundDeletedMessageView>
     implements OutboundDeletedMessageController

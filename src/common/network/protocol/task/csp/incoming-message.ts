@@ -1730,7 +1730,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return instructions;
             }
             case CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE: {
-                // TODO(DESK-1387)
                 const validatedContainer =
                     structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
                         structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),

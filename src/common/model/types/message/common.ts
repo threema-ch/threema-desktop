@@ -179,7 +179,7 @@ export type InboundBaseMessageController<TView extends InboundBaseMessageView> =
          *
          * Note: This interface does not allow updating `fromLocal`, because when viewing a
          *       conversation on the local device, the _entire_ conversation should be marked as
-         *       read. Thus, use `ConversationControllerLocal` instead.
+         *       read. Thus, use `ConversationController.read.fromLocal` instead.
          */
         readonly read: ControllerUpdateFromSync<[readAt: Date]>;
 

@@ -934,16 +934,17 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     ) => {removed: boolean; deletedFileIds: FileId[]};
 
     /**
-     * Delete the message and associated data. This includes subtables, such as the type specific
-     * message subtable, reactions and the history. Furthermore, it marks the message as deleted.
-     * Additionally, the list of {@link FileId}s that were removed from the database is returned.
-     * This data should be used by the caller to clean up the file storage. Note: This differs in
-     * removing a message in a fundamental way: A message removal only happens locally while message
-     * deletion is reflected and set to the recipient as well. This also means that the message
-     * persists in the local database, marked as deleted, and a placeholder is shown for it on all
-     * affected devices.
+     * Mark the message as deleted and remove associated data including subtables.
+     *
+     * Returns the marked message as well as the list of {@link FileId}s that were removed from the
+     * database. This data should be used by the caller to clean up the file storage.
+     *
+     * Note: This differs from {@link removeMessage}, which completely removes messages from the
+     * database, while this method only removes associated data and changes the type to "deleted".
+     * This method should be used in the "delete for everyone" use case, while the other method
+     * should be used for complete local removal of a message from a conversation.
      */
-    readonly deleteMessage: (
+    readonly markMessageAsDeleted: (
         conversationUid: DbConversationUid,
         uid: DbRemove<DbAnyMessage>,
         deletedAt: Date,

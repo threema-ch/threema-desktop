@@ -439,9 +439,9 @@ export const FEATURE_MASK_FLAG = {
     FORWARD_SECURITY_SUPPORT: 0x40n,
     // Can handle group calls.
     GROUP_CALL_SUPPORT: 0x80n,
-    // Can handle edited messages
+    // Can handle edited messages.
     EDIT_MESSAGE_SUPPORT: 0x100n,
-    // Can handle deleted messages
+    // Can handle deleted messages.
     DELETED_MESSAGES_SUPPORT: 0x200n,
 } as const;
 

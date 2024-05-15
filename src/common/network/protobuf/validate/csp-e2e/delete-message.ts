@@ -8,9 +8,11 @@ import {MESSAGE_ID_SCHEMA} from '~/common/network/protobuf/validate/helpers';
 
 export const SCHEMA = validator(
     csp_e2e.DeleteMessage,
-    v.object({
-        messageId: MESSAGE_ID_SCHEMA,
-    }),
+    v
+        .object({
+            messageId: MESSAGE_ID_SCHEMA,
+        })
+        .rest(v.unknown()),
 );
 
 /** Validated Scheme for {@link csp_e2e.DeleteMessage} */

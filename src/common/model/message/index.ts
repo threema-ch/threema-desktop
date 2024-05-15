@@ -438,7 +438,7 @@ function updateOutboundMessageSentAt(
  * Delete the message with the specified {@link uid} from the database, the cache and the file
  * system.
  */
-function remove(
+function removeFromDatabase(
     services: ServicesForModel,
     log: Logger,
     conversationUid: UidOf<DbConversation>,
@@ -480,7 +480,7 @@ export function deleteMessage(
     const messageUid = messageModel.get().controller.uid;
     return messageModel.get().controller.meta.deactivate(() => {
         // Delete from database
-        const {deletedMessage, deletedFileIds} = db.deleteMessage(
+        const {deletedMessage, deletedFileIds} = db.markMessageAsDeleted(
             conversation.uid,
             messageUid,
             deletedAt,
@@ -615,7 +615,7 @@ export abstract class CommonBaseMessageController<TView extends CommonBaseMessag
      */
     public remove(): void {
         this.meta.deactivate(() =>
-            remove(this._services, this._log, this._conversation.uid, this.uid),
+            removeFromDatabase(this._services, this._log, this._conversation.uid, this.uid),
         );
     }
 }
@@ -624,7 +624,7 @@ export abstract class CommonBaseMessageController<TView extends CommonBaseMessag
  * This class represents a controller for all messages that can be interacted with. Such
  * interactions may entail deleting, editing, reactions and so on.
  */
-export abstract class CommonBaseInteractableMessageModelController<
+export abstract class CommonBaseNonDeletedMessageModelController<
     TView extends CommonBaseMessageView,
 > extends CommonBaseMessageController<TView> {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
@@ -703,7 +703,7 @@ export abstract class CommonBaseInteractableMessageModelController<
 
 /** @inheritdoc */
 export abstract class InboundBaseMessageModelController<TView extends InboundBaseMessageView>
-    extends CommonBaseInteractableMessageModelController<TView>
+    extends CommonBaseNonDeletedMessageModelController<TView>
     implements InboundBaseMessageController<TView>
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
@@ -876,7 +876,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
 
 /** @inheritdoc */
 export abstract class OutboundBaseMessageModelController<TView extends OutboundBaseMessageView>
-    extends CommonBaseInteractableMessageModelController<TView>
+    extends CommonBaseNonDeletedMessageModelController<TView>
     implements OutboundBaseMessageController<TView>
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
@@ -1126,9 +1126,7 @@ export class MessageModelRepository implements MessageRepository {
                     `Expected MessageModelStore for message with UID ${message.uid} to exist`,
                 );
 
-                /**
-                 * The search results should not contain any message that was deleted.
-                 */
+                // The search results should not contain any deleted messages.
                 assert(messageModelStore.type !== MessageType.DELETED);
 
                 return messageModelStore;

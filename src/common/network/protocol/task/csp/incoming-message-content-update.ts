@@ -45,22 +45,29 @@ export class IncomingMessageContentUpdateTask
         );
         let conversation: LocalModelStore<Conversation>;
 
-        if (this._conversationId.type === ReceiverType.CONTACT) {
-            conversation = this._contactOrInit.get().controller.conversation();
-        } else {
-            const group = model.groups.getByGroupIdAndCreator(
-                this._conversationId.groupId,
-                this._conversationId.creatorIdentity,
-            );
-            if (group === undefined) {
-                this._log.warn(
-                    `Discarding conversation message update of type ${this._update.type} for message ${u64ToHexLe(
-                        this._messageId,
-                    )} as the referenced group does not exist`,
-                );
-                return;
-            }
-            conversation = group.get().controller.conversation();
+        switch (this._conversationId.type) {
+            case ReceiverType.CONTACT:
+                conversation = this._contactOrInit.get().controller.conversation();
+                break;
+            case ReceiverType.GROUP:
+                {
+                    const group = model.groups.getByGroupIdAndCreator(
+                        this._conversationId.groupId,
+                        this._conversationId.creatorIdentity,
+                    );
+                    if (group === undefined) {
+                        this._log.warn(
+                            `Discarding conversation message update of type ${this._update.type} for message ${u64ToHexLe(
+                                this._messageId,
+                            )} as the referenced group does not exist`,
+                        );
+                        return;
+                    }
+                    conversation = group.get().controller.conversation();
+                }
+                break;
+            default:
+                unreachable(this._conversationId);
         }
         const message = conversation.get().controller.getMessage(this._messageId);
 
