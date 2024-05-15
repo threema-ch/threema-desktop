@@ -18,9 +18,8 @@ export function getIndicatorElements(
     options: NonNullable<IndicatorProps['options']>,
     reactions: IndicatorProps['reactions'],
     status: IndicatorProps['status'],
-    isDeleted: IndicatorProps['isDeleted'],
 ): IndicatorElement[] {
-    if (isDeleted) {
+    if (status.deleted !== undefined) {
         return [];
     }
     const reactionElements = getIndicatorElementsForReactions(reactions, options);

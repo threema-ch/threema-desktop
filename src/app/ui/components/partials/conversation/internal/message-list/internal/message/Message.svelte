@@ -13,6 +13,7 @@
     getTextContent,
     getTranslatedSyncButtonTitle,
     isUnsyncedOrSyncingFile,
+    shouldShowReactionButtons,
   } from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/helpers';
   import type {MessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
   import {transformMessageFileProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/transformers';
@@ -24,6 +25,7 @@
   import {handleCopyImage, handleSaveAsFile} from '~/app/ui/utils/file-sync/handlers';
   import {syncAndGetPayload} from '~/app/ui/utils/file-sync/helpers';
   import {reactive} from '~/app/ui/utils/svelte';
+  import {escapeHtmlUnsafeChars} from '~/app/ui/utils/text';
   import {formatDateLocalized} from '~/app/ui/utils/timestamp';
   import {ReceiverType} from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
@@ -39,11 +41,9 @@
   export let actions: $$Props['actions'];
   export let boundary: $$Props['boundary'] = undefined;
   export let conversation: $$Props['conversation'];
-  export let deletedAt: $$Props['deletedAt'];
   export let direction: $$Props['direction'];
   export let file: $$Props['file'] = undefined;
   export let id: $$Props['id'];
-  export let lastEdited: $$Props['lastEdited'] = undefined;
   export let highlighted: $$Props['highlighted'] = undefined;
   export let quote: $$Props['quote'] = undefined;
   export let reactions: $$Props['reactions'];
@@ -51,7 +51,6 @@
   export let services: $$Props['services'];
   export let status: $$Props['status'];
   export let text: $$Props['text'] = undefined;
-  export let type: $$Props['type'] = 'message';
 
   const {
     router,
@@ -252,6 +251,14 @@
           'The quoted message could not be found.',
         ),
       };
+    } else if (rawQuote.status.deleted !== undefined) {
+      quoteProps = {
+        type: 'deleted',
+        fallbackText: $i18n.t(
+          'messaging.error--quoted-message-deleted',
+          'The quoted message was deleted.',
+        ),
+      };
     } else {
       const sanitizedHtml = getTextContent(
         rawQuote.text?.raw,
@@ -284,38 +291,25 @@
     }
   }
 
-  $: htmlContent = getTextContent(text?.raw, text?.mentions, $i18n.t);
+  $: htmlContent =
+    status.deleted !== undefined
+      ? escapeHtmlUnsafeChars(
+          $i18n.t('messaging.prose--message-deleted', 'This message was deleted'),
+        )
+      : getTextContent(text?.raw, text?.mentions, $i18n.t);
 
-  let showReactionButtons: boolean;
-  $: {
-    const receiver = conversation.receiver;
-
-    switch (receiver.type) {
-      case 'contact':
-        showReactionButtons =
-          !receiver.isDisabled && !receiver.isBlocked && direction === 'inbound';
-        break;
-
-      case 'group':
-        showReactionButtons = !receiver.isDisabled && !receiver.isLeft;
-        break;
-
-      case 'distribution-list':
-        showReactionButtons = false;
-        break;
-
-      default:
-        unreachable(receiver);
-    }
-    showReactionButtons &&= deletedAt === undefined;
-  }
+  $: showReactionButtons = shouldShowReactionButtons(
+    conversation.receiver,
+    direction,
+    status.deleted?.at,
+  );
 
   let showEditButton: boolean = false;
   $: showEditButton = reactive(
     () =>
       import.meta.env.BUILD_ENVIRONMENT === 'sandbox' &&
       direction === 'outbound' &&
-      deletedAt === undefined &&
+      status.deleted === undefined &&
       status.sent !== undefined &&
       // For audio we don't support edits yet.
       !(file !== undefined && file.type === 'audio') &&
@@ -379,9 +373,9 @@
       quote:
         (conversation.receiver.type === 'contact'
           ? !conversation.receiver.isBlocked
-          : !conversation.receiver.isDisabled) && deletedAt === undefined,
+          : !conversation.receiver.isDisabled) && status.deleted === undefined,
       // TODO(DESK-1400)
-      forward: text !== undefined && file === undefined && deletedAt === undefined,
+      forward: text !== undefined && file === undefined && status.deleted === undefined,
       openDetails: true,
       deleteMessage: true,
     }}
@@ -437,8 +431,9 @@
             {direction}
             file={transformMessageFileProps(file, id, conversation.receiver.lookup, services)}
             {highlighted}
-            {deletedAt}
-            {lastEdited}
+            footerHint={status.edited
+              ? $i18n.t('messaging.prose--message-edited', 'Edited')
+              : undefined}
             onError={(error) =>
               log.error(
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

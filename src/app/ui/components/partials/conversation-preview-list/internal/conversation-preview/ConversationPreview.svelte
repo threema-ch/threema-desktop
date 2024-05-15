@@ -172,7 +172,7 @@
             receiver,
           ),
           bottomRight:
-            lastMessage === undefined || lastMessage.deletedAt !== undefined
+            lastMessage === undefined || lastMessage.status.deleted !== undefined
               ? undefined
               : [
                   {

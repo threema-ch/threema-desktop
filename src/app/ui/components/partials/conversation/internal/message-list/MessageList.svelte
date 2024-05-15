@@ -177,11 +177,9 @@
       props: {
         conversation,
         direction: message.direction,
-        deletedAt: message.deletedAt,
         file: message.file,
         history: message.history,
         id: message.id,
-        lastEdited: message.lastEdited,
         reactions: message.reactions,
         services,
         status: message.status,
@@ -194,7 +192,6 @@
       type: 'message-details',
       props: {
         conversation,
-        deletedAt: undefined,
         history: [],
         id: message.id,
         reactions: [],
@@ -251,7 +248,6 @@
       case 'not-found':
         log.error('Quote was clicked but it was either undefined or not found');
         return;
-
       default:
         scrollToMessage(message.quote.id, {
           behavior: 'smooth',
@@ -468,16 +464,13 @@
           {/if}
           <!-- eslint-disable @typescript-eslint/no-unsafe-argument -->
           <Message
-            type={item.type}
             actions={item.actions}
             boundary={element}
             {conversation}
-            deletedAt={item.deletedAt}
             direction={item.direction}
             file={item.file}
             highlighted={item.id === highlightedMessageId}
             id={item.id}
-            lastEdited={item.lastEdited}
             quote={item.quote}
             reactions={item.reactions}
             sender={item.sender}

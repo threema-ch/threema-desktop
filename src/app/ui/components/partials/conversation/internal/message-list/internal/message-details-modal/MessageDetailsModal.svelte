@@ -19,10 +19,8 @@
 
   export let conversation: $$Props['conversation'];
   export let direction: $$Props['direction'] = undefined;
-  export let deletedAt: $$Props['deletedAt'] = undefined;
   export let file: $$Props['file'] = undefined;
   export let id: $$Props['id'] = undefined;
-  export let lastEdited: $$Props['lastEdited'] = undefined;
   export let reactions: $$Props['reactions'];
   export let history: $$Props['history'];
   export let services: $$Props['services'];
@@ -131,21 +129,24 @@
             />
           </KeyValueList.Item>
         {/if}
-        {#if lastEdited !== undefined}
+        {#if status.edited !== undefined}
           <KeyValueList.Item
             key={$i18n.t('dialog--message-details.label--last-edited-date', 'Last Edited')}
           >
             <Text
-              text={formatDateLocalized(lastEdited.at, $i18n, 'extended', use24hTime)}
+              text={formatDateLocalized(status.edited.at, $i18n, 'extended', use24hTime)}
               selectable
             />
           </KeyValueList.Item>
         {/if}
-        {#if deletedAt !== undefined}
+        {#if status.deleted !== undefined}
           <KeyValueList.Item
             key={$i18n.t('dialog--message-details.label--deleted-date', 'Deleted')}
           >
-            <Text text={formatDateLocalized(deletedAt, $i18n, 'extended', use24hTime)} selectable />
+            <Text
+              text={formatDateLocalized(status.deleted.at, $i18n, 'extended', use24hTime)}
+              selectable
+            />
           </KeyValueList.Item>
         {/if}
       </KeyValueList.Section>

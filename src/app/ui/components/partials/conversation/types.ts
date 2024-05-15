@@ -85,5 +85,3 @@ export interface ComposeBarEdit extends ComposeBarMode {
     readonly editedMessage: EditedMessage;
     readonly quotedMessage: QuotedMessage;
 }
-
-export type FeatureSupport = {supported: false} | {supported: true; notSupportedNames: string[]};

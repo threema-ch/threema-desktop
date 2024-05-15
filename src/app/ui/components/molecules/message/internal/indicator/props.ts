@@ -21,7 +21,6 @@ export interface IndicatorProps {
     };
     readonly reactions: Readonly<Reaction[]>;
     readonly status: Status;
-    readonly isDeleted: boolean;
 }
 
 interface Reaction {
@@ -39,6 +38,8 @@ export interface Status {
     readonly delivered?: Milestone;
     readonly read?: Milestone;
     readonly error?: Milestone;
+    readonly deleted?: Milestone;
+    readonly edited?: Milestone;
 }
 
 interface Milestone {

@@ -6,7 +6,6 @@ import type {FileInfoProps} from '~/app/ui/components/molecules/message/internal
 import type {IndicatorProps} from '~/app/ui/components/molecules/message/internal/indicator/props';
 import type {QuoteProps} from '~/app/ui/components/molecules/message/internal/quote/props';
 import type {SenderProps} from '~/app/ui/components/molecules/message/internal/sender/props';
-import type {MessageDetailsModalProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-details-modal/props';
 import type {BlobStore} from '~/common/dom/ui/blob-cache';
 import type {Dimensions, f64} from '~/common/types';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
@@ -57,18 +56,10 @@ export interface MessageProps {
      * animation is completed.
      */
     readonly highlighted?: BubbleProps['highlighted'];
-
     /**
-     * If and when this message was deleted. Defaults to undefined and is undefined if the message has never been deleted.
+     * An arbitrary string to display in the footer before the indicator symbols and the timestamp.
      */
-    readonly deletedAt: MessageDetailsModalProps['deletedAt'];
-
-    /** When the message was last edited. Undefined if it was never edited */
-    readonly lastEdited:
-        | {
-              at: Date;
-          }
-        | undefined;
+    readonly footerHint?: string;
     readonly onError: (error: Error) => void;
     readonly options?: {
         readonly hideSender?: boolean;
@@ -76,7 +67,7 @@ export interface MessageProps {
         readonly indicatorOptions?: IndicatorProps['options'];
     };
     /** Data of the quoted message. */
-    readonly quote?: DefaultQuoteProps | NotFoundQuoteProps;
+    readonly quote?: DefaultQuoteProps | NotFoundQuoteProps | DeletedQuoteProps;
     readonly reactions: IndicatorProps['reactions'];
     /** Details about the message sender. */
     readonly sender?: Pick<AvatarProps, 'color' | 'initials'> & Pick<SenderProps, 'color' | 'name'>;
@@ -96,5 +87,10 @@ interface DefaultQuoteProps extends QuoteProps {
 
 interface NotFoundQuoteProps {
     readonly type: 'not-found';
+    readonly fallbackText: string;
+}
+
+interface DeletedQuoteProps {
+    readonly type: 'deleted';
     readonly fallbackText: string;
 }

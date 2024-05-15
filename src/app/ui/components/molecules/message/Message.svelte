@@ -15,7 +15,6 @@
   import Quote from '~/app/ui/components/molecules/message/internal/quote/Quote.svelte';
   import Sender from '~/app/ui/components/molecules/message/internal/sender/Sender.svelte';
   import type {MessageProps} from '~/app/ui/components/molecules/message/props';
-  import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {MAX_CONVERSATION_THUMBNAIL_SIZE} from '~/common/dom/ui/media';
   import type {u53} from '~/common/types';
@@ -31,8 +30,7 @@
   export let direction: $$Props['direction'];
   export let file: $$Props['file'] = undefined;
   export let highlighted: $$Props['highlighted'] = undefined;
-  export let deletedAt: $$Props['deletedAt'] = undefined;
-  export let lastEdited: $$Props['lastEdited'] = undefined;
+  export let footerHint: $$Props['footerHint'] = undefined;
   export let onError: $$Props['onError'];
   export let options: NonNullable<$$Props['options']> = {};
   export let quote: $$Props['quote'] = undefined;
@@ -98,7 +96,7 @@
       </span>
     {/if}
 
-    {#if quote?.type === 'not-found'}
+    {#if quote?.type === 'not-found' || quote?.type === 'deleted'}
       <Quote
         {alt}
         content={{
@@ -138,7 +136,6 @@
                       options={options.indicatorOptions}
                       {reactions}
                       {status}
-                      isDeleted={deletedAt !== undefined}
                     />
                   </span>
                 {/if}
@@ -157,13 +154,7 @@
             <svelte:fragment slot="status">
               {#if messageInfoPlacement === 'preview'}
                 <Text text={timestamp.fluent} wrap={false} />
-                <Indicator
-                  {direction}
-                  options={options.indicatorOptions}
-                  {reactions}
-                  {status}
-                  isDeleted={deletedAt !== undefined}
-                />
+                <Indicator {direction} options={options.indicatorOptions} {reactions} {status} />
               {/if}
             </svelte:fragment>
           </FileInfo>
@@ -189,13 +180,7 @@
             {#if messageInfoPlacement === 'preview'}
               <span class="badge status">
                 <Text text={timestamp.short} wrap={false} />
-                <Indicator
-                  {direction}
-                  options={options.indicatorOptions}
-                  {reactions}
-                  {status}
-                  isDeleted={deletedAt !== undefined}
-                />
+                <Indicator {direction} options={options.indicatorOptions} {reactions} {status} />
               </span>
             {/if}
           </div>
@@ -231,7 +216,7 @@
     {/if}
 
     {#if content !== undefined}
-      <div class={`text ${deletedAt !== undefined ? 'deleted' : ''}`}>
+      <div class="text" class:deleted={status.deleted !== undefined}>
         <Prose {content} selectable={true} wrap={true} />
       </div>
     {/if}
@@ -239,17 +224,11 @@
     {#if messageInfoPlacement === 'footer'}
       <div class="footer">
         <span class="status">
-          {#if lastEdited !== undefined}
-            <Text text={$i18n.t('messaging.prose--message-edited', 'Edited')} wrap={false}></Text>
+          {#if footerHint !== undefined}
+            <Text text={footerHint} wrap={false}></Text>
           {/if}
           <Text text={timestamp.fluent} wrap={false} />
-          <Indicator
-            {direction}
-            options={options.indicatorOptions}
-            {reactions}
-            {status}
-            isDeleted={deletedAt !== undefined}
-          />
+          <Indicator {direction} options={options.indicatorOptions} {reactions} {status} />
         </span>
       </div>
     {/if}

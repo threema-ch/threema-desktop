@@ -4,6 +4,7 @@ import {type SanitizedHtml, sanitizeAndParseTextToHtml} from '~/app/ui/utils/tex
 import type {u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import type {AnyMention} from '~/common/viewmodel/utils/mentions';
+import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
  * Sanitizes and parses raw text from a text message to HTML.
@@ -104,5 +105,25 @@ export function getTranslatedSyncButtonTitle(
 
         default:
             return unreachable(file.sync.direction);
+    }
+}
+
+export function shouldShowReactionButtons(
+    receiver: AnyReceiverData,
+    direction: 'inbound' | 'outbound',
+    deletedAt: Date | undefined,
+): boolean {
+    if (deletedAt !== undefined) {
+        return false;
+    }
+    switch (receiver.type) {
+        case 'contact':
+            return !receiver.isDisabled && !receiver.isBlocked && direction === 'inbound';
+        case 'group':
+            return !receiver.isDisabled && !receiver.isLeft;
+        case 'distribution-list':
+            return false;
+        default:
+            return unreachable(receiver);
     }
 }

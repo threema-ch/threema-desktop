@@ -50,7 +50,15 @@ export function transformMessageQuoteProps(
             type: 'not-found',
             fallbackText: i18n.t(
                 'messaging.error--quoted-message-not-found',
-                'The quoted message could not be found.',
+                'The quoted message could not be found',
+            ),
+        };
+    } else if (rawQuoteProps === 'deleted') {
+        return {
+            type: 'deleted',
+            fallbackText: i18n.t(
+                'messaging.error--quoted-message-deleted',
+                'The quoted message was deleted',
             ),
         };
     }

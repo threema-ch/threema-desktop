@@ -58,7 +58,6 @@ export function conversationListItemSetStoreToConversationPreviewListPropsStore(
                             lastMessageViewModel === undefined
                                 ? undefined
                                 : {
-                                      deletedAt: lastMessageViewModel.deletedAt,
                                       file: lastMessageViewModel.file,
                                       reactions: transformMessageReactionsProps(
                                           lastMessageViewModel,
@@ -67,7 +66,6 @@ export function conversationListItemSetStoreToConversationPreviewListPropsStore(
                                       sender: lastMessageViewModel.sender,
                                       status: lastMessageViewModel.status,
                                       text: lastMessageViewModel.text,
-                                      type: lastMessageViewModel.type,
                                   },
                         receiver: viewModel.receiver,
                         totalMessageCount: viewModel.totalMessageCount,

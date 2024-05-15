@@ -71,39 +71,31 @@ function getMessageProps(
         type: viewModel.type,
         actions: {
             acknowledge:
-                viewModel.deletedAt === undefined
+                viewModel.status.deleted === undefined
                     ? async () => {
                           await viewModelController.acknowledge();
                       }
                     : undefined,
             decline:
-                viewModel.deletedAt === undefined
+                viewModel.status.deleted === undefined
                     ? async () => {
                           await viewModelController.decline();
                       }
                     : undefined,
             edit:
-                viewModel.deletedAt === undefined
+                viewModel.status.deleted === undefined
                     ? async (newText: string) => {
                           await viewModelController.edit(newText, new Date());
                       }
                     : undefined,
         },
-        deletedAt: viewModel.deletedAt,
         direction: viewModel.direction,
         file: getMessageFileProps(viewModelController, viewModel),
         id: viewModel.id,
-        lastEdited: viewModel.lastEditedAt === undefined ? undefined : {at: viewModel.lastEditedAt},
         reactions: getMessageReactionsProps(viewModel, i18n),
         sender: viewModel.sender,
         status: viewModel.status,
-        text:
-            viewModel.deletedAt === undefined
-                ? viewModel.text
-                : {
-                      raw: i18n.t('messaging.prose--message deleted', 'This message was deleted'),
-                      mentions: undefined,
-                  },
+        text: viewModel.text,
         history: viewModel.history.map((val) => ({
             at: val.editedAt,
             text: val.text,

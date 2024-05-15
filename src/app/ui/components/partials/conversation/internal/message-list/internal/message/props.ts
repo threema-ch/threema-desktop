@@ -12,7 +12,6 @@ import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
  * Props accepted by the `Message` component.
  */
 export interface MessageProps {
-    readonly type: 'message';
     readonly actions: {
         readonly acknowledge: (() => Promise<void>) | undefined;
         readonly decline: (() => Promise<void>) | undefined;
@@ -23,7 +22,6 @@ export interface MessageProps {
         readonly receiver: AnyReceiverData;
         readonly isEditingSupported: boolean;
     };
-    readonly deletedAt: Date | undefined;
     readonly direction: BasicMessageProps['direction'];
     readonly file?: Omit<NonNullable<BasicMessageProps['file']>, 'thumbnail'> & {
         readonly sync: {
@@ -47,7 +45,6 @@ export interface MessageProps {
      */
     readonly highlighted?: BasicMessageProps['highlighted'];
     readonly id: MessageId;
-    readonly lastEdited?: BasicMessageProps['lastEdited'];
     readonly quote?: Omit<MessageProps, 'boundary' | 'conversation' | 'services'> | 'not-found';
     readonly reactions: BasicMessageProps['reactions'] & MessageDetailsModalProps['reactions'];
     readonly sender?: NonNullable<BasicMessageProps['sender']> &

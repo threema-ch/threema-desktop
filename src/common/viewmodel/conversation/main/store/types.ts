@@ -47,4 +47,4 @@ export type FeatureMaskMap = Map<
     FeatureSupport
 >;
 
-type FeatureSupport = {supported: false} | {supported: true; notSupportedNames: string[]};
+export type FeatureSupport = {supported: false} | {supported: true; notSupportedNames: string[]};

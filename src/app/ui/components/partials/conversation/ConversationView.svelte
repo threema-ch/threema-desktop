@@ -12,7 +12,7 @@
   } from '~/app/ui/components/partials/conversation/drafts';
   import {prepareFilesForMediaComposeModal} from '~/app/ui/components/partials/conversation/helpers';
   import ComposeBar from '~/app/ui/components/partials/conversation/internal/compose-bar/ComposeBar.svelte';
-  import DeleteMessageModal from '~/app/ui/components/partials/conversation/internal/delete=message-modal/DeleteMessageModal.svelte';
+  import DeleteMessageModal from '~/app/ui/components/partials/conversation/internal/delete-message-modal/DeleteMessageModal.svelte';
   import MessageList from '~/app/ui/components/partials/conversation/internal/message-list/MessageList.svelte';
   import {getTextContent} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/helpers';
   import {transformMessageFileProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/transformers';
@@ -27,7 +27,6 @@
     ComposeBarState,
     ConversationRouteParams,
     EditedMessage,
-    FeatureSupport,
     ModalState,
     QuotedMessage,
     RemoteConversationViewModelStoreValue,
@@ -59,6 +58,7 @@
   import type {ConversationViewModelBundle} from '~/common/viewmodel/conversation/main';
   import type {SendMessageEventDetail} from '~/common/viewmodel/conversation/main/controller/types';
   import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
+  import type {FeatureSupport} from '~/common/viewmodel/conversation/main/store/types';
 
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.conversation-view');
@@ -99,7 +99,7 @@
   let modalState: ModalState = {type: 'none'};
 
   let receiverSupportsEditedMessages: FeatureSupport;
-  let receiverSupportsDeleteMessage: FeatureSupport;
+  let receiverSupportsDeletedMessages: FeatureSupport;
 
   function handleClickJoinCall(event: CustomEvent<MouseEvent>): void {
     // TODO(DESK-1447): Handle joining group call (example below).
@@ -131,16 +131,14 @@
     }
   }
 
-  function handleClickDeleteMessageForAll(event: CustomEvent<MessageListMessage>): void {
-    if (event.detail.deletedAt !== undefined) {
+  function handleClickDeleteMessageForEveryone(event: CustomEvent<MessageListMessage>): void {
+    if (event.detail.status.deleted !== undefined) {
       log.warn('Tried to delete an already deleted message on all devices');
       return;
     }
-    viewModelController?.deleteMessageForAll(event.detail.id).catch((error) => {
+    viewModelController?.deleteMessageForEveryone(event.detail.id).catch((error) => {
       log.error(`Could not delete message with id ${event.detail.id}`, error);
-      toast.addSimpleFailure(
-        $i18n.t('messaging.error--delete-message', 'Could not delete message'),
-      );
+      toast.addSimpleFailure($i18n.t('messaging.error--delete-message'));
     });
   }
 
@@ -204,14 +202,14 @@
       if ($viewModelStore?.receiver.type === 'contact') {
         toast.addSimpleFailure(
           $i18n.t(
-            'messaging.prose--edit-not-support',
+            'messaging.prose--edit-not-supported',
             'Cannot edit the message because the recipient’s app version does not support this feature.',
           ),
         );
       } else if ($viewModelStore?.receiver.type === 'group') {
         toast.addSimpleFailure(
           $i18n.t(
-            'messaging.prose--edit-not-support-group',
+            'messaging.prose--edit-not-supported-group',
             'Cannot edit the message because no group member supports this feature.',
           ),
         );
@@ -222,10 +220,11 @@
       const numNotSupported = receiverSupportsEditedMessages.notSupportedNames.length;
       toast.addSimpleWarning(
         $i18n.t(
-          'messaging.prose--edit-not-support-partial',
-          'The following group members will not be able to see your edits: {names}. To see edits, they need to install the latest Threema version.',
+          'messaging.prose--edit-not-supported-partial',
+          'The following group members will not be able to see your edits: {names}{n, plural, =0 {.} other { and {n} more.}} To see edits, they need to install the latest Threema version.',
           {
-            names: `${receiverSupportsEditedMessages.notSupportedNames.slice(0, 5).join(', ')} ${numNotSupported > 5 ? ',...' : ''}`,
+            names: receiverSupportsEditedMessages.notSupportedNames.slice(0, 5).join(', '),
+            n: `${numNotSupported > 5 ? numNotSupported - 5 : 0}`,
           },
         ),
       );
@@ -329,21 +328,13 @@
         viewModelController = viewModelBundle.viewModelController;
 
         // Check for edit support
-        const editFeature = viewModelStore
+        receiverSupportsEditedMessages = viewModelStore
           .get()
-          ?.supportedFeatures.get(FEATURE_MASK_FLAG.EDIT_MESSAGE_SUPPORT);
-        receiverSupportsEditedMessages =
-          editFeature !== undefined
-            ? {supported: true, notSupportedNames: editFeature.notSupported}
-            : {supported: false};
+          ?.supportedFeatures.get(FEATURE_MASK_FLAG.EDIT_MESSAGE_SUPPORT) ?? {supported: false};
 
-        const deleteFeature = viewModelStore
+        receiverSupportsDeletedMessages = viewModelStore
           .get()
-          ?.supportedFeatures.get(FEATURE_MASK_FLAG.DELETED_MESSAGES_SUPPORT);
-        receiverSupportsDeleteMessage =
-          deleteFeature !== undefined
-            ? {supported: true, notSupportedNames: deleteFeature.notSupported}
-            : {supported: false};
+          ?.supportedFeatures.get(FEATURE_MASK_FLAG.DELETED_MESSAGES_SUPPORT) ?? {supported: false};
 
         // Set an `initiallyVisibleMessageId` if provided by the current route.
         initiallyVisibleMessageId = routeParams?.initialMessage?.messageId;
@@ -353,14 +344,10 @@
           draftStore = conversationDrafts.getOrCreateStore($viewModelStore.receiver.lookup);
         }
         const draft = draftStore.get();
-        const forwardedMessageViewModelStore = (
+        const forwardedMessageText = (
           await getForwardedMessageViewModelBundle()
-        )?.viewModelStore.get();
+        )?.viewModelStore.get().text?.raw;
 
-        const forwardedMessageText =
-          forwardedMessageViewModelStore?.deletedAt !== undefined
-            ? undefined
-            : forwardedMessageViewModelStore?.text?.raw;
         const preloadedFiles = getPreloadedFiles();
 
         // Load initial data. Note: If there is both a draft and a forwarded message, the forwarded
@@ -643,7 +630,7 @@
         messageToEdit?.status.sent !== undefined &&
         Date.now() - messageToEdit.status.sent.at.getTime() <
           EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES * 60000 &&
-        messageToEdit.deletedAt === undefined
+        messageToEdit.status.deleted === undefined
       ) {
         event.preventDefault();
         handleClickEditMessage(messageToEdit);
@@ -868,11 +855,11 @@
 {:else if modalState.type === 'delete-message'}
   <DeleteMessageModal
     message={{...modalState.props}}
-    featureSupport={receiverSupportsDeleteMessage}
+    featureSupport={receiverSupportsDeletedMessages}
     on:close={handleCloseModal}
-    on:deletelocally={handleClickDeleteMessageLocally}
-    on:deleteforall={handleClickDeleteMessageForAll}
-  ></DeleteMessageModal>
+    on:clickdeletelocally={handleClickDeleteMessageLocally}
+    on:clickdeleteforeveryone={handleClickDeleteMessageForEveryone}
+  />
 {:else}
   {unreachable(modalState)}
 {/if}

@@ -29,6 +29,7 @@ interface Status {
     readonly delivered?: Milestone;
     readonly read?: Milestone;
     readonly error?: Milestone;
+    readonly deleted?: Milestone;
 }
 
 interface Milestone {
