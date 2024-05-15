@@ -120,7 +120,8 @@ export function createTlsCertificateVerifier(
             );
         }
 
-        return invalid('No matching pin config found');
+        log.warn(`Unpinned domain encountered: ${request.hostname}`);
+        return valid();
     };
 }
 
