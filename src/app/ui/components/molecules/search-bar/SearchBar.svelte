@@ -123,7 +123,7 @@
     }
 
     .action {
-      @extend %neutral-input;
+      @include clicktarget-button-rect;
 
       color: var(--cc-search-input-icon-color, inherit);
       padding: rem(8px);
@@ -137,8 +137,17 @@
         cursor: pointer;
       }
 
+      &[data-icon='search'],
+      &[data-icon='back'] {
+        border-top-left-radius: rem(8px);
+        border-bottom-left-radius: rem(8px);
+      }
+
       &[data-icon='reset'] {
         display: none;
+
+        border-top-right-radius: rem(8px);
+        border-bottom-right-radius: rem(8px);
       }
     }
 
