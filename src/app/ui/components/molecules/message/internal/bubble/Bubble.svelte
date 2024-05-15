@@ -103,6 +103,8 @@
     }
 
     &:not([data-disabled='true']) {
+      @include clicktarget-button-rect;
+
       &::after {
         transition: background-color 0.15s;
       }

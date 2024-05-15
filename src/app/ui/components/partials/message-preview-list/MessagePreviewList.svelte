@@ -80,6 +80,8 @@
                       name: message.sender.name,
                     })}
                     initials={message.sender.initials}
+                    isClickable={false}
+                    isFocusable={false}
                     size={24}
                   />
                 {/await}
