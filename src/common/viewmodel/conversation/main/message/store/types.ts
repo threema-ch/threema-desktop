@@ -6,18 +6,13 @@ import type {IdColor} from '~/common/utils/id-color';
 import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
 import type {AnyMention} from '~/common/viewmodel/utils/mentions';
 
-export type ConversationMessageViewModel =
-    | StandardConversationMessageViewModel
-    | DeletedMessageViewModel;
-
 /**
  * Data to be supplied to the UI layer as part of the `ViewModelStore`. This should be as close as
  * possible to the `MessageProps` that the message component expects, excluding props that only
  * exist in the ui layer.
  */
-export interface StandardConversationMessageViewModel {
+export interface ConversationMessageViewModel {
     readonly type: 'message';
-    readonly deletedAt: undefined;
     readonly direction: 'inbound' | 'outbound';
     readonly file?: {
         readonly duration?: f64;
@@ -49,7 +44,6 @@ export interface StandardConversationMessageViewModel {
         readonly type: 'audio' | 'file' | 'image' | 'video';
     };
     readonly id: MessageId;
-    readonly lastEditedAt: Date | undefined;
     /**
      * Ordinal for message ordering in the conversation list.
      */
@@ -67,22 +61,6 @@ export interface StandardConversationMessageViewModel {
         readonly editedAt: Date;
         readonly text: string;
     }[];
-}
-
-export interface DeletedMessageViewModel {
-    readonly type: 'message';
-    readonly deletedAt: Date;
-    readonly direction: 'inbound' | 'outbound';
-    readonly file: undefined;
-    readonly id: MessageId;
-    readonly history: [];
-    readonly lastEditedAt: undefined;
-    readonly ordinal: u53;
-    readonly quote: undefined;
-    readonly reactions: [];
-    readonly sender?: AnyMessageSender;
-    readonly status: StatusData;
-    readonly text: undefined;
 }
 
 /**
@@ -131,6 +109,8 @@ interface StatusData {
     readonly delivered?: StatusDetailData;
     readonly read?: StatusDetailData;
     readonly error?: StatusDetailData;
+    readonly deleted?: StatusDetailData;
+    readonly edited?: StatusDetailData;
 }
 
 interface StatusDetailData {

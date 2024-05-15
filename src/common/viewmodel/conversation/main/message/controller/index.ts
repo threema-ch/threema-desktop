@@ -79,24 +79,22 @@ export class ConversationMessageViewModelController
         const messageModel = this._message.get();
 
         if (messageModel.type === MessageType.DELETED) {
-            return;
+            return undefined;
         }
 
         switch (reaction) {
             case MessageReaction.ACKNOWLEDGE:
-                await messageModel.controller.reaction.fromLocal(
+                return await messageModel.controller.reaction.fromLocal(
                     MessageReaction.ACKNOWLEDGE,
                     new Date(),
                 );
-                return;
             case MessageReaction.DECLINE:
-                await messageModel.controller.reaction.fromLocal(
+                return await messageModel.controller.reaction.fromLocal(
                     MessageReaction.DECLINE,
                     new Date(),
                 );
-                return;
             default:
-                unreachable(reaction);
+                return unreachable(reaction);
         }
     }
 }

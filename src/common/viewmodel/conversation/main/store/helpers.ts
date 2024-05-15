@@ -288,20 +288,32 @@ export function getSupportedFeatures(
     const featureSet: FeatureMaskMap = new Map();
     const editSupport = supportsFeature(conversation, services, 'EDIT_MESSAGE_SUPPORT');
     if (editSupport.supported === 'all') {
-        featureSet.set(FEATURE_MASK_FLAG.EDIT_MESSAGE_SUPPORT, {notSupported: []});
+        featureSet.set(FEATURE_MASK_FLAG.EDIT_MESSAGE_SUPPORT, {
+            supported: true,
+            notSupportedNames: [],
+        });
     } else if (editSupport.supported === 'partial') {
         featureSet.set(FEATURE_MASK_FLAG.EDIT_MESSAGE_SUPPORT, {
-            notSupported: editSupport.notSupportedNames,
+            supported: true,
+            notSupportedNames: editSupport.notSupportedNames,
         });
+    } else {
+        featureSet.set(FEATURE_MASK_FLAG.EDIT_MESSAGE_SUPPORT, {supported: false});
     }
 
     const deleteSupport = supportsFeature(conversation, services, 'DELETED_MESSAGES_SUPPORT');
     if (deleteSupport.supported === 'all') {
-        featureSet.set(FEATURE_MASK_FLAG.DELETED_MESSAGES_SUPPORT, {notSupported: []});
+        featureSet.set(FEATURE_MASK_FLAG.DELETED_MESSAGES_SUPPORT, {
+            supported: true,
+            notSupportedNames: [],
+        });
     } else if (deleteSupport.supported === 'partial') {
         featureSet.set(FEATURE_MASK_FLAG.DELETED_MESSAGES_SUPPORT, {
-            notSupported: deleteSupport.notSupportedNames,
+            supported: true,
+            notSupportedNames: deleteSupport.notSupportedNames,
         });
+    } else {
+        featureSet.set(FEATURE_MASK_FLAG.DELETED_MESSAGES_SUPPORT, {supported: false});
     }
 
     return featureSet;

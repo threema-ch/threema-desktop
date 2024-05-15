@@ -12,10 +12,7 @@ import {u64ToHexLe} from '~/common/utils/number';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
 import {getConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
-import type {
-    ConversationMessageViewModel,
-    StandardConversationMessageViewModel,
-} from '~/common/viewmodel/conversation/main/message/store/types';
+import type {ConversationMessageViewModel} from '~/common/viewmodel/conversation/main/message/store/types';
 import {getMentions} from '~/common/viewmodel/utils/mentions';
 
 /**
@@ -30,7 +27,7 @@ export function getMessageQuote(
     messageModel: AnyMessageModel,
     conversationModelStore: ConversationModelStore,
     getAndSubscribe: GetAndSubscribeFunction,
-): StandardConversationMessageViewModel['quote'] {
+): ConversationMessageViewModel['quote'] {
     if (messageModel.type !== MessageType.TEXT) {
         // Quotes are only permitted in text messages.
         return undefined;
@@ -44,11 +41,6 @@ export function getMessageQuote(
     const quotedMessageModelStore = conversationModelStore
         .get()
         .controller.getMessage(messageModel.view.quotedMessageId);
-
-    // If the message quoted by this message was deleted, ignore it.
-    if (quotedMessageModelStore?.get().view.deletedAt !== undefined) {
-        return undefined;
-    }
 
     if (quotedMessageModelStore === undefined) {
         log.info(
@@ -148,6 +140,20 @@ export function getMessageStatus(
                   },
               }
             : {}),
+        ...(view.deletedAt !== undefined
+            ? {
+                  deleted: {
+                      at: view.deletedAt,
+                  },
+              }
+            : {}),
+        ...(view.lastEditedAt !== undefined
+            ? {
+                  edited: {
+                      at: view.lastEditedAt,
+                  },
+              }
+            : {}),
     };
 }
 
@@ -195,7 +201,7 @@ export function getMessageSender(
 export function getMessageText(
     services: Pick<ServicesForViewModel, 'model'>,
     messageModel: AnyMessageModel,
-): StandardConversationMessageViewModel['text'] | undefined {
+): ConversationMessageViewModel['text'] | undefined {
     switch (messageModel.type) {
         case 'text':
             return {
@@ -231,16 +237,14 @@ export function getMessageHistory(
  */
 export function getMessageFile(
     messageModel: AnyMessageModel,
-): StandardConversationMessageViewModel['file'] {
+): ConversationMessageViewModel['file'] {
     const {type} = messageModel;
     if (type === 'text' || type === 'deleted') {
         return undefined;
     }
 
     const renderingType = type === 'image' ? messageModel.view.renderingType : undefined;
-    let imageRenderingType: NonNullable<
-        StandardConversationMessageViewModel['file']
-    >['imageRenderingType'];
+    let imageRenderingType: NonNullable<ConversationMessageViewModel['file']>['imageRenderingType'];
     switch (renderingType) {
         case ImageRenderingType.REGULAR:
             imageRenderingType = 'regular';
@@ -278,7 +282,7 @@ export function getMessageFile(
 
 function getMessageFileSyncDirection(
     messageModel: AnyFileBasedMessageModel,
-): Required<StandardConversationMessageViewModel>['file']['sync']['direction'] {
+): Required<ConversationMessageViewModel>['file']['sync']['direction'] {
     if (messageModel.view.state === 'unsynced' || messageModel.view.state === 'syncing') {
         const fileData = messageModel.view.fileData;
         const blobId = messageModel.view.blobId;
@@ -295,7 +299,7 @@ function getMessageFileSyncDirection(
 
 function getMessageFileThumbnail(
     messageModel: AnyFileBasedMessageModel,
-): Required<StandardConversationMessageViewModel>['file']['thumbnail'] {
+): Required<ConversationMessageViewModel>['file']['thumbnail'] {
     switch (messageModel.type) {
         case 'file':
         case 'audio':

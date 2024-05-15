@@ -59,12 +59,10 @@ function getConversationMessageViewModel(
     if (messageModel.type === MessageType.DELETED) {
         return {
             type: 'message',
-            deletedAt: messageModel.view.deletedAt,
             direction:
                 messageModel.view.direction === MessageDirection.INBOUND ? 'inbound' : 'outbound',
             id: messageModel.view.id,
             file: undefined,
-            lastEditedAt: undefined,
             ordinal: messageModel.view.ordinal,
             quote: undefined,
             reactions: [],
@@ -76,13 +74,11 @@ function getConversationMessageViewModel(
     }
     return {
         type: 'message',
-        deletedAt: undefined,
         direction:
             messageModel.view.direction === MessageDirection.INBOUND ? 'inbound' : 'outbound',
         file: getMessageFile(messageModel),
         history: getMessageHistory(messageModel),
         id: messageModel.view.id,
-        lastEditedAt: messageModel.view.lastEditedAt,
         ordinal: messageModel.view.ordinal,
         quote: resolveQuote
             ? getMessageQuote(log, services, messageModel, conversationModelStore, getAndSubscribe)

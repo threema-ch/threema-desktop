@@ -44,5 +44,7 @@ export interface ConversationViewModel {
  */
 export type FeatureMaskMap = Map<
     (typeof FEATURE_MASK_FLAG)[keyof typeof FEATURE_MASK_FLAG],
-    {notSupported: string[]}
+    FeatureSupport
 >;
+
+type FeatureSupport = {supported: false} | {supported: true; notSupportedNames: string[]};
