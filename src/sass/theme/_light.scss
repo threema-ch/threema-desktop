@@ -66,7 +66,7 @@
       message-background-color-incoming-nav: theme.$grey-200,
       message-background-color-outgoing: -g($branding, primary-color-50),
       message-background-color-outgoing-nav: -g($branding, primary-color-100),
-      message-highlight-backdrop-filter: brightness(70%),
+      message-highlight-overlay-color: rgba(0, 0, 0, 0.25),
       message-badge-color: rgb(71, 71, 71),
       message-badge-background-color: rgba(#ffffff, 74%),
       message-overlay-background-color: rgba(#000000, 38%),

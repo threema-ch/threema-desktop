@@ -104,14 +104,14 @@
 
     &:not([data-disabled='true']) {
       &::after {
-        transition: backdrop-filter 0.15s;
+        transition: background-color 0.15s;
       }
 
       &:hover {
         cursor: pointer;
 
         &::after {
-          backdrop-filter: var(--mc-message-highlight-backdrop-filter);
+          background-color: var(--mc-message-highlight-overlay-color);
         }
       }
     }
@@ -119,7 +119,7 @@
 
   @keyframes pulse-brightness {
     50% {
-      backdrop-filter: var(--mc-message-highlight-backdrop-filter);
+      background-color: var(--mc-message-highlight-overlay-color);
     }
   }
 </style>
