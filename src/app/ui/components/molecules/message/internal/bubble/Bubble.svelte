@@ -52,6 +52,7 @@
 
   .bubble {
     @extend %neutral-input;
+
     position: relative;
     border-radius: rem(10px);
     text-align: left;
@@ -78,7 +79,7 @@
     }
 
     &.md {
-      padding: rem(6px) rem(6px);
+      padding: rem(8px) rem(10px);
     }
 
     &::after {
