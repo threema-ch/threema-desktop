@@ -936,7 +936,7 @@ const other: MediaTypeToExtRecord = {
     'text/x-handlebars-template': ['hbs'],
     'text/x-java-source': ['java'],
     'text/x-lua': ['lua'],
-    'text/x-markdown': ['mkd'],
+    'text/x-markdown': ['md', 'mkd'],
     'text/x-nfo': ['nfo'],
     'text/x-opml': ['opml'],
     'text/x-org': ['org'],
