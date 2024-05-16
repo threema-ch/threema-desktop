@@ -45,6 +45,7 @@ import type {
     DbVideoMessageFragment,
     RawDatabaseKey,
     DbCreateMessage,
+    DbAnyMediaMessage,
     DbMessageReaction,
     DbMessageEditFor,
     DbMessageLastEdit,
@@ -2089,11 +2090,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     ]);
 
                     // Add, update or remove associated file data entries
-                    const removedFileDataUids = this._processFileDataChanges(
-                        conversationUid,
-                        message,
-                        update,
-                    );
+                    const removedFileDataUids = this._processFileDataChanges(message, update);
 
                     // Update message file data
                     sync(
@@ -2135,11 +2132,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     ]);
 
                     // Add, update or remove associated file data entries
-                    const removedFileDataUids = this._processFileDataChanges(
-                        conversationUid,
-                        message,
-                        update,
-                    );
+                    const removedFileDataUids = this._processFileDataChanges(message, update);
 
                     // Update message file data
                     sync(
@@ -2180,11 +2173,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     ]);
 
                     // Add, update or remove associated file data entries
-                    const removedFileDataUids = this._processFileDataChanges(
-                        conversationUid,
-                        message,
-                        update,
-                    );
+                    const removedFileDataUids = this._processFileDataChanges(message, update);
 
                     // Update message file data
                     sync(
@@ -2224,11 +2213,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     ]);
 
                     // Add, update or remove associated file data entries
-                    const removedFileDataUids = this._processFileDataChanges(
-                        conversationUid,
-                        message,
-                        update,
-                    );
+                    const removedFileDataUids = this._processFileDataChanges(message, update);
 
                     // Update message file data
                     sync(
@@ -2254,20 +2239,13 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         }, this._log);
     }
 
-    private _processFileDataChanges<
-        TDbMessage extends DbFileMessage | DbImageMessage | DbVideoMessage | DbAudioMessage,
-    >(
-        conversaitonUid: DbConversationUid,
-        message: Partial<TDbMessage> & {type: TDbMessage['type']} & {uid: DbMessageUid},
-        update: UpdateSetsForDbMessage<TDbMessage>,
+    private _processFileDataChanges<TDbMediaMessage extends DbAnyMediaMessage>(
+        message: Partial<TDbMediaMessage> & Pick<DbAnyMediaMessage, 'type' | 'uid'>,
+        update: UpdateSetsForDbMessage<TDbMediaMessage>,
     ): DbFileDataUid[] {
-        // Nothing to do here
-        if (message.type === MessageType.TEXT) {
-            return [];
-        }
-
-        let table;
-        let query;
+        // To keep the file data table clean and remove entries that aren't referenced
+        // anymore, we first need to query the current UIDs.
+        let table, query;
         if (message.type === MessageType.AUDIO) {
             table = tMessageAudioData;
             query = {
@@ -2298,9 +2276,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 thumbnailFileDataUid: table.thumbnailFileDataUid,
             };
         }
-
-        // To keep the file data table clean and remove entries that aren't referenced
-        // anymore, we first need to query the current UIDs.
         const previousFileDataUids = sync(
             this._db
                 .selectFrom(table)
@@ -2308,6 +2283,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .where(table.messageUid.equalsIfValue(message.uid))
                 .executeSelectNoneOrOne(),
         );
+
         // If necessary, insert new file data rows
         if (message.fileData !== undefined && previousFileDataUids?.fileDataUid === undefined) {
             update.fileDataUid = this._insertFileData(message.fileData);
@@ -2370,36 +2346,40 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         return removedFileDataUids;
     }
 
-    private _getReferencedFileUidsByMessageUid(
-        conversationUid: DbConversationUid,
-        uid: DbRemove<DbAnyMessage>,
-        type: MessageType,
+    /**
+     * Return list of all associated file UIDs for the specified {@link message}.
+     */
+    private _getReferencedFileUidsByMessage(
+        message: Pick<DbAnyMessage, 'uid' | 'conversationUid' | 'type'>,
     ): {
-        fileDataUid?: DbFileDataUid | undefined;
-        thumbnailFileDataUid?: DbFileDataUid | undefined;
+        fileDataUid?: DbFileDataUid;
+        thumbnailFileDataUid?: DbFileDataUid;
     }[] {
-        // Nothing to do here
-        if (type === MessageType.TEXT) {
+        // Text messages don't have associated file data
+        if (message.type === MessageType.TEXT) {
             return [];
         }
 
-        if (type === MessageType.AUDIO) {
+        // Audio messages don't have a thumbnail, so they need to be queried separately
+        if (message.type === MessageType.AUDIO) {
             return sync(
                 this._db
                     .selectFrom(tMessageAudioData)
                     .innerJoin(tMessage)
-                    .on(tMessage.uid.equals(uid))
+                    .on(tMessage.uid.equals(tMessageAudioData.messageUid))
                     .select({
                         fileDataUid: tMessageAudioData.fileDataUid,
                     })
-                    .where(tMessageAudioData.messageUid.equals(uid))
-                    .and(tMessage.conversationUid.equals(conversationUid))
+                    .where(tMessageAudioData.messageUid.equals(message.uid))
+                    .and(tMessage.conversationUid.equals(message.conversationUid))
                     .and(tMessageAudioData.fileDataUid.isNotNull())
                     .executeSelectMany(),
             );
         }
+
+        // Other message types can have both file and thumbnail data
         let table;
-        switch (type) {
+        switch (message.type) {
             case 'file':
                 table = tMessageFileData;
                 break;
@@ -2410,34 +2390,35 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 table = tMessageVideoData;
                 break;
             default:
-                unreachable(type);
+                unreachable(message.type);
         }
-
         return sync(
             this._db
                 .selectFrom(table)
                 .innerJoin(tMessage)
-                .on(tMessage.uid.equals(uid))
+                .on(tMessage.uid.equals(table.messageUid))
                 .select({
                     fileDataUid: table.fileDataUid,
                     thumbnailFileDataUid: table.thumbnailFileDataUid,
                 })
-                .where(table.messageUid.equalsIfValue(uid))
-                .and(tMessage.conversationUid.equals(conversationUid))
+                .where(table.messageUid.equalsIfValue(message.uid))
+                .and(tMessage.conversationUid.equals(message.conversationUid))
                 .and(table.fileDataUid.isNotNull())
                 .or(table.thumbnailFileDataUid.isNotNull())
                 .executeSelectMany(),
         );
     }
 
-    private _getReferencedFileUidsByConversationUid(
+    /**
+     * Return list of all file UIDs associated with any message in the specified conversation.
+     */
+    private _getReferencedFileUidsByConversation(
         conversationUid: DbConversationUid,
     ): DbFileDataUid[] {
         const audio = sync(
             this._db
                 .selectFrom(tMessageAudioData)
                 .innerJoin(tMessage)
-
                 .on(tMessage.uid.equals(tMessageAudioData.messageUid))
                 .select({
                     fileDataUid: tMessageAudioData.fileDataUid,
@@ -2462,19 +2443,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .where(tMessage.conversationUid.equals(conversationUid))
                 .and(tMessageFileData.fileDataUid.isNotNull())
                 .or(tMessageFileData.thumbnailFileDataUid.isNotNull())
-                .union(
-                    this._db
-                        .selectFrom(tMessageVideoData)
-                        .innerJoin(tMessage)
-                        .on(tMessage.uid.equals(tMessageVideoData.messageUid))
-                        .select({
-                            fileDataUid: tMessageVideoData.fileDataUid,
-                            thumbnailFileDataUid: tMessageVideoData.thumbnailFileDataUid,
-                        })
-                        .where(tMessage.conversationUid.equals(conversationUid))
-                        .and(tMessageVideoData.fileDataUid.isNotNull())
-                        .or(tMessageVideoData.thumbnailFileDataUid.isNotNull()),
-                )
                 .union(
                     this._db
                         .selectFrom(tMessageVideoData)
@@ -2569,32 +2537,32 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         uid: DbRemove<DbAnyMessage>,
     ): {removed: boolean; deletedFileIds: FileId[]} {
         const [deletedCount, deletedFileIds] = this._db.syncTransaction(() => {
-            const type = sync(
+            // Ensure that target message exists, retrieve message type
+            const messageType = sync(
                 this._db
                     .selectFrom(tMessage)
-                    .select({type: tMessage.messageType})
+                    .selectOneColumn(tMessage.messageType)
                     .where(tMessage.uid.equals(uid))
                     .executeSelectNoneOrOne(),
             );
-
-            if (type === null) {
+            if (messageType === null) {
                 this._log.error('Tried to remove a message that does not exist in the db');
                 return [0, []];
             }
 
             // In order to clean up unreferenced file data entries, we need to get a list of the
             // file data UIDs that will be deleted.
-            const fileDataUidRows = this._getReferencedFileUidsByMessageUid(
-                conversationUid,
+            const fileDataUidRows = this._getReferencedFileUidsByMessage({
                 uid,
-                type.type,
-            );
+                conversationUid,
+                type: messageType,
+            });
 
             const fileDataUids = fileDataUidRows
                 .flatMap((row) => [row.fileDataUid, row.thumbnailFileDataUid])
                 .filter(isNotUndefined);
 
-            // Delete rows from fileMessageData.
+            // Delete message from database.
             //
             // Note: We only need to delete the row from the `messages` table.
             //       The associated type-specific data will be dropped automatically
@@ -2606,6 +2574,10 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     .and(tMessage.conversationUid.equals(conversationUid))
                     .executeDelete(),
             );
+            assert(
+                rowsDeleted < 2,
+                `Expected to remove at most one message but removed ${rowsDeleted}`,
+            );
 
             // After deleting the message file data, we can now determine whether there are now
             // unreferenced file data entries that should be cleaned up.
@@ -2613,11 +2585,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             // Note: Deleting the files from the file storage is the responsibility of the caller.
             const unreferencedFileIds = this._deleteFromMessageDataIfUnreferenced(fileDataUids);
 
-            // Sanity check
-            assert(
-                rowsDeleted < 2,
-                `Expected to remove at most one message but removed ${rowsDeleted}`,
-            );
             return [rowsDeleted, unreferencedFileIds];
         }, this._log);
 
@@ -2635,7 +2602,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         return this._db.syncTransaction(() => {
             // In order to clean up unreferenced file data entries, we need to get a list of the file
             // data UIDs that will be deleted.
-            const fileDataUids = this._getReferencedFileUidsByConversationUid(conversationUid);
+            const fileDataUids = this._getReferencedFileUidsByConversation(conversationUid);
 
             // Remove all messages
             const removed = sync(

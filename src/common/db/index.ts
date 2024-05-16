@@ -537,7 +537,7 @@ export type DbAnyMessage =
     | DbAudioMessage;
 
 /**
- * Any database media message
+ * Any database media (file-based) message
  */
 export type DbAnyMediaMessage = DbFileMessage | DbImageMessage | DbVideoMessage | DbAudioMessage;
 

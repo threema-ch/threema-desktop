@@ -1394,7 +1394,7 @@ export function backendTests(
             assert(conversation !== undefined);
             expect(conversation.lastUpdate).to.be.undefined;
 
-            // Add a bunch of messages and update the conversation
+            // Add a bunch of messages (text, file and image) and update the conversation
             for (let i = 0; i < 10; ++i) {
                 createTextMessage(db, {conversationUid: conversation.uid, text: `${i}`});
             }
@@ -1407,23 +1407,17 @@ export function backendTests(
                 thumbnailFileData,
             });
             createFileMessage(db, {conversationUid: conversation.uid, fileData: fileData2});
+            const imageFileData = makeFileData();
+            const imageThumbnailFileData = makeFileData();
+            createImageMessage(db, {
+                conversationUid: conversation.uid,
+                fileData: imageFileData,
+                thumbnailFileData: imageThumbnailFileData,
+            });
             const lastUpdate = new Date(1973);
             db.updateConversation({
                 uid: conversation.uid,
                 lastUpdate,
-            });
-            expect(db.getMessageUids(conversation.uid, 20)).to.have.length(12);
-            const imageFileData = makeFileData();
-            const thumbnailFileData2 = makeFileData();
-            createImageMessage(db, {
-                conversationUid: conversation.uid,
-                fileData: imageFileData,
-                thumbnailFileData: thumbnailFileData2,
-            });
-            const lu = new Date(1974);
-            db.updateConversation({
-                uid: conversation.uid,
-                lastUpdate: lu,
             });
             expect(db.getMessageUids(conversation.uid, 20)).to.have.length(13);
 
@@ -1436,19 +1430,17 @@ export function backendTests(
             conversation = db.getConversationOfReceiver(receiver);
             expect(conversation).to.not.be.undefined;
             assert(conversation !== undefined);
-            expect(conversation.lastUpdate).to.deep.equal(lu);
+            expect(conversation.lastUpdate).to.deep.equal(lastUpdate);
 
             // Ensure that the removed file IDs are returned
             if (!features.doesNotImplementFileDataCleanup) {
-                expect(removeInfo1.deletedFileIds.sort()).have.members(
-                    [
-                        fileData1.fileId,
-                        thumbnailFileData.fileId,
-                        fileData2.fileId,
-                        imageFileData.fileId,
-                        thumbnailFileData2.fileId,
-                    ].sort(),
-                );
+                expect(removeInfo1.deletedFileIds).to.have.members([
+                    fileData1.fileId,
+                    thumbnailFileData.fileId,
+                    fileData2.fileId,
+                    imageFileData.fileId,
+                    imageThumbnailFileData.fileId,
+                ]);
             }
 
             // Add a bunch of messages again
