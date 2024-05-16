@@ -2377,36 +2377,76 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             );
         }
 
-        // Other message types can have both file and thumbnail data
-        let table;
+        // Note: The query in the following branches is always identical (only the table is
+        // different)! If we want to extract it, we need a solution for
+        // https://github.com/juanluispaz/ts-sql-query/issues/127
         switch (message.type) {
-            case 'file':
-                table = tMessageFileData;
-                break;
-            case 'image':
-                table = tMessageImageData;
-                break;
-            case 'video':
-                table = tMessageVideoData;
-                break;
+            case MessageType.FILE: {
+                const table = tMessageFileData;
+                return sync(
+                    this._db
+                        .selectFrom(table)
+                        .innerJoin(tMessage)
+                        .on(tMessage.uid.equals(table.messageUid))
+                        .select({
+                            fileDataUid: table.fileDataUid,
+                            thumbnailFileDataUid: table.thumbnailFileDataUid,
+                        })
+                        .where(table.messageUid.equals(message.uid))
+                        .and(tMessage.conversationUid.equals(message.conversationUid))
+                        .and(
+                            table.fileDataUid
+                                .isNotNull()
+                                .or(table.thumbnailFileDataUid.isNotNull()),
+                        )
+                        .executeSelectMany(),
+                );
+            }
+            case MessageType.IMAGE: {
+                const table = tMessageImageData;
+                return sync(
+                    this._db
+                        .selectFrom(table)
+                        .innerJoin(tMessage)
+                        .on(tMessage.uid.equals(table.messageUid))
+                        .select({
+                            fileDataUid: table.fileDataUid,
+                            thumbnailFileDataUid: table.thumbnailFileDataUid,
+                        })
+                        .where(table.messageUid.equals(message.uid))
+                        .and(tMessage.conversationUid.equals(message.conversationUid))
+                        .and(
+                            table.fileDataUid
+                                .isNotNull()
+                                .or(table.thumbnailFileDataUid.isNotNull()),
+                        )
+                        .executeSelectMany(),
+                );
+            }
+            case MessageType.VIDEO: {
+                const table = tMessageVideoData;
+                return sync(
+                    this._db
+                        .selectFrom(table)
+                        .innerJoin(tMessage)
+                        .on(tMessage.uid.equals(table.messageUid))
+                        .select({
+                            fileDataUid: table.fileDataUid,
+                            thumbnailFileDataUid: table.thumbnailFileDataUid,
+                        })
+                        .where(table.messageUid.equals(message.uid))
+                        .and(tMessage.conversationUid.equals(message.conversationUid))
+                        .and(
+                            table.fileDataUid
+                                .isNotNull()
+                                .or(table.thumbnailFileDataUid.isNotNull()),
+                        )
+                        .executeSelectMany(),
+                );
+            }
             default:
-                unreachable(message.type);
+                return unreachable(message.type);
         }
-        return sync(
-            this._db
-                .selectFrom(table)
-                .innerJoin(tMessage)
-                .on(tMessage.uid.equals(table.messageUid))
-                .select({
-                    fileDataUid: table.fileDataUid,
-                    thumbnailFileDataUid: table.thumbnailFileDataUid,
-                })
-                .where(table.messageUid.equalsIfValue(message.uid))
-                .and(tMessage.conversationUid.equals(message.conversationUid))
-                .and(table.fileDataUid.isNotNull())
-                .or(table.thumbnailFileDataUid.isNotNull())
-                .executeSelectMany(),
-        );
     }
 
     /**
@@ -2441,8 +2481,11 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     thumbnailFileDataUid: tMessageFileData.thumbnailFileDataUid,
                 })
                 .where(tMessage.conversationUid.equals(conversationUid))
-                .and(tMessageFileData.fileDataUid.isNotNull())
-                .or(tMessageFileData.thumbnailFileDataUid.isNotNull())
+                .and(
+                    tMessageFileData.fileDataUid
+                        .isNotNull()
+                        .or(tMessageFileData.thumbnailFileDataUid.isNotNull()),
+                )
                 .union(
                     this._db
                         .selectFrom(tMessageVideoData)
@@ -2453,8 +2496,11 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                             thumbnailFileDataUid: tMessageVideoData.thumbnailFileDataUid,
                         })
                         .where(tMessage.conversationUid.equals(conversationUid))
-                        .and(tMessageVideoData.fileDataUid.isNotNull())
-                        .or(tMessageVideoData.thumbnailFileDataUid.isNotNull()),
+                        .and(
+                            tMessageVideoData.fileDataUid
+                                .isNotNull()
+                                .or(tMessageVideoData.thumbnailFileDataUid.isNotNull()),
+                        ),
                 )
                 .union(
                     this._db
@@ -2466,8 +2512,11 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                             thumbnailFileDataUid: tMessageImageData.thumbnailFileDataUid,
                         })
                         .where(tMessage.conversationUid.equals(conversationUid))
-                        .and(tMessageImageData.fileDataUid.isNotNull())
-                        .or(tMessageImageData.thumbnailFileDataUid.isNotNull()),
+                        .and(
+                            tMessageImageData.fileDataUid
+                                .isNotNull()
+                                .or(tMessageImageData.thumbnailFileDataUid.isNotNull()),
+                        ),
                 )
                 .executeSelectMany(),
         );

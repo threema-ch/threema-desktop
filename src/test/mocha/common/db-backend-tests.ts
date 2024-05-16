@@ -1351,6 +1351,27 @@ export function backendTests(
             expect(db.getMessageByUid(messageUid2), 'Message 2 does not exist').not.to.be.undefined;
             expect(db.getMessageByUid(messageUid3), 'Message 3 does not exist').not.to.be.undefined;
 
+            // Add a second, unrelated conversation with file messages. This should not affect the
+            // test expectations in any way (but ensures that the SQL queries filter correctly).
+            {
+                const unrelatedUid = makeContact(db, {identity: 'OTHERRRR'});
+                const unrelatedConversation = db.getConversationOfReceiver({
+                    type: ReceiverType.CONTACT,
+                    uid: unrelatedUid,
+                });
+                assert(unrelatedConversation !== undefined);
+                createFileMessage(db, {
+                    conversationUid: unrelatedConversation.uid,
+                    fileData: makeFileData(),
+                });
+                createImageMessage(db, {
+                    conversationUid: unrelatedConversation.uid,
+                    fileData: makeFileData(),
+                    thumbnailFileData: makeFileData(),
+                });
+                expect(db.getMessageUids(unrelatedConversation.uid, 20)).to.have.length(2);
+            }
+
             // Delete first message, this should return two file IDs
             const removeInfo1 = db.removeMessage(conversation.uid, messageUid1);
             expect(removeInfo1.removed, 'Message 1 not deleted').to.be.true;
@@ -1420,6 +1441,27 @@ export function backendTests(
                 lastUpdate,
             });
             expect(db.getMessageUids(conversation.uid, 20)).to.have.length(13);
+
+            // Add a second, unrelated conversation with file messages. This should not affect the
+            // test expectations in any way (but ensures that the SQL queries filter correctly).
+            {
+                const unrelatedUid = makeContact(db, {identity: 'OTHERRRR'});
+                const unrelatedConversation = db.getConversationOfReceiver({
+                    type: ReceiverType.CONTACT,
+                    uid: unrelatedUid,
+                });
+                assert(unrelatedConversation !== undefined);
+                createFileMessage(db, {
+                    conversationUid: unrelatedConversation.uid,
+                    fileData: makeFileData(),
+                });
+                createImageMessage(db, {
+                    conversationUid: unrelatedConversation.uid,
+                    fileData: makeFileData(),
+                    thumbnailFileData: makeFileData(),
+                });
+                expect(db.getMessageUids(unrelatedConversation.uid, 20)).to.have.length(2);
+            }
 
             // Now, remove all messages and ensure that they're gone
             const removeInfo1 = db.removeAllMessages(conversation.uid, false);
