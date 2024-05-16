@@ -17,5 +17,6 @@
   "typescript.tsserver.experimental.enableProjectDiagnostics": false,
   "typescript.preferences.importModuleSpecifier": "non-relative",
   "typescript.preferences.preferTypeOnlyAutoImports": true,
-  "rewrap.wrappingColumn": 100
+  "rewrap.wrappingColumn": 100,
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
