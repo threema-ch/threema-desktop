@@ -44,6 +44,30 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta33" date="2024-05-22">
+            <description>
+                <p>New features:</p>
+                <ul>
+                    <li>Show status messages in group chats</li>
+                </ul>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Improve keyboard accessibility of conversation list and global search</li>
+                    <li>Close conversation on desktop when associated contact is deleted on iOS</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>
+                        Fixed highlighting of referenced message bubble when clicking on a quote
+                    </li>
+                    <li>
+                        Fixed a bug where encrypted files in the file system were not always cleaned
+                        up properly when deleting a message
+                    </li>
+                </ul>
+                <p>…and various under-the-hood changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta32" date="2024-04-30">
             <description>
                 <p>Fixes:</p>
@@ -71,7 +95,7 @@
                     <li>Fixed a bug in relation to the formatting of pasted text</li>
                     <li>Fixed the background transparency of the media viewer</li>
                 </ul>
-                <p>...and various under-the-hood changes and improvements.</p>
+                <p>…and various under-the-hood changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~publicbeta30" date="2024-03-21">
@@ -88,7 +112,7 @@
                     </li>
                     <li>Fixed the display of the emoji picker</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~publicbeta29" date="2024-03-06">
@@ -117,7 +141,7 @@
                         and .xml)
                     </li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~publicbeta28" date="2024-03-04">
@@ -137,7 +161,7 @@
                     <li>Persistent window position across restarts on macOS and Windows</li>
                     <li>Improved performance in chat view</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~publicbeta26" date="2024-01-15">
@@ -154,7 +178,7 @@
                 <ul>
                     <li>Fixed a bug that caused media not to auto-download in all cases</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~publicbeta25" date="2024-01-05">
@@ -176,7 +200,7 @@
                         standby on macOS
                     </li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~publicbeta24" date="2023-12-02">
@@ -202,7 +226,7 @@
                     <li>Fix cursive emoji in formatted text</li>
                     <li>Fix line breaks in long file names</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~publicbeta23" date="2023-10-13">
@@ -215,7 +239,7 @@
                 <ul>
                     <li>Security update for Electron (fixes CVE-2023-5217)</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~publicbeta22" date="2023-09-20">
@@ -229,7 +253,7 @@
                     <li>Message details: Localized date for "last reaction"</li>
                     <li>Security update for Electron (fixes CVE-2023-4863)</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~publicbeta21" date="2023-09-19">
@@ -254,7 +278,7 @@
                         visible
                     </li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~publicbeta20" date="2023-09-01">
@@ -273,7 +297,7 @@
                     <li>Properly render inactive or revoked contacts</li>
                     <li>Make context menu adapt to the size of its content</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~publicbeta19" date="2023-08-04">
@@ -297,7 +321,7 @@
                     <li>Fix text color when quoting image messages</li>
                     <li>Fix border around image in image viewer</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~publicbeta18" date="2023-07-31">
@@ -319,7 +343,7 @@
                     <li>Disable built-in Electron DNS resolver to improve privacy</li>
                     <li>Various UI fixes</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~publicbeta17" date="2023-07-13">
@@ -355,7 +379,7 @@
                     <li>Set initial window size to avoid scrollbars</li>
                     <li>Embed fonts into application</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~publicbeta16" date="2023-07-12">
@@ -390,7 +414,7 @@
                 <ul>
                     <li>Preparations for new device linking flow</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~preview13" date="2023-06-12">
@@ -409,7 +433,7 @@
                 <ul>
                     <li>Preparations for new device linking flow</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~preview12" date="2023-05-26">
@@ -438,7 +462,7 @@
                 <ul>
                     <li>Preparations for new device linking flow</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~preview11" date="2023-05-11">
@@ -461,7 +485,7 @@
                     <li>Preparations for internationalization</li>
                     <li>Preparations for Threema Work support</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~preview10" date="2023-04-28">
@@ -471,7 +495,7 @@
                     <li>Add a Windows installer (MSIX)</li>
                     <li>Add start menu item on Windows</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~preview09" date="2023-04-13">
@@ -492,7 +516,7 @@
                     <li>Fix delay when typing in chat with a lot of messages</li>
                     <li>Fix keyboard-focus of conversations in conversation list</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~preview08" date="2023-03-31">
@@ -514,7 +538,7 @@
                     <li>Position emoji picker correctly on window resize</li>
                     <li>Improve profile picture display in some cases</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~preview07" date="2023-03-09">
@@ -542,7 +566,7 @@
                     <li>Avoid crash when opening a chat with a huge number of unread messages</li>
                     <li>If an error occurs during linking, delete profile and force re-linking</li>
                 </ul>
-                <p>...and a few other minor changes and improvements.</p>
+                <p>…and a few other minor changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~preview06" date="2023-02-27">
@@ -571,7 +595,7 @@
                         picture releasing configuration was set to "Selected Contacts".
                     </li>
                 </ul>
-                <p>...and a few other changes and improvements.</p>
+                <p>…and a few other changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~preview04" date="2023-01-26">
@@ -609,7 +633,7 @@
                         drop support for now
                     </li>
                 </ul>
-                <p>...and a few other changes and improvements.</p>
+                <p>…and a few other changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~preview03" date="2023-01-12">
@@ -647,7 +671,7 @@
                 <ul>
                     <li>Old quotes in your message history are not displayed correctly</li>
                 </ul>
-                <p>...and a few other changes and improvements.</p>
+                <p>…and a few other changes and improvements.</p>
             </description>
         </release>
         <release version="2.0~preview01" date="2022-12-06">
