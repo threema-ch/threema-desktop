@@ -86,15 +86,4 @@
     flex-direction: column;
     gap: rem(16px);
   }
-
-  .action-button {
-    display: flex;
-    gap: rem(16px);
-    align-items: center;
-
-    .loading {
-      height: 1.8em;
-      width: 1.8em;
-    }
-  }
 </style>

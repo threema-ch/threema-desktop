@@ -91,37 +91,41 @@
           'dialog--linking-oppf.prose--enter-config',
           'Threema OnPrem is the self-hosted messenger for companies. Please enter the credentials provided by your company',
         )}
-      ></Text>
+      />
     </p>
   </header>
+
   <div class="body">
     <Input
-      id="work_usernam"
+      id="work_username"
       autofocus
       label={$i18n.t('dialog--linking-oppf.label--username', 'Username')}
       bind:value={username}
-    ></Input>
+    />
     <Password
       label={$i18n.t('dialog--linking-oppf.label--password', 'Password')}
       bind:value={password}
-    ></Password>
+    />
     <Input
       id="oppf_url"
       label={$i18n.t('dialog--linking-oppf.label--url', 'URL')}
       bind:this={oppfUrlInput}
       bind:value={oppfUrl}
       on:focus={() => oppfUrlInput.select()}
-    ></Input>
+    />
     {#if submitError !== undefined}
-      <div class="error"><Text text={submitError} color="inherit" family="secondary"></Text></div>
+      <div class="error">
+        <Text text={submitError} color="inherit" family="secondary" />
+      </div>
     {/if}
+
     <div class="info">
       <Text
         text={$i18n.t(
           'dialog--linking-oppf.prose--forget-credentials',
           'Forgot your credentials? Please contact your Threema OnPrem administrator.',
         )}
-      ></Text>
+      />
     </div>
     <div class="info">
       <SubstitutableText
@@ -134,15 +138,17 @@
           slot="1"
           href={import.meta.env.URLS.downloadAndInfoForOtherVariant.full}
           target="_blank"
-          rel="noreferrer noopener">{import.meta.env.URLS.downloadAndInfoForOtherVariant.short}</a
+          rel="noreferrer noopener"
         >
+          {import.meta.env.URLS.downloadAndInfoForOtherVariant.short}
+        </a>
       </SubstitutableText>
     </div>
   </div>
   <div class="footer">
-    <Button flavor="filled" on:click={handleClickConfirm}
-      >{$i18n.t('dialog--linking-oppf.action--confirm', 'Next')}</Button
-    >
+    <Button flavor="filled" on:click={handleClickConfirm}>
+      {$i18n.t('dialog--linking-oppf.action--confirm', 'Next')}
+    </Button>
   </div>
 </Step>
 
@@ -150,7 +156,6 @@
   @use 'component' as *;
 
   h1,
-  h2,
   p {
     padding: 0;
     margin: 0;
@@ -167,11 +172,6 @@
 
     .intro {
       color: var(--t-text-e2-color);
-
-      a {
-        text-decoration: underline;
-        color: inherit;
-      }
     }
   }
 

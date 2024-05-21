@@ -116,7 +116,7 @@
     <img class:cover={!preferredDisplay.isAspectRatioObeyed} src={image.url} alt={description} />
   {:else if image.state === 'failed'}
     <slot name="failed">
-      <span class="placeholder failed">
+      <span class="placeholder cover failed">
         <MdIcon theme="Filled">broken_image</MdIcon>
       </span>
     </slot>

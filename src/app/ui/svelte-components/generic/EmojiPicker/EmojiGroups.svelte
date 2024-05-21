@@ -89,10 +89,12 @@
   }
 
   @for $groupId from 0 through 9 {
-    .groups[data-active-group='#{$groupId}'] {
-      button[data-group='#{$groupId}'] {
-        color: var(--c-emoji-picker-emoji-groups-icon-color--active);
-        transition: color 0.15s;
+    @if $groupId != 2 {
+      .groups[data-active-group='#{$groupId}'] {
+        button[data-group='#{$groupId}'] {
+          color: var(--c-emoji-picker-emoji-groups-icon-color--active);
+          transition: color 0.15s;
+        }
       }
     }
   }
