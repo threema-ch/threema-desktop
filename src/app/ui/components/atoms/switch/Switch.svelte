@@ -12,6 +12,7 @@
 </script>
 
 <!-- A11y is already covered by the contained checkbox. -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="switch" class:checked class:disabled on:click>
   <div class="track" />

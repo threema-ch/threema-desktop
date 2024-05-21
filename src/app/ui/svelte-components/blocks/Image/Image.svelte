@@ -81,29 +81,28 @@
   });
 </script>
 
-<template>
-  {#if url === 'loading'}
+{#if url === 'loading'}
+  <slot />
+{:else if url === 'failed'}
+  <!-- Fall back the error slot, then to the default slot. -->
+  <slot name="error">
     <slot />
-  {:else if url === 'failed'}
-    <!-- Fall back the error slot, then to the default slot. -->
-    <slot name="error">
-      <slot />
-    </slot>
-  {:else}
-    <img
-      src={url}
-      {alt}
-      on:click
-      on:load
-      on:error
-      on:error={(error) => {
-        // Force falling back to the error/default slot.
-        src = Promise.reject(ensureError(error));
-      }}
-      {...$$restProps}
-    />
-  {/if}
-</template>
+  </slot>
+{:else}
+  <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+  <img
+    src={url}
+    {alt}
+    on:click
+    on:load
+    on:error
+    on:error={(error) => {
+      // Force falling back to the error/default slot.
+      src = Promise.reject(ensureError(error));
+    }}
+    {...$$restProps}
+  />
+{/if}
 
 <style lang="scss">
   @use 'component' as *;

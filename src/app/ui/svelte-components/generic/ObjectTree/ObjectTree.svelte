@@ -63,55 +63,59 @@
   $: children = limited(info.children ?? [], limiter);
 </script>
 
-<template>
-  <div
-    class="wrapper"
-    on:click={expand}
-    class:expanded={isExpanded}
-    class:clickable={children.items.length > 0 || external.includes(info.type)}
-    title="{info.type}{info.length !== undefined ? `(${info.length})` : ''}"
-  >
-    <div class="marker" class:hide={children.items.length === 0}>
-      <MdIcon theme="Filled">{isExpanded ? 'expand_more' : 'expand_less'}</MdIcon>
-    </div>
-    {#if key !== ''}
-      <div class="key">{key}</div>
-      <div class="separator">:</div>
-    {/if}
-    <div class="value" data-type={info.type}>
-      {#if info.display.type}
-        <span class="type">{info.type}</span>{#if info.length !== undefined}
-          <span class="length">({info.length})</span>
-        {/if}
-      {/if}
-      {#if info.display.value !== undefined}{info.display.value}{/if}
-    </div>
+<!-- Internal dev component, doesn't need to be accessible for now. -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div
+  class="wrapper"
+  on:click={expand}
+  class:expanded={isExpanded}
+  class:clickable={children.items.length > 0 || external.includes(info.type)}
+  title="{info.type}{info.length !== undefined ? `(${info.length})` : ''}"
+>
+  <div class="marker" class:hide={children.items.length === 0}>
+    <MdIcon theme="Filled">{isExpanded ? 'expand_more' : 'expand_less'}</MdIcon>
   </div>
-  {#if children.items.length > 0}
-    <ul class:expanded={isExpanded}>
-      {#each children.items as [itemKey, itemValue]}
-        <li>
-          <svelte:self
-            key={itemKey}
-            object={itemValue}
-            {limit}
-            {external}
-            on:expand={(event) => dispatch('expand', event.detail)}
-          />
-        </li>
-      {/each}
-      {#if children.limited}
-        <li
-          class="clickable expand"
-          title="Show all"
-          on:click|once={() => (limiter = Number.POSITIVE_INFINITY)}
-        >
-          <MdIcon theme="Filled">expand_more</MdIcon>
-        </li>
-      {/if}
-    </ul>
+  {#if key !== ''}
+    <div class="key">{key}</div>
+    <div class="separator">:</div>
   {/if}
-</template>
+  <div class="value" data-type={info.type}>
+    {#if info.display.type}
+      <span class="type">{info.type}</span>{#if info.length !== undefined}
+        <span class="length">({info.length})</span>
+      {/if}
+    {/if}
+    {#if info.display.value !== undefined}{info.display.value}{/if}
+  </div>
+</div>
+{#if children.items.length > 0}
+  <ul class:expanded={isExpanded}>
+    {#each children.items as [itemKey, itemValue]}
+      <li>
+        <svelte:self
+          key={itemKey}
+          object={itemValue}
+          {limit}
+          {external}
+          on:expand={(event) => dispatch('expand', event.detail)}
+        />
+      </li>
+    {/each}
+    {#if children.limited}
+      <!-- Internal dev component, doesn't need to be accessible for now. -->
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+      <li
+        class="clickable expand"
+        title="Show all"
+        on:click|once={() => (limiter = Number.POSITIVE_INFINITY)}
+      >
+        <MdIcon theme="Filled">expand_more</MdIcon>
+      </li>
+    {/if}
+  </ul>
+{/if}
 
 <style lang="scss">
   @use 'component' as *;

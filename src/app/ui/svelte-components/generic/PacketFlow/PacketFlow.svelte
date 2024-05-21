@@ -46,6 +46,9 @@
       {#each layers as layer}<span title={layer}>{layer}</span>{/each}
     </header>
     {#each filtered as packet}
+      <!-- Internal dev component, doesn't need to be accessible for now. -->
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <section
         on:click={() => (selected = packet)}
         class:active={packet === selected}

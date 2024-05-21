@@ -53,53 +53,56 @@
   }
 </script>
 
-<template>
-  <div class="container" data-error={error !== undefined}>
-    <div
-      class="input"
-      data-label={label !== undefined}
-      data-input={showInput}
-      data-disabled={disabled}
-      on:click={() => input?.focus()}
-    >
-      <label on:mousedown={focus}>
-        <span>{label}</span>
-        <input
-          on:input
-          on:keyup
-          on:keydown
-          on:paste
-          bind:this={input}
-          on:blur={() => {
-            if (!disabled) {
-              showInput = label === undefined || value !== '';
-            }
-          }}
-          on:focus={() => {
-            if (!disabled) {
-              showInput = true;
-            }
-          }}
-          type="text"
-          placeholder={label}
-          bind:value
-          {disabled}
-          {spellcheck}
-          {maxlength}
-        />
-      </label>
-    </div>
-    {#if error !== undefined || help !== undefined}
-      <div class="text">
-        {#if error !== undefined}
-          {error}
-        {:else}
-          {help}
-        {/if}
-      </div>
-    {/if}
+<div class="container" data-error={error !== undefined}>
+  <!-- Because `<input>` can be focused via keyboard anyway, a11y should not be handled here. -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div
+    class="input"
+    data-label={label !== undefined}
+    data-input={showInput}
+    data-disabled={disabled}
+    on:click={() => input?.focus()}
+  >
+    <!-- See comment above. -->
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+    <label on:mousedown={focus}>
+      <span>{label}</span>
+      <input
+        on:input
+        on:keyup
+        on:keydown
+        on:paste
+        bind:this={input}
+        on:blur={() => {
+          if (!disabled) {
+            showInput = label === undefined || value !== '';
+          }
+        }}
+        on:focus={() => {
+          if (!disabled) {
+            showInput = true;
+          }
+        }}
+        type="text"
+        placeholder={label}
+        bind:value
+        {disabled}
+        {spellcheck}
+        {maxlength}
+      />
+    </label>
   </div>
-</template>
+  {#if error !== undefined || help !== undefined}
+    <div class="text">
+      {#if error !== undefined}
+        {error}
+      {:else}
+        {help}
+      {/if}
+    </div>
+  {/if}
+</div>
 
 <style lang="scss">
   @use 'component' as *;

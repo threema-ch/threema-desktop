@@ -40,6 +40,9 @@
     {/each}
     {#if rows.limited}
       <section>
+        <!-- Internal dev component, doesn't need to be accessible for now. -->
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <span
           class="expand"
           title="Show all"

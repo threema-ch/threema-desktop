@@ -65,6 +65,8 @@
         <span class="label">{label}</span>
       {/if}
 
+      <!-- Disable `autofocus` warning, because we only use it where needed. -->
+      <!-- svelte-ignore a11y-autofocus -->
       <input
         bind:this={inputElement}
         bind:value

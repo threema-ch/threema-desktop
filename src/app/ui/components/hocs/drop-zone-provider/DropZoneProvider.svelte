@@ -29,6 +29,9 @@
   }
 </script>
 
+<!-- Disable `no-static-element-interactions` warning, because accessible alternatives (e.g., a
+button) for adding files should always be used in conjunction with `DropZoneProvider`. -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="dropzone"
   use:safedrag
