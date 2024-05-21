@@ -47,23 +47,25 @@
   }
 </script>
 
-<template>
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div on:click={triggerFile} style:display="inline-block">
-    <slot />
-    <form bind:this={form}>
-      <input
-        style:display="none"
-        bind:this={fileInput}
-        type="file"
-        {accept}
-        {multiple}
-        on:input={handleFiles}
-      />
-    </form>
-  </div>
-</template>
+<button on:click={triggerFile} style:display="inline-block">
+  <slot />
+
+  <form bind:this={form}>
+    <input
+      style:display="none"
+      bind:this={fileInput}
+      type="file"
+      {accept}
+      {multiple}
+      on:input={handleFiles}
+    />
+  </form>
+</button>
 
 <style lang="scss">
   @use 'component' as *;
+
+  button {
+    @extend %neutral-input;
+  }
 </style>

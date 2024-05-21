@@ -378,7 +378,8 @@
             />
           </div>
           <div class="action" class:disabled={!isSendingEnabled}>
-            <div
+            <button
+              class="send"
               bind:this={sendButtonWrapper}
               on:mouseenter={handleTriggerMouseEnter}
               on:mouseleave={handleTriggerMouseLeave}
@@ -386,7 +387,8 @@
               <IconButton flavor="filled" disabled={!isSendingEnabled} on:click={sendMessages}>
                 <MdIcon theme="Filled">arrow_upward</MdIcon>
               </IconButton>
-            </div>
+            </button>
+
             {#if !isSendingEnabled && sendButtonPopover !== null}
               <Tooltip bind:popover={sendButtonPopover} reference={sendButtonWrapper}>
                 <p class="tooltip-content">
@@ -453,6 +455,10 @@
         white-space: nowrap;
         padding: 0;
         margin: rem(10px);
+      }
+
+      .send {
+        @include clicktarget-button-circle;
       }
 
       &.disabled {

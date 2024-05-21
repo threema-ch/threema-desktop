@@ -2,24 +2,24 @@
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
 </script>
 
-<template>
-  <div
-    class="wip"
-    on:click={() => {
-      // eslint-disable-next-line no-alert
-      alert('Not yet implemented (DESK-390)');
-    }}
-  >
-    <span>
-      <MdIcon theme="Outlined">add_a_photo</MdIcon>
-    </span>
-  </div>
-</template>
+<button
+  class="wip"
+  on:click={() => {
+    // eslint-disable-next-line no-alert
+    alert('Not yet implemented (DESK-390)');
+  }}
+>
+  <span>
+    <MdIcon theme="Outlined">add_a_photo</MdIcon>
+  </span>
+</button>
 
 <style lang="scss">
   @use 'component' as *;
 
-  div {
+  button {
+    @include clicktarget-button-circle;
+
     width: rem(120px);
     height: rem(120px);
     border-radius: 50%;

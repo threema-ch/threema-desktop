@@ -9,9 +9,9 @@
 <template>
   <div class="header">
     <div class="title">{title}</div>
-    <div class="close" on:click={modal.close}>
+    <button class="close" on:click={modal.close}>
       <MdIcon theme="Outlined">close</MdIcon>
-    </div>
+    </button>
   </div>
 </template>
 
@@ -31,10 +31,10 @@
     }
 
     .close {
+      @include clicktarget-button-circle;
       @include def-var(--c-icon-font-size, #{rem(24px)});
-      display: grid;
-      place-items: center;
-      cursor: pointer;
+
+      padding: rem(4px);
     }
   }
 </style>

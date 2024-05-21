@@ -21,7 +21,7 @@
 <template>
   <div class={variant} style="--c-t-value: {value};">
     <svg viewBox="20 20 40 40">
-      <circle class={color} cx="40" cy="40" />
+      <circle class={color} cx="40" cy="40" style="r: calc((40px - var(--c-t-thickness)) / 2);" />
     </svg>
   </div>
 </template>
@@ -53,7 +53,6 @@
       &.white {
         stroke: #fff;
       }
-      r: calc((40px - #{var($-temp-vars, --c-t-thickness)}) / 2);
       stroke-width: var($-temp-vars, --c-t-thickness);
     }
 

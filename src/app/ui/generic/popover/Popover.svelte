@@ -192,9 +192,9 @@
 
 <div class="container" bind:this={element}>
   {#if $$slots.trigger}
-    <div class="trigger" bind:this={trigger} on:click={handleClickTrigger}>
+    <button class="trigger" bind:this={trigger} on:click={handleClickTrigger}>
       <slot name="trigger" />
-    </div>
+    </button>
   {/if}
 
   {#if isOpen}
@@ -229,6 +229,10 @@
 
   .container {
     position: relative;
+
+    .trigger {
+      @extend %neutral-input;
+    }
 
     .popover {
       position: absolute;

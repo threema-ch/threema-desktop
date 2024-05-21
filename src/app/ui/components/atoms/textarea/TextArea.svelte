@@ -312,6 +312,7 @@
     style:height={areaElementHeight !== undefined ? `${areaElementHeight}px` : '0'}
     on:changesize={handleChangeSizeSpacerElement}
   />
+
   <div
     bind:this={areaElement}
     use:mutation={{
@@ -325,6 +326,8 @@
     class="textarea"
     contenteditable="true"
     {placeholder}
+    role="textbox"
+    tabindex={0}
     on:changesize={handleChangeSizeAreaElement}
     on:input={handleInput}
     on:keydown={handleKeyDown}

@@ -2,16 +2,14 @@
   export let wip = false;
 </script>
 
-<template>
-  <div on:click class="icon-text" class:wip>
-    <div class="icon">
-      <slot name="icon" />
-    </div>
-    <div class="text">
-      <slot name="text" />
-    </div>
+<div class="icon-text" class:wip>
+  <div class="icon">
+    <slot name="icon" />
   </div>
-</template>
+  <div class="text">
+    <slot name="text" />
+  </div>
+</div>
 
 <style lang="scss">
   @use 'component' as *;

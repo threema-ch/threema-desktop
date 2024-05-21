@@ -149,6 +149,7 @@
         <div slot="text" class="wip">Scan Threema ID</div>
       </IconText>
     </div> -->
+
     {#if import.meta.env.BUILD_VARIANT === 'work'}
       <hr />
       <span class="note-directory">
@@ -157,7 +158,7 @@
           'Or search a contact in corporate directory and add it to your personal contact list:',
         )}
       </span>
-      <div
+      <button
         class="add-contact"
         on:click={() => {
           // eslint-disable-next-line no-alert
@@ -168,6 +169,7 @@
           <div slot="icon" class="icon">
             <MdIcon theme="Filled">add</MdIcon>
           </div>
+
           <div slot="text">
             {$i18n.t(
               'contacts.action--add-contact-from-work-directory',
@@ -175,7 +177,7 @@
             )}
           </div>
         </IconText>
-      </div>
+      </button>
     {/if}
 
     <div class="next">
@@ -216,18 +218,25 @@
       padding: rem(4px) rem(16px) 0;
     }
 
+    .add-contact {
+      @extend %neutral-input;
+    }
+
     .threema-id,
     .add-contact {
       padding: 0 rem(16px);
     }
+
     .icon {
       display: grid;
       place-items: center;
       color: var(--t-color-primary);
     }
+
     span {
       color: var(--t-text-e2-color);
     }
+
     hr {
       border: none;
       border-top: rem(1px) solid rgba(#000000, 12%);

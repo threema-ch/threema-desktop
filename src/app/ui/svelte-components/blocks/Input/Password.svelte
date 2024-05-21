@@ -73,87 +73,97 @@
   }
 </script>
 
-<template>
-  <div class="container" data-error={error !== undefined}>
-    <div
-      class="input"
-      data-label={label !== undefined}
-      data-input={showInput}
-      data-disabled={disabled}
-      on:click={() => input?.focus()}
-    >
-      <label on:mousedown={focus}>
-        <span class="label-text">{label}</span>
-        <!-- Note: 'type' attribute cannot be dynamic if input uses two-way binding -->
-        {#if isPasswordShown}
-          <input
-            on:input
-            on:keyup
-            on:keydown
-            on:paste
-            bind:this={input}
-            on:blur={() => {
-              if (!disabled) {
-                showInput = label === undefined || value !== '';
-              }
-            }}
-            on:focus={() => {
-              if (!disabled) {
-                showInput = true;
-              }
-            }}
-            type="text"
-            name="password"
-            placeholder={label}
-            bind:value
-            {disabled}
-            spellcheck={false}
-            {maxlength}
-          />
-        {:else}
-          <input
-            on:input
-            on:keyup
-            on:keydown
-            on:paste
-            bind:this={input}
-            on:blur={() => {
-              if (!disabled) {
-                showInput = label === undefined || value !== '';
-              }
-            }}
-            on:focus={() => {
-              if (!disabled) {
-                showInput = true;
-              }
-            }}
-            type="password"
-            name="password"
-            placeholder={label}
-            bind:value
-            {disabled}
-            spellcheck={false}
-            {maxlength}
-          />
-        {/if}
-        <span tabindex="-1" class="password-visibility-toggle" on:click={tooglePasswordVisibility}>
-          <MdIcon theme="Filled"
-            >{#if isPasswordShown}visibility{:else}visibility_off{/if}</MdIcon
-          >
-        </span>
-      </label>
-    </div>
-    {#if error !== undefined || help !== undefined}
-      <div class="text">
-        {#if error !== undefined}
-          {error}
-        {:else}
-          {help}
-        {/if}
-      </div>
-    {/if}
+<div class="container" data-error={error !== undefined}>
+  <!-- Because `<input>` can be focused via keyboard anyway, a11y should not be handled here. -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div
+    class="input"
+    data-label={label !== undefined}
+    data-input={showInput}
+    data-disabled={disabled}
+    on:click={() => input?.focus()}
+  >
+    <!-- See comment above. -->
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+    <label on:mousedown={focus}>
+      <span class="label-text">{label}</span>
+
+      <!-- Note: 'type' attribute cannot be dynamic if input uses two-way binding. -->
+      {#if isPasswordShown}
+        <input
+          on:input
+          on:keyup
+          on:keydown
+          on:paste
+          bind:this={input}
+          on:blur={() => {
+            if (!disabled) {
+              showInput = label === undefined || value !== '';
+            }
+          }}
+          on:focus={() => {
+            if (!disabled) {
+              showInput = true;
+            }
+          }}
+          type="text"
+          name="password"
+          placeholder={label}
+          bind:value
+          {disabled}
+          spellcheck={false}
+          {maxlength}
+        />
+      {:else}
+        <input
+          on:input
+          on:keyup
+          on:keydown
+          on:paste
+          bind:this={input}
+          on:blur={() => {
+            if (!disabled) {
+              showInput = label === undefined || value !== '';
+            }
+          }}
+          on:focus={() => {
+            if (!disabled) {
+              showInput = true;
+            }
+          }}
+          type="password"
+          name="password"
+          placeholder={label}
+          bind:value
+          {disabled}
+          spellcheck={false}
+          {maxlength}
+        />
+      {/if}
+
+      <button tabindex="-1" class="password-visibility-toggle" on:click={tooglePasswordVisibility}>
+        <MdIcon theme="Filled">
+          {#if isPasswordShown}
+            visibility
+          {:else}
+            visibility_off
+          {/if}
+        </MdIcon>
+      </button>
+    </label>
   </div>
-</template>
+
+  {#if error !== undefined || help !== undefined}
+    <div class="text">
+      {#if error !== undefined}
+        {error}
+      {:else}
+        {help}
+      {/if}
+    </div>
+  {/if}
+</div>
 
 <style lang="scss">
   @use 'component' as *;
@@ -186,6 +196,7 @@
 
       label {
         @extend %font-small-400;
+
         position: relative;
         display: grid;
         grid-template:
@@ -194,13 +205,15 @@
           / auto;
         color: var(--c-input-text-label-color);
 
-        span.label-text {
+        .label-text {
           grid-area: label;
           user-select: none;
           cursor: text;
         }
 
-        span.password-visibility-toggle {
+        .password-visibility-toggle {
+          @extend %neutral-input;
+
           cursor: pointer;
           position: absolute;
           user-select: none;
@@ -233,6 +246,7 @@
 
         label {
           @extend %font-normal-400;
+
           grid-template:
             'label' auto
             / 100%;
@@ -240,7 +254,7 @@
           position: relative;
           cursor: text;
 
-          span.password-visibility-toggle {
+          .password-visibility-toggle {
             top: 0;
             font-size: em(20px);
           }
@@ -277,9 +291,7 @@
           cursor: default;
 
           span {
-            :not(.password-visibility-toggle) {
-              cursor: default;
-            }
+            cursor: default;
           }
 
           input {

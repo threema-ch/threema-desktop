@@ -66,7 +66,9 @@
         <MdIcon theme="Filled">bug_report</MdIcon>
       </div>
       {#each Object.entries(TOOLS) as [name, tool]}
-        <div class:selected={selected === tool} on:click={() => (selected = tool)}>{name}</div>
+        <button class="tab" class:selected={selected === tool} on:click={() => (selected = tool)}>
+          {name}
+        </button>
       {/each}
     </nav>
 
@@ -101,22 +103,25 @@
     display: flex;
     place-items: center;
 
-    > * {
+    .title {
+      cursor: auto;
+      display: grid;
+    }
+
+    .tab {
+      @include clicktarget-button-rect;
+
+      &.selected,
+      &:hover {
+        border-top-color: var(--dc-top-bar-border-color);
+      }
+    }
+
+    .title,
+    .tab {
       padding: 0 rem(4px);
       border-top: solid transparent rem(2px);
       cursor: pointer;
-
-      &.title {
-        cursor: auto;
-        display: grid;
-      }
-
-      &:not(.title) {
-        &.selected,
-        &:hover {
-          border-top-color: var(--dc-top-bar-border-color);
-        }
-      }
     }
   }
 
