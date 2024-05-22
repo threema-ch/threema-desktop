@@ -209,7 +209,6 @@ function getTypeScriptConfigMixin(extension, override) {
         ],
 
         // Svelte rules
-        'a11y-click-events-have-key-events': 'off', // TODO(DESK-839): Reenable
         'svelte/valid-compile': 'warn', // Until https://github.com/sveltejs/svelte/issues/8558 is added
 
         // Our custom extensions
