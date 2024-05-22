@@ -7,7 +7,6 @@ import {
 import type {Logger} from '~/common/logging';
 import type {Contact, Group, GroupInit} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
-import type {GroupCreator} from '~/common/model/types/group';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {
     ActiveTaskCodecHandle,
@@ -18,6 +17,7 @@ import type {
 import type {GroupCreatorContainer, GroupSetup} from '~/common/network/structbuf/validate/csp/e2e';
 import type {IdentityString, MessageId} from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
+import {getGroupCreator} from '~/common/utils/group';
 import {idColorIndex} from '~/common/utils/id-color';
 import {u64ToHexLe} from '~/common/utils/number';
 
@@ -60,10 +60,7 @@ export abstract class GroupSetupTaskBase<
         const memberIdentities = new Set(this._groupSetup.members); // Set to avoid duplicates
         memberIdentities.delete(creatorIdentity); // Creator is an implicit member
 
-        const creator: GroupCreator =
-            creatorIdentity === device.identity.string
-                ? {creatorIsUser: true}
-                : {creatorIsUser: false, creatorIdentity};
+        const creator = getGroupCreator(this._services, creatorIdentity);
 
         // 2. Look up group
         const group = model.groups.getByGroupIdAndCreator(groupId, creator)?.get();

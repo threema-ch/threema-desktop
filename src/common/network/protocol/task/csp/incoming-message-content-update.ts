@@ -16,6 +16,7 @@ import type {
     MessageId,
 } from '~/common/network/types';
 import {assert, unreachable} from '~/common/utils/assert';
+import {getGroupCreator} from '~/common/utils/group';
 import {u64ToHexLe} from '~/common/utils/number';
 
 /**
@@ -51,14 +52,10 @@ export class IncomingMessageContentUpdateTask
                 break;
             case ReceiverType.GROUP:
                 {
-                    const creator: GroupCreator =
-                        this._conversationId.creatorIdentity ===
-                        this._services.device.identity.string
-                            ? {creatorIsUser: true}
-                            : {
-                                  creatorIsUser: false,
-                                  creatorIdentity: this._conversationId.creatorIdentity,
-                              };
+                    const creator: GroupCreator = getGroupCreator(
+                        this._services,
+                        this._conversationId.creatorIdentity,
+                    );
                     const group = model.groups.getByGroupIdAndCreator(
                         this._conversationId.groupId,
                         creator,

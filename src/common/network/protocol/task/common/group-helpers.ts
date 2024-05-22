@@ -12,7 +12,6 @@ import {
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact, ContactInit, Group} from '~/common/model';
-import type {GroupCreator} from '~/common/model/types/group';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {encryptAndUploadBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
@@ -29,6 +28,7 @@ import type {GroupId, GroupMessageReflectSetting, IdentityString} from '~/common
 import type {ReadonlyUint8Array} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
+import {getGroupCreator} from '~/common/utils/group';
 import {idColorIndex} from '~/common/utils/id-color';
 
 /**
@@ -47,12 +47,8 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
     services: ServicesForTasks,
     log: Logger,
 ): Promise<{group: LocalModelStore<Group>; senderContact: LocalModelStore<Contact>} | undefined> {
-    const {device, model} = services;
-    const creator: GroupCreator =
-        creatorIdentity === device.identity.string
-            ? {creatorIsUser: true}
-            : {creatorIsUser: false, creatorIdentity};
-
+    const {model} = services;
+    const creator = getGroupCreator(services, creatorIdentity);
     // 1. Look up the group
     const group = model.groups.getByGroupIdAndCreator(groupId, creator);
 

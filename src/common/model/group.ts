@@ -141,6 +141,8 @@ function addGroupMember(
  * Add multiple group member entries.
  *
  * Returns the number of members that were added.
+ *
+ * TODO(DESK-1465): Don't loop here but only have a single query.
  */
 function addGroupMembers(
     services: ServicesForModel,
@@ -181,6 +183,8 @@ function hasGroupMember(
  * Remove a group member from a group.
  *
  * Note: If a given contact is not in the member list, it will be ignored.
+ *
+ * TODO(DESK-1465): Don't loop here but only have a single query.
  */
 function removeGroupMember(
     services: ServicesForModel,

@@ -4,7 +4,6 @@
 
 import {CspE2eStatusUpdateType, ReceiverType} from '~/common/enum';
 import type {Conversation} from '~/common/model';
-import type {GroupCreator} from '~/common/model/types/group';
 import type {InboundAudioMessage, OutboundAudioMessage} from '~/common/model/types/message/audio';
 import type {
     InboundDeletedMessage,
@@ -21,6 +20,7 @@ import * as structbuf from '~/common/network/structbuf';
 import type {ConversationId, MessageId} from '~/common/network/types';
 import type {Mutable} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
+import {getGroupCreator} from '~/common/utils/group';
 import {u64ToHexLe} from '~/common/utils/number';
 
 // Message init fragments. Message ID and sender are excluded, since those will be extracted from
@@ -84,7 +84,7 @@ export function getConversationById(
     services: Pick<ServicesForTasks, 'device' | 'model'>,
     conversationId: ConversationId,
 ): LocalModelStore<Conversation> | undefined {
-    const {device, model} = services;
+    const {model} = services;
     switch (conversationId.type) {
         case ReceiverType.CONTACT: {
             const contact = model.contacts.getByIdentity(conversationId.identity);
@@ -94,10 +94,7 @@ export function getConversationById(
             return contact.get().controller.conversation();
         }
         case ReceiverType.GROUP: {
-            const creator: GroupCreator =
-                conversationId.creatorIdentity === device.identity.string
-                    ? {creatorIsUser: true}
-                    : {creatorIsUser: false, creatorIdentity: conversationId.creatorIdentity};
+            const creator = getGroupCreator(services, conversationId.creatorIdentity);
             const group = model.groups.getByGroupIdAndCreator(conversationId.groupId, creator);
             if (group === undefined) {
                 return undefined;

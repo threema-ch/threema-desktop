@@ -5,7 +5,6 @@ import {GroupUserState} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact, ContactInit, Group} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
-import type {GroupCreator} from '~/common/model/types/group';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import type {
     ActiveTaskCodecHandle,
@@ -15,6 +14,7 @@ import type {
 } from '~/common/network/protocol/task';
 import type {GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
 import type {IdentityString, MessageId} from '~/common/network/types';
+import {getGroupCreator} from '~/common/utils/group';
 import {u64ToHexLe} from '~/common/utils/number';
 
 /**
@@ -63,10 +63,7 @@ export abstract class GroupLeaveTaskBase<
             return;
         }
 
-        const creator: GroupCreator =
-            creatorIdentity === this._services.device.identity.string
-                ? {creatorIsUser: true}
-                : {creatorIsUser: false, creatorIdentity};
+        const creator = getGroupCreator(this._services, creatorIdentity);
 
         // 2. Look up the group
         const group = model.groups.getByGroupIdAndCreator(groupId, creator);

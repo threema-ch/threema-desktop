@@ -34,7 +34,6 @@ import type {Logger} from '~/common/logging';
 import type {Contact} from '~/common/model';
 import type {ContactModelStore} from '~/common/model/contact';
 import type {GroupModelStore} from '~/common/model/group';
-import type {GroupCreator} from '~/common/model/types/group';
 import {type IdentityStringOrMe, OWN_IDENTITY_ALIAS} from '~/common/model/types/message';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {BLOB_ID_LENGTH, ensureBlobId} from '~/common/network/protocol/blob';
@@ -51,6 +50,7 @@ import {
 import {wrapRawBlobKey} from '~/common/network/types/keys';
 import type {u53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
+import {getGroupCreator} from '~/common/utils/group';
 import {idColorIndex} from '~/common/utils/id-color';
 import {hasProperty} from '~/common/utils/object';
 
@@ -502,10 +502,7 @@ export async function importScreenshotData(
     for (const group of data.groups) {
         const creatorIdentity =
             group.creator === OWN_IDENTITY ? device.identity.string : group.creator;
-        const creator: GroupCreator =
-            group.creator === OWN_IDENTITY
-                ? {creatorIsUser: true}
-                : {creatorIsUser: false, creatorIdentity: group.creator};
+        const creator = getGroupCreator(services, creatorIdentity);
 
         // Look up group contacts
         const groupMemberUids = [];
