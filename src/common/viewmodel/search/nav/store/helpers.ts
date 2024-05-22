@@ -1,5 +1,6 @@
 import type {ConversationModelStore} from '~/common/model/conversation';
 import {conversationCompareFn} from '~/common/model/utils/conversation';
+import {isNotUndefined} from '~/common/utils/assert';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
@@ -35,6 +36,9 @@ export function getConversationSearchResults(
 
         for (const conversationModelStore of sortedConversations) {
             const conversationController = conversationModelStore.get().controller;
+            if (!conversationController.meta.active.get()) {
+                continue;
+            }
             const commonData = getCommonReceiverData(conversationController.receiver().get());
 
             if (commonData.name.toLowerCase().includes(searchParams.term.toLowerCase())) {
@@ -112,27 +116,31 @@ export function getMessageSearchResults(
             searchParams.limits.messages,
         );
 
-        messageResults = [...getAndSubscribe(messageSetStore)].map((messageModelStore) => {
-            const messageModel = getAndSubscribe(messageModelStore);
-            const conversationModelStore = messageModel.controller.conversation();
-            const conversationModel = getAndSubscribe(conversationModelStore);
-
-            return endpoint.exposeProperties({
-                conversation: {
-                    receiver: getConversationReceiverData(
+        messageResults = [...getAndSubscribe(messageSetStore)]
+            .map((messageModelStore) => {
+                const messageModel = getAndSubscribe(messageModelStore);
+                const conversationModelStore = messageModel.controller.conversation();
+                const conversationModel = getAndSubscribe(conversationModelStore);
+                if (!conversationModel.controller.meta.active.get()) {
+                    return undefined;
+                }
+                return endpoint.exposeProperties({
+                    conversation: {
+                        receiver: getConversationReceiverData(
+                            services,
+                            conversationModel,
+                            getAndSubscribe,
+                        ),
+                    },
+                    message: getConversationMessageViewModelBundle(
                         services,
-                        conversationModel,
-                        getAndSubscribe,
+                        messageModelStore,
+                        conversationModelStore,
+                        true,
                     ),
-                },
-                message: getConversationMessageViewModelBundle(
-                    services,
-                    messageModelStore,
-                    conversationModelStore,
-                    true,
-                ),
-            });
-        });
+                });
+            })
+            .filter(isNotUndefined);
     }
 
     const tag = 'message-results[]';
@@ -167,7 +175,9 @@ export function getReceiverSearchResults(
 
             if (commonData.name.toLowerCase().includes(searchParams.term.toLowerCase())) {
                 const model = getAndSubscribe(contactOrGroupModelStore);
-
+                if (model.controller.meta.active.get()) {
+                    continue;
+                }
                 receiverResults.push(
                     endpoint.exposeProperties({
                         receiver: getConversationReceiverData(

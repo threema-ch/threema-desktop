@@ -57,6 +57,9 @@ export type ReceiverUpdateDataFor<TReceiver extends AnyReceiver> = {
 /**
  * Extracts and returns data related to a conversation's receiver from the specified
  * {@link conversationModel}.
+ *
+ * Note: Since we are calling a method on a controller in the derive function here, the caller must
+ * make sure that the controller is active.
  */
 export function getConversationReceiverData(
     services: Pick<ServicesForViewModel, 'model'>,
