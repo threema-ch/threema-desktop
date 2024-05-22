@@ -7,11 +7,9 @@ import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';
 import {
     type CspE2eContactControlType,
     type CspE2eConversationType,
-    CspE2eConversationTypeUtils,
     type CspE2eForwardSecurityType,
     type CspE2eGroupControlType,
     type CspE2eGroupConversationType,
-    CspE2eGroupConversationTypeUtils,
     type CspE2eStatusUpdateType,
     MessageFilterInstruction,
     NonceScope,
@@ -286,10 +284,11 @@ export class OutgoingCspMessageTask<
 
         // Reflect the sent state of the message
         let reflectDate;
-        const isConversationMessage =
-            CspE2eConversationTypeUtils.containsNumber(type) ||
-            CspE2eGroupConversationTypeUtils.containsNumber(type);
-        if (this._reflect && isConversationMessage && sentMessagesCount > 0) {
+        if (
+            this._reflect &&
+            MESSAGE_TYPE_PROPERTIES[this._messageProperties.type].reflect.outgoingSentUpdate &&
+            sentMessagesCount > 0
+        ) {
             // TODO(DESK-323): Do this asynchronously?
             const conversationId = conversationIdForReceiver(this._receiver);
             const task = new ReflectOutgoingMessageUpdateTask(this._services, {

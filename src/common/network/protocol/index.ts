@@ -364,11 +364,13 @@ export interface MessageTypeProperties<TReceiverType extends ReceiverType> {
     readonly exemptFromBlocking: boolean;
 
     /**
-     * Should this message be reflected to other devices?
+     * Should this message be reflected to other devices and should this message reflect a `sent`
+     * update when outgoing?
      */
     readonly reflect: {
         readonly incoming: boolean;
         readonly outgoing: boolean;
+        readonly outgoingSentUpdate: boolean;
     };
 
     /**
@@ -394,6 +396,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: true,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -403,6 +406,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: true,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -412,6 +416,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: true,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -421,6 +426,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: true,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -430,6 +436,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: true,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -439,6 +446,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: true,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -448,6 +456,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: true,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -457,6 +466,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -466,6 +476,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -475,6 +486,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -484,6 +496,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: false,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -493,6 +506,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -502,6 +516,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -513,6 +528,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -522,6 +538,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: false,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -533,6 +550,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -542,6 +560,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -551,6 +570,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: false,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -562,6 +582,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: true,
         },
         sendToGatewayGroupCreator: 'if-captured',
     },
@@ -571,6 +592,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: true,
         },
         sendToGatewayGroupCreator: 'if-captured',
     },
@@ -580,6 +602,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: true,
         },
         sendToGatewayGroupCreator: 'if-captured',
     },
@@ -589,6 +612,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: true,
         },
         sendToGatewayGroupCreator: 'if-captured',
     },
@@ -598,6 +622,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: true,
         },
         sendToGatewayGroupCreator: 'if-captured',
     },
@@ -607,6 +632,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: true,
         },
         sendToGatewayGroupCreator: 'if-captured',
     },
@@ -616,6 +642,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: true,
         },
         sendToGatewayGroupCreator: 'if-captured',
     },
@@ -625,6 +652,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'if-captured',
     },
@@ -636,6 +664,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'if-captured',
     },
@@ -647,6 +676,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -656,6 +686,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -665,6 +696,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'always',
     },
@@ -674,6 +706,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -683,6 +716,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -692,6 +726,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'always',
     },
@@ -701,6 +736,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'if-captured',
     },
@@ -716,6 +752,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: false,
             outgoing: false,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -727,6 +764,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: false,
             outgoing: false,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -736,6 +774,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -746,6 +785,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'if-captured',
     },
@@ -756,6 +796,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'not-applicable',
     },
@@ -766,6 +807,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         reflect: {
             incoming: true,
             outgoing: true,
+            outgoingSentUpdate: false,
         },
         sendToGatewayGroupCreator: 'if-captured',
     },
