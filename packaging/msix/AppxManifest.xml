@@ -27,11 +27,11 @@
         <Resource Language="en-us" />
     </Resources>
     <Dependencies>
-        <!-- Min: Windows Server 2019 -->
-        <!-- Max: Windows 11 22H2 (October 2022 Update) -->
+        <!-- Min: Windows 10 21H2 (November 2021 Update)-->
+        <!-- Max: Windows 11 22H2 (October 2022 Update)-->
         <TargetDeviceFamily
             Name="Windows.Desktop"
-            MinVersion="10.0.17763.0"
+            MinVersion="10.0.19044.0"
             MaxVersionTested="10.0.22621.0"
         />
     </Dependencies>
@@ -43,7 +43,6 @@
         <Application
             Id="{{applicationId}}"
             Executable="ThreemaDesktop.exe"
-            EntryPoint="Windows.FullTrustApplication"
             uap10:RuntimeBehavior="packagedClassicApp"
             uap10:TrustLevel="mediumIL"
         >
