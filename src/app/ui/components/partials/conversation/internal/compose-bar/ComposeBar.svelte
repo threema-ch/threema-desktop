@@ -136,7 +136,12 @@
   </div>
 
   <div class="center">
-    <div class="composearea">
+    <!-- A11y is not handled here, as it's already possible to focus the `TextArea` by just tabbing
+    into it. This workaround to make the clickable area larger is specific to mouse-based input
+    methods. -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div class="composearea" on:click={() => textAreaComponent?.focus()}>
       <TextArea
         bind:this={textAreaComponent}
         bind:isEmpty={isTextAreaEmpty}
@@ -216,12 +221,8 @@
         height: 100%;
       }
 
-      // Add padding to the text area so that its clickable area is larger. Note: As paddings will
-      // be excluded from the internal `spacer` measurement and the textarea itself is positioned
-      // absolutely, the measurement is still the same as without padding (intrinsic size + margins,
-      // excluding paddings).
-      .composearea :global(> .container > .textarea) {
-        padding-block: rem(22px);
+      .composearea:hover {
+        cursor: text;
       }
     }
 

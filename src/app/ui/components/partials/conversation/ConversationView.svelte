@@ -904,21 +904,31 @@
 
     .footer {
       z-index: 1;
-
       grid-area: footer;
+
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: end;
+
+      max-height: 75vh;
       border-top: rem(1px) var(--t-panel-gap-color) solid;
       box-sizing: border-box;
 
       .quote {
-        background-color: var(--cc-compose-area-quote-background-color);
-        padding: rem(8px) rem(8px) rem(8px) rem(16px);
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
         gap: rem(24px);
 
+        padding: rem(8px) rem(8px) rem(8px) rem(16px);
+        background-color: var(--cc-compose-area-quote-background-color);
+
+        overflow-y: hidden;
+
         .body {
-          flex-grow: 1;
+          max-height: 100%;
+          overflow-y: auto;
         }
       }
 
