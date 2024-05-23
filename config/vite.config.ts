@@ -346,6 +346,13 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
     };
     if (process.env.VITE_PORT !== undefined) {
         env.devServerPort = Number.parseInt(process.env.VITE_PORT, 10);
+    } else {
+        // Prevent conflicts when running multiple dev servers
+        env.devServerPort =
+            9000 +
+            BUILD_TARGETS.indexOf(env.target) * 100 +
+            BUILD_VARIANTS.indexOf(env.variant) * 10 +
+            BUILD_ENVIRONMENTS.indexOf(env.environment);
     }
 
     // Load package.json
@@ -494,6 +501,7 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
             .flat(),
         server: {
             port: env.devServerPort,
+            strictPort: true,
             fs: {
                 strict: true,
                 allow: ['.', '../libs', '../node_modules'],
