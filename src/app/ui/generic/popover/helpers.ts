@@ -2,6 +2,7 @@ import type {
     AnchorPoint,
     Flip,
     Offset,
+    Padding,
     PartialDOMRect,
     PopoverCloseFunction,
     RectPoint,
@@ -31,6 +32,7 @@ export const popoverStore = new WritableStore<PopoverCloseFunction | undefined>(
  * @param offset An optional offset to move the popover relative to the anchor.
  * @param flip Whether the popover should flip so that it doesn't overflow the
  *   `constraintContainer`.
+ * @param safetyGap An additional gap relative to the `constraintContainer`.
  * @returns The {@link Offset} the popover should move to be at the desired position.
  */
 export function getPopoverOffset(
@@ -41,11 +43,13 @@ export function getPopoverOffset(
     anchorPoints: AnchorPoint,
     offset: Offset = {left: 0, top: 0},
     flip = true,
+    safetyGap: Padding = {left: 0, right: 0, top: 0, bottom: 0},
 ): Offset {
-    // Get the `DOMRect` of the popover, but disregard any previously applied transforms.
-    const popoverRect = getUntransformedBoundingClientRect(popover);
+    // 1. Get the `DOMRect` of the popover, but disregard any previously applied transforms (e.g.,
+    //    if the popover has already been positioned previously).
+    const popoverRect = getBoundingClientRectWithoutTransforms(popover);
 
-    // Calculate the preferred `Offset` of the popover without considering any constraints.
+    // 2. Calculate the preferred offset of the popover without considering any constraints.
     const preferredPopoverOffset = getUnconstrainedPopoverOffset(
         positioningContainer,
         reference,
@@ -53,15 +57,16 @@ export function getPopoverOffset(
         anchorPoints,
         offset,
     );
-    const translatedPopoverRect = getRectPlusOffset(popoverRect, preferredPopoverOffset);
+    const popoverRectWithOffset = getRectPlusOffset(popoverRect, preferredPopoverOffset);
 
-    // Calculate the necessary `Flip` that needs to be applied so that the popover is fully visible.
+    // 3. Calculate whether (and in which direction) the popover needs to be flipped to be fully
+    //    visible.
     const suggestedPopoverFlip = flip
-        ? getSuggestedPopoverFlip(translatedPopoverRect, constraintContainer)
+        ? getSuggestedPopoverFlip(popoverRectWithOffset, constraintContainer, safetyGap)
         : 'none';
 
-    // Calculate and return the final `Offset` of the popover, and account for a possible `Flip`.
-    const popoverOffset =
+    // 4. Calculate and return the final offset of the popover, and account for a possible flip.
+    const popoverOffsetAfterFlip =
         suggestedPopoverFlip === 'none'
             ? preferredPopoverOffset
             : getUnconstrainedPopoverOffset(
@@ -71,15 +76,21 @@ export function getPopoverOffset(
                   getFlippedAnchorPoint(anchorPoints, suggestedPopoverFlip),
                   getFlippedOffset(offset, suggestedPopoverFlip),
               );
-    const maybeFlippedPopoverOffsetRect = getRectPlusOffset(popoverRect, popoverOffset);
+    const popoverRectAfterFlip = getRectPlusOffset(popoverRect, popoverOffsetAfterFlip);
+
+    // 5. If the popover is still not fully visible, even after flipping it, just move it until it
+    //    is (best-effort).
     const popoverOffsetCorrection = getSuggestedOffsetCorrection(
-        maybeFlippedPopoverOffsetRect,
+        popoverRectAfterFlip,
         constraintContainer,
+        safetyGap,
     );
 
+    // Return the suggested offset the popover should be translated by, relative to its original
+    // position.
     return {
-        left: popoverOffset.left + popoverOffsetCorrection.left,
-        top: popoverOffset.top + popoverOffsetCorrection.top,
+        left: popoverOffsetAfterFlip.left + popoverOffsetCorrection.left,
+        top: popoverOffsetAfterFlip.top + popoverOffsetCorrection.top,
     };
 }
 
@@ -106,7 +117,7 @@ function getUnconstrainedPopoverOffset(
     const positioningContainerRect: PartialDOMRect = positioningContainer.getBoundingClientRect();
     const referenceRect: PartialDOMRect =
         reference instanceof HTMLElement ? reference.getBoundingClientRect() : reference;
-    const popoverRect: PartialDOMRect = getUntransformedBoundingClientRect(popover);
+    const popoverRect: PartialDOMRect = getBoundingClientRectWithoutTransforms(popover);
 
     // Calculate `AnchorPoint` offsets.
     const referenceAnchorPointOffset = getRectPointOffset(referenceRect, anchorPoints.reference);
@@ -155,7 +166,7 @@ function getRelativeRectOffset(rect: PartialDOMRect, toRect: PartialDOMRect): Of
  * @param element The {@link HTMLElement} to get the {@link PartialDOMRect} from.
  * @returns The calculated {@link PartialDOMRect}.
  */
-function getUntransformedBoundingClientRect(element: HTMLElement): PartialDOMRect {
+function getBoundingClientRectWithoutTransforms(element: HTMLElement): PartialDOMRect {
     const rect = element.getBoundingClientRect();
     const computedStyle = getComputedStyle(element);
     const transform = computedStyle.transform;
@@ -206,15 +217,19 @@ function getRectPointOffset(rect: PartialDOMRect, rectPoint: RectPoint): Offset 
  *
  * @param popoverRect The {@link PartialDOMRect} of the popover.
  * @param constraintContainer The container that constrains the positioning of the popover.
+ * @param safetyGap Minimum distance from the `constraintContainer`'s bounds which is considered
+ *   safe for positioning without needing a flip.
  * @returns A proposed {@link Flip} to apply to the popover.
  */
 function getSuggestedPopoverFlip(
     popoverRect: PartialDOMRect,
     constraintContainer: HTMLElement,
+    safetyGap: Padding = {left: 0, right: 0, top: 0, bottom: 0},
 ): Flip {
     const {horizontal, vertical} = getIsRectInVisibleAreaOfContainer(
         popoverRect,
         constraintContainer,
+        safetyGap,
     );
 
     if (horizontal && vertical) {
@@ -243,28 +258,51 @@ function getSuggestedPopoverFlip(
  *
  * @param popoverRect The {@link PartialDOMRect} of the popover.
  * @param constraintContainer The container that should constrain the popover.
+ * @param safetyGap Minimum distance to try to ensure between `popoverRect` and `constraintContainer`.
  * @returns The suggested offset to move the popover by.
  */
 function getSuggestedOffsetCorrection(
     popoverRect: PartialDOMRect,
     constraintContainer: HTMLElement,
+    safetyGap: Padding = {left: 0, right: 0, top: 0, bottom: 0},
 ): Offset {
     const containerRect = constraintContainer.getBoundingClientRect();
     const visibleArea = {
         ...containerRect,
-        top: Math.max(containerRect.top, 0),
-        left: Math.max(containerRect.left, 0),
-        bottom: Math.min(containerRect.bottom, window.innerHeight),
-        right: Math.min(containerRect.right, window.innerWidth),
+        top: Math.max(containerRect.top, 0) + safetyGap.top,
+        left: Math.max(containerRect.left, 0) + safetyGap.left,
+        bottom: Math.min(containerRect.bottom, window.innerHeight) - safetyGap.bottom,
+        right: Math.min(containerRect.right, window.innerWidth) - safetyGap.right,
     };
     const relativeOffset = getBoundingRectRelativeToContainer(popoverRect, visibleArea);
 
-    const horizontalPosition =
+    // Return early if there is no overflow.
+    if (
+        relativeOffset.top >= 0 &&
+        relativeOffset.left >= 0 &&
+        relativeOffset.bottom >= 0 &&
+        relativeOffset.right >= 0
+    ) {
+        return {
+            left: 0,
+            top: 0,
+        };
+    }
+
+    // If we're in a horizontal scroll container, this indicates whether we are in the first half
+    // (left half) of the scroll container or the second (right half). This provides an
+    // understanding of whether we're likely able to scroll further to reveal more of the
+    // overflowing popover (i.e., if we're in the first half) or if it would be better to position
+    // it so that it can be revealed by scrolling back (if we're in the second half). Note: This
+    // doesn't guarantee that the positioning will allways be perfect such that the user is able to
+    // reveal it fully, but it increases the likelihood.
+    const horizontalScrollPosition =
         constraintContainer.scrollLeft <
         constraintContainer.scrollWidth - constraintContainer.scrollLeft
             ? 'left-half'
             : 'right-half';
-    const verticalPosition =
+    // See comment above.
+    const verticalScrollPosition =
         constraintContainer.scrollTop <
         constraintContainer.scrollHeight - constraintContainer.scrollTop
             ? 'top-half'
@@ -279,33 +317,51 @@ function getSuggestedOffsetCorrection(
     };
 
     let offsetCorrectionLeft = 0;
-    if (horizontalPosition === 'left-half') {
-        // If we are in the left half, we want the popover to overlap on the right so it can be
-        // revealed by scrolling, if necessary.
+    if (horizontalScrollPosition === 'left-half') {
+        // Because we're in the left half, moving the popover more to the right is likely safer.
         offsetCorrectionLeft =
             overflow.left > overflow.right
-                ? clamp(overflow.left, {min: 0})
-                : -clamp(overflow.right, {min: 0});
+                ? // Popover overflow is larger on the left side: Move it to the right (add more
+                  // offset on the left) as much as needed to clear the entire left overflow.
+                  clamp(overflow.left, {min: 0})
+                : // Popover overflow is larger on the right side: Move it to the left (reduce offset
+                  // on the left), but only as far as not to add additional overflow on the left.
+                  -clamp(overflow.right, {
+                      min: 0,
+                      max: relativeOffset.left,
+                  });
     } else {
-        // If we are in the right half, we want the popover to overlap on the left so it can be
-        // revealed by scrolling, if necessary.
+        // Because we're in the right half, moving the popover more to the left is likely safer.
         offsetCorrectionLeft =
             overflow.left > overflow.right
-                ? clamp(overflow.left, {min: 0, max: relativeOffset.right})
-                : -clamp(overflow.right, {min: 0, max: relativeOffset.left});
+                ? // Popover overflow is larger on the left side: Move it to the right (add offset on
+                  // the left), but only as far as not to add additional overflow on the right.
+                  clamp(overflow.left, {
+                      min: 0,
+                      max: relativeOffset.right,
+                  })
+                : // Popover overflow is larger on the right side: Move it to the left (reduce offset
+                  // on the left) as much as needed to clear the entire right overflow.
+                  -clamp(overflow.right, {min: 0});
     }
 
     let offsetCorrectionTop = 0;
-    if (verticalPosition === 'top-half') {
+    if (verticalScrollPosition === 'top-half') {
         offsetCorrectionTop =
             overflow.top > overflow.bottom
                 ? clamp(overflow.top, {min: 0})
-                : -clamp(overflow.bottom, {min: 0});
+                : -clamp(overflow.bottom, {
+                      min: 0,
+                      max: relativeOffset.top,
+                  });
     } else {
         offsetCorrectionTop =
             overflow.top > overflow.bottom
-                ? clamp(overflow.top, {min: 0, max: relativeOffset.bottom})
-                : -clamp(overflow.bottom, {min: 0, max: relativeOffset.top});
+                ? clamp(overflow.top, {
+                      min: 0,
+                      max: relativeOffset.bottom,
+                  })
+                : -clamp(overflow.bottom, {min: 0});
     }
 
     return {
@@ -382,19 +438,22 @@ function getFlippedOffset(offset: Offset, flip: Flip): Offset {
  *
  * @param rect The {@link PartialDOMRect} to check if its area is enclosed by the `container`.
  * @param container The {@link HTMLElement} to check if it encloses the area of the `rect`.
+ * @param safetyGap Minimum distance needed between `rect` and `container` before considering it to
+ *   be in the visible area.
  * @returns Whether the `rect` is enclosed by the area of the `container`, by direction.
  */
 function getIsRectInVisibleAreaOfContainer(
     rect: PartialDOMRect,
     container: HTMLElement,
+    safetyGap: Padding = {left: 0, right: 0, top: 0, bottom: 0},
 ): {horizontal: boolean; vertical: boolean} {
     const containerRect = container.getBoundingClientRect();
 
     const visibleArea = {
-        top: Math.max(containerRect.top, 0),
-        left: Math.max(containerRect.left, 0),
-        bottom: Math.min(containerRect.bottom, window.innerHeight),
-        right: Math.min(containerRect.right, window.innerWidth),
+        top: Math.max(containerRect.top, 0) + safetyGap.top,
+        left: Math.max(containerRect.left, 0) + safetyGap.left,
+        bottom: Math.min(containerRect.bottom, window.innerHeight) - safetyGap.bottom,
+        right: Math.min(containerRect.right, window.innerWidth) - safetyGap.right,
     };
 
     // Ceil and floor rounding are necessary in case the app on electron is not being displayed at

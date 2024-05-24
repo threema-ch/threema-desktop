@@ -9,6 +9,16 @@ export interface Offset {
 }
 
 /**
+ * Describes a padding of a rectangular shape.
+ */
+export interface Padding {
+    readonly left: u53;
+    readonly right: u53;
+    readonly top: u53;
+    readonly bottom: u53;
+}
+
+/**
  * Describes a point on a rectangular shape.
  */
 export interface RectPoint {

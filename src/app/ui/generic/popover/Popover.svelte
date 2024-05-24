@@ -35,6 +35,7 @@
   export let element: $$Props['element'] = undefined;
   export let flip: NonNullable<$$Props['flip']> = true;
   export let offset: NonNullable<$$Props['offset']> = {left: 0, top: 0};
+  export let safetyGap: NonNullable<$$Props['safetyGap']> = {left: 0, right: 0, top: 0, bottom: 0};
   export let reference: $$Props['reference'] = undefined;
   export let triggerBehavior: NonNullable<$$Props['triggerBehavior']> = 'toggle';
 
@@ -121,6 +122,7 @@
       anchorPoints,
       offset,
       flip,
+      safetyGap,
     );
 
     return popoverOffset;

@@ -31,6 +31,7 @@
   export let offset: $$Props['offset'] = undefined;
   export let popover: $$Props['popover'] = null;
   export let reference: $$Props['reference'] = undefined;
+  export let safetyGap: $$Props['safetyGap'] = {left: 8, right: 8, top: 8, bottom: 8};
   export let triggerBehavior: $$Props['triggerBehavior'] = undefined;
 
   const dispatch = createEventDispatcher<{
@@ -61,6 +62,7 @@
     {flip}
     {offset}
     {reference}
+    {safetyGap}
     {triggerBehavior}
     on:clicktrigger
     on:hasclosed

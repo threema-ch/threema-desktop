@@ -261,6 +261,13 @@
     items={menuItems}
     offset={{left: 0, top: 4}}
     reference={virtualTrigger}
+    safetyGap={{
+      left: 12,
+      right: 12,
+      // Account for the `TopBar`.
+      top: 64 + 12,
+      bottom: 12,
+    }}
     triggerBehavior={virtualTrigger === undefined ? 'toggle' : 'open'}
     on:clicktrigger={handleClickTrigger}
     on:hasclosed
