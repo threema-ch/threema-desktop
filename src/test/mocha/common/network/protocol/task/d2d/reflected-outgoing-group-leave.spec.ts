@@ -89,7 +89,7 @@ export function run(): void {
 
             // Group state should still be KICKED, not LEFT (message should be discarded)
             const group = model.groups.getByGroupIdAndCreator(groupId, {
-                creatorIsUser: false,
+                isUser: false,
                 creatorIdentity: creator,
             });
             assert(group !== undefined, 'Group not found');
@@ -119,7 +119,7 @@ export function run(): void {
 
             // Ensure we left the group
             const group = model.groups.getByGroupIdAndCreator(groupId, {
-                creatorIsUser: false,
+                isUser: false,
                 creatorIdentity: creator,
             });
             assert(group !== undefined, 'Group not found');
@@ -149,7 +149,7 @@ export function run(): void {
 
             // Group should be marked as dissolved, with member list still intact
             const group = model.groups.getByGroupIdAndCreator(groupId, {
-                creatorIsUser: true,
+                isUser: true,
             });
             assert(group !== undefined, 'Group not found');
             expect(group.get().view.userState, 'Wrong user state').to.equal(GroupUserState.LEFT);

@@ -697,7 +697,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      *
      * Note: If the creator is undefined, this function will assume that the user is the creator.
      */
-    readonly hasGroupByIdAndCreator: (id: GroupId, creatorUid?: DbContactUid) => DbHas<DbGroup>;
+    readonly hasGroupByIdAndCreatorUid: (id: GroupId, creatorUid?: DbContactUid) => DbHas<DbGroup>;
 
     /**
      * Get the group with the specified UID.
@@ -727,14 +727,12 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     readonly getAllGroupMemberContactUids: (groupUid: DbGroupUid) => DbList<DbContact, 'uid'>;
 
     /**
-     * Return the uids of all groups a contact is member of.
+     * Return the uids of all groups where both the user and the specified contact are members of.
      */
-    readonly getAllSharedGroupsByContact: (contactUid: DbContactUid) => DbList<DbGroup, 'uid'>;
+    readonly getAllCommonGroupsByContact: (contactUid: DbContactUid) => DbList<DbGroup, 'uid'>;
 
     /**
-     * Return whether the specified contact is part of the specified group.
-     *
-     * Note: This function will also return true if the `contactUid` belongs to the creator.
+     * Return whether the specified contact is part of the specified group (member or creator).
      */
     readonly hasGroupMember: (groupUid: DbGroupUid, contactUid: DbContactUid) => boolean;
 
@@ -742,12 +740,14 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      * Add a group member to a group. If the contact is the creator or a member already, this
      * function has no side effects.
      *
-     * Returns the number of added group members.
+     * Returns the number of added group members (0 or 1).
      */
     readonly createGroupMember: (groupUid: DbGroupUid, contactUid: DbContactUid) => u53;
 
     /**
      * Remove a group membership.
+     *
+     * Returns the number of removed group members (0 or 1).
      *
      * TODO(DESK-538): When contact with AcquaintanceLevel.GROUP is removed from the last group, delete it
      */

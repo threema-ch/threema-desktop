@@ -250,7 +250,7 @@ function supportsFeature(
         case ReceiverType.GROUP: {
             // Check whether group members support editing
             //
-            // Note: Right now, the list of members does not include the group creator, nor does it
+            // Note: The list of members does not include the group creator, nor does it
             // include the user.
             const memberIdentities = [...receiver.get().view.members].map(
                 (member) => member.get().view.identity,

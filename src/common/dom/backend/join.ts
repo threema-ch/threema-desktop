@@ -367,9 +367,9 @@ export class DeviceJoinProtocol {
             );
             this._log.debug(`Restoring group ${debugString}`);
 
-            // Collect member UIDs. We assume that all contacts must have been restored in the
+            // Collect group members. We assume that all contacts must have been restored in the
             // contact restore step. A missing contact is treated as an invalid group.
-            const memberUids = [];
+            const members = [];
             for (const member of group.memberIdentities.identities) {
                 // Sanity check: Our own identity must not be part of the members list
                 if (member === ownIdentity) {
@@ -385,7 +385,7 @@ export class DeviceJoinProtocol {
                         `Group ${groupDebugString} could not be imported, member ${member} not found in database`,
                     );
                 }
-                memberUids.push(contact);
+                members.push(contact);
             }
 
             let creator: ContactModelStore | undefined = undefined;
@@ -420,7 +420,7 @@ export class DeviceJoinProtocol {
                     category: group.conversationCategory,
                     visibility: group.conversationVisibility,
                 } as const),
-                memberUids,
+                members,
             );
 
             // Profile picture

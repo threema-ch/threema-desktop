@@ -54,8 +54,8 @@ export interface GroupView {
  * is needed to fetch the corresponding contact.
  */
 export type GroupCreator =
-    | {creatorIsUser: false; creatorIdentity: IdentityString}
-    | {creatorIsUser: true};
+    | {readonly isUser: false; readonly creatorIdentity: IdentityString}
+    | {readonly isUser: true};
 
 export type GroupInit = Omit<GroupView, 'displayName' | 'members' | 'color'> &
     ConversationInitMixin;
@@ -107,14 +107,18 @@ export type GroupController = ReceiverController & {
     >;
 
     /**
-     * Set the group member. This function calculates the diff of the given contacts towards the
-     * group. To that end, it will add all contacts that are not in the group yet to the group and
-     * remove the ones that are already in the group. If `newUserState` is set, the user will be added to the group (if they were not previously a member).
+     * Set the group member.
      *
-     * Returns the number of added
-     * and removed contacts. It is the responsibility of the caller to react adequately to the number of changes made to the group.
+     * This function calculates the diff of the given contacts towards the group. To that end, it
+     * will add all contacts that are not in the group yet to the group and remove the ones that are
+     * current members of the group but not in the {@link contacts} list.
+     *
+     * If `newUserState` is set, the user will be added to the group (if they were not previously a
+     * member).
      *
      * Note: If the creator is in the list, it will be ignored.
+     *
+     * @returns the number of added and removed contacts.
      */
     readonly setMembers: Omit<
         ControllerUpdateFromSource<
@@ -129,22 +133,20 @@ export type GroupController = ReceiverController & {
     >;
 
     /**
-     * Update group properties that only come from a sync or only trigger a sync.
+     * Update group properties that only come from a sync or only trigger a sync (i.e. no CSP
+     * messages).
      */
     readonly update: ControllerUpdateFromSync<[update: GroupUpdateFromToSync]> &
         ControllerUpdateFromLocal<[update: GroupUpdateFromLocal]>;
 
     /**
-     * Update update a group's name.
+     * Update a group's name.
      */
     readonly name: ControllerUpdateFromSource<[name: string, createdAt: Date]>;
 
     /**
      * Remove the group and the corresponding conversation, and deactivate the controller. In case
      * the remove is called locally, sync the update to other devices.
-     *
-     * fromLocal returns a promise that will be resolved if the group was successfully removed by
-     * this or another device. It will be rejected with an error if removing failed.
      */
     readonly remove: Omit<ControllerUpdateFromSource, 'fromRemote'>;
 
@@ -152,7 +154,7 @@ export type GroupController = ReceiverController & {
      * Mark group membership as {@link GroupUserState.KICKED}. This means that we were removed from
      * the group by the creator.
      */
-    readonly kick: Omit<ControllerUpdateFromSource, 'fromLocal'>;
+    readonly kicked: Omit<ControllerUpdateFromSource, 'fromLocal'>;
 
     /**
      * Mark group membership as {@link GroupUserState.LEFT}. This means that we left the group.

@@ -7,6 +7,6 @@ export function getGroupCreator(
     creatorIdentity: IdentityString,
 ): GroupCreator {
     return services.device.identity.string === creatorIdentity
-        ? {creatorIsUser: true}
-        : {creatorIsUser: false, creatorIdentity};
+        ? {isUser: true}
+        : {isUser: false, creatorIdentity};
 }

@@ -161,7 +161,7 @@ export function run(): void {
             const thirdUser = makeTestUser('USER0002');
             const thirdContact = addTestUserAsContact(services.model, thirdUser);
 
-            group2.get().controller.kick.fromSync();
+            group2.get().controller.kicked.fromSync();
 
             expect(group2.get().view.userState).to.eq(GroupUserState.KICKED);
 

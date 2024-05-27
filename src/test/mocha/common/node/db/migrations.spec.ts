@@ -32,7 +32,7 @@ export function run(): void {
         this.beforeEach(() => {
             db = new DatabaseConstructor(':memory:');
             migrationHelper = MigrationHelper.create(log, {
-                identity: ensureIdentityString('MEMEMEME'),
+                userIdentity: ensureIdentityString('MEMEMEME'),
             });
         });
         this.afterEach(() => {
@@ -199,7 +199,7 @@ export function run(): void {
             // The latest migration was applied (and cached in the database), but does not exist in
             // the migration list of the current app.
             const migrationHelperAfterDowngrade = MigrationHelper.create(log, {
-                identity: ensureIdentityString('MEMEMEME'),
+                userIdentity: ensureIdentityString('MEMEMEME'),
             });
 
             // Downgrade to latest bundled migration version!

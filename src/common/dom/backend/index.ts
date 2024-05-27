@@ -793,7 +793,7 @@ export class Backend {
         const db = factories.db(
             {config},
             logging.logger('db'),
-            {identity: keyStorageContents.identityData.identity},
+            {userIdentity: keyStorageContents.identityData.identity},
             keyStorageContents.databaseKey,
             true,
         );
@@ -1092,7 +1092,7 @@ export class Backend {
         const db = factories.db(
             {config},
             logging.logger('db'),
-            {identity: joinResult.identity},
+            {userIdentity: joinResult.identity},
             databaseKey,
             false,
         );

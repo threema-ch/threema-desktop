@@ -589,7 +589,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public hasGroupByIdAndCreator(groupdId: GroupId, creator?: DbContactUid): DbHas<DbGroup> {
+    public hasGroupByIdAndCreatorUid(groupdId: GroupId, creator?: DbContactUid): DbHas<DbGroup> {
         if (creator === undefined) {
             return sync(
                 this._db
@@ -693,7 +693,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public getAllSharedGroupsByContact(contactUid: DbContactUid): DbList<DbGroup, 'uid'> {
+    public getAllCommonGroupsByContact(contactUid: DbContactUid): DbList<DbGroup, 'uid'> {
         const groupMemberLeftJoin = tGroupMember.forUseInLeftJoin();
         return sync(
             this._db
@@ -714,6 +714,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
 
     /** @inheritdoc */
     public hasGroupMember(groupUid: DbGroupUid, contactUid: DbContactUid): boolean {
+        // Check if contact has a membership
         const membershipRecord = sync(
             this._db
                 .selectFrom(tGroupMember)
@@ -725,27 +726,26 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 )
                 .executeSelectNoneOrOne(),
         );
-        let isCreator = false;
-        if (membershipRecord === null) {
-            isCreator =
-                sync(
-                    this._db
-                        .selectFrom(tGroup)
-                        .select({creatorUid: tGroup.creatorUid})
-                        .where(tGroup.uid.equals(groupUid))
-                        .executeSelectNoneOrOne(),
-                )?.creatorUid === contactUid;
+        if (membershipRecord !== null) {
+            return true;
         }
 
-        return membershipRecord !== null || isCreator;
+        // Otherwise, the contact might be the creator
+        return (
+            sync(
+                this._db
+                    .selectFrom(tGroup)
+                    .selectOneColumn(tGroup.creatorUid)
+                    .where(tGroup.uid.equals(groupUid))
+                    .executeSelectNoneOrOne(),
+            ) === contactUid
+        );
     }
 
     /** @inheritdoc */
     public createGroupMember(groupUid: DbGroupUid, contactUid: DbContactUid): u53 {
         if (this.hasGroupMember(groupUid, contactUid)) {
-            this._log.warn(
-                'Cannot add a group member to a group that is already included in its members or is its admin. Aborting the operation',
-            );
+            this._log.warn('Contact is already member of the group, cannot add');
             return 0;
         }
 

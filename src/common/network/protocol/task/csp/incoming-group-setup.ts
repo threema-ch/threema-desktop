@@ -40,8 +40,11 @@ export class IncomingGroupSetupTask extends GroupSetupTaskBase<ActiveTaskCodecHa
     }
 
     /** @inheritdoc */
-    protected async _kick(handle: ActiveTaskCodecHandle<'volatile'>, group: Group): Promise<void> {
-        await group.controller.kick.fromRemote(handle);
+    protected async _kicked(
+        handle: ActiveTaskCodecHandle<'volatile'>,
+        group: Group,
+    ): Promise<void> {
+        await group.controller.kicked.fromRemote(handle);
     }
 
     /** @inheritdoc */

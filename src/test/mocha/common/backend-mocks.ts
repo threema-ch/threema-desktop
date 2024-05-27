@@ -214,7 +214,7 @@ export function initSqliteBackend(logger: Logger): SqliteDatabaseBackend {
     const dbKey = wrapRawDatabaseKey(new Uint8Array(32));
     const backend = SqliteDatabaseBackend.create(
         logger,
-        {identity: ensureIdentityString('MEMEMEME')},
+        {userIdentity: ensureIdentityString('MEMEMEME')},
         ':memory:',
         dbKey,
     );

@@ -11,7 +11,7 @@ SELECT uid, creatorUid FROM groups WHERE creatorUid IS NOT NULL;
 -- Remove the new column
 ALTER TABLE groups DROP COLUMN creatorUid;
 
--- Recreate the old groups table
+-- Recreate the old groups table including the unique constraint on creatorIdentity
 CREATE TABLE groups_copy (
     uid INTEGER PRIMARY KEY,
     creatorIdentity TEXT NOT NULL,
@@ -25,11 +25,9 @@ CREATE TABLE groups_copy (
     profilePictureAdminDefined BLOB,
     colorIndex INTEGER NOT NULL DEFAULT 0,
 
-
     -- The (creatorIdentity, groupId) pair must be unique
     UNIQUE(creatorIdentity, groupId)
 );
-
 INSERT INTO groups_copy (uid,
     creatorIdentity,
     groupId,
@@ -56,21 +54,15 @@ INSERT INTO groups_copy (uid,
 
 DROP table groups;
 
-ALTER TABLE groups_copy RENAME TO groups; 
+ALTER TABLE groups_copy RENAME TO groups;
 
--- check that foreign keys still uphold
+-- Check that foreign keys still uphold
 PRAGMA foreign_key_check;
 
--- commit this transaction
+-- Commit this transaction
 COMMIT TRANSACTION;
 
--- Turn on the foreign keys again.
+-- Turn on the foreign keys again
 PRAGMA foreign_keys=ON;
 
 BEGIN TRANSACTION;
-
-
-
-
-
-

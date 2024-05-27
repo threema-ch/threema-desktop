@@ -540,8 +540,7 @@ export async function importScreenshotData(
                     groupId: group.id,
                     creatorIdentity,
                 }),
-                userState:
-                    isMember || creator.creatorIsUser ? GroupUserState.MEMBER : GroupUserState.LEFT,
+                userState: isMember || creator.isUser ? GroupUserState.MEMBER : GroupUserState.LEFT,
                 category: ConversationCategory.DEFAULT,
                 visibility: ConversationVisibility.SHOW,
             },

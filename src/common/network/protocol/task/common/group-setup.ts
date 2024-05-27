@@ -84,7 +84,7 @@ export abstract class GroupSetupTaskBase<
                 // Group was found, but we're not part of the group anymore. Reflect and return.
                 await this._reflectIncomingGroupSetup(handle);
                 if (group.view.userState === GroupUserState.MEMBER) {
-                    await this._kick(handle, group);
+                    await this._kicked(handle, group);
                     this._log.info(`We were removed from the group ${this._groupDebugString}`);
                 } else {
                     this._log.info(
@@ -189,7 +189,7 @@ export abstract class GroupSetupTaskBase<
     /**
      * Mark our own user as kicked from the specified group.
      */
-    protected abstract _kick(handle: TTaskCodecHandleType, group: Group): Promise<void>;
+    protected abstract _kicked(handle: TTaskCodecHandleType, group: Group): Promise<void>;
 
     /**
      * Replace the member list for the specified group.

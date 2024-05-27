@@ -237,7 +237,7 @@ function update(services: ServicesForModel, change: Exact<ContactUpdate>, uid: D
 
 function isRemovable(services: ServicesForModel, uid: DbContactUid): boolean {
     const {db} = services;
-    const groupsWithContactAsMember = db.getAllSharedGroupsByContact(uid);
+    const groupsWithContactAsMember = db.getAllCommonGroupsByContact(uid);
     return groupsWithContactAsMember.length === 0;
 }
 

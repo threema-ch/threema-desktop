@@ -4,7 +4,6 @@ COMMIT TRANSACTION;
 
 PRAGMA foreign_keys = OFF;
 
-
 BEGIN TRANSACTION;
 
 -- The uid of the group creator. Is null if the user is the creator
@@ -22,6 +21,7 @@ DELETE FROM groupMembers WHERE EXISTS (
     AND groups.creatorUid = groupMembers.contactUid
 );
 
+-- Remove the unique constraint from groups.creatorIdentity
 CREATE TABLE groups_copy (
     uid INTEGER PRIMARY KEY,
     creatorIdentity TEXT NOT NULL,
@@ -35,48 +35,50 @@ CREATE TABLE groups_copy (
     profilePictureAdminDefined BLOB,
     colorIndex INTEGER NOT NULL DEFAULT 0,
     creatorUid INTEGER DEFAULT NULL REFERENCES contacts(uid) ON DELETE RESTRICT
-
 );
 
-INSERT INTO groups_copy (uid,
-    creatorIdentity,
-    groupId,
-    name,
-    createdAt,
-    userState ,
-    notificationTriggerPolicyOverride ,
-    notificationTriggerPolicyOverrideExpiresAt,
-    notificationSoundPolicyOverride,
-    profilePictureAdminDefined,
-    colorIndex,
-    creatorUid) SELECT uid, creatorIdentity,
-    groupId,
-    name,
-    createdAt,
-    userState ,
-    notificationTriggerPolicyOverride ,
-    notificationTriggerPolicyOverrideExpiresAt,
-    notificationSoundPolicyOverride,
-    profilePictureAdminDefined,
-    colorIndex,
-    creatorUid from groups;
+INSERT INTO groups_copy
+    (
+        uid,
+        creatorIdentity,
+        groupId,
+        name,
+        createdAt,
+        userState ,
+        notificationTriggerPolicyOverride ,
+        notificationTriggerPolicyOverrideExpiresAt,
+        notificationSoundPolicyOverride,
+        profilePictureAdminDefined,
+        colorIndex,
+        creatorUid
+    )
+    SELECT
+        uid,
+        creatorIdentity,
+        groupId,
+        name,
+        createdAt,
+        userState ,
+        notificationTriggerPolicyOverride ,
+        notificationTriggerPolicyOverrideExpiresAt,
+        notificationSoundPolicyOverride,
+        profilePictureAdminDefined,
+        colorIndex,
+        creatorUid
+    FROM groups;
 
 -- Drop the old groups table
 DROP table groups;
 
-ALTER TABLE groups_copy RENAME TO groups; 
+ALTER TABLE groups_copy RENAME TO groups;
 
--- check that foreign keys still uphold
+-- Check that foreign keys still uphold
 PRAGMA foreign_key_check;
 
--- commit this transaction
+-- Commit this transaction
 COMMIT TRANSACTION;
 
--- rollback all config you setup before.
+-- Turn on the foreign keys again
 PRAGMA foreign_keys=ON;
 
 BEGIN TRANSACTION;
-
-
-
-

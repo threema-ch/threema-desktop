@@ -813,7 +813,7 @@ export function backendTests(
             expect(() => db.createGroupMember(99999n as DbGroupUid, contactUid1)).to.throw;
         });
 
-        it('hasGroupByIdAndCreator / removeGroup', function () {
+        it('hasGroupByIdAndCreatorUid / removeGroup', function () {
             // Add a group with no members
             const uid = makeGroup(db, {creatorUid: undefined}, []);
             const group = db.getGroupByUid(uid);
@@ -821,16 +821,18 @@ export function backendTests(
             assert(group !== undefined);
 
             // Existing group is found
-            expect(db.hasGroupByIdAndCreator(group.groupId, group.creatorUid)).to.equal(uid);
+            expect(db.hasGroupByIdAndCreatorUid(group.groupId, group.creatorUid)).to.equal(uid);
 
             // Other combinations are not found
-            expect(db.hasGroupByIdAndCreator(group.groupId, 9999n as DbContactUid)).to.be.undefined;
-            expect(db.hasGroupByIdAndCreator(99999n as GroupId, group.creatorUid)).to.be.undefined;
+            expect(db.hasGroupByIdAndCreatorUid(group.groupId, 9999n as DbContactUid)).to.be
+                .undefined;
+            expect(db.hasGroupByIdAndCreatorUid(99999n as GroupId, group.creatorUid)).to.be
+                .undefined;
 
             // Once group is gone, not found
             expect(db.removeGroup(uid)).to.be.true;
             expect(db.removeGroup(uid)).to.be.false;
-            expect(db.hasGroupByIdAndCreator(group.groupId, group.creatorUid)).to.be.undefined;
+            expect(db.hasGroupByIdAndCreatorUid(group.groupId, group.creatorUid)).to.be.undefined;
         });
 
         it('getGroupByUid', function () {
