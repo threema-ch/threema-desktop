@@ -101,9 +101,9 @@ export type InboundBaseMessageView = CommonBaseMessageView & {
     readonly receivedAt: Date;
 
     /**
-     * Unparsed raw body. For deleted messages, we don't need a raw body.
+     * Unparsed raw body.
      */
-    readonly raw?: ReadonlyUint8Array;
+    readonly raw: ReadonlyUint8Array;
 };
 export type OutboundBaseMessageView = CommonBaseMessageView & {
     /**

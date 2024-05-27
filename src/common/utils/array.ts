@@ -153,3 +153,19 @@ export async function filterAsync<T>(
     );
     return array.filter((_, index) => results[index]);
 }
+
+/**
+ *  Typeguard for empty arrays.
+ */
+function isEmptyArray(val: unknown): val is [] {
+    return Array.isArray(val) && val.length === 0;
+}
+/*
+ * Ensure value is an empty array.
+ */
+export function ensureEmptyArray(val: unknown): [] {
+    if (!isEmptyArray(val)) {
+        throw new Error(`Value ${val} is not an empty array`);
+    }
+    return val;
+}

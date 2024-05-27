@@ -129,3 +129,20 @@ export function ensureError(error: unknown): Error {
 export function isNotUndefined<T>(val: T | undefined): val is T {
     return val !== undefined;
 }
+
+/**
+ * Typeguard for an undefined value.
+ */
+function isUndefined<T>(val: T | undefined): val is undefined {
+    return val === undefined;
+}
+
+/*
+ * Ensure value is undefined.
+ */
+export function ensureUndefined(val: unknown): undefined {
+    if (!isUndefined(val)) {
+        throw new Error(`Value ${val} is not undefined`);
+    }
+    return val;
+}

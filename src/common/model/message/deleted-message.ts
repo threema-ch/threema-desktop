@@ -17,70 +17,46 @@ import type {
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
-import {assert, unreachable} from '~/common/utils/assert';
+import {ensureEmptyArray} from '~/common/utils/array';
+import {assert, ensureUndefined, unreachable, unwrap} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
-export function commonViewToDeletedView<TMessageDirection extends MessageDirection>(
-    common: BaseMessageView<TMessageDirection>,
-): InboundDeletedMessageView | OutboundDeletedMessageView {
-    assert(
-        common.deletedAt !== undefined,
-        'Cannot create a deleted view of a message that was not deleted',
-    );
-
-    switch (common.direction) {
-        case MessageDirection.INBOUND:
-            return {
-                createdAt: common.createdAt,
-                deletedAt: common.deletedAt,
-                direction: common.direction,
-                history: [],
-                id: common.id,
-                lastEditedAt: undefined,
-                ordinal: common.ordinal,
-                reactions: [],
-                receivedAt: common.receivedAt,
-                raw: undefined,
-                readAt: common.readAt,
-            };
-        case MessageDirection.OUTBOUND:
-            return {
-                createdAt: common.createdAt,
-                deletedAt: common.deletedAt,
-                direction: common.direction,
-                history: [],
-                id: common.id,
-                lastEditedAt: undefined,
-                ordinal: common.ordinal,
-                reactions: [],
-                readAt: common.readAt,
-                sentAt: common.sentAt,
-            };
-
-        default:
-            return unreachable(common);
-    }
-}
-
-export function getDeletedMessageModelStore(
+export function getDeletedMessageModelStore<TMessageDirection extends MessageDirection>(
     services: ServicesForModel,
     conversation: ConversationControllerHandle,
-    view: InboundDeletedMessageView | OutboundDeletedMessageView,
+    common: BaseMessageView<TMessageDirection>,
     uid: DbMessageUid,
     sender: LocalModelStore<Contact> | typeof NO_SENDER,
 ): AnyDeletedMessageModelStore {
-    switch (view.direction) {
-        case MessageDirection.OUTBOUND:
+    switch (common.direction) {
+        case MessageDirection.OUTBOUND: {
+            const view: OutboundDeletedMessageView = {
+                ...common,
+                deletedAt: unwrap(common.deletedAt),
+                history: ensureEmptyArray(common.history),
+                reactions: ensureEmptyArray(common.history),
+                lastEditedAt: ensureUndefined(common.lastEditedAt),
+            };
+
             return new OutboundDeletedMessageModelStore(services, view, uid, conversation);
-        case MessageDirection.INBOUND:
+        }
+        case MessageDirection.INBOUND: {
             assert(
                 sender !== NO_SENDER,
                 `Expected sender of inbound ${MessageType.DELETED} message ${uid} to exist`,
             );
+            assert(common.raw.byteLength === 0, 'Deleted message cannot have a raw body');
+            const view: InboundDeletedMessageView = {
+                ...common,
+                deletedAt: unwrap(common.deletedAt),
+                history: ensureEmptyArray(common.history),
+                reactions: ensureEmptyArray(common.history),
+                lastEditedAt: ensureUndefined(common.lastEditedAt),
+            };
             return new InboundDeletedMessageModelStore(services, view, uid, conversation, sender);
-
+        }
         default:
-            return unreachable(view);
+            return unreachable(common);
     }
 }
 

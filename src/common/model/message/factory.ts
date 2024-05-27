@@ -9,10 +9,7 @@ import type {
 import type {MessageFactory} from '~/common/model/message';
 import {createAudioMessage, getAudioMessageModelStore} from '~/common/model/message/audio-message';
 import type {NO_SENDER} from '~/common/model/message/common';
-import {
-    commonViewToDeletedView,
-    getDeletedMessageModelStore,
-} from '~/common/model/message/deleted-message';
+import {getDeletedMessageModelStore} from '~/common/model/message/deleted-message';
 import {createFileMessage, getFileMessageModelStore} from '~/common/model/message/file-message';
 import {createImageMessage, getImageMessageModelStore} from '~/common/model/message/image-message';
 import {createTextMessage, getTextMessageModelStore} from '~/common/model/message/text-message';
@@ -84,7 +81,7 @@ export const MESSAGE_FACTORY: MessageFactory = {
                 return getDeletedMessageModelStore(
                     services,
                     conversation,
-                    commonViewToDeletedView(common),
+                    common,
                     message.uid,
                     sender,
                 ) as TLocalModelStore;

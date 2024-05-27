@@ -159,9 +159,7 @@ function getCommonView<TDirection extends MessageDirection>(
 
     switch (direction) {
         case MessageDirection.INBOUND: {
-            if (message.type !== MessageType.DELETED) {
-                assert(message.raw !== undefined, 'Expected inbound message to have a raw body');
-            }
+            assert(message.raw !== undefined, 'Expected inbound message to have a raw body');
             assert(
                 message.processedAt !== undefined,
                 'Expected inbound message to have a `processedAt` value',
@@ -170,7 +168,7 @@ function getCommonView<TDirection extends MessageDirection>(
                 ...common,
                 direction: MessageDirection.INBOUND,
                 receivedAt: message.processedAt,
-                raw: message.type === MessageType.DELETED ? undefined : message.raw,
+                raw: message.raw,
             };
             return inbound as BaseMessageView<TDirection>;
         }

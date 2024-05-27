@@ -14,19 +14,26 @@ import type {
     OutboundBaseMessageView,
 } from '~/common/model/types/message/common';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ReadonlyUint8Array} from '~/common/types';
 
-// View
-
-interface CommonDeletedMessageView extends Required<Pick<CommonBaseMessageView, 'deletedAt'>> {
+/**
+ * The fields of the deleted message that contrarily to normal messages must be defined
+ * (`deletedAt`) or undefined/empty (lastEditedAt, reactions, history).
+ */
+interface CommonDeleteMessageRestrictions
+    extends Required<Pick<CommonBaseMessageView, 'deletedAt'>> {
     readonly history: [];
     readonly lastEditedAt: undefined;
     readonly reactions: [];
 }
+
+// View
+
 export type InboundDeletedMessageView = InboundBaseMessageView &
-    CommonDeletedMessageView & {
-        readonly raw: undefined;
+    CommonDeleteMessageRestrictions & {
+        readonly raw: ReadonlyUint8Array;
     };
-export type OutboundDeletedMessageView = OutboundBaseMessageView & CommonDeletedMessageView;
+export type OutboundDeletedMessageView = OutboundBaseMessageView & CommonDeleteMessageRestrictions;
 
 // Init
 

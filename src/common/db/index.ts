@@ -526,11 +526,11 @@ export interface DbAudioMessageFragment extends DbBaseFileMessageFragment {
 export type DbAudioMessage = DbAudioMessageFragment & DbMessageCommon<MessageType.AUDIO>;
 
 /**
- * A deleted message cannot have a raw body, nor can it be edited, have reactions or have a history.
+ * A deleted message cannot be edited, have reactions nor can it have a history.
  */
 export type DbDeletedMessage = Omit<
     DbMessageCommon<MessageType.DELETED>,
-    'raw' | 'lastEditedAt' | 'reactions' | 'history'
+    'lastEditedAt' | 'reactions' | 'history'
 > &
     Required<Pick<DbMessageCommon<MessageType.DELETED>, 'deletedAt'>>;
 

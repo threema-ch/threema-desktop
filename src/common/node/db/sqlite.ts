@@ -2701,6 +2701,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     .selectFrom(tMessage)
                     .select({
                         type: tMessage.messageType,
+                        sender: tMessage.senderContactUid,
                     })
                     .where(tMessage.uid.equals(uid))
                     .executeSelectNoneOrOne(),
@@ -2759,12 +2760,13 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             const unreferencedFileIds = this._deleteFromMessageDataIfUnreferenced(fileDataUids);
 
             // Now change the message type and all associated data in the main table of the deleted message.
+            // If the message is incoming, we empty the raw body.
             const dbDeletedMessage = sync(
                 this._db
                     .update(tMessage)
                     .set({
                         lastEditedAt: undefined,
-                        raw: undefined,
+                        raw: typeQueryResult.sender !== undefined ? new Uint8Array() : undefined,
                         messageType: MessageType.DELETED,
                         deletedAt,
                     })
@@ -2781,6 +2783,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         threadId: tMessage.threadId,
                         deletedAt: tMessage.deletedAt,
                         ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt).getTime(),
+                        raw: tMessage.raw,
                     })
                     .executeUpdateNoneOrOne(),
             );
