@@ -18,9 +18,7 @@ import {assert, unreachable} from '~/common/utils/assert';
 import {u64ToHexLe} from '~/common/utils/number';
 
 /**
- * Receive and process incoming delivery receipts from CSP.
- *
- * Processing may trigger side effects (e.g. reflection).
+ * Receive and process incoming edit and delete messages from CSP.
  */
 export class IncomingMessageContentUpdateTask
     implements ComposableTask<ActiveTaskCodecHandle<'volatile'>, void>
@@ -34,6 +32,7 @@ export class IncomingMessageContentUpdateTask
         private readonly _contactOrInit: ContactOrInit,
         private readonly _log: Logger,
     ) {}
+
     public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
         const {model} = this._services;
 
@@ -43,11 +42,11 @@ export class IncomingMessageContentUpdateTask
             this._contactOrInit instanceof LocalModelStore,
             'Contact should have been created by IncomingMessageTask, but was not',
         );
+        const senderContactModel = this._contactOrInit.get();
         let conversation: LocalModelStore<Conversation>;
-
         switch (this._conversationId.type) {
             case ReceiverType.CONTACT:
-                conversation = this._contactOrInit.get().controller.conversation();
+                conversation = senderContactModel.controller.conversation();
                 break;
             case ReceiverType.GROUP:
                 {
@@ -81,12 +80,20 @@ export class IncomingMessageContentUpdateTask
             );
             return;
         }
-
         if (message.ctx !== MessageDirection.INBOUND) {
             this._log.warn(
                 `Discarding conversation message update of type ${this._update.type} for message ${u64ToHexLe(
                     this._messageId,
                 )} as the target message was not inbound`,
+            );
+            return;
+        }
+        const messageSender = message.get().controller.sender();
+        if (messageSender.ctx !== this._contactOrInit.ctx) {
+            this._log.warn(
+                `Discarding conversation message update of type ${this._update.type} for message ${u64ToHexLe(
+                    this._messageId,
+                )} as the original sender and the editor do not match`,
             );
             return;
         }
@@ -102,19 +109,9 @@ export class IncomingMessageContentUpdateTask
             return;
         }
 
-        const messageSender = message.get().controller.sender();
-        if (messageSender.ctx !== this._contactOrInit.ctx) {
-            this._log.warn(
-                `Discarding conversation message update of type ${this._update.type} for message ${u64ToHexLe(
-                    this._messageId,
-                )} as the original sender and the editor do not match`,
-            );
-            return;
-        }
-
         switch (this._update.type) {
             case 'edit':
-                await this._editMessage(handle, message);
+                await this._editMessage(handle, message, this._update.newText);
                 return;
             case 'delete':
                 await this._deleteMessage(handle, conversation);
@@ -136,10 +133,10 @@ export class IncomingMessageContentUpdateTask
     private async _editMessage(
         handle: ActiveTaskCodecHandle<'volatile'>,
         message: AnyInboundNonDeletedMessageModelStore,
+        newText: string,
     ): Promise<void> {
-        assert(this._update.type === 'edit', 'Cannot edit from update task of type delete');
         await message.get().controller.editMessage.fromRemote(handle, {
-            newText: this._update.newText,
+            newText,
             lastEditedAt: this._timeStamp,
         });
     }

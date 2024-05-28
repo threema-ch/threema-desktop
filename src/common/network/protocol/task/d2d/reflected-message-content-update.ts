@@ -62,7 +62,7 @@ export class ReflectedMessageContentUpdateTask
 
         switch (this._update.type) {
             case 'edit':
-                this._editMessage(messageStore);
+                this._editMessage(messageStore, this._update.newText);
                 return;
             case 'delete':
                 this._deleteMessage(conversation, messageStore.ctx);
@@ -85,14 +85,13 @@ export class ReflectedMessageContentUpdateTask
             .controller.markMessageAsDeleted.fromSync(this._messageId, this._timeStamp);
     }
 
-    private _editMessage(message: AnyNonDeletedMessageModelStore): void {
-        assert(this._update.type === 'edit', 'Cannot edit from update task of type delete');
+    private _editMessage(message: AnyNonDeletedMessageModelStore, newText: string): void {
         assert(
             message.ctx === this._expectedMessageDirection,
             `Expected ${message.ctx} message to have direction ${this._expectedMessageDirection}`,
         );
         message.get().controller.editMessage.fromSync({
-            newText: this._update.newText,
+            newText,
             lastEditedAt: this._timeStamp,
         });
     }
