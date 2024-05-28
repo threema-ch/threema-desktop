@@ -130,7 +130,7 @@ export class IncomingMessageContentUpdateTask
     ): Promise<void> {
         await conversation
             .get()
-            .controller.deleteMessage.fromRemote(handle, this._messageId, this._timeStamp);
+            .controller.markMessageAsDeleted.fromRemote(handle, this._messageId, this._timeStamp);
     }
 
     private async _editMessage(

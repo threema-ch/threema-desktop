@@ -466,7 +466,7 @@ function removeFromDatabase(
  * @throws Error if the message type was not deletable or the (message, conversation)-pair was not
  * found in the database.
  */
-export function deleteMessage(
+export function markMessageAsDeleted(
     services: ServicesForModel,
     deletedAt: Date,
     conversation: ConversationControllerHandle,

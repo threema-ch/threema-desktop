@@ -80,7 +80,9 @@ export class ReflectedMessageContentUpdateTask
             direction === this._expectedMessageDirection,
             `Expected ${direction} message to have direction ${this._expectedMessageDirection}`,
         );
-        conversation.get().controller.deleteMessage.fromSync(this._messageId, this._timeStamp);
+        conversation
+            .get()
+            .controller.markMessageAsDeleted.fromSync(this._messageId, this._timeStamp);
     }
 
     private _editMessage(message: AnyNonDeletedMessageModelStore): void {

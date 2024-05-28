@@ -37,9 +37,9 @@ export interface IConversationViewModelController extends ProxyMarked {
      */
     readonly clear: () => Promise<void>;
     readonly delete: () => Promise<void>;
-    readonly deleteMessage: (messageId: MessageId) => Promise<void>;
-    readonly deleteStatusMessage: (statusMessageId: StatusMessageId) => Promise<void>;
-    readonly deleteMessageForEveryone: (messageId: MessageId) => Promise<void>;
+    readonly removeMessage: (messageId: MessageId) => Promise<void>;
+    readonly markMessageAsDeleted: (messageId: MessageId) => Promise<void>;
+    readonly removeStatusMessage: (statusMessageId: StatusMessageId) => Promise<void>;
     readonly findForwardedMessage: (
         receiverLookup: DbReceiverLookup,
         messageId: MessageId,
@@ -102,20 +102,20 @@ export class ConversationViewModelController implements IConversationViewModelCo
         return this._conversation.get().controller.update.fromSync({lastUpdate: undefined});
     }
 
-    public async deleteMessage(messageId: MessageId): Promise<void> {
-        return await this._conversation.get().controller.removeMessageLocally.fromLocal(messageId);
+    public async removeMessage(messageId: MessageId): Promise<void> {
+        return await this._conversation.get().controller.removeMessage.fromLocal(messageId);
     }
 
-    public async deleteStatusMessage(statusMessageId: StatusMessageId): Promise<void> {
+    public async removeStatusMessage(statusMessageId: StatusMessageId): Promise<void> {
         return await this._conversation
             .get()
             .controller.removeStatusMessage.fromLocal(statusMessageId);
     }
 
-    public async deleteMessageForEveryone(messageId: MessageId): Promise<void> {
+    public async markMessageAsDeleted(messageId: MessageId): Promise<void> {
         return await this._conversation
             .get()
-            .controller.deleteMessage.fromLocal(messageId, new Date());
+            .controller.markMessageAsDeleted.fromLocal(messageId, new Date());
     }
 
     public findForwardedMessage(

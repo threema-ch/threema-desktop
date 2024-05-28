@@ -306,7 +306,7 @@ export class ConversationModelController implements ConversationController {
     }
 
     /** @inheritdoc */
-    public readonly removeMessageLocally: ConversationController['removeMessageLocally'] = {
+    public readonly removeMessage: ConversationController['removeMessage'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (uid: MessageId) => {
@@ -322,7 +322,7 @@ export class ConversationModelController implements ConversationController {
     };
 
     /** @inheritdoc */
-    public readonly deleteMessage: ConversationController['deleteMessage'] = {
+    public readonly markMessageAsDeleted: ConversationController['markMessageAsDeleted'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (uid: MessageId, deletedAt: Date) => {
@@ -764,7 +764,7 @@ export class ConversationModelController implements ConversationController {
         deletedAt: Date,
         triggerSource: TriggerSource,
     ): void {
-        const deletedMessageStore = message.deleteMessage(
+        const deletedMessageStore = message.markMessageAsDeleted(
             this._services,
             deletedAt,
             this._handle,

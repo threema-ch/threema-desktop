@@ -109,7 +109,7 @@
   function handleClickDeleteMessageLocally(event: CustomEvent<AnyMessageListMessage>): void {
     switch (event.detail.type) {
       case 'message':
-        viewModelController?.deleteMessage(event.detail.id).catch((error) => {
+        viewModelController?.removeMessage(event.detail.id).catch((error) => {
           log.error(`Could not delete message with id ${event.detail.id}`, error);
           toast.addSimpleFailure(
             $i18n.t('messaging.error--delete-message', 'Could not delete message'),
@@ -118,7 +118,7 @@
         break;
 
       case 'status-message':
-        viewModelController?.deleteStatusMessage(event.detail.id).catch((error) => {
+        viewModelController?.removeStatusMessage(event.detail.id).catch((error) => {
           log.error(`Could not delete status message with id ${event.detail.id}`, error);
           toast.addSimpleFailure(
             $i18n.t('messaging.error--delete-status-message', 'Could not delete status message'),
@@ -136,7 +136,7 @@
       log.warn('Tried to delete an already deleted message on all devices');
       return;
     }
-    viewModelController?.deleteMessageForEveryone(event.detail.id).catch((error) => {
+    viewModelController?.markMessageAsDeleted(event.detail.id).catch((error) => {
       log.error(`Could not delete message with id ${event.detail.id}`, error);
       toast.addSimpleFailure($i18n.t('messaging.error--delete-message'));
     });
@@ -681,12 +681,12 @@
         <!-- TODO(DESK-1447): Pass call state to `TopBar` (illustrative example below). Note:
         `members` should be replaced with the actual members of the group call, not all group
         members. -->
-        <!-- 
+        <!--
           call={{
             isJoined: false,
             members:
               $viewModelStore.receiver.type === 'group' ? $viewModelStore.receiver.members : [],
-          }} 
+          }}
         -->
         <TopBar
           conversation={{

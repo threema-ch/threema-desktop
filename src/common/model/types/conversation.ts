@@ -123,7 +123,7 @@ export type ConversationController = {
      *
      * Note: This triggers an update of the `_lastModificationStore`.
      */
-    readonly removeMessageLocally: ControllerUpdateFromLocal<[uid: MessageId]>;
+    readonly removeMessage: ControllerUpdateFromLocal<[uid: MessageId]>;
 
     /**
      * Remove all messages from this conversation.
@@ -150,6 +150,16 @@ export type ConversationController = {
     readonly removeAllStatusMessages: ControllerUpdateFromLocal;
 
     /**
+     * Mark a message as deleted. Contrary to `removeMessage`, this function deletes all text
+     * and additional data from the message and marks it as deleted, disabling any interaction with
+     * the message except for removing it. This operation is irreversible and is reflected to all
+     * devices, as well as sent to all members of the current conversation.
+     *
+     * @throws if the message could not be found.
+     */
+    readonly markMessageAsDeleted: ControllerUpdateFromSource<[uid: MessageId, deletedAt: Date]>;
+
+    /**
      * Create a status message and add it to the DB.
      * The status message can be of any type.
      * Status are triggered locally and do not have side-effects on linked devices.
@@ -162,15 +172,6 @@ export type ConversationController = {
             | Omit<GroupNameChangeStatus['view'], 'conversationUid' | 'id' | 'ordinal'>,
     ) => AnyStatusMessageModelStore;
 
-    /**
-     * Mark a message as deleted. Contrarily to `removeMessage`, this function deletes all text and
-     * additional data from the message and marks it as deleted, disabling any interaction with the
-     * message expect for removing it. This operation is irreversible and is reflected to all
-     * devices, as well as sent to all recipients of the current conversation.
-     *
-     * @throws if the message could not be found.
-     */
-    readonly deleteMessage: ControllerUpdateFromSource<[uid: MessageId, deletedAt: Date]>;
     /**
      * Return whether the message with the specified id exists in the this conversation.
      */
