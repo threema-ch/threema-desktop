@@ -24,6 +24,7 @@ import type {
     ConversationView,
 } from '~/common/model/types/conversation';
 import type {
+    AnyDeletedMessageModelStore,
     AnyInboundNonDeletedMessageModelStore,
     AnyMessageModelStore,
     AnyNonDeletedMessageModelStore,
@@ -324,64 +325,102 @@ export class ConversationModelController implements ConversationController {
     /** @inheritdoc */
     public readonly markMessageAsDeleted: ConversationController['markMessageAsDeleted'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
-        // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (uid: MessageId, deletedAt: Date) => {
             const messageToDelete = this.getMessage(uid);
-
             if (messageToDelete === undefined) {
                 this._log.warn('Cannot find the message to be deleted');
                 return;
             }
 
-            if (messageToDelete.type === MessageType.DELETED) {
-                this._log.warn('Trying to delete a message that was already deleted.');
-                return;
-            }
+            await this._lock.with(async () => {
+                // Validate message
+                if (messageToDelete.type === MessageType.DELETED) {
+                    this._log.warn('Trying to delete a message that was already deleted.');
+                    return;
+                }
+                if (!messageToDelete.get().controller.meta.active.get()) {
+                    this._log.warn('Trying to delete a message with an inactive model.');
+                    return;
+                }
+                assert(
+                    messageToDelete.ctx === MessageDirection.OUTBOUND,
+                    'Cannot send an outgoing delete message task for an inbound message',
+                );
 
-            assert(
-                messageToDelete.ctx === MessageDirection.OUTBOUND,
-                `Expected message direction ${MessageDirection.OUTBOUND} does not match the actual message direction ${messageToDelete.ctx}`,
-            );
+                // Run task
+                const task = new OutgoingDeleteMessageTask(
+                    this._services,
+                    this.receiver().get(),
+                    messageToDelete,
+                    deletedAt,
+                );
+                await this._services.taskManager.schedule(task);
 
-            this._deleteMessage(messageToDelete, deletedAt, TriggerSource.LOCAL);
+                // Update local state
+                this._deleteMessage(messageToDelete, deletedAt);
+                this._updateStoresOnConversationUpdate();
+            });
         },
 
         fromSync: (uid: MessageId, deletedAt: Date) => {
             const messageToDelete = this.getMessage(uid);
 
+            // Validate message
             if (messageToDelete === undefined) {
                 this._log.warn('Cannot find the message to be deleted');
                 return;
             }
-
             if (messageToDelete.type === MessageType.DELETED) {
                 this._log.warn('Trying to delete a message that was already deleted.');
                 return;
             }
+            if (!messageToDelete.get().controller.meta.active.get()) {
+                this._log.warn('Trying to delete a message with an inactive model.');
+                return;
+            }
 
-            this._deleteMessage(messageToDelete, deletedAt, TriggerSource.SYNC);
+            // Update local state
+            this._deleteMessage(messageToDelete, deletedAt);
+            this._updateStoresOnConversationUpdate();
         },
 
-        // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle, uid: MessageId, deletedAt: Date) => {
             const messageToDelete = this.getMessage(uid);
-
             if (messageToDelete === undefined) {
                 this._log.warn('Cannot find the message to be deleted');
                 return;
             }
 
-            if (messageToDelete.type === MessageType.DELETED) {
-                this._log.warn('Trying to delete a message that was already deleted.');
-                return;
-            }
+            // eslint-disable-next-line @typescript-eslint/require-await
+            await this._lock.with(async () => {
+                // Validate message
+                if (messageToDelete.type === MessageType.DELETED) {
+                    this._log.warn('Trying to delete a message that was already deleted.');
+                    return;
+                }
+                if (!messageToDelete.get().controller.meta.active.get()) {
+                    this._log.warn('Trying to delete a message with an inactive model.');
+                    return;
+                }
 
-            assert(
-                messageToDelete.ctx === MessageDirection.INBOUND,
-                `Expected message direction ${MessageDirection.INBOUND} does not match the actual message direction ${messageToDelete.ctx}`,
-            );
+                // Update local state
+                const deletedMessageStore = this._deleteMessage(messageToDelete, deletedAt);
+                this._updateStoresOnConversationUpdate();
 
-            this._deleteMessage(messageToDelete, deletedAt, TriggerSource.REMOTE);
+                // Update notification
+                assert(
+                    deletedMessageStore.ctx === MessageDirection.INBOUND,
+                    'Cannot create a delete notification for an outbound message',
+                );
+                this.meta.run((storeHandle): void => {
+                    this._services.notification
+                        .notifyMessageDelete(deletedMessageStore, {
+                            receiver: this.receiver(),
+                            view: storeHandle.view(),
+                        })
+                        .catch(assertUnreachable);
+                });
+            });
         },
     };
 
@@ -759,12 +798,14 @@ export class ConversationModelController implements ConversationController {
         return message.getFirstUnreadMessageId(this._services, this._handle);
     }
 
+    /**
+     * Locally mark a message as deleted.
+     */
     private _deleteMessage(
         messageToDelete: AnyNonDeletedMessageModelStore,
         deletedAt: Date,
-        triggerSource: TriggerSource,
-    ): void {
-        const deletedMessageStore = message.markMessageAsDeleted(
+    ): AnyDeletedMessageModelStore {
+        return message.markMessageAsDeleted(
             this._services,
             deletedAt,
             this._handle,
@@ -772,49 +813,6 @@ export class ConversationModelController implements ConversationController {
             MESSAGE_FACTORY,
             this._log,
         );
-
-        switch (triggerSource) {
-            case TriggerSource.LOCAL: {
-                assert(
-                    deletedMessageStore.ctx === MessageDirection.OUTBOUND,
-                    'Cannot send an outgoing delete message task for an inbound message',
-                );
-                const task = new OutgoingDeleteMessageTask(
-                    this._services,
-                    this.receiver().get(),
-                    deletedMessageStore,
-                    deletedAt,
-                );
-                this._services.taskManager.schedule(task).catch((error) => {
-                    this._log.error(`Delete message task failed: ${error}`);
-                });
-
-                break;
-            }
-            case TriggerSource.REMOTE:
-                assert(
-                    deletedMessageStore.ctx === MessageDirection.INBOUND,
-                    'Cannot create a delete notification for an outbound message',
-                );
-
-                this.meta.run((viewHandle): void => {
-                    this._services.notification
-                        .notifyMessageDelete(deletedMessageStore, {
-                            receiver: this.receiver(),
-                            view: viewHandle.view(),
-                        })
-                        .catch(assertUnreachable);
-                });
-
-                break;
-
-            case TriggerSource.SYNC:
-                break;
-            default:
-                unreachable(triggerSource);
-        }
-
-        this._updateStoresOnConversationUpdate();
     }
 
     /**

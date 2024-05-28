@@ -1,9 +1,12 @@
 import {CspE2eGroupMessageUpdateType, CspE2eMessageUpdateType, ReceiverType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import type {AnyReceiver} from '~/common/model';
-import type {OutboundDeletedMessageModelStore} from '~/common/model/message/deleted-message';
+import type {
+    Group,
+    AnyReceiver,
+    Contact,
+    AnyOutboundNonDeletedMessageModelStore,
+} from '~/common/model';
 import * as protobuf from '~/common/network/protobuf';
-import {DELETE_MESSAGE_GRACE_PERIOD_IN_MINUTES} from '~/common/network/protocol/constants';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
     ACTIVE_TASK,
@@ -12,10 +15,7 @@ import {
     type ActiveTaskSymbol,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {
-    OutgoingCspMessageTask,
-    type ValidCspMessageTypeForReceiver,
-} from '~/common/network/protocol/task/csp/outgoing-csp-message';
+import {OutgoingCspMessageTask} from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {assert, unreachable} from '~/common/utils/assert';
@@ -23,10 +23,10 @@ import {UTF8} from '~/common/utils/codec';
 import {intoUnsignedLong, u64ToHexLe} from '~/common/utils/number';
 
 export class OutgoingDeleteMessageTask<TReceiver extends AnyReceiver>
-    implements ActiveTask<void, 'persistent'>
+    implements ActiveTask<void, 'volatile'>
 {
     public readonly type: ActiveTaskSymbol = ACTIVE_TASK;
-    public readonly persist = true;
+    public readonly persist = false;
     public readonly transaction = undefined;
 
     private readonly _log: Logger;
@@ -34,7 +34,7 @@ export class OutgoingDeleteMessageTask<TReceiver extends AnyReceiver>
     public constructor(
         private readonly _services: ServicesForTasks,
         private readonly _receiverModel: TReceiver,
-        private readonly _messageModelStore: OutboundDeletedMessageModelStore,
+        private readonly _messageModelStore: AnyOutboundNonDeletedMessageModelStore,
         private readonly _deletedAt: Date,
     ) {
         // Instantiate logger
@@ -42,46 +42,42 @@ export class OutgoingDeleteMessageTask<TReceiver extends AnyReceiver>
         this._log = _services.logging.logger(`network.protocol.task.out-message.${messageIdHex}`);
     }
 
-    public async run(handle: ActiveTaskCodecHandle<'persistent'>): Promise<void> {
+    public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
+        // Ensure that message was already sent, otherwise it cannot be remote-deleted
         const messageModel = this._messageModelStore.get();
         assert(
             messageModel.view.sentAt !== undefined,
             'Cannot delete a message that has not been sent yet',
         );
-        if (
-            Date.now() - messageModel.view.sentAt.getTime() >
-            DELETE_MESSAGE_GRACE_PERIOD_IN_MINUTES * 60000
-        ) {
-            this._log.warn('Not deleting message because grace period has expired');
-            return;
-        }
 
-        const longMessageId = intoUnsignedLong(messageModel.view.id);
         const encoder = protobuf.utils.encoder(protobuf.csp_e2e.DeleteMessage, {
-            messageId: longMessageId,
+            messageId: intoUnsignedLong(messageModel.view.id),
         });
 
-        const deleteMessageWrapperId = randomMessageId(this._services.crypto);
+        const commonMessageProperties = {
+            cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
+            messageId: randomMessageId(this._services.crypto),
+            createdAt: this._deletedAt,
+            allowUserProfileDistribution: false,
+        };
 
-        // Note: Here, we assume that a feature mask check and a check whether edit has actually changed anything have already happened.
+        // Note: Here, we assume that a feature mask check has actually changed anything have
+        // already happened.
         let task;
-
         switch (this._receiverModel.type) {
             case ReceiverType.CONTACT: {
                 const messageProperties = {
-                    type: CspE2eMessageUpdateType.DELETE_MESSAGE as ValidCspMessageTypeForReceiver<TReceiver>,
+                    type: CspE2eMessageUpdateType.DELETE_MESSAGE,
                     encoder,
-                    cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
-                    messageId: deleteMessageWrapperId,
-                    createdAt: this._deletedAt,
-                    allowUserProfileDistribution: false,
-                };
+                    ...commonMessageProperties,
+                } as const;
 
-                task = new OutgoingCspMessageTask(
-                    this._services,
-                    this._receiverModel,
-                    messageProperties,
-                );
+                task = new OutgoingCspMessageTask<
+                    protobuf.csp_e2e.DeleteMessageEncodable,
+                    Contact,
+                    CspE2eMessageUpdateType.DELETE_MESSAGE
+                >(this._services, this._receiverModel, messageProperties);
+
                 break;
             }
             case ReceiverType.GROUP: {
@@ -94,23 +90,22 @@ export class OutgoingDeleteMessageTask<TReceiver extends AnyReceiver>
                     },
                 );
                 const messageProperties = {
-                    type: CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE as ValidCspMessageTypeForReceiver<TReceiver>,
+                    type: CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE,
                     encoder: groupEncoder,
-                    cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
-                    messageId: deleteMessageWrapperId,
-                    createdAt: this._deletedAt,
-                    allowUserProfileDistribution: false,
+                    ...commonMessageProperties,
                 } as const;
 
-                task = new OutgoingCspMessageTask(
-                    this._services,
-                    this._receiverModel,
-                    messageProperties,
-                );
+                task = new OutgoingCspMessageTask<
+                    structbuf.csp.e2e.GroupMemberContainerEncodable,
+                    Group,
+                    CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE
+                >(this._services, this._receiverModel, messageProperties);
+
                 break;
             }
             case ReceiverType.DISTRIBUTION_LIST:
-                this._log.warn('Distribution Lists not implemented yet');
+                // TODO(DESK-597): Distribution lists
+                this._log.warn('Distribution lists not implemented yet');
                 return;
             default:
                 unreachable(this._receiverModel);
