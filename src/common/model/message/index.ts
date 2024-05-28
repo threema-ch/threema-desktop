@@ -683,20 +683,15 @@ export abstract class CommonBaseNonDeletedMessageModelController<
     }
 
     /**
-     * Update the message model using {@link editedMessage}. Return whether or not the message
-     * update was applied successfully.
-     *
-     * Example: When editing a text message, an empty text is not valid. In that case, do not update
-     * the model, but return false. Otherwise, return true.)
+     * Update the message model using {@link editedMessage}.
      *
      * Note: Tasks (e.g. the OutgoingMessageUpdateTask) should not be scheduled by this method, this
      * will be handled by the {@link CommonBaseMessageModelController} depending on the return type.
      */
-
     protected abstract _editMessage(
         message: GuardedStoreHandle<TView>,
         editedMessage: UnifiedEditMessage,
-    ): boolean;
+    ): void;
 }
 
 /** @inheritdoc */
@@ -731,13 +726,19 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
     /** @inheritdoc */
     public readonly editMessage: InboundBaseMessageController<TView>['editMessage'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
+
         fromRemote: async (
             taskHandle: ActiveTaskCodecHandle<'volatile'>,
             editedMessage: UnifiedEditMessage,
             // eslint-disable-next-line @typescript-eslint/require-await
         ) => {
+            if (this._type === MessageType.TEXT && editedMessage.newText.trim().length === 0) {
+                this._log.warn('New text of a text message edit may not be empty');
+                return;
+            }
+
             this.meta.run((handle) => {
-                this._editMessage(handle, editedMessage);
+                // Validate message
                 const conversation = this.conversation().get();
                 const message = conversation.controller.getMessage(handle.view().id);
                 assert(
@@ -748,19 +749,27 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
                     message.ctx === MessageDirection.INBOUND,
                     'Cannot reference an outbound message from an inbound controller',
                 );
-
                 assert(
                     message.type !== MessageType.DELETED,
                     'Cannot edit a message that was already deleted',
                 );
 
+                // Update database
+                this._editMessage(handle, editedMessage);
+
+                // Update notification
                 this._updateNotificationForEditedMessage(message);
             });
         },
+
         fromSync: (editedMessage: UnifiedEditMessage) => {
-            this.meta.run((handle) => {
-                this._editMessage(handle, editedMessage);
-            });
+            if (this._type === MessageType.TEXT && editedMessage.newText.trim().length === 0) {
+                this._log.warn('New text of a text message edit may not be empty');
+                return;
+            }
+
+            // Update database
+            this.meta.run((handle) => this._editMessage(handle, editedMessage));
         },
     };
 
@@ -918,20 +927,30 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
     /** @inheritdoc */
     public readonly editMessage: OutboundBaseMessageController<TView>['editMessage'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
-        // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (editedMessage: UnifiedEditMessage) => {
-            this.meta.run((handle) => {
-                const modelUpdated = this._editMessage(handle, editedMessage);
-                if (modelUpdated) {
-                    this._scheduleOutgoingEditMessageTask(handle, editedMessage.lastEditedAt);
-                }
-            });
+            if (this._type === MessageType.TEXT && editedMessage.newText.trim().length === 0) {
+                this._log.warn('New text of a text message edit may not be empty');
+                return;
+            }
+
+            // Run task
+            const messageId = this.meta.run((handle) => handle.view().id);
+            const task = new OutgoingEditMessageTask(
+                this._services,
+                this._conversation.getReceiver().get(),
+                this._conversation.getReceiver().get().controller.conversation(),
+                messageId,
+                editedMessage,
+            );
+            await this._services.taskManager.schedule(task);
+
+            // Update database
+            this.meta.run((handle) => this._editMessage(handle, editedMessage));
         },
 
         fromSync: (editedMessage: UnifiedEditMessage) => {
-            this.meta.run((handle) => {
-                this._editMessage(handle, editedMessage);
-            });
+            // Update database
+            this.meta.run((handle) => this._editMessage(handle, editedMessage));
         },
     };
 
@@ -1067,22 +1086,10 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
         });
     }
 
-    private _scheduleOutgoingEditMessageTask(
-        storeHandle: GuardedStoreHandle<TView>,
+    private async _scheduleOutgoingEditMessageTask(
+        messageId: MessageId,
         lastEditedAt: Date,
-    ): void {
-        const task = new OutgoingEditMessageTask(
-            this._services,
-            this._conversation.getReceiver().get(),
-            this._conversation.getReceiver().get().controller.conversation(),
-            storeHandle.view().id,
-            lastEditedAt,
-        );
-
-        this._services.taskManager.schedule(task).catch((error) => {
-            this._log.error(`Edit message task failed: ${error}`);
-        });
-    }
+    ): Promise<void> {}
 }
 
 /** @inheritdoc */

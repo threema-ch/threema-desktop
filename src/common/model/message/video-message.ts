@@ -172,7 +172,7 @@ export class InboundVideoMessageModelController
     protected override _editMessage(
         message: GuardedStoreHandle<InboundVideoMessage['view']>,
         editedMessage: UnifiedEditMessage,
-    ): boolean {
+    ): void {
         message.update((view) =>
             updateFileBasedMessageCaption(
                 this._services,
@@ -182,7 +182,6 @@ export class InboundVideoMessageModelController
                 editedMessage,
             ),
         );
-        return true;
     }
 }
 
@@ -243,7 +242,7 @@ export class OutboundVideoMessageModelController
     protected override _editMessage(
         message: GuardedStoreHandle<OutboundVideoMessage['view']>,
         editedMessage: UnifiedEditMessage,
-    ): boolean {
+    ): void {
         message.update((view) =>
             updateFileBasedMessageCaption(
                 this._services,
@@ -253,7 +252,6 @@ export class OutboundVideoMessageModelController
                 editedMessage,
             ),
         );
-        return true;
     }
 }
 

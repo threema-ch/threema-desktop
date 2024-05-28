@@ -159,7 +159,7 @@ export class InboundAudioMessageModelController
     protected override _editMessage(
         message: GuardedStoreHandle<InboundAudioMessage['view']>,
         editedMessage: UnifiedEditMessage,
-    ): boolean {
+    ): void {
         message.update((view) =>
             updateFileBasedMessageCaption(
                 this._services,
@@ -169,7 +169,6 @@ export class InboundAudioMessageModelController
                 editedMessage,
             ),
         );
-        return true;
     }
 }
 
@@ -230,7 +229,7 @@ export class OutboundAudioMessageModelController
     protected override _editMessage(
         message: GuardedStoreHandle<OutboundAudioMessage['view']>,
         editedMessage: UnifiedEditMessage,
-    ): boolean {
+    ): void {
         message.update((view) =>
             updateFileBasedMessageCaption(
                 this._services,
@@ -240,7 +239,6 @@ export class OutboundAudioMessageModelController
                 editedMessage,
             ),
         );
-        return true;
     }
 }
 

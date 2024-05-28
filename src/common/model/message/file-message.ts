@@ -158,7 +158,7 @@ export class InboundFileMessageModelController
     protected override _editMessage(
         message: GuardedStoreHandle<InboundFileMessage['view']>,
         editedMessage: UnifiedEditMessage,
-    ): boolean {
+    ): void {
         message.update((view) =>
             updateFileBasedMessageCaption(
                 this._services,
@@ -168,7 +168,6 @@ export class InboundFileMessageModelController
                 editedMessage,
             ),
         );
-        return true;
     }
 }
 
@@ -229,7 +228,7 @@ export class OutboundFileMessageModelController
     protected override _editMessage(
         message: GuardedStoreHandle<OutboundFileMessage['view']>,
         editedMessage: UnifiedEditMessage,
-    ): boolean {
+    ): void {
         message.update((view) =>
             updateFileBasedMessageCaption(
                 this._services,
@@ -239,7 +238,6 @@ export class OutboundFileMessageModelController
                 editedMessage,
             ),
         );
-        return true;
     }
 }
 

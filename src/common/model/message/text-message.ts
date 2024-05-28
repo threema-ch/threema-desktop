@@ -97,11 +97,7 @@ export class InboundTextMessageModelController
     protected override _editMessage(
         message: GuardedStoreHandle<InboundTextMessage['view']>,
         editedMessage: UnifiedEditMessage,
-    ): boolean {
-        if (editedMessage.newText.trim() === '') {
-            this._log.warn('Not applying edit on inbound message because the new text is empty');
-            return false;
-        }
+    ): void {
         const change = {
             lastEditedAt: editedMessage.lastEditedAt,
             text: editedMessage.newText,
@@ -118,7 +114,6 @@ export class InboundTextMessageModelController
             });
             return {...change, history: newHistory};
         });
-        return true;
     }
 }
 
@@ -130,11 +125,7 @@ export class OutboundTextMessageModelController
     protected override _editMessage(
         message: GuardedStoreHandle<OutboundTextMessage['view']>,
         editedMessage: UnifiedEditMessage,
-    ): boolean {
-        if (editedMessage.newText.trim() === '') {
-            this._log.warn('Not applying edit on outbound message because the new text is empty.');
-            return false;
-        }
+    ): void {
         const change = {
             lastEditedAt: editedMessage.lastEditedAt,
             text: editedMessage.newText,
@@ -151,7 +142,6 @@ export class OutboundTextMessageModelController
             });
             return {...change, history: newHistory};
         });
-        return true;
     }
 }
 

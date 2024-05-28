@@ -6,7 +6,8 @@ import {
     ReceiverType,
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import type {Conversation} from '~/common/model';
+import type {Contact, Conversation, Group} from '~/common/model';
+import type {UnifiedEditMessage} from '~/common/model/types/message';
 import type {AnyReceiver} from '~/common/model/types/receiver';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
@@ -18,10 +19,7 @@ import {
     type ActiveTaskSymbol,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {
-    OutgoingCspMessageTask,
-    type ValidCspMessageTypeForReceiver,
-} from '~/common/network/protocol/task/csp/outgoing-csp-message';
+import {OutgoingCspMessageTask} from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import type {MessageId} from '~/common/network/types';
@@ -30,10 +28,10 @@ import {UTF8} from '~/common/utils/codec';
 import {intoUnsignedLong, u64ToHexLe} from '~/common/utils/number';
 
 export class OutgoingEditMessageTask<TReceiver extends AnyReceiver>
-    implements ActiveTask<void, 'persistent'>
+    implements ActiveTask<void, 'volatile'>
 {
     public readonly type: ActiveTaskSymbol = ACTIVE_TASK;
-    public readonly persist = true;
+    public readonly persist = false;
     public readonly transaction = undefined;
 
     private readonly _log: Logger;
@@ -43,14 +41,14 @@ export class OutgoingEditMessageTask<TReceiver extends AnyReceiver>
         private readonly _receiverModel: TReceiver,
         private readonly _conversation: LocalModelStore<Conversation>,
         private readonly _messageId: MessageId,
-        private readonly _lastEditedAt: Date,
+        private readonly _editedMessage: UnifiedEditMessage,
     ) {
         // Instantiate logger
         const messageIdHex = u64ToHexLe(this._messageId);
         this._log = _services.logging.logger(`network.protocol.task.edit-message.${messageIdHex}`);
     }
 
-    public async run(handle: ActiveTaskCodecHandle<'persistent'>): Promise<void> {
+    public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
         const messageModelStore = this._conversation.get().controller.getMessage(this._messageId);
         if (messageModelStore === undefined) {
             this._log.error('Message does not exist anymore, aborting edit');
@@ -69,10 +67,7 @@ export class OutgoingEditMessageTask<TReceiver extends AnyReceiver>
 
         // Encode message
         const encoder = protobuf.utils.encoder(protobuf.csp_e2e.EditMessage, {
-            text:
-                messageModel.type === MessageType.TEXT
-                    ? messageModel.view.text
-                    : messageModel.view.caption,
+            text: this._editedMessage.newText,
             messageId: intoUnsignedLong(messageModel.view.id),
         });
 
@@ -80,7 +75,7 @@ export class OutgoingEditMessageTask<TReceiver extends AnyReceiver>
         const commonMessageProperties = {
             messageId: randomMessageId(this._services.crypto),
             cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
-            createdAt: this._lastEditedAt,
+            createdAt: this._editedMessage.lastEditedAt,
             allowUserProfileDistribution: false,
         };
 
@@ -89,15 +84,17 @@ export class OutgoingEditMessageTask<TReceiver extends AnyReceiver>
         switch (this._receiverModel.type) {
             case ReceiverType.CONTACT: {
                 const messageProperties = {
-                    type: CspE2eMessageUpdateType.EDIT_MESSAGE as ValidCspMessageTypeForReceiver<TReceiver>,
+                    type: CspE2eMessageUpdateType.EDIT_MESSAGE,
                     encoder,
                     ...commonMessageProperties,
-                };
-                task = new OutgoingCspMessageTask(
-                    this._services,
-                    this._receiverModel,
-                    messageProperties,
-                );
+                } as const;
+
+                task = new OutgoingCspMessageTask<
+                    protobuf.csp_e2e.EditMessageEncodable,
+                    Contact,
+                    CspE2eMessageUpdateType.EDIT_MESSAGE
+                >(this._services, this._receiverModel, messageProperties);
+
                 break;
             }
             case ReceiverType.GROUP: {
@@ -110,15 +107,17 @@ export class OutgoingEditMessageTask<TReceiver extends AnyReceiver>
                     },
                 );
                 const messageProperties = {
-                    type: CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE as ValidCspMessageTypeForReceiver<TReceiver>,
+                    type: CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE,
                     encoder: groupEncoder,
                     ...commonMessageProperties,
-                };
-                task = new OutgoingCspMessageTask(
-                    this._services,
-                    this._receiverModel,
-                    messageProperties,
-                );
+                } as const;
+
+                task = new OutgoingCspMessageTask<
+                    structbuf.csp.e2e.GroupMemberContainerEncodable,
+                    Group,
+                    CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE
+                >(this._services, this._receiverModel, messageProperties);
+
                 break;
             }
             case ReceiverType.DISTRIBUTION_LIST: {
@@ -129,7 +128,6 @@ export class OutgoingEditMessageTask<TReceiver extends AnyReceiver>
             default:
                 unreachable(this._receiverModel);
         }
-
         await task.run(handle);
     }
 }
