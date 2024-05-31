@@ -1,3 +1,7 @@
+import {TRANSFER_HANDLER} from '~/common/index';
+import {PROXY_HANDLER, type ProxyMarked} from '~/common/utils/endpoint';
+import {ResolvablePromise} from '~/common/utils/resolvable-promise';
+
 /**
  * Return a promise that never resolves.
  */
@@ -26,4 +30,33 @@ export function taggedRace<const TTag1, const TValue1, const TTag2, const TValue
         promise1.promise.then((value) => ({tag: promise1.tag, value})),
         promise2.promise.then((value) => ({tag: promise2.tag, value})),
     ]);
+}
+
+/**
+ * The ReusablePromise contains an internal promise, which can be awaited:
+ *
+ *     const reusablePromise = new ReusablePromise<string>();
+ *     // ...
+ *     const value = await reusablePromise.value();
+ *
+ * Once a value is passed to the ReusablePromise, it will be dispatched to all subscribers.
+ *
+ *     reusablePromise.resolve("hello world");
+ *
+ * At the same time, the promise is replaced with a new promise, which can be awaited again.
+ */
+export class ReusablePromise<TValue> implements ProxyMarked {
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
+
+    private _promise = new ResolvablePromise<TValue>({uncaught: 'discard'});
+
+    public resolve(password: TValue): void {
+        this._promise.resolve(password);
+        this._promise = new ResolvablePromise({uncaught: 'discard'});
+    }
+
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    public value(): Promise<TValue> {
+        return this._promise;
+    }
 }
