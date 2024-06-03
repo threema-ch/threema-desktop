@@ -17,7 +17,10 @@
   "main": "build/electron/electron-main/electron-main.cjs",
   "sideEffects": false,
   "scripts": {
-    "clean": "rm -rf build node_modules packaging/build && for d in \"libs/\"*; do rm -rf $d/node_modules; done",
+    "clean": "npm run clean:build && npm run clean:node_modules",
+    "clean:build": "rm -rf build packaging/build && npm run clean:build:flatpak",
+    "clean:build:flatpak": "rm -rf packaging/flatpak/build packaging/flatpak/repo packaging/flatpak/ch.threema.*-desktop.yml packaging/flatpak/generated-sources.json packaging/flatpak/.flatpak-builder",
+    "clean:node_modules": "rm -rf node_modules && for d in \"libs/\"*; do rm -rf $d/node_modules; done",
     "build": "npm run rebuild && node tools/build-electron.cjs",
     "build:cli": "VITE_MAKE=cli,cli,consumer,sandbox vite build -m production -c config/vite.config.ts",
     "dist:consumer-sandbox": "npm run build consumer sandbox && node tools/dist-electron.cjs consumer sandbox",
