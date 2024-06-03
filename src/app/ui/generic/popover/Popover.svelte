@@ -192,9 +192,16 @@
 
 <div class="container" bind:this={element}>
   {#if $$slots.trigger}
-    <button class="trigger" bind:this={trigger} on:click={handleClickTrigger}>
+    <!-- Disable a11y warnings here, because `"trigger"` actually isn't intended as a clickable
+    element itself, but only as an unstyled wrapper element that catches and handles `"click"`
+    events (because `<slot>` doesn't support them directly). The contents of the slot should instead
+    handle a11y themselves and emit the necessary click events. Note: Use `<button>`s as slot
+    content, so we get click events "for free" (even on keypress). -->
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div class="trigger" bind:this={trigger} on:click={handleClickTrigger}>
       <slot name="trigger" />
-    </button>
+    </div>
   {/if}
 
   {#if isOpen}
@@ -229,10 +236,6 @@
 
   .container {
     position: relative;
-
-    .trigger {
-      @extend %neutral-input;
-    }
 
     .popover {
       position: absolute;
