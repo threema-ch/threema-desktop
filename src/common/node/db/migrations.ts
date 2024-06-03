@@ -2,8 +2,8 @@ import * as path from 'node:path';
 import * as process from 'node:process';
 
 import * as v from '@badrap/valita';
-
 import type {Database} from 'better-sqlcipher';
+
 import {MigrationError} from '~/common/error';
 import type {Logger} from '~/common/logging';
 import type {IdentityString} from '~/common/network/types';

@@ -1,10 +1,10 @@
+import DatabaseConstructor, {type Database} from 'better-sqlcipher';
 import {SynchronousPromise} from 'synchronous-promise';
 import type {UpdatableValues} from 'ts-sql-query/extras/types';
 import {ConsoleLogQueryRunner} from 'ts-sql-query/queryRunners/ConsoleLogQueryRunner';
 import type {QueryRunner} from 'ts-sql-query/queryRunners/QueryRunner';
 import type {ColumnsForSetOf, OuterJoinSourceOf} from 'ts-sql-query/utils/tableOrViewUtils';
 
-import DatabaseConstructor, {type Database} from 'better-sqlcipher';
 import type {NonceHash} from '~/common/crypto';
 import type {
     DbAudioMessage,

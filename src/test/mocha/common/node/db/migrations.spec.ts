@@ -1,6 +1,6 @@
+import DatabaseConstructor, {type Database} from 'better-sqlcipher';
 import {expect} from 'chai';
 
-import DatabaseConstructor, {type Database} from 'better-sqlcipher';
 import {type Logger, NOOP_LOGGER} from '~/common/logging';
 import {ensureIdentityString} from '~/common/network/types';
 import {MigrationHelper} from '~/common/node/db/migrations';

@@ -2,9 +2,6 @@
 	path = threema-protocols
 	url = ../../protocols/threema-protocols.git
 	branch = main
-[submodule "libs/better-sqlcipher"]
-	path = libs/better-sqlcipher
-	url = ../better-sqlcipher.git
 [submodule "libs/structbuf-typescript"]
 	path = libs/structbuf-typescript
 	url = ../../structbuf/structbuf-typescript.git

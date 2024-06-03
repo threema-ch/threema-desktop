@@ -3,11 +3,10 @@
 // The only changes are the name and the database driver type.
 // We'll try to keep changes minimal, to make updating easier if the interface changes.
 
+import type {Database} from 'better-sqlcipher';
 import type {DatabaseType} from 'ts-sql-query/queryRunners/QueryRunner'
 import {SqlTransactionQueryRunner} from 'ts-sql-query/queryRunners/SqlTransactionQueryRunner'
 import type {PromiseProvider, UnwrapPromiseTuple} from 'ts-sql-query/utils/PromiseProvider'
-
-import type {Database} from 'better-sqlcipher';
 
 /* eslint-disable */
 
