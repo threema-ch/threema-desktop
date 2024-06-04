@@ -105,6 +105,7 @@ export class BackendController {
             linkingState: ReadableStore<LinkingState>,
             userPassword: ResolvablePromise<string>,
             oldProfilePassword: ReusablePromise<string | undefined>,
+            continueWithoutRestoring: ResolvablePromise<void>,
             oppfConfig: ResolvablePromise<OppfFetchConfig>,
         ) => Promise<void>,
         requestUserPassword: (previouslyAttemptedPassword?: string) => Promise<string>,
@@ -167,6 +168,7 @@ export class BackendController {
             linkingStateStore: WritableStore<LinkingState>,
             userPassword: Promise<string>,
             oldProfilePassword: ReusablePromise<string | undefined>,
+            continueWithoutRestoring: Promise<void>,
             oppfConfig: Promise<OppfFetchConfig>,
         ): ProxyEndpoint<DeviceLinkingSetup> {
             const {local, remote} = endpoint.createEndpointPair<DeviceLinkingSetup>();
@@ -182,6 +184,7 @@ export class BackendController {
                 },
                 userPassword,
                 oldProfilePassword,
+                continueWithoutRestoring,
                 oppfConfig,
                 [TRANSFER_HANDLER]: PROXY_HANDLER,
             };
@@ -278,6 +281,7 @@ export class BackendController {
                 break;
             }
         }
+
         // If backend could not be created, that means that no identity was found. Initiate device
         // linking flow.
         if (backendEndpoint === undefined) {
@@ -291,15 +295,15 @@ export class BackendController {
 
             // Note: `oppfConfig` will never resolve in non OnPrem builds.
             const oppfConfig = new ResolvablePromise<OppfFetchConfig>({uncaught: 'default'});
-
-            // Show linking screen
             const userPassword = new ResolvablePromise<string>({uncaught: 'default'});
-
             const oldProfilePassword = new ReusablePromise<string | undefined>();
+            const continueWithoutRestoring = new ResolvablePromise<void>({uncaught: 'default'});
+            // Show linking screen
             await showLinkingWizard(
                 linkingStateStore,
                 userPassword,
                 oldProfilePassword,
+                continueWithoutRestoring,
                 oppfConfig,
             );
             // Create backend through device join
@@ -310,6 +314,7 @@ export class BackendController {
                         linkingStateStore,
                         userPassword,
                         oldProfilePassword,
+                        continueWithoutRestoring,
                         oppfConfig,
                     ),
                     assembleForwardPinCommunication(forwardPins),

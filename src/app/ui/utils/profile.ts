@@ -9,6 +9,9 @@ export async function resetProfile(services: AppServices): Promise<void> {
 
     const ipc = window.app;
 
+    // Copy the profile
+    ipc.createProfileSnapshot();
+
     // Then, request deletion of profile directory and app restart
     ipc.deleteProfileAndRestartApp();
 }

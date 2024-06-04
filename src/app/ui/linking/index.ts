@@ -31,6 +31,12 @@ export interface LinkingParams {
     readonly oldProfilePassword: ReusablePromise<string | undefined>;
 
     /**
+     * A promise that fulfills if the user tried to restore messages from another Threema ID and
+     * decides to continue without message restoration.
+     */
+    readonly continueWithoutRestoring: ResolvablePromise<void>;
+
+    /**
      * A promise that should be fulfilled when the user clicks the button in the success screen.
      */
     readonly identityReady: ResolvablePromise<void>;
@@ -57,6 +63,10 @@ export interface LinkingWizardOldProfilePasswordProps {
     readonly oldPassword: ReusablePromise<string | undefined>;
     readonly previouslyEnteredPassword?: string;
     readonly buttonState: 'default' | 'loading';
+}
+
+export interface RestorationIdentityMismatchProps {
+    readonly accept: ResolvablePromise<void>;
 }
 
 export interface LinkingWizardSetPasswordProps {

@@ -144,10 +144,11 @@
     "action--default-cancel": "OK",
     "action--default-confirm": "Relink",
     "label--title": "Connection Failed",
+    "markup--backup": "The message history can be restored after relinking.",
     "markup--client-update-required-p1": "This Threema version is no longer supported (outdated protocol version).",
     "markup--client-update-required-p2": "Please <1>update to the latest version</1> to continue using Threema.",
     "markup--client-was-dropped-p1": "This device has been unlinked, which is why you currently can’t send or receive new messages.",
-    "markup--client-was-dropped-p2": "If unlinking was not triggered by you, please note that this might happen during the beta phase for technical reasons. We apologize for the inconvience.",
+    "markup--client-was-dropped-p2": "If unlinking was not triggered by you, please note that this might happen during the beta phase for technical reasons. We apologize for the inconvenience.",
     "markup--device-slot-mismatch-p1": "Due to an unexpected error, this device must be re-linked with the server.",
     "markup--see-faq": "For more information, see <1>FAQ</1>.",
     "prose--mediator-update-required-p1": "This Threema version is not compatible with your mediator server. The server uses an outdated protocol version and must be updated first.",
@@ -200,6 +201,7 @@
     "label--title-invalid-identity": "Revoked or Unknown Threema ID",
     "label--title-invalid-work-credentials": "Invalid Threema Work Credentials",
     "label--title-rendezvous-error-timeout": "Linking Timeout",
+    "label--title-restoration-failed": "Restoring your Existing Messages Failed",
     "label--title-restore-error": "Restoring Data Failed",
     "prose--configuration-failed": "The setup of the OnPrem instance failed because of a configuration error. Please retry the setup process or contact your administrator.",
     "prose--message-connection-error-generic": "Connection to the server was lost before linking was complete. If you did not abort the process yourself, please check your Internet connection, and try again.",
@@ -208,7 +210,16 @@
     "prose--message-invalid-identity": "The Threema ID used for linking is unknown to the server or has been revoked.",
     "prose--message-invalid-work-credentials": "The credentials for Threema Work are invalid or expired. Please restart the app on your mobile device and retry linking, or contact your Threema Work administrator.",
     "prose--message-wrong-app-variant-consumer-error": "It is not possible to link your Threema ID with this app. If you use Threema Work on your mobile device, download the desktop app from <1 />.",
-    "prose--message-wrong-app-variant-work-error": "It is not possible to link your Threema ID with this app. If you use the consumer version of Threema on your mobile device, download the desktop app from <1 />."
+    "prose--message-wrong-app-variant-work-error": "It is not possible to link your Threema ID with this app. If you use the consumer version of Threema on your mobile device, download the desktop app from <1 />.",
+    "prose--restoration-failed": "Restoring existing messages failed. Please try again or relink without restoring your existing messages."
+  },
+  "dialog--linking-old-profile-password": {
+    "action--confirm": "Restore Messages",
+    "error--incorrect-password": "The entered password is incorrect. Please try again.",
+    "label--old-password": "Password",
+    "label--skip-restoration": "Skip",
+    "label--title": "Restore Messages",
+    "prose--intro": "Previous chats were found. To restore them, please enter the corresponding password. If you skip this step, the old chats will be deleted irrevocably."
   },
   "dialog--linking-oppf": {
     "action--confirm": "Next",
@@ -222,6 +233,12 @@
     "prose--enter-config": "Threema OnPrem is the self-hosted secure messenger for companies. Please enter the credentials provided by your company.",
     "prose--forget-credentials": "Forgot your credentials? Please contact your Threema OnPrem administrator.",
     "prose--private-user": "If you are a private user, please visit <1 /> to download Threema."
+  },
+  "dialog--linking-restoration-identity-mismatch": {
+    "action--confirm": "Retry",
+    "label--continue": "Link Without Chat History",
+    "label--title": "Restore Messages",
+    "prose--intro": "A different Threema ID was previously used on this device. Your chat history cannot be restored."
   },
   "dialog--linking-scan": {
     "action--need-help": "Need help?",
@@ -303,7 +320,7 @@
     "action--cancel": "OK",
     "action--confirm": "Reset and Relink",
     "label--title": "Unrecoverable State Detected",
-    "prose--description-p1": "We have detected that your local data is in an unrecoverable state. To prevent data loss, you currently can’t send or receive new messages. We apologize for the inconvience.",
+    "prose--description-p1": "We have detected that your local data is in an unrecoverable state. To prevent data loss, you currently can’t send or receive new messages. We apologize for the inconvenience.",
     "prose--description-p2": "To continue using Threema, you need to remove your local profile and relink the device.",
     "prose--description-p3": "Please report this error to Threema’s support from the app on your mobile device (“Settings > Beta Feedback”). Note: Remember to save your logs before relinking, as they will be cleared."
   },

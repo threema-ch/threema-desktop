@@ -256,8 +256,7 @@ export type LinkingStateErrorType =
     | {readonly kind: 'registration-error'}
     | {readonly kind: 'generic-error'}
     | {readonly kind: 'onprem-configuration-error'}
-    | {readonly kind: 'old-messages-restoration-error'}
-    | {readonly kind: 'old-new-profile-identity-mismatch'};
+    | {readonly kind: 'old-messages-restoration-error'};
 
 export type SyncingPhase = 'receiving' | 'restoring' | 'encrypting';
 
@@ -303,9 +302,16 @@ export type LinkingState =
      * Let the user enter the password of an old profile that was found to restore its messages.
      */
     | {
-          readonly state: 'wait-for-old-profile-password';
-          previouslyEnteredPassword?: string;
-          isLoading: boolean;
+          readonly state: 'waiting-for-old-profile-password';
+          readonly previouslyEnteredPassword?: string;
+          readonly isLoading: boolean;
+      }
+    /**
+     * If the user tried to restore messages from another ID, let them restart or continue without
+     * messages.
+     */
+    | {
+          readonly state: 'restoration-identity-mismatch';
       }
     /**
      * We are registered at the Mediator server and the device join protocol is complete.
@@ -339,6 +345,12 @@ export interface DeviceLinkingSetup extends ProxyMarked {
      * profile.
      */
     readonly oldProfilePassword: ReusablePromise<string | undefined>;
+
+    /**
+     * A promise that will be fulfilled by the frontend when the user continues without restoring
+     * messages when they linked with a different identity.
+     */
+    readonly continueWithoutRestoring: Promise<void>;
 
     /**
      * A promise that will be fulfilled by the frontend when the user has entered a oppf url
@@ -949,7 +961,7 @@ export class Backend {
             logging.logger('com.pin-forwarding'),
         );
 
-        const wrappedOldProfileEraser = endpoint.wrap<OldProfileRemover>(
+        const wrappedOldProfileRemover = endpoint.wrap<OldProfileRemover>(
             oldProfileRemover,
             logging.logger('com.profile-removal'),
         );
@@ -1334,7 +1346,7 @@ export class Backend {
 
         // Only continue this process if an old profile was found
         if (shouldRestoreOldMessages) {
-            let oldDatabaseKey: RawDatabaseKey | undefined = undefined;
+            let oldDatabaseKey: RawDatabaseKey | undefined | 'no-restoration' = undefined;
             try {
                 const {dbKey, oldUserIdentity} = await unlockDatabaseKey(
                     services,
@@ -1344,12 +1356,15 @@ export class Backend {
                 );
                 if (oldUserIdentity !== identityData.identity) {
                     log.debug(
-                        'Tried to restore the messages of a profile whose identity does not match the new profile',
+                        'Tried to restore the messages of a profile whose identity does not match the new profile.',
                     );
-                    return await throwLinkingError(
-                        'Restoring the messages of the old profile failed because the identity does not match the one of the new profile.',
-                        {kind: 'old-new-profile-identity-mismatch'},
-                    );
+                    await wrappedDeviceLinkingSetup.linkingState.updateState({
+                        state: 'restoration-identity-mismatch',
+                    });
+                    await wrappedDeviceLinkingSetup.continueWithoutRestoring;
+                    oldDatabaseKey = 'no-restoration';
+                } else {
+                    oldDatabaseKey = dbKey;
                 }
             } catch (errorInfo) {
                 if (errorInfo instanceof KeyStorageError) {
@@ -1369,7 +1384,7 @@ export class Backend {
             let previouslyEnteredPassword: string | undefined = undefined;
             while (oldDatabaseKey === undefined) {
                 await wrappedDeviceLinkingSetup.linkingState.updateState({
-                    state: 'wait-for-old-profile-password',
+                    state: 'waiting-for-old-profile-password',
                     previouslyEnteredPassword,
                     isLoading: false,
                 });
@@ -1380,7 +1395,7 @@ export class Backend {
                 }
 
                 await wrappedDeviceLinkingSetup.linkingState.updateState({
-                    state: 'wait-for-old-profile-password',
+                    state: 'waiting-for-old-profile-password',
                     previouslyEnteredPassword,
                     isLoading: true,
                 });
@@ -1398,10 +1413,13 @@ export class Backend {
                         log.debug(
                             'Tried to restore the messages of a profile whose identity does not match the new profile',
                         );
-                        return await throwLinkingError(
-                            'Restoring the messages of the old profile failed because the identity does not match the one of the new profile.',
-                            {kind: 'old-new-profile-identity-mismatch'},
-                        );
+
+                        await wrappedDeviceLinkingSetup.linkingState.updateState({
+                            state: 'restoration-identity-mismatch',
+                        });
+                        await wrappedDeviceLinkingSetup.continueWithoutRestoring;
+                        oldDatabaseKey = 'no-restoration';
+                        break;
                     }
                     oldDatabaseKey = oldProfileInformation.dbKey;
                 } catch (errorInfo) {
@@ -1421,7 +1439,7 @@ export class Backend {
                 }
             }
 
-            if (oldDatabaseKey !== undefined) {
+            if (oldDatabaseKey !== undefined && oldDatabaseKey !== 'no-restoration') {
                 try {
                     transferOldMessages(services, oldDatabaseKey, db, config, log, factories, 1000);
                 } catch (errorInfo) {
@@ -1433,10 +1451,10 @@ export class Backend {
                     );
                 }
             } else {
-                log.info('User did not want to restore old messages, continuing normal flow');
+                log.info('Not restoring messages, continuing normal flow');
             }
 
-            await wrappedOldProfileEraser.remove();
+            await wrappedOldProfileRemover.remove();
         }
 
         // Now that essential data is processed, we can connect to the Mediator server and register

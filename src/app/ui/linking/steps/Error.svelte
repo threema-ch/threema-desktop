@@ -178,18 +178,11 @@
       case 'old-messages-restoration-error':
         title = t(
           'dialog--linking-error.label--title-restoration-failed',
-          'Restoration of old messages failed',
+          'Restoring your existing messages failed',
         );
         message = t(
           'dialog--linking-error.prose--restoration-failed',
-          'The restoration of the messages of the old profile failed for an unknown reason. Please try again or relink without restoring your old messages.',
-        );
-        break;
-      case 'old-new-profile-identity-mismatch':
-        title = t('dialog--linking-error.label--title-configuration-failed');
-        message = t(
-          'dialog--linking-error.prose--restoration-failed',
-          'The restoration of the messages of the old profile failed because the old profile is connected to a different Threema ID than your new one. Please make sure that you use the same Threema ID or relink without restoring your old messages.',
+          'Restoring existing messages failed. Please try again or relink without restoring your existing messages.',
         );
         break;
       default:

@@ -316,6 +316,7 @@ async function main(): Promise<() => void> {
         linkingState: ReadableStore<LinkingState>,
         userPassword: ResolvablePromise<string>,
         oldProfilePassword: ReusablePromise<string | undefined>,
+        continueWithoutRestoring: ResolvablePromise<void>,
         oppfConfig: ResolvablePromise<OppfConfig>,
     ): Promise<void> {
         await domContentLoaded;
@@ -325,6 +326,7 @@ async function main(): Promise<() => void> {
             linkingState,
             userPassword,
             oldProfilePassword,
+            continueWithoutRestoring,
             identityReady,
             oppfConfig,
         });

@@ -144,6 +144,7 @@
     "action--default-cancel": "OK",
     "action--default-confirm": "Erneut verknüpfen",
     "label--title": "Verbindung fehlgeschlagen",
+    "markup--backup": "Die Chatverläufe können nach erneutem Verknüpfen wiederhergestellt werden.",
     "markup--client-update-required-p1": "Diese Version von Threema wird nicht mehr unterstützt (veraltete Protokollversion).",
     "markup--client-update-required-p2": "Bitte <1>installieren Sie die neueste Version</1>, um Threema weiterhin zu nutzen.",
     "markup--client-was-dropped-p1": "Die Verknüpfung mit diesem Gerät wurde aufgehoben, weshalb im Moment keine neuen Nachrichten mehr gesendet oder empfangen werden können.",
@@ -200,6 +201,7 @@
     "label--title-invalid-identity": "Widerrufene oder unbekannte Threema-ID",
     "label--title-invalid-work-credentials": "Ungültige Threema Work-Zugangsdaten",
     "label--title-rendezvous-error-timeout": "Verknüpfungsvorgang abgelaufen",
+    "label--title-restoration-failed": "Wiederherstellung der alten Nachrichten fehlgeschlagen",
     "label--title-restore-error": "Datenwiederherstellung fehlgeschlagen",
     "prose--configuration-failed": "Das Aufsetzen der OnPrem Instanz ist wegen einem Konfigurationsfehler fehlgeschlagen. Bitte versuchen Sie es erneut oder kontaktieren Sie Ihren Administrator.",
     "prose--message-connection-error-generic": "Die Verbindung zum Server wurde unterbrochen, bevor die Verknüpfung abgeschlossen werden konnte. Bitte prüfen Sie Ihre Internetverbindung, und versuchen Sie es erneut.",
@@ -208,7 +210,16 @@
     "prose--message-invalid-identity": "Die Threema-ID, die beim Verknüpfen verwendet wurde, ist ungültig oder wurde widerrufen.",
     "prose--message-invalid-work-credentials": "Die Zugangsdaten für Threema Work sind ungültig oder abgelaufen. Bitte starten Sie die App auf dem Mobilgerät neu und wiederholen Sie den Vorgang, oder kontaktieren Sie Ihren Threema Work-Administrator.",
     "prose--message-wrong-app-variant-consumer-error": "Es ist nicht möglich, Ihre Threema-ID mit dieser App zu verknüpfen. Nutzen Sie auf dem Mobilgerät Threema Work, dann laden Sie die Desktop-App von <1 /> herunter.",
-    "prose--message-wrong-app-variant-work-error": "Es ist nicht möglich, Ihre Threema-ID mit dieser App zu verknüpfen. Nutzen Sie auf dem Mobilgerät Threema für Privatanwender, dann laden Sie die Desktop-App von <1 /> herunter."
+    "prose--message-wrong-app-variant-work-error": "Es ist nicht möglich, Ihre Threema-ID mit dieser App zu verknüpfen. Nutzen Sie auf dem Mobilgerät Threema für Privatanwender, dann laden Sie die Desktop-App von <1 /> herunter.",
+    "prose--restoration-failed": "Die Wiederherstellung bestehender Nachrichten ist fehlgeschlagen. Bitte versuchen Sie es erneut oder fahren Sie fort, ohne Ihre bestehenden Nachrichten wiederherzustellen."
+  },
+  "dialog--linking-old-profile-password": {
+    "action--confirm": "Nachrichten wiederherstellen",
+    "error--incorrect-password": "Das eingegebene Passwort ist falsch. Bitte versuchen Sie es erneut.",
+    "label--old-password": "Passwort",
+    "label--skip-restoration": "Überspringen",
+    "label--title": "Nachrichten wiederherstellen",
+    "prose--intro": "Alte Chats wurden gefunden. Um diese wiederherzustellen, geben Sie bitte das entsprechende Passwort ein. Wenn Sie diesen Schritt überspringen, werden die alten Chats unwiderruflich gelöscht."
   },
   "dialog--linking-oppf": {
     "action--confirm": "Weiter",
@@ -222,6 +233,12 @@
     "prose--enter-config": "Threema OnPrem ist der selbstgehostete sichere Messenger für Unternehmen. Bitte geben Sie die Zugangsdaten ein, die Sie von Ihrem Unternehmen erhalten haben.",
     "prose--forget-credentials": "Zugangsdaten vergessen? Bitte kontaktieren Sie Ihren Threema OnPrem-Administrator.",
     "prose--private-user": "Falls Sie Privatanwender sind, laden Sie Threema von <1 /> herunter."
+  },
+  "dialog--linking-restoration-identity-mismatch": {
+    "action--confirm": "Erneut versuchen",
+    "label--continue": "Ohne Chatverläufe verknüpfen",
+    "label--title": "Nachrichten wiederherstellen",
+    "prose--intro": "Auf diesem Gerät wurde zuvor eine andere Threema-ID verwendet. Ihre Chatverläufe können nicht wiederhergestellt werden."
   },
   "dialog--linking-scan": {
     "action--need-help": "Brauchen Sie Hilfe?",

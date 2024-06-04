@@ -47,7 +47,7 @@
         <p>
           {$i18n.t(
             'dialog--unrecoverable-state.prose--description-p1',
-            'We have detected that your local data is in an unrecoverable state. To prevent data loss, you cannot currently send or receive new messages. We apologize for the inconvience.',
+            'We have detected that your local data is in an unrecoverable state. To prevent data loss, you cannot currently send or receive new messages. We apologize for the inconvenience.',
           )}
         </p>
         <p>

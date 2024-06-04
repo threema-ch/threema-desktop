@@ -13,10 +13,12 @@
     LinkingWizardSetPasswordProps,
     LinkingWizardSuccessProps,
     LinkingWizardSyncingProps,
+    RestorationIdentityMismatchProps,
   } from '~/app/ui/linking';
   import ConfirmEmoji from '~/app/ui/linking/steps/ConfirmEmoji.svelte';
   import Error from '~/app/ui/linking/steps/Error.svelte';
   import OldProfilePassword from '~/app/ui/linking/steps/OldProfilePassword.svelte';
+  import RestorationIdentityMismatch from '~/app/ui/linking/steps/RestorationIdentityMismatch.svelte';
   import Scan from '~/app/ui/linking/steps/Scan.svelte';
   import SetPassword from '~/app/ui/linking/steps/SetPassword.svelte';
   import SuccessLinked from '~/app/ui/linking/steps/SuccessLinked.svelte';
@@ -50,6 +52,10 @@
     | {
         component: 'oldProfilePassword';
         props: LinkingWizardOldProfilePasswordProps;
+      }
+    | {
+        component: 'restorationIdentityMismatch';
+        props: RestorationIdentityMismatchProps;
       }
     | {
         component: 'setPassword';
@@ -122,13 +128,21 @@
             },
           };
           break;
-        case 'wait-for-old-profile-password':
+        case 'waiting-for-old-profile-password':
           linkingWizardState = {
             component: 'oldProfilePassword',
             props: {
               oldPassword: params.oldProfilePassword,
               previouslyEnteredPassword: state.previouslyEnteredPassword,
               buttonState: state.isLoading ? 'loading' : 'default',
+            },
+          };
+          break;
+        case 'restoration-identity-mismatch':
+          linkingWizardState = {
+            component: 'restorationIdentityMismatch',
+            props: {
+              accept: params.continueWithoutRestoring,
             },
           };
           break;
@@ -165,6 +179,8 @@
     <ConfirmEmoji {...linkingWizardState.props} />
   {:else if linkingWizardState.component === 'oldProfilePassword'}
     <OldProfilePassword {...linkingWizardState.props} />
+  {:else if linkingWizardState.component === 'restorationIdentityMismatch'}
+    <RestorationIdentityMismatch {...linkingWizardState.props} />
   {:else if linkingWizardState.component === 'setPassword'}
     <SetPassword {...linkingWizardState.props} />
   {:else if linkingWizardState.component === 'sync'}
