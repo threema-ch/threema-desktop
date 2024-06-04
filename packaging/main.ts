@@ -691,6 +691,24 @@ async function buildDmg(
     const appPath = `${binaryDirPath}/${appName}.app`;
     const outPath = path.join(dirs.root, 'build', 'installers', 'mac');
 
+    // Copy launcher binary into app bundle and modify Info.plist
+    const launcherBinaryName = 'threema-desktop-launcher';
+    const plistPath = path.join(appPath, 'Contents', 'Info.plist');
+    const launcherBinaryPath = path.join(binaryDirPath, launcherBinaryName);
+    const launcherBinaryPathNew = path.join(appPath, 'Contents', 'MacOS', launcherBinaryName);
+    copySync(launcherBinaryPath, launcherBinaryPathNew, {
+        errorOnExist: true,
+        dereference: false,
+        preserveTimestamps: false,
+    });
+    const plist = fs
+        .readFileSync(plistPath, 'utf8')
+        .replace(
+            /<key>CFBundleExecutable<\/key>(?<whitespace>[\s]+)<string>ThreemaDesktop<\/string>/u,
+            `<key>CFBundleExecutable</key>$<whitespace><string>${launcherBinaryName}</string>`,
+        );
+    fs.writeFileSync(plistPath, plist, 'utf8');
+
     // Rename app directory
     fs.renameSync(originalAppPath, appPath);
 
