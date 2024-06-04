@@ -364,6 +364,7 @@ package:source:
     - apt-get install -y flatpak jq lftp elfutils libyaml-dev libglib2.0-dev libcurl4-gnutls-dev libxml2-dev libxslt1-dev python3-aiohttp
     # Set up git
     - git config --global init.defaultBranch main # Avoid warning on stdout
+    - git config --global advice.detachedHead false # Don't show detached head warnings
     # Build current version of flatpak-builder
     - apt-get install -y meson cmake debugedit appstream appstream-compose libjson-glib-dev libelf-dev libostree-dev
     - |

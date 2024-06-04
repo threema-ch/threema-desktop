@@ -71,7 +71,7 @@ modules:
       # value. Because the Flatpak runtime does not ensure a specific minor or
       # patch version of node, we skip the strict engine checks in npm by
       # passing in `--engine-strict=false`.
-      - npm --engine-strict=false install --offline
+      - npm --engine-strict=false install --offline --no-audit --no-fund
       # Remove previous build artifacts
       - rm -rf build/electron/packaged
       # Build Threema Desktop
