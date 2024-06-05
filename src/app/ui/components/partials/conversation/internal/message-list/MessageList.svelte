@@ -601,7 +601,8 @@
       align-items: center;
       justify-content: center;
       color: var(--t-text-e2-color);
-      margin: rem(16px) auto;
+      // Adjust for top bar.
+      margin: rem(16px + 64px) auto;
       user-select: none;
 
       .content {
