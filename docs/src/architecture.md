@@ -30,7 +30,8 @@ All source code is in the `src` directory:
 
 - `src/app` is the application that runs in the renderer process. It allows access to the DOM and a
   subset of the Electron API.
-- `src/app/electron/main` is the entrypoint for Electron. It allows full access to the Electron API.
+- `src/electron/electron-main` is the entrypoint for Electron. It allows full access to the Electron
+  API.
 - `src/common` is common code that can be imported by any of the other code bases.
 - `src/common/dom` is common code that uses parts of the DOM API and can be imported by any other
   code base that provides the required subset of the DOM API. Note however that anything that can be
