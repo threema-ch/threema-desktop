@@ -13,6 +13,7 @@ import {
     isStatusMessageId,
 } from '~/common/network/types';
 import {unreachable, assert, assertUnreachable} from '~/common/utils/assert';
+import {isGroupManagedAndMonitoredByGateway, isGroupManagedByGateway} from '~/common/utils/group';
 import {type GetAndSubscribeFunction, derive} from '~/common/utils/store/derived-store';
 import {LocalSetBasedSetStore, LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
@@ -268,8 +269,17 @@ function supportsFeature(
 
             const groupCreator = receiver.get().view.creator;
             // The user is not the creator, hence we need to check the creator's feature mask as well.
+            // If the creator is a Gateway ID that is not monitored, don't show it in the list.
             if (groupCreator !== 'me') {
+                const creatorIdentity = groupCreator.get().view.identity;
                 if (
+                    !(
+                        isGroupManagedByGateway(creatorIdentity) &&
+                        !isGroupManagedAndMonitoredByGateway(
+                            receiver.get().view.displayName,
+                            creatorIdentity,
+                        )
+                    ) &&
                     !checkFeatureMaskSupportsFeature(groupCreator.get().view.featureMask, feature)
                 ) {
                     notSupportedNames.push(groupCreator.get().view.displayName);

@@ -30,6 +30,7 @@ import type {ClientKey} from '~/common/network/types/keys';
 import type {WeakOpaque} from '~/common/types';
 import {assertUnreachable, unreachable} from '~/common/utils/assert';
 import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {isGroupManagedAndMonitoredByGateway, isGroupManagedByGateway} from '~/common/utils/group';
 import type {QueueConsumer, QueueProducer} from '~/common/utils/queue';
 import type {QueryablePromise, ResolvablePromise} from '~/common/utils/resolvable-promise';
 import type {AbortListener} from '~/common/utils/signal';
@@ -373,14 +374,14 @@ export function shouldSendGroupMessageToCreator(
     messageType: CspE2eType,
 ): boolean {
     // Non-gateway group creators always receive all messages
-    const isGroupManagedByGateway = creatorIdentity.startsWith('*');
-    if (!isGroupManagedByGateway) {
+    const groupManagedByGateway = isGroupManagedByGateway(creatorIdentity);
+    if (!groupManagedByGateway) {
         return true;
     }
 
     // Gateway group creators prefixed with cloud emoji always receive all messages
-    const isGroupMonitoredByGateway = groupName.startsWith('☁');
-    if (isGroupMonitoredByGateway) {
+    const groupMonitoredByGateway = isGroupManagedAndMonitoredByGateway(groupName, creatorIdentity);
+    if (groupMonitoredByGateway) {
         return true;
     }
 
