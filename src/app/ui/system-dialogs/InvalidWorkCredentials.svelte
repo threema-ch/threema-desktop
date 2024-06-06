@@ -121,9 +121,10 @@
       });
   }
 
-  function deleteProfileAndRestartApp(): void {
+  function copyAndDeleteProfileAndRestartApp(): void {
     deletingProfile = true;
     const ipc = window.app;
+    ipc.createProfileSnapshot();
     backend
       .selfKickFromMediator()
       .then(() => {
@@ -284,7 +285,7 @@
           <p>
             {$i18n.t(
               'dialog--invalid-work-credentials.prose--description-relink',
-              'Remove the current link, and relink {appName} for desktop to your mobile device. Please note that this will delete the chat history in the desktop app (but not on the mobile device).',
+              'Remove the current link, and relink {appName} for desktop to your mobile device. The message history can be restored after relinking.',
               {appName: import.meta.env.APP_NAME},
             )}
           </p>
@@ -292,7 +293,7 @@
             <Button
               flavor="filled"
               disabled={deletingProfile}
-              on:click={deleteProfileAndRestartApp}
+              on:click={copyAndDeleteProfileAndRestartApp}
             >
               {$i18n.t(
                 'dialog--invalid-work-credentials.action--relink',

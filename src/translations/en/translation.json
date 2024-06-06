@@ -179,7 +179,7 @@
     "prose--description-enter-credentials": "Please enter valid Threema Work credentials. If you don’t know the credentials, please contact your Threema Work administrator.",
     "prose--description-p1": "The credentials for Threema Work are invalid. Either they were disabled by your Threema Work admin, or your Threema Work license expired.",
     "prose--description-p2": "To continue using {appName} for desktop, you have two options:",
-    "prose--description-relink": "Remove the current link, and relink {appName} for desktop to your mobile device. Please note that this will delete the chat history in the desktop app (but not on the mobile device).",
+    "prose--description-relink": "Remove the current link, and relink {appName} for desktop to your mobile device. The message history can be restored after relinking.",
     "prose--update-success": "Threema Work credentials successfully updated"
   },
   "dialog--linking-confirm-emoji": {

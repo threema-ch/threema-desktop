@@ -179,7 +179,7 @@
     "prose--description-enter-credentials": "Bitte geben Sie gültige Threema Work-Zugangsdaten ein. Wenn Sie die Zugangsdaten nicht kennen, kontaktieren Sie Ihren Threema Work-Administrator",
     "prose--description-p1": "Die Zugangsdaten für Threema Work sind ungültig. Entweder wurden sie durch Ihren Threema Work-Administrator deaktiviert, oder die Lizenz von Threema Work ist abgelaufen.",
     "prose--description-p2": "Um {appName} weiterhin zu verwenden, haben Sie zwei Möglichkeiten:",
-    "prose--description-relink": "Heben Sie die bestehende Verknüpfung auf und verknüpfen Sie {appName} für Desktop erneut mit Ihrem Mobilgerät. Bitte beachten Sie, dass die Chatverläufe in der Desktop-App dadurch gelöscht werden, sie jedoch weiterhin auf dem Mobilgerät verfügbar sind.",
+    "prose--description-relink": "Heben Sie die bestehende Verknüpfung auf und verknüpfen Sie {appName} für Desktop erneut mit Ihrem Mobilgerät. Die Chatverläufe können nach erneutem Verknüpfen wiederhergestellt werden.",
     "prose--update-success": "Threema Work-Zugangsdaten erfolgreich aktualisiert"
   },
   "dialog--linking-confirm-emoji": {
