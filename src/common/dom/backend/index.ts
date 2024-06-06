@@ -1281,7 +1281,16 @@ export class Backend {
 
         // Now that essential data is processed, we can connect to the Mediator server and register
         // ourselves
-        const initialConnectionResult = await backend._connectionManager.start();
+        let initialConnectionResult;
+        try {
+            initialConnectionResult = await backend._connectionManager.start();
+        } catch (error) {
+            return await throwLinkingError(
+                'Device join protocol was aborted while starting connection',
+                {kind: 'connection-error', cause: 'closed'},
+            );
+        }
+
         if (initialConnectionResult.connected) {
             // Write key storage
             await writeKeyStorage(
@@ -1299,8 +1308,15 @@ export class Backend {
             purgeSensitiveData();
 
             // Mark join protocol as complete and update state
-            await joinProtocol.complete();
-            await linkingState.updateState({state: 'registered'});
+            try {
+                await joinProtocol.complete();
+                await linkingState.updateState({state: 'registered'});
+            } catch (error) {
+                return await throwLinkingError(
+                    'Device join protocol was aborted while completing the join protocol',
+                    {kind: 'connection-error', cause: 'closed'},
+                );
+            }
         } else {
             // Purge data and report error
             purgeSensitiveData();
