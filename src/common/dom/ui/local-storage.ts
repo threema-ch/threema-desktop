@@ -10,12 +10,7 @@ import {
     ensureDebugPanelState,
 } from '~/common/dom/ui/debug';
 import {applyTheme, ensureTheme, type Theme} from '~/common/dom/ui/theme';
-import {
-    type IQueryableStore,
-    type ISubscribableStore,
-    type IWritableStore,
-    WritableStore,
-} from '~/common/utils/store';
+import {type IWritableStore, WritableStore} from '~/common/utils/store';
 
 const KEYS = {
     theme: 'theme',
@@ -30,11 +25,10 @@ const KEYS = {
  * IMPORTANT: This storage is not encrypted!
  */
 export class LocalStorageController {
-    public readonly debugPanelState: IWritableStore<DebugPanelState> &
-        ISubscribableStore<DebugPanelState>;
-    public readonly debugPanelHeight: IWritableStore<string> & ISubscribableStore<string>;
-    public readonly theme: IWritableStore<Theme> & ISubscribableStore<Theme>;
-    public readonly locale: IWritableStore<Locale> & IQueryableStore<Locale>;
+    public readonly debugPanelState: IWritableStore<DebugPanelState>;
+    public readonly debugPanelHeight: IWritableStore<string>;
+    public readonly theme: IWritableStore<Theme>;
+    public readonly locale: IWritableStore<Locale>;
 
     public constructor(containers: HTMLElement[], systemLocale: string) {
         // Note: We can ignore the unsubscribers because we will also maintain a reference to the

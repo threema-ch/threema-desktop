@@ -51,7 +51,7 @@ export interface ISubscribableStore<out TValue> {
 }
 
 /**
- * A svelte-compatible listenable store of which the current state can be queried for the current
+ * A svelte-compatible readable store of which the current state can be queried for the current
  * value.
  */
 export interface IQueryableStore<out TValue> extends ISubscribableStore<TValue> {
@@ -71,15 +71,16 @@ export type IQueryableStoreValue<TStore extends IQueryableStore<unknown>> =
     TStore extends IQueryableStore<infer TStoreValue> ? TStoreValue : never;
 
 /**
- * A svelte-compatible writable store.
+ * A svelte-compatible writable store (which, by design, must also be readable).
  */
-export interface IWritableStore<in TValue> {
+export interface IWritableStore<TInValue extends TOutValue, TOutValue = TInValue>
+    extends IQueryableStore<TOutValue> {
     /**
      * Set the current value.
      *
      * @param value The new value.
      */
-    readonly set: (value: TValue) => void;
+    readonly set: (value: TInValue) => void;
 }
 
 /**
@@ -335,7 +336,7 @@ export class ReadableStore<in out TInValue extends TOutValue, in out TOutValue =
  */
 export class WritableStore<TInValue extends TOutValue, TOutValue = TInValue>
     extends ReadableStore<TInValue, TOutValue>
-    implements IWritableStore<TInValue>, IQueryableStore<TOutValue>, LocalStore<TOutValue>
+    implements IWritableStore<TInValue, TOutValue>, LocalStore<TOutValue>
 {
     public readonly [TRANSFER_HANDLER] = STORE_TRANSFER_HANDLER;
     public readonly debug: StoreTransferDebug;

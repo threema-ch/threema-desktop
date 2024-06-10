@@ -1,12 +1,6 @@
 import type {RouterState} from '~/app/routing/router';
 import {unreachable} from '~/common/utils/assert';
-import type {
-    IQueryableStore,
-    ISubscribableStore,
-    IWritableStore,
-    StoreUnsubscriber,
-    WritableStore,
-} from '~/common/utils/store';
+import type {IQueryableStore, StoreUnsubscriber, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 
 /**
@@ -51,11 +45,9 @@ type DisplayModeMediaQueries = {readonly [K in DisplayMode]: MediaQueryList};
  * a store.
  */
 export class DisplayModeObserver {
-    private readonly _store: IWritableStore<DisplayMode> & ISubscribableStore<DisplayMode>;
     private readonly _queries: DisplayModeMediaQueries;
 
-    public constructor(store: IWritableStore<DisplayMode> & ISubscribableStore<DisplayMode>) {
-        this._store = store;
+    public constructor(private readonly _store: WritableStore<DisplayMode>) {
         this._queries = {
             small: window.matchMedia(`screen and (max-width: ${DISPLAY_MODES.medium}px)`),
             medium: window.matchMedia(`screen and (min-width: ${DISPLAY_MODES.medium}px)`),
