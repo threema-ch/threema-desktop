@@ -89,4 +89,5 @@ export interface ModalButton {
     readonly label: string;
     readonly onClick?: (() => void) | 'close' | 'submit';
     readonly type: 'naked' | 'filled';
+    readonly buttonState?: 'loading' | 'default';
 }

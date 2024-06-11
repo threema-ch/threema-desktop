@@ -12,6 +12,7 @@
   import Portal from '~/app/ui/components/hocs/portal/Portal.svelte';
   import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
   import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
@@ -222,8 +223,17 @@
                       } else if (button.onClick !== undefined) {
                         button.onClick();
                       }
-                    }}>{button.label}</Button
+                    }}
                   >
+                    <div class="confirm-button-content" data-button-state={button.buttonState}>
+                      <div class="progress">
+                        <CircularProgress variant="indeterminate" color="white" />
+                      </div>
+                      <div class="label">
+                        {button.label}
+                      </div>
+                    </div>
+                  </Button>
                 {/each}
               </div>
             {/if}
@@ -366,6 +376,31 @@
             justify-content: end;
             gap: rem(8px);
             padding: rem(16px);
+
+            .confirm-button-content {
+              display: grid;
+
+              .progress,
+              .label {
+                grid-row: 1;
+                grid-column: 1;
+              }
+
+              .progress {
+                display: none;
+                height: rem(20px);
+              }
+
+              &[data-button-state='loading'] {
+                .progress {
+                  display: block;
+                }
+
+                .label {
+                  opacity: 0.4;
+                }
+              }
+            }
           }
         }
       }
