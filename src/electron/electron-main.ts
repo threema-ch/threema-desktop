@@ -906,7 +906,10 @@ function main(
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 enableWebSQL: false,
             },
+            minHeight: 420,
+            minWidth: 420,
         });
+
         window.on('close', () => {
             const currentWindow = unwrap(window, 'Window is undefined in on:close');
             updateElectronSettings(
