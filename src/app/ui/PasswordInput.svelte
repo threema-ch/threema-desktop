@@ -112,6 +112,7 @@
 
   .body {
     width: rem(480px);
+    max-width: 100%;
     padding: rem(16px) rem(16px) rem(16px) rem(16px);
     .hint {
       color: var(--t-text-e2-color);
