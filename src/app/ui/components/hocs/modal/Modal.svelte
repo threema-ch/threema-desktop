@@ -166,7 +166,7 @@
             actions = [],
             buttons = [],
             elevated = true,
-            minWidth = 460,
+            minWidth = 320,
             maxWidth,
             title,
           } = wrapper}
@@ -174,7 +174,7 @@
           <div
             class="card"
             class:elevated
-            style={`--c-t-min-width: ${minWidth}px;${maxWidth === undefined ? '' : ` --c-t-max-width: ${maxWidth}px;`}`}
+            style={`--c-t-min-width: ${minWidth}px; ${maxWidth === undefined ? '--c-t-max-width: 100%;' : `--c-t-max-width: ${maxWidth}px;`}`}
           >
             {#if title !== undefined || actions.length > 0}
               <div class="header">
@@ -320,9 +320,9 @@
           border: none;
           border-radius: rem(8px);
 
-          min-width: min(100%, var($-temp-vars, --c-t-min-width));
-          max-width: min(100%, var($-temp-vars, --c-t-max-width));
-          width: fit-content;
+          min-width: var($-temp-vars, --c-t-min-width);
+          max-width: min(var($-temp-vars, --c-t-max-width), 100%);
+          width: 100%;
 
           min-height: auto;
           max-height: 100%;

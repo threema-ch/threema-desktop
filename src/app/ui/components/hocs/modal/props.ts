@@ -58,15 +58,15 @@ interface CardWrapperOptions extends CommonWrapperOptions {
      */
     readonly elevated?: boolean;
     /**
-     * Optional minimum width of the modal card, in pixels. Defaults to `460`. Note: The modal
+     * Optional minimum width of the modal card, in pixels. Defaults to `320`. Note: The modal
      * cannot overflow the viewport, and the given `minWidth` is only used if it's smaller than the
      * current viewport size.
      */
     readonly minWidth?: u53;
     /**
-     * Optional maximum width of the modal card, in pixels. Defaults to `undefined`. Note: The modal
-     * cannot overflow the viewport, and the given `maxWidth` is only used if it's smaller than the
-     * current viewport size.
+     * Optional maximum width of the modal card, in pixels. Defaults to 100% of the parent. Note:
+     * The modal cannot overflow the viewport, and the given `maxWidth` is only used if it's smaller
+     * than the current viewport size.
      */
     readonly maxWidth?: u53;
     readonly title?: string;
