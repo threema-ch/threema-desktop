@@ -44,6 +44,10 @@ import {
 import {type DebugPanelViewModel, getDebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/viewmodel/profile';
 import {getSearchViewModelBundle, type SearchViewModelBundle} from '~/common/viewmodel/search/nav';
+import {
+    getSettingsViewModelBundle,
+    type SettingsViewModelBundle,
+} from '~/common/viewmodel/settings';
 
 /**
  * Services required by the viewmodel backend.
@@ -113,6 +117,7 @@ export interface IViewModelRepository extends ProxyMarked {
     readonly debugPanel: () => DebugPanelViewModel;
     readonly profile: () => ProfileViewModelStore;
     readonly search: () => SearchViewModelBundle;
+    readonly settings: () => SettingsViewModelBundle;
 }
 
 export class ViewModelRepository implements IViewModelRepository {
@@ -252,5 +257,9 @@ export class ViewModelRepository implements IViewModelRepository {
 
     public search(): SearchViewModelBundle {
         return this._cache.search.derefOrCreate(() => getSearchViewModelBundle(this._services));
+    }
+
+    public settings(): SettingsViewModelBundle {
+        return this._cache.settings.derefOrCreate(() => getSettingsViewModelBundle(this._services));
     }
 }

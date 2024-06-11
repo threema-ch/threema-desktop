@@ -20,6 +20,7 @@ import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/
 import type {DebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import type {ProfileViewModelStore} from '~/common/viewmodel/profile';
 import type {SearchViewModelBundle} from '~/common/viewmodel/search/nav';
+import type {SettingsViewModelBundle} from '~/common/viewmodel/settings';
 
 export class ViewModelCache {
     public readonly conversationList = new LazyWeakRef<ConversationListViewModelBundle>();
@@ -52,4 +53,5 @@ export class ViewModelCache {
     public readonly debugPanel = new LazyWeakRef<DebugPanelViewModel>();
     public readonly profile = new LazyWeakRef<ProfileViewModelStore>();
     public readonly search = new LazyWeakRef<SearchViewModelBundle>();
+    public readonly settings = new LazyWeakRef<SettingsViewModelBundle>();
 }
