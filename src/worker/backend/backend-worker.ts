@@ -4,6 +4,7 @@ import {
     type BackendInit,
     type DeviceLinkingSetup,
     type FactoriesForBackend,
+    type OldProfileRemover,
     type PinForwarder,
 } from '~/common/dom/backend';
 import {createEndpointService, ensureEndpoint} from '~/common/dom/utils/endpoint';
@@ -59,6 +60,8 @@ export function main(factories: FactoriesForBackend): void {
             init: BackendInit,
             deviceLinkingSetup: ProxyEndpoint<DeviceLinkingSetup>,
             pinForwarder: ProxyEndpoint<PinForwarder>,
+            oldProfileRemover: ProxyEndpoint<OldProfileRemover>,
+            shouldRestoreOldMessages: boolean,
         ) => {
             log.info('Creating backend from device join');
             return await Backend.createFromDeviceJoin(
@@ -67,6 +70,8 @@ export function main(factories: FactoriesForBackend): void {
                 services,
                 deviceLinkingSetup,
                 pinForwarder,
+                oldProfileRemover,
+                shouldRestoreOldMessages,
             );
         },
     };

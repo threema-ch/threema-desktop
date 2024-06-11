@@ -27,6 +27,7 @@ import {workLicenseCheckJob} from '~/common/dom/backend/background-jobs';
 import {DeviceJoinProtocol, type DeviceJoinResult} from '~/common/dom/backend/join';
 import * as oppf from '~/common/dom/backend/onprem/oppf';
 import {OPPF_FILE_SCHEMA} from '~/common/dom/backend/onprem/oppf';
+import {unlockDatabaseKey, transferOldMessages} from '~/common/dom/backend/restore-db';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {DebugBackend} from '~/common/dom/debug';
 import {ConnectionManager} from '~/common/dom/network/protocol/connection';
@@ -108,7 +109,7 @@ import {
 } from '~/common/utils/endpoint';
 import {Identity} from '~/common/utils/identity';
 import {u64ToHexLe} from '~/common/utils/number';
-import {taggedRace} from '~/common/utils/promise';
+import {taggedRace, type ReusablePromise} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {type LocalStore, type StoreDeactivator, WritableStore} from '~/common/utils/store';
 import {type IViewModelRepository, ViewModelRepository} from '~/common/viewmodel';
@@ -186,6 +187,8 @@ export interface BackendCreator extends ProxyMarked {
         init: Remote<BackendInit>,
         deviceLinkingSetup: ProxyEndpoint<DeviceLinkingSetup>,
         pinForwarder: ProxyEndpoint<PinForwarder>,
+        oldProfileRemover: ProxyEndpoint<OldProfileRemover>,
+        shouldRestoreOldMessages: boolean,
     ) => Promise<ProxyEndpoint<BackendHandle>>;
 }
 
@@ -196,9 +199,17 @@ export interface FactoriesForBackend {
     /** Instantiate logger factory. */
     readonly logging: (rootTag: string, defaultStyle: string) => LoggerFactory;
     /** Instantiate key storage. */
-    readonly keyStorage: (services: ServicesForKeyStorageFactory, log: Logger) => KeyStorage;
+    readonly keyStorage: (
+        services: ServicesForKeyStorageFactory,
+        log: Logger,
+        loadFromOldProfile?: boolean,
+    ) => KeyStorage;
     /** Instantiate file storage. */
-    readonly fileStorage: (services: ServicesForFileStorageFactory, log: Logger) => FileStorage;
+    readonly fileStorage: (
+        services: ServicesForFileStorageFactory,
+        log: Logger,
+        loadFromOldProfile?: boolean,
+    ) => FileStorage;
     /** Instantiate compressor. */
     readonly compressor: () => Compressor;
     /**
@@ -212,6 +223,7 @@ export interface FactoriesForBackend {
         supplementaryMigrationInformation: DbMigrationSupplements,
         key: RawDatabaseKey,
         shouldExist: boolean,
+        loadFromOldProfile?: boolean,
     ) => DatabaseBackend;
 }
 
@@ -225,10 +237,13 @@ export interface FactoriesForBackend {
  * - identity-transfer-prohibited: Restoring failed because user tried to link a Threema Work ID
  *   with the consumer build variant, or vice versa.
  * - invalid-identity: Restoring failed because user identity is unknown or revoked.
- * - invalid-work-credentials: Restoring failed because user's Threema Work credentials are invalid or expired.
+ * - invalid-work-credentials: Restoring failed because user's Threema Work credentials are invalid
+ *   or expired.
  * - registration-error: Initial registration at Mediator server failed.
  * - generic-error: Some other error during linking.
  * - onprem-configuration-error: An error when parsing or verifying the onprem configuration file.
+ * - old-messages-restoration-error: An error when trying to restore the messages from an old
+ *   profile.
  */
 export type LinkingStateErrorType =
     | {readonly kind: 'connection-error'; readonly cause: RendezvousCloseCause}
@@ -240,7 +255,9 @@ export type LinkingStateErrorType =
     | {readonly kind: 'invalid-work-credentials'}
     | {readonly kind: 'registration-error'}
     | {readonly kind: 'generic-error'}
-    | {readonly kind: 'onprem-configuration-error'};
+    | {readonly kind: 'onprem-configuration-error'}
+    | {readonly kind: 'old-messages-restoration-error'}
+    | {readonly kind: 'old-new-profile-identity-mismatch'};
 
 export type SyncingPhase = 'receiving' | 'restoring' | 'encrypting';
 
@@ -283,6 +300,14 @@ export type LinkingState =
      */
     | {readonly state: 'waiting-for-password'}
     /**
+     * Let the user enter the password of an old profile that was found to restore its messages.
+     */
+    | {
+          readonly state: 'wait-for-old-profile-password';
+          previouslyEnteredPassword?: string;
+          isLoading: boolean;
+      }
+    /**
      * We are registered at the Mediator server and the device join protocol is complete.
      */
     | {readonly state: 'registered'}
@@ -310,6 +335,12 @@ export interface DeviceLinkingSetup extends ProxyMarked {
     readonly userPassword: Promise<string>;
 
     /**
+     * A reusable promise that will be resolved when the user entered a password for their old
+     * profile.
+     */
+    readonly oldProfilePassword: ReusablePromise<string | undefined>;
+
+    /**
      * A promise that will be fulfilled by the frontend when the user has entered a oppf url
      */
     readonly oppfConfig: Promise<OppfFetchConfig>;
@@ -317,6 +348,10 @@ export interface DeviceLinkingSetup extends ProxyMarked {
 
 export interface PinForwarder extends ProxyMarked {
     readonly forward: (pins: DomainCertificatePin[] | undefined) => void;
+}
+
+export interface OldProfileRemover extends ProxyMarked {
+    readonly remove: () => void;
 }
 
 /**
@@ -876,6 +911,9 @@ export class Backend {
      * @param factories {FactoriesForBackend} The factories needed in the backend.
      * @param services The services needed in the backend.
      * @param deviceLinkingSetup Information needed for the device linking flow.
+     * @param pinForwarder Function that forwards public key pins fetched from an .oppf file to electron through ipc (in onPrem builds).
+     * @param oldProfileRemover Function that signals electron to remove old profiles from the file system through ipc
+     * @param shouldRestoreOldMessages Whether there is an old profile whose messages should be restored.
      * @returns A remote BackendHandle that can be used by the backend controller to access the
      *   backend worker.
      */
@@ -885,6 +923,8 @@ export class Backend {
         {endpoint, logging}: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
         deviceLinkingSetup: ProxyEndpoint<DeviceLinkingSetup>,
         pinForwarder: ProxyEndpoint<PinForwarder>,
+        oldProfileRemover: ProxyEndpoint<OldProfileRemover>,
+        shouldRestoreOldMessages: boolean,
     ): Promise<ProxyEndpoint<BackendHandle>> {
         const log = logging.logger('backend.create.from-join');
         log.info('Creating backend through device linking flow');
@@ -907,6 +947,11 @@ export class Backend {
         const wrappedPinForwarder = endpoint.wrap<PinForwarder>(
             pinForwarder,
             logging.logger('com.pin-forwarding'),
+        );
+
+        const wrappedOldProfileEraser = endpoint.wrap<OldProfileRemover>(
+            oldProfileRemover,
+            logging.logger('com.profile-removal'),
         );
 
         // Helper function for error handling
@@ -1285,6 +1330,113 @@ export class Backend {
                 oppfCachedConfig: unwrap(oppfFile).string,
                 lastUpdated: BigInt(new Date().getUTCMilliseconds()),
             };
+        }
+
+        // Only continue this process if an old profile was found
+        if (shouldRestoreOldMessages) {
+            let oldDatabaseKey: RawDatabaseKey | undefined = undefined;
+            try {
+                const {dbKey, oldUserIdentity} = await unlockDatabaseKey(
+                    services,
+                    userPassword,
+                    log,
+                    factories,
+                );
+                if (oldUserIdentity !== identityData.identity) {
+                    log.debug(
+                        'Tried to restore the messages of a profile whose identity does not match the new profile',
+                    );
+                    return await throwLinkingError(
+                        'Restoring the messages of the old profile failed because the identity does not match the one of the new profile.',
+                        {kind: 'old-new-profile-identity-mismatch'},
+                    );
+                }
+            } catch (errorInfo) {
+                if (errorInfo instanceof KeyStorageError) {
+                    log.debug(
+                        'New password did not match the password of the old profile, continuing with password restoration dialog',
+                    );
+                } else {
+                    return await throwLinkingError(
+                        `Dealing with the restoration of an old identity failed: ${errorInfo}`,
+                        {
+                            kind: 'generic-error',
+                        },
+                    );
+                }
+            }
+
+            let previouslyEnteredPassword: string | undefined = undefined;
+            while (oldDatabaseKey === undefined) {
+                await wrappedDeviceLinkingSetup.linkingState.updateState({
+                    state: 'wait-for-old-profile-password',
+                    previouslyEnteredPassword,
+                    isLoading: false,
+                });
+                const oldProfilePassword =
+                    await wrappedDeviceLinkingSetup.oldProfilePassword.value();
+                if (oldProfilePassword === undefined) {
+                    break;
+                }
+
+                await wrappedDeviceLinkingSetup.linkingState.updateState({
+                    state: 'wait-for-old-profile-password',
+                    previouslyEnteredPassword,
+                    isLoading: true,
+                });
+                previouslyEnteredPassword = oldProfilePassword;
+
+                let oldProfileInformation;
+                try {
+                    oldProfileInformation = await unlockDatabaseKey(
+                        services,
+                        oldProfilePassword,
+                        log,
+                        factories,
+                    );
+                    if (oldProfileInformation.oldUserIdentity !== identityData.identity) {
+                        log.debug(
+                            'Tried to restore the messages of a profile whose identity does not match the new profile',
+                        );
+                        return await throwLinkingError(
+                            'Restoring the messages of the old profile failed because the identity does not match the one of the new profile.',
+                            {kind: 'old-new-profile-identity-mismatch'},
+                        );
+                    }
+                    oldDatabaseKey = oldProfileInformation.dbKey;
+                } catch (errorInfo) {
+                    if (errorInfo instanceof KeyStorageError) {
+                        log.debug(
+                            'New password did not match the password of the old profile, continuing with password restoration dialog',
+                        );
+                        continue;
+                    } else {
+                        return await throwLinkingError(
+                            `Dealing with the restoration of an old identity failed: ${errorInfo}`,
+                            {
+                                kind: 'generic-error',
+                            },
+                        );
+                    }
+                }
+            }
+
+            if (oldDatabaseKey !== undefined) {
+                try {
+                    transferOldMessages(services, oldDatabaseKey, db, config, log, factories, 1000);
+                } catch (errorInfo) {
+                    return await throwLinkingError(
+                        `Restoring the old messages failed: ${errorInfo} `,
+                        {
+                            kind: 'old-messages-restoration-error',
+                        },
+                    );
+                }
+            } else {
+                log.info('User did not want to restore old messages, continuing normal flow');
+            }
+
+            await wrappedOldProfileEraser.remove();
         }
 
         // Now that essential data is processed, we can connect to the Mediator server and register

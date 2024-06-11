@@ -512,6 +512,16 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         return sync(this._db.selectFrom(tContact).select({uid: tContact.uid}).executeSelectMany());
     }
 
+    /** @inheritdoc */
+    public getAllContactIdentities(): DbList<DbContact, 'uid' | 'identity'> {
+        return sync(
+            this._db
+                .selectFrom(tContact)
+                .select({uid: tContact.uid, identity: tContact.identity})
+                .executeSelectMany(),
+        );
+    }
+
     /**
      * Unsplit a DbGroup into the fields as required by the database.
      */
@@ -952,7 +962,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
      * This method should only be used inside a transaction.
      */
     private _insertCommonMessageData<T extends MessageType>(
-        message: DbCreateMessage<DbMessageCommon<T>>,
+        message: DbCreateMessage<Omit<DbMessageCommon<T>, 'reactions' | 'history'>>,
     ): DbMessageUid {
         return sync(
             this._db
@@ -967,6 +977,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     raw: message.raw,
                     messageType: message.type,
                     threadId: message.threadId,
+                    lastEditedAt: message.lastEditedAt,
+                    deletedAt: message.deletedAt,
                 })
                 .returningLastInsertedId()
                 .executeInsert(),
@@ -994,6 +1006,16 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             // Note: Returning the UID of the main message, not of the messageTextData
             return messageUid;
         }, this._log);
+    }
+
+    /** @inheritdoc */
+    public createDeletedMessage(
+        deletedMessage: DbCreateMessage<DbDeletedMessage>,
+    ): DbCreated<DbDeletedMessage> {
+        return this._db.syncTransaction(
+            () => this._insertCommonMessageData(deletedMessage),
+            this._log,
+        );
     }
 
     /**
@@ -1348,6 +1370,56 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         text: tMessageHistoryLeftJoin.text,
                     })
                     .useEmptyArrayForNoValue(),
+            })
+            .groupBy(tMessage.uid);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+    private _getCommonMessageSelectorWithConversation() {
+        const tMessageReactionLeftJoin = tMessageReaction.forUseInLeftJoin();
+        const tMessageHistoryLeftJoin = tMessageHistory.forUseInLeftJoin();
+        return this._db
+            .selectFrom(tMessage)
+            .leftJoin(tMessageReactionLeftJoin)
+            .on(tMessageReactionLeftJoin.messageUid.equals(tMessage.uid))
+            .leftJoin(tMessageHistoryLeftJoin)
+            .on(tMessageHistoryLeftJoin.messageUid.equals(tMessage.uid))
+            .innerJoin(tConversation)
+            .on(tConversation.uid.equals(tMessage.conversationUid))
+            .select({
+                uid: tMessage.uid,
+                id: tMessage.messageId,
+                senderContactUid: tMessage.senderContactUid,
+                conversationUid: tMessage.conversationUid,
+                createdAt: tMessage.createdAt,
+                createdAtTimestamp: tMessage.createdAtTimestamp,
+                processedAt: tMessage.processedAt,
+                deliveredAt: tMessage.deliveredAt,
+                readAt: tMessage.readAt,
+                raw: tMessage.raw,
+                type: tMessage.messageType,
+                threadId: tMessage.threadId,
+                lastEditedAt: tMessage.lastEditedAt,
+                deletedAt: tMessage.deletedAt,
+                // TODO(DESK-1445): Implement ordinal using virtual columns
+                ordinal: tMessage.processedAtTimestamp.valueWhenNull(tMessage.createdAtTimestamp),
+                reactions: this._db
+                    .aggregateAsArrayDistinct({
+                        reaction: tMessageReactionLeftJoin.reaction,
+                        reactionAt: tMessageReactionLeftJoin.reactionAt,
+                        senderIdentity: tMessageReactionLeftJoin.senderIdentity,
+                    })
+                    .useEmptyArrayForNoValue(),
+
+                history: this._db
+                    .aggregateAsArrayDistinct({
+                        editedAt: tMessageHistoryLeftJoin.editedAt,
+                        text: tMessageHistoryLeftJoin.text,
+                    })
+                    .useEmptyArrayForNoValue(),
+
+                groupReceiverLookup: tConversation.groupUid,
+                contactReceiverLookup: tConversation.contactUid,
             })
             .groupBy(tMessage.uid);
     }
@@ -2011,16 +2083,10 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             // Message has never been edited before, create a corresponding entry for the first
             // version in the history database.
             if (lastEdit.lastEditedAt === undefined) {
-                sync(
-                    this._db
-                        .insertInto(tMessageHistory)
-                        .set({
-                            messageUid,
-                            editedAt: lastEdit.createdAt,
-                            text: lastEdit.text,
-                        })
-                        .executeInsert(),
-                );
+                this.createMessageHistoryEntry(messageUid, {
+                    text: lastEdit.text,
+                    editedAt: lastEdit.createdAt,
+                });
             }
 
             sync(
@@ -2045,6 +2111,10 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             }
 
             // Now, we need to add the message into the message version table
+            this.createMessageHistoryEntry(messageUid, {
+                text,
+                editedAt: messageUpdate.lastEditedAt,
+            });
             sync(
                 this._db
                     .insertInto(tMessageHistory)
@@ -2056,6 +2126,23 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     .executeInsert(),
             );
         }, this._log);
+    }
+
+    /** @inheritdoc */
+    public createMessageHistoryEntry(
+        messageUid: DbMessageUid,
+        messageUpdate: {text: string | undefined; editedAt: Date},
+    ): void {
+        sync(
+            this._db
+                .insertInto(tMessageHistory)
+                .set({
+                    messageUid,
+                    editedAt: messageUpdate.editedAt,
+                    text: messageUpdate.text,
+                })
+                .executeInsert(),
+        );
     }
 
     /** @inheritdoc */
@@ -3269,6 +3356,205 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .selectOneColumn(tNonce.nonce)
                 .where(tNonce.scope.equals(scope))
                 .executeSelectMany(),
+        );
+    }
+
+    /** @inheritdoc */
+    public getMessagesByContactIdentities(
+        contactIdentities: IdentityString[],
+        chunkParameters?: {
+            limit: u53;
+            offset: u53;
+        },
+    ): {
+        message: DbGet<DbAnyMessage>;
+        lookup: {
+            groupReceiverLookup: DbGroupUid | undefined;
+            contactReceiverLookup: DbContactUid | undefined;
+        };
+    }[] {
+        const contactUids = sync(
+            this._db
+                .selectFrom(tContact)
+                .selectOneColumn(tContact.uid)
+                .where(tContact.identity.in(contactIdentities))
+                .executeSelectMany(),
+        );
+        const common = sync(
+            this._getCommonMessageSelectorWithConversation()
+                .where(
+                    tMessage.senderContactUid
+                        .in(contactUids)
+                        .or(tMessage.senderContactUid.isNull()),
+                )
+                .limitIfValue(chunkParameters?.limit)
+                .offsetIfValue(chunkParameters?.offset)
+                .executeSelectMany(),
+        );
+
+        return common.map((c) => ({
+            message: this._getMessage(c),
+            lookup: {
+                groupReceiverLookup: c.groupReceiverLookup,
+                contactReceiverLookup: c.contactReceiverLookup,
+            },
+        }));
+    }
+
+    private _getMessageText(uid: DbMessageUid): string {
+        return sync(
+            this._db
+                .selectFrom(tMessageTextData)
+                .selectOneColumn(tMessageTextData.text)
+                .where(tMessageTextData.messageUid.equals(uid))
+                .executeSelectOne(),
+        );
+    }
+
+    private _getCaption(table: AnyMediaMessageDataTable, uid: DbMessageUid): string | undefined {
+        return (
+            sync(
+                this._db
+                    .selectFrom(table)
+                    .selectOneColumn(table.caption)
+                    .where(table.messageUid.equals(uid))
+                    .executeSelectOne(),
+            ) ?? undefined
+        );
+    }
+
+    /** @inheritdoc*/
+    public getMessages(chunkParameters?: {limit: u53; offset: u53}): (Pick<
+        DbAnyMessage,
+        'id' | 'deletedAt' | 'createdAt' | 'senderContactUid' | 'conversationUid' | 'type'
+    > & {
+        lastEditedAt?: Date;
+        text: string | undefined;
+    })[] {
+        const messages = sync(
+            this._getCommonMessageSelector()
+                .limitIfValue(chunkParameters?.limit)
+                .offsetIfValue(chunkParameters?.offset)
+                .executeSelectMany(),
+        );
+
+        return messages.map((message) => {
+            const text = this.getMessageText(message);
+            return {...message, text};
+        });
+    }
+
+    /** @inheritdoc */
+    public getStatusMessages(chunkParameters?: {limit: u53; offset: u53}): DbAnyStatusMessage[] {
+        const statusMessages = sync(
+            this._db
+                .selectFrom(tStatusMessage)
+                .select({
+                    type: tStatusMessage.type,
+                    conversationUid: tStatusMessage.conversationUid,
+                    createdAt: tStatusMessage.createdAt,
+                    createdAtTimestamp: tStatusMessage.createdAtTimestamp,
+                    statusBytes: tStatusMessage.statusBytes,
+                    uid: tStatusMessage.uid,
+                    ordinal: tStatusMessage.createdAtTimestamp,
+                })
+                .limitIfValue(chunkParameters?.limit)
+                .offsetIfValue(chunkParameters?.offset)
+                .executeSelectMany(),
+        );
+
+        return statusMessages.map((statusMessage) => ({
+            ...statusMessage,
+            id: statusMessageUidToStatusMessageId(statusMessage.uid),
+        }));
+    }
+
+    /** @inheritdoc */
+    public getMessageText(message: Pick<DbAnyMessage, 'type' | 'uid'>): string | undefined {
+        let text;
+        switch (message.type) {
+            case 'text':
+                text = this._getMessageText(message.uid);
+                break;
+            case 'file':
+            case 'image':
+            case 'video':
+            case 'audio':
+                text = this._getCaption(this._getTableForFileType(message.type), message.uid);
+                break;
+            case 'deleted':
+                text = undefined;
+                break;
+            default:
+                unreachable(message.type);
+        }
+
+        return text;
+    }
+
+    /** @inheritdoc */
+    public getContactConversationUidByIdentity(
+        identity: IdentityString,
+    ): DbConversationUid | undefined {
+        return (
+            sync(
+                this._db
+                    .selectFrom(tConversation)
+                    .innerJoin(tContact)
+                    .on(tConversation.contactUid.equals(tContact.uid))
+                    .selectOneColumn(tConversation.uid)
+                    .where(
+                        tContact.identity
+                            .equals(identity)
+                            .and(tConversation.contactUid.isNotNull()),
+                    )
+                    .executeSelectNoneOrOne(),
+            ) ?? undefined
+        );
+    }
+    /** @inheritdoc */
+    public getGroupConversationUidByCreatorIdentity(
+        creator: IdentityString | undefined,
+        groupId: GroupId,
+    ): DbConversationUid | undefined {
+        // If the creator is not the user, we need to join with the contacts to check the identity.
+        if (creator !== undefined) {
+            return (
+                sync(
+                    this._db
+                        .selectFrom(tConversation)
+                        .innerJoin(tGroup)
+                        .on(tConversation.groupUid.equals(tGroup.uid))
+                        .innerJoin(tContact)
+                        .on(tGroup.creatorUid.equals(tContact.uid))
+                        .selectOneColumn(tConversation.uid)
+                        .where(
+                            tContact.identity
+                                .equalsIfValue(creator)
+                                .and(tGroup.groupId.equals(groupId))
+                                .and(tConversation.groupUid.isNotNull()),
+                        )
+                        .executeSelectNoneOrOne(),
+                ) ?? undefined
+            );
+        }
+
+        // If the user is the creator, we can directly extract the conversation Uid in a single join
+        return (
+            sync(
+                this._db
+                    .selectFrom(tConversation)
+                    .innerJoin(tGroup)
+                    .on(tConversation.groupUid.equals(tGroup.uid))
+                    .selectOneColumn(tConversation.uid)
+                    .where(
+                        tGroup.creatorUid
+                            .isNull()
+                            .and(tGroup.groupId.equals(groupId))
+                            .and(tConversation.groupUid.isNotNull()),
+                    )
+                    .executeSelectNoneOrOne(),
+            ) ?? undefined
         );
     }
 

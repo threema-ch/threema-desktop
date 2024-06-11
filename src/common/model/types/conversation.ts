@@ -266,4 +266,9 @@ export type ConversationRepository = {
     getAll: () => LocalSetStore<LocalModelStore<Conversation>>;
     getByUid: (uid: DbConversationUid) => LocalModelStore<Conversation> | undefined;
     getForReceiver: (receiver: DbReceiverLookup) => LocalModelStore<Conversation> | undefined;
+    /**
+     * Clears the conversation cache and reloads all conversations, triggering a full refresh of the
+     * frontend main view.
+     */
+    refreshCache: () => void;
 } & ProxyMarked;

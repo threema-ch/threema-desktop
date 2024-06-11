@@ -25,15 +25,25 @@ import {FileLogger} from '~/common/node/logging';
 import {assert} from '~/common/utils/assert';
 import {main} from '~/worker/backend/backend-worker';
 import {BACKEND_WORKER_CONFIG} from '~/worker/backend/config';
+import {INITIAL_MESSAGE_SCHEME, type InitialMessage} from '~/worker/backend/electron/types';
 
 export async function run(): Promise<void> {
     // We need the app path before we can do anything.
     // Note: The path is sent from the app initialization code in src/app/app.ts
-    const appPath: string = await new Promise((resolve) => {
-        function appPathListener({data}: MessageEvent): void {
-            assert(typeof data === 'string');
+    const {appPath, oldProfilePath}: InitialMessage = await new Promise((resolve) => {
+        function appPathListener({
+            data,
+        }: MessageEvent<{appPath: string; oldProfilePath: string | undefined}>): void {
             self.removeEventListener('message', appPathListener);
-            resolve(data);
+
+            // We make sure that the data received is of the correct type by assertions, since
+            // the types specified above could fool us here.s
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            const validatedMessage = INITIAL_MESSAGE_SCHEME.parse(data);
+            resolve({
+                appPath: validatedMessage.appPath,
+                oldProfilePath: validatedMessage.oldProfilePath,
+            });
         }
         self.addEventListener('message', appPathListener);
     });
@@ -83,12 +93,17 @@ export async function run(): Promise<void> {
         },
         import.meta.env.DEBUG ? 'debug' : 'info',
     );
-
     // Start backend worker for Electron
     main({
         logging: loggerFactory,
-        keyStorage: (services: ServicesForKeyStorageFactory, log: Logger) => {
-            const keyStoragePath = path.join(appPath, ...STATIC_CONFIG.KEY_STORAGE_PATH);
+        keyStorage: (
+            services: ServicesForKeyStorageFactory,
+            log: Logger,
+            loadFromOldProfile?: boolean,
+        ) => {
+            const basePath = loadFromOldProfile === true ? oldProfilePath : appPath;
+            assert(basePath !== undefined, 'Cannot create the key storage from an undefined path');
+            const keyStoragePath = path.join(basePath, ...STATIC_CONFIG.KEY_STORAGE_PATH);
             fs.mkdirSync(path.dirname(keyStoragePath), {
                 recursive: true,
                 ...directoryModeInternalObjectIfPosix(),
@@ -96,8 +111,14 @@ export async function run(): Promise<void> {
             return new FileSystemKeyStorage(services, log, keyStoragePath);
         },
 
-        fileStorage: (services: ServicesForFileStorageFactory, log: Logger) => {
-            const fileStoragePath = path.join(appPath, ...STATIC_CONFIG.FILE_STORAGE_PATH);
+        fileStorage: (
+            services: ServicesForFileStorageFactory,
+            log: Logger,
+            loadFromOldProfile?: boolean,
+        ) => {
+            const basePath = loadFromOldProfile === true ? oldProfilePath : appPath;
+            assert(basePath !== undefined, 'Cannot create the key storage from an undefined path');
+            const fileStoragePath = path.join(basePath, ...STATIC_CONFIG.FILE_STORAGE_PATH);
             fs.mkdirSync(fileStoragePath, {
                 recursive: true,
                 ...directoryModeInternalObjectIfPosix(),
@@ -113,6 +134,7 @@ export async function run(): Promise<void> {
             migrationSupplementaryInformation: DbMigrationSupplements,
             key: RawDatabaseKey,
             shouldExist: boolean,
+            loadFromOldProfile?: boolean,
         ) => {
             const {config} = services;
 
@@ -122,7 +144,12 @@ export async function run(): Promise<void> {
                 log.info('Using in-memory database');
                 databasePath = ':memory:';
             } else {
-                databasePath = path.join(appPath, ...config.DATABASE_PATH);
+                const basePath = loadFromOldProfile === true ? oldProfilePath : appPath;
+                assert(
+                    basePath !== undefined,
+                    'Cannot create the key storage from an undefined path',
+                );
+                databasePath = path.join(basePath, ...config.DATABASE_PATH);
                 if (!shouldExist) {
                     // Ensure that database does not exist. If necessary, remove leftover files from
                     // an incomplete join process.

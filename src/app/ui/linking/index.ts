@@ -1,5 +1,6 @@
 import type {LinkingState, LinkingStateErrorType, SyncingPhase} from '~/common/dom/backend';
 import type {ReadonlyUint8Array} from '~/common/types';
+import type {ReusablePromise} from '~/common/utils/promise';
 import type {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import type {ReadableStore} from '~/common/utils/store';
 
@@ -19,6 +20,15 @@ export interface LinkingParams {
      * A promise that should be fulfilled when the user has chosen a password.
      */
     readonly userPassword: ResolvablePromise<string>;
+
+    /**
+     * A promise that fulfills when the user enters a password to unlock the key storage of an old
+     * profile. Can be resolved multiple times.
+     *
+     * Is resolved to undefined when the user does not wish to unlock the old key storage, or when no
+     * such storage is found.
+     */
+    readonly oldProfilePassword: ReusablePromise<string | undefined>;
 
     /**
      * A promise that should be fulfilled when the user clicks the button in the success screen.
@@ -41,6 +51,12 @@ export interface LinkingWizardScanProps {
 
 export interface LinkingWizardConfirmEmojiProps {
     readonly rph: ReadonlyUint8Array;
+}
+
+export interface LinkingWizardOldProfilePasswordProps {
+    readonly oldPassword: ReusablePromise<string | undefined>;
+    readonly previouslyEnteredPassword?: string;
+    readonly buttonState: 'default' | 'loading';
 }
 
 export interface LinkingWizardSetPasswordProps {

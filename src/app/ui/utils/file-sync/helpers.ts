@@ -96,6 +96,7 @@ function convertBlobFetchError(error: BlobFetchError, t: I18nType['t']): SyncFai
                 case 'dir-not-found':
                 case 'read-error':
                 case 'delete-error':
+                case 'copy-error':
                 case 'unsupported-format':
                 case undefined:
                     return fail(

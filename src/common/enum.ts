@@ -2434,6 +2434,12 @@ export namespace ElectronIpcCommand {
     export type SET_FILE_LOGGING_ENABLED_AND_RESTART = typeof SET_FILE_LOGGING_ENABLED_AND_RESTART;
     export const DELETE_PROFILE_AND_RESTART = 'deleteProfileAndRestart';
     export type DELETE_PROFILE_AND_RESTART = typeof DELETE_PROFILE_AND_RESTART;
+    export const CREATE_PROFILE_SNAPSHOT = 'createProfileSnapshot';
+    export type CREATE_PROFILE_SNAPSHOT = typeof CREATE_PROFILE_SNAPSHOT;
+    export const REMOVE_OLD_PROFILES = 'removeOldProfiles';
+    export type REMOVE_OLD_PROFILES = typeof REMOVE_OLD_PROFILES;
+    export const GET_LATEST_PROFILE_PATH = 'getLatestProfilePath';
+    export type GET_LATEST_PROFILE_PATH = typeof GET_LATEST_PROFILE_PATH;
     export const CLOSE_APP = 'closeApp';
     export type CLOSE_APP = typeof CLOSE_APP;
     export const UPDATE_APP_BADGE = 'updateAppBadge';

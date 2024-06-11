@@ -140,7 +140,7 @@
   },
   "dialog--error-connection": {
     "action--client-was-dropped-cancel": "OK",
-    "action--client-was-dropped-confirm": "Remove Local Profile and Relink Device",
+    "action--client-was-dropped-confirm": "Relink Device",
     "action--default-cancel": "OK",
     "action--default-confirm": "Relink",
     "label--title": "Connection Failed",

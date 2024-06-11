@@ -581,8 +581,8 @@ export type DbMessageFor<TType extends MessageType> = {
 }[TType];
 
 /*
- * Helper type for queries to the message database Text can be undefined because it might be empty
- * for file messages
+ * Helper type for queries to the message database. `Text` can be undefined because it might be
+ * empty for file messages.
  */
 export interface DbMessageLastEdit {
     text?: string;
@@ -686,6 +686,11 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      * Return the uid for all contacts.
      */
     readonly getAllContactUids: () => DbList<DbContact, 'uid'>;
+
+    /**
+     * Get a list of the uids and the identities of all contacts.
+     */
+    readonly getAllContactIdentities: () => DbList<DbContact, 'uid' | 'identity'>;
 
     /**
      * Create a new group and an associated conversation.
@@ -822,6 +827,17 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     ) => DbCreated<DbAnyStatusMessage>;
 
     /**
+     * Create a new deleted message.
+     *
+     * Note: This function should only be used to restore messages from an old profile. It is the
+     * only way deleted messages can be created from scratch. In all other cases use
+     * {@link db.markMessageAsDeleted}!
+     */
+    readonly createDeletedMessage: (
+        deletedMessage: DbCreateMessage<DbDeletedMessage>,
+    ) => DbCreated<DbDeletedMessage>;
+
+    /**
      * If the message ID exists in the conversation, return its UID.
      */
     readonly hasMessageById: (
@@ -920,6 +936,14 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
         messageUid: DbMessageUid,
         type: TMessageType,
         messageUpdate: DbMessageEditFor<TMessageType>,
+    ) => void;
+
+    /**
+     * Creates an entry in the message history table.
+     */
+    readonly createMessageHistoryEntry: (
+        messageUid: DbMessageUid,
+        messageUpdate: {text: string | undefined; editedAt: Date},
     ) => void;
 
     /**
@@ -1098,6 +1122,70 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     readonly getGlobalProperty: <TKey extends GlobalPropertyKey>(
         key: TKey,
     ) => DbGet<DbGlobalProperty<TKey>>;
+
+    /**
+     * Get all messages of a list of contacts, determined by their identity.
+     *
+     * The number of returned messages can be limited and offset.
+     */
+    readonly getMessagesByContactIdentities: (
+        contactIdentity: IdentityString[],
+        chunkParameters?: {
+            limit: u53;
+            offset: u53;
+        },
+    ) => {
+        message: DbGet<DbAnyMessage>;
+        lookup: {
+            groupReceiverLookup: DbGroupUid | undefined;
+            contactReceiverLookup: DbContactUid | undefined;
+        };
+    }[];
+
+    /**
+     * Retrieve information about a limited and offset set of messages.
+     *
+     * Note: The subset returned can be used i.e. to check fo the consistency of the database
+     * against another database.
+     */
+    readonly getMessages: (chunkParameters?: {limit: u53; offset: u53}) => (Pick<
+        DbAnyMessage,
+        'id' | 'deletedAt' | 'createdAt' | 'senderContactUid' | 'conversationUid' | 'type'
+    > & {
+        lastEditedAt?: Date;
+        text: string | undefined;
+    })[];
+
+    /**
+     * Retrieve a limited and offset list of status messages.
+     */
+    readonly getStatusMessages: (chunkParameters?: {
+        limit: u53;
+        offset: u53;
+    }) => DbAnyStatusMessage[];
+
+    /**
+     * Returns the text/caption of a message.
+     */
+    readonly getMessageText: (message: DbAnyMessage) => string | undefined;
+
+    /**
+     * Get the conversationUid of the single conversation with a given contact, determined by their
+     * identity.
+     */
+    readonly getContactConversationUidByIdentity: (
+        identity: IdentityString,
+    ) => DbConversationUid | undefined;
+
+    /**
+     * Get the conversationUid of a group conversation, determined by groupId and creator.
+     *
+     * Note: If the creator is undefined, it is assumed that the `user` is the creator.
+     */
+    readonly getGroupConversationUidByCreatorIdentity: (
+        creator: IdentityString | undefined,
+        groupId: GroupId,
+    ) => DbConversationUid | undefined;
 }
 
 export interface NonceDatabaseBackend {

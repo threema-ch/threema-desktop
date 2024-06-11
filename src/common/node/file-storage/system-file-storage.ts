@@ -6,12 +6,12 @@ import path from 'node:path';
 import {
     type FileEncryptionKey,
     type FileId,
-    type FileStorage,
     FileStorageError,
     randomFileEncryptionKey,
     randomFileId,
     type ServicesForFileStorage,
     type StoredFileHandle,
+    type CopyableFileStorage,
 } from '~/common/file-storage';
 import type {Logger} from '~/common/logging';
 import {FileChunkNonce} from '~/common/node/file-storage/file-crypto';
@@ -52,7 +52,7 @@ export const CHUNK_AUTH_TAG_BYTES = 16; // 16 bytes (128 bits) AES-GCM auth tag
  * ¹ HRRV15: "Online authenticated-encryption and its nonce-reuse misuse-resistance" by Hoang,
  *   Reyhanitabar, Rogaway and Vizár, https://eprint.iacr.org/2015/189
  */
-export class FileSystemFileStorage implements FileStorage {
+export class FileSystemFileStorage implements CopyableFileStorage {
     public readonly currentStorageFormatVersion = FILE_STORAGE_FORMAT.V1;
 
     /**
@@ -201,6 +201,32 @@ export class FileSystemFileStorage implements FileStorage {
             throw new FileStorageError('delete-error', message, {from: error});
         }
         this._log.debug(`Deleted file with ID ${fileId}`);
+        return true;
+    }
+
+    /** @inheritdoc */
+    public async getRawPath(fileId: FileId): Promise<string> {
+        return await this._getFilepath(fileId);
+    }
+
+    /** @inheritdoc */
+    public async copyFromRawPath(fileId: FileId, sourcePath: string): Promise<boolean> {
+        const filePath = await this._getFilepath(fileId, {create: true});
+        try {
+            await fsPromises.copyFile(sourcePath, filePath);
+        } catch (error) {
+            let message = `Could not copy file with ID ${fileId}`;
+            if (isNodeError(error)) {
+                if (error.code === 'ENOENT') {
+                    // File does not exist
+                    return false;
+                }
+                message += ` (${error.code})`;
+            }
+            throw new FileStorageError('copy-error', message, {from: error});
+        }
+
+        this._log.debug(`Copied file with ID ${fileId} to ${sourcePath}`);
         return true;
     }
 

@@ -21,6 +21,24 @@ import {registerErrorTransferHandler} from '~/common/utils/endpoint';
 export type FileId = WeakOpaque<string, {readonly FileId: unique symbol}>;
 
 /**
+ * Interface implemented by File Storages that have a copying functionality, allowing copying files
+ * from one FileStorage to another.
+ */
+export interface CopyableFileStorage extends FileStorage {
+    /**
+     * Get the raw path of a file determined by its fileId.
+     */
+    readonly getRawPath: (fileId: FileId) => Promise<string>;
+    /**
+     * Copy a file from an arbitrary source path into the file storage.
+     *
+     * Note: The path should point to a file that is compatible with the current file storage (e.g.
+     * in terms of decryption).
+     */
+    readonly copyFromRawPath: (fileId: FileId, sourcePath: string) => Promise<boolean>;
+}
+
+/**
  * File encryption key (32 bytes).
  *
  * Must be different for every file, and must be used for encrypting only one file.
@@ -139,6 +157,45 @@ export function deleteFilesInBackground(file: FileStorage, log: Logger, fileIds:
     }
 }
 
+/**
+ * Typeguard to check if a file storage has the ability to copy files to another file storage.
+ *
+ * TODO(DESK-1480) Pass the class directly for type safety instead of working with the abstracted
+ * interface.
+ */
+export function canCopyFiles(val: FileStorage): val is CopyableFileStorage {
+    const castedVal = val as CopyableFileStorage;
+    return (
+        // eslint-disable-next-line no-restricted-syntax
+        'getRawPath' in castedVal &&
+        typeof castedVal.getRawPath === 'function' &&
+        // eslint-disable-next-line no-restricted-syntax
+        'copyFromRawPath' in castedVal &&
+        typeof castedVal.copyFromRawPath === 'function'
+    );
+}
+
+/**
+ * Copy files with the specified file IDs to a given target in a background task.
+ *
+ * The result will not be awaited! If copying fails, an error is logged.
+ */
+export async function copyFilesInBackground(
+    oldFileStorage: CopyableFileStorage,
+    newFileStorage: CopyableFileStorage,
+    log: Logger,
+    fileIds: FileId[],
+): Promise<void> {
+    for (const fileId of fileIds) {
+        const sourcePath = await oldFileStorage.getRawPath(fileId);
+        log.info(`restoring file ${sourcePath}`);
+        newFileStorage.copyFromRawPath(fileId, sourcePath).catch((error_) => {
+            const error = ensureError(error_);
+            log.error(`Error while copying file: ${extractErrorMessage(error, 'short')}`);
+        });
+    }
+}
+
 export interface StoredFileHandle {
     /**
      * The assigned file ID.
@@ -217,6 +274,7 @@ export type FileStorageErrorType =
     | 'read-error'
     | 'write-error'
     | 'delete-error'
+    | 'copy-error'
     | 'unsupported-format';
 
 const FILE_STORAGE_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<

@@ -19,14 +19,14 @@
   unusedProp(log, appServices);
 
   function deleteProfileAndRestartApp(): void {
-    const ipc = window.app;
-    ipc.deleteProfileAndRestartApp();
+    window.app.deleteProfileAndRestartApp();
   }
 
   function handleConfirmEvent(event: Event): void {
-    if (context.type === 'client-was-dropped') {
+    if (context.type === 'client-was-dropped' || context.type === 'device-slot-state-mismatch') {
       event.preventDefault();
       event.stopPropagation();
+      window.app.createProfileSnapshot();
       deleteProfileAndRestartApp();
     }
   }
@@ -103,6 +103,15 @@
               )}
             />
           </p>
+
+          <p>
+            <SubstitutableText
+              text={$i18n.t(
+                'dialog--error-connection.markup--backup',
+                'The message history can be restored after relinking.',
+              )}
+            />
+          </p>
           <p>
             <SubstitutableText
               text={$i18n.t(
@@ -154,7 +163,7 @@
             cancelText={$i18n.t('dialog--error-connection.action--client-was-dropped-cancel', 'OK')}
             confirmText={$i18n.t(
               'dialog--error-connection.action--client-was-dropped-confirm',
-              'Remove local profile and relink',
+              'Relink Device',
             )}
             {modal}
           />

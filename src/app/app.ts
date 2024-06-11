@@ -38,6 +38,7 @@ import type {SettingsService} from '~/common/model/types/settings';
 import type {DomainCertificatePin, u53} from '~/common/types';
 import {assertUnreachable, setAssertFailLogger, unwrap} from '~/common/utils/assert';
 import {Delayed} from '~/common/utils/delayed';
+import type {ReusablePromise} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import type {ReadableStore} from '~/common/utils/store';
 import {TIMER} from '~/common/utils/timer';
@@ -282,9 +283,11 @@ async function main(): Promise<() => void> {
 
     // Initialize the backend worker with the app path.
     //
-    // Send app path to backend worker and wait for it to be ready.
+    // Send app path and the path of the latest old profile (if it exists) to backend worker and
+    // wait for it to be ready.
     // Note: Comlink is not yet active at this point!
     const appPath = window.app.getAppPath();
+    const oldProfilePath = window.app.getLatestProfilePath();
 
     await new Promise((resolve) => {
         function readyListener(): void {
@@ -292,7 +295,7 @@ async function main(): Promise<() => void> {
             resolve(undefined);
         }
         worker.addEventListener('message', readyListener);
-        worker.postMessage(appPath);
+        worker.postMessage({appPath, oldProfilePath});
     });
 
     // Instantiate router
@@ -312,6 +315,7 @@ async function main(): Promise<() => void> {
     async function showLinkingWizard(
         linkingState: ReadableStore<LinkingState>,
         userPassword: ResolvablePromise<string>,
+        oldProfilePassword: ReusablePromise<string | undefined>,
         oppfConfig: ResolvablePromise<OppfConfig>,
     ): Promise<void> {
         await domContentLoaded;
@@ -320,6 +324,7 @@ async function main(): Promise<() => void> {
         attachLinkingWizard(elements, {
             linkingState,
             userPassword,
+            oldProfilePassword,
             identityReady,
             oppfConfig,
         });
@@ -363,13 +368,19 @@ async function main(): Promise<() => void> {
             window.app.updatePublicKeyPins(newPins);
         }
     }
+    // Function to delete all old profiles
+    function removeOldProfiles(): void {
+        window.app.removeOldProfiles();
+    }
     log.info('Instantiating Backend');
     // Instantiate backend
     const [backend, isNewIdentity] = await BackendController.create(
+        oldProfilePath,
         backendControllerServices,
         endpoint.wrap(ensureEndpoint(worker), logging.logger('com.backend-creator')),
         showLinkingWizard,
         requestUserPassword,
+        removeOldProfiles,
         forwardPins,
     );
     const [

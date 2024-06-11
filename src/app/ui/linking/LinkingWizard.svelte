@@ -8,6 +8,7 @@
     LinkingWizardConfirmEmojiProps,
     LinkingWizardErrorProps,
     LinkingWizardOppfProps,
+    LinkingWizardOldProfilePasswordProps,
     LinkingWizardScanProps,
     LinkingWizardSetPasswordProps,
     LinkingWizardSuccessProps,
@@ -15,6 +16,7 @@
   } from '~/app/ui/linking';
   import ConfirmEmoji from '~/app/ui/linking/steps/ConfirmEmoji.svelte';
   import Error from '~/app/ui/linking/steps/Error.svelte';
+  import OldProfilePassword from '~/app/ui/linking/steps/OldProfilePassword.svelte';
   import Scan from '~/app/ui/linking/steps/Scan.svelte';
   import SetPassword from '~/app/ui/linking/steps/SetPassword.svelte';
   import SuccessLinked from '~/app/ui/linking/steps/SuccessLinked.svelte';
@@ -44,6 +46,10 @@
     | {
         component: 'confirmEmoji';
         props: LinkingWizardConfirmEmojiProps;
+      }
+    | {
+        component: 'oldProfilePassword';
+        props: LinkingWizardOldProfilePasswordProps;
       }
     | {
         component: 'setPassword';
@@ -116,6 +122,16 @@
             },
           };
           break;
+        case 'wait-for-old-profile-password':
+          linkingWizardState = {
+            component: 'oldProfilePassword',
+            props: {
+              oldPassword: params.oldProfilePassword,
+              previouslyEnteredPassword: state.previouslyEnteredPassword,
+              buttonState: state.isLoading ? 'loading' : 'default',
+            },
+          };
+          break;
         case 'registered':
           linkingWizardState = {
             component: 'successLinked',
@@ -147,6 +163,8 @@
     <Scan {...linkingWizardState.props} />
   {:else if linkingWizardState.component === 'confirmEmoji'}
     <ConfirmEmoji {...linkingWizardState.props} />
+  {:else if linkingWizardState.component === 'oldProfilePassword'}
+    <OldProfilePassword {...linkingWizardState.props} />
   {:else if linkingWizardState.component === 'setPassword'}
     <SetPassword {...linkingWizardState.props} />
   {:else if linkingWizardState.component === 'sync'}

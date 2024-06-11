@@ -140,7 +140,7 @@
   },
   "dialog--error-connection": {
     "action--client-was-dropped-cancel": "OK",
-    "action--client-was-dropped-confirm": "Lokales Profil entfernen und Gerät erneut verknüpfen",
+    "action--client-was-dropped-confirm": "Gerät erneut verknüpfen",
     "action--default-cancel": "OK",
     "action--default-confirm": "Erneut verknüpfen",
     "label--title": "Verbindung fehlgeschlagen",

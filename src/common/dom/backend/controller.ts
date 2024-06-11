@@ -9,6 +9,7 @@ import {
     type LinkingState,
     type PinForwarder,
     type BackendHandle,
+    type OldProfileRemover,
     type BackendInit,
 } from '~/common/dom/backend';
 import type {ConnectionState, D2mLeaderState} from '~/common/enum';
@@ -23,7 +24,7 @@ import type {NotificationCreator} from '~/common/notification';
 import type {SystemDialogService} from '~/common/system-dialog';
 import {assertError, ensureError, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, type RemoteProxy, type ProxyEndpoint} from '~/common/utils/endpoint';
-import {eternalPromise} from '~/common/utils/promise';
+import {ReusablePromise, eternalPromise} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {
     type IQueryableStore,
@@ -97,14 +98,17 @@ export class BackendController {
     }
 
     public static async create(
+        oldProfilePath: string | undefined,
         services: ServicesForBackendController,
         creator: RemoteProxy<BackendCreator>,
         showLinkingWizard: (
             linkingState: ReadableStore<LinkingState>,
             userPassword: ResolvablePromise<string>,
+            oldProfilePassword: ReusablePromise<string | undefined>,
             oppfConfig: ResolvablePromise<OppfFetchConfig>,
         ) => Promise<void>,
         requestUserPassword: (previouslyAttemptedPassword?: string) => Promise<string>,
+        removeOldProfiles: () => void,
         forwardPins: PinForwarder['forward'],
     ): Promise<[controller: BackendController, isNewIdentity: boolean]> {
         const {endpoint, logging} = services;
@@ -162,6 +166,7 @@ export class BackendController {
         function assembleDeviceLinkingSetup(
             linkingStateStore: WritableStore<LinkingState>,
             userPassword: Promise<string>,
+            oldProfilePassword: ReusablePromise<string | undefined>,
             oppfConfig: Promise<OppfFetchConfig>,
         ): ProxyEndpoint<DeviceLinkingSetup> {
             const {local, remote} = endpoint.createEndpointPair<DeviceLinkingSetup>();
@@ -176,6 +181,7 @@ export class BackendController {
                     [TRANSFER_HANDLER]: PROXY_HANDLER,
                 },
                 userPassword,
+                oldProfilePassword,
                 oppfConfig,
                 [TRANSFER_HANDLER]: PROXY_HANDLER,
             };
@@ -200,6 +206,22 @@ export class BackendController {
             return endpoint.transfer(remote, [remote]);
         }
 
+        function assembleRemoveOldProfileCommunication(
+            removeOldProfile: OldProfileRemover['remove'],
+        ): ProxyEndpoint<OldProfileRemover> {
+            const {local, remote} = endpoint.createEndpointPair<OldProfileRemover>();
+            const removeOldProfileSetup: OldProfileRemover = {
+                [TRANSFER_HANDLER]: PROXY_HANDLER,
+                remove: removeOldProfile,
+            };
+
+            endpoint.exposeProxy(
+                removeOldProfileSetup,
+                local,
+                logging.logger('com.delete-profiles'),
+            );
+            return endpoint.transfer(remote, [remote]);
+        }
         // Create backend from existing key storage (if present).
         log.debug('Waiting for remote backend to be created');
         const isNewIdentity = !(await creator.hasIdentity());
@@ -256,12 +278,12 @@ export class BackendController {
                 break;
             }
         }
-
         // If backend could not be created, that means that no identity was found. Initiate device
         // linking flow.
         if (backendEndpoint === undefined) {
             log.debug('Starting device linking process');
 
+            const shouldRestoreOldMessages = oldProfilePath !== undefined;
             // Store containing the backend's linking state
             const linkingStateStore = new WritableStore<LinkingState>({
                 state: 'initializing',
@@ -272,14 +294,27 @@ export class BackendController {
 
             // Show linking screen
             const userPassword = new ResolvablePromise<string>({uncaught: 'default'});
-            await showLinkingWizard(linkingStateStore, userPassword, oppfConfig);
 
+            const oldProfilePassword = new ReusablePromise<string | undefined>();
+            await showLinkingWizard(
+                linkingStateStore,
+                userPassword,
+                oldProfilePassword,
+                oppfConfig,
+            );
             // Create backend through device join
             try {
                 backendEndpoint = await creator.fromDeviceJoin(
                     assembleBackendInit(),
-                    assembleDeviceLinkingSetup(linkingStateStore, userPassword, oppfConfig),
+                    assembleDeviceLinkingSetup(
+                        linkingStateStore,
+                        userPassword,
+                        oldProfilePassword,
+                        oppfConfig,
+                    ),
                     assembleForwardPinCommunication(forwardPins),
+                    assembleRemoveOldProfileCommunication(removeOldProfiles),
+                    shouldRestoreOldMessages,
                 );
             } catch (error) {
                 assertError(

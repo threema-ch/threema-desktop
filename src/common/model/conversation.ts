@@ -107,6 +107,10 @@ function createCache() {
 
 let cache = createCache();
 
+function recreateCaches(): void {
+    cache = createCache();
+}
+
 const ensureExactConversationUpdate = createExactPropertyValidator<ConversationUpdate>(
     'ConversationUpdate',
     {
@@ -1228,5 +1232,12 @@ export class ConversationModelRepository implements ConversationRepository {
     public getForReceiver(receiver: DbReceiverLookup): LocalModelStore<Conversation> | undefined {
         const tag = getDebugTagForReceiver(receiver);
         return getByReceiver(this._services, receiver, Existence.UNKNOWN, tag);
+    }
+
+    /** @inheritdoc */
+    public refreshCache(): void {
+        // Empty the cache
+        recreateCaches();
+        all(this._services);
     }
 }

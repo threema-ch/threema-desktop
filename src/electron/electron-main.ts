@@ -29,6 +29,7 @@ import {
 import type {LogFileInfo, LogInfo} from '~/common/node/file-storage/log-info';
 import {directoryModeInternalObjectIfPosix} from '~/common/node/fs';
 import {FileLogger} from '~/common/node/logging';
+import {removeOldProfiles, getLatestProfilePath} from '~/common/node/old-profiles';
 import {
     ensureSpkiValue,
     type DomainCertificatePin,
@@ -65,7 +66,15 @@ const RUN_PARAMETER_BOOL_SCHEMA = v
             : v.err(`Expected "true" or "false", but got "${bool}"`),
     );
 const RUN_PARAMETERS_SCHEMA = v.object({
-    'profile': v.string().default('default'),
+    'profile': v
+        .string()
+        .default('default')
+        .chain((s) => {
+            if (s.match(/^[0-9a-z]+$/u)) {
+                return v.ok(s);
+            }
+            return v.err('Profile name is only allowed to contain lower-case letters or numbers');
+        }),
     'single-instance-lock': RUN_PARAMETER_BOOL_SCHEMA.optional(),
 });
 type RunParameters = Readonly<v.Infer<typeof RUN_PARAMETERS_SCHEMA>>;
@@ -74,7 +83,8 @@ type RunParameters = Readonly<v.Infer<typeof RUN_PARAMETERS_SCHEMA>>;
  * Run parameter documentation.
  */
 const RUN_PARAMETERS_DOCS: {readonly [K in keyof RunParameters]: string} = {
-    'profile': '<session-profile-name> – The name of the profile to use. "default" by default.',
+    'profile':
+        '<session-profile-name> – The name of the profile to use. Only lower-case letters and numbers are allowed. "default" by default.',
     'single-instance-lock':
         '<true|false> – Prevent running multiple instances of Threema Desktop at the same time (default: "true"). Development option, disable at your own risk!',
 };
@@ -419,7 +429,8 @@ async function init(): Promise<MainInit> {
         try {
             return RUN_PARAMETERS_SCHEMA.parse(Object.fromEntries(unverifiedParameters));
         } catch (error) {
-            return showUsageAndExit(entrypoint, error);
+            const errorText = error instanceof v.ValitaError ? error.message : error;
+            return showUsageAndExit(entrypoint, errorText);
         }
     }
 
@@ -691,6 +702,19 @@ function main(
 
         // Set up IPC message handlers
         electron.ipcMain
+            .on(ElectronIpcCommand.CREATE_PROFILE_SNAPSHOT, (event) => {
+                validateSenderFrame(event.senderFrame);
+                log.info(`Copied old profile from: ${appPath} to ${appPath}-${Date.now()}`);
+                fs.cpSync(appPath, `${appPath}.${Date.now()}`, {recursive: true});
+            })
+            .on(ElectronIpcCommand.GET_LATEST_PROFILE_PATH, (event) => {
+                validateSenderFrame(event.senderFrame);
+                event.returnValue = getLatestProfilePath(appPath, parameters.profile, log);
+            })
+            .on(ElectronIpcCommand.REMOVE_OLD_PROFILES, (event) => {
+                validateSenderFrame(event.senderFrame);
+                removeOldProfiles(appPath, parameters.profile, log);
+            })
             .on(
                 ElectronIpcCommand.ERROR,
                 (event: electron.IpcMainEvent, errorDetails: ErrorDetails) => {

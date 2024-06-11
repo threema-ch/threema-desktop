@@ -73,6 +73,22 @@ export interface ElectronIpc {
     readonly deleteProfileAndRestartApp: () => void;
 
     /**
+     * Copy the current profile to the root app path for restoration, adding a timestamp to the
+     * name.
+     */
+    readonly createProfileSnapshot: () => void;
+
+    /**
+     * Delete all old profiles that are found at the root of the app path.
+     */
+    readonly removeOldProfiles: () => void;
+
+    /**
+     * Find all old profiles at the root of the app path, and return the newest one.
+     */
+    readonly getLatestProfilePath: () => string | undefined;
+
+    /**
      * Close the application.
      */
     readonly closeApp: () => void;
