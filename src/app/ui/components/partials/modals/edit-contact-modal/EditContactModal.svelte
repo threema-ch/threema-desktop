@@ -70,6 +70,7 @@
     title: $i18n.t('dialog--edit-contact.label--title', 'Edit {name}', {
       name: receiver.name,
     }),
+    maxWidth: 460,
   }}
   options={{
     allowSubmittingWithEnter: true,

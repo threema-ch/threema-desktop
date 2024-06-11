@@ -65,6 +65,8 @@
       },
     ],
     title: $i18n.t('dialog--empty-conversation.label--title', 'Empty Chat'),
+    minWidth: 340,
+    maxWidth: 460,
   }}
   options={{
     allowSubmittingWithEnter: true,

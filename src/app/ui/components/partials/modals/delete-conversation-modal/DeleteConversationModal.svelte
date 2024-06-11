@@ -91,6 +91,8 @@
       },
     ],
     title: $i18n.t('dialog--delete-conversation.label--title', 'Delete Chat'),
+    minWidth: 340,
+    maxWidth: 460,
   }}
   options={{
     allowSubmittingWithEnter: true,

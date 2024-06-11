@@ -51,6 +51,8 @@
         },
       ],
       title: $i18n.t('dialog--edit-device-name.action--title', 'Edit Device Name'),
+      minWidth: 280,
+      maxWidth: 460,
     }}
     options={{
       allowClosingWithEsc: true,

@@ -21,8 +21,8 @@
         onClick: 'close',
       },
     ],
-    minWidth: 320,
     title: $i18n.t('dialog--id-information.label--title', 'Threema ID'),
+    maxWidth: 520,
   }}
   on:close
 >
@@ -55,7 +55,6 @@
     @extend %font-normal-400;
 
     padding: 0 rem(16px);
-    max-width: rem(480px);
 
     .public-key {
       @extend %font-meta-400;

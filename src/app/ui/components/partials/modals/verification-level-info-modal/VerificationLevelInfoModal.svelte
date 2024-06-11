@@ -22,6 +22,7 @@
       },
     ],
     title: $i18n.t('dialog--verification-levels.label--title', 'Verification Levels'),
+    maxWidth: 520,
   }}
   on:close
 >
@@ -100,7 +101,7 @@
 
     .level {
       display: grid;
-      grid-template: 'dots text' auto / min-content minmax(#{rem(100px)}, #{rem(480px)});
+      grid-template: 'dots text' auto / min-content minmax(#{rem(100px)}, #{100%});
       column-gap: rem(16px);
       margin-bottom: rem(16px);
 

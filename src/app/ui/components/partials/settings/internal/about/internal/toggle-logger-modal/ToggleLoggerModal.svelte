@@ -51,6 +51,7 @@
     title: isLoggerEnabled
       ? $i18n.t('dialog--toggle-logger.label--title-disable', 'Disable Logging')
       : $i18n.t('dialog--toggle-logger.label--title-enable', 'Enable Logging'),
+    maxWidth: 520,
   }}
   on:close
 >

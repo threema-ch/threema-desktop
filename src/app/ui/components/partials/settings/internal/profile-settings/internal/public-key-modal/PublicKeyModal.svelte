@@ -28,6 +28,7 @@
     ],
     title: $i18n.t('settings--profile.label--public-key', 'Public Key'),
     minWidth: 240,
+    maxWidth: 240,
   }}
   on:close
 >
