@@ -1,10 +1,10 @@
 <script lang="ts">
   import SVGThreemaIcon from '~/app/res/icon/icon-welcome.svg?raw';
-  import type {AppServices} from '~/app/types';
+  import type {AppServicesForSvelte} from '~/app/types';
   import {display} from '~/common/dom/ui/state';
   import {unusedProp} from '~/common/utils/svelte-helpers';
 
-  export let services: AppServices;
+  export let services: AppServicesForSvelte;
   unusedProp(services);
 </script>
 

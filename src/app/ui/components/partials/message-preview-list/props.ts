@@ -1,4 +1,4 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 import type {MessageProps} from '~/app/ui/components/molecules/message/props';
 import type {SanitizeAndParseTextToHtmlOptions} from '~/app/ui/utils/text';
 import type {DbContactUid} from '~/common/db';
@@ -14,7 +14,10 @@ export interface MessagePreviewListProps {
      */
     readonly highlights?: string | string[];
     readonly items: MessagePreviewListItemProps[];
-    readonly services: Pick<AppServices, 'blobCache' | 'profilePicture' | 'router' | 'settings'>;
+    readonly services: Pick<
+        AppServicesForSvelte,
+        'blobCache' | 'profilePicture' | 'router' | 'settings'
+    >;
 }
 
 interface MessagePreviewListItemProps {

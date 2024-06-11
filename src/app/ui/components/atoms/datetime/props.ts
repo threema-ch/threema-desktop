@@ -1,4 +1,4 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 
 export interface DateTimeProps {
     /** The date object to render. */
@@ -10,5 +10,5 @@ export interface DateTimeProps {
      *  - `extended`: Longer, more detailed, and unambiguous display of date and time.
      */
     readonly format?: 'auto' | 'time' | 'extended';
-    readonly services: AppServices;
+    readonly services: AppServicesForSvelte;
 }

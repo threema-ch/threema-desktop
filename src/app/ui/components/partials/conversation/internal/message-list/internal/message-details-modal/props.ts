@@ -1,4 +1,4 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 import type {MessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
 import type {StatusMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/props';
 import type {MessageId, StatusMessageId} from '~/common/network/types';
@@ -13,7 +13,7 @@ export interface MessageDetailsModalProps {
     readonly id?: MessageId | StatusMessageId;
     readonly reactions: Readonly<Reaction[]>;
     readonly history: Readonly<HistoryEntry[]>;
-    readonly services: AppServices;
+    readonly services: AppServicesForSvelte;
     readonly status: MessageProps['status'];
     readonly statusMessageType?: StatusMessageProps['status']['type'];
 }

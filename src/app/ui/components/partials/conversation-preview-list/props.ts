@@ -1,4 +1,4 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 import type {ContextMenuOption} from '~/app/ui/components/hocs/context-menu-provider/types';
 import type {ConversationPreviewProps} from '~/app/ui/components/partials/conversation-preview-list/internal/conversation-preview/props';
 
@@ -16,7 +16,7 @@ export interface ConversationPreviewListProps<THandlerProps = undefined> {
      */
     readonly highlights?: string | string[];
     readonly items: ConversationPreviewListItem<THandlerProps>[];
-    readonly services: AppServices;
+    readonly services: AppServicesForSvelte;
 }
 
 export interface ConversationPreviewListItem<THandlerProps>

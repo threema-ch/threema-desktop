@@ -1,4 +1,4 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 import type {ContactReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
@@ -6,5 +6,5 @@ import type {ContactReceiverData} from '~/common/viewmodel/utils/receiver';
  */
 export interface ContactContentProps {
     readonly receiver: ContactReceiverData;
-    readonly services: Pick<AppServices, 'profilePicture' | 'settings'>;
+    readonly services: Pick<AppServicesForSvelte, 'profilePicture' | 'settings'>;
 }

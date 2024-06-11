@@ -1,4 +1,4 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 import type {u53} from '~/common/types';
 import type {
     AnyReceiverData,
@@ -32,7 +32,7 @@ export interface ProfilePictureProps {
         | (Pick<AnyReceiverData, 'color' | 'initials' | 'lookup' | 'name' | 'type'> &
               Pick<ContactReceiverData, 'badge'>)
         | Pick<SelfReceiverData, 'color' | 'initials' | 'name' | 'type'>;
-    readonly services: Pick<AppServices, 'profilePicture'>;
+    readonly services: Pick<AppServicesForSvelte, 'profilePicture'>;
     /** Controls how large the avatar, text, and other elements appear. Defaults to `"md"`. */
     readonly size?: 'lg' | 'md' | 'sm';
     /**

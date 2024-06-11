@@ -1,4 +1,4 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 import {toast} from '~/app/ui/snackbar';
 import {ReceiverType} from '~/common/enum';
 import {extractErrorMessage} from '~/common/error';
@@ -6,13 +6,19 @@ import type {Logger} from '~/common/logging';
 import {ensureError} from '~/common/utils/assert';
 
 export async function collectLogsAndComposeMessageToSupport(
-    services: Pick<AppServices, 'backend' | 'router'>,
+    services: Pick<AppServicesForSvelte, 'backend' | 'router'>,
     log: Logger,
 ): Promise<void> {
     try {
         const logFiles = await window.app.getGzippedLogFiles();
-        const supportContact =
-            await services.backend.model.contacts.getOrCreatePredefinedContact('*SUPPORT');
+        const supportContact = await services.backend.viewModel
+            .settings()
+            .then(
+                async (viewModelBundle) =>
+                    await viewModelBundle.viewModelController.getOrCreatePredefinedContact(
+                        '*SUPPORT',
+                    ),
+            );
 
         services.router.openConversationAndFileDialogForReceiver(
             {

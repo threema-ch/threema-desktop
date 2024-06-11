@@ -15,7 +15,7 @@ import type {SettingsService} from '~/common/model/types/settings';
 import type {SystemDialogService} from '~/common/system-dialog';
 
 /**
- * Container for available services on the app and on the root panels.
+ * Container for available services in the frontend.
  */
 export interface AppServices {
     readonly crypto: Pick<CryptoBackend, 'randomBytes'>;
@@ -29,6 +29,14 @@ export interface AppServices {
     readonly systemInfo: SystemInfo;
     readonly settings: SettingsService;
 }
+
+/**
+ * Container for available services in UI components.
+ */
+export type AppServicesForSvelte = Omit<AppServices, 'backend'> & {
+    // Re-include `backend`, but without `model` access.
+    readonly backend: Omit<BackendController, 'model'>;
+};
 
 // TODO(DESK-339): Use SvelteAction when 3.47 is released
 export interface SvelteAction {

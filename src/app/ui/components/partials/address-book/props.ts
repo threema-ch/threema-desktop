@@ -1,4 +1,4 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 import type {TabState} from '~/app/ui/components/partials/address-book/types';
 import type {ReceiverPreviewListProps} from '~/app/ui/components/partials/receiver-preview-list/props';
 
@@ -27,7 +27,7 @@ export interface AddressBookProps<THandlerProps = undefined> {
          */
         readonly routeOnClick?: boolean;
     };
-    readonly services: AppServices;
+    readonly services: AppServicesForSvelte;
     /**
      * Useful to bind to the current {@link TabState} from outside.
      */

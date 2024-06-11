@@ -1,7 +1,7 @@
 <script lang="ts">
   import {onMount, type SvelteComponent} from 'svelte';
 
-  import type {AppServices} from '~/app/types';
+  import type {AppServices, AppServicesForSvelte} from '~/app/types';
   import ContactDetail from '~/app/ui/components/partials/contact-detail/ContactDetail.svelte';
   import ContactNav from '~/app/ui/components/partials/contact-nav/ContactNav.svelte';
   import ConversationView from '~/app/ui/components/partials/conversation/ConversationView.svelte';
@@ -90,19 +90,19 @@
 
   // Routing
   let navPanelComponent: typeof SvelteComponent<{
-    services: AppServices;
+    services: AppServicesForSvelte;
   }>;
   let mainPanelComponent: typeof SvelteComponent<{
-    services: AppServices;
+    services: AppServicesForSvelte;
   }>;
   let asidePanelComponent:
     | typeof SvelteComponent<{
-        services: AppServices;
+        services: AppServicesForSvelte;
       }>
     | undefined;
   let modalComponent:
     | typeof SvelteComponent<{
-        services: AppServices;
+        services: AppServicesForSvelte;
       }>
     | undefined;
   $: {

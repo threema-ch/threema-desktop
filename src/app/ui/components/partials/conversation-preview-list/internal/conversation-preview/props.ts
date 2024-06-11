@@ -1,4 +1,4 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 import type {ContextMenuProviderProps} from '~/app/ui/components/hocs/context-menu-provider/props';
 import type {MessageProps} from '~/app/ui/components/molecules/message/props';
 import type {CharmsProps} from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/charms/props';
@@ -41,7 +41,7 @@ export interface ConversationPreviewProps {
     };
     readonly popover?: ContextMenuProviderProps['popover'];
     readonly receiver: AnyReceiverData;
-    readonly services: Pick<AppServices, 'profilePicture' | 'router' | 'settings'>;
+    readonly services: Pick<AppServicesForSvelte, 'profilePicture' | 'router' | 'settings'>;
     readonly totalMessageCount: u53;
     readonly unreadMessageCount?: ReceiverCardProps['unreadMessageCount'];
 }

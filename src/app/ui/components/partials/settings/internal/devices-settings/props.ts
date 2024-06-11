@@ -1,5 +1,5 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 
 export interface DevicesSettingsProps {
-    readonly services: AppServices;
+    readonly services: AppServicesForSvelte;
 }

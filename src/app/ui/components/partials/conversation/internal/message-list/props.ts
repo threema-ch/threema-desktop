@@ -1,4 +1,4 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 import type {MessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
 import type {MessageDetailsModalProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-details-modal/props';
 import type {StatusMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/props';
@@ -40,8 +40,8 @@ export interface MessageListProps {
     };
     /** Store of messages belonging to this conversation. */
     readonly messagesStore: IQueryableStore<AnyMessageListMessage[]>;
-    /** `AppServices` bundle to pass through to child components. */
-    readonly services: AppServices;
+    /** `AppServicesForSvelte` bundle to pass through to child components. */
+    readonly services: AppServicesForSvelte;
 }
 
 /**

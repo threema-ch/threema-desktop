@@ -1,4 +1,4 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 import type {ContextMenuOption} from '~/app/ui/components/hocs/context-menu-provider/types';
 import type {ReceiverPreviewProps} from '~/app/ui/components/partials/receiver-preview-list/internal/receiver-preview/props';
 
@@ -28,7 +28,7 @@ export interface ReceiverPreviewListProps<THandlerProps = undefined> {
          */
         readonly routeOnClick?: boolean;
     };
-    readonly services: Pick<AppServices, 'router' | 'settings' | 'profilePicture'>;
+    readonly services: Pick<AppServicesForSvelte, 'router' | 'settings' | 'profilePicture'>;
 }
 
 export interface ReceiverPreviewListItem<THandlerProps>

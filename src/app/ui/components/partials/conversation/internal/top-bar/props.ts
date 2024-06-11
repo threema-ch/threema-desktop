@@ -1,4 +1,4 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 import type {ClearConversationModalProps} from '~/app/ui/components/partials/modals/clear-conversation-modal/props';
 import type {DeleteConversationModalProps} from '~/app/ui/components/partials/modals/delete-conversation-modal/props';
 import type {ReceiverCardProps} from '~/app/ui/components/partials/receiver-card/props';
@@ -23,5 +23,5 @@ export interface TopBarProps {
             readonly unpin: () => Promise<void>;
         };
     readonly receiver: AnyReceiverData;
-    readonly services: ReceiverCardProps['services'] & Pick<AppServices, 'router'>;
+    readonly services: ReceiverCardProps['services'] & Pick<AppServicesForSvelte, 'router'>;
 }

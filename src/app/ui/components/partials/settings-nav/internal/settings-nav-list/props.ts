@@ -1,8 +1,8 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 
 /**
  * Props accepted by the `SettingsNavList` component.
  */
 export interface SettingsNavListProps {
-    readonly services: AppServices;
+    readonly services: AppServicesForSvelte;
 }

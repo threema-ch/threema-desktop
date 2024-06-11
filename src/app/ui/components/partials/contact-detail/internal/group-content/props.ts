@@ -1,4 +1,4 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 import type {GroupReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
@@ -6,5 +6,5 @@ import type {GroupReceiverData} from '~/common/viewmodel/utils/receiver';
  */
 export interface GroupContentProps {
     readonly receiver: GroupReceiverData;
-    readonly services: Pick<AppServices, 'router' | 'settings' | 'profilePicture'>;
+    readonly services: Pick<AppServicesForSvelte, 'router' | 'settings' | 'profilePicture'>;
 }
