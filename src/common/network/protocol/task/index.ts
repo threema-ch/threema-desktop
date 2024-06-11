@@ -368,7 +368,6 @@ export function placeholderTextForUnhandledMessage(
  *   `false` otherwise.
  */
 export function shouldSendGroupMessageToCreator(
-    services: Pick<ServicesForTasks, 'device'>,
     groupName: string,
     creatorIdentity: IdentityString,
     messageType: CspE2eType,

@@ -40,7 +40,7 @@ import type {
     WorkVerificationLevel,
 } from '~/common/enum';
 import type {FileEncryptionKey, FileId} from '~/common/file-storage';
-import type {IdentityStringOrMe} from '~/common/model/types/message';
+import type {IdentityStringOrMe} from '~/common/model/types/common';
 import type {BlobId} from '~/common/network/protocol/blob';
 import type {
     DistributionListId,

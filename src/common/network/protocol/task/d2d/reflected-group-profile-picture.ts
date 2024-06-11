@@ -1,4 +1,5 @@
 import type {Logger} from '~/common/logging';
+import {getIdentityString} from '~/common/model/contact';
 import {groupDebugString} from '~/common/model/group';
 import {downloadAndDecryptBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
@@ -12,7 +13,6 @@ import type {
     SetProfilePicture,
 } from '~/common/network/structbuf/validate/csp/e2e';
 import type {IdentityString, MessageId} from '~/common/network/types';
-import {getGroupCreator} from '~/common/utils/group';
 import {u64ToHexLe} from '~/common/utils/number';
 
 /**
@@ -50,7 +50,7 @@ export class ReflectedGroupProfilePictureTask
         // Extract relevant fields
         const creatorIdentity = this._senderIdentity;
         const groupId = this._container.groupId;
-        const creator = getGroupCreator(this._services, creatorIdentity);
+        const creator = getIdentityString(this._services.device, creatorIdentity);
 
         // Look up group
         const group = model.groups.getByGroupIdAndCreator(groupId, creator);

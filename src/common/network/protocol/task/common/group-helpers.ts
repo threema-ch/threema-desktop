@@ -12,6 +12,7 @@ import {
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact, ContactInit, Group} from '~/common/model';
+import {getIdentityString} from '~/common/model/contact';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {encryptAndUploadBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
@@ -28,7 +29,6 @@ import type {GroupId, GroupMessageReflectSetting, IdentityString} from '~/common
 import type {ReadonlyUint8Array} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
-import {getGroupCreator} from '~/common/utils/group';
 import {idColorIndex} from '~/common/utils/id-color';
 
 /**
@@ -48,7 +48,8 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
     log: Logger,
 ): Promise<{group: LocalModelStore<Group>; senderContact: LocalModelStore<Contact>} | undefined> {
     const {model} = services;
-    const creator = getGroupCreator(services, creatorIdentity);
+    const creator = getIdentityString(services.device, creatorIdentity);
+
     // 1. Look up the group
     const group = model.groups.getByGroupIdAndCreator(groupId, creator);
 
@@ -56,7 +57,7 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
     if (group === undefined) {
         // 2.1 If the user is the creator of the group (as alleged by the received message), discard
         //     the received message and abort these steps.
-        if (creator.isUser) {
+        if (creator === 'me') {
             log.debug(
                 'Discarding group message in unknown group where we are supposedly the creator',
             );
@@ -103,7 +104,7 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
         case GroupUserState.KICKED: {
             // 3.1 If the user is the creator of the group, send a group-setup with an empty members
             //     list back to the sender, discard the received message and abort these steps.
-            if (creator.isUser) {
+            if (creator === 'me') {
                 await sendEmptyGroupSetup(groupId, senderContact.get(), handle, services);
                 return undefined;
             }
@@ -124,7 +125,7 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
     if (!senderIsMember) {
         // 4.1 If the user is the creator of the group, send a [`group-setup`](ref:e2e.group-setup)
         //     with an empty members list back to the sender.
-        if (creator.isUser) {
+        if (creator === 'me') {
             await sendEmptyGroupSetup(groupId, senderContact.get(), handle, services);
         }
 

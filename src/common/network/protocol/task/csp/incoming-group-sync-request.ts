@@ -60,7 +60,7 @@ export class IncomingGroupSyncRequestTask
         const creatorIdentity = device.identity.string;
         const groupId = this._container.groupId;
 
-        const creator: GroupCreator = {isUser: true};
+        const creator: GroupCreator = 'me';
 
         // 1. Look up the group. If the group could not be found, abort these steps.
         const group = model.groups.getByGroupIdAndCreator(groupId, creator);

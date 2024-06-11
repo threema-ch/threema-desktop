@@ -1,7 +1,9 @@
 import type {Cookie, CryptoBox, NonceUnguardedScope} from '~/common/crypto';
 import type {DbStatusMessageUid} from '~/common/db';
+import type {Device} from '~/common/device';
 import {type NonceScope, ReceiverType} from '~/common/enum';
 import type {AnyReceiver} from '~/common/model';
+import {getIdentityString} from '~/common/model/contact';
 import {isU64, type ReadonlyUint8Array, type u32, type u64, type WeakOpaque} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import type {SequenceNumberU32, SequenceNumberU64} from '~/common/utils/sequence-number';
@@ -533,14 +535,14 @@ export type GroupMessageReflectSetting = 'default' | 'never';
 /**
  * Return a {@link ConversationId} for the specified receiver model.
  */
-export function conversationIdForReceiver(receiver: AnyReceiver): ConversationId {
+export function conversationIdForReceiver(device: Device, receiver: AnyReceiver): ConversationId {
     switch (receiver.type) {
         case ReceiverType.CONTACT:
             return {type: ReceiverType.CONTACT, identity: receiver.view.identity};
         case ReceiverType.GROUP:
             return {
                 type: ReceiverType.GROUP,
-                creatorIdentity: receiver.controller.getCreatorIdentity(),
+                creatorIdentity: getIdentityString(device, receiver.view.creator),
                 groupId: receiver.view.groupId,
             };
         case ReceiverType.DISTRIBUTION_LIST:

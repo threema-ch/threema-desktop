@@ -12,7 +12,6 @@ import type {
     AnyOutboundNonDeletedMessageModelStore,
     Conversation,
 } from '~/common/model';
-import {OWN_IDENTITY_ALIAS} from '~/common/model/types/message';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/reflected-delivery-receipt';
 import {randomMessageId} from '~/common/network/protocol/utils';
@@ -113,7 +112,7 @@ export function run(): void {
                         messageIds: [messageId],
                     },
                     timestamp,
-                    OWN_IDENTITY_ALIAS,
+                    'me',
                 ).run(handle);
                 handle.finish();
             }
@@ -135,7 +134,7 @@ export function run(): void {
             expect(msg.get().view.reactions[0], 'lastReaction').to.eql({
                 reactionAt: decTimestamp,
                 reaction: MessageReaction.DECLINE,
-                senderIdentity: OWN_IDENTITY_ALIAS,
+                senderIdentity: 'me',
             });
         });
 
@@ -170,7 +169,7 @@ export function run(): void {
                         messageIds: [messageId],
                     },
                     timestamp,
-                    OWN_IDENTITY_ALIAS,
+                    'me',
                 ).run(handle);
                 handle.finish();
             }
@@ -198,7 +197,7 @@ export function run(): void {
             expect(msg.get().view.reactions[0], 'reactions').to.deep.equal({
                 reactionAt: ackTimestamp,
                 reaction: MessageReaction.ACKNOWLEDGE,
-                senderIdentity: OWN_IDENTITY_ALIAS,
+                senderIdentity: 'me',
             });
 
             // Process DECLINED
@@ -209,7 +208,7 @@ export function run(): void {
             expect(msg.get().view.reactions[0], 'reactions').to.deep.equal({
                 reactionAt: decTimestamp,
                 reaction: MessageReaction.DECLINE,
-                senderIdentity: OWN_IDENTITY_ALIAS,
+                senderIdentity: 'me',
             });
         });
     });

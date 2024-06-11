@@ -123,10 +123,10 @@ export function groupSetupTests(
         );
 
         // Ensure group was created
-        const group = services.model.groups.getByGroupIdAndCreator(groupId, {
-            isUser: false,
-            creatorIdentity: creator.identity.string,
-        });
+        const group = services.model.groups.getByGroupIdAndCreator(
+            groupId,
+            creator.identity.string,
+        );
         assert(group !== undefined, 'Group was not created');
         const view = group.get().view;
         expect([...view.members].map((m) => m.get().view.identity)).to.have.members([
@@ -199,10 +199,10 @@ export function groupSetupTests(
         );
 
         // Ensure group was created successfully (but without user 3)
-        const group = services.model.groups.getByGroupIdAndCreator(groupId, {
-            isUser: false,
-            creatorIdentity: creator.identity.string,
-        });
+        const group = services.model.groups.getByGroupIdAndCreator(
+            groupId,
+            creator.identity.string,
+        );
         assert(group !== undefined, 'Group was not created');
         const view = group.get().view;
         expect([...view.members].map((m) => m.get().view.identity)).to.have.members([

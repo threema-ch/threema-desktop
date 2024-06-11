@@ -7,7 +7,7 @@ from os import path
 import sys
 
 
-OWN_IDENTITY_TOKEN = 'OWN_IDENTITY'
+OWN_IDENTITY_TOKEN = 'me'
 
 
 def print_usage():

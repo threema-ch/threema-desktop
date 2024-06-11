@@ -4,7 +4,28 @@ import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard
 import type {LocalModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
 import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import type {TaskManager} from '~/common/network/protocol/task/manager';
+import {isIdentityString, type IdentityString} from '~/common/network/types';
 import type {ProxyMarked, RemoteProxy} from '~/common/utils/endpoint';
+
+const ME = 'me';
+export type IdentityStringOrMe = IdentityString | typeof ME;
+
+/**
+ * Type guard for {@link IdentityStringOrMe}.
+ */
+export function isIdentityStringOrMe(identity: unknown): identity is IdentityStringOrMe {
+    return typeof identity === 'string' && (identity === ME || isIdentityString(identity));
+}
+
+/**
+ * Ensure input is a valid {@link IdentityStringOrMe}.
+ */
+export function ensureIdentityStringOrMe(identity: unknown): IdentityStringOrMe {
+    if (!isIdentityStringOrMe(identity)) {
+        throw new Error(`Not a valid Threema ID / 'me': ${identity}`);
+    }
+    return identity;
+}
 
 /**
  * Services required by the model backend.

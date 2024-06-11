@@ -14,7 +14,7 @@ import {
     CspE2eGroupMessageUpdateType,
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import {OWN_IDENTITY_ALIAS, type MessageFor} from '~/common/model/types/message';
+import type {MessageFor} from '~/common/model/types/message';
 import * as protobuf from '~/common/network/protobuf';
 import {
     type ComposableTask,
@@ -517,7 +517,7 @@ export class ReflectedOutgoingMessageTask
                         conversationId,
                         validatedBody.message,
                         createdAt,
-                        OWN_IDENTITY_ALIAS,
+                        'me',
                     ),
                 };
                 return instructions;
@@ -538,7 +538,7 @@ export class ReflectedOutgoingMessageTask
                         },
                         {status: deliveryReceipt.status, messageIds: deliveryReceipt.messageIds},
                         createdAt,
-                        OWN_IDENTITY_ALIAS,
+                        'me',
                     ),
                 };
                 return instructions;

@@ -1,5 +1,5 @@
 import type {DbContactUid} from '~/common/db';
-import type {IdentityStringOrMe} from '~/common/model/types/message';
+import type {IdentityStringOrMe} from '~/common/model/types/common';
 import type {MessageId} from '~/common/network/types';
 import type {Dimensions, f64, u53} from '~/common/types';
 import type {IdColor} from '~/common/utils/id-color';

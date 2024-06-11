@@ -1,5 +1,6 @@
 import type {Logger} from '~/common/logging';
 import type {Group} from '~/common/model';
+import {getIdentityString} from '~/common/model/contact';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {
@@ -10,7 +11,6 @@ import {
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
 import {unreachable} from '~/common/utils/assert';
-import {getGroupCreator} from '~/common/utils/group';
 import {filterUndefinedProperties} from '~/common/utils/object';
 import {mapValitaDefaultsToUndefined} from '~/common/utils/valita-helpers';
 
@@ -56,7 +56,7 @@ export class ReflectedGroupSyncTask implements PassiveTask<void> {
                 unreachable(validatedMessage);
         }
 
-        const creator = getGroupCreator(this._services, groupIdentity.creatorIdentity);
+        const creator = getIdentityString(this._services.device, groupIdentity.creatorIdentity);
         const group = model.groups.getByGroupIdAndCreator(groupIdentity.groupId, creator);
 
         // Execute group message action

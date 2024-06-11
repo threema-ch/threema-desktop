@@ -6,6 +6,7 @@ import type {
     Contact,
     AnyOutboundNonDeletedMessageModelStore,
 } from '~/common/model';
+import {getIdentityString} from '~/common/model/contact';
 import * as protobuf from '~/common/network/protobuf';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
@@ -86,7 +87,10 @@ export class OutgoingDeleteMessageTask<TReceiver extends AnyReceiver>
                     {
                         groupId: this._receiverModel.view.groupId,
                         creatorIdentity: UTF8.encode(
-                            this._receiverModel.controller.getCreatorIdentity(),
+                            getIdentityString(
+                                this._services.device,
+                                this._receiverModel.view.creator,
+                            ),
                         ),
                         innerData: encoder,
                     },

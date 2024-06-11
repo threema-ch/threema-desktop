@@ -9,33 +9,17 @@ import {
     MessageReaction,
     VerificationLevelUtils,
 } from '~/common/enum';
-import {OWN_IDENTITY_ALIAS} from '~/common/model/types/message';
+import {ensureIdentityStringOrMe} from '~/common/model/types/common';
 import {
     ensureGroupId,
     ensureIdentityString,
     ensureMessageId,
     ensureNickname,
-    type IdentityString,
 } from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {base64ToU8a} from '~/common/utils/base64';
 import {hexToBytes} from '~/common/utils/byte';
 import {hexLeToU64} from '~/common/utils/number';
-
-export const OWN_IDENTITY = Symbol('own-identity');
-
-function identityStringOrOwnIdentity(
-    value: string,
-): v.ValitaResult<IdentityString | typeof OWN_IDENTITY> {
-    if (value === 'OWN_IDENTITY') {
-        return v.ok(OWN_IDENTITY);
-    }
-    try {
-        return v.ok(ensureIdentityString(value));
-    } catch (error) {
-        return v.err(`${error}`);
-    }
-}
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function translatedValueSchema<T>(valueSchema: v.Type<T>) {
@@ -78,10 +62,7 @@ const TEST_MESSAGE_BASE = {
                             return unreachable(value);
                     }
                 }),
-                senderIdentity: v.union(
-                    v.string().map(ensureIdentityString),
-                    v.literal(OWN_IDENTITY_ALIAS),
-                ),
+                senderIdentity: v.union(v.string().map(ensureIdentityString), v.literal('me')),
             }),
         )
         .optional(),
@@ -213,9 +194,9 @@ const TEST_CONTACT_SCHEMA = v
 const TEST_GROUP_SCHEMA = v
     .object({
         id: v.string().map(hexLeToU64).map(ensureGroupId),
-        creator: v.string().chain(identityStringOrOwnIdentity),
+        creator: v.string().map(ensureIdentityStringOrMe),
         name: translatedValueSchema(v.string()),
-        members: v.array(v.string().chain(identityStringOrOwnIdentity)),
+        members: v.array(v.string().map(ensureIdentityStringOrMe)),
         createdMinutesAgo: v.number(),
         avatar: v
             .string()

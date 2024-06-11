@@ -1,11 +1,7 @@
 import {ImageRenderingType, MessageDirection, MessageReaction, MessageType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {ConversationModelStore} from '~/common/model/conversation';
-import {
-    OWN_IDENTITY_ALIAS,
-    type AnyFileBasedMessageModel,
-    type AnyMessageModel,
-} from '~/common/model/types/message';
+import type {AnyFileBasedMessageModel, AnyMessageModel} from '~/common/model/types/message';
 import {getUserInitials} from '~/common/model/user';
 import {unreachable} from '~/common/utils/assert';
 import {u64ToHexLe} from '~/common/utils/number';
@@ -90,7 +86,7 @@ export function getMessageReactions(
 
         return {
             at: reaction.reactionAt,
-            direction: reaction.senderIdentity === OWN_IDENTITY_ALIAS ? 'outbound' : 'inbound',
+            direction: reaction.senderIdentity === 'me' ? 'outbound' : 'inbound',
             type: reaction.reaction === MessageReaction.ACKNOWLEDGE ? 'acknowledged' : 'declined',
             sender: {
                 identity: reaction.senderIdentity,

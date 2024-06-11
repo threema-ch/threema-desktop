@@ -1,4 +1,5 @@
 import type {Logger} from '~/common/logging';
+import {getIdentityString} from '~/common/model/contact';
 import {groupDebugString} from '~/common/model/group';
 import type {
     ComposableTask,
@@ -7,7 +8,6 @@ import type {
 } from '~/common/network/protocol/task';
 import type {GroupCreatorContainer, GroupName} from '~/common/network/structbuf/validate/csp/e2e';
 import type {IdentityString, MessageId} from '~/common/network/types';
-import {getGroupCreator} from '~/common/utils/group';
 import {u64ToHexLe} from '~/common/utils/number';
 
 /**
@@ -44,7 +44,7 @@ export class ReflectedGroupNameTask implements ComposableTask<PassiveTaskCodecHa
         const creatorIdentity = this._senderIdentity;
         const groupId = this._container.groupId;
         const groupName = this._groupName.name;
-        const creator = getGroupCreator(this._services, creatorIdentity);
+        const creator = getIdentityString(this._services.device, creatorIdentity);
 
         // Look up group
         const group = model.groups.getByGroupIdAndCreator(groupId, creator);

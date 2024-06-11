@@ -1,9 +1,6 @@
 import {MessageType, type MessageReaction} from '~/common/enum';
-import type {
-    AnyMessageModel,
-    AnyOutboundMessageModel,
-    IdentityStringOrMe,
-} from '~/common/model/types/message';
+import type {IdentityStringOrMe} from '~/common/model/types/common';
+import type {AnyMessageModel, AnyOutboundMessageModel} from '~/common/model/types/message';
 import type {PassiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
 import {DeliveryReceiptTaskBase} from '~/common/network/protocol/task/common/delivery-receipt';
 import type {DeliveryReceipt} from '~/common/network/structbuf/validate/csp/e2e';

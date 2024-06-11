@@ -11,6 +11,7 @@ import type {
     ControllerCustomUpdateFromSource,
     ControllerUpdateFromSource,
     ControllerUpdateFromSync,
+    IdentityStringOrMe,
 } from '~/common/model/types/common';
 import type {Contact} from '~/common/model/types/contact';
 import type {Conversation} from '~/common/model/types/conversation';
@@ -23,9 +24,6 @@ import type {RawBlobKey} from '~/common/network/types/keys';
 import type {ReadonlyUint8Array, u53} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
-
-export const OWN_IDENTITY_ALIAS = 'me';
-export type IdentityStringOrMe = IdentityString | typeof OWN_IDENTITY_ALIAS;
 
 export type MediaBasedMessageType = Exclude<MessageType, MessageType.TEXT | MessageType.DELETED>;
 

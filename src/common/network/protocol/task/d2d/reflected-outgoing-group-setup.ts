@@ -64,7 +64,7 @@ export class ReflectedOutgoingGroupSetupTask
         memberIdentities.delete(creatorIdentity);
 
         // Look up group
-        const group = model.groups.getByGroupIdAndCreator(groupId, {isUser: true})?.get();
+        const group = model.groups.getByGroupIdAndCreator(groupId, 'me')?.get();
 
         // Look up group member contacts
         const memberContacts: LocalModelStore<Contact>[] = [];

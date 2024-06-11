@@ -9,6 +9,7 @@ import type {
     ControllerUpdateFromLocal,
     ControllerUpdateFromSource,
     ControllerUpdateFromSync,
+    IdentityStringOrMe,
     LocalModel,
 } from '~/common/model/types/common';
 import type {Contact} from '~/common/model/types/contact';
@@ -17,7 +18,7 @@ import type {ProfilePicture} from '~/common/model/types/profile-picture';
 import type {ReceiverController} from '~/common/model/types/receiver';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
-import type {GroupId, IdentityString} from '~/common/network/types';
+import type {GroupId} from '~/common/network/types';
 import type {u8, u53} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
 import type {IdColor} from '~/common/utils/id-color';
@@ -49,13 +50,8 @@ export interface GroupView {
     readonly members: Set<LocalModelStore<Contact>>;
 }
 
-/**
- * A group creator can either be the user or any other contact. If it is not the user, the identity
- * is needed to fetch the corresponding contact.
- */
-export type GroupCreator =
-    | {readonly isUser: false; readonly creatorIdentity: IdentityString}
-    | {readonly isUser: true};
+/** A group creator can either be the user or any other contact. */
+export type GroupCreator = IdentityStringOrMe;
 
 export type GroupInit = Omit<GroupView, 'displayName' | 'members' | 'color'> &
     ConversationInitMixin;
@@ -165,11 +161,6 @@ export type GroupController = ReceiverController & {
      * Dissolve a group that we created.
      */
     readonly dissolve: Omit<ControllerUpdateFromSource, 'fromLocal' | 'fromRemote'>;
-
-    /**
-     * Return the identity string of the creator.
-     */
-    readonly getCreatorIdentity: () => IdentityString;
 
     /**
      * Returns true if the given contact is a member (or the creator) of this group.

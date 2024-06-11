@@ -26,9 +26,9 @@ import type {
     WorkVerificationLevel,
 } from '~/common/enum';
 import type {FileEncryptionKey, FileId} from '~/common/file-storage';
+import type {IdentityStringOrMe} from '~/common/model/types/common';
 import type {
     AnyNonDeletedMessageType,
-    IdentityStringOrMe,
     MediaBasedMessageType,
     TextBasedMessageType,
 } from '~/common/model/types/message';
@@ -417,7 +417,7 @@ export interface DbMessageReaction {
     readonly reaction: MessageReaction;
 
     /**
-     * The sender of the reaction. If it is oneself, the identity string is 'me'
+     * The sender of the reaction. If it is the user, the identity string is 'me'
      */
     readonly senderIdentity: IdentityStringOrMe;
 

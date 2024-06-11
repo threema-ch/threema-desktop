@@ -27,27 +27,25 @@ import type {
 } from '~/common/model';
 import * as contact from '~/common/model/contact';
 import {NO_SENDER} from '~/common/model/message/common';
-import type {GuardedStoreHandle} from '~/common/model/types/common';
+import type {GuardedStoreHandle, IdentityStringOrMe} from '~/common/model/types/common';
 import type {Conversation, ConversationControllerHandle} from '~/common/model/types/conversation';
-import {
-    type BaseMessageView,
-    type CommonBaseMessageView,
-    type InboundBaseMessageController,
-    type InboundBaseMessageView,
-    type OutboundBaseMessageController,
-    type OutboundBaseMessageView,
-    type SetOfAnyLocalMessageModelStore,
-    type MessageReactionView,
-    type IdentityStringOrMe,
-    OWN_IDENTITY_ALIAS,
-    type MessageRepository,
-    type UnifiedEditMessage,
-    type MessageHistoryViewEntry,
-    type CommonBaseFileMessageView,
-    type UpdateFileBasedMessage,
-    type AnyNonDeletedMessageType,
-    type AnyNonDeletedMessageModelStore,
-    type AnyDeletedMessageModelStore,
+import type {
+    BaseMessageView,
+    CommonBaseMessageView,
+    InboundBaseMessageController,
+    InboundBaseMessageView,
+    OutboundBaseMessageController,
+    OutboundBaseMessageView,
+    SetOfAnyLocalMessageModelStore,
+    MessageReactionView,
+    MessageRepository,
+    UnifiedEditMessage,
+    MessageHistoryViewEntry,
+    CommonBaseFileMessageView,
+    UpdateFileBasedMessage,
+    AnyNonDeletedMessageType,
+    AnyNonDeletedMessageModelStore,
+    AnyDeletedMessageModelStore,
 } from '~/common/model/types/message';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
@@ -711,7 +709,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (type: MessageReaction, reactedAt: Date) =>
-            this._handleReaction(TriggerSource.LOCAL, type, reactedAt, OWN_IDENTITY_ALIAS),
+            this._handleReaction(TriggerSource.LOCAL, type, reactedAt, 'me'),
         fromSync: (type: MessageReaction, reactedAt: Date, reactionSender: IdentityStringOrMe) =>
             this._handleReaction(TriggerSource.SYNC, type, reactedAt, reactionSender),
         // eslint-disable-next-line @typescript-eslint/require-await
@@ -837,7 +835,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
             // Queue a persistent task to send a notification, then reflect it.
             if (source === TriggerSource.LOCAL) {
                 assert(
-                    reactionSender === OWN_IDENTITY_ALIAS,
+                    reactionSender === 'me',
                     'Reaction with trigger source LOCAL must be from current user',
                 );
 
@@ -902,7 +900,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
 
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (type: MessageReaction, reactedAt: Date) =>
-            this._handleReaction(TriggerSource.LOCAL, type, reactedAt, OWN_IDENTITY_ALIAS),
+            this._handleReaction(TriggerSource.LOCAL, type, reactedAt, 'me'),
 
         fromSync: (type: MessageReaction, reactedAt: Date, reactionSender: IdentityStringOrMe) =>
             this._handleReaction(TriggerSource.SYNC, type, reactedAt, reactionSender),
@@ -1043,7 +1041,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
                         reaction.senderIdentity === reactionSender && reaction.reaction === type;
                     const isOwnReactionInNonGroupChat =
                         this._conversation.receiverLookup.type !== ReceiverType.GROUP &&
-                        reactionSender === OWN_IDENTITY_ALIAS;
+                        reactionSender === 'me';
                     return reactionExists || isOwnReactionInNonGroupChat;
                 })
             ) {
@@ -1056,7 +1054,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
             // For local reactions, queue a persistent task to send and reflect the reaction.
             if (source === TriggerSource.LOCAL) {
                 assert(
-                    reactionSender === OWN_IDENTITY_ALIAS,
+                    reactionSender === 'me',
                     'Reaction with trigger source LOCAL must be from current user',
                 );
 

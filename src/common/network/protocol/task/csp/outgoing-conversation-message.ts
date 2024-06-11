@@ -9,6 +9,7 @@ import {
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {AnyOutboundNonDeletedMessageModelStore, AnyReceiver} from '~/common/model';
+import {getIdentityString} from '~/common/model/contact';
 import type {UploadedBlobBytes} from '~/common/model/message/common';
 import type {CspE2eType, LayerEncoder} from '~/common/network/protocol';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
@@ -226,7 +227,10 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
         }
 
         if (this._receiverModel.type === ReceiverType.GROUP) {
-            const creatorIdentity = this._receiverModel.controller.getCreatorIdentity();
+            const creatorIdentity = getIdentityString(
+                this._services.device,
+                this._receiverModel.view.creator,
+            );
             return structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
                 groupId: this._receiverModel.view.groupId,
                 creatorIdentity: UTF8.encode(creatorIdentity),

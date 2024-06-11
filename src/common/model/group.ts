@@ -96,34 +96,27 @@ const ensureExactGroupUpdateFromToSync = createExactPropertyValidator<GroupUpdat
 export function getDisplayName(
     groupName: string,
     userState: GroupUserState,
-    creator: {isUser: false; name: string} | {isUser: true},
+    creator: LocalModelStore<Contact> | 'me',
     groupMembers: Set<LocalModelStore<Contact>>,
     services: Pick<ServicesForModel, 'model'>,
 ): string {
     if (groupName !== '') {
         return groupName;
     }
+
     // Use members as fallback.
     //
     // Sorting: Creator first, then members, then our own user last.
     const memberNames = [...groupMembers]
         .map((member) => member.get().view.displayName)
         .sort((a, b) => a.localeCompare(b));
-    if (!creator.isUser) {
-        memberNames.unshift(creator.name);
+    if (creator !== 'me') {
+        memberNames.unshift(creator.get().view.displayName);
     }
     if (userState === GroupUserState.MEMBER) {
         memberNames.push(services.model.user.displayName.get());
     }
     return memberNames.join(', ');
-}
-
-function getCreatorName(
-    creator: LocalModelStore<Contact> | 'me',
-): {isUser: false; name: string} | {isUser: true} {
-    return creator === 'me'
-        ? {isUser: true}
-        : {name: creator.get().view.displayName, isUser: false};
 }
 
 /**
@@ -265,7 +258,7 @@ function create(
         displayName: getDisplayName(
             group.name,
             group.userState,
-            getCreatorName(init.creator),
+            init.creator,
             processedMembers,
             services,
         ),
@@ -347,13 +340,7 @@ export function getByUid(
             ...group,
             color: idColorIndexToString(group.colorIndex),
             creator,
-            displayName: getDisplayName(
-                group.name,
-                group.userState,
-                getCreatorName(creator),
-                members,
-                services,
-            ),
+            displayName: getDisplayName(group.name, group.userState, creator, members, services),
             members,
         };
 
@@ -376,8 +363,8 @@ function getByGroupIdAndCreator(
     const {db} = services;
 
     let contactUid: DbContactUid | undefined = undefined;
-    if (!creator.isUser) {
-        contactUid = db.hasContactByIdentity(creator.creatorIdentity);
+    if (creator !== 'me') {
+        contactUid = db.hasContactByIdentity(creator);
         if (contactUid === undefined) {
             return undefined;
         }
@@ -729,11 +716,6 @@ export class GroupModelController implements GroupController {
         return hasGroupMember(this._services, this.uid, memberContact);
     }
 
-    /** @inheritdoc */
-    public getCreatorIdentity(): IdentityString {
-        return this._creatorIdentity;
-    }
-
     /**
      * Add members to a group and update the view.
      *
@@ -916,14 +898,13 @@ export class GroupModelController implements GroupController {
             const members = getGroupMembers(this._services, this.uid);
 
             const creator = handle.view().creator;
-            const creatorName = getCreatorName(creator);
 
             // Update display name, if necessary
             if (derivedChange.name !== undefined) {
                 derivedChange.displayName = getDisplayName(
                     derivedChange.name,
                     handle.view().userState,
-                    creatorName,
+                    creator,
                     members,
                     this._services,
                 );
@@ -1084,10 +1065,6 @@ export class GroupModelStore extends LocalModelStore<Group> {
         uid: DbGroupUid,
         initialGrofilePictureData: GroupProfilePictureFields,
     ) {
-        const creatorIdentity =
-            group.creator === 'me'
-                ? services.device.identity.string
-                : group.creator.get().view.identity;
         const {logging} = services;
         const tag = `group.${uid}`;
         super(
@@ -1095,7 +1072,7 @@ export class GroupModelStore extends LocalModelStore<Group> {
             new GroupModelController(
                 services,
                 uid,
-                creatorIdentity,
+                contact.getIdentityString(services.device, group.creator),
                 group.groupId,
                 initialGrofilePictureData,
             ),

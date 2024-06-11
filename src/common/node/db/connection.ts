@@ -48,7 +48,6 @@ import {
 import {TypeTransformError} from '~/common/error';
 import {isFileId, wrapFileEncryptionKey} from '~/common/file-storage';
 import type {Logger} from '~/common/logging';
-import {OWN_IDENTITY_ALIAS} from '~/common/model/types/message';
 import {isBlobId} from '~/common/network/protocol/blob';
 import {
     ensureDistributionListId,
@@ -335,7 +334,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.IDENTITY:
                 return isIdentityString(value) ? value : fail();
             case CUSTOM_TYPES.IDENTITY_OR_ME:
-                return isIdentityString(value) || value === OWN_IDENTITY_ALIAS ? value : fail();
+                return isIdentityString(value) || value === 'me' ? value : fail();
             case CUSTOM_TYPES.PUBLIC_KEY:
                 return isPublicKey(value) ? value : fail();
             case CUSTOM_TYPES.NICKNAME:

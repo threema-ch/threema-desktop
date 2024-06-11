@@ -586,13 +586,12 @@ export class ConversationModelController implements ConversationController {
             case ReceiverType.CONTACT:
                 return {type: ReceiverType.CONTACT, identity: model.view.identity};
             case ReceiverType.GROUP: {
-                const creatorIdentity =
-                    model.view.creator === 'me'
-                        ? this._services.device.identity.string
-                        : model.view.creator.get().view.identity;
                 return {
                     type: ReceiverType.GROUP,
-                    creatorIdentity,
+                    creatorIdentity: contact.getIdentityString(
+                        this._services.device,
+                        model.view.creator,
+                    ),
                     groupId: model.view.groupId,
                 };
             }

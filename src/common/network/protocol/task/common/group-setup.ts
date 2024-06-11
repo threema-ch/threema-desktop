@@ -6,6 +6,7 @@ import {
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact, Group, GroupInit} from '~/common/model';
+import {getIdentityString} from '~/common/model/contact';
 import {groupDebugString} from '~/common/model/group';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {
@@ -17,7 +18,6 @@ import type {
 import type {GroupCreatorContainer, GroupSetup} from '~/common/network/structbuf/validate/csp/e2e';
 import type {IdentityString, MessageId} from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
-import {getGroupCreator} from '~/common/utils/group';
 import {idColorIndex} from '~/common/utils/id-color';
 import {u64ToHexLe} from '~/common/utils/number';
 
@@ -60,7 +60,7 @@ export abstract class GroupSetupTaskBase<
         const memberIdentities = new Set(this._groupSetup.members); // Set to avoid duplicates
         memberIdentities.delete(creatorIdentity); // Creator is an implicit member
 
-        const creator = getGroupCreator(this._services, creatorIdentity);
+        const creator = getIdentityString(this._services.device, creatorIdentity);
 
         // 2. Look up group
         const group = model.groups.getByGroupIdAndCreator(groupId, creator)?.get();

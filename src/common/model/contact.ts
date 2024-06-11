@@ -5,6 +5,7 @@ import type {
     DbCreate,
     DbCreateConversationMixin,
 } from '~/common/db';
+import type {Device} from '~/common/device';
 import {
     AcquaintanceLevel,
     ActivityState,
@@ -60,6 +61,22 @@ import {
 import {SequenceNumberU53} from '~/common/utils/sequence-number';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 import {getGraphemeClusters} from '~/common/utils/string';
+
+/**
+ * Retrieve the {@link IdentityString} for a {@link LocalModelStore<Contact> | 'me'} or a {@link IdentityStringOrMe}
+ */
+export function getIdentityString(
+    device: Device,
+    identity: LocalModelStore<Contact> | IdentityString | 'me',
+): IdentityString {
+    if (identity === 'me') {
+        return device.identity.string;
+    }
+    if (typeof identity === 'string') {
+        return identity;
+    }
+    return identity.get().view.identity;
+}
 
 let cache = new LocalModelStoreCache<DbContactUid, LocalModelStore<Contact>>();
 

@@ -1,5 +1,6 @@
 import {GroupUserState} from '~/common/enum';
 import type {Logger} from '~/common/logging';
+import {getIdentityString} from '~/common/model/contact';
 import {groupDebugString} from '~/common/model/group';
 import type {
     ComposableTask,
@@ -8,7 +9,6 @@ import type {
 } from '~/common/network/protocol/task';
 import type {GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
 import type {MessageId} from '~/common/network/types';
-import {getGroupCreator} from '~/common/utils/group';
 import {u64ToHexLe} from '~/common/utils/number';
 
 /**
@@ -45,7 +45,7 @@ export class ReflectedOutgoingGroupLeaveTask
             `Processing reflected outgoing group leave for group ${this._groupDebugString}`,
         );
 
-        const creator = getGroupCreator(this._services, this._container.creatorIdentity);
+        const creator = getIdentityString(this._services.device, this._container.creatorIdentity);
 
         // Look up the group
         const group = model.groups.getByGroupIdAndCreator(this._container.groupId, creator);

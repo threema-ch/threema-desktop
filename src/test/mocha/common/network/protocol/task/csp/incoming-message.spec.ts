@@ -16,6 +16,7 @@ import {
     UnknownContactPolicy,
 } from '~/common/enum';
 import type {Conversation} from '~/common/model';
+import {getIdentityString} from '~/common/model/contact';
 import type {AnyTextMessageModelStore} from '~/common/model/types/message';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
@@ -987,7 +988,7 @@ export function run(): void {
                         CspE2eGroupConversationType.GROUP_TEXT,
                         structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
                             creatorIdentity: UTF8.encode(
-                                group.get().controller.getCreatorIdentity(),
+                                getIdentityString(services.device, group.get().view.creator),
                             ),
                             groupId: group.get().view.groupId,
                             innerData: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
@@ -1114,7 +1115,7 @@ export function run(): void {
                         CspE2eGroupConversationType.GROUP_TEXT,
                         structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
                             creatorIdentity: UTF8.encode(
-                                group.get().controller.getCreatorIdentity(),
+                                getIdentityString(services.device, group.get().view.creator),
                             ),
                             groupId: group.get().view.groupId,
                             innerData: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {

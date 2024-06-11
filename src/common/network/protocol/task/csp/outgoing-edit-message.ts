@@ -7,6 +7,7 @@ import {
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact, Conversation, Group} from '~/common/model';
+import {getIdentityString} from '~/common/model/contact';
 import type {UnifiedEditMessage} from '~/common/model/types/message';
 import type {AnyReceiver} from '~/common/model/types/receiver';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
@@ -103,7 +104,10 @@ export class OutgoingEditMessageTask<TReceiver extends AnyReceiver>
                     {
                         groupId: this._receiverModel.view.groupId,
                         creatorIdentity: UTF8.encode(
-                            this._receiverModel.controller.getCreatorIdentity(),
+                            getIdentityString(
+                                this._services.device,
+                                this._receiverModel.view.creator,
+                            ),
                         ),
                         innerData: encoder,
                     },

@@ -7,6 +7,7 @@ import {
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {AnyReceiver, Contact, Group} from '~/common/model';
+import {getIdentityString} from '~/common/model/contact';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
     ACTIVE_TASK,
@@ -147,7 +148,9 @@ export class OutgoingDeliveryReceiptTask<TReceiver extends AnyReceiver>
             type: CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT,
             encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
                 groupId: group.view.groupId,
-                creatorIdentity: UTF8.encode(group.controller.getCreatorIdentity()),
+                creatorIdentity: UTF8.encode(
+                    getIdentityString(this._services.device, group.view.creator),
+                ),
                 innerData: structbuf.bridge.encoder(structbuf.csp.e2e.DeliveryReceipt, {
                     messageIds,
                     status: this._status,

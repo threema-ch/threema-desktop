@@ -21,6 +21,7 @@ import {
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {AnyReceiver, Contact} from '~/common/model';
+import {getIdentityString} from '~/common/model/contact';
 import * as protobuf from '~/common/network/protobuf';
 import type {ProtobufInstanceOf} from '~/common/network/protobuf/utils';
 import {
@@ -48,7 +49,7 @@ import {
     type MessageId,
 } from '~/common/network/types';
 import type {u53} from '~/common/types';
-import {assert, assertUnreachable, debugAssert, unreachable} from '~/common/utils/assert';
+import {assert, assertUnreachable, debugAssert, unreachable, unwrap} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 import {
@@ -223,18 +224,22 @@ export class OutgoingCspMessageTask<
         // If the message is a group message and it should not be sent to the creator, remove the
         // creator from the receivers list.
         let receivers: Set<Contact>;
+        const groupCreatorIdentity =
+            this._receiver.type === ReceiverType.GROUP
+                ? getIdentityString(this._services.device, this._receiver.view.creator)
+                : undefined;
         if (
             this._receiver.type === ReceiverType.GROUP &&
             !shouldSendGroupMessageToCreator(
-                this._services,
                 this._receiver.view.name,
-                this._receiver.controller.getCreatorIdentity(),
+                unwrap(groupCreatorIdentity),
                 type,
             )
         ) {
-            const creatorIdentity = this._receiver.controller.getCreatorIdentity();
             receivers = new Set(
-                [...allReceivers].filter((receiver) => receiver.view.identity !== creatorIdentity),
+                [...allReceivers].filter(
+                    (receiver) => receiver.view.identity !== groupCreatorIdentity,
+                ),
             );
 
             debugAssert(
@@ -291,7 +296,7 @@ export class OutgoingCspMessageTask<
             sentMessagesCount > 0
         ) {
             // TODO(DESK-323): Do this asynchronously?
-            const conversationId = conversationIdForReceiver(this._receiver);
+            const conversationId = conversationIdForReceiver(this._services.device, this._receiver);
             const task = new ReflectOutgoingMessageUpdateTask(this._services, {
                 messageId,
                 conversation: conversationId,
@@ -500,7 +505,7 @@ export class OutgoingCspMessageTask<
             case ReceiverType.GROUP: {
                 const receivers: Contact[] = [];
 
-                // Get group creator if it is not us
+                // Get group creator if it is not the user
                 const creator = this._receiver.view.creator;
                 if (creator !== 'me') {
                     receivers.push(creator.get());
@@ -537,7 +542,10 @@ export class OutgoingCspMessageTask<
                     distributionList: undefined,
                 });
             case ReceiverType.GROUP: {
-                const creatorIdentity = this._receiver.controller.getCreatorIdentity();
+                const creatorIdentity = getIdentityString(
+                    this._services.device,
+                    this._receiver.view.creator,
+                );
                 return protobuf.utils.creator(protobuf.d2d.ConversationId, {
                     contact: undefined,
                     group: protobuf.utils.creator(protobuf.common.GroupIdentity, {
