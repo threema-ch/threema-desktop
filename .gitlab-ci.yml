@@ -379,6 +379,10 @@ package:source:
     - flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
     # Import PGP key
     - KEYFILE_ENV_VAR="GPG_KEY_${GPG_ID}"; gpg --import ${!KEYFILE_ENV_VAR}
+    # Run SSH agent
+    - eval $(ssh-agent -s)
+    # Add SSH deploy key
+    - chmod 400 $SSH_DEPLOY_KEY && ssh-add $SSH_DEPLOY_KEY
   script:
     # Handle ref
     - |
