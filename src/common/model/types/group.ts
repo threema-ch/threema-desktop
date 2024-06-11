@@ -165,7 +165,7 @@ export type GroupController = ReceiverController & {
     /**
      * Returns true if the given contact is a member (or the creator) of this group.
      */
-    readonly hasMember: (memberContact: LocalModelStore<Contact> | 'me') => boolean;
+    readonly hasMember: (contact: LocalModelStore<Contact> | 'me') => boolean;
 } & ProxyMarked;
 export interface GroupControllerHandle {
     /**

@@ -177,17 +177,6 @@ function getGroupMembers(
 }
 
 /**
- * Returns true if the member contact is a member (or the creator) of the specified group.
- */
-function hasGroupMember(
-    services: ServicesForModel,
-    groupUid: DbGroupUid,
-    memberContact: LocalModelStore<Contact>,
-): boolean {
-    return services.db.hasGroupMember(groupUid, memberContact.ctx);
-}
-
-/**
  * Remove a group member from a group.
  *
  * @returns 1 if member was removed, or 0 if contact was not in the member list.
@@ -709,11 +698,20 @@ export class GroupModelController implements GroupController {
     }
 
     /** @inheritdoc */
-    public hasMember(memberContact: LocalModelStore<Contact> | 'me'): boolean {
-        if (memberContact === 'me') {
-            return this.meta.run((handle) => handle.view().userState === GroupUserState.MEMBER);
-        }
-        return hasGroupMember(this._services, this.uid, memberContact);
+    public hasMember(contact_: LocalModelStore<Contact> | 'me'): boolean {
+        return this.meta.run((handle) => {
+            const view = handle.view();
+            if (contact_ === 'me') {
+                return view.userState === GroupUserState.MEMBER;
+            }
+            const identity = contact_.get().view.identity;
+            for (const member of view.members) {
+                if (member.get().view.identity === identity) {
+                    return true;
+                }
+            }
+            return false;
+        });
     }
 
     /**
