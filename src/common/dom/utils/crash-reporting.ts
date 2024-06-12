@@ -39,7 +39,7 @@ export function initCrashReportingInSandboxBuilds(log: Logger): void {
 
         // We want some error context
         attachStacktrace: true,
-        integrations: [new Sentry.Breadcrumbs()],
+        integrations: [Sentry.breadcrumbsIntegration()],
     });
     crashReportingInitialized = true;
 }
