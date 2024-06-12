@@ -119,7 +119,7 @@
     }
   },
   "devDependencies": {
-    "@electron/fuses": "1.7.0",
+    "@electron/fuses": "1.8.0",
     "@electron/notarize": "2.3.0",
     "@electron/osx-sign": "1.3.0",
     "@electron/packager": "18.3.2",
