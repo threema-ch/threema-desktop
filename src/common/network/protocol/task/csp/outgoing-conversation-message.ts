@@ -145,7 +145,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
             this._messageModelStore
                 .get()
                 .controller.regenerateThumbnail(uploadedBlobBytes.main)
-                .catch((error) =>
+                .catch((error: unknown) =>
                     this._log.warn(`Failed to regenerate thumbnail: ${ensureError(error)}`),
                 );
         }

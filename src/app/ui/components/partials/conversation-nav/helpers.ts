@@ -49,11 +49,13 @@ export function getContextMenuItems(
         },
         {
             handler: (props) => {
-                void props.viewModelBundle.viewModelController.togglePinned().catch((error) => {
-                    log.error(
-                        `${item.isPinned ? 'Unpinning' : 'Pinning'} conversation failed: ${extractErrorMessage(ensureError(error), 'short')}`,
-                    );
-                });
+                void props.viewModelBundle.viewModelController
+                    .togglePinned()
+                    .catch((error: unknown) => {
+                        log.error(
+                            `${item.isPinned ? 'Unpinning' : 'Pinning'} conversation failed: ${extractErrorMessage(ensureError(error), 'short')}`,
+                        );
+                    });
             },
             label: item.isPinned
                 ? i18n.t('messaging.action--conversation-option-unpin', 'Unpin')
@@ -64,11 +66,13 @@ export function getContextMenuItems(
         },
         {
             handler: (props) => {
-                void props.viewModelBundle.viewModelController.toggleArchived().catch((error) => {
-                    log.error(
-                        `${item.isArchived ? 'Unarchiving' : 'Archiving'} conversation failed: ${extractErrorMessage(ensureError(error), 'short')}`,
-                    );
-                });
+                void props.viewModelBundle.viewModelController
+                    .toggleArchived()
+                    .catch((error: unknown) => {
+                        log.error(
+                            `${item.isArchived ? 'Unarchiving' : 'Archiving'} conversation failed: ${extractErrorMessage(ensureError(error), 'short')}`,
+                        );
+                    });
             },
             label: item.isArchived
                 ? i18n.t('messaging.action--conversation-option-unarchive', 'Unarchive')

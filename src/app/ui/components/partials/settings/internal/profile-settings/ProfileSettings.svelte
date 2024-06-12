@@ -46,7 +46,7 @@
     .then((loadedProfile) => {
       profileViewModelStore = loadedProfile;
     })
-    .catch((error) => {
+    .catch((error: unknown) => {
       log.error('Loading profile view model failed', error);
     });
 

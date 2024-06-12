@@ -100,7 +100,7 @@ export const LOCALE_NAMES: {[Locale in keyof typeof resources]: string} & {
 
 export type Locale = (typeof LOCALES)[u53];
 
-const FALLBACK_LOCALE: Locale = 'en' as const;
+const FALLBACK_LOCALE: Locale = 'en';
 
 export function ensureLocale(locale: string | undefined): Locale {
     if (locale === undefined) {

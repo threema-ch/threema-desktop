@@ -28,7 +28,7 @@ export function workLicenseCheckJob(
                 }
             }
         })
-        .catch((error) => {
+        .catch((error: unknown) => {
             log.error(`Work license check failed: ${error}`);
         });
 }

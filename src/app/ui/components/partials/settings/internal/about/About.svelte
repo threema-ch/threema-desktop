@@ -39,7 +39,7 @@
       isLoggerEnabled = enabled;
       isLoggerEnabledToggleState = enabled ?? false;
     })
-    .catch((error) => {
+    .catch((error: unknown) => {
       log.error(
         `Couldn't read whether file logging is enabled: ${extractErrorMessage(
           ensureError(error),
@@ -54,7 +54,7 @@
     .then((info) => {
       logInfo = info;
     })
-    .catch((error) => {
+    .catch((error: unknown) => {
       log.error(
         `Couldn't read logInformation: ${extractErrorMessage(ensureError(error), 'short')}`,
       );

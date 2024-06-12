@@ -98,7 +98,7 @@
         element: itemElement,
         options,
         timeoutMs: 3000,
-      }).catch((error) => {
+      }).catch((error: unknown) => {
         onError?.(ensureError(error));
       });
 
@@ -154,7 +154,7 @@
               timeoutMs: 3000,
             }),
         )
-        .catch((error) => {
+        .catch((error: unknown) => {
           onError?.(ensureError(error));
         });
 

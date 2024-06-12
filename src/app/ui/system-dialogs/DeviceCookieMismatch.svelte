@@ -23,6 +23,7 @@
    * Unlink and delete the device data and restart the application.
    */
   async function resetAndUnlink(): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     if (appServices === undefined || !appServices.isSet()) {
       log.warn('Cannot unlink the profile because the app services are not yet ready');
       return;
@@ -62,6 +63,7 @@
       </p>
     </div>
     <div slot="footer" let:modal>
+      <!-- eslint-disable @typescript-eslint/prefer-optional-chain -->
       <CancelAndConfirm
         cancelText={$i18n.t(
           'dialog--device-cookie.label--relink',
@@ -71,6 +73,7 @@
         cancelDisabled={appServices === undefined || !appServices.isSet()}
         {modal}
       />
+      <!-- eslint-enable @typescript-eslint/prefer-optional-chain -->
     </div>
   </ModalDialog>
 </ModalWrapper>

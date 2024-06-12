@@ -56,7 +56,7 @@ export class BlobCacheService {
                             : new Blob([result.bytes], {type: result.mediaType}),
                     );
                 })
-                .catch((error) =>
+                .catch((error: unknown) =>
                     this._log.warn(`Failed to fetch message thumbnail bytes: ${error}`),
                 );
             return store;
@@ -86,7 +86,7 @@ export class BlobCacheService {
                         : new Blob([result.bytes], {type: result.mediaType}),
                 );
             })
-            .catch((error) =>
+            .catch((error: unknown) =>
                 this._log.warn(`Failed to refresh message thumbnail bytes: ${error}`),
             );
     }

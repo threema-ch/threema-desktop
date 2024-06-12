@@ -17,7 +17,7 @@ export function sync<T>(promise: Promise<T>): T {
     let result: T | typeof UNSET = UNSET;
     let error: Error | typeof UNSET = UNSET;
 
-    promise.then((r) => (result = r)).catch((error_) => (error = ensureError(error_)));
+    promise.then((r) => (result = r)).catch((error_: unknown) => (error = ensureError(error_)));
 
     // Propagate error, if available
     if (error !== UNSET) {

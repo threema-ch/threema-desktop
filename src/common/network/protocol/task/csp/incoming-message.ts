@@ -823,7 +823,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         messageStore
                             .get()
                             .controller.thumbnailBlob()
-                            .catch((error) =>
+                            .catch((error: unknown) =>
                                 this._log.error(
                                     `Downloading the thumbnail of an incoming message failed: ${error}`,
                                 ),
@@ -841,7 +841,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                             messageStore
                                 .get()
                                 .controller.blob()
-                                .catch((error) => {
+                                .catch((error: unknown) => {
                                     this._log.error(
                                         `Downloading the blob of an incoming message failed: ${error}`,
                                     );

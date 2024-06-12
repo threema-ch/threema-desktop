@@ -24,7 +24,9 @@ export async function prepareFilesForMediaComposeModal(
                 .then((result) => {
                     validatedFiles = result;
                 })
-                .catch((error) => log.error(`An error occurred when validating files: ${error}`));
+                .catch((error: unknown) =>
+                    log.error(`An error occurred when validating files: ${error}`),
+                );
         } else {
             validatedFiles = files;
         }

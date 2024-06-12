@@ -109,7 +109,7 @@
   function handleClickDeleteMessageLocally(event: CustomEvent<AnyMessageListMessage>): void {
     switch (event.detail.type) {
       case 'message':
-        viewModelController?.removeMessage(event.detail.id).catch((error) => {
+        viewModelController?.removeMessage(event.detail.id).catch((error: unknown) => {
           log.error(`Could not delete message with id ${event.detail.id}`, error);
           toast.addSimpleFailure(
             $i18n.t('messaging.error--delete-message', 'Could not delete message'),
@@ -118,7 +118,7 @@
         break;
 
       case 'status-message':
-        viewModelController?.removeStatusMessage(event.detail.id).catch((error) => {
+        viewModelController?.removeStatusMessage(event.detail.id).catch((error: unknown) => {
           log.error(`Could not delete status message with id ${event.detail.id}`, error);
           toast.addSimpleFailure(
             $i18n.t('messaging.error--delete-status-message', 'Could not delete status message'),
@@ -136,7 +136,7 @@
       log.warn('Tried to delete an already deleted message on all devices');
       return;
     }
-    viewModelController?.markMessageAsDeleted(event.detail.id).catch((error) => {
+    viewModelController?.markMessageAsDeleted(event.detail.id).catch((error: unknown) => {
       log.error(`Could not delete message with id ${event.detail.id}`, error);
       toast.addSimpleFailure($i18n.t('messaging.error--delete-message'));
     });
@@ -378,7 +378,7 @@
           await openMediaComposeModal(preloadedFiles);
         }
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         log.error(
           `Failed to load conversation for receiver uid ${receiver.uid}: ${ensureError(error)}`,
         );
@@ -417,7 +417,7 @@
       return;
     }
 
-    await composeBarState.editedMessage.actions.edit?.(event.detail).catch((error) => {
+    await composeBarState.editedMessage.actions.edit?.(event.detail).catch((error: unknown) => {
       log.error('Failed to update message with error:', error);
     });
     resetComposeBar();

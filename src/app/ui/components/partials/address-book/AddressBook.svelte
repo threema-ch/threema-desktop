@@ -76,15 +76,13 @@
   export async function scrollToItem(lookup: DbReceiverLookup): Promise<void> {
     await scrollIntoViewIfNeededAsync({
       container: listElement,
-      element: listElement?.querySelector(
-        `ul > li[data-receiver="${`${lookup.type}.${lookup.uid}`}"]`,
-      ),
+      element: listElement?.querySelector(`ul > li[data-receiver="${lookup.type}.${lookup.uid}"]`),
       options: {
         behavior: 'instant',
         block: 'start',
       },
       timeoutMs: 100,
-    }).catch((error) => {
+    }).catch((error: unknown) => {
       log.info(`Scroll to contact was not performed: ${error}`);
     });
   }

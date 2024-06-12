@@ -67,6 +67,7 @@
 
   $: hasNotificationPolicy = notificationPolicy.type !== 'default' || notificationPolicy.isMuted;
   $: currentDuration =
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     call !== undefined && call.isJoined ? formatDurationBetween(call.startedAt, now) : undefined;
 
   $: handleChangeCall(call);

@@ -21,7 +21,10 @@ export function publicKeyGrid(publicKey: PublicKey): string {
         }
 
         // Add hex character
-        grid += hex[i];
+        const char = hex[i];
+        if (char !== undefined) {
+            grid += char;
+        }
     }
     return grid;
 }

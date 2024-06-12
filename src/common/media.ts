@@ -95,6 +95,6 @@ export class BackendMediaService {
     ): Promise<void> {
         await this._frontendMediaService
             .refreshThumbnailCacheForMessage(messageId, dbReceiverLookup)
-            .catch((error) => this._log.error('Failed to regenerate thumbnail', error));
+            .catch((error: unknown) => this._log.error('Failed to regenerate thumbnail', error));
     }
 }

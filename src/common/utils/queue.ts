@@ -135,7 +135,7 @@ export class UnboundedQueue<V, E extends Error = Error> {
     public prepend(queue: UnboundedQueue<V, E>): void {
         // Bubble any error
         if (this._error !== undefined) {
-            // eslint-disable-next-line @typescript-eslint/no-throw-literal
+            // eslint-disable-next-line @typescript-eslint/only-throw-error
             throw this._error;
         }
 
@@ -150,7 +150,7 @@ export class UnboundedQueue<V, E extends Error = Error> {
     public put(value: V): void {
         // Bubble any error
         if (this._error !== undefined) {
-            // eslint-disable-next-line @typescript-eslint/no-throw-literal
+            // eslint-disable-next-line @typescript-eslint/only-throw-error
             throw this._error;
         }
 

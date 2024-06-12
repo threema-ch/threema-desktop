@@ -162,7 +162,7 @@ export class Layer4Decoder implements SyncTransformerCodec<InboundL3Message, Inb
                 try {
                     const text = UTF8.decode(payload.payload.message);
                     this._log.warn(`Incoming server alert: ${text}`);
-                    this._showAlert(text).catch((error) => {
+                    this._showAlert(text).catch((error: unknown) => {
                         this._log.error(`Failed to show server alert system dialog: ${error}`);
                     });
                 } catch (error) {
@@ -199,7 +199,7 @@ export class Layer4Decoder implements SyncTransformerCodec<InboundL3Message, Inb
                             this._controller.connection.manager.enableAutoConnect();
                         }
                     })
-                    .catch((error) => {
+                    .catch((error: unknown) => {
                         this._log.error(`Failed to show server error system dialog: ${error}`);
                     });
                 return;

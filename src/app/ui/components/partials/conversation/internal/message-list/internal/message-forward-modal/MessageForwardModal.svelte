@@ -74,7 +74,7 @@
         // Replace `viewModelBundle`.
         viewModelStore = viewModelBundle.viewModelStore;
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         log.error(`Failed to load ContactListViewModelBundle: ${ensureError(error)}`);
 
         toast.addSimpleFailure(

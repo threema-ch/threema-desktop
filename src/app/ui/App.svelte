@@ -163,7 +163,7 @@
     }
   }
 
-  $: updateDelayedConnectionState($connectionState as ConnectionState, 3000);
+  $: updateDelayedConnectionState($connectionState as unknown as ConnectionState, 3000);
 </script>
 
 <svelte:body on:keydown|self={maybeToggleDebugPanelByKey} />

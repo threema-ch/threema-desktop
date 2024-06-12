@@ -228,7 +228,7 @@ class Connection {
         // Update leader state
         controller.d2m.promotedToLeader
             .then(() => leaderState.set(D2mLeaderState.LEADER))
-            .catch((error) => {
+            .catch((error: unknown) => {
                 log.warn('Leader state promise errored', extractErrorTraceback(ensureError(error)));
                 closed.raise({
                     type: 'error',
@@ -304,7 +304,7 @@ class Connection {
                     info,
                 });
             })
-            .catch((error) => {
+            .catch((error: unknown) => {
                 log.warn(
                     'Mediator transport closed with error:',
                     extractErrorTraceback(ensureError(error)),
@@ -343,7 +343,7 @@ class Connection {
                     });
                 }
             })
-            .catch((error) => {
+            .catch((error: unknown) => {
                 log.warn(
                     'Mediator transport readable side errored:',
                     extractErrorTraceback(ensureError(error)),
@@ -373,7 +373,7 @@ class Connection {
                     },
                 });
             })
-            .catch((error) => {
+            .catch((error: unknown) => {
                 if (error instanceof ConnectionClosed) {
                     if (import.meta.env.VERBOSE_LOGGING.NETWORK) {
                         log.debug(
@@ -411,7 +411,7 @@ class Connection {
                 });
                 unreachable(v, new Error('Task manager stopped'));
             })
-            .catch((error) => {
+            .catch((error: unknown) => {
                 if (error instanceof ConnectionClosed) {
                     if (import.meta.env.VERBOSE_LOGGING.NETWORK) {
                         log.debug(
@@ -540,7 +540,7 @@ export class ConnectionManager implements ConnectionManagerHandle {
             }
             assertUnreachable('Connection runner should never return');
         }
-        runForever().catch((error) =>
+        runForever().catch((error: unknown) =>
             assertUnreachable(`Connection manager failed to run: ${error}`),
         );
 

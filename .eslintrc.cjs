@@ -893,6 +893,7 @@ module.exports = {
                             },
                         },
                     ],
+                    '@typescript-eslint/use-unknown-in-catch-callback-variable': 'off',
                     'import/no-mutable-exports': 'off',
                 },
             }),

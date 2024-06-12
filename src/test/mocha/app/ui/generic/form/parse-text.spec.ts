@@ -24,8 +24,8 @@ function mockedT(key: string, defaultValue: string): string {
 
 export function run(): void {
     describe('Formatted message text parsing', function () {
-        const testContactId = 'ECHOECHO' as const;
-        const testAllId = '@@@@@@@@' as const;
+        const testContactId = 'ECHOECHO';
+        const testAllId = '@@@@@@@@';
 
         const testMentions: {
             self: MentionSelf;
@@ -164,7 +164,7 @@ export function run(): void {
         });
 
         describe('parseHighlights', function () {
-            const testSearchString = 'Test' as const;
+            const testSearchString = 'Test';
 
             it('should replace all search string occurrences in text with HTML (case-insensitive)', function () {
                 const parsedText = parseHighlights(

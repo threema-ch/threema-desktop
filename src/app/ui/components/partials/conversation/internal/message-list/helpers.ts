@@ -13,8 +13,9 @@ export class Viewport {
 
     private readonly _notifyController = TIMER.debounce(
         () => {
-            this._setCurrentViewportMessagesHandler(new Set(this._messages)).catch((error) =>
-                this._log.error(`Failed to set current viewport messages: ${error}`),
+            this._setCurrentViewportMessagesHandler(new Set(this._messages)).catch(
+                (error: unknown) =>
+                    this._log.error(`Failed to set current viewport messages: ${error}`),
             );
         },
         Viewport._DEBOUNCE_MS,
@@ -30,7 +31,8 @@ export class Viewport {
     ) {
         if (initiallyVisibleMessageId !== undefined) {
             this._setCurrentViewportMessagesHandler(new Set([initiallyVisibleMessageId])).catch(
-                (error) => this._log.error(`Failed to set initial viewport message: ${error}`),
+                (error: unknown) =>
+                    this._log.error(`Failed to set initial viewport message: ${error}`),
             );
         }
     }

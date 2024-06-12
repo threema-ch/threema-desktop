@@ -163,7 +163,7 @@
 
         blob = state;
       })
-      .catch((error) => {
+      .catch(() => {
         blob = {
           status: 'failed',
         };
@@ -179,7 +179,7 @@
         assert(isLoaded.state.type === 'resolved', 'Expected audio to be loaded');
         await togglePlayback();
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         onError(ensureError(error));
       });
   }

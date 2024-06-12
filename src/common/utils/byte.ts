@@ -41,7 +41,7 @@ export function byteEquals(left: ReadonlyUint8Array, right: ReadonlyUint8Array):
  */
 export function bytesToHex(array: ReadonlyUint8Array, prefix = ''): string {
     return array.reduce(
-        /* eslint-disable no-bitwise */
+        /* eslint-disable no-bitwise, @typescript-eslint/restrict-plus-operands */
         (parts, value) =>
             parts + prefix + HEX_LOOKUP_TABLE[value >>> 4] + HEX_LOOKUP_TABLE[value & 0x0f],
         '',

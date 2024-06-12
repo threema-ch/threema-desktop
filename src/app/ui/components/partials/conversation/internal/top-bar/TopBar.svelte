@@ -104,17 +104,17 @@
 
   function handleClickPinUnpinConversation(): void {
     if (conversation.isPinned) {
-      conversation.unpin().catch((error) => log.warn(`Failed to unpin: ${error}`));
+      conversation.unpin().catch((error: unknown) => log.warn(`Failed to unpin: ${error}`));
     } else {
-      conversation.pin().catch((error) => log.warn(`Failed to pin: ${error}`));
+      conversation.pin().catch((error: unknown) => log.warn(`Failed to pin: ${error}`));
     }
   }
 
   function handleClickArchiveUnarchiveConversation(): void {
     if (conversation.isArchived) {
-      conversation.unarchive().catch((error) => log.warn(`Failed to unarchive: ${error}`));
+      conversation.unarchive().catch((error: unknown) => log.warn(`Failed to unarchive: ${error}`));
     } else {
-      conversation.archive().catch((error) => log.warn(`Failed to archive: ${error}`));
+      conversation.archive().catch((error: unknown) => log.warn(`Failed to archive: ${error}`));
     }
   }
 

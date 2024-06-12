@@ -49,7 +49,7 @@
     await urlUpdateLock.with(async () => {
       const blob =
         currentSrc instanceof Promise
-          ? await currentSrc.catch((error) => {
+          ? await currentSrc.catch((error: unknown) => {
               log.error(
                 `Could not update image url due to an error while loading the blob: ${error}`,
               );

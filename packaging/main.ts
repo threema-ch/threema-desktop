@@ -273,12 +273,12 @@ function main(args: string[]): void {
             buildBinaryArchives(dirs, true, args.slice(1));
             break;
         case 'dmg':
-            buildDmgs(dirs, false, args.slice(1)).catch((error) => {
+            buildDmgs(dirs, false, args.slice(1)).catch((error: unknown) => {
                 fail(`Building DMG failed: ${error}`);
             });
             break;
         case 'dmgSigned':
-            buildDmgs(dirs, true, args.slice(1)).catch((error) => {
+            buildDmgs(dirs, true, args.slice(1)).catch((error: unknown) => {
                 fail(`Building signed DMG failed: ${error}`);
             });
             break;

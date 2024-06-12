@@ -139,7 +139,7 @@ export class ResolvablePromise<V, E extends Error = never>
             .then((v) => {
                 promise.resolve(v);
             })
-            .catch((error) => {
+            .catch((error: unknown) => {
                 // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                 promise.reject(ensureError(error) as E);
             });

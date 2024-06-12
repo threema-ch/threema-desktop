@@ -744,7 +744,7 @@ export class Backend {
                             lastUpdated: BigInt(new Date().getUTCMilliseconds()),
                             oppfCachedConfig: oppfFile.string,
                         })
-                        .catch((error) =>
+                        .catch((error: unknown) =>
                             log.error(
                                 `Failed to cache OnPrem config: ${extractErrorMessage(ensureError(error), 'short')}`,
                             ),
@@ -1050,7 +1050,9 @@ export class Backend {
                     await linkingState.updateState({state: 'syncing', phase: syncingPhase.get()});
                     userPasswordPromise.resolve(password);
                 })
-                .catch((error) => log.error(`Waiting for userPassword promise failed: ${error}`));
+                .catch((error: unknown) =>
+                    log.error(`Waiting for userPassword promise failed: ${error}`),
+                );
         };
         const joinProtocol = new DeviceJoinProtocol(
             connectResult.connection,

@@ -209,7 +209,7 @@ export async function downloadAndDecryptBlob(
     // TODO(DESK-921): Do this *after* processing!
     result
         .done(doneScope)
-        .catch((error) =>
+        .catch((error: unknown) =>
             log.warn(
                 `Failed to mark blob as done: ${extractErrorMessage(ensureError(error), 'short')}`,
             ),

@@ -129,8 +129,10 @@ export async function convertImage(image: Blob, type: 'image/png'): Promise<Blob
                         bitmap.close();
                         resolve(blob);
                     })
-                    .catch((error) => reject(new Error(`Failed to convert image: ${error}`)));
+                    .catch((error: unknown) =>
+                        reject(new Error(`Failed to convert image: ${error}`)),
+                    );
             })
-            .catch((error) => reject(new Error(`Failed to create ImageBitmap: ${error}`)));
+            .catch((error: unknown) => reject(new Error(`Failed to create ImageBitmap: ${error}`)));
     });
 }

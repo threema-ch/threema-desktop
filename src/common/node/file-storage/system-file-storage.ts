@@ -119,7 +119,9 @@ export class FileSystemFileStorage implements FileStorage {
                 },
             );
         } finally {
-            file?.close().catch((error) => this._log.warn(`Failed to close file: ${error}`));
+            file
+                ?.close()
+                .catch((error: unknown) => this._log.warn(`Failed to close file: ${error}`));
         }
 
         this._log.debug(`Loaded file with ID ${handle.fileId} (${decrypted.byteLength} bytes)`);
@@ -152,7 +154,9 @@ export class FileSystemFileStorage implements FileStorage {
             // Close file
             file
                 ?.close()
-                .catch((closeError) => this._log.warn(`Failed to close file: ${closeError}`));
+                .catch((closeError: unknown) =>
+                    this._log.warn(`Failed to close file: ${closeError}`),
+                );
 
             let message = `Could not write file with ID ${fileId}`;
             if (isNodeError(openError)) {

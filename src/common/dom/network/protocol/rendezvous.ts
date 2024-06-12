@@ -122,7 +122,7 @@ class WebSocketPath implements SinglePath {
                 }
                 abort.raise(closeCause);
             })
-            .catch((error) => {
+            .catch(() => {
                 // Ignore, in order to prevent unhandled rejection error. The connection closing event
                 // is already handled via the stream closing.
             });
@@ -163,7 +163,7 @@ class MultiplexedPath
 
         // Abort the queue when the protocol is aborted and vice versa.
         abort.subscribe((cause) => queue.error(new RendezvousCloseError(cause)));
-        queue.aborted.catch((error) => {
+        queue.aborted.catch((error: unknown) => {
             _log.debug('Queue aborted', error);
             abort.raise(error instanceof RendezvousCloseError ? error.cause : 'unknown');
         });
@@ -226,7 +226,7 @@ class MultiplexedPath
                             },
                         }),
                     )
-                    .catch((error) => _log.error(`Path errored (pid=${path.pid})`, error))
+                    .catch((error: unknown) => _log.error(`Path errored (pid=${path.pid})`, error))
                     .finally(() => {
                         // Drop the path from the internal map
                         const deleted = this._paths?.delete(path.pid) ?? false;
@@ -245,7 +245,7 @@ class MultiplexedPath
                 // Abort the path when the queue aborted.
                 //
                 // Note: This implicitly catches protocol aborts because those abort the queue.
-                queue.aborted.catch((error) => {
+                queue.aborted.catch((error: unknown) => {
                     path.close(error instanceof RendezvousCloseError ? error.cause : 'unknown');
                 });
 
@@ -418,7 +418,7 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
                 .pipeTo(path.writable, {
                     signal: abort.attach(new AbortController()),
                 })
-                .catch((error) => {
+                .catch(() => {
                     // Ignore
                 });
         }

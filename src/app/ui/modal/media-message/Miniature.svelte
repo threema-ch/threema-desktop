@@ -20,7 +20,7 @@
       .then((value) => {
         thumbnail = value;
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         log.error(`An error occurred while loading thumbnail: ${error}`);
       });
   }

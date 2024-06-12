@@ -95,7 +95,7 @@
             i18n.get().t('messaging.success--copy-message-link', 'Link copied to clipboard'),
           ),
         )
-        .catch((error) => {
+        .catch((error: unknown) => {
           log.error('Could not copy link to clipboard', error);
           toast.addSimpleFailure(
             i18n.get().t('messaging.error--copy-message-link', 'Could not copy link to clipboard'),
@@ -119,7 +119,7 @@
               .t('messaging.success--copy-message-selection', 'Selected text copied to clipboard'),
           ),
         )
-        .catch((error) => {
+        .catch((error: unknown) => {
           log.error('Could not copy selected text to clipboard', error);
           toast.addSimpleFailure(
             i18n

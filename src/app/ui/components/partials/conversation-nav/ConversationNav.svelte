@@ -113,7 +113,7 @@
       props: {
         conversation: {
           clear: async () => {
-            await props.viewModelBundle.viewModelController.clear().catch((error) => {
+            await props.viewModelBundle.viewModelController.clear().catch((error: unknown) => {
               log.error(
                 `Clearing conversation failed: ${extractErrorMessage(ensureError(error), 'short')}`,
               );
@@ -135,7 +135,7 @@
       props: {
         conversation: {
           delete: async () => {
-            await props.viewModelBundle.viewModelController.delete().catch((error) => {
+            await props.viewModelBundle.viewModelController.delete().catch((error: unknown) => {
               log.error(
                 `Deleting conversation failed: ${extractErrorMessage(ensureError(error), 'short')}`,
               );
@@ -166,15 +166,13 @@
   async function scrollToItem(lookup: DbReceiverLookup): Promise<void> {
     await scrollIntoViewIfNeededAsync({
       container: listElement,
-      element: listElement?.querySelector(
-        `ul > li[data-receiver="${`${lookup.type}.${lookup.uid}`}"]`,
-      ),
+      element: listElement?.querySelector(`ul > li[data-receiver="${lookup.type}.${lookup.uid}"]`),
       options: {
         behavior: 'instant',
         block: 'start',
       },
       timeoutMs: 100,
-    }).catch((error) => {
+    }).catch((error: unknown) => {
       log.info(`Scroll to conversation was not performed: ${error}`);
     });
   }
@@ -204,7 +202,7 @@
         // Replace `viewModelBundle`.
         viewModelStore = viewModelBundle.viewModelStore;
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         log.error(`Failed to load ConversationListViewModelBundle: ${ensureError(error)}`);
 
         toast.addSimpleFailure(
@@ -218,7 +216,7 @@
         // Replace `profileViewModelStore`.
         profileViewModelStore = store;
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         log.error(`Failed to load ProfileViewModel: ${ensureError(error)}`);
       });
 

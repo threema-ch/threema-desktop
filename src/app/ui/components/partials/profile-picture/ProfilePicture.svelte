@@ -42,7 +42,7 @@
           profilePictureStore = store;
         }
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         log.warn(`Failed to fetch profile picture store: ${error}`);
         profilePictureStore = new ReadableStore(undefined);
       });

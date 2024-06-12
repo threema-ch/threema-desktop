@@ -101,7 +101,7 @@
     const {receiver} = $viewModelStore;
     const profilePictureBlobStore = await profilePicture
       .getProfilePictureForReceiver(receiver.lookup)
-      .catch((error) => {
+      .catch(() => {
         log.error(
           `Error opening profile picture modal: Profile picture for ${receiver.lookup.type}.${receiver.lookup.uid} could not be loaded`,
         );
@@ -178,7 +178,7 @@
         viewModelStore = viewModelBundle.viewModelStore;
         viewModelController = viewModelBundle.viewModelController;
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         log.error(`Failed to load detail for receiver uid ${receiver?.uid}: ${ensureError(error)}`);
 
         toast.addSimpleFailure(

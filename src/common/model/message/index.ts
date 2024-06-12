@@ -714,12 +714,12 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
             this._handleReaction(TriggerSource.LOCAL, type, reactedAt, OWN_IDENTITY_ALIAS),
         fromSync: (type: MessageReaction, reactedAt: Date, reactionSender: IdentityStringOrMe) =>
             this._handleReaction(TriggerSource.SYNC, type, reactedAt, reactionSender),
+        // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (
             handle: ActiveTaskCodecHandle<'volatile'>,
             type: MessageReaction,
             reactedAt: Date,
             reactionSender: IdentityString,
-            // eslint-disable-next-line @typescript-eslint/require-await
         ) => this._handleReaction(TriggerSource.REMOTE, type, reactedAt, reactionSender),
     };
 
@@ -727,10 +727,10 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
     public readonly editMessage: InboundBaseMessageController<TView>['editMessage'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (
             taskHandle: ActiveTaskCodecHandle<'volatile'>,
             editedMessage: UnifiedEditMessage,
-            // eslint-disable-next-line @typescript-eslint/require-await
         ) => {
             if (this._type === MessageType.TEXT && editedMessage.newText.trim().length === 0) {
                 this._log.warn('New text of a text message edit may not be empty');
@@ -907,12 +907,12 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
         fromSync: (type: MessageReaction, reactedAt: Date, reactionSender: IdentityStringOrMe) =>
             this._handleReaction(TriggerSource.SYNC, type, reactedAt, reactionSender),
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (
             handle: ActiveTaskCodecHandle<'volatile'>,
             type: MessageReaction,
             reactedAt: Date,
             reactionSender: IdentityString,
-            // eslint-disable-next-line @typescript-eslint/require-await
         ) => this._handleReaction(TriggerSource.REMOTE, type, reactedAt, reactionSender),
     };
 

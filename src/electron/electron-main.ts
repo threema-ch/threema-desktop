@@ -191,7 +191,7 @@ function handleCriticalError(
                 electron.app.exit(EXIT_CODE_UNCAUGHT_ERROR);
             }
         })
-        .catch((error) => log.error(`Dialog promise unsuccessful: ${error}`));
+        .catch((error: unknown) => log.error(`Dialog promise unsuccessful: ${error}`));
 }
 
 function buildElectronMenu(): electron.Menu {
@@ -575,7 +575,7 @@ function main(
             if (selection === 0) {
                 electron.shell
                     .openExternal(import.meta.env.URLS.resetProfile.full)
-                    .catch((openExternalError) => {
+                    .catch((openExternalError: unknown) => {
                         log.error('Unable to open external URL', openExternalError);
                     });
             }
@@ -935,7 +935,9 @@ function main(
         }
         log.debug(`Running in mode: ${import.meta.env.BUILD_MODE} with parameters:\n`, parameters);
         log.info(`Serving app from ${appUrl}`);
-        window.loadURL(appUrl).catch((error) => log.error(`Unable to load URL ${appUrl}`, error));
+        window
+            .loadURL(appUrl)
+            .catch((error: unknown) => log.error(`Unable to load URL ${appUrl}`, error));
         if (!import.meta.env.DEBUG) {
             // In release builds, we don't include the "Toggle Developer Tools" menu entry. Without the
             // menu entry, the corresponding keyboard shortcut (Ctrl+Shift+i) doesn't work anymore.
@@ -1107,7 +1109,7 @@ function main(
             const allowedProtocols = ['http:', 'https:', 'ftp:', 'ftps:', 'mailto:', 'jitsi-meet:'];
             if (allowedProtocols.includes(protocol)) {
                 log.info(`Opening URL in external browser: ${handler.url}`);
-                electron.shell.openExternal(handler.url).catch((error) => {
+                electron.shell.openExternal(handler.url).catch((error: unknown) => {
                     log.error('Unable to open external URL', error);
                 });
             } else {

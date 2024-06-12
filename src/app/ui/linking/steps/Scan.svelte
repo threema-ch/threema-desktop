@@ -32,7 +32,7 @@
       navigator.clipboard
         .writeText(joinUri)
         .then(() => log.info('Linking code copied to clipboard'))
-        .catch((error) => {
+        .catch((error: unknown) => {
           log.error('Could not copy linking code to clipboard', error);
         });
     } else {

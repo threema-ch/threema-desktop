@@ -1044,7 +1044,7 @@ export class EndpointService {
             }
             Promise.resolve(returnValue)
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                .catch((error) => ({error, [TRANSFER_HANDLER]: THROW_HANDLER}))
+                .catch((error: unknown) => ({error, [TRANSFER_HANDLER]: THROW_HANDLER}))
                 .then((returnValue_) => {
                     const [wireValue, transfers] = service._toWireValue(returnValue_);
                     ep.postMessage({...wireValue, id}, transfers as any[]);
@@ -1367,7 +1367,6 @@ const THROW_HANDLER: RegisteredTransferHandler<
     deserialize: (serialized, service, root) => {
         const thrown = deserializeThrown(serialized, service, root);
         if (root) {
-            // eslint-disable-next-line @typescript-eslint/no-throw-literal
             throw thrown;
         } else {
             return thrown;
@@ -1468,7 +1467,7 @@ export function registerErrorTransferHandler<
                 {name, stack},
             );
             if (root) {
-                // eslint-disable-next-line @typescript-eslint/no-throw-literal
+                // eslint-disable-next-line @typescript-eslint/only-throw-error
                 throw error;
             } else {
                 return error;

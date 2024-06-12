@@ -455,6 +455,6 @@ async function main(): Promise<() => void> {
 
 // Temporarily set primitive assertion failed logger, then run main
 setAssertFailLogger((error) => CONSOLE_LOGGER.trace(error));
-main().catch((error) => {
+main().catch((error: unknown) => {
     throw new Error(`Critical error while initializing app`, {cause: error});
 });

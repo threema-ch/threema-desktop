@@ -131,7 +131,7 @@ export function byteToFileId(array: ReadonlyUint8Array): FileId {
  */
 export function deleteFilesInBackground(file: FileStorage, log: Logger, fileIds: FileId[]): void {
     for (const fileId of fileIds) {
-        file.delete(fileId).catch((error_) => {
+        file.delete(fileId).catch((error_: unknown) => {
             const error = ensureError(error_);
             log.error(`Error while deleting file: ${extractErrorMessage(error, 'short')}`);
         });

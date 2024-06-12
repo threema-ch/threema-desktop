@@ -152,7 +152,7 @@ async function runSqlite(argv: string[]): Promise<void> {
 setAssertFailLogger((error) => CONSOLE_LOGGER.trace(error));
 main()
     .then(() => {})
-    .catch((error) => {
+    .catch((error: unknown) => {
         logger.error(`Command failed: ${error}`);
         process.exit(1);
     });

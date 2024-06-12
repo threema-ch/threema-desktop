@@ -57,7 +57,7 @@
       viewModelController = loadedViewModelBundle.viewModelController;
       viewModelStore = loadedViewModelBundle.viewModelStore;
     })
-    .catch((error) => {
+    .catch((error: unknown) => {
       log.error('Loading search view model bundle failed', error);
     });
 

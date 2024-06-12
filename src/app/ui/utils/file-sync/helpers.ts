@@ -27,7 +27,7 @@ export async function syncAndGetPayload<TPayload extends FileBytesAndMediaType>(
                 data: fileData,
             } as const;
         })
-        .catch((error) => {
+        .catch((error: unknown) => {
             if (error instanceof BlobFetchError) {
                 return convertBlobFetchError(error, t);
             }

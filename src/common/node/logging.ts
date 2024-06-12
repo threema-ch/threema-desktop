@@ -15,7 +15,7 @@ export class FileLogger implements Logger {
 
     public constructor(private readonly _handle: fs.FileHandle) {
         process.on('beforeExit', () => {
-            this._handle.close().catch((error) => {
+            this._handle.close().catch((error: unknown) => {
                 CONSOLE_LOGGER.error('Unable to close log file before exiting:', error);
             });
         });
@@ -43,7 +43,7 @@ export class FileLogger implements Logger {
         const entry = `${new Date().toISOString()} ${level}: ${data
             .map((item) => `${item}`)
             .join(' ')}\n`;
-        this._handle.write(entry).catch((error) => {
+        this._handle.write(entry).catch((error: unknown) => {
             CONSOLE_LOGGER.error('Unable to write log entry:', error);
         });
     }

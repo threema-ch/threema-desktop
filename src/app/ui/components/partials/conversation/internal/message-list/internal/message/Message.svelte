@@ -113,7 +113,7 @@
               .t('messaging.success--copy-message-content', 'Message content copied to clipboard'),
           ),
         )
-        .catch((error) => {
+        .catch((error: unknown) => {
           log.error('Could not copy message content to clipboard', error);
 
           toast.addSimpleFailure(
@@ -145,7 +145,7 @@
   }
 
   function handleClickAcknowledgeOption(): void {
-    actions.acknowledge?.().catch((error) => {
+    actions.acknowledge?.().catch((error: unknown) => {
       log.error(`Could not react to message: ${extractErrorMessage(ensureError(error), 'short')}`);
 
       toast.addSimpleFailure(
@@ -155,7 +155,7 @@
   }
 
   function handleClickDeclineOption(): void {
-    actions.decline?.().catch((error) => {
+    actions.decline?.().catch((error: unknown) => {
       log.error(`Could not react to message: ${extractErrorMessage(ensureError(error), 'short')}`);
 
       toast.addSimpleFailure(
@@ -233,7 +233,7 @@
             profilePictureStore = store;
           }
         })
-        .catch((error) => {
+        .catch((error: unknown) => {
           log.warn(`Failed to fetch profile picture store: ${error}`);
           profilePictureStore = new ReadableStore(undefined);
         });

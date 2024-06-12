@@ -457,11 +457,11 @@ export class GroupModelController implements GroupController {
                 return numRemoved;
             });
         },
+        // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (
             handle: ActiveTaskCodecHandle<'volatile'>,
             contacts: LocalModelStore<Contact>[],
             createdAt: Date,
-            // eslint-disable-next-line @typescript-eslint/require-await
         ) => {
             this._log.debug('GroupModelController: Remove members from remote');
             return this.meta.run((guardedHandle) => {
@@ -516,12 +516,12 @@ export class GroupModelController implements GroupController {
                 return {added, removed};
             });
         },
+        // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (
             handle: ActiveTaskCodecHandle<'volatile'>,
             contacts: LocalModelStore<Contact>[],
             createdAt: Date,
             newUserState?: GroupUserState.MEMBER,
-            // eslint-disable-next-line @typescript-eslint/require-await
         ) => {
             this._log.debug('GroupModelController: Set members from remote');
             return this.meta.run((guardedHandle) => {

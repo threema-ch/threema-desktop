@@ -114,7 +114,7 @@
         );
         modal.close();
       })
-      .catch((error) => {
+      .catch(() => {
         // Error. Probably a wrong key storage password.
         keyStoragePasswordValidity = false;
         checkingKeyStoragePassword = false;
@@ -129,7 +129,7 @@
       .then(() => {
         ipc.deleteProfileAndRestartApp();
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         // TODO(DESK-1228): Delete profile anyways if selfkick failed?
         log.error(`deleteProfileAndRestartApp failed: ${error}`);
         deleteProfileError = `${$i18n.t(

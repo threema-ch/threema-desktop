@@ -56,7 +56,7 @@ export class Delayed<T, E extends Error = Error> {
      */
     public unwrap(): T {
         if (this._value === UNSET) {
-            // eslint-disable-next-line @typescript-eslint/no-throw-literal
+            // eslint-disable-next-line @typescript-eslint/only-throw-error
             throw this._createGetError();
         }
         return this._value;
@@ -70,7 +70,7 @@ export class Delayed<T, E extends Error = Error> {
      */
     public set(value: T): void {
         if (this._value !== UNSET) {
-            // eslint-disable-next-line @typescript-eslint/no-throw-literal
+            // eslint-disable-next-line @typescript-eslint/only-throw-error
             throw this._createSetError();
         }
         this._value = value;

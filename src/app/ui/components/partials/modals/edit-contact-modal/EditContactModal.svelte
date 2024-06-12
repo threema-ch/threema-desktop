@@ -33,7 +33,7 @@
           $i18n.t('dialog--edit-contact.success--edit-contact', 'Contact successfully edited'),
         );
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         log.error(`Failed to update contact: ${error}`);
 
         toast.addSimpleFailure(

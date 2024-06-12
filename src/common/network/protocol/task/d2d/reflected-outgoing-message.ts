@@ -281,7 +281,7 @@ export class ReflectedOutgoingMessageTask
                     messageStore
                         .get()
                         .controller.thumbnailBlob()
-                        .catch((error) =>
+                        .catch((error: unknown) =>
                             this._log.error(
                                 `Downloading the thumbnail of a reflected outgoing message failed: ${error}`,
                             ),
@@ -299,7 +299,7 @@ export class ReflectedOutgoingMessageTask
                         messageStore
                             .get()
                             .controller.blob()
-                            .catch((error) => {
+                            .catch((error: unknown) => {
                                 this._log.error(
                                     `Downloading the blob of a reflected outgoing message failed: ${error}`,
                                 );

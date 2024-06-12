@@ -3,8 +3,8 @@ import type {IconSet} from '~/common/types';
 import {WritableStore} from '~/common/utils/store';
 import {TIMER} from '~/common/utils/timer';
 
-const SIMPLE_TOAST_TTL_MILLISECONDS = 5000 as const;
-const ACTION_TOAST_TTL_MILLISECONDS = 10000 as const;
+const SIMPLE_TOAST_TTL_MILLISECONDS = 5000;
+const ACTION_TOAST_TTL_MILLISECONDS = 10000;
 
 export type ToastIconColor = 'green' | 'red' | 'orange';
 
