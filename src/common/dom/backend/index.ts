@@ -1441,7 +1441,15 @@ export class Backend {
 
             if (oldDatabaseKey !== undefined && oldDatabaseKey !== 'no-restoration') {
                 try {
-                    transferOldMessages(services, oldDatabaseKey, db, config, log, factories, 1000);
+                    await transferOldMessages(
+                        services,
+                        oldDatabaseKey,
+                        db,
+                        config,
+                        log,
+                        factories,
+                        1000,
+                    );
                 } catch (errorInfo) {
                     return await throwLinkingError(
                         `Restoring the old messages failed: ${errorInfo} `,

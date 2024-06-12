@@ -26,14 +26,14 @@ export type FileId = WeakOpaque<string, {readonly FileId: unique symbol}>;
  */
 export interface CopyableFileStorage extends FileStorage {
     /**
-     * Get the raw path of a file determined by its fileId.
+     * Get the raw file system path of a {@link fileId}.
      */
     readonly getRawPath: (fileId: FileId) => Promise<string>;
     /**
      * Copy a file from an arbitrary source path into the file storage.
      *
      * Note: The path should point to a file that is compatible with the current file storage (e.g.
-     * in terms of decryption).
+     * in terms of encryption).
      */
     readonly copyFromRawPath: (fileId: FileId, sourcePath: string) => Promise<boolean>;
 }
@@ -176,24 +176,26 @@ export function canCopyFiles(val: FileStorage): val is CopyableFileStorage {
 }
 
 /**
- * Copy files with the specified file IDs to a given target in a background task.
- *
- * The result will not be awaited! If copying fails, an error is logged.
+ * Copy files with the specified file IDs from {@link oldFileStorage} to {@link newFileStorage}.
  */
-export async function copyFilesInBackground(
+export async function copyFiles(
     oldFileStorage: CopyableFileStorage,
     newFileStorage: CopyableFileStorage,
     log: Logger,
     fileIds: FileId[],
 ): Promise<void> {
+    const promises = [];
     for (const fileId of fileIds) {
         const sourcePath = await oldFileStorage.getRawPath(fileId);
-        log.info(`restoring file ${sourcePath}`);
-        newFileStorage.copyFromRawPath(fileId, sourcePath).catch((error_) => {
-            const error = ensureError(error_);
-            log.error(`Error while copying file: ${extractErrorMessage(error, 'short')}`);
-        });
+        log.info(`Restoring file ${sourcePath}`);
+        promises.push(
+            newFileStorage.copyFromRawPath(fileId, sourcePath).catch((error_: unknown) => {
+                const error = ensureError(error_);
+                log.error(`Error while copying file: ${extractErrorMessage(error, 'short')}`);
+            }),
+        );
     }
+    await Promise.all(promises);
 }
 
 export interface StoredFileHandle {

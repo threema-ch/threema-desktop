@@ -11,12 +11,12 @@ import type {
 } from '~/common/db';
 import type {FactoriesForBackend} from '~/common/dom/backend';
 import {MessageType, ReceiverType} from '~/common/enum';
-import {canCopyFiles, copyFilesInBackground, type FileId} from '~/common/file-storage';
+import {canCopyFiles, copyFiles, type FileId} from '~/common/file-storage';
 import type {ServicesForKeyStorage} from '~/common/key-storage';
 import type {Logger} from '~/common/logging';
 import type {IdentityString} from '~/common/network/types';
 import type {u53} from '~/common/types';
-import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
+import {assert, unreachable} from '~/common/utils/assert';
 
 /**
  * Checks the password entered by the user against an old profile.
@@ -54,7 +54,7 @@ export async function unlockDatabaseKey(
  *
  * @throws If the transfer to the new database failed for some reason.
  */
-export function transferOldMessages(
+export async function transferOldMessages(
     services: Pick<ServicesForBackend, 'config' | 'crypto' | 'file' | 'model'>,
     oldDbKey: RawDatabaseKey,
     db: DatabaseBackend,
@@ -62,7 +62,7 @@ export function transferOldMessages(
     log: Logger,
     factories: Pick<FactoriesForBackend, 'db' | 'fileStorage'>,
     chunkSize: u53,
-): void {
+): Promise<void> {
     const {model, file} = services;
 
     // Decrypt old database
@@ -133,15 +133,15 @@ export function transferOldMessages(
                 uidOfContactInNewDb = 'me';
             }
 
-            // The message was sent in a single chat
             if (message.lookup.contactReceiverLookup !== undefined) {
+                // The message was sent in a single chat
                 const identity = oldDbUidToIdentityMap.get(message.lookup.contactReceiverLookup);
                 if (identity === undefined) {
                     continue;
                 }
                 uidOfConversationInNewDb = db.getContactConversationUidByIdentity(identity);
-                // The message was sent in a group chat
             } else if (message.lookup.groupReceiverLookup !== undefined) {
+                // The message was sent in a group chat
                 const group = oldDb.getGroupByUid(message.lookup.groupReceiverLookup);
                 if (group === undefined) {
                     continue;
@@ -249,9 +249,7 @@ export function transferOldMessages(
             }
         }
         if (restoreFiles) {
-            copyFilesInBackground(oldFileStorage, file, log, messageFileIds).catch(
-                assertUnreachable,
-            );
+            await copyFiles(oldFileStorage, file, log, messageFileIds);
         }
     } while (messages.length !== 0);
 
