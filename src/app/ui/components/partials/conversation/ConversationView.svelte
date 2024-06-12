@@ -722,7 +722,7 @@
               await viewModelController?.delete().catch(assertUnreachable);
               if (
                 $router.main.id === 'conversation' &&
-                $router.main.params.receiverLookup.type === $viewModelStore?.receiver.lookup.type &&
+                $router.main.params.receiverLookup.type === $viewModelStore.receiver.lookup.type &&
                 $router.main.params.receiverLookup.uid === $viewModelStore.receiver.lookup.uid
               ) {
                 router.goToWelcome();

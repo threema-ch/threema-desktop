@@ -131,8 +131,8 @@ export function truncate(
 
     // eslint-disable-next-line threema/ban-stateful-regex-flags
     const regexp = new RegExp(focuses.map((focus) => `(${escapeRegExp(focus)})`).join('|'), 'ug');
-    const focusIndices = [...graphemeClusters.join('').matchAll(regexp)].flatMap(({index}) =>
-        index === undefined ? [] : [index],
+    const focusIndices = [...graphemeClusters.join('').matchAll(regexp)].flatMap(
+        ({index}) => index,
     );
 
     // If no matches have been found, truncate according to `mode`.

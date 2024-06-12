@@ -44,7 +44,7 @@ export function tsWorkerPlugin(): WorkerPlugin {
             for (const result of results) {
                 const {0: match, index} = result;
                 let url = result.groups?.url;
-                assert(index !== undefined && url !== undefined);
+                assert(url !== undefined);
 
                 // "Parse" template string and replace `import.meta.env.BUILD_TARGET` in it.
                 //

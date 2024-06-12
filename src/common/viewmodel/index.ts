@@ -238,13 +238,9 @@ export class ViewModelRepository implements IViewModelRepository {
             return undefined;
         }
 
-        return this._cache.contactDetail.getOrCreate(receiverModelStore, () => {
-            if (receiverModelStore === undefined) {
-                return undefined;
-            }
-
-            return getContactDetailViewModelBundle(this._services, receiverModelStore);
-        });
+        return this._cache.contactDetail.getOrCreate(receiverModelStore, () =>
+            getContactDetailViewModelBundle(this._services, receiverModelStore),
+        );
     }
 
     public profile(): ProfileViewModelStore {

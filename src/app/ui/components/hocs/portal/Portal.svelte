@@ -19,6 +19,7 @@
   let ref: SvelteNullableBinding<HTMLElement> = null;
 
   onMount(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (target !== undefined && target !== null && ref !== null) {
       target.appendChild(ref);
     } else {
@@ -35,7 +36,8 @@
 
     // TODO(DESK-1339): Is this delay really needed? If yes, maybe replace with tick.then()?
     TIMER.timeout(() => {
-      if (_ref?.parentNode) {
+      if (_ref?.parentNode !== null && _ref?.parentNode !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         _ref.parentNode.removeChild(_ref);
       }
     }, 0);

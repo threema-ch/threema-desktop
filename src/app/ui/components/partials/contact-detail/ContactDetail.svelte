@@ -179,7 +179,7 @@
         viewModelController = viewModelBundle.viewModelController;
       })
       .catch((error: unknown) => {
-        log.error(`Failed to load detail for receiver uid ${receiver?.uid}: ${ensureError(error)}`);
+        log.error(`Failed to load detail for receiver uid ${receiver.uid}: ${ensureError(error)}`);
 
         toast.addSimpleFailure(
           i18n.get().t('contacts.error--contact-detail-load', 'Details could not be loaded'),

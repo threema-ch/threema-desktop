@@ -35,10 +35,12 @@
   }
 
   onMount(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     modalElement?.addEventListener('click', handleOutsideClick);
   });
 
   onDestroy(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     modalElement?.removeEventListener('click', handleOutsideClick);
   });
 </script>

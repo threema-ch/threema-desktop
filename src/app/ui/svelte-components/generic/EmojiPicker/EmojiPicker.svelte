@@ -84,8 +84,10 @@
     observer = observeActiveGroup(wrapper_);
 
     // Add event listener and observe each group
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     wrapper_.querySelectorAll('.group').forEach((group) => {
       (group as HTMLElement).addEventListener('click', onEmojiGroupClicked);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       observer.observe(group);
     });
   });
@@ -93,6 +95,7 @@
     const wrapper_ = unwrap(wrapper);
 
     // Remove emoji click listener and disable observer
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     wrapper_.querySelectorAll('.group').forEach((group) => {
       (group as HTMLElement).removeEventListener('click', onEmojiGroupClicked);
       observer.disconnect();

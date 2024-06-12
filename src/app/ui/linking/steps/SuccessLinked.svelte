@@ -15,6 +15,7 @@
   let buttonComponent: Button | null = null;
 
   onMount(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     buttonComponent?.focus();
   });
 </script>
