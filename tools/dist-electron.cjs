@@ -60,6 +60,8 @@ function allow(directory, pattern) {
 async function setElectronFuses(binaryPath) {
     await flipFuses(binaryPath, {
         version: FuseVersion.V1,
+        // See: https://github.com/electron/fuses?tab=readme-ov-file#new-fuses.
+        strictlyRequireAllFuses: true,
         resetAdHocDarwinSignature: process.platform === 'darwin' && process.arch === 'arm64',
         // Disable ELECTRON_RUN_AS_NODE
         [FuseV1Options.RunAsNode]: false,
@@ -78,6 +80,9 @@ async function setElectronFuses(binaryPath) {
         // Load V8 Snapshot from `browser_v8_context_snapshot.bin` for the browser process
         // Note: Threema seems to crash on launch when setting this to true.
         [FuseV1Options.LoadBrowserProcessSpecificV8Snapshot]: false,
+        // Changes whether pages loaded from the file:// protocol are given privileges beyond what
+        // they would receive in a traditional web browser.
+        [FuseV1Options.GrantFileProtocolExtraPrivileges]: false,
     });
 }
 
