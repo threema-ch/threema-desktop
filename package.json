@@ -66,8 +66,8 @@
     "emoji:generate:prettify": "prettier --write src/app/ui/svelte-components/generic/EmojiPicker/{emoji,groups}.html"
   },
   "engines": {
-    "node": "18.18.2",
-    "npm": "9.8.1"
+    "node": "20.11.1",
+    "npm": "10.2.4"
   },
   "dependencies": {
     "@badrap/valita": "0.3.8",
@@ -133,7 +133,7 @@
     "@types/estree": "~1.0.5",
     "@types/fs-extra": "~11.0.4",
     "@types/mocha": "~10.0.0",
-    "@types/node": "~18.18.14",
+    "@types/node": "~20.11.1",
     "@types/qrcode": "^1.5.5",
     "@types/sinon": "~17.0.2",
     "@types/sinon-chai": "~3.2.9",

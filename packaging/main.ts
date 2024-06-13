@@ -977,7 +977,7 @@ function buildFlatpaks(dirs: Directories, args: string[]): void {
     const dependencies = [
         ['org.electronjs.Electron2.BaseApp', '23.08'],
         ['org.freedesktop.Sdk', '23.08'],
-        ['org.freedesktop.Sdk.Extension.node18', '23.08'],
+        ['org.freedesktop.Sdk.Extension.node20', '23.08'],
     ];
 
     // Child process options
