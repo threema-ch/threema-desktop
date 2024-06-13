@@ -169,7 +169,7 @@
     "prettier": "3.3.2",
     "prettier-plugin-svelte": "3.2.4",
     "protobufjs-cli": "1.1.2",
-    "sass": "~1.72.0",
+    "sass": "~1.77.5",
     "sinon": "~17.0.1",
     "sinon-chai": "~3.7.0",
     "structbuf-typescript": "file:libs/structbuf-typescript",
