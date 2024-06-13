@@ -117,30 +117,33 @@
     <div class="bar">
       <ContactAddNavBar on:back={navigateBack} on:cancel={navigateToContactList} />
     </div>
-    <span class="profile-picture-upload">
-      <ProfilePictureUpload />
-    </span>
-    <div class="threema-id">
-      <Text
-        disabled={true}
-        value={identityData.identity}
-        label={$i18n.t('contacts.label--threema-id')}
-      />
-    </div>
-    <div class="firstname">
-      <Text
-        bind:this={contactFirstnameTextField}
-        bind:value={firstName}
-        label={$i18n.t('contacts.label--first-name', 'First Name')}
-        spellcheck={false}
-      />
-    </div>
-    <div class="lastname">
-      <Text
-        bind:value={lastName}
-        label={$i18n.t('contacts.label--last-name', 'Last Name')}
-        spellcheck={false}
-      />
+
+    <div class="content">
+      <span class="profile-picture-upload">
+        <ProfilePictureUpload />
+      </span>
+      <div class="threema-id">
+        <Text
+          disabled={true}
+          value={identityData.identity}
+          label={$i18n.t('contacts.label--threema-id')}
+        />
+      </div>
+      <div class="firstname">
+        <Text
+          bind:this={contactFirstnameTextField}
+          bind:value={firstName}
+          label={$i18n.t('contacts.label--first-name', 'First Name')}
+          spellcheck={false}
+        />
+      </div>
+      <div class="lastname">
+        <Text
+          bind:value={lastName}
+          label={$i18n.t('contacts.label--last-name', 'Last Name')}
+          spellcheck={false}
+        />
+      </div>
     </div>
 
     <div class="next">
@@ -156,35 +159,45 @@
 
   #nav-wrapper {
     display: grid;
-    padding: rem(12px) 0 0;
     background-color: var(--t-nav-background-color);
     grid-template:
-      'bar' rem(40px)
-      'profile-picture-upload' auto
-      'threema-id' auto
-      'firstname' auto
-      'lastname' auto
+      'bar' rem(64px)
+      'content' auto
       '.' 1fr
       'next' rem(64px);
-    gap: rem(8px);
     align-content: start;
+    overflow: hidden;
 
     .bar {
-      padding: 0 rem(8px) 0 rem(8px);
-      display: grid;
+      grid-area: bar;
+
+      padding: rem(12px) rem(8px);
     }
 
-    .profile-picture-upload,
-    .threema-id,
-    .firstname,
-    .lastname {
-      padding: 0 rem(16px);
-    }
-    .profile-picture-upload {
-      place-self: center;
+    .content {
+      grid-area: content;
+
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: start;
+      gap: rem(8px);
+
+      .profile-picture-upload,
+      .threema-id,
+      .firstname,
+      .lastname {
+        padding: 0 rem(16px);
+      }
+      .profile-picture-upload {
+        place-self: center;
+      }
     }
 
     .next {
+      grid-area: next;
+
       display: grid;
       grid-area: next;
       background-color: var(--t-color-primary);
