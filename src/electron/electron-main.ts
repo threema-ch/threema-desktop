@@ -961,8 +961,11 @@ function main(
             contents: Electron.WebContents,
             permission: string,
             details:
-                | Electron.PermissionRequestHandlerHandlerDetails
-                | Electron.PermissionCheckHandlerHandlerDetails,
+                | Electron.PermissionCheckHandlerHandlerDetails // From setPermissionCheckHandler
+                | Electron.PermissionRequest // From setPermissionRequestHandler
+                | Electron.FilesystemPermissionRequest // From setPermissionRequestHandler
+                | Electron.MediaAccessPermissionRequest // From setPermissionRequestHandler
+                | Electron.OpenExternalPermissionRequest, // From setPermissionRequestHandler
         ): boolean {
             function deny(error: string): false {
                 log.error(error);
