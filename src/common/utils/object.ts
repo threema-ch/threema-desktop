@@ -9,9 +9,9 @@ export type UnknownRecord = Record<PropertyKey, unknown>;
  * Typed variant of {@link Object.hasOwn}.
  */
 export function hasProperty<TKey extends PropertyKey>(
-    record: Readonly<UnknownRecord>,
+    record: object,
     key: TKey,
-): record is Readonly<UnknownRecord> & {[key in TKey]: unknown} {
+): record is object & {[key in TKey]: unknown} {
     return Object.hasOwn(record, key);
 }
 

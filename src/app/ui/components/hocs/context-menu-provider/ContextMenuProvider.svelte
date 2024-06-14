@@ -2,7 +2,7 @@
   @component
   Provides the wrapped element with a popover that contains a context menu.
 -->
-<script lang="ts">
+<script lang="ts" generics="THandlerProps = undefined">
   import {createEventDispatcher} from 'svelte';
 
   import type {ContextMenuProviderProps} from '~/app/ui/components/hocs/context-menu-provider/props';
@@ -15,8 +15,13 @@
   import MenuContainer from '~/app/ui/svelte-components/generic/Menu/MenuContainer.svelte';
   import MenuItem from '~/app/ui/svelte-components/generic/Menu/MenuItem.svelte';
   import MenuItemDivider from '~/app/ui/svelte-components/generic/Menu/MenuItemDivider.svelte';
+  import {hasProperty} from '~/common/utils/object';
 
-  type $$Props = ContextMenuProviderProps;
+  // Generic parameters are not yet recognized by the linter.
+  // See https://github.com/sveltejs/eslint-plugin-svelte/issues/521
+  // and https://github.com/sveltejs/svelte-eslint-parser/issues/306
+  // eslint-disable-next-line no-undef
+  type $$Props = ContextMenuProviderProps<THandlerProps>;
 
   export let afterClose: $$Props['afterClose'] = undefined;
   export let afterOpen: $$Props['afterOpen'] = undefined;
@@ -35,16 +40,24 @@
   export let triggerBehavior: $$Props['triggerBehavior'] = undefined;
 
   const dispatch = createEventDispatcher<{
-    clickitem: ContextMenuOption;
+    // See comment for `$$Props`.
+    // eslint-disable-next-line no-undef
+    clickitem: ContextMenuOption<THandlerProps>;
   }>();
 
-  function handleClickItem(item: ContextMenuItem): void {
+  // See comment for `$$Props`.
+  // eslint-disable-next-line no-undef
+  function handleClickItem(item: ContextMenuItem<THandlerProps>): void {
     if (item === 'divider') {
       return;
     }
 
     dispatch('clickitem', item);
-    item.handler();
+    if (hasProperty(item, 'handlerProps')) {
+      item.handler(item.handlerProps);
+    } else {
+      item.handler();
+    }
   }
 </script>
 
