@@ -480,7 +480,7 @@ export class GroupModelController implements GroupController {
         ) => {
             this._log.debug('GroupModelController: Set members from sync');
             return this.meta.run((handle) => {
-                const {added, removed} = this._diffAndSet(
+                const {added, removed} = this._diffAndSetMembers(
                     handle,
                     contacts,
                     createdAt,
@@ -501,7 +501,7 @@ export class GroupModelController implements GroupController {
         ) => {
             this._log.debug('GroupModelController: Set members from remote');
             return this.meta.run((guardedHandle) => {
-                const {added, removed} = this._diffAndSet(
+                const {added, removed} = this._diffAndSetMembers(
                     guardedHandle,
                     contacts,
                     createdAt,
@@ -757,7 +757,7 @@ export class GroupModelController implements GroupController {
      * Return which contacts would be removed or added as members when setting them all as the new
      * member list.
      */
-    private _diff(
+    private _diffMembers(
         guardedHandle: GuardedStoreHandle<GroupView>,
         contacts: Set<LocalModelStore<Contact>>,
     ): {
@@ -792,7 +792,7 @@ export class GroupModelController implements GroupController {
         return {added: [...added], removed: [...removed]};
     }
 
-    private _set(
+    private _setMembers(
         handle: GuardedStoreHandle<GroupView>,
         added: LocalModelStore<Contact>[],
         removed: LocalModelStore<Contact>[],
@@ -816,7 +816,7 @@ export class GroupModelController implements GroupController {
      *
      * Note: Triggers a `group-member-change` status message if a new member was added.
      */
-    private _diffAndSet(
+    private _diffAndSetMembers(
         guardedHandle: GuardedStoreHandle<GroupView>,
         contacts: LocalModelStore<Contact>[],
         createdAt: Date,
@@ -827,11 +827,11 @@ export class GroupModelController implements GroupController {
             this._update(guardedHandle, {userState: newUserState});
             userAdded += 1;
         }
-        const {added, removed} = this._diff(guardedHandle, new Set(contacts));
+        const {added, removed} = this._diffMembers(guardedHandle, new Set(contacts));
         if (added.length === 0 && removed.length === 0) {
             return {added: userAdded, removed: 0};
         }
-        this._set(guardedHandle, [...added], [...removed]);
+        this._setMembers(guardedHandle, [...added], [...removed]);
         this._addGroupMemberChangeStatusMessage(added, removed, createdAt);
         return {added: added.length + userAdded, removed: removed.length};
     }
