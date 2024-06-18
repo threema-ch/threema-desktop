@@ -19,9 +19,10 @@
   import type {AugmentedOngoingGroupCallViewModelBundle} from '~/app/ui/components/partials/call-activity/transformer';
   import ParticipantFeed from '~/app/ui/components/partials/call-participant-feed/ParticipantFeed.svelte';
   import type {ParticipantFeedProps} from '~/app/ui/components/partials/call-participant-feed/props';
+  import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import type {DbGroupReceiverLookup} from '~/common/db';
-  import {assert, assertUnreachable, unwrap} from '~/common/utils/assert';
+  import {assert, assertUnreachable, unreachable, unwrap} from '~/common/utils/assert';
   import {byteEquals} from '~/common/utils/byte';
   import type {Remote} from '~/common/utils/endpoint';
   import {AbortRaiser} from '~/common/utils/signal';
@@ -145,11 +146,81 @@
     const stop_ = new AbortRaiser<AnyExtendedGroupCallContextAbort>();
     stop = stop_;
     stop_.subscribe((event) => {
-      // TODO(DESK-1405): Add a toast depending on stop event cause
       log.info('Group call stopped', event);
-      toast.addSimple(
-        `TODO(DESK-1405): Group call stopped (origin=${event.origin}, cause=${event.cause})`,
-      );
+
+      switch (event.cause) {
+        case 'disconnected':
+          toast.addSimpleFailure(
+            $i18n.t('messaging.error--call-disconnected', 'Call was disconnected'),
+          );
+          break;
+
+        case 'group-left-kicked-or-removed':
+          toast.addSimpleFailure(
+            $i18n.t(
+              'messaging.error--call-group-left-kicked-or-removed',
+              'Group call was left because you left the group',
+            ),
+          );
+          break;
+
+        case 'group-calls-disabled':
+          toast.addSimpleFailure(
+            $i18n.t(
+              'messaging.error--call-group-calls-disabled',
+              'Group call feature was disabled',
+            ),
+          );
+          break;
+
+        case 'call-not-running':
+          toast.addSimpleFailure(
+            $i18n.t('messaging.error--call-not-running', 'Call has already ended'),
+          );
+          break;
+
+        case 'call-full':
+          toast.addSimpleFailure(
+            $i18n.t(
+              'messaging.error--call-group-full',
+              'Maximum reached: No more participants can join this group call',
+            ),
+          );
+          break;
+
+        case 'disconnected-due-to-inactivity':
+          toast.addSimple(
+            $i18n.t(
+              'messaging.error--call-disconnected-due-to-inactivity',
+              'Call has ended due to inactivity',
+            ),
+          );
+          break;
+
+        case 'destroy':
+          // UI component which hosted the group call was destroyed. Just show the user an info that
+          // the group call has ended.
+          toast.addSimple($i18n.t('messaging.hint--call-ended', 'Call has ended'));
+          break;
+
+        case 'user-hangup':
+        case 'switching-call':
+          // No toast, as these are fairly regular (mostly expected) events which should be silent.
+          break;
+
+        case 'unexpected-error':
+          // Generic, unknown errors.
+          toast.addSimpleFailure(
+            $i18n.t(
+              'messaging.error--call-unexpected-error',
+              'Call has ended due to an unexpected error',
+            ),
+          );
+          break;
+
+        default:
+          unreachable(event);
+      }
 
       // Reset call state
       stop = undefined;
