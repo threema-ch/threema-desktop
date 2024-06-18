@@ -20,11 +20,15 @@ import {registerErrorTransferHandler} from '~/common/utils/endpoint';
  */
 export type FileId = WeakOpaque<string, {readonly FileId: unique symbol}>;
 
+export const COPYABLE_FILE_STORAGE = Symbol('copyable-file-storage');
+
 /**
  * Interface implemented by File Storages that have a copying functionality, allowing copying files
  * from one FileStorage to another.
  */
 export interface CopyableFileStorage extends FileStorage {
+    readonly storageType: typeof COPYABLE_FILE_STORAGE;
+
     /**
      * Get the raw file system path of a {@link fileId}.
      */
@@ -163,16 +167,8 @@ export function deleteFilesInBackground(file: FileStorage, log: Logger, fileIds:
  * TODO(DESK-1480) Pass the class directly for type safety instead of working with the abstracted
  * interface.
  */
-export function canCopyFiles(val: FileStorage): val is CopyableFileStorage {
-    const castedVal = val as CopyableFileStorage;
-    return (
-        // eslint-disable-next-line no-restricted-syntax
-        'getRawPath' in castedVal &&
-        typeof castedVal.getRawPath === 'function' &&
-        // eslint-disable-next-line no-restricted-syntax
-        'copyFromRawPath' in castedVal &&
-        typeof castedVal.copyFromRawPath === 'function'
-    );
+export function canCopyFiles(storage: FileStorage): storage is CopyableFileStorage {
+    return storage.storageType === COPYABLE_FILE_STORAGE;
 }
 
 /**
@@ -228,6 +224,11 @@ export interface StoredFileHandle {
  *       allow overwriting an existing `FileId`.
  */
 export interface FileStorage {
+    /**
+     * Storage type. Subtypes can override this.
+     */
+    readonly storageType?: unknown;
+
     /**
      * The current / latest storage format version.
      */

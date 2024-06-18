@@ -12,6 +12,7 @@ import {
     type ServicesForFileStorage,
     type StoredFileHandle,
     type CopyableFileStorage,
+    COPYABLE_FILE_STORAGE,
 } from '~/common/file-storage';
 import type {Logger} from '~/common/logging';
 import {FileChunkNonce} from '~/common/node/file-storage/file-crypto';
@@ -53,6 +54,7 @@ export const CHUNK_AUTH_TAG_BYTES = 16; // 16 bytes (128 bits) AES-GCM auth tag
  *   Reyhanitabar, Rogaway and Vizár, https://eprint.iacr.org/2015/189
  */
 export class FileSystemFileStorage implements CopyableFileStorage {
+    public readonly storageType: typeof COPYABLE_FILE_STORAGE = COPYABLE_FILE_STORAGE;
     public readonly currentStorageFormatVersion = FILE_STORAGE_FORMAT.V1;
 
     /**
