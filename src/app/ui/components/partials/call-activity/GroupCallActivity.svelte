@@ -5,6 +5,7 @@
   import {onDestroy} from 'svelte';
 
   import {globals} from '~/app/globals';
+  import {size} from '~/app/ui/actions/size';
   import {
     startCall,
     type AnyExtendedGroupCallContextAbort,
@@ -12,6 +13,7 @@
     selectInitialCaptureDevices,
     type CaptureDevices,
     attachLocalDeviceAndAnnounceCaptureState,
+    type ActivityLayout,
   } from '~/app/ui/components/partials/call-activity/helpers';
   import ControlBar from '~/app/ui/components/partials/call-activity/internal/control-bar/ControlBar.svelte';
   import TopBar from '~/app/ui/components/partials/call-activity/internal/top-bar/TopBar.svelte';
@@ -35,9 +37,13 @@
   export let isExpanded: $$Props['isExpanded'];
   export let services: $$Props['services'];
 
+  const FEED_MIN_WIDTH_PX = 256;
+
   const {router} = services;
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.call-activity');
+
+  let containerLayout: ActivityLayout = 'regular';
 
   let microphone: CaptureDevices['microphone'];
   let camera: CaptureDevices['microphone'];
@@ -45,9 +51,10 @@
 
   let stop: AbortRaiser<AnyExtendedGroupCallContextAbort> | undefined;
   let call: AugmentedOngoingGroupCallViewModelBundle | undefined;
-  let remoteFeeds: readonly Omit<ParticipantFeedProps<'remote'>, 'services'>[] = [];
+  let remoteFeeds: readonly Omit<ParticipantFeedProps<'remote'>, 'activity' | 'services'>[] = [];
 
-  let feeds: readonly Omit<ParticipantFeedProps<'local' | 'remote'>, 'services'>[] = [];
+  let feeds: readonly Omit<ParticipantFeedProps<'local' | 'remote'>, 'activity' | 'services'>[] =
+    [];
   $: feeds = [...(localFeed !== undefined ? [localFeed] : []), ...remoteFeeds];
 
   onDestroy(() => {
@@ -58,6 +65,20 @@
     microphone?.track.stop();
     camera?.track.stop();
   });
+
+  function handleChangeSizeContainerElement(
+    event: CustomEvent<{entries: ResizeObserverEntry[]}>,
+  ): void {
+    const width = event.detail.entries[0]?.contentRect.width;
+
+    requestAnimationFrame(() => {
+      if ((width ?? 0) < FEED_MIN_WIDTH_PX) {
+        containerLayout = 'pocket';
+      } else {
+        containerLayout = 'regular';
+      }
+    });
+  }
 
   function handleClickLeaveCall(): void {
     // Stop any ongoing call
@@ -121,6 +142,9 @@
     if (user !== undefined && $user !== undefined) {
       localFeed = {
         type: 'local',
+        activity: {
+          layout: containerLayout,
+        },
         receiver: $user,
         participantId: 'local',
         tracks: {
@@ -323,7 +347,13 @@
   }
 </script>
 
-<div class="container" class:expanded={isExpanded}>
+<div
+  use:size
+  class="container"
+  class:expanded={isExpanded}
+  data-layout={containerLayout}
+  on:changesize={handleChangeSizeContainerElement}
+>
   <div class="top-bar">
     <TopBar
       {isExpanded}
@@ -341,44 +371,9 @@
   <div class="content">
     <div class="feeds">
       {#each feeds as feed (feed.participantId)}
-        <ParticipantFeed {...feed} {services} />
+        <ParticipantFeed {...feed} activity={{layout: containerLayout}} {services} />
       {/each}
     </div>
-
-    <!-- TODO(DESK-1405): Use either ProfilePicture OR VideoFeed and observe the desired screen size by
-    window.matchMedia(...).addEventListener('change', ...) -->
-
-    <!-- <div class="profile-pictures">
-      {#each feeds as feed (feed.participantId)}
-        <ProfilePicture
-          extraCharms={[
-            {
-              content: {
-                type: 'icon',
-                icon: feed.isAudioEnabled ? 'mic' : 'mic_off',
-                family: 'material',
-              },
-              position: 135,
-              style: {
-                type: 'cutout',
-                contentColor: 'white',
-                gap: 2,
-                backgroundColor: feed.isAudioEnabled
-                  ? 'var(--t-color-primary-600)'
-                  : 'red',
-              },
-            },
-          ]}
-          options={{
-            hideDefaultCharms: true,
-            isClickable: false,
-          }}
-          receiver={feed.receiver}
-          {services}
-          size="md"
-        />
-      {/each}
-    </div> -->
 
     <div class="footer">
       <ControlBar
@@ -420,10 +415,6 @@
       overflow-y: auto;
 
       .feeds {
-        display: none;
-      }
-
-      .profile-pictures {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -473,47 +464,41 @@
     }
   }
 
-  @container activity (min-width: 256px) {
-    .container {
-      .top-bar {
-        padding: rem(12px) rem(12px) rem(16px) rem(16px);
+  .container[data-layout='regular'] {
+    .top-bar {
+      padding: rem(12px) rem(12px) rem(16px) rem(16px);
+    }
+
+    .content {
+      .feeds {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        grid-auto-rows: min-content;
+        gap: rem(8px);
+
+        padding: rem(16px);
       }
 
-      .content {
-        .feeds {
-          display: grid;
-          grid-template-columns: repeat(1, 1fr);
-          grid-auto-rows: min-content;
-          gap: rem(8px);
-
-          padding: rem(16px);
-        }
-
-        .profile-pictures {
-          display: none;
-        }
-
-        .footer {
-          padding: rem(12px);
-        }
+      .footer {
+        padding: rem(12px);
       }
     }
   }
 
   @container activity (min-width: 512px) {
-    .container > .content > .feeds {
+    .container[data-layout='regular'] > .content > .feeds {
       grid-template-columns: repeat(2, 1fr);
     }
   }
 
   @container activity (min-width: 768px) {
-    .container > .content > .feeds {
+    .container[data-layout='regular'] > .content > .feeds {
       grid-template-columns: repeat(3, 1fr);
     }
   }
 
   @container activity (min-width: 1024px) {
-    .container > .content > .feeds {
+    .container[data-layout='regular'] > .content > .feeds {
       grid-template-columns: repeat(4, 1fr);
     }
   }

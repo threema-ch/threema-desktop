@@ -9,10 +9,12 @@
   import ProfilePicture from '~/app/ui/components/partials/profile-picture/ProfilePicture.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
+  import {unreachable} from '~/common/utils/assert';
   import {unusedProp} from '~/common/utils/svelte-helpers';
 
   type $$Props = ParticipantFeedProps<'local' | 'remote'>;
 
+  export let activity: $$Props['activity'];
   export let services: $$Props['services'];
   export let type: $$Props['type'];
   export let receiver: $$Props['receiver'];
@@ -80,61 +82,100 @@
   }
 </script>
 
-<div class="container" data-camera-capture={capture.camera} data-camera-health={cameraHealth}>
+<div
+  class="container"
+  data-camera-capture={capture.camera}
+  data-camera-health={cameraHealth}
+  data-layout={activity.layout}
+>
   <audio bind:this={microphoneAudioElement} autoplay playsinline />
 
-  <div class="video-container">
-    <div class="placeholder" data-color={receiver.color}>
-      <ProfilePicture
-        options={{
-          isClickable: false,
-        }}
-        {receiver}
-        {services}
-        size="md"
-      />
+  {#if activity.layout === 'pocket'}
+    <ProfilePicture
+      extraCharms={[
+        {
+          content: {
+            type: 'icon',
+            icon: capture.microphone === 'on' ? 'mic' : 'mic_off',
+            family: 'material',
+          },
+          position: 130,
+          style: {
+            type: 'cutout',
+            contentColor: 'white',
+            gap: 2,
+            backgroundColor: capture.microphone === 'on' ? 'var(--t-color-primary-600)' : 'red',
+          },
+        },
+      ]}
+      options={{
+        hideDefaultCharms: true,
+        isClickable: false,
+      }}
+      {receiver}
+      {services}
+      size="md"
+    />
+  {:else if activity.layout === 'regular'}
+    <div class="video-container">
+      <div class="placeholder" data-color={receiver.color}>
+        <ProfilePicture
+          options={{
+            isClickable: false,
+          }}
+          {receiver}
+          {services}
+          size="md"
+        />
+      </div>
+
+      <video bind:this={cameraVideoElement} autoplay disablepictureinpicture muted playsinline />
     </div>
 
-    <video bind:this={cameraVideoElement} autoplay disablepictureinpicture muted playsinline />
-  </div>
-
-  <div class="footer">
-    <span class="pills left">
-      <span class="pill name">
-        <Text family="primary" size="body-small" text={receiver.name} />
+    <div class="footer">
+      <span class="pills left">
+        <span class="pill name">
+          <Text family="primary" size="body-small" text={receiver.name} />
+        </span>
       </span>
-    </span>
 
-    {#if type === 'remote'}
-      <span class="pills right">
-        <div class="pill control">
-          <MdIcon theme="Outlined">
-            {#if capture.camera === 'on'}
-              videocam
-            {:else}
-              videocam_off
-            {/if}
-          </MdIcon>
-        </div>
+      {#if type === 'remote'}
+        <span class="pills right">
+          <div class="pill control">
+            <MdIcon theme="Outlined">
+              {#if capture.camera === 'on'}
+                videocam
+              {:else}
+                videocam_off
+              {/if}
+            </MdIcon>
+          </div>
 
-        <div class="pill control">
-          <MdIcon theme="Outlined">
-            {#if capture.microphone === 'on'}
-              mic
-            {:else}
-              mic_off
-            {/if}
-          </MdIcon>
-        </div>
-      </span>
-    {/if}
-  </div>
+          <div class="pill control">
+            <MdIcon theme="Outlined">
+              {#if capture.microphone === 'on'}
+                mic
+              {:else}
+                mic_off
+              {/if}
+            </MdIcon>
+          </div>
+        </span>
+      {/if}
+    </div>
+  {:else}
+    {unreachable(activity.layout)}
+  {/if}
 </div>
 
 <style lang="scss">
   @use 'component' as *;
 
   .container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
     position: relative;
     width: 100%;
     border-radius: rem(10px);

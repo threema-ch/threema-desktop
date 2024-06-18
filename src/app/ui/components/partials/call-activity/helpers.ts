@@ -33,6 +33,8 @@ export interface CaptureDevices {
     readonly camera: CaptureDevice;
 }
 
+export type ActivityLayout = 'pocket' | 'regular';
+
 /**
  * Select the default or a specific microphone device.
  */
@@ -192,7 +194,7 @@ export function updateRemoteParticipantFeeds(
     controller: AugmentedOngoingGroupCallViewModelBundle['controller'],
     stop: AbortRaiser<AnyExtendedGroupCallContextAbort>,
     state: AugmentedOngoingGroupCallStateViewModel,
-): readonly Omit<ParticipantFeedProps<'remote'>, 'services'>[] {
+): readonly Omit<ParticipantFeedProps<'remote'>, 'activity' | 'services'>[] {
     // TODO(DESK-1405): Only subscribe remote participants when they are in view with the current
     // canvas dimensions. Call `remoteCamera` again whenever the canvas dimensions change (debounced
     // to ~3s) or when the participant moves out of the viewport (also debounced but maybe just
@@ -212,7 +214,7 @@ export function updateRemoteParticipantFeeds(
     }
 
     return state.remote.map(
-        (participant): Omit<ParticipantFeedProps<'remote'>, 'services'> => ({
+        (participant): Omit<ParticipantFeedProps<'remote'>, 'activity' | 'services'> => ({
             type: 'remote',
             receiver: participant.receiver,
             participantId: participant.id,

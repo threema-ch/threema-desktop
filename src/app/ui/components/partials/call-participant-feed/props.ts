@@ -1,9 +1,16 @@
 import type {AppServices} from '~/app/types';
+import type {ActivityLayout} from '~/app/ui/components/partials/call-activity/helpers';
 import type {ParticipantId} from '~/common/network/protocol/call/group-call';
 import type {GroupCallParticipantReceiverData} from '~/common/viewmodel/utils/call';
 import type {CaptureState} from '~/common/webrtc/group-call';
 
 export interface ParticipantFeedProps<TType extends 'local' | 'remote'> {
+    /**
+     * Details about the `activity` this feed is part of.
+     */
+    readonly activity: {
+        readonly layout: ActivityLayout;
+    };
     readonly services: Pick<AppServices, 'profilePicture'>;
     readonly type: TType;
     readonly receiver: GroupCallParticipantReceiverData;
