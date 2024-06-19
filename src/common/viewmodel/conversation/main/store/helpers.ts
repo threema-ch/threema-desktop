@@ -286,7 +286,7 @@ function supportsFeature(
                 }
             }
 
-            if (notSupportedNames.length === memberIdentities.length) {
+            if (notSupportedNames.length === memberIdentities.length + 1) {
                 return {supported: 'none'};
             } else if (notSupportedNames.length === 0) {
                 return {supported: 'all'};
