@@ -53,3 +53,19 @@ If none applies, it is probably `prose`.
 6. **"prose":** Miscellaneous text snippets, which are usually longer and form a coherent text.
    - Example: "This beta only works in..."
    - Use cases: Explainers, aside text, body text
+
+## Development
+
+During development, it is preferred that new translations are not added to the respective JSON files
+by the developer. Instead, only the key and its default value should be filled in _developer
+english_ when using the `i18n.t` function, e.g.:
+
+```typescript
+$i18n.t('dialog--startup-unlock.label--title', 'Enter App Password');
+```
+
+The changes to the translation files should only be provided in the latest stage just before or
+during the review phase of a change.
+
+Once the translation files are added, the _developer english_ values should be aligned (and kept
+aligned) with the respective values in `en/translation.json`.
