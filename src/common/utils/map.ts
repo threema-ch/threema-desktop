@@ -1,5 +1,4 @@
 import type {u53} from '~/common/types';
-import {AsyncLock} from '~/common/utils/lock';
 
 /**
  * A weak map where the value is weakly referenced [1].
@@ -94,90 +93,6 @@ export class WeakValueMap<TKey, TValue extends object> {
     public delete(key: TKey): boolean {
         this._unregister(this._map.get(key));
         return this._map.delete(key);
-    }
-
-    /**
-     * Deregister the specified ref from the finalization registry.
-     */
-    private _unregister(ref: WeakRef<TValue> | undefined): void {
-        const value = ref?.deref();
-        if (value !== undefined) {
-            this._registry.unregister(value);
-        }
-    }
-}
-
-/**
- * A map where the value is weakly referenced. Async reduced version of {@link WeakValueMap}.
- *
- * This implementation is async safe, meaning that all async methods guarantee that other async
- * methods called concurrently cannot see incomplete state.
- */
-export class AsyncWeakValueMap<TKey, TValue extends object> {
-    private readonly _map = new Map<TKey, WeakRef<TValue>>();
-    private readonly _registry = new FinalizationRegistry((key: TKey) => this._map.delete(key));
-    private readonly _locks = new WeakValueMap<TKey, AsyncLock>();
-
-    /**
-     * Return the value associated with the specified key, or `undefined` if the key is not defined
-     * or if the value has already been reclaimed.
-     *
-     * @param key The lookup key.
-     */
-    public async get(key: TKey): Promise<TValue | undefined> {
-        return await this._locks
-            .getOrCreate(key, () => new AsyncLock())
-            // eslint-disable-next-line @typescript-eslint/require-await
-            .with(async () => this._map.get(key)?.deref());
-    }
-
-    /**
-     * Look up the value associated with the specified key and run the {@link hit} function (if the
-     * value was found in the map) or the {@link miss} function (if the value was not found in the
-     * map or has already been reclaimed).
-     *
-     * @param key The lookup key.
-     * @param miss Will be called if the key is not found in the map. If the return value of the
-     *   miss function is not undefined, it will be stored in the map and returned.
-     * @param hit Will be called if the key is found in the map.
-     * @returns The lookup value (on hit) or the return value of the {@link miss} function (on
-     *   miss).
-     */
-    public async getOrCreate<TCreated extends TValue | undefined>(
-        key: TKey,
-        miss: () => Promise<TCreated>,
-        hit?: () => Promise<void>,
-    ): Promise<TCreated> {
-        return await this._locks
-            .getOrCreate(key, () => new AsyncLock())
-            .with(async () => {
-                let value = this._map.get(key)?.deref();
-                if (value === undefined) {
-                    value = await miss();
-                    if (value !== undefined) {
-                        this._set(key, value);
-                    }
-                } else {
-                    await hit?.();
-                }
-                return value as TCreated;
-            });
-    }
-
-    /**
-     * Store the value in the map and return it.
-     */
-    private _set(key: TKey, value: TValue): TValue {
-        // Unregister the previous value to prevent it from removing the new
-        // value from the map when the previous value is being GCed.
-        this._unregister(this._map.get(key));
-
-        // Register and set the (new) value.
-        this._registry.register(value, key);
-        this._map.set(key, new WeakRef(value));
-
-        // Return value for convenience
-        return value;
     }
 
     /**
