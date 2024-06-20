@@ -207,7 +207,10 @@
       switch (event.cause) {
         case 'disconnected':
           toast.addSimpleFailure(
-            $i18n.t('messaging.error--call-disconnected', 'Call was disconnected'),
+            $i18n.t(
+              'messaging.error--call-disconnected',
+              'Call ended because the connection was interrupted',
+            ),
           );
           break;
 
@@ -215,17 +218,14 @@
           toast.addSimpleFailure(
             $i18n.t(
               'messaging.error--call-group-left-kicked-or-removed',
-              'Group call was left because you left the group',
+              'Group call ended because you left the group',
             ),
           );
           break;
 
         case 'group-calls-disabled':
           toast.addSimpleFailure(
-            $i18n.t(
-              'messaging.error--call-group-calls-disabled',
-              'Group call feature was disabled',
-            ),
+            $i18n.t('messaging.error--call-group-calls-disabled', 'Group calls are disabled'),
           );
           break;
 
@@ -248,7 +248,7 @@
           toast.addSimple(
             $i18n.t(
               'messaging.error--call-disconnected-due-to-inactivity',
-              'Call has ended due to inactivity',
+              'Call ended due to inactivity',
             ),
           );
           break;
@@ -256,7 +256,7 @@
         case 'destroy':
           // UI component which hosted the group call was destroyed. Just show the user an info that
           // the group call has ended.
-          toast.addSimple($i18n.t('messaging.hint--call-ended', 'Call has ended'));
+          toast.addSimple($i18n.t('messaging.hint--call-ended', 'Call ended'));
           break;
 
         case 'user-hangup':
@@ -269,7 +269,7 @@
           toast.addSimpleFailure(
             $i18n.t(
               'messaging.error--call-unexpected-error',
-              'Call has ended due to an unexpected error',
+              'Call ended due to an unexpected error',
             ),
           );
           break;

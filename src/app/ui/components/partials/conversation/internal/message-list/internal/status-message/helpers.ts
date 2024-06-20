@@ -70,9 +70,13 @@ export function getStatusMessageTextForStatus(
         }
 
         case StatusMessageType.GROUP_CALL_STARTED:
-            return i18n.t('status.prose--group-call-started', '{startedBy} started a group call', {
-                startedBy: status.startedBy,
-            });
+            return i18n.t(
+                'status.prose--group-call-started',
+                '{startedBy} has started a group call',
+                {
+                    startedBy: status.startedBy,
+                },
+            );
 
         case StatusMessageType.GROUP_CALL_ENDED:
             return i18n.t('status.prose--group-call-ended', 'Group call has ended');

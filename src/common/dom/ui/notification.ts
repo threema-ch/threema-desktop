@@ -200,7 +200,7 @@ export class FrontendNotificationCreator implements NotificationCreator {
                 .get()
                 .t(
                     'messaging.prose--notification-group-call-start-body-generic',
-                    'Group call started',
+                    'A group call started',
                 );
         }
 
@@ -208,7 +208,7 @@ export class FrontendNotificationCreator implements NotificationCreator {
             .get()
             .t(
                 'messaging.prose--notification-group-call-start-body',
-                'Group call started by {name}',
+                'A group call was started by {name}',
                 {
                     name: startedByContactName,
                 },
