@@ -18,7 +18,7 @@
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import {display} from '~/common/dom/ui/state';
-  import {ReceiverType} from '~/common/enum';
+  import {GroupCallPolicy} from '~/common/enum';
   import {unreachable} from '~/common/utils/assert';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.conversation.top-bar');
@@ -30,7 +30,10 @@
   export let receiver: $$Props['receiver'];
   export let services: $$Props['services'];
 
-  const {router} = services;
+  const {
+    router,
+    settings: {calls: callsSettings},
+  } = services;
 
   const anchorPoints: AnchorPoint = {
     reference: {
@@ -54,38 +57,19 @@
   let modalState: ModalState = {type: 'none'};
 
   const dispatch = createEventDispatcher<{
-    clickjoincall: MouseEvent;
+    clickjoincall: {readonly event: MouseEvent; readonly intent: 'join' | 'join-or-create'};
   }>();
 
   function handleClickBack(): void {
-    router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withoutParams());
+    router.goToWelcome();
   }
 
   function handleClickReceiverCard(): void {
-    switch (receiver.lookup.type) {
-      case ReceiverType.CONTACT:
-        router.replaceAside(
-          ROUTE_DEFINITIONS.aside.contactDetails.withTypedParams({contactUid: receiver.lookup.uid}),
-        );
-        break;
-
-      case ReceiverType.GROUP:
-        router.replaceAside(
-          ROUTE_DEFINITIONS.aside.groupDetails.withTypedParams({groupUid: receiver.lookup.uid}),
-        );
-        break;
-
-      case ReceiverType.DISTRIBUTION_LIST:
-        // TODO(DESK-771): Open distribution list detail route
-        break;
-
-      default:
-        unreachable(receiver.lookup, new Error('Unhandled receiverLookup type'));
-    }
+    router.go({aside: ROUTE_DEFINITIONS.aside.receiverDetails.withParams(receiver.lookup)});
   }
 
-  function handleClickJoinCall(event: MouseEvent): void {
-    dispatch('clickjoincall', event);
+  function handleclickjoincall(event: MouseEvent, intent: 'join' | 'join-or-create'): void {
+    dispatch('clickjoincall', {event, intent});
   }
 
   function handleClickEmptyChatOption(): void {
@@ -173,14 +157,28 @@
       </div>
     {/if}
 
-    {#if call?.isJoined === false}
-      <ProfilePictureButton
-        icon="add"
-        label={$i18n.t('messaging.label--call-join-long', 'Join Call')}
-        receivers={call.members}
-        {services}
-        on:click={handleClickJoinCall}
-      />
+    <!-- TODO(DESK-858): Remove sandbox restriction once group calls should be released -->
+    {#if import.meta.env.BUILD_ENVIRONMENT === 'sandbox' && $callsSettings.view.groupCallPolicy === GroupCallPolicy.ALLOW_GROUP_CALL}
+      {#if receiver.type === 'group' && !receiver.isLeft}
+        {#if call === undefined}
+          <IconButton
+            flavor="naked"
+            on:click={(event) => handleclickjoincall(event, 'join-or-create')}
+          >
+            <MdIcon title={$i18n.t('messaging.label--call-start-long', 'Start call')} theme="Filled"
+              >phone_locked</MdIcon
+            >
+          </IconButton>
+        {:else if !call.joined}
+          <ProfilePictureButton
+            icon="add"
+            label={$i18n.t('messaging.label--call-join-long', 'Join call')}
+            receivers={call.participants ?? []}
+            {services}
+            on:click={(event) => handleclickjoincall(event, 'join')}
+          />
+        {/if}
+      {/if}
     {/if}
 
     <ContextMenuProvider

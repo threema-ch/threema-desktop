@@ -11,7 +11,7 @@ import type {ContactDetailViewModelBundle} from '~/common/viewmodel/contact/deta
  * Shape of the router's route params if it's an "aside" route.
  */
 export type ContactDetailRouteParams = v.Infer<
-    (typeof ROUTE_DEFINITIONS)['aside']['contactDetails' | 'groupDetails']['params']
+    (typeof ROUTE_DEFINITIONS)['aside']['receiverDetails']['params']
 >;
 
 /**

@@ -1,28 +1,21 @@
-import type {StatusMessageType} from '~/common/enum';
-import type {
-    AnyStatusMessageModel,
-    GroupMemberChangeStatus,
-    GroupNameChangeStatus,
-} from '~/common/model/types/status';
-import {GROUP_MEMBER_CHANGE_CODEC} from '~/common/status/group-member-change';
-import {GROUP_NAME_CHANGE_CODEC} from '~/common/status/group-name-change';
+import {StatusMessageType} from '~/common/enum';
+import type {StatusMessageValues} from '~/common/model/types/status';
+import {GROUP_CALL_STARTED_CODEC, GROUP_CALL_ENDED_CODEC} from '~/common/status/group-call';
+import {GROUP_MEMBER_CHANGED_CODEC} from '~/common/status/group-member-changed';
+import {GROUP_NAME_CHANGED_CODEC} from '~/common/status/group-name-changed';
+import type {ReadonlyUint8Array} from '~/common/types';
 
-export interface StatusMessagesCodec<TStatusModel extends AnyStatusMessageModel> {
-    readonly encode: (status: TStatusModel['view']['value']) => Uint8Array;
-    readonly decode: (encoded: Uint8Array) => TStatusModel['view']['value'];
+export interface StatusMessagesCodec<TType extends StatusMessageType> {
+    readonly encode: (status: StatusMessageValues[TType]) => Uint8Array;
+    readonly decode: (encoded: ReadonlyUint8Array) => StatusMessageValues[TType];
 }
 
-// Map the status types to their corresponding codecs.
-// Note: This must cover all implemented status messages.
-export type StatusMessageTypesCodec = {
-    readonly [TKey in StatusMessageType]: TKey extends 'group-member-change'
-        ? StatusMessagesCodec<GroupMemberChangeStatus>
-        : TKey extends 'group-name-change'
-          ? StatusMessagesCodec<GroupNameChangeStatus>
-          : never;
-};
-
-export const STATUS_CODEC: StatusMessageTypesCodec = {
-    'group-member-change': GROUP_MEMBER_CHANGE_CODEC,
-    'group-name-change': GROUP_NAME_CHANGE_CODEC,
+/** Map of the status types to their corresponding codec. */
+export const STATUS_CODEC: {
+    readonly [TType in StatusMessageType]: StatusMessagesCodec<TType>;
+} = {
+    [StatusMessageType.GROUP_MEMBER_CHANGED]: GROUP_MEMBER_CHANGED_CODEC,
+    [StatusMessageType.GROUP_NAME_CHANGED]: GROUP_NAME_CHANGED_CODEC,
+    [StatusMessageType.GROUP_CALL_STARTED]: GROUP_CALL_STARTED_CODEC,
+    [StatusMessageType.GROUP_CALL_ENDED]: GROUP_CALL_ENDED_CODEC,
 };

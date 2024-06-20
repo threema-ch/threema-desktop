@@ -73,7 +73,7 @@ export async function run(): Promise<void> {
     // Initialize WASM packages
     initLog.debug('Initializing WASM packages');
     await initLibthreema();
-    const libthreemaLog = logging.logger('libthreema', createLoggerStyle('#5C2751', 'white'));
+    const libthreemaLog = logging.logger('libthreema', createLoggerStyle('#5c2751', '#ffffff'));
     libthreema.initLogging(
         {
             debug: (message) => libthreemaLog.debug(message),

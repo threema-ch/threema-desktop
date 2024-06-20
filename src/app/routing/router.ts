@@ -1,27 +1,34 @@
-import {type AnyRouteInstance, ROUTE_DEFINITIONS, type PreloadedFiles} from '~/app/routing/routes';
-import type {DbReceiverLookup} from '~/common/db';
+import {ROUTE_DEFINITIONS, type RouteInstanceFor, type RouteInstances} from '~/app/routing/routes';
 import {display} from '~/common/dom/ui/state';
 import {ReceiverType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import {assert, assertUnreachable} from '~/common/utils/assert';
-import {WritableStore} from '~/common/utils/store';
+import {assert} from '~/common/utils/assert';
+import {ReadableStore} from '~/common/utils/store';
 import {splitAtLeast} from '~/common/utils/string';
 
 /**
  * Interface representing the current application routing state.
  */
 export interface RouterState {
-    nav: AnyRouteInstance['nav'];
-    main: AnyRouteInstance['main'];
-    aside: AnyRouteInstance['aside'] | undefined;
-    modal: AnyRouteInstance['modal'] | undefined;
-    activity: AnyRouteInstance['activity'] | undefined;
+    readonly nav: RouteInstances['nav'];
+    readonly main: RouteInstances['main'];
+    readonly aside: RouteInstances['aside'] | undefined;
+    readonly modal: RouteInstances['modal'] | undefined;
+    readonly activity: RouteInstances['activity'] | undefined;
+}
+
+export interface UpdateRouterState {
+    readonly nav?: RouteInstances['nav'];
+    readonly main?: RouteInstances['main'];
+    readonly aside?: RouteInstances['aside'] | 'close';
+    readonly modal?: RouteInstances['modal'] | 'close';
+    readonly activity?: RouteInstances['activity'] | 'close';
 }
 
 /**
- * Initial router state, when no other state can be determined (e.g. from the URL fragment).
+ * Default router state, when no other state can be determined (e.g. from the URL fragment).
  */
-const INITIAL_STATE: RouterState = {
+const DEFAULT_STATE: RouterState = {
     nav: ROUTE_DEFINITIONS.nav.conversationList.withoutParams(),
     main: ROUTE_DEFINITIONS.main.welcome.withoutParams(),
     aside: undefined,
@@ -32,26 +39,13 @@ const INITIAL_STATE: RouterState = {
 /**
  * Return a fragment for the specified main route with the specified params.
  */
-export function getFragmentForRoute(
-    route: AnyRouteInstance['main'],
-    log?: Logger,
-): string | undefined {
+export function getFragmentForRoute(route: RouterState['main'], log?: Logger): string | undefined {
     if (import.meta.env.VERBOSE_LOGGING.ROUTER) {
         log?.debug('getFragmentForRoute route', route);
     }
 
     // Look up route path
     const path = ROUTE_DEFINITIONS.main[route.id].path;
-
-    // Route without path has no fragment
-    //
-    // Note: As long as not all routes are defined, ESLint returns "unnecessary conditional" errors
-    //       based on the analysis of the existing routes. To avoid this, disable the check for now.
-    //
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (path === undefined) {
-        return undefined;
-    }
 
     // If there are no params, the fragment must be static
     if (route.params === undefined) {
@@ -112,7 +106,7 @@ function stateFromUrlFragment(fragment: string, log: Logger): RouterState | unde
             //       (e.g. for the settings), we need to change this logic. (For example, every
             //       route path could specify the required nav panel.)
             return {
-                nav: INITIAL_STATE.nav,
+                nav: DEFAULT_STATE.nav,
                 main: instance,
                 aside: undefined,
                 modal: undefined,
@@ -166,6 +160,24 @@ export interface RouterEnvironment {
     setOnPopStateHandler: (handler: (event: PopStateEvent) => void) => void;
 }
 
+function needsUpdate<TPanel extends keyof RouterState>(
+    current: RouterState[TPanel],
+    updated: UpdateRouterState[TPanel],
+): boolean {
+    // Check if a change was requested
+    if (updated === undefined) {
+        return false;
+    }
+
+    // Close request: Close if a panel for that route exists
+    if (updated === 'close') {
+        return current !== undefined;
+    }
+
+    // Update request: Update if the ID or parameters changed
+    return updated.id !== current?.id || updated.params !== current.params;
+}
+
 /**
  * A router that has the following responsibilities:
  *
@@ -174,7 +186,13 @@ export interface RouterEnvironment {
  *
  * This router is also a Svelte store and can be subscribed to.
  *
- * When instantiated, the router will initialize the state from the browser URL fragment.
+ * The router will initialize the state from the browser URL fragment.
+ *
+ * ## Convention
+ *
+ * - A method with _reset_ in its name **resets** all panels to a specific new state, replacing them
+ *   all at once.
+ * - A method with _go_ in its name **updates** some of the panels but not all of them.
  *
  * ## State Based Routing
  *
@@ -196,7 +214,7 @@ export interface RouterEnvironment {
  *
  * You are now back in the setting 1 view.
  */
-export class Router extends WritableStore<RouterState> {
+export class Router extends ReadableStore<RouterState> {
     public constructor(
         protected override readonly _log: Logger,
         private readonly _environment: RouterEnvironment,
@@ -205,7 +223,7 @@ export class Router extends WritableStore<RouterState> {
 
         // Initial state
         const stateFromFragment = stateFromUrlFragment(fragment, _log);
-        const initialState = stateFromFragment ?? INITIAL_STATE;
+        const initialState = stateFromFragment ?? DEFAULT_STATE;
 
         // Replace invalid fragments
         if (stateFromFragment === undefined) {
@@ -221,181 +239,130 @@ export class Router extends WritableStore<RouterState> {
         // Register browser history popstate handler
         this._environment.setOnPopStateHandler(this._onpopstate.bind(this));
 
-        _log.debug('Router created, initial state:', this.get());
+        _log.debug('Created, initial state:', this.get());
     }
 
     /**
-     * Set a new route.
+     * Set a completely new route state, updating the state of **all** panels.
      *
-     * @param nav the new nav panel route
-     * @param main the new main panel route
-     * @param aside the new aside panel route
-     * @param modal the new modal route
+     * Note: This should only be used when **all parts** of the route need to be changed. Use
+     * {@link go} for all other cases.
      */
-    public go(
-        nav: AnyRouteInstance['nav'],
-        main: AnyRouteInstance['main'],
-        aside: AnyRouteInstance['aside'] | undefined,
-        modal?: AnyRouteInstance['modal'],
-        activity?: AnyRouteInstance['activity'],
-    ): void {
+    public replace(routes: RouterState): void {
+        const routesString = Object.entries(routes)
+            .map(([panel, route]) => `${panel}: ${route === undefined ? '<closed>' : route.id}`)
+            .join(', ');
+        this._log.debug(`Navigating to ${routesString} (full state replacement)`);
+        this._setState(routes);
+    }
+
+    /**
+     * Update the existing route with a change to only some parts of the route.
+     */
+    public go(routes: UpdateRouterState): void {
         const current = this.get();
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        const routesList = Object.entries({...routes}).filter(([_, route]) => route !== undefined);
         if (
-            main.id !== current.main.id ||
-            main.params !== current.main.params ||
-            nav.id !== current.nav.id ||
-            nav.params !== current.nav.params ||
-            aside?.id !== current.aside?.id ||
-            aside?.params !== current.aside?.params ||
-            modal?.id !== current.modal?.id ||
-            activity?.id !== current.activity?.id ||
-            activity?.params !== current.activity?.params
+            routesList.some(([panel, updated]) =>
+                needsUpdate(current[panel as keyof RouteInstances], updated),
+            )
         ) {
-            this._log.debug(
-                `Router: Navigating to (${nav.id} ${main.id} ${aside?.id} ${modal?.id} ${activity?.id})`,
+            const routesString = routesList
+                .map(([panel, route]) => `${panel}: ${route === 'close' ? '<closed>' : route.id}`)
+                .join(', ');
+            this._log.debug(`Navigating to ${routesString}`);
+            this._setState({
+                ...current,
+                ...Object.fromEntries(
+                    routesList.map(([panel, route]) =>
+                        route === 'close' ? [panel, undefined] : [panel, route],
+                    ),
+                ),
+            });
+        }
+    }
+
+    /**
+     * Asserts that a specific route state is present.
+     */
+    public assert<
+        TPanel extends keyof RouterState,
+        TIds extends keyof (typeof ROUTE_DEFINITIONS)[TPanel],
+    >(panel: TPanel, ids: readonly TIds[]): RouteInstanceFor<TPanel, TIds>['params'] {
+        const current = this.get()[panel];
+        if (
+            current === undefined ||
+            !(ids as readonly (string | undefined)[]).includes(current.id)
+        ) {
+            throw new Error(
+                `Unexpected state for panel ${panel} (expected=${ids.join(', ')}, got=${current?.id})`,
             );
-            this._setState({nav, main, aside, modal, activity});
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        return current.params as RouteInstanceFor<TPanel, TIds>['params'];
     }
 
     /**
-     * Call {@link go} with the Welcome route on the main section, ensuring aside and modal are
-     * closed.
-     */
-    public goToWelcome(): void {
-        this.go(
-            this.get().nav,
-            ROUTE_DEFINITIONS.main.welcome.withoutParams(),
-            undefined,
-            undefined,
-        );
-    }
-
-    /**
-     * Call {@link go} with the current state and a new nav panel route.
-     */
-    public replaceNav(nav: AnyRouteInstance['nav']): void {
-        const current = this.get();
-        return this.go(nav, current.main, current.aside, current.modal);
-    }
-
-    /**
-     * Call {@link go} with the current state and a new main panel route.
-     */
-    public replaceMain(main: AnyRouteInstance['main']): void {
-        const current = this.get();
-        return this.go(current.nav, main, current.aside, current.modal);
-    }
-
-    /**
-     * Call {@link go} with the current state and a new aside panel route.
-     */
-    public replaceAside(aside: AnyRouteInstance['aside'] | undefined): void {
-        const current = this.get();
-        return this.go(current.nav, current.main, aside, current.modal);
-    }
-
-    /**
-     * Close the aside panel and keep the rest of the route state.
-     */
-    public closeAside(): void {
-        this.replaceAside(undefined);
-    }
-
-    /**
-     * Call {@link go} with the current state and a new modal route.
-     */
-    public replaceModal(modal: AnyRouteInstance['modal'] | undefined): void {
-        const current = this.get();
-        return this.go(current.nav, current.main, current.aside, modal);
-    }
-
-    /**
-     * Close the modal and keep the rest of the route state.
-     */
-    public closeModal(): void {
-        this.replaceModal(undefined);
-    }
-
-    /**
-     * Open the conversation with a list of files that will be added to the media message composer.
+     * Navigate to the _welcome_ route on the main section.
      *
-     * By default, the aside panel is always closed in medium and small layout, unless
-     * `options.keepAsidePanelOpen` is set to `true`.
+     * Any aside or modal panel will be closed.
      */
-    public openConversationAndFileDialogForReceiver(
-        receiverLookup: DbReceiverLookup,
-        preloadedFiles: PreloadedFiles,
-        options?: {readonly keepAsidePanelOpen?: boolean},
-    ): void {
-        assert(
-            [ReceiverType.CONTACT, ReceiverType.GROUP].includes(receiverLookup.type),
-            'TODO(DESK-236)',
-        );
-        const aside = this._getAside(receiverLookup, options?.keepAsidePanelOpen ?? false);
-
-        this.go(
-            ROUTE_DEFINITIONS.nav.conversationList.withoutParams(),
-            ROUTE_DEFINITIONS.main.conversation.withTypedParams({
-                receiverLookup,
-                preloadedFiles,
-            }),
-            aside,
-            undefined,
-        );
+    public goToWelcome(routes?: Pick<UpdateRouterState, 'nav' | 'activity'>): void {
+        this.go({
+            ...routes,
+            main: ROUTE_DEFINITIONS.main.welcome.withoutParams(),
+            aside: 'close',
+            modal: 'close',
+        });
     }
 
     /**
-     * Open the conversation and the conversation details for the specified receiver.
+     * Navigate to a conversation.
      *
-     * By default, the aside panel is always closed in medium and small layout, unless
-     * `options.keepAsidePanelOpen` is set to `true`.
+     * Any modal will be closed. The associated conversation detail panel will be opened aside in
+     * the large layout and otherwise closed.
      */
-    public openConversationAndDetailsForReceiver(
-        receiverLookup: DbReceiverLookup,
-        options?: {readonly keepAsidePanelOpen?: boolean},
+    public goToConversation(
+        params: RouteInstanceFor<'main', 'conversation'>['params'],
+        routes?: Omit<UpdateRouterState, 'main' | 'aside' | 'modal'>,
     ): void {
-        assert(
-            [ReceiverType.CONTACT, ReceiverType.GROUP].includes(receiverLookup.type),
-            'TODO(DESK-236)',
-        );
-        const aside = this._getAside(receiverLookup, options?.keepAsidePanelOpen ?? false);
-        this.go(
-            this.get().nav,
-            ROUTE_DEFINITIONS.main.conversation.withTypedParams({receiverLookup}),
-            aside,
-            undefined,
-        );
+        assert(params.receiverLookup.type !== ReceiverType.DISTRIBUTION_LIST, 'TODO(DESK-236)');
+        const current = this.get();
+
+        // Navigate to the conversation
+        this.go({
+            ...routes,
+            main: ROUTE_DEFINITIONS.main.conversation.withParams(params),
+            aside:
+                current.aside !== undefined && display.get() === 'large'
+                    ? ROUTE_DEFINITIONS.aside.receiverDetails.withParams(params.receiverLookup)
+                    : 'close',
+            modal: 'close',
+        });
     }
 
-    private _getAside(
-        receiverLookup: DbReceiverLookup,
-        keepAsidePanelOpen: boolean,
-    ): AnyRouteInstance['aside'] | undefined {
-        const currentState = this.get();
-        const displayMode = display.get();
-
-        // Determine what to show in aside panel. If the aside is currently closed, keep it closed.
-        // If it is opened, then show it, but only if layout is in large mode (since otherwise the
-        // chat view is hidden below the aside panel), or if the `keepAsidePanelOpen` option is set.
-        let aside = undefined;
-        if (currentState.aside !== undefined && (displayMode === 'large' || keepAsidePanelOpen)) {
-            switch (receiverLookup.type) {
-                case ReceiverType.CONTACT:
-                    aside = ROUTE_DEFINITIONS.aside.contactDetails.withTypedParams({
-                        contactUid: receiverLookup.uid,
-                    });
-                    break;
-                case ReceiverType.GROUP:
-                    aside = ROUTE_DEFINITIONS.aside.groupDetails.withTypedParams({
-                        groupUid: receiverLookup.uid,
-                    });
-                    break;
-                default:
-                    assertUnreachable('TODO(DESK-236)');
-            }
-        }
-        return aside;
+    /**
+     * Navigate to the settings.
+     *
+     * Any aside or modal panel will be closed.
+     */
+    public goToSettings(
+        params: RouteInstanceFor<'main', 'settings'>['params'],
+        routes?: Omit<UpdateRouterState, 'nav' | 'main' | 'aside' | 'modal'>,
+    ): void {
+        this.go({
+            ...routes,
+            nav: ROUTE_DEFINITIONS.nav.settingsList.withoutParams(),
+            // Note: When opening settings in small display mode, we want to see the settings
+            //       categories, not the profile settings.
+            main:
+                display.get() === 'small'
+                    ? ROUTE_DEFINITIONS.main.welcome.withoutParams()
+                    : ROUTE_DEFINITIONS.main.settings.withParams(params),
+            aside: 'close',
+            modal: 'close',
+        });
     }
 
     /**
@@ -406,7 +373,10 @@ export class Router extends WritableStore<RouterState> {
         if (import.meta.env.VERBOSE_LOGGING.ROUTER) {
             this._log.debug('Set state:', state);
         }
-        this.set(state);
+        if (!this._update(state)) {
+            return;
+        }
+        this._dispatch(state);
 
         // Determine fragment
         let url: string | undefined = undefined;
@@ -433,11 +403,11 @@ export class Router extends WritableStore<RouterState> {
         }
 
         // Determine new state.
-        let newState: RouterState;
+        let state: RouterState;
         if (event.state !== null && event.state !== undefined) {
             // If the popstate event contains a state, restore this.
             // (No need to update the URL, this will have already happened by now.)
-            newState = event.state as RouterState;
+            state = event.state as RouterState;
         } else {
             // Otherwise, try to recreate the state from the fragment.
             const fragment = this._environment.getUrlFragment();
@@ -449,18 +419,20 @@ export class Router extends WritableStore<RouterState> {
                     'Received popstate event without state and URL fragment is invalid as well. ' +
                         'Falling back to initial state.',
                 );
-                newState = INITIAL_STATE;
-                const newFragment = getFragmentForRoute(newState.main, this._log);
-                this._environment.replaceHistoryState(newState, `#${newFragment}`);
+                state = DEFAULT_STATE;
+                const newFragment = getFragmentForRoute(state.main, this._log);
+                this._environment.replaceHistoryState(state, `#${newFragment}`);
             } else {
                 // Fragment is valid, load it
-                newState = stateFromFragment;
+                state = stateFromFragment;
             }
         }
 
         if (import.meta.env.VERBOSE_LOGGING.ROUTER) {
-            this._log.debug('Restore state', newState);
+            this._log.debug('Restore state', state);
         }
-        this.set(newState);
+        if (this._update(state)) {
+            this._dispatch(state);
+        }
     }
 }

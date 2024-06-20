@@ -19,50 +19,57 @@ export namespace TransferTag {
     export type MODEL_STORE = typeof MODEL_STORE;
     export const SET_STORE = 5;
     export type SET_STORE = typeof SET_STORE;
-    export const BLOB_BACKEND_ERROR = 6;
+    export const ABORT_LISTENER = 6;
+    // Events
+    export type ABORT_LISTENER = typeof ABORT_LISTENER;
+    export const BLOB_BACKEND_ERROR = 7;
     // Errors
     export type BLOB_BACKEND_ERROR = typeof BLOB_BACKEND_ERROR;
-    export const CACHE_STORAGE_RESOURCE_CACHE_ERROR = 7;
+    export const CACHE_STORAGE_RESOURCE_CACHE_ERROR = 8;
     export type CACHE_STORAGE_RESOURCE_CACHE_ERROR = typeof CACHE_STORAGE_RESOURCE_CACHE_ERROR;
-    export const CONNECTION_CLOSED_ERROR = 8;
+    export const CONNECTION_CLOSED_ERROR = 9;
     export type CONNECTION_CLOSED_ERROR = typeof CONNECTION_CLOSED_ERROR;
-    export const CRYPTO_ERROR = 9;
+    export const CRYPTO_ERROR = 10;
     export type CRYPTO_ERROR = typeof CRYPTO_ERROR;
-    export const DIRECTORY_ERROR = 10;
+    export const DIRECTORY_ERROR = 11;
     export type DIRECTORY_ERROR = typeof DIRECTORY_ERROR;
-    export const ENCODING_ERROR = 11;
+    export const ENCODING_ERROR = 12;
     export type ENCODING_ERROR = typeof ENCODING_ERROR;
-    export const FILE_STORAGE_ERROR = 12;
+    export const FILE_STORAGE_ERROR = 13;
     export type FILE_STORAGE_ERROR = typeof FILE_STORAGE_ERROR;
-    export const KEY_STORAGE_ERROR = 13;
+    export const KEY_STORAGE_ERROR = 14;
     export type KEY_STORAGE_ERROR = typeof KEY_STORAGE_ERROR;
-    export const INCOMING_REFLECTED_MESSAGE_TASK_ERROR = 14;
+    export const INCOMING_REFLECTED_MESSAGE_TASK_ERROR = 15;
     export type INCOMING_REFLECTED_MESSAGE_TASK_ERROR =
         typeof INCOMING_REFLECTED_MESSAGE_TASK_ERROR;
-    export const MIGRATION_ERROR = 15;
+    export const MIGRATION_ERROR = 16;
     export type MIGRATION_ERROR = typeof MIGRATION_ERROR;
-    export const PROTOCOL_ERROR = 16;
+    export const PROTOCOL_ERROR = 17;
     export type PROTOCOL_ERROR = typeof PROTOCOL_ERROR;
-    export const TYPE_TRANSFORM_ERROR = 17;
+    export const TYPE_TRANSFORM_ERROR = 18;
     export type TYPE_TRANSFORM_ERROR = typeof TYPE_TRANSFORM_ERROR;
-    export const COMPRESSION_ERROR = 18;
+    export const COMPRESSION_ERROR = 19;
     export type COMPRESSION_ERROR = typeof COMPRESSION_ERROR;
-    export const SAFE_ERROR = 19;
+    export const SAFE_ERROR = 20;
     export type SAFE_ERROR = typeof SAFE_ERROR;
-    export const BACKEND_CREATION_ERROR = 20;
+    export const BACKEND_CREATION_ERROR = 21;
     export type BACKEND_CREATION_ERROR = typeof BACKEND_CREATION_ERROR;
-    export const TASK_ERROR = 21;
+    export const TASK_ERROR = 22;
     export type TASK_ERROR = typeof TASK_ERROR;
-    export const RENDEZVOUS_PROTOCOL_ERROR = 22;
+    export const RENDEZVOUS_PROTOCOL_ERROR = 23;
     export type RENDEZVOUS_PROTOCOL_ERROR = typeof RENDEZVOUS_PROTOCOL_ERROR;
-    export const DEVICE_JOIN_PROTOCOL_ERROR = 23;
+    export const DEVICE_JOIN_PROTOCOL_ERROR = 24;
     export type DEVICE_JOIN_PROTOCOL_ERROR = typeof DEVICE_JOIN_PROTOCOL_ERROR;
-    export const APPLICATION_STATE_ERROR = 24;
+    export const APPLICATION_STATE_ERROR = 25;
     export type APPLICATION_STATE_ERROR = typeof APPLICATION_STATE_ERROR;
-    export const BLOB_FETCH_ERROR = 25;
+    export const BLOB_FETCH_ERROR = 26;
     export type BLOB_FETCH_ERROR = typeof BLOB_FETCH_ERROR;
-    export const WORK_ERROR = 26;
+    export const WORK_ERROR = 27;
     export type WORK_ERROR = typeof WORK_ERROR;
+    export const GROUP_CALL_ERROR = 28;
+    export type GROUP_CALL_ERROR = typeof GROUP_CALL_ERROR;
+    export const DELAYED_ERROR = 29;
+    export type DELAYED_ERROR = typeof DELAYED_ERROR;
 }
 /**
  * All enums to be used must be declared in this file. They are disallowed in
@@ -1241,17 +1248,30 @@ export namespace MessageTypeUtils {
     }
 }
 export namespace StatusMessageType {
-    export const GROUP_MEMBER_CHANGE = 'group-member-change';
-    export type GROUP_MEMBER_CHANGE = typeof GROUP_MEMBER_CHANGE;
-    export const GROUP_NAME_CHANGE = 'group-name-change';
-    export type GROUP_NAME_CHANGE = typeof GROUP_NAME_CHANGE;
+    export const GROUP_MEMBER_CHANGED = 'group-member-changed';
+    export type GROUP_MEMBER_CHANGED = typeof GROUP_MEMBER_CHANGED;
+    export const GROUP_NAME_CHANGED = 'group-name-changed';
+    export type GROUP_NAME_CHANGED = typeof GROUP_NAME_CHANGED;
+    export const GROUP_CALL_STARTED = 'group-call-started';
+    export type GROUP_CALL_STARTED = typeof GROUP_CALL_STARTED;
+    export const GROUP_CALL_ENDED = 'group-call-ended';
+    export type GROUP_CALL_ENDED = typeof GROUP_CALL_ENDED;
 }
-/** @generate convert */
+/**
+ * All possible status message types.
+ *
+ * WARNING: Do not change the internal representation of this enum, since those values are stored
+ *          directly in the database!
+ *
+ * @generate name convert
+ */
 export type StatusMessageType = (typeof StatusMessageType)[keyof typeof StatusMessageType];
 export namespace StatusMessageTypeUtils {
     export const ALL: ReadonlySet<StatusMessageType> = new Set([
-        StatusMessageType.GROUP_MEMBER_CHANGE,
-        StatusMessageType.GROUP_NAME_CHANGE,
+        StatusMessageType.GROUP_MEMBER_CHANGED,
+        StatusMessageType.GROUP_NAME_CHANGED,
+        StatusMessageType.GROUP_CALL_STARTED,
+        StatusMessageType.GROUP_CALL_ENDED,
     ] as const);
     export function fromString(value: string, fallback?: StatusMessageType): StatusMessageType {
         if ((ALL as ReadonlySet<string>).has(value)) {
@@ -1267,6 +1287,15 @@ export namespace StatusMessageTypeUtils {
     }
     export function contains(value: unknown): value is StatusMessageType {
         return typeof value === 'string' && (ALL as ReadonlySet<string>).has(value);
+    }
+    export const NAME_OF = {
+        [StatusMessageType.GROUP_MEMBER_CHANGED]: 'GROUP_MEMBER_CHANGED',
+        [StatusMessageType.GROUP_NAME_CHANGED]: 'GROUP_NAME_CHANGED',
+        [StatusMessageType.GROUP_CALL_STARTED]: 'GROUP_CALL_STARTED',
+        [StatusMessageType.GROUP_CALL_ENDED]: 'GROUP_CALL_ENDED',
+    } as const;
+    export function nameOf<T extends u53>(value: T): string | undefined {
+        return (NAME_OF as Record<u53, string | undefined>)[value];
     }
 }
 export namespace TriggerSource {

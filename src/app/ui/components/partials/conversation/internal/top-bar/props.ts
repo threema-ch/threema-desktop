@@ -3,14 +3,14 @@ import type {ClearConversationModalProps} from '~/app/ui/components/partials/mod
 import type {DeleteConversationModalProps} from '~/app/ui/components/partials/modals/delete-conversation-modal/props';
 import type {ReceiverCardProps} from '~/app/ui/components/partials/receiver-card/props';
 import type {u53} from '~/common/types';
-import type {AnyCallProps} from '~/common/viewmodel/utils/call';
+import type {AnyCallData} from '~/common/viewmodel/utils/call';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
  * Props accepted by the `TopBar` component.
  */
 export interface TopBarProps {
-    readonly call?: AnyCallProps;
+    readonly call?: AnyCallData;
     /** Details of the conversation related to this receiver. */
     readonly conversation: ClearConversationModalProps['conversation'] &
         DeleteConversationModalProps['conversation'] & {
@@ -23,5 +23,6 @@ export interface TopBarProps {
             readonly unpin: () => Promise<void>;
         };
     readonly receiver: AnyReceiverData;
-    readonly services: ReceiverCardProps['services'] & Pick<AppServicesForSvelte, 'router'>;
+    readonly services: ReceiverCardProps['services'] &
+        Pick<AppServicesForSvelte, 'router' | 'settings'>;
 }

@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+message EncryptedKeyStorage {
+  // The key storage schema version. Used for being able to migrate the storage
+  // format.
+  uint32 schema_version = 3;
+
+  // Contains the key storage (`KeyStorage`), encrypted and encoded in the
+  // following way:
+  //
+  // 1. Let `plain_storage` be the plaintext `KeyStorage`, encoded to bytes.
+  // 2. Let `sk` be a 32 byte secret key derived by running the chosen KDF
+  //    with its parameters and the user-provided passphrase.
+  // 3. Let `nonce` be a random nonce.
+  // 4. Let `encrypted_storage` be the result of an NaCl box encryption with
+  //    `sk` as the secret key, `nonce` as the nonce and `plain_storage` as
+  //    data.
+  // 5. Set `encrypted_key_storage` to `nonce || encrypted_storage` (i.e. a
+  //    `extra.crypto.encrypted-data-with-nonce-ahead` struct).
+  bytes encrypted_key_storage = 1;
+
+  // Argon2id parameters.
+  //
+  // We currently recommend to use the following minimum parameter values:
+  //
+  // - Memory: At least 128 MiB
+  // - Iterations: At least 3
+  //
+  // Ideally, the parameters are tuned for the system in the following way:
+  //
+  // 1. Choose a maximum `time` the algorithm should run. For our use case,
+  //    ~2s at application startup are acceptable.
+  // 2. Figure out the an appropriate `memory` value based on weak target
+  //    hardware.
+  // 3. Run Argon2id and increase the number of `memory` and `iterations`
+  //    until the targeted `time` is roughly matched.
+  message Argon2idParameters {
+    // Version of Argon2
+    enum Argon2Version {
+      VERSION_1_3 = 0;
+    }
+    Argon2Version version = 1;
+
+    // Random salt (≥ 16 bytes, recommended to be 16 bytes)
+    bytes salt = 2;
+
+    // Memory usage in bytes (≥ 128 MiB)
+    uint32 memory_bytes = 3;
+
+    // Number of iterations (≥ 3)
+    uint32 iterations = 4;
+
+    // Amount of parallelism (≥ 1, recommended to be 1)
+    uint32 parallelism = 5;
+  }
+
+  // The KDF and associated parameters
+  oneof kdf_parameters { Argon2idParameters argon2id = 2; }
+}
+
+message IdentityData {
+  // The Threema ID string
+  string identity = 1;
+
+  // The permanent client key associated to the Threema ID (32 bytes)
+  bytes ck = 2;
+
+  // Deprecated numeric server group
+  uint32 deprecated_server_group = 3;
+
+  // The server group associated to the Threema ID (1 byte)
+  string server_group = 4;
+}
+
+message DeviceIds {
+  // The device ID used towards the mediator server
+  uint64 d2mDeviceId = 1;
+
+  // The device ID used towards the chat server
+  uint64 cspDeviceId = 2;
+}
+
+message ThreemaWorkCredentials {
+  string username = 1;
+  string password = 2;
+}
+
+message OnPremConfig {
+  string oppf_url = 1;
+  uint64 last_updated = 2;
+  string oppf_cached_config = 3;
+}
+
+message DecryptedKeyStorage {
+  // The key storage schema version. Used for being able to migrate the storage
+  // format.
+  uint32 schema_version = 5;
+
+  // Data associated to the Threema ID
+  IdentityData identity_data = 1;
+
+  // The device group key (32 bytes)
+  bytes dgk = 2;
+
+  // The SQLCipher database encryption key (32 bytes)
+  bytes database_key = 3;
+
+  // Device IDs
+  DeviceIds device_ids = 4;
+
+  // The device cookie (16 bytes)
+  // TODO(DESK-1344)
+  optional bytes device_cookie = 8;
+
+  // Threema Work Credentials (if any)
+  ThreemaWorkCredentials work_credentials = 6;
+
+  // Threema OnPrem Config (if any)
+  OnPremConfig on_prem_config = 7;
+}

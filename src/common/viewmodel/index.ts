@@ -1,13 +1,16 @@
 import type {ServicesForBackend} from '~/common/backend';
 import type {DbReceiverLookup} from '~/common/db';
 import {ReceiverType} from '~/common/enum';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {AnyMessageModelStore, AnyReceiver} from '~/common/model';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import type {ReceiverStoreFor} from '~/common/model/types/receiver';
 import type {AnyStatusMessageModelStore} from '~/common/model/types/status';
 import {unreachable} from '~/common/utils/assert';
-import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, type ProxyMarked} from '~/common/utils/endpoint';
 import {WeakValueMap} from '~/common/utils/map';
+import type {LocalStore} from '~/common/utils/store';
+import {derive} from '~/common/utils/store/derived-store';
 import type {ViewModelCache} from '~/common/viewmodel/cache';
 import {
     getContactDetailViewModelBundle,
@@ -48,6 +51,7 @@ import {
     getSettingsViewModelBundle,
     type SettingsViewModelBundle,
 } from '~/common/viewmodel/settings';
+import {getSelfReceiverData, type SelfReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
  * Services required by the viewmodel backend.
@@ -113,6 +117,8 @@ export interface IViewModelRepository extends ProxyMarked {
     readonly contactDetail: (
         receiver: DbReceiverLookup,
     ) => ContactDetailViewModelBundle<AnyReceiver> | undefined;
+
+    readonly user: () => LocalStore<SelfReceiverData>;
 
     readonly debugPanel: () => DebugPanelViewModel;
     readonly profile: () => ProfileViewModelStore;
@@ -240,6 +246,15 @@ export class ViewModelRepository implements IViewModelRepository {
 
         return this._cache.contactDetail.getOrCreate(receiverModelStore, () =>
             getContactDetailViewModelBundle(this._services, receiverModelStore),
+        );
+    }
+
+    // TODO(DESK-1466): You probably want to change this, right?
+    public user(): LocalStore<SelfReceiverData> {
+        return this._cache.user.derefOrCreate(() =>
+            derive([], (_, getAndSubscribe) =>
+                getSelfReceiverData(this._services, getAndSubscribe),
+            ),
         );
     }
 

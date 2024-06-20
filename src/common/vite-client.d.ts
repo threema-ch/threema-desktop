@@ -371,13 +371,15 @@ interface ImportMetaEnv extends ViteDefaultImportMetaEnv, BuildConfig {
 
     // Verbose debug logging
     readonly VERBOSE_LOGGING: {
-        readonly ENDPOINT: boolean;
+        readonly CALLS: boolean;
+        readonly CALLS_MEDIA_CRYPTO: boolean;
         readonly DB: boolean;
-        readonly STORES: boolean;
+        readonly ENDPOINT: boolean;
         readonly EVENTS: boolean;
+        readonly HOTKEY: boolean;
         readonly NETWORK: boolean;
         readonly ROUTER: boolean;
-        readonly HOTKEY: boolean;
+        readonly STORES: boolean;
     };
 }
 

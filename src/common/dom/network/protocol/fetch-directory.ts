@@ -6,6 +6,7 @@ import {hash} from '~/common/crypto/blake2b';
 import {deriveDirectoryChallengeResponseKey} from '~/common/crypto/csp-keys';
 import type {ThreemaWorkCredentials} from '~/common/device';
 import {ActivityState} from '~/common/enum';
+import {TRANSFER_HANDLER} from '~/common/index';
 import {
     type DirectoryBackend,
     DirectoryError,
@@ -14,6 +15,8 @@ import {
     type IdentityPrivateData,
     VALID_IDENTITY_DATA_SCHEMA,
     AUTH_TOKEN_SCHEMA,
+    type SfuToken,
+    SFU_TOKEN_SCHEMA,
 } from '~/common/network/protocol/directory';
 import type {IdentityString} from '~/common/network/types';
 import type {ClientKey} from '~/common/network/types/keys';
@@ -21,7 +24,9 @@ import type {ReadonlyUint8Array} from '~/common/types';
 import {assert, ensureError, unreachable, unwrap} from '~/common/utils/assert';
 import {base64ToU8a, u8aToBase64} from '~/common/utils/base64';
 import {UTF8} from '~/common/utils/codec';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {ExpiringValue} from '~/common/utils/date';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
+import {AsyncLock} from '~/common/utils/lock';
 import {TIMER, TimeoutError} from '~/common/utils/timer';
 
 /**
@@ -85,6 +90,10 @@ const DIRECTORY_TIMEOUT_MS = 10_000;
 export class FetchDirectoryBackend implements DirectoryBackend {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     private readonly _headers: Record<string, string>;
+    private readonly _lock = new AsyncLock();
+    private readonly _cache = {
+        sfuToken: new ExpiringValue<SfuToken>(),
+    } as const;
 
     public constructor(
         private readonly _services: Pick<ServicesForBackend, 'config' | 'logging'>,
@@ -236,6 +245,35 @@ export class FetchDirectoryBackend implements DirectoryBackend {
             );
         }
         return responseData;
+    }
+
+    /** @inheritdoc */
+    public async sfuToken(identity: IdentityString, ck: ClientKey): Promise<SfuToken> {
+        // Re-use cached SFU token if possible
+        const token = this._cache.sfuToken.get();
+        if (token !== undefined) {
+            return token;
+        }
+
+        // No SFU token or it expired. Fetch and cache a new SFU token.
+        //
+        // Note: Apply lock to prevent multiple concurrent SFU token updates
+        return await this._lock.with(async () => {
+            const response = await this._authenticatedRequest(
+                'SFU token',
+                'identity/sfu_cred',
+                {identity},
+                ck,
+                SFU_TOKEN_SCHEMA,
+            );
+            if (response === undefined) {
+                throw new DirectoryError(
+                    'invalid-response',
+                    `SFU token fetch request returned status 404`,
+                );
+            }
+            return this._cache.sfuToken.set(response, response.expiration);
+        });
     }
 
     /**

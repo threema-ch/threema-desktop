@@ -3,19 +3,18 @@ import * as v from '@badrap/valita';
 import {ensurePublicKey} from '~/common/crypto';
 import {ActivityState, IdentityType, IdentityTypeUtils, TransferTag} from '~/common/enum';
 import {BaseError, type BaseErrorOptions} from '~/common/error';
+import {TRANSFER_HANDLER} from '~/common/index';
 import {
+    ensureBaseUrl,
     ensureFeatureMask,
     ensureIdentityString,
     ensureServerGroup,
     type IdentityString,
 } from '~/common/network/types';
 import type {ClientKey} from '~/common/network/types/keys';
+import {ensureU53} from '~/common/types';
 import {base64ToU8a} from '~/common/utils/base64';
-import {
-    registerErrorTransferHandler,
-    TRANSFER_HANDLER,
-    type ProxyMarked,
-} from '~/common/utils/endpoint';
+import {registerErrorTransferHandler, type ProxyMarked} from '~/common/utils/endpoint';
 
 export const VALID_IDENTITY_DATA_SCHEMA = v
     .object({
@@ -26,8 +25,8 @@ export const VALID_IDENTITY_DATA_SCHEMA = v
             .optional(),
         publicKey: v
             .string()
-            .map((value) => base64ToU8a(value))
-            .map((value) => ensurePublicKey(value)),
+            .map((pk) => base64ToU8a(pk))
+            .map(ensurePublicKey),
         featureMask: v.number().map(BigInt).map(ensureFeatureMask),
         type: v.number().map((type) => IdentityTypeUtils.fromNumber(type, IdentityType.REGULAR)),
     })
@@ -79,6 +78,27 @@ export const AUTH_TOKEN_SCHEMA = v
  */
 export type IdentityPrivateData = Readonly<v.Infer<typeof IDENTITY_PRIVATE_DATA_SCHEMA>>;
 
+export const SFU_TOKEN_SCHEMA = v
+    .object({
+        sfuBaseUrl: v.string().map((url) => ({raw: url, parsed: ensureBaseUrl(url, 'https:')})),
+        allowedSfuHostnameSuffixes: v.array(v.string()),
+        sfuToken: v.string(),
+        expiration: v
+            .number()
+            .map(ensureU53)
+            .map((expiresInS) => {
+                const expiration = new Date();
+                expiration.setSeconds(expiration.getSeconds() + expiresInS);
+                return expiration;
+            }),
+    })
+    .rest(v.unknown());
+
+/**
+ * Validated SFU token returned from identity directory.
+ */
+export type SfuToken = Readonly<v.Infer<typeof SFU_TOKEN_SCHEMA>>;
+
 export type DirectoryBackend = {
     /**
      * Fetch data for a single identity from the directory.
@@ -121,6 +141,14 @@ export type DirectoryBackend = {
      * @throws {Error} if the current build environment is not OnPrem.
      */
     authToken: () => Promise<string>;
+
+    /**
+     * Refresh an SFU token from the directory, if necessary.
+     *
+     * @throws {DirectoryError} if something went wrong during fetching of the data. See
+     *   {@link DirectoryErrorType} for a list of possible error types.
+     */
+    sfuToken: (identity: IdentityString, ck: ClientKey) => Promise<SfuToken>;
 } & ProxyMarked;
 
 /**

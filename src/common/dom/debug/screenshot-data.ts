@@ -9,7 +9,6 @@ import {
     MessageReaction,
     VerificationLevelUtils,
 } from '~/common/enum';
-import {ensureIdentityStringOrMe} from '~/common/model/types/common';
 import {
     ensureGroupId,
     ensureIdentityString,
@@ -33,6 +32,11 @@ function translatedValueSchema<T>(valueSchema: v.Type<T>) {
 }
 
 type TranslatedValueSchema<T> = v.Infer<ReturnType<typeof translatedValueSchema<T>>>;
+
+const OTHER_IDENTITY_STRING_OR_ME_SCHEMA = v.union(
+    v.string().map(ensureIdentityString),
+    v.literal('me'),
+);
 
 const TEST_MESSAGE_BASE = {
     messageId: v.string().map(hexLeToU64).map(ensureMessageId).optional(),
@@ -62,7 +66,7 @@ const TEST_MESSAGE_BASE = {
                             return unreachable(value);
                     }
                 }),
-                senderIdentity: v.union(v.string().map(ensureIdentityString), v.literal('me')),
+                senderIdentity: OTHER_IDENTITY_STRING_OR_ME_SCHEMA,
             }),
         )
         .optional(),
@@ -194,9 +198,9 @@ const TEST_CONTACT_SCHEMA = v
 const TEST_GROUP_SCHEMA = v
     .object({
         id: v.string().map(hexLeToU64).map(ensureGroupId),
-        creator: v.string().map(ensureIdentityStringOrMe),
+        creator: OTHER_IDENTITY_STRING_OR_ME_SCHEMA,
         name: translatedValueSchema(v.string()),
-        members: v.array(v.string().map(ensureIdentityStringOrMe)),
+        members: v.array(OTHER_IDENTITY_STRING_OR_ME_SCHEMA),
         createdMinutesAgo: v.number(),
         avatar: v
             .string()

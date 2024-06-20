@@ -65,7 +65,7 @@ export function serialize(
     const {id, key, nonce, uploadedAt} = validatedMessage;
     return creator(common.Blob, {
         id: id as ReadonlyUint8Array as Uint8Array,
-        key: key === undefined ? undefined : (key.unwrap() as Uint8Array),
+        key: key === undefined ? undefined : (key.unwrap() as ReadonlyUint8Array as Uint8Array),
         nonce: nonce as Uint8Array | undefined,
         uploadedAt:
             uploadedAt === undefined

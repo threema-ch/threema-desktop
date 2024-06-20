@@ -10,7 +10,6 @@ import {
     CspE2eStatusUpdateType,
     TransactionScope,
 } from '~/common/enum';
-import type {GroupCreator} from '~/common/model/types/group';
 import * as protobuf from '~/common/network/protobuf';
 import {CspPayloadType, D2mPayloadType, type LayerEncoder} from '~/common/network/protocol';
 import * as structbuf from '~/common/network/structbuf';
@@ -99,10 +98,10 @@ export function decryptContainer(
 export function assertGroupHasMembers(
     services: Pick<ServicesForBackend, 'model'>,
     groupId: GroupId,
-    creator: GroupCreator,
-    expectedMembers: IdentityString[],
+    creatorIdentity: IdentityString,
+    expectedMembers: readonly IdentityString[],
 ): void {
-    const group = services.model.groups.getByGroupIdAndCreator(groupId, creator);
+    const group = services.model.groups.getByGroupIdAndCreator(groupId, creatorIdentity);
     assert(group !== undefined, 'Group not found');
     expect(
         [...group.get().view.members].map((member) => member.get().view.identity),

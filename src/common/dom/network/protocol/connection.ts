@@ -16,6 +16,7 @@ import {
     GlobalPropertyKey,
 } from '~/common/enum';
 import {ConnectionClosed, extractErrorTraceback} from '~/common/error';
+import {TRANSFER_HANDLER} from '~/common/index';
 import {createLoggerStyle, type Logger} from '~/common/logging';
 import type {CloseInfo} from '~/common/network';
 import * as protobuf from '~/common/network/protobuf';
@@ -36,7 +37,8 @@ import {ConnectedTaskManager} from '~/common/network/protocol/task/manager';
 import type {TemporaryClientKey} from '~/common/network/types/keys';
 import {assert, assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
 import {Delayed} from '~/common/utils/delayed';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
+import {clamp} from '~/common/utils/number';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {AbortRaiser, type AbortListener} from '~/common/utils/signal';
 import {MonotonicEnumStore, type StrictMonotonicEnumStore} from '~/common/utils/store';
@@ -406,7 +408,7 @@ class Connection {
                         reason: 'Task manager stopped',
                     },
                 });
-                unreachable(v, new Error('Task manager stopped'));
+                unreachable(v, 'Task manager stopped');
             })
             .catch((error: unknown) => {
                 if (error instanceof ConnectionClosed) {
@@ -450,7 +452,7 @@ class Connection {
 /**
  * Connection logger style (white on yellow).
  */
-const connectionLoggerStyle = createLoggerStyle('#EE9B00', 'white');
+const connectionLoggerStyle = createLoggerStyle('#ee9b00', '#ffffff');
 
 interface ConnectionResultConnected {
     readonly connected: true;
@@ -777,13 +779,10 @@ export class ConnectionManager implements ConnectionManagerHandle {
             } else {
                 // When we were connected, we ensure that the total wait time does not exceed 5s
                 // between connection attempts.
-
-                // In practise, we observe very rare time jumps in connection with stand-by on MacOS.
-                // Therefore, we clamp the values to a sane range to avoid very long reconnect timeouts.
-                const waitMs = Math.min(
-                    elapsedMs > reconnectionDelayMs ? 0 : reconnectionDelayMs - elapsedMs,
-                    reconnectionDelayMs,
-                );
+                const waitMs = clamp(reconnectionDelayMs - elapsedMs, {
+                    min: 0,
+                    max: reconnectionDelayMs,
+                });
                 this._log.debug(
                     `Waiting ${(waitMs / 1000).toFixed(
                         1,

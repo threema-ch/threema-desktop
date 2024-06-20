@@ -1,8 +1,10 @@
+import type {
+    DecryptedKeyStorage,
+    EncryptedKeyStorage,
+} from '~/common/internal-protobuf/key-storage-file';
 import type {Logger} from '~/common/logging';
 import {assert, unwrap} from '~/common/utils/assert';
 import {byteToHex} from '~/common/utils/byte';
-
-import type {DecryptedKeyStorage, EncryptedKeyStorage} from './key-storage-file';
 
 type KeyStorageSchema = EncryptedKeyStorage | DecryptedKeyStorage;
 

@@ -1,10 +1,9 @@
 import {MessageType, type MessageReaction} from '~/common/enum';
-import type {IdentityStringOrMe} from '~/common/model/types/common';
 import type {AnyMessageModel, AnyOutboundMessageModel} from '~/common/model/types/message';
 import type {PassiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
 import {DeliveryReceiptTaskBase} from '~/common/network/protocol/task/common/delivery-receipt';
 import type {DeliveryReceipt} from '~/common/network/structbuf/validate/csp/e2e';
-import type {ConversationId, MessageId} from '~/common/network/types';
+import type {ConversationId, IdentityString, MessageId} from '~/common/network/types';
 import {u64ToHexLe} from '~/common/utils/number';
 
 /**
@@ -19,7 +18,7 @@ export class ReflectedDeliveryReceiptTask extends DeliveryReceiptTaskBase<Passiv
         conversationId: ConversationId,
         validatedDeliveryReceipt: DeliveryReceipt.Type,
         clampedCreatedAt: Date,
-        private readonly _senderIdentity: IdentityStringOrMe,
+        private readonly _senderIdentity: IdentityString,
     ) {
         super(
             services,

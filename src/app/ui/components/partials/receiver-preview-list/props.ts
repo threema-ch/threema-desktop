@@ -14,7 +14,7 @@ export interface ReceiverPreviewListProps<THandlerProps = undefined> {
     /**
      * Optional substring(s) to highlight in receiver preview text fields.
      */
-    readonly highlights?: string | string[];
+    readonly highlights?: string | readonly string[];
     readonly items: ReceiverPreviewListItem<THandlerProps>[];
     readonly options?: {
         /**

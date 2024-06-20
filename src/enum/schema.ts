@@ -33,28 +33,33 @@ export const enum TransferTag {
     MODEL_STORE = 4,
     SET_STORE = 5,
 
+    // Events
+    ABORT_LISTENER = 6,
+
     // Errors
-    BLOB_BACKEND_ERROR = 6,
-    CACHE_STORAGE_RESOURCE_CACHE_ERROR = 7,
-    CONNECTION_CLOSED_ERROR = 8,
-    CRYPTO_ERROR = 9,
-    DIRECTORY_ERROR = 10,
-    ENCODING_ERROR = 11,
-    FILE_STORAGE_ERROR = 12,
-    KEY_STORAGE_ERROR = 13,
-    INCOMING_REFLECTED_MESSAGE_TASK_ERROR = 14,
-    MIGRATION_ERROR = 15,
-    PROTOCOL_ERROR = 16,
-    TYPE_TRANSFORM_ERROR = 17,
-    COMPRESSION_ERROR = 18,
-    SAFE_ERROR = 19,
-    BACKEND_CREATION_ERROR = 20,
-    TASK_ERROR = 21,
-    RENDEZVOUS_PROTOCOL_ERROR = 22,
-    DEVICE_JOIN_PROTOCOL_ERROR = 23,
-    APPLICATION_STATE_ERROR = 24,
-    BLOB_FETCH_ERROR = 25,
-    WORK_ERROR = 26,
+    BLOB_BACKEND_ERROR = 7,
+    CACHE_STORAGE_RESOURCE_CACHE_ERROR = 8,
+    CONNECTION_CLOSED_ERROR = 9,
+    CRYPTO_ERROR = 10,
+    DIRECTORY_ERROR = 11,
+    ENCODING_ERROR = 12,
+    FILE_STORAGE_ERROR = 13,
+    KEY_STORAGE_ERROR = 14,
+    INCOMING_REFLECTED_MESSAGE_TASK_ERROR = 15,
+    MIGRATION_ERROR = 16,
+    PROTOCOL_ERROR = 17,
+    TYPE_TRANSFORM_ERROR = 18,
+    COMPRESSION_ERROR = 19,
+    SAFE_ERROR = 20,
+    BACKEND_CREATION_ERROR = 21,
+    TASK_ERROR = 22,
+    RENDEZVOUS_PROTOCOL_ERROR = 23,
+    DEVICE_JOIN_PROTOCOL_ERROR = 24,
+    APPLICATION_STATE_ERROR = 25,
+    BLOB_FETCH_ERROR = 26,
+    WORK_ERROR = 27,
+    GROUP_CALL_ERROR = 28,
+    DELAYED_ERROR = 29,
 }
 
 /**
@@ -462,10 +467,19 @@ export enum MessageType {
     // LOCATION = 'location',
 }
 
-/** @generate convert */
+/**
+ * All possible status message types.
+ *
+ * WARNING: Do not change the internal representation of this enum, since those values are stored
+ *          directly in the database!
+ *
+ * @generate name convert
+ */
 export enum StatusMessageType {
-    GROUP_MEMBER_CHANGE = 'group-member-change',
-    GROUP_NAME_CHANGE = 'group-name-change',
+    GROUP_MEMBER_CHANGED = 'group-member-changed',
+    GROUP_NAME_CHANGED = 'group-name-changed',
+    GROUP_CALL_STARTED = 'group-call-started',
+    GROUP_CALL_ENDED = 'group-call-ended',
 }
 
 /**

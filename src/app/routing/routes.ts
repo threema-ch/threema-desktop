@@ -1,7 +1,7 @@
 import * as v from '@badrap/valita';
 
-import type {DbContactUid, DbGroupUid, DbReceiverLookup} from '~/common/db';
-import {ReceiverTypeUtils} from '~/common/enum';
+import type {DbGroupReceiverLookup, DbReceiverLookup} from '~/common/db';
+import {ReceiverType, ReceiverTypeUtils} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import {VALID_IDENTITY_DATA_SCHEMA} from '~/common/network/protocol/directory';
 import {ensureIdentityString, ensureMessageId} from '~/common/network/types';
@@ -17,16 +17,32 @@ import {assert} from '~/common/utils/assert';
 import {instanceOf} from '~/common/utils/valita-helpers';
 
 /**
- * Information needed to look up a generic receiver, together with additional data that will be used
- * by the conversation view.
+ * Information needed to look up a receiver.
+ *
+ * Note: Keep this compatible with {@link DbReceiverLookup}.
  */
-const PARAM_RECEIVER_LOOKUP_SCHEMA = v.object({
-    receiverLookup: v
-        .object({
-            type: v.number().map((value) => ReceiverTypeUtils.fromNumber(value)),
-            uid: v.bigint().map(ensureU64),
-        })
-        .map((value) => value as DbReceiverLookup),
+const PARAM_RECEIVER_LOOKUP_SCHEMA = v
+    .object({
+        type: v.number().map((value) => ReceiverTypeUtils.fromNumber(value)),
+        uid: v.bigint().map(ensureU64),
+    })
+    .map((value) => value as DbReceiverLookup);
+
+/**
+ * Information needed to look up a group.
+ *
+ * Note: Keep this compatible with {@link DbGroupReceiverLookup}.
+ */
+const PARAM_GROUP_LOOKUP_SCHEMA = PARAM_RECEIVER_LOOKUP_SCHEMA.assert(
+    (lookup) => lookup.type === ReceiverType.GROUP,
+).map((lookup) => lookup as DbGroupReceiverLookup);
+
+/**
+ * Information needed to look up a conversation, together with additional data that will be used by
+ * the conversation view.
+ */
+const PARAM_CONVERSATION_LOOKUP_SCHEMA = v.object({
+    receiverLookup: PARAM_RECEIVER_LOOKUP_SCHEMA,
     forwardedMessage: v
         .object({
             receiverLookup: v
@@ -59,26 +75,6 @@ const PARAM_SETTINGS_SCHEMA = v.object({
 });
 
 /**
- * Information needed to look up a contact.
- */
-const PARAM_CONTACT_LOOKUP_SCHEMA = v.object({
-    contactUid: v
-        .bigint()
-        .map(ensureU64)
-        .map((value) => value as DbContactUid),
-});
-
-/**
- * Information needed to look up a group.
- */
-const PARAM_GROUP_LOOKUP_SCHEMA = v.object({
-    groupUid: v
-        .bigint()
-        .map(ensureU64)
-        .map((value) => value as DbGroupUid),
-});
-
-/**
  * An optional contact identity.
  */
 const PARAM_OPTIONAL_IDENTITY_SCHEMA = v.object({
@@ -93,14 +89,14 @@ const PARAM_IDENTITY_DATA_SCHEMA = v.object({
 });
 
 /**
- * Information needed to look up a group call.
+ * Group call activity data.
  */
-const PARAM_GROUP_CALL_LOOKUP_SCHEMA = v.object({
-    groupUid: v
-        .bigint()
-        .map(ensureU64)
-        .map((value) => value as DbGroupUid),
-});
+const PARAM_CALL_ACTIVITY_SCHEMA = v.union(
+    v.object({
+        receiverLookup: PARAM_GROUP_LOOKUP_SCHEMA,
+        intent: v.union(v.literal('join'), v.literal('join-or-create')),
+    }),
+);
 
 /**
  * Path definition.
@@ -137,8 +133,7 @@ interface RoutePath {
  */
 interface RawRouteDefinition {
     readonly id: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    readonly params: v.ObjectType<any> | undefined;
+    readonly params: v.Type | undefined;
 }
 
 interface RoutePathDefinition {
@@ -164,23 +159,12 @@ type RouteDefinition<TRoute extends RawRouteDefinition & Partial<RoutePathDefini
           }
         : {
               /**
-               * Function that validates a set of parameters against a parameter schema,
-               * and – if it passes – returns a route instance.
-               *
-               * If a route has no parameters, this should be called with `undefined` as
-               * argument.
-               */
-              readonly withUntypedParams: (
-                  params?: Record<string, unknown>,
-              ) => RouteInstance<TRoute>;
-
-              /**
                * Function that returns a route instance with the specified params.
                *
                * If a route has no parameters, this should be called with `undefined` as
                * argument.
                */
-              readonly withTypedParams: (
+              readonly withParams: (
                   params: RouteInstanceParams<TRoute['params']>,
               ) => RouteInstance<TRoute>;
           });
@@ -190,7 +174,7 @@ type RouteDefinition<TRoute extends RawRouteDefinition & Partial<RoutePathDefini
  */
 type RouteInstanceParams<TParams> =
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    TParams extends v.ObjectType<any> ? v.Infer<TParams> : undefined;
+    TParams extends v.Type<any> ? v.Infer<TParams> : undefined;
 
 /**
  * A route whose parameters have been validated using the corresponding schema.
@@ -199,10 +183,9 @@ type RouteInstanceParams<TParams> =
  * place of a `RouteInstance`.
  *
  * Note: A route instance should usually be constructed either through
- *       {@link RouteDefinition.matches}, {@link RouteDefinition.withUntypedParams} or
- *       {@link RouteDefinition.withTypedParams}.
+ * {@link RouteDefinition.matches} or {@link RouteDefinition.withParams}.
  */
-type RouteInstance<TRoute extends RawRouteDefinition> = WeakOpaque<
+export type RouteInstance<TRoute extends RawRouteDefinition> = WeakOpaque<
     Pick<TRoute, 'id'> & {
         /**
          * Validated route parameters.
@@ -219,7 +202,7 @@ type RouteInstance<TRoute extends RawRouteDefinition> = WeakOpaque<
  * {@link RouteDefinition}.
  *
  * Note: Do not use this function directly! Instead, use {@link defineNav}, {@link defineMain} or
- *       {@link defineAside}!
+ * {@link defineAside}!
  */
 function defineImplementation<TRoute extends RawRouteDefinition & Partial<RoutePathDefinition>>(
     route: TRoute,
@@ -259,30 +242,7 @@ function defineImplementation<TRoute extends RawRouteDefinition & Partial<RouteP
         };
     }
 
-    function withUntypedParams(params: Record<string, unknown> | undefined): RouteInstance<TRoute> {
-        // Handle routes without a parameter schema
-        if (route.params === undefined) {
-            assert(
-                params === undefined,
-                `A route without parameters may not be constructed with parameters`,
-            );
-            return {
-                id: route.id,
-                params: undefined as RouteInstanceParams<TRoute['params']>,
-            } as RouteInstance<TRoute>;
-        }
-
-        // Otherwise, the route has parameters. Validate the argument passed in.
-        let validatedParams;
-        try {
-            validatedParams = route.params.parse(params);
-        } catch (error) {
-            throw new Error(`Cannot validate untyped route params: ${error}`);
-        }
-        return withTypedParams(validatedParams as RouteInstanceParams<TRoute['params']>);
-    }
-
-    function withTypedParams(params: RouteInstanceParams<TRoute['params']>): RouteInstance<TRoute> {
+    function withParams(params: RouteInstanceParams<TRoute['params']>): RouteInstance<TRoute> {
         // Since the params are already correctly typed, we can use them without validation
         return {
             id: route.id,
@@ -297,7 +257,7 @@ function defineImplementation<TRoute extends RawRouteDefinition & Partial<RouteP
         } as RouteInstance<TRoute>;
     }
 
-    return {...route, matches, withUntypedParams, withTypedParams, withoutParams};
+    return {...route, matches, withParams, withoutParams};
 }
 
 function defineNav<const TRoute extends RawRouteDefinition>(
@@ -408,7 +368,7 @@ export const ROUTE_DEFINITIONS = {
         }),
         conversation: defineMain({
             id: 'conversation',
-            params: PARAM_RECEIVER_LOOKUP_SCHEMA,
+            params: PARAM_CONVERSATION_LOOKUP_SCHEMA,
             path: {
                 match: new RegExp(
                     '^/conversation/(?<receiverType>\\d+)/(?<receiverUid>\\d+)/$',
@@ -434,13 +394,9 @@ export const ROUTE_DEFINITIONS = {
         }),
     },
     aside: {
-        contactDetails: defineAside({
-            id: 'contactDetails',
-            params: PARAM_CONTACT_LOOKUP_SCHEMA,
-        }),
-        groupDetails: defineAside({
-            id: 'groupDetails',
-            params: PARAM_GROUP_LOOKUP_SCHEMA,
+        receiverDetails: defineAside({
+            id: 'receiverDetails',
+            params: PARAM_RECEIVER_LOOKUP_SCHEMA,
         }),
     },
     modal: {
@@ -450,68 +406,30 @@ export const ROUTE_DEFINITIONS = {
         }),
     },
     activity: {
-        groupCall: defineActivity({
-            id: 'groupCall',
-            params: PARAM_GROUP_CALL_LOOKUP_SCHEMA,
+        call: defineActivity({
+            id: 'call',
+            params: PARAM_CALL_ACTIVITY_SCHEMA,
         }),
     },
 };
 /* eslint-enable prefer-regex-literals */
 
-/**
- * Map of all possible route instances (derived from route definitions).
- */
-export interface RouteInstances {
-    nav: {
-        [K in keyof typeof ROUTE_DEFINITIONS.nav]: RouteInstance<(typeof ROUTE_DEFINITIONS.nav)[K]>;
-    };
-    main: {
-        [K in keyof typeof ROUTE_DEFINITIONS.main]: RouteInstance<
-            (typeof ROUTE_DEFINITIONS.main)[K]
-        >;
-    };
-    aside: {
-        [K in keyof typeof ROUTE_DEFINITIONS.aside]: RouteInstance<
-            (typeof ROUTE_DEFINITIONS.aside)[K]
-        >;
-    };
-    modal: {
-        [K in keyof typeof ROUTE_DEFINITIONS.modal]: RouteInstance<
-            (typeof ROUTE_DEFINITIONS.modal)[K]
-        >;
-    };
-    activity: {
-        [K in keyof typeof ROUTE_DEFINITIONS.activity]: RouteInstance<
-            (typeof ROUTE_DEFINITIONS.activity)[K]
-        >;
-    };
-}
+/** Get a route instance for a specific panel and ID. */
+export type RouteInstanceFor<
+    TPanel extends keyof typeof ROUTE_DEFINITIONS,
+    TId extends keyof (typeof ROUTE_DEFINITIONS)[TPanel],
+> = (typeof ROUTE_DEFINITIONS)[TPanel][TId] extends RawRouteDefinition
+    ? RouteInstance<(typeof ROUTE_DEFINITIONS)[TPanel][TId]>
+    : never;
 
-/**
- * Any possible route instance.
- */
-export interface AnyRouteInstance {
-    nav: RouteInstances['nav'][keyof typeof ROUTE_DEFINITIONS.nav];
-    main: RouteInstances['main'][keyof typeof ROUTE_DEFINITIONS.main];
-    aside: RouteInstances['aside'][keyof typeof ROUTE_DEFINITIONS.aside] | undefined;
-    modal: RouteInstances['modal'][keyof typeof ROUTE_DEFINITIONS.modal] | undefined;
-    activity: RouteInstances['activity'][keyof typeof ROUTE_DEFINITIONS.activity] | undefined;
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type RouteInstancesFor<TDefinitions extends Record<string, RouteDefinition<any>>> = {
+    [TKey in keyof TDefinitions]: RouteInstance<TDefinitions[TKey]>;
+}[keyof TDefinitions];
 
-/**
- * Type alias for forwarded message lookup (as part of the {@link PARAM_RECEIVER_LOOKUP_SCHEMA}).
- */
-export type ForwardedMessageLookup = Exclude<
-    v.Infer<typeof PARAM_RECEIVER_LOOKUP_SCHEMA>['forwardedMessage'],
-    undefined
->;
-
-export type PreloadedFiles = Exclude<
-    v.Infer<typeof PARAM_RECEIVER_LOOKUP_SCHEMA>['preloadedFiles'],
-    undefined
->;
-
-export type InitialMessage = Exclude<
-    v.Infer<typeof PARAM_RECEIVER_LOOKUP_SCHEMA>['initialMessage'],
-    undefined
->;
+/** Map of all possible route instances (derived from route definitions). */
+export type RouteInstances = {
+    [TPanel in keyof typeof ROUTE_DEFINITIONS]: RouteInstancesFor<
+        (typeof ROUTE_DEFINITIONS)[TPanel]
+    >;
+};

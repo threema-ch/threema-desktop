@@ -4,8 +4,8 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import {unwrap} from '~/app/ui/svelte-components/utils/assert';
   import {type FileResult, validateFileList} from '~/app/ui/svelte-components/utils/filelist';
+  import {unwrap} from '~/common/utils/assert';
 
   /**
    * Optional file type filter, comma-separated list of unique file type specifiers

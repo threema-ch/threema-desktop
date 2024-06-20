@@ -342,7 +342,7 @@ export class Layer3Decoder implements SyncTransformerCodec<InboundL2Message, Inb
                 }
 
                 // Store the server cookie and a box for subsequent payloads
-                const tsk = ensurePublicKey(challengeResponse.tsk) as TemporaryServerKey;
+                const tsk = ensurePublicKey<TemporaryServerKey>(challengeResponse.tsk);
                 csp.sck.set(serverHello.sck as ServerCookie);
                 csp.box.set(csp.tck.getSharedBox(tsk, NONCE_UNGUARDED_SCOPE, undefined));
 

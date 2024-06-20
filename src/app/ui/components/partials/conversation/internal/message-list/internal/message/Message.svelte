@@ -4,7 +4,6 @@
 -->
 <script lang="ts">
   import {globals} from '~/app/globals';
-  import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import Avatar from '~/app/ui/components/atoms/avatar/Avatar.svelte';
   import OverlayProvider from '~/app/ui/components/hocs/overlay-provider/OverlayProvider.svelte';
   import BasicMessage from '~/app/ui/components/molecules/message/Message.svelte';
@@ -71,35 +70,12 @@
       return;
     }
 
-    const route = router.get();
-
-    if (route.aside !== undefined) {
-      router.go(
-        route.nav,
-        ROUTE_DEFINITIONS.main.conversation.withTypedParams({
-          receiverLookup: {
-            type: ReceiverType.CONTACT,
-            uid: sender.uid,
-          },
-        }),
-        ROUTE_DEFINITIONS.aside.contactDetails.withTypedParams({
-          contactUid: sender.uid,
-        }),
-        undefined,
-      );
-    } else {
-      router.go(
-        route.nav,
-        ROUTE_DEFINITIONS.main.conversation.withTypedParams({
-          receiverLookup: {
-            type: ReceiverType.CONTACT,
-            uid: sender.uid,
-          },
-        }),
-        undefined,
-        undefined,
-      );
-    }
+    router.goToConversation({
+      receiverLookup: {
+        type: ReceiverType.CONTACT,
+        uid: sender.uid,
+      },
+    });
   }
 
   function handleClickCopyOption(): void {
@@ -248,7 +224,7 @@
         type: 'not-found',
         fallbackText: $i18n.t(
           'messaging.error--quoted-message-not-found',
-          'The quoted message could not be found.',
+          'The quoted message could not be found',
         ),
       };
     } else if (rawQuote.status.deleted !== undefined) {
@@ -256,7 +232,7 @@
         type: 'deleted',
         fallbackText: $i18n.t(
           'messaging.error--quoted-message-deleted',
-          'The quoted message was deleted.',
+          'The quoted message was deleted',
         ),
       };
     } else {

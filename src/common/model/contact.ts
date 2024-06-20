@@ -19,6 +19,7 @@ import {
     VerificationLevel,
     WorkVerificationLevel,
 } from '~/common/enum';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import * as conversation from '~/common/model/conversation';
@@ -49,7 +50,7 @@ import {getNotificationTagForContact, type NotificationTag} from '~/common/notif
 import type {StrictOmit, u53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import {idColorIndex, idColorIndexToString} from '~/common/utils/id-color';
 import {AsyncLock} from '~/common/utils/lock';
 import {
@@ -63,19 +64,16 @@ import {LocalSetStore} from '~/common/utils/store/set-store';
 import {getGraphemeClusters} from '~/common/utils/string';
 
 /**
- * Retrieve the {@link IdentityString} for a {@link LocalModelStore<Contact> | 'me'} or a {@link IdentityStringOrMe}
+ * Retrieve the {@link IdentityString} for a {@link LocalModelStore<Contact> | 'me'}.
  */
 export function getIdentityString(
     device: Device,
-    identity: LocalModelStore<Contact> | IdentityString | 'me',
+    contact: LocalModelStore<Contact> | 'me',
 ): IdentityString {
-    if (identity === 'me') {
+    if (contact === 'me') {
         return device.identity.string;
     }
-    if (typeof identity === 'string') {
-        return identity;
-    }
-    return identity.get().view.identity;
+    return contact.get().view.identity;
 }
 
 let cache = new LocalModelStoreCache<DbContactUid, LocalModelStore<Contact>>();

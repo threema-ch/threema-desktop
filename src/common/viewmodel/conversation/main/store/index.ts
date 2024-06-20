@@ -6,7 +6,7 @@ import type {LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import type {LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
-import type {IConversationViewModelController} from '~/common/viewmodel/conversation/main/controller';
+import type {ConversationViewModelController} from '~/common/viewmodel/conversation/main/controller';
 import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
 import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/conversation/main/status-message';
 import {
@@ -15,7 +15,8 @@ import {
     getSupportedFeatures,
 } from '~/common/viewmodel/conversation/main/store/helpers';
 import type {ConversationViewModel} from '~/common/viewmodel/conversation/main/store/types';
-import {getConversationReceiverData} from '~/common/viewmodel/utils/receiver';
+import {getCallData} from '~/common/viewmodel/utils/call';
+import {getReceiverData} from '~/common/viewmodel/utils/receiver';
 
 export type ConversationViewModelStore = LocalStore<
     (ConversationViewModel & PropertiesMarked) | undefined
@@ -43,7 +44,7 @@ export type ConversationMessageSetStore = LocalDerivedSetStore<
 export function getConversationViewModelStore(
     services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     viewModelRepository: IViewModelRepository,
-    conversationViewModelController: IConversationViewModelController,
+    conversationViewModelController: ConversationViewModelController,
     conversationModelStore: ConversationModelStore,
 ): ConversationViewModelStore {
     const {endpoint} = services;
@@ -62,7 +63,9 @@ export function getConversationViewModelStore(
             if (!active) {
                 return undefined;
             }
-            return endpoint.exposeProperties({
+            const receiver = getAndSubscribe(conversationModel.controller.receiver());
+            const properties: ConversationViewModel = {
+                call: getCallData(services, receiver, getAndSubscribe),
                 category: conversationModel.view.category,
                 firstUnreadMessageId: conversationModel.controller.getFirstUnreadMessageId(),
                 id: conversationModel.ctx,
@@ -71,11 +74,12 @@ export function getConversationViewModelStore(
                 isPrivate: conversationModel.view.category === ConversationCategory.PROTECTED,
                 lastMessage: getLastMessage(conversationModel, getAndSubscribe),
                 messageSetStore,
-                receiver: getConversationReceiverData(services, conversationModel, getAndSubscribe),
+                receiver: getReceiverData(services, receiver, getAndSubscribe),
                 supportedFeatures: getSupportedFeatures(conversationModel, services),
                 totalMessagesCount: conversationModel.controller.getMessageCount(),
                 unreadMessagesCount: conversationModel.view.unreadMessageCount,
-            });
+            };
+            return endpoint.exposeProperties(properties);
         },
     );
 }

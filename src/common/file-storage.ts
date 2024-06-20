@@ -6,11 +6,12 @@ import type {ServicesForBackend} from '~/common/backend';
 import {type CryptoBackend, type ReadonlyRawKey, wrapRawKey} from '~/common/crypto';
 import {TransferTag} from '~/common/enum';
 import {BaseError, type BaseErrorOptions, extractErrorMessage} from '~/common/error';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import type {ReadonlyUint8Array, u53, WeakOpaque} from '~/common/types';
 import {ensureError} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
-import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {registerErrorTransferHandler} from '~/common/utils/endpoint';
 
 /**
  * A 24-byte File ID in lowercase hexadecimal string format.

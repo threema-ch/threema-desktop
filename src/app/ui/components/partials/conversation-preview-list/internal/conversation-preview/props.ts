@@ -19,7 +19,7 @@ export interface ConversationPreviewProps {
     /**
      * Optional substring(s) to highlight in conversation preview text fields.
      */
-    readonly highlights?: string | string[];
+    readonly highlights?: string | readonly string[];
     readonly isArchived: boolean;
     readonly isPinned: boolean;
     readonly isPrivate: boolean;

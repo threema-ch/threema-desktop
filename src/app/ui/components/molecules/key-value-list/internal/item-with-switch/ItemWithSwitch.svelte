@@ -18,7 +18,7 @@
 
   const dispatch = createEventDispatcher<{
     clickinfoicon: MouseEvent;
-    switchevent: {old: boolean; new: boolean};
+    switchevent: {readonly old: boolean; readonly new: boolean};
   }>();
 
   function handleClickItem(event: MouseEvent): void {

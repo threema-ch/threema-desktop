@@ -23,7 +23,7 @@ export type ConversationMessageViewModelStore = LocalStore<
 
 export function getConversationMessageViewModelStore(
     log: Logger,
-    services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     messageModelStore: AnyMessageModelStore,
     conversationModelStore: ConversationModelStore,
     resolveQuote: boolean,
@@ -50,7 +50,7 @@ export function getConversationMessageViewModelStore(
 
 function getConversationMessageViewModel(
     log: Logger,
-    services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     messageModel: AnyMessageModel,
     conversationModelStore: ConversationModelStore,
     getAndSubscribe: GetAndSubscribeFunction,
@@ -83,9 +83,9 @@ function getConversationMessageViewModel(
         quote: resolveQuote
             ? getMessageQuote(log, services, messageModel, conversationModelStore, getAndSubscribe)
             : undefined,
-        reactions: getMessageReactions(services, messageModel),
+        reactions: getMessageReactions(services, messageModel, getAndSubscribe),
         status: getMessageStatus(messageModel),
         sender: getMessageSender(services, messageModel, getAndSubscribe),
-        text: getMessageText(services, messageModel),
+        text: getMessageText(services, messageModel, getAndSubscribe),
     };
 }

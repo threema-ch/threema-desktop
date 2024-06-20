@@ -14,7 +14,7 @@ export interface ConversationPreviewListProps<THandlerProps = undefined> {
     /**
      * Optional substring(s) to highlight in conversation preview text fields.
      */
-    readonly highlights?: string | string[];
+    readonly highlights?: string | readonly string[];
     readonly items: ConversationPreviewListItem<THandlerProps>[];
     readonly services: AppServicesForSvelte;
 }

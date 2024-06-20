@@ -1,7 +1,7 @@
 import * as v from '@badrap/valita';
 
+import * as proto from '~/common/internal-protobuf/settings';
 import {ensureDeviceName} from '~/common/network/types';
-import * as proto from '~/common/node/settings/settings';
 import type {SettingsCategoryCodec} from '~/common/settings';
 
 const DEVICES_SETTINGS_SCHEMA = v

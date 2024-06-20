@@ -1,5 +1,6 @@
 import {i18n} from '~/app/ui/i18n';
 import {appVisibility} from '~/common/dom/ui/state';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {
     CustomNotification,
     DeletedMessageNotification,
@@ -9,7 +10,7 @@ import type {
     NotificationTag,
 } from '~/common/notification';
 import {unreachable} from '~/common/utils/assert';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
 
 class ProxyNotification extends Notification {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;

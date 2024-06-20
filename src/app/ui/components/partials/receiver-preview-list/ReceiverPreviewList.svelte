@@ -44,12 +44,16 @@
     }
   }
 
-  function handleClickItem(event: MouseEvent, lookup?: DbReceiverLookup, active?: boolean): void {
+  function handleClickItem(
+    event: MouseEvent,
+    receiverLookup?: DbReceiverLookup,
+    active?: boolean,
+  ): void {
     event.preventDefault();
-    if (lookup === undefined) {
+    if (receiverLookup === undefined) {
       return;
     }
-    dispatch('clickitem', lookup);
+    dispatch('clickitem', receiverLookup);
 
     if (options.routeOnClick === false) {
       return;
@@ -58,7 +62,7 @@
       // Close conversation of the respective receiver if it was already open.
       router.goToWelcome();
     } else {
-      router.openConversationAndDetailsForReceiver(lookup);
+      router.goToConversation({receiverLookup});
     }
   }
 
@@ -66,7 +70,7 @@
 </script>
 
 <ul bind:this={containerElement} class="container">
-  {#each items as item (item.receiver.type === 'self' ? 'self' : `${item.receiver.lookup.type}.${item.receiver.lookup.uid}`)}
+  {#each items as item (item.receiver.id)}
     {@const {receiver} = item}
     {@const active =
       receiver.type === 'self'

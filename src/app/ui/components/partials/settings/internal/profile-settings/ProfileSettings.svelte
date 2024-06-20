@@ -73,7 +73,7 @@
   }
 
   function handleChangeProfileSettings(settings: typeof $profileSettings, t: typeof $i18n.t): void {
-    const sharedArray: Readonly<IdentityString[]> =
+    const sharedArray: readonly IdentityString[] =
       $profileSettings.view.profilePictureShareWith.group === 'allowList'
         ? $profileSettings.view.profilePictureShareWith.allowList
         : [];

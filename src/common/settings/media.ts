@@ -1,7 +1,7 @@
 import * as v from '@badrap/valita';
 
+import * as proto from '~/common/internal-protobuf/settings';
 import type {AutoDownload} from '~/common/model/settings/media';
-import * as proto from '~/common/node/settings/settings';
 import type {SettingsCategoryCodec} from '~/common/settings';
 import {unreachable} from '~/common/utils/assert';
 

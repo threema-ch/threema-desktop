@@ -73,11 +73,8 @@
     isContextMenuOpen = false;
   }
 
-  function getItemUrl(lookup: DbReceiverLookup): string {
-    const route = ROUTE_DEFINITIONS.main.conversation.withTypedParams({
-      receiverLookup: lookup,
-    });
-
+  function getItemUrl(receiverLookup: DbReceiverLookup): string {
+    const route = ROUTE_DEFINITIONS.main.conversation.withParams({receiverLookup});
     return `#${getFragmentForRoute(route) ?? ''}`;
   }
 </script>

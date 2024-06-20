@@ -1,6 +1,7 @@
 import type {ContextMenuItem} from '~/app/ui/components/hocs/context-menu-provider/types';
 import type {StatusMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/props';
 import type {I18nType} from '~/app/ui/i18n-types';
+import {StatusMessageType} from '~/common/enum';
 import {unreachable} from '~/common/utils/assert';
 
 /**
@@ -10,7 +11,7 @@ export function getContextMenuItems(
     i18n: I18nType,
     onClickMessageDetails: () => void,
     onClickDelete: () => void,
-): Readonly<ContextMenuItem[]> {
+): readonly ContextMenuItem[] {
     return [
         {
             handler: onClickMessageDetails,
@@ -37,11 +38,10 @@ export function getStatusMessageTextForStatus(
     i18n: I18nType,
 ): string {
     switch (status.type) {
-        case 'group-member-change': {
+        case StatusMessageType.GROUP_MEMBER_CHANGED: {
             return i18n.t(
-                'status.prose--group-member-change',
+                'status.prose--group-member-changed',
                 '{addedCount, plural, =0 {} =1 {{addedMembers} was added to the group} other {{addedMembers} were added to the group}}{and, plural, =0 {} other {, and }}{removedCount, plural, =0 {} =1 {{removedMembers} was removed from the group} other {{removedMembers} were removed from the group}}',
-
                 {
                     addedMembers: status.added.join(', '),
                     removedMembers: status.removed.join(', '),
@@ -52,7 +52,7 @@ export function getStatusMessageTextForStatus(
             );
         }
 
-        case 'group-name-change': {
+        case StatusMessageType.GROUP_NAME_CHANGED: {
             if (status.oldName === '') {
                 return i18n.t(
                     'status.prose--group-created-name',
@@ -63,11 +63,20 @@ export function getStatusMessageTextForStatus(
                 );
             }
             return i18n.t(
-                'status.prose--group-name-change',
+                'status.prose--group-name-changed',
                 'The group name was changed from "{old}" to "{new}"',
                 {old: status.oldName, new: status.newName},
             );
         }
+
+        case StatusMessageType.GROUP_CALL_STARTED:
+            return i18n.t('status.prose--group-call-started', '{startedBy} started a group call', {
+                startedBy: status.startedBy,
+            });
+
+        case StatusMessageType.GROUP_CALL_ENDED:
+            return i18n.t('status.prose--group-call-ended', 'Group call has ended');
+
         default:
             return unreachable(status);
     }

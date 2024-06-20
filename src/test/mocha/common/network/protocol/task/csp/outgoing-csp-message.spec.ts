@@ -27,6 +27,7 @@ import * as structbuf from '~/common/network/structbuf';
 import {
     ensureIdentityString,
     ensureMessageId,
+    ensureNickname,
     type GroupId,
     type IdentityString,
     type MessageId,
@@ -189,6 +190,9 @@ export function run(): void {
 
             const receiverContact = addTestUserAsContact(model, receiver);
 
+            await services.model.user.profileSettings
+                .get()
+                .controller.update({nickname: ensureNickname('W00T')});
             const ownNickname = services.model.user.profileSettings.get().view.nickname;
             expect(ownNickname).not.to.be.empty;
 

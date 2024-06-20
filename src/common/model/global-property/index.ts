@@ -1,4 +1,5 @@
 import type {GlobalPropertyKey} from '~/common/enum';
+import {TRANSFER_HANDLER} from '~/common/index';
 import {APPLICATION_STATE_CODEC} from '~/common/model/global-property/application-state';
 import {LAST_MEDIATOR_CONNECTION_CODEC} from '~/common/model/global-property/last-mediator-connection';
 import type {ServicesForModel} from '~/common/model/types/common';
@@ -15,7 +16,7 @@ import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import type {ReadonlyUint8Array} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
 
 export class GlobalPropertyRepository implements IGlobalPropertyRepository {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;

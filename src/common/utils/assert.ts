@@ -78,8 +78,11 @@ export function assertUnreachable(message: unknown): never {
  *
  * @throws {Error} Always.
  */
-export function unreachable(value: never, error?: Error): never {
-    error ??= new Error('Unreachable code section!');
+export function unreachable(value: never, messageOrError?: string | Error): never {
+    const error =
+        messageOrError instanceof Error
+            ? messageOrError
+            : new Error(messageOrError ?? 'Unreachable code section!');
     assertFailLogger?.(error);
     throw error;
 }

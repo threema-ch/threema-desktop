@@ -17,11 +17,11 @@ import {
     type ReadonlyRawKey,
     wrapRawKey,
 } from '~/common/crypto';
-import {type Blake2bKeyLength, type Blake2bParameters, deriveKey} from '~/common/crypto/blake2b';
+import {type Blake2bKeyLength, deriveKey, type Blake2bKdfParameters} from '~/common/crypto/blake2b';
 import {type INonceGuard, type INonceService, NONCE_REUSED} from '~/common/crypto/nonce';
 import type {NonceScope} from '~/common/enum';
 import {CryptoError} from '~/common/error';
-import type {ByteEncoder, ByteLengthEncoder, u53, u64} from '~/common/types';
+import type {ByteEncoder, ByteLengthEncoder, ReadonlyUint8Array, u53, u64} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {byteView} from '~/common/utils/byte';
 import {ByteBuffer} from '~/common/utils/byte-buffer';
@@ -555,7 +555,7 @@ export class SecureSharedBoxFactory<
             undefined,
         );
         const encryptedKey = box
-            .encryptor(CREATE_BUFFER_TOKEN, secret.unwrap() as PlainData)
+            .encryptor(CREATE_BUFFER_TOKEN, secret.unwrap() as ReadonlyUint8Array as PlainData)
             .encryptWithRandomNonceAhead(undefined);
         secret.purge();
 
@@ -618,10 +618,10 @@ export class SecureSharedBoxFactory<
     public deriveSharedKey<TDerivedKeyLength extends Blake2bKeyLength>(
         length: TDerivedKeyLength,
         publicKey: PublicKey,
-        parameters: Blake2bParameters,
+        parameters: Blake2bKdfParameters,
     ): RawKey<TDerivedKeyLength> {
         const sharedKey = this.#_makeSharedSecret(publicKey);
-        const derivedKey = deriveKey(length, sharedKey, parameters);
+        const derivedKey = deriveKey(length, sharedKey.asReadonly(), parameters);
         sharedKey.purge();
         return derivedKey;
     }

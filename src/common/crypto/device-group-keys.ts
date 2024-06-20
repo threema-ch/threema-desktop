@@ -107,7 +107,7 @@ export function deriveDeviceGroupKeys(
         TSalt extends DeviceGroupKeyMap[TKeyName]['salt'],
     >(keyName: TKeyName, salt: TSalt): TKey {
         try {
-            return deriveKey(NACL_CONSTANTS.KEY_LENGTH, dgk, {
+            return deriveKey(NACL_CONSTANTS.KEY_LENGTH, dgk.asReadonly(), {
                 personal: '3ma-mdev',
                 salt,
             }) as TKey;

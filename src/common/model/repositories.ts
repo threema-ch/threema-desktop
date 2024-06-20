@@ -1,3 +1,4 @@
+import {TRANSFER_HANDLER} from '~/common/index';
 import {ContactModelRepository} from '~/common/model/contact';
 import {ConversationModelRepository} from '~/common/model/conversation';
 import {GlobalPropertyRepository} from '~/common/model/global-property';
@@ -15,7 +16,8 @@ import type {MessageRepository} from '~/common/model/types/message';
 import type {IGlobalPropertyRepository} from '~/common/model/types/settings';
 import type {User} from '~/common/model/types/user';
 import {UserModel} from '~/common/model/user';
-import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {CallManager} from '~/common/network/protocol/call';
+import {PROXY_HANDLER, type ProxyMarked} from '~/common/utils/endpoint';
 
 export type Repositories = {
     readonly user: User;
@@ -25,6 +27,7 @@ export type Repositories = {
     readonly messages: MessageRepository;
     readonly profilePictures: ProfilePictureRepository;
     readonly globalProperties: IGlobalPropertyRepository;
+    readonly call: CallManager;
 } & ProxyMarked;
 
 export class ModelRepositories implements Repositories {
@@ -36,20 +39,22 @@ export class ModelRepositories implements Repositories {
     public readonly messages: MessageModelRepository;
     public readonly profilePictures: ProfilePictureRepository;
     public readonly globalProperties: GlobalPropertyRepository;
+    public readonly call: CallManager;
 
-    public constructor(services: Omit<ServicesForModel, 'model'>) {
-        const services_ = {...services, model: this};
+    public constructor(services_: Omit<ServicesForModel, 'model'>) {
+        const services = {...services_, model: this};
         // Note: Because we pass a `this`-reference to the repository constructors before this
         //       constructor has finished (and thus before `this` is completely constructed), it is
         //       important that the order of instantiation below is correct. For example, the
         //       `ContactModelRepository` constructor requires the `profilePictures` property to be
         //       initialized.
-        this.profilePictures = new ProfilePictureModelRepository(services_);
-        this.user = new UserModel(services_);
-        this.contacts = new ContactModelRepository(services_);
-        this.groups = new GroupModelRepository(services_);
-        this.conversations = new ConversationModelRepository(services_);
-        this.messages = new MessageModelRepository(services_);
-        this.globalProperties = new GlobalPropertyRepository(services_);
+        this.profilePictures = new ProfilePictureModelRepository(services);
+        this.user = new UserModel(services);
+        this.contacts = new ContactModelRepository(services);
+        this.groups = new GroupModelRepository(services);
+        this.conversations = new ConversationModelRepository(services);
+        this.messages = new MessageModelRepository(services);
+        this.globalProperties = new GlobalPropertyRepository(services);
+        this.call = new CallManager(services);
     }
 }

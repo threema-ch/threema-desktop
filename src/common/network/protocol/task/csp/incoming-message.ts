@@ -69,7 +69,17 @@ import {
 import {commonGroupReceiveSteps} from '~/common/network/protocol/task/common/group-helpers';
 import {getTextForLocation} from '~/common/network/protocol/task/common/location';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
+import {IncomingContactProfilePictureTask} from '~/common/network/protocol/task/csp/incoming-contact-profile-picture';
+import {IncomingDeliveryReceiptTask} from '~/common/network/protocol/task/csp/incoming-delivery-receipt';
+import {IncomingForwardSecurityEnvelopeTask} from '~/common/network/protocol/task/csp/incoming-fs-envelope';
+import {IncomingGroupCallStartTask} from '~/common/network/protocol/task/csp/incoming-group-call-start';
+import {IncomingGroupLeaveTask} from '~/common/network/protocol/task/csp/incoming-group-leave';
+import {IncomingGroupNameTask} from '~/common/network/protocol/task/csp/incoming-group-name';
+import {IncomingGroupProfilePictureTask} from '~/common/network/protocol/task/csp/incoming-group-profile-picture';
+import {IncomingGroupSetupTask} from '~/common/network/protocol/task/csp/incoming-group-setup';
+import {IncomingGroupSyncRequestTask} from '~/common/network/protocol/task/csp/incoming-group-sync-request';
 import {IncomingMessageContentUpdateTask} from '~/common/network/protocol/task/csp/incoming-message-content-update';
+import {OutgoingCspMessageTask} from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import {
     messageReferenceDebugFor,
     type AnyInboundMessageInitFragment,
@@ -102,18 +112,8 @@ import {
     intoU64,
     intoUnsignedLong,
     u64ToHexLe,
-    unixTimestamptoDateS,
+    unixTimestampToDateS,
 } from '~/common/utils/number';
-
-import {IncomingContactProfilePictureTask} from './incoming-contact-profile-picture';
-import {IncomingDeliveryReceiptTask} from './incoming-delivery-receipt';
-import {IncomingForwardSecurityEnvelopeTask} from './incoming-fs-envelope';
-import {IncomingGroupLeaveTask} from './incoming-group-leave';
-import {IncomingGroupNameTask} from './incoming-group-name';
-import {IncomingGroupProfilePictureTask} from './incoming-group-profile-picture';
-import {IncomingGroupSetupTask} from './incoming-group-setup';
-import {IncomingGroupSyncRequestTask} from './incoming-group-sync-request';
-import {OutgoingCspMessageTask} from './outgoing-csp-message';
 
 /**
  * Ensure the provided timestamp on when a message has been created is not in
@@ -314,6 +314,7 @@ type MessageProcessingInstructions =
     | MessageUpdateInstructions
     | UnhandledMessageInstructions;
 
+// TODO(DESK-1502): Consider adding `runCommonGroupReceiveStep` for all group categories
 interface BaseProcessingInstructions {
     /**
      * A constant indicating the category (e.g. `conversation-message` or `status-update`).
@@ -1137,7 +1138,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
     ): MessageProcessingInstructions | 'forward' | 'discard' {
         const message = this._message;
         const clampedCreatedAt = getClampedCreatedAt(
-            metadata?.createdAt ?? unixTimestamptoDateS(message.createdAt),
+            metadata?.createdAt ?? unixTimestampToDateS(message.createdAt),
         );
         const messageId = ensureMessageId(message.messageId);
 
@@ -1212,7 +1213,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         }
 
         function unhandledGroupMemberMessage(
-            d2dMessageType: CspE2eGroupConversationType | CspE2eGroupControlType.GROUP_CALL_START,
+            d2dMessageType: CspE2eGroupConversationType,
         ): UnhandledMessageInstructions {
             const validatedContainer = structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
                 structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
@@ -1230,6 +1231,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         switch (maybeCspE2eType) {
             // Conversation messages
             case CspE2eConversationType.TEXT:
+            case CspE2eConversationType.LOCATION:
             case CspE2eConversationType.FILE: {
                 let initFragment;
                 switch (maybeCspE2eType) {
@@ -1239,6 +1241,12 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                             cspMessageBody,
                             this._log,
                             this._id,
+                        );
+                        break;
+                    case CspE2eConversationType.LOCATION:
+                        initFragment = getLocationMessageInitFragment(
+                            clampedCreatedAt,
+                            cspMessageBody,
                         );
                         break;
                     case CspE2eConversationType.FILE:
@@ -1262,8 +1270,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return instructions;
             }
             case CspE2eGroupConversationType.GROUP_TEXT:
+            case CspE2eGroupConversationType.GROUP_LOCATION:
             case CspE2eGroupConversationType.GROUP_FILE: {
-                // A group text message is wrapped in a group-member-container
                 const validatedContainer =
                     structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
                         structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
@@ -1276,6 +1284,12 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                             validatedContainer.innerData,
                             this._log,
                             this._id,
+                        );
+                        break;
+                    case CspE2eGroupConversationType.GROUP_LOCATION:
+                        initFragment = getLocationMessageInitFragment(
+                            clampedCreatedAt,
+                            validatedContainer.innerData,
                         );
                         break;
                     case CspE2eGroupConversationType.GROUP_FILE:
@@ -1299,42 +1313,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     deliveryReceipt: false,
                     initFragment,
                     reflectFragment: reflectFragmentFor(maybeCspE2eType),
-                };
-                return instructions;
-            }
-            case CspE2eConversationType.LOCATION: {
-                const instructions: ConversationMessageInstructions = {
-                    messageCategory: 'conversation-message',
-                    conversationId: senderConversationId,
-                    missingContactHandling: 'create',
-                    deliveryReceipt: true,
-                    initFragment: getLocationMessageInitFragment(clampedCreatedAt, cspMessageBody),
-                    reflectFragment: reflectFragmentFor(protobuf.common.CspE2eMessageType.LOCATION),
-                };
-                return instructions;
-            }
-            case CspE2eGroupConversationType.GROUP_LOCATION: {
-                // A group location message is wrapped in a group-member-container
-                const validatedContainer =
-                    structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
-                        structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
-                    );
-                const instructions: ConversationMessageInstructions = {
-                    messageCategory: 'conversation-message',
-                    conversationId: {
-                        type: ReceiverType.GROUP,
-                        groupId: validatedContainer.groupId,
-                        creatorIdentity: validatedContainer.creatorIdentity,
-                    },
-                    missingContactHandling: 'ignore',
-                    deliveryReceipt: false,
-                    initFragment: getLocationMessageInitFragment(
-                        clampedCreatedAt,
-                        validatedContainer.innerData,
-                    ),
-                    reflectFragment: reflectFragmentFor(
-                        protobuf.common.CspE2eMessageType.GROUP_LOCATION,
-                    ),
                 };
                 return instructions;
             }
@@ -1548,6 +1526,31 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         messageId,
                         senderContactOrInit,
                         validatedContainer,
+                    ),
+                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                };
+                return instructions;
+            }
+
+            case CspE2eGroupControlType.GROUP_CALL_START: {
+                const validatedContainer =
+                    structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
+                    );
+                const validatedGroupCallStart =
+                    protobuf.validate.csp_e2e.GroupCallStart.SCHEMA.parse(
+                        protobuf.csp_e2e.GroupCallStart.decode(validatedContainer.innerData),
+                    );
+                const instructions: GroupControlMessageInstructions = {
+                    messageCategory: 'group-control',
+                    missingContactHandling: 'ignore',
+                    deliveryReceipt: false,
+                    task: new IncomingGroupCallStartTask(
+                        this._services,
+                        messageId,
+                        senderContactOrInit,
+                        validatedContainer,
+                        validatedGroupCallStart,
                     ),
                     reflectFragment: reflectFragmentFor(maybeCspE2eType),
                 };
@@ -1787,8 +1790,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return unhandled(maybeCspE2eType, false);
             case CspE2eConversationType.CALL_RINGING: // TODO(DESK-243)
                 return unhandled(maybeCspE2eType, false);
-            case CspE2eGroupControlType.GROUP_CALL_START: // TODO(DESK-858)
-                return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE: // TODO(DESK-586)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupConversationType.GROUP_AUDIO: // TODO(DESK-586)

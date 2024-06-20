@@ -6,14 +6,11 @@ import {
     type FactoriesForBackend,
     type PinForwarder,
 } from '~/common/dom/backend';
-import {createEndpointService} from '~/common/dom/utils/endpoint';
+import {createEndpointService, ensureEndpoint} from '~/common/dom/utils/endpoint';
+import {extractErrorTraceback} from '~/common/error';
+import {TRANSFER_HANDLER} from '~/common/index';
 import {setAssertFailLogger} from '~/common/utils/assert';
-import {
-    type EndpointFor,
-    PROXY_HANDLER,
-    type ProxyMarked,
-    TRANSFER_HANDLER,
-} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, type ProxyEndpoint} from '~/common/utils/endpoint';
 import {BACKEND_WORKER_CONFIG} from '~/worker/backend/config';
 
 declare const self: DedicatedWorkerGlobalScope;
@@ -26,7 +23,7 @@ export function main(factories: FactoriesForBackend): void {
     const logging = factories.logging('bw', BACKEND_WORKER_CONFIG.LOG_DEFAULT_STYLE);
     {
         const assertFailLogger = logging.logger('assert');
-        setAssertFailLogger((error) => assertFailLogger.trace(error));
+        setAssertFailLogger((error) => assertFailLogger.error(extractErrorTraceback(error)));
     }
     const log = logging.logger('main');
 
@@ -41,12 +38,13 @@ export function main(factories: FactoriesForBackend): void {
         endpoint,
     };
 
-    const creator: BackendCreator & ProxyMarked = {
+    const creator: BackendCreator = {
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         hasIdentity: () => Backend.hasIdentity(factories, services),
         fromKeyStorage: async (
             init: BackendInit,
             keyStoragePassword: string,
-            pinForwarder: EndpointFor<PinForwarder>,
+            pinForwarder: ProxyEndpoint<PinForwarder>,
         ) => {
             log.info('Creating backend from key storage');
             return await Backend.createFromKeyStorage(
@@ -59,8 +57,8 @@ export function main(factories: FactoriesForBackend): void {
         },
         fromDeviceJoin: async (
             init: BackendInit,
-            deviceLinkingSetup: EndpointFor<DeviceLinkingSetup>,
-            pinForwarder: EndpointFor<PinForwarder>,
+            deviceLinkingSetup: ProxyEndpoint<DeviceLinkingSetup>,
+            pinForwarder: ProxyEndpoint<PinForwarder>,
         ) => {
             log.info('Creating backend from device join');
             return await Backend.createFromDeviceJoin(
@@ -71,8 +69,7 @@ export function main(factories: FactoriesForBackend): void {
                 pinForwarder,
             );
         },
-        [TRANSFER_HANDLER]: PROXY_HANDLER,
     };
 
-    endpoint.exposeProxy(creator, self, logging.logger('com.backend-creator'));
+    endpoint.exposeProxy(creator, ensureEndpoint(self), logging.logger('com.backend-creator'));
 }

@@ -59,10 +59,20 @@ export type ProtobufInstanceOf<TProto extends ProtobufConstructor> = WeakOpaque<
 >;
 
 /**
- * Tagged instance of a protobuf repeated message where all properties have been explicitly defined.
+ * Tagged instance of a protobuf repeated message where all items have been explicitly defined.
  */
 export type ProtobufArrayInstanceOf<TProto extends ProtobufConstructor> = WeakOpaque<
     InstanceType<TProto>[],
+    TagOf<ProtobufEncodableOf<TProto>>
+>;
+
+/**
+ * Tagged instance of a protobuf map where all properties have been explicitly defined.
+ *
+ * Note: Because protobufjs is a quality product, all keys are in a string representation.
+ */
+export type ProtobufMapInstanceOf<TProto extends ProtobufConstructor> = WeakOpaque<
+    Record<string, ProtobufInstanceOf<TProto>>,
     TagOf<ProtobufEncodableOf<TProto>>
 >;
 
@@ -169,12 +179,28 @@ export function creator<TProto extends ProtobufConstructor>(
     protobuf: TProto,
     data: EntireProtobufPropertiesOf<TProto>,
 ): ProtobufInstanceOf<TProto>;
-
 export function creator<TProto extends ProtobufConstructor>(
     protobuf: TProto,
     data: unknown,
 ): unknown {
     return data;
+}
+
+/**
+ * Validate input data for a protobuf map and construct it.
+ *
+ * This prevents property mismatches due to typos or when a property has been renamed in the
+ * protocol.
+ *
+ * IMPORTANT: This only inspects the provided object on the first level!
+ */
+export function creatorForMap<TProto extends ProtobufConstructor>(
+    protobuf: TProto,
+    map:
+        | readonly [string, ProtobufInstanceOf<TProto>][]
+        | ReadonlyMap<string, ProtobufInstanceOf<TProto>>,
+): ProtobufMapInstanceOf<TProto> {
+    return Object.fromEntries(map) as ProtobufMapInstanceOf<TProto>;
 }
 
 /**

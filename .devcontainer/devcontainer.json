@@ -26,7 +26,9 @@
         "esbenp.prettier-vscode",
         "svelte.svelte-vscode",
         "EditorConfig.EditorConfig",
-        "zxh404.vscode-proto3"
+        "zxh404.vscode-proto3",
+        "meganrogge.template-string-converter",
+        "eamodio.gitlens"
       ],
       "settings": {}
     }

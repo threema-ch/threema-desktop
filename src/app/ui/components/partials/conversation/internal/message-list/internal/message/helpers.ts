@@ -11,7 +11,7 @@ import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
  */
 export function getTextContent(
     raw: string | undefined,
-    mentions: AnyMention | AnyMention[] | undefined,
+    mentions: readonly AnyMention[] | undefined,
     t: I18nType['t'],
     truncate?: u53,
 ): SanitizedHtml | undefined {

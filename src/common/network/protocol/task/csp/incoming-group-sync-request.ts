@@ -2,7 +2,6 @@ import {AcquaintanceLevel, GroupUserState} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact, ContactInit} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
-import type {GroupCreator} from '~/common/model/types/group';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import type {
     ActiveTaskCodecHandle,
@@ -16,6 +15,7 @@ import {
     sendGroupSetProfilePicture,
     sendGroupSetup,
 } from '~/common/network/protocol/task/common/group-helpers';
+import {createOutgoingCspGroupCallStartTask} from '~/common/network/protocol/task/csp/outgoing-group-call-start';
 import type {GroupCreatorContainer} from '~/common/network/structbuf/validate/csp/e2e';
 import type {IdentityString, MessageId} from '~/common/network/types';
 import {u64ToHexLe} from '~/common/utils/number';
@@ -60,15 +60,16 @@ export class IncomingGroupSyncRequestTask
         const creatorIdentity = device.identity.string;
         const groupId = this._container.groupId;
 
-        const creator: GroupCreator = 'me';
-
         // 1. Look up the group. If the group could not be found, abort these steps.
-        const group = model.groups.getByGroupIdAndCreator(groupId, creator);
+        const group = model.groups.getByGroupIdAndCreator(
+            groupId,
+            this._services.device.identity.string,
+        );
         if (group === undefined) {
             this._log.info('Received group sync request for an unknown group. Discarding.');
             return;
         }
-        const view = group.get().view;
+        const {view, controller} = group.get();
 
         // Check the sender contact. If it wasn't stored in the database yet, do that now.
         let senderContact;
@@ -145,7 +146,7 @@ export class IncomingGroupSyncRequestTask
         // 5. If the group has a profile picture, send a set-profile-picture group control message
         //    to the sender.
         // 6. If the group has no profile picture, send a delete-profile-picture group control message to the sender.
-        const profilePictureView = group.get().controller.profilePicture.get().view;
+        const profilePictureView = controller.profilePicture.get().view;
         if (profilePictureView.picture !== undefined) {
             await sendGroupSetProfilePicture(
                 groupId,
@@ -163,7 +164,19 @@ export class IncomingGroupSyncRequestTask
             );
         }
 
-        // Note: In theory we could send the group name and profile picture concurrently, but that
-        //       makes testing harder. Thus, we send them sequentially.
+        // 6. If a group call is currently considered running within this group, run the _Group Call
+        //    Refresh Steps_ and let `chosen-call` be the result. If `chosen-call` is defined,
+        //    repeat `csp-e2e.GroupCallStart` that is associated to `chosen-call` with the _created_
+        //    timestamp set to the `started_at` value associated to `chosen-call`.
+        {
+            const chosen = await controller.refreshCall(undefined);
+            if (chosen !== undefined) {
+                await createOutgoingCspGroupCallStartTask(
+                    this._services,
+                    group.get(),
+                    chosen.base,
+                ).run(handle);
+            }
+        }
     }
 }

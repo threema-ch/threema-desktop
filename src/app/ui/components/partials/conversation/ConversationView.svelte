@@ -42,11 +42,11 @@
   import type {FileLoadResult} from '~/app/ui/utils/file';
   import {type SvelteNullableBinding, reactive} from '~/app/ui/utils/svelte';
   import type {DbReceiverLookup} from '~/common/db';
-  import {ConversationCategory, MessageDirection} from '~/common/enum';
+  import {ConversationCategory, MessageDirection, ReceiverType} from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
   import {EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES} from '~/common/network/protocol/constants';
   import {FEATURE_MASK_FLAG, type MessageId} from '~/common/network/types';
-  import {assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
+  import {assertUnreachable, ensureError, unreachable, unwrap} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
   import {
@@ -101,9 +101,14 @@
   let receiverSupportsEditedMessages: FeatureSupport;
   let receiverSupportsDeletedMessages: FeatureSupport;
 
-  function handleClickJoinCall(event: CustomEvent<MouseEvent>): void {
-    // TODO(DESK-1447): Handle joining group call (example below).
-    // viewModelController?.joinCall();
+  function handleclickjoincall(
+    receiverLookup: DbReceiverLookup,
+    intent: 'join' | 'join-or-create',
+  ): void {
+    if (receiverLookup.type !== ReceiverType.GROUP) {
+      return;
+    }
+    router.go({activity: ROUTE_DEFINITIONS.activity.call.withParams({receiverLookup, intent})});
   }
 
   function handleClickDeleteMessageLocally(event: CustomEvent<AnyMessageListMessage>): void {
@@ -388,7 +393,7 @@
         );
 
         // Navigate back to the welcome page.
-        router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withoutParams());
+        router.go({main: ROUTE_DEFINITIONS.main.welcome.withoutParams()});
       });
   }
 
@@ -456,7 +461,7 @@
 
     // Set Nav to Conversation Preview List.
     if ($router.nav.id !== 'conversationList') {
-      router.replaceNav(ROUTE_DEFINITIONS.nav.conversationList.withoutParams());
+      router.go({nav: ROUTE_DEFINITIONS.nav.conversationList.withoutParams()});
     }
 
     // Dispatch an event to scroll the conversation list all the way to the top.
@@ -678,17 +683,8 @@
   >
     <div class="conversation">
       <div class="header">
-        <!-- TODO(DESK-1447): Pass call state to `TopBar` (illustrative example below). Note:
-        `members` should be replaced with the actual members of the group call, not all group
-        members. -->
-        <!--
-          call={{
-            isJoined: false,
-            members:
-              $viewModelStore.receiver.type === 'group' ? $viewModelStore.receiver.members : [],
-          }}
-        -->
         <TopBar
+          call={$viewModelStore.call}
           conversation={{
             archive: async () => {
               await viewModelController
@@ -731,7 +727,8 @@
           }}
           receiver={$viewModelStore.receiver}
           {services}
-          on:clickjoincall={handleClickJoinCall}
+          on:clickjoincall={({detail: {intent}}) =>
+            handleclickjoincall(unwrap($viewModelStore).receiver.lookup, intent)}
         />
       </div>
 

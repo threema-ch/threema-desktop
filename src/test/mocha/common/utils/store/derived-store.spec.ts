@@ -24,7 +24,7 @@ type SourceStore = WritableStore<u32>;
 function createSimpleDerivedStore(
     options?: AnyDerivedStoreOptions<{answer: string}>,
 ): readonly [
-    derivedStore: DerivedStore<[SourceStore], Readonly<{answer: string}>>,
+    derivedStore: DerivedStore<readonly [SourceStore], Readonly<{answer: string}>>,
     sourceStores: SourceStore,
 ] {
     const sourceStore = new WritableStore(41);

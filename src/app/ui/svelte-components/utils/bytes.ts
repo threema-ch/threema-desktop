@@ -1,5 +1,5 @@
-import {unwrap} from '~/app/ui/svelte-components/utils/assert';
 import type {u53} from '~/common/types';
+import {unwrap} from '~/common/utils/assert';
 
 // prettier-ignore
 const HEX_LOOKUP_TABLE = [

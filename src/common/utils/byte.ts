@@ -33,24 +33,25 @@ export function byteEquals(left: ReadonlyUint8Array, right: ReadonlyUint8Array):
 }
 
 /**
- * Convert an Uint8Array to a 0-padded lowercase hex string.
+ * Convert an Uint8Array to a zero-padded lowercase hex string.
  *
  * @param array Array to convert
- * @param prefix Prefix string for each byte
- * @returns String as hex
+ * @param separator Optional separator in between hex bytes
+ * @returns String containing the bytes as hex
  */
-export function bytesToHex(array: ReadonlyUint8Array, prefix = ''): string {
-    return array.reduce(
-        /* eslint-disable no-bitwise, @typescript-eslint/restrict-plus-operands */
+export function bytesToHex(array: ReadonlyUint8Array, separator = ''): string {
+    const hexString = array.reduce(
+        /* eslint-disable no-bitwise */
         (parts, value) =>
-            parts + prefix + HEX_LOOKUP_TABLE[value >>> 4] + HEX_LOOKUP_TABLE[value & 0x0f],
+            `${parts}${HEX_LOOKUP_TABLE[value >>> 4]}${HEX_LOOKUP_TABLE[value & 0x0f]}${separator}`,
         '',
         /* eslint-enable no-bitwise */
     );
+    return separator.length > 0 ? hexString.slice(0, -separator.length) : hexString;
 }
 
 /**
- * Convert a single byte to a 0-padded lowercase hex string.
+ * Convert a single byte to a zero-padded lowercase hex string.
  *
  * Validation can be turned off, if you've already ensured that the input is a valid u8. However,
  * because casting a number to u8 can be done implicitly by accident, validation is enabled by
@@ -70,6 +71,49 @@ export function byteToHex(byte: u8, validate = true): string {
 }
 
 /**
+ * Parse a hex string with a separator between each byte (e.g. a colon) and return a Uint8Array.
+ *
+ * Note: This function validates the input and won't accept input strings with odd number of
+ *       characters or with non-hex characters. For very fast hex decoding of long strings that are
+ *       known to contain valid hexadecimal data, a function with less validation may be preferred.
+ *
+ * @param hexString Hex string (either upper- or lowercase)
+ * @param separatorLength Length of the separator in between hex bytes
+ * @returns Uint8Array containing the bytes
+ * @throws {Error} if decoding fails or if the input string contains non-hex characters
+ */
+export function hexWithSeparatorToBytes(hexString: string, separatorLength: u53): Uint8Array {
+    if (hexString.length === 0) {
+        return new Uint8Array(0);
+    }
+    const step = 2 + separatorLength;
+    const byteLength = (hexString.length + separatorLength) / step;
+    if (!Number.isInteger(byteLength)) {
+        throw new Error('Invalid hex string length');
+    }
+    const array = new Uint8Array(byteLength);
+
+    // Extract bytes
+    for (let i = 0, j = 0; i < hexString.length; i += step, ++j) {
+        const hexByte = hexString.substring(i, i + 2);
+
+        // Ensure that hex byte contains valid hexadecimal characters only
+        for (let k = 0; k < hexByte.length; k++) {
+            const cc = hexByte.charCodeAt(k);
+            if (cc < 48 || (cc > 57 && cc < 65) || (cc > 70 && cc < 97) || cc > 102) {
+                throw new Error(`Invalid hex character: ${hexByte[k]}`);
+            }
+        }
+
+        // Convert hex string to byte. Note that we don't need to check for NaN thanks to the input
+        // validation above.
+        array[j] = parseInt(hexByte, 16);
+    }
+
+    return array;
+}
+
+/**
  * Parse a hex string and return a Uint8Array.
  *
  * Note: This function validates the input and won't accept input strings with odd number of
@@ -81,28 +125,7 @@ export function byteToHex(byte: u8, validate = true): string {
  * @throws {Error} if decoding fails or if the input string contains non-hex characters
  */
 export function hexToBytes(hexString: string): Uint8Array {
-    if (hexString.length % 2 !== 0) {
-        throw new Error('Hex string must contain an even number of characters');
-    }
-
-    const byteCount = hexString.length / 2;
-    const array = new Uint8Array(byteCount);
-    for (let i = 0; i < byteCount; i++) {
-        const hexPair = hexString.substring(i * 2, i * 2 + 2);
-
-        // Ensure that hex string contains valid hexadecimal characters only
-        for (let j = 0; j < hexPair.length; j++) {
-            const cc = hexPair.charCodeAt(j);
-            if (cc < 48 || (cc > 57 && cc < 65) || (cc > 70 && cc < 97) || cc > 102) {
-                throw new Error(`Invalid hex character: ${hexPair[j]}`);
-            }
-        }
-
-        // Convert hex string to byte. Note that we don't need to check for NaN thanks to the input
-        // validation above.
-        array[i] = parseInt(hexPair, 16);
-    }
-    return array;
+    return hexWithSeparatorToBytes(hexString, 0);
 }
 
 /**

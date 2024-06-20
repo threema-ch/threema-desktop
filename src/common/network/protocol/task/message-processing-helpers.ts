@@ -4,7 +4,6 @@
 
 import {CspE2eStatusUpdateType, ReceiverType} from '~/common/enum';
 import type {Conversation} from '~/common/model';
-import {getIdentityString} from '~/common/model/contact';
 import type {InboundAudioMessage, OutboundAudioMessage} from '~/common/model/types/message/audio';
 import type {
     InboundDeletedMessage,
@@ -94,8 +93,10 @@ export function getConversationById(
             return contact.get().controller.conversation();
         }
         case ReceiverType.GROUP: {
-            const creator = getIdentityString(services.device, conversationId.creatorIdentity);
-            const group = model.groups.getByGroupIdAndCreator(conversationId.groupId, creator);
+            const group = model.groups.getByGroupIdAndCreator(
+                conversationId.groupId,
+                conversationId.creatorIdentity,
+            );
             if (group === undefined) {
                 return undefined;
             }

@@ -9,6 +9,7 @@ import {
     TransferTag,
 } from '~/common/enum';
 import {BaseError, type BaseErrorOptions} from '~/common/error';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {CloseInfo} from '~/common/network';
 import type * as protobuf from '~/common/network/protobuf';
 import {
@@ -29,7 +30,7 @@ import type {IdentityString} from '~/common/network/types';
 import type {ClientKey} from '~/common/network/types/keys';
 import type {WeakOpaque} from '~/common/types';
 import {assertUnreachable, unreachable} from '~/common/utils/assert';
-import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {registerErrorTransferHandler} from '~/common/utils/endpoint';
 import {isGroupManagedAndMonitoredByGateway, isGroupManagedByGateway} from '~/common/utils/group';
 import type {QueueConsumer, QueueProducer} from '~/common/utils/queue';
 import type {QueryablePromise, ResolvablePromise} from '~/common/utils/resolvable-promise';

@@ -1,6 +1,13 @@
 import * as chai from 'chai';
 
-import {bytePadPkcs7, byteSplit, byteToHex, hexToBytes} from '~/common/utils/byte';
+import {
+    bytePadPkcs7,
+    byteSplit,
+    byteToHex,
+    bytesToHex,
+    hexToBytes,
+    hexWithSeparatorToBytes,
+} from '~/common/utils/byte';
 import {ByteBuffer} from '~/common/utils/byte-buffer';
 import chaiByteEqual from '~/test/common/plugins/byte-equal';
 
@@ -42,10 +49,10 @@ export function run(): void {
 
         describe('hexToBytes', function () {
             it('validates the input character length', function () {
-                expect(() => hexToBytes('0')).to.throw('even number of characters');
-                expect(() => hexToBytes('01')).not.to.throw('even number of characters');
-                expect(() => hexToBytes('012')).throw('even number of characters');
-                expect(() => hexToBytes('0123')).not.to.throw('even number of characters');
+                expect(() => hexToBytes('0')).to.throw('Invalid hex string length');
+                expect(() => hexToBytes('01')).not.to.throw('Invalid hex string length');
+                expect(() => hexToBytes('012')).throw('Invalid hex string length');
+                expect(() => hexToBytes('0123')).not.to.throw('Invalid hex string length');
             });
 
             it('validates the input characters', function () {
@@ -56,13 +63,67 @@ export function run(): void {
             });
 
             it('decodes lowercase, uppercase and mixed hex', function () {
-                expect(hexToBytes('000102ff')).to.byteEqual(Uint8Array.of(0, 1, 2, 255));
-                expect(hexToBytes('AABBCC')).to.byteEqual(Uint8Array.of(170, 187, 204));
-                expect(hexToBytes('0AbC42')).to.byteEqual(Uint8Array.of(10, 188, 66));
+                expect(hexToBytes('000102ff')).to.byteEqual(Uint8Array.of(0x00, 0x01, 0x02, 0xff));
+                expect(hexToBytes('AABBCC')).to.byteEqual(Uint8Array.of(0xaa, 0xbb, 0xcc));
+                expect(hexToBytes('0AbC42')).to.byteEqual(Uint8Array.of(0x0a, 0xbc, 0x42));
             });
 
             it('handles empty strings', function () {
                 expect(hexToBytes('')).to.byteEqual(new Uint8Array(0));
+            });
+        });
+
+        describe('hexWithSeparatorToBytes', function () {
+            it('validates the input character length', function () {
+                expect(() => hexWithSeparatorToBytes('0', 1)).to.throw('Invalid hex string length');
+                expect(() => hexWithSeparatorToBytes('01', 1)).not.to.throw(
+                    'Invalid hex string length',
+                );
+                expect(() => hexWithSeparatorToBytes('01:', 1)).throw('Invalid hex string length');
+                expect(() => hexWithSeparatorToBytes('01:', 2)).throw('Invalid hex string length');
+                expect(() => hexWithSeparatorToBytes('01:2', 2)).throw('Invalid hex string length');
+                expect(() => hexWithSeparatorToBytes('01:23', 1)).not.to.throw(
+                    'Invalid hex string length',
+                );
+                expect(() => hexWithSeparatorToBytes('01::23', 2)).not.to.throw(
+                    'Invalid hex string length',
+                );
+                expect(() => hexWithSeparatorToBytes('01:23:', 1)).throw(
+                    'Invalid hex string length',
+                );
+                expect(() => hexWithSeparatorToBytes('01::23:', 2)).throw(
+                    'Invalid hex string length',
+                );
+                expect(() => hexWithSeparatorToBytes('01::23::', 2)).throw(
+                    'Invalid hex string length',
+                );
+            });
+
+            it('validates the input characters', function () {
+                expect(() => hexWithSeparatorToBytes('0 ', 1)).to.throw('Invalid hex character:  ');
+                expect(() => hexWithSeparatorToBytes('fg', 1)).to.throw('Invalid hex character: g');
+                expect(() => hexWithSeparatorToBytes('gf', 1)).to.throw('Invalid hex character: g');
+                expect(() => hexWithSeparatorToBytes('f0:0b:äa', 1)).to.throw(
+                    'Invalid hex character: ä',
+                );
+            });
+
+            it('decodes lowercase, uppercase and mixed hex', function () {
+                expect(hexWithSeparatorToBytes('00:01:02:ff', 1)).to.byteEqual(
+                    Uint8Array.of(0x00, 0x01, 0x02, 0xff),
+                );
+                expect(hexWithSeparatorToBytes('AA:BB:CC', 1)).to.byteEqual(
+                    Uint8Array.of(0xaa, 0xbb, 0xcc),
+                );
+                expect(hexWithSeparatorToBytes('0A:bC:42', 1)).to.byteEqual(
+                    Uint8Array.of(0x0a, 0xbc, 0x42),
+                );
+            });
+
+            it('handles empty strings', function () {
+                expect(hexWithSeparatorToBytes('', 1)).to.byteEqual(new Uint8Array(0));
+                expect(hexWithSeparatorToBytes('', 2)).to.byteEqual(new Uint8Array(0));
+                expect(hexWithSeparatorToBytes('', 3)).to.byteEqual(new Uint8Array(0));
             });
         });
 
@@ -87,6 +148,26 @@ export function run(): void {
             it('validation can be turned off, but results in undefined behavior', function () {
                 expect(() => byteToHex(-1, false)).not.to.throw;
                 expect(() => byteToHex(256, false)).not.to.throw;
+            });
+        });
+
+        describe('bytesToHex', function () {
+            it('encodes bytes properly', function () {
+                expect(bytesToHex(new Uint8Array(0))).to.equal('');
+                expect(bytesToHex(Uint8Array.of(0, 1, 10, 15, 16, 64, 254, 255))).to.equal(
+                    '00010a0f1040feff',
+                );
+            });
+
+            it('encodes bytes with separator', function () {
+                expect(bytesToHex(new Uint8Array(0), ':')).to.equal('');
+                expect(bytesToHex(Uint8Array.of(0, 1, 10, 15, 16, 64, 254, 255), ':')).to.equal(
+                    '00:01:0a:0f:10:40:fe:ff',
+                );
+                expect(bytesToHex(new Uint8Array(0), 'lol')).to.equal('');
+                expect(bytesToHex(Uint8Array.of(0, 1, 10, 15, 16, 64, 254, 255), 'lol')).to.equal(
+                    '00lol01lol0alol0flol10lol40lolfelolff',
+                );
             });
         });
 

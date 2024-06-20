@@ -1,6 +1,5 @@
 import {GroupUserState} from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import {getIdentityString} from '~/common/model/contact';
 import {groupDebugString} from '~/common/model/group';
 import type {
     ComposableTask,
@@ -45,10 +44,11 @@ export class ReflectedOutgoingGroupLeaveTask
             `Processing reflected outgoing group leave for group ${this._groupDebugString}`,
         );
 
-        const creator = getIdentityString(this._services.device, this._container.creatorIdentity);
-
         // Look up the group
-        const group = model.groups.getByGroupIdAndCreator(this._container.groupId, creator);
+        const group = model.groups.getByGroupIdAndCreator(
+            this._container.groupId,
+            this._container.creatorIdentity,
+        );
 
         // If the group could not be found or is marked as left (i.e. was dissolved): Log warning
         // and exit.

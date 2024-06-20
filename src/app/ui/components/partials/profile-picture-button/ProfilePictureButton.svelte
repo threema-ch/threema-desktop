@@ -36,7 +36,7 @@
   </span>
 
   <div class="profile-pictures">
-    {#each receiversSample as receiver, index (`${receiver.lookup.type}.${receiver.lookup.uid}`)}
+    {#each receiversSample as receiver, index}
       {#if index === 0}
         <ProfilePicture
           options={{

@@ -33,7 +33,6 @@ export function isU8(val: unknown): val is u8 {
 /**
  * Ensure value is a valid number in the {@link u8} range.
  */
-// eslint-disable-next-line no-restricted-syntax
 export function ensureU8(val: unknown): u8 {
     if (!isU8(val)) {
         throw new Error(`Value ${val} is not a valid unsigned byte (type is ${typeof val})`);
@@ -45,16 +44,15 @@ export function ensureU8(val: unknown): u8 {
  * Type guard for {@link u16}.
  */
 export function isU16(val: unknown): val is u16 {
-    return typeof val === 'number' && Number.isInteger(val) && val >= 0 && val <= 2 ** 16 - 1;
+    return typeof val === 'number' && Number.isInteger(val) && val >= 0 && val <= 65535;
 }
 
 /**
- * Ensure value is a valid number in the {@link u16} range.
+ * Ensure value is a valid {@link u16}.
  */
-// eslint-disable-next-line no-restricted-syntax
 export function ensureU16(val: unknown): u16 {
     if (!isU16(val)) {
-        throw new Error(`Value ${val} is not a valid unsigned byte (type is ${typeof val})`);
+        throw new Error(`Number '${val}' is not a valid unsigned 16 bit integer`);
     }
     return val;
 }
@@ -74,7 +72,6 @@ export function isU53(val: unknown): val is u53 {
 /**
  * Ensure value is a valid {@link u53}.
  */
-// eslint-disable-next-line no-restricted-syntax
 export function ensureU53(val: unknown): u53 {
     if (!isU53(val)) {
         throw new Error(`Value ${val} is not a valid integer in the u53 range`);
@@ -102,7 +99,6 @@ export function isU64(val: unknown): val is u64 {
 /**
  * Ensure value is a valid {@link u64}.
  */
-// eslint-disable-next-line no-restricted-syntax
 export function ensureU64(val: unknown): u64 {
     if (!isU64(val)) {
         throw new Error(`Value ${val} is not a valid integer in the u64 range`);
@@ -146,28 +142,16 @@ export type WeakOpaque<T, UID> = T & OpaqueTag<UID>;
 export type TagOf<T> = [type: T] extends [newType: WeakOpaque<unknown, infer I>] ? I : never;
 
 /**
- * Remove the new-type from a type. If the type is an object, it removes
- * all new-type properties of the object as well.
+ * Remove the new-type from a type.
  */
-export type Bare<T> =
-    T extends WeakOpaque<infer I, TagOf<T>>
-        ? I
-        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          T extends Record<keyof any, unknown>
-          ? {[K in Exclude<keyof T, keyof OpaqueTag<unknown>>]: Bare<T[K]>}
-          : never;
+export type Bare<T> = T extends WeakOpaque<infer I, TagOf<T>> ? Omit<I, '__TAG__'> : T;
 
 /**
- * Remove the new-type from a type. If the type is an object, it removes
- * all new-type properties of the object as well.
+ * Safely apply a new-type to a type.
  */
-export type BareFromTag<T, TOpaque extends OpaqueTag<unknown>> =
-    T extends WeakOpaque<infer I, TagOf<TOpaque>>
-        ? I
-        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          T extends Record<any, any>
-          ? {[K in Exclude<keyof T, keyof OpaqueTag<unknown>>]: BareFromTag<T[K], TOpaque>}
-          : T;
+export function tag<T extends WeakOpaque<unknown, unknown>>(item: Bare<T>): T {
+    return item as T;
+}
 
 /**
  * From a new-type object T, pick a set of properties by its keys K.
@@ -184,7 +168,7 @@ export type OpaquePick<T extends WeakOpaque<unknown, TagOf<T>>, K extends keyof 
  */
 export type Mutable<T, K extends keyof T = keyof T> = Omit<T, K> & {-readonly [P in K]: T[P]};
 
-// eslint-disable-next-line @typescript-eslint/ban-types, no-restricted-syntax
+// eslint-disable-next-line @typescript-eslint/ban-types
 export type Primitive = undefined | null | boolean | string | number | bigint;
 
 /**
@@ -420,7 +404,7 @@ export function ensureSpkiValue(spkiBytes: ReadonlyUint8Array): SpkiValue {
 }
 
 /**
- * Dimensions (height and width) of a 2D object.
+ * Dimensions (width and height) of a 2D object in pixels.
  */
 export interface Dimensions {
     readonly height: u53;

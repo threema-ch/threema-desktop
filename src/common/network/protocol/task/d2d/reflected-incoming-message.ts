@@ -32,6 +32,12 @@ import {
 import {getTextForLocation} from '~/common/network/protocol/task/common/location';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/reflected-delivery-receipt';
+import {ReflectedGroupCallStartTask} from '~/common/network/protocol/task/d2d/reflected-group-call-start';
+import {ReflectedGroupNameTask} from '~/common/network/protocol/task/d2d/reflected-group-name';
+import {ReflectedGroupProfilePictureTask} from '~/common/network/protocol/task/d2d/reflected-group-profile-picture';
+import {ReflectedIncomingGroupLeaveTask} from '~/common/network/protocol/task/d2d/reflected-incoming-group-leave';
+import {ReflectedIncomingGroupSetupTask} from '~/common/network/protocol/task/d2d/reflected-incoming-group-setup';
+import {ReflectedMessageTaskBase} from '~/common/network/protocol/task/d2d/reflected-message';
 import {ReflectedMessageContentUpdateTask} from '~/common/network/protocol/task/d2d/reflected-message-content-update';
 import {
     type AnyInboundMessageInitFragment,
@@ -52,12 +58,6 @@ import type {
 } from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
-
-import {ReflectedGroupNameTask} from './reflected-group-name';
-import {ReflectedGroupProfilePictureTask} from './reflected-group-profile-picture';
-import {ReflectedIncomingGroupLeaveTask} from './reflected-incoming-group-leave';
-import {ReflectedIncomingGroupSetupTask} from './reflected-incoming-group-setup';
-import {ReflectedMessageTaskBase} from './reflected-message';
 
 type CommonInboundMessageInitFragment = Omit<
     MessageFor<MessageDirection.INBOUND, MessageType, 'init'>,
@@ -479,6 +479,20 @@ export class ReflectedIncomingMessageTask
                 // Ignore, must be processed by leader only
                 return 'discard';
 
+            case CspE2eGroupControlType.GROUP_CALL_START: {
+                const instructions: GroupControlMessageInstructions = {
+                    messageCategory: 'group-control',
+                    task: new ReflectedGroupCallStartTask(
+                        this._services,
+                        messageId,
+                        senderIdentity,
+                        validatedBody.container,
+                        validatedBody.message,
+                    ),
+                };
+                return instructions;
+            }
+
             // Status messages
             case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: {
                 const deliveryReceipt = structbuf.validate.csp.e2e.DeliveryReceipt.SCHEMA.parse(
@@ -533,24 +547,17 @@ export class ReflectedIncomingMessageTask
                 return instructions;
             }
             case CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE: {
-                const editMessage = protobuf.validate.csp_e2e.EditMessage.SCHEMA.parse(
-                    protobuf.csp_e2e.EditMessage.decode(
-                        validatedBody.message.innerData,
-                        validatedBody.message.innerData.byteLength,
-                    ),
-                );
-
                 const instructions: MessageContentUpdateInstructions = {
                     messageCategory: 'message-content-update',
                     task: new ReflectedMessageContentUpdateTask(
                         this._services,
-                        editMessage.messageId,
+                        validatedBody.message.messageId,
                         {
                             type: ReceiverType.GROUP,
-                            creatorIdentity: validatedBody.message.creatorIdentity,
-                            groupId: validatedBody.message.groupId,
+                            creatorIdentity: validatedBody.container.creatorIdentity,
+                            groupId: validatedBody.container.groupId,
                         },
-                        {type: 'edit', newText: editMessage.text},
+                        {type: 'edit', newText: validatedBody.message.text},
                         createdAt,
                         MessageDirection.INBOUND,
                         this._log,
@@ -577,21 +584,15 @@ export class ReflectedIncomingMessageTask
             }
 
             case CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE: {
-                const deletedMessage = protobuf.validate.csp_e2e.DeleteMessage.SCHEMA.parse(
-                    protobuf.csp_e2e.DeleteMessage.decode(
-                        validatedBody.message.innerData,
-                        validatedBody.message.innerData.byteLength,
-                    ),
-                );
                 const instructions: MessageContentUpdateInstructions = {
                     messageCategory: 'message-content-update',
                     task: new ReflectedMessageContentUpdateTask(
                         this._services,
-                        deletedMessage.messageId,
+                        validatedBody.message.messageId,
                         {
                             type: ReceiverType.GROUP,
-                            creatorIdentity: validatedBody.message.creatorIdentity,
-                            groupId: validatedBody.message.groupId,
+                            creatorIdentity: validatedBody.container.creatorIdentity,
+                            groupId: validatedBody.container.groupId,
                         },
                         {type: 'delete'},
                         createdAt,

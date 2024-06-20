@@ -101,18 +101,22 @@ export function splitAtLeast<N extends u53>(
  * @returns The truncated string adhering to the specified conditions.
  */
 export function truncate(
-    text: string | string[],
+    text: string | readonly string[],
     max: u53,
     mode: 'around',
-    focuses: string[],
+    focuses: readonly string[],
     fallback: 'both' | 'end' | 'start',
 ): string;
-export function truncate(text: string | string[], max: u53, mode: 'both' | 'end' | 'start'): string;
 export function truncate(
-    text: string | string[],
+    text: string | readonly string[],
+    max: u53,
+    mode: 'both' | 'end' | 'start',
+): string;
+export function truncate(
+    text: string | readonly string[],
     max: u53,
     mode: 'around' | 'both' | 'end' | 'start' = 'end',
-    focuses?: string[],
+    focuses?: readonly string[],
     fallback: 'both' | 'end' | 'start' = 'end',
 ): string {
     if (mode !== 'around') {
@@ -204,7 +208,7 @@ export function truncate(
  * @returns The truncated string with a maximum length of {@link max}.
  */
 function truncateEnds(
-    text: string | string[],
+    text: string | readonly string[],
     max: u53,
     mode: 'both' | 'end' | 'start' = 'end',
 ): string {
@@ -233,7 +237,7 @@ function truncateEnds(
  * up to (but does not exceed) {@link max}. Note: If the given value for {@link text} is an array,
  * it is assumed to already be clustered.
  */
-function truncateBoth(text: string | string[], max: u53): string {
+function truncateBoth(text: string | readonly string[], max: u53): string {
     const graphemeClusters = text instanceof Array ? text : getGraphemeClusters(text, text.length);
     if (graphemeClusters.length <= max) {
         return graphemeClusters.join('');
@@ -256,7 +260,7 @@ function truncateBoth(text: string | string[], max: u53): string {
  * does not exceed) {@link max}. Note: If the given value for {@link text} is an array, it is
  * assumed to already be clustered.
  */
-function truncateEnd(text: string | string[], max: u53): string {
+function truncateEnd(text: string | readonly string[], max: u53): string {
     const graphemeClusters = text instanceof Array ? text : getGraphemeClusters(text, text.length);
 
     if (graphemeClusters.length <= max) {
@@ -271,7 +275,7 @@ function truncateEnd(text: string | string[], max: u53): string {
  * (but does not exceed) {@link max}. Note: If the given value for {@link text} is an array, it is
  * assumed to already be clustered.
  */
-function truncateStart(text: string | string[], max: u53): string {
+function truncateStart(text: string | readonly string[], max: u53): string {
     const graphemeClusters = text instanceof Array ? text : getGraphemeClusters(text, text.length);
     if (graphemeClusters.length <= max) {
         return graphemeClusters.join('');

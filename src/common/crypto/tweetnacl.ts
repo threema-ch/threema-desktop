@@ -122,7 +122,7 @@ class TweetNaClBoxBackend implements CryptoBoxBackend {
             plain,
             plain.byteLength,
             nonce,
-            this.#_key.unwrap() as SecretKey,
+            this.#_key.unwrap() as ReadonlyUint8Array as SecretKey,
         );
         if (code !== 0) {
             throw new CryptoError(
@@ -152,7 +152,7 @@ class TweetNaClBoxBackend implements CryptoBoxBackend {
             encrypted,
             encrypted.byteLength,
             nonce,
-            this.#_key.unwrap() as SecretKey,
+            this.#_key.unwrap() as ReadonlyUint8Array as SecretKey,
         );
         if (code !== 0) {
             throw new CryptoError(
@@ -244,9 +244,9 @@ export class TweetNaClBackend implements CryptoBackend {
             NACL_CONSTANTS.KEY_LENGTH,
         );
         nacl.crypto_box_beforenm(
-            sharedKey.unwrap() as SharedKey,
+            sharedKey.unwrap() as ReadonlyUint8Array as SharedKey,
             publicKey,
-            secretKey.unwrap() as SecretKey,
+            secretKey.unwrap() as ReadonlyUint8Array as SecretKey,
         );
         return sharedKey;
     }

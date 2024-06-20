@@ -1,7 +1,7 @@
 import type {
-    EarlyServices,
-    EarlyServicesThatDontRequireConfig,
-    EarlyServicesThatRequireConfig,
+    EarlyBackendServices,
+    EarlyBackendServicesThatDontRequireConfig,
+    EarlyBackendServicesThatRequireConfig,
     ServicesForBackend,
 } from '~/common/backend';
 import {BackgroundJobScheduler} from '~/common/background-job-scheduler';
@@ -32,6 +32,7 @@ import {DebugBackend} from '~/common/dom/debug';
 import {ConnectionManager} from '~/common/dom/network/protocol/connection';
 import {FetchBlobBackend} from '~/common/dom/network/protocol/fetch-blob';
 import {FetchDirectoryBackend} from '~/common/dom/network/protocol/fetch-directory';
+import {FetchSfuHttpBackend} from '~/common/dom/network/protocol/fetch-sfu';
 import {FetchWorkBackend} from '~/common/dom/network/protocol/fetch-work';
 import {
     RendezvousConnection,
@@ -48,6 +49,8 @@ import {
     extractErrorMessage,
 } from '~/common/error';
 import type {FileStorage, ServicesForFileStorageFactory} from '~/common/file-storage';
+import {TRANSFER_HANDLER} from '~/common/index';
+import type {ThreemaWorkCredentials} from '~/common/internal-protobuf/key-storage-file';
 import {
     type KeyStorage,
     type KeyStorageContents,
@@ -82,7 +85,6 @@ import {
     wrapRawDeviceGroupKey,
 } from '~/common/network/types/keys';
 import type {DbMigrationSupplements} from '~/common/node/db/migrations';
-import type {ThreemaWorkCredentials} from '~/common/node/key-storage/key-storage-file';
 import {type NotificationCreator, NotificationService} from '~/common/notification';
 import type {SystemDialogService} from '~/common/system-dialog';
 import type {DomainCertificatePin, ReadonlyUint8Array} from '~/common/types';
@@ -97,15 +99,12 @@ import {u8aToBase64} from '~/common/utils/base64';
 import {bytesToHex} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 import {
-    type EndpointFor,
     type EndpointService,
     PROXY_HANDLER,
     type ProxyMarked,
     registerErrorTransferHandler,
     type Remote,
-    TRANSFER_HANDLER,
-    type TransferredFromRemote,
-    type TransferredToRemote,
+    type ProxyEndpoint,
 } from '~/common/utils/endpoint';
 import {Identity} from '~/common/utils/identity';
 import {u64ToHexLe} from '~/common/utils/number';
@@ -114,6 +113,7 @@ import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {type LocalStore, type StoreDeactivator, WritableStore} from '~/common/utils/store';
 import {type IViewModelRepository, ViewModelRepository} from '~/common/viewmodel';
 import {ViewModelCache} from '~/common/viewmodel/cache';
+import type {WebRtcService} from '~/common/webrtc';
 
 /**
  * Type of the {@link BackendCreationError}.
@@ -159,21 +159,10 @@ export class BackendCreationError extends BaseError {
  * Data required to be supplied to a backend worker for initialisation.
  */
 export interface BackendInit {
-    readonly frontendMediaServiceEndpoint: EndpointFor<IFrontendMediaService>;
-    readonly notificationEndpoint: EndpointFor<NotificationCreator>;
-    readonly systemDialogEndpoint: EndpointFor<SystemDialogService>;
-    readonly systemInfo: SystemInfo;
-}
-
-/**
- * Data required to be supplied to a backend worker for initialisation.
- */
-export interface BackendInitAfterTransfer {
-    readonly frontendMediaServiceEndpoint: TransferredFromRemote<
-        EndpointFor<IFrontendMediaService>
-    >;
-    readonly notificationEndpoint: TransferredToRemote<EndpointFor<NotificationCreator>>;
-    readonly systemDialogEndpoint: TransferredToRemote<EndpointFor<SystemDialogService>>;
+    readonly mediaEndpoint: ProxyEndpoint<IFrontendMediaService>;
+    readonly notificationEndpoint: ProxyEndpoint<NotificationCreator>;
+    readonly systemDialogEndpoint: ProxyEndpoint<SystemDialogService>;
+    readonly webRtcEndpoint: ProxyEndpoint<WebRtcService>;
     readonly systemInfo: SystemInfo;
 }
 
@@ -181,23 +170,23 @@ export interface BackendInitAfterTransfer {
  * Interface exposed by the worker towards the backend controller. It is used to instantiate the
  * backend in the context of the worker.
  */
-export interface BackendCreator {
+export interface BackendCreator extends ProxyMarked {
     /** Return whether or not an identity (i.e. a key storage file) is present. */
     readonly hasIdentity: () => boolean;
 
     /** Instantiate backend from an existing key storage. */
     readonly fromKeyStorage: (
-        init: Remote<BackendInitAfterTransfer>,
+        init: Remote<BackendInit>,
         userPassword: string,
-        pinForwarder: TransferredFromRemote<EndpointFor<PinForwarder>>,
-    ) => Promise<TransferredToRemote<EndpointFor<BackendHandle>>>;
+        pinForwarder: ProxyEndpoint<PinForwarder>,
+    ) => Promise<ProxyEndpoint<BackendHandle>>;
 
     /** Instantiate backend through the device join protocol. */
     readonly fromDeviceJoin: (
-        init: Remote<BackendInitAfterTransfer>,
-        deviceLinkingSetup: TransferredFromRemote<EndpointFor<DeviceLinkingSetup>>,
-        pinForwarder: TransferredFromRemote<EndpointFor<PinForwarder>>,
-    ) => Promise<TransferredToRemote<EndpointFor<BackendHandle>>>;
+        init: Remote<BackendInit>,
+        deviceLinkingSetup: ProxyEndpoint<DeviceLinkingSetup>,
+        pinForwarder: ProxyEndpoint<PinForwarder>,
+    ) => Promise<ProxyEndpoint<BackendHandle>>;
 }
 
 /**
@@ -335,7 +324,7 @@ export interface PinForwarder extends ProxyMarked {
  */
 function createNotificationService(
     endpoint: EndpointService,
-    notificationCreator: EndpointFor<NotificationCreator>,
+    notificationCreator: ProxyEndpoint<NotificationCreator>,
     logging: LoggerFactory,
 ): NotificationService {
     const notificationCreatorEndpoint = endpoint.wrap<NotificationCreator>(
@@ -354,7 +343,7 @@ function createNotificationService(
  */
 function createMediaService(
     endpoint: EndpointService,
-    frontendMediaService: EndpointFor<IFrontendMediaService>,
+    frontendMediaService: ProxyEndpoint<IFrontendMediaService>,
     logging: LoggerFactory,
 ): BackendMediaService {
     const frontendMediaServiceEndpoint = endpoint.wrap<IFrontendMediaService>(
@@ -375,19 +364,20 @@ function initEarlyBackendServicesWithoutConfig(
     factories: FactoriesForBackend,
     {endpoint, logging}: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
     backendInit: BackendInit,
-): EarlyServicesThatDontRequireConfig {
+): EarlyBackendServicesThatDontRequireConfig {
     const crypto = new TweetNaClBackend(randomBytes);
-    const {frontendMediaServiceEndpoint, notificationEndpoint} = backendInit;
+    const {mediaEndpoint: frontendMediaServiceEndpoint, notificationEndpoint} = backendInit;
     const compressor = factories.compressor();
     const notification = createNotificationService(endpoint, notificationEndpoint, logging);
     const media = createMediaService(endpoint, frontendMediaServiceEndpoint, logging);
-    const systemDialog: Remote<SystemDialogService> = endpoint.wrap(
+    const systemDialog = endpoint.wrap(
         backendInit.systemDialogEndpoint,
         logging.logger('com.system-dialog'),
     );
     const taskManager = new TaskManager({logging});
     const keyStorage = factories.keyStorage({crypto}, logging.logger('key-storage'));
     const volatileProtocolState = new VolatileProtocolStateBackend();
+    const webrtc = endpoint.wrap(backendInit.webRtcEndpoint, logging.logger('com.webrtc'));
 
     return {
         compressor,
@@ -401,6 +391,7 @@ function initEarlyBackendServicesWithoutConfig(
         systemInfo: backendInit.systemInfo,
         taskManager,
         volatileProtocolState,
+        webrtc,
     };
 }
 
@@ -412,13 +403,15 @@ function initEarlyBackendServicesWithConfig(
     factories: FactoriesForBackend,
     {config, crypto, logging}: Pick<ServicesForBackend, 'crypto' | 'config' | 'logging'>,
     workCredentials: ThreemaWorkCredentials | undefined,
-): EarlyServicesThatRequireConfig {
+): EarlyBackendServicesThatRequireConfig {
     const file = factories.fileStorage({config, crypto}, logging.logger('storage'));
     const directory = new FetchDirectoryBackend({config, logging}, workCredentials);
+    const sfu = new FetchSfuHttpBackend({config, logging});
 
     return {
         directory,
         file,
+        sfu,
     };
 }
 
@@ -428,7 +421,7 @@ function initEarlyBackendServicesWithConfig(
  * Note: The {@link dgk} will be consumed and purged after initialization!
  */
 function initBackendServices(
-    earlyServices: EarlyServices,
+    earlyServices: EarlyBackendServices,
     db: DatabaseBackend,
     identityData: IdentityData,
     deviceIds: DeviceIds,
@@ -446,9 +439,11 @@ function initBackendServices(
         logging,
         media,
         notification,
-        taskManager,
+        sfu,
         systemDialog,
+        taskManager,
         volatileProtocolState,
+        webrtc,
     } = earlyServices;
 
     const workData = workCredentials === undefined ? undefined : {workCredentials};
@@ -475,9 +470,11 @@ function initBackendServices(
         media,
         nonces,
         notification,
+        sfu,
         taskManager,
         systemDialog,
         volatileProtocolState,
+        webrtc,
     });
     const viewModel = new ViewModelRepository(
         {model, config, crypto, endpoint, file, logging, device},
@@ -485,8 +482,8 @@ function initBackendServices(
     );
     return {
         ...earlyServices,
-        device,
         blob,
+        device,
         model,
         nonces,
         viewModel,
@@ -638,8 +635,8 @@ export class Backend {
         factories: FactoriesForBackend,
         {endpoint, logging}: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
         keyStoragePassword: string,
-        pinForwarder: EndpointFor<PinForwarder>,
-    ): Promise<TransferredToRemote<EndpointFor<BackendHandle>>> {
+        pinForwarder: ProxyEndpoint<PinForwarder>,
+    ): Promise<ProxyEndpoint<BackendHandle>> {
         const log = logging.logger('backend.create.from-keystorage');
         log.info('Creating backend from existing key storage');
 
@@ -886,9 +883,9 @@ export class Backend {
         backendInit: BackendInit,
         factories: FactoriesForBackend,
         {endpoint, logging}: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
-        deviceLinkingSetup: EndpointFor<DeviceLinkingSetup>,
-        pinForwarder: EndpointFor<PinForwarder>,
-    ): Promise<TransferredToRemote<EndpointFor<BackendHandle>>> {
+        deviceLinkingSetup: ProxyEndpoint<DeviceLinkingSetup>,
+        pinForwarder: ProxyEndpoint<PinForwarder>,
+    ): Promise<ProxyEndpoint<BackendHandle>> {
         const log = logging.logger('backend.create.from-join');
         log.info('Creating backend through device linking flow');
 
@@ -1347,13 +1344,11 @@ export class Backend {
         // Expose the backend on a new channel
         const {local, remote} = endpoint.createEndpointPair<BackendHandle>();
         endpoint.exposeProxy(backend.handle, local, logging.logger('com.backend'));
-        const transferredRemote: TransferredToRemote<EndpointFor<BackendHandle>> =
-            endpoint.transfer(remote, [remote]);
-        return transferredRemote;
+        return endpoint.transfer(remote, [remote]);
     }
 
     private static async _fetchAndVerifyOppfFile(
-        earlyServices: EarlyServicesThatDontRequireConfig,
+        earlyServices: EarlyBackendServicesThatDontRequireConfig,
         {oppfUrl, username, password}: OppfFetchConfig,
     ): Promise<{readonly parsed: oppf.OppfFile; readonly string: string}> {
         let response: Response;

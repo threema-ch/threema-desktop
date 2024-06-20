@@ -86,7 +86,7 @@ export function isIterable(object: unknown): object is Iterable<unknown> {
  *
  * This is a typed version of {@link Object.keys}.
  */
-export function keys<T>(object: {[key in keyof T]: unknown}): (keyof T)[] {
+export function keys<T>(object: {[K in keyof T]: unknown}): (keyof T)[] {
     return Object.keys(object) as (keyof T)[];
 }
 

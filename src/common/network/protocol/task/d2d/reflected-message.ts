@@ -295,6 +295,19 @@ export abstract class ReflectedMessageTaskBase<
                     };
                 }
 
+                case CspE2eGroupControlType.GROUP_CALL_START: {
+                    const container = structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupMemberContainer.decode(body),
+                    );
+                    return {
+                        type: CspE2eGroupControlType.GROUP_CALL_START,
+                        message: protobuf.validate.csp_e2e.GroupCallStart.SCHEMA.parse(
+                            protobuf.csp_e2e.GroupCallStart.decode(container.innerData),
+                        ),
+                        container,
+                    };
+                }
+
                 // Status messages
                 case CspE2eStatusUpdateType.DELIVERY_RECEIPT:
                     return {
@@ -318,17 +331,15 @@ export abstract class ReflectedMessageTaskBase<
                         container: undefined,
                     };
                 }
-                // Message Update types
+
+                // Message update types
                 case CspE2eMessageUpdateType.EDIT_MESSAGE: {
-                    const message = protobuf.validate.csp_e2e.EditMessage.SCHEMA.parse(
-                        protobuf.csp_e2e.EditMessage.decode(body),
-                    );
                     return {
                         type: CspE2eMessageUpdateType.EDIT_MESSAGE,
-                        message: {
-                            messageId: message.messageId,
-                            text: message.text,
-                        },
+                        message: protobuf.validate.csp_e2e.EditMessage.SCHEMA.parse(
+                            protobuf.csp_e2e.EditMessage.decode(body),
+                        ),
+                        container: undefined,
                     };
                 }
                 case CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE: {
@@ -337,7 +348,10 @@ export abstract class ReflectedMessageTaskBase<
                     );
                     return {
                         type: CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE,
-                        message: container,
+                        message: protobuf.validate.csp_e2e.EditMessage.SCHEMA.parse(
+                            protobuf.csp_e2e.EditMessage.decode(body),
+                        ),
+                        container,
                     };
                 }
 
@@ -350,6 +364,7 @@ export abstract class ReflectedMessageTaskBase<
                         message: {
                             messageId: message.messageId,
                         },
+                        container: undefined,
                     };
                 }
                 case CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE: {
@@ -358,7 +373,10 @@ export abstract class ReflectedMessageTaskBase<
                     );
                     return {
                         type: CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE,
-                        message: container,
+                        message: protobuf.validate.csp_e2e.DeleteMessage.SCHEMA.parse(
+                            protobuf.csp_e2e.GroupCallStart.decode(container.innerData),
+                        ),
+                        container,
                     };
                 }
                 case CspE2eStatusUpdateType.TYPING_INDICATOR:
@@ -387,7 +405,6 @@ export abstract class ReflectedMessageTaskBase<
                 case CspE2eConversationType.CALL_HANGUP: // TODO(DESK-243)
                 case CspE2eConversationType.CALL_RINGING: // TODO(DESK-243)
                     return unhandled({maybeReflectedE2eType});
-                case CspE2eGroupControlType.GROUP_CALL_START: // TODO(DESK-858)
                 case CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE: // TODO(DESK-586)
                 case CspE2eGroupConversationType.GROUP_AUDIO: // TODO(DESK-586)
                 case CspE2eGroupConversationType.GROUP_VIDEO: // TODO(DESK-586)

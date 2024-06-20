@@ -17,6 +17,7 @@ import {
     ReceiverType,
 } from '~/common/enum';
 import {deleteFilesInBackground} from '~/common/file-storage';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import type {
     AnyInboundNonDeletedMessageModelStore,
@@ -27,7 +28,7 @@ import type {
 } from '~/common/model';
 import * as contact from '~/common/model/contact';
 import {NO_SENDER} from '~/common/model/message/common';
-import type {GuardedStoreHandle, IdentityStringOrMe} from '~/common/model/types/common';
+import type {GuardedStoreHandle} from '~/common/model/types/common';
 import type {Conversation, ConversationControllerHandle} from '~/common/model/types/conversation';
 import type {
     BaseMessageView,
@@ -56,7 +57,7 @@ import {OutgoingEditMessageTask} from '~/common/network/protocol/task/csp/outgoi
 import type {IdentityString, MessageId} from '~/common/network/types';
 import type {u53} from '~/common/types';
 import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import {LazyMap} from '~/common/utils/map';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 
@@ -639,7 +640,7 @@ export abstract class CommonBaseNonDeletedMessageModelController<
         view: Readonly<TView>,
         reaction: MessageReaction,
         reactionAt: Date,
-        senderIdentity: IdentityStringOrMe,
+        senderIdentity: IdentityString,
     ): void {
         // Update the message
         message.update(() => {
@@ -648,11 +649,12 @@ export abstract class CommonBaseNonDeletedMessageModelController<
                 reaction,
                 senderIdentity,
             };
-            const filtered = view.reactions.filter((r) => r.senderIdentity !== senderIdentity);
-            filtered.push(messageReaction);
-            const change = {
-                reactions: filtered,
-            };
+            const reactions = view.reactions.filter(
+                ({senderIdentity: existingReactionSenderIdentity}) =>
+                    senderIdentity !== existingReactionSenderIdentity,
+            );
+            reactions.push(messageReaction);
+            const change = {reactions};
             createOrUpdateReaction(this._services, this.uid, messageReaction);
             return change as Partial<TView>;
         });
@@ -709,8 +711,13 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (type: MessageReaction, reactedAt: Date) =>
-            this._handleReaction(TriggerSource.LOCAL, type, reactedAt, 'me'),
-        fromSync: (type: MessageReaction, reactedAt: Date, reactionSender: IdentityStringOrMe) =>
+            this._handleReaction(
+                TriggerSource.LOCAL,
+                type,
+                reactedAt,
+                this._services.device.identity.string,
+            ),
+        fromSync: (type: MessageReaction, reactedAt: Date, reactionSender: IdentityString) =>
             this._handleReaction(TriggerSource.SYNC, type, reactedAt, reactionSender),
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (
@@ -806,7 +813,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
         source: TriggerSource,
         type: MessageReaction,
         reactedAt: Date,
-        reactionSender: IdentityStringOrMe,
+        reactionSender: IdentityString,
     ): void {
         this.meta.run((handle) => {
             const view = handle.view();
@@ -821,7 +828,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
                 return;
             }
 
-            // Ignore if somebody acks their own message outside of a group chat
+            // Ignore if somebody reacts to their own message outside of a group chat
             if (
                 this._sender.get().view.identity === reactionSender &&
                 this._conversation.receiverLookup.type !== ReceiverType.GROUP
@@ -835,7 +842,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
             // Queue a persistent task to send a notification, then reflect it.
             if (source === TriggerSource.LOCAL) {
                 assert(
-                    reactionSender === 'me',
+                    reactionSender === this._services.device.identity.string,
                     'Reaction with trigger source LOCAL must be from current user',
                 );
 
@@ -900,9 +907,14 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
 
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (type: MessageReaction, reactedAt: Date) =>
-            this._handleReaction(TriggerSource.LOCAL, type, reactedAt, 'me'),
+            this._handleReaction(
+                TriggerSource.LOCAL,
+                type,
+                reactedAt,
+                this._services.device.identity.string,
+            ),
 
-        fromSync: (type: MessageReaction, reactedAt: Date, reactionSender: IdentityStringOrMe) =>
+        fromSync: (type: MessageReaction, reactedAt: Date, reactionSender: IdentityString) =>
             this._handleReaction(TriggerSource.SYNC, type, reactedAt, reactionSender),
 
         // eslint-disable-next-line @typescript-eslint/require-await
@@ -1028,20 +1040,20 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
         source: TriggerSource,
         type: MessageReaction,
         reactedAt: Date,
-        reactionSender: IdentityStringOrMe,
+        reactionSender: IdentityString,
     ): void {
         this.meta.run((handle) => {
             const view = handle.view();
 
-            // Ignore if this reaction of this person already exists
-            // We also filter messages that were wrongly acked by ourselves if this was not a group
+            // Ignore if the specific reaction of the sender already exists. We also filter messages
+            // that were wrongly reacted by ourselves if this was not a group.
             if (
                 view.reactions.some((reaction) => {
                     const reactionExists =
                         reaction.senderIdentity === reactionSender && reaction.reaction === type;
                     const isOwnReactionInNonGroupChat =
                         this._conversation.receiverLookup.type !== ReceiverType.GROUP &&
-                        reactionSender === 'me';
+                        reactionSender === this._services.device.identity.string;
                     return reactionExists || isOwnReactionInNonGroupChat;
                 })
             ) {
@@ -1054,7 +1066,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
             // For local reactions, queue a persistent task to send and reflect the reaction.
             if (source === TriggerSource.LOCAL) {
                 assert(
-                    reactionSender === 'me',
+                    reactionSender === this._services.device.identity.string,
                     'Reaction with trigger source LOCAL must be from current user',
                 );
 

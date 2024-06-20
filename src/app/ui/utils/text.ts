@@ -12,9 +12,9 @@ export type SanitizedHtml = WeakOpaque<string, {readonly SanitizedHtml: unique s
 
 export interface SanitizeAndParseTextToHtmlOptions {
     /** The {@link Mention}s to search for and replace in the text. */
-    readonly mentions?: AnyMention | AnyMention[];
+    readonly mentions?: readonly AnyMention[];
     /** The highlights to search for and replace in the text. */
-    readonly highlights?: string | string[];
+    readonly highlights?: readonly string[];
     /** If mentions should link to the conversation with the respective contact. */
     readonly shouldLinkMentions?: boolean;
     /** If simple markup tokens (bold, italic, strikethrough) should be replaced. */
@@ -63,7 +63,7 @@ export function sanitizeAndParseTextToHtml(
                 sanitizedText,
                 truncateMax,
                 'around',
-                highlights instanceof Array ? highlights : [highlights],
+                highlights,
                 'end',
             ) as SanitizedHtml;
         } else {
@@ -126,7 +126,7 @@ function getMentionHtml(
     switch (mention.type) {
         case 'self': {
             const text = escapeHtmlUnsafeChars(
-                mention.name ?? t('messaging.label--mention-me', 'Me'),
+                mention.nickname ?? t('messaging.label--mention-me', 'Me'),
             );
             return `<span class="mention me">@${text}</span>` as SanitizedHtml;
         }
@@ -136,6 +136,10 @@ function getMentionHtml(
                 const href = `#/conversation/${mention.lookup.type}/${mention.lookup.uid}/`;
                 return `<a href="${href}" draggable="false" class="mention">@${name}</a>` as SanitizedHtml;
             }
+            return `<span class="mention">@${name}</span>` as SanitizedHtml;
+        }
+        case 'contact-removed': {
+            const name = escapeHtmlUnsafeChars(mention.identity);
             return `<span class="mention">@${name}</span>` as SanitizedHtml;
         }
         case 'everyone': {
@@ -184,11 +188,11 @@ function parseMarkup(text: SanitizedHtml): SanitizedHtml {
 export function parseMentions(
     t: I18nType['t'],
     text: SanitizedHtml,
-    mentions: AnyMention | AnyMention[],
+    mentions: readonly AnyMention[],
     enableLinks: boolean,
 ): SanitizedHtml {
     let parsedText = text;
-    for (const mention of mentions instanceof Array ? mentions : [mentions]) {
+    for (const mention of mentions) {
         parsedText = parsedText.replaceAll(
             `@[${mention.identity}]`,
             getMentionHtml(t, mention, enableLinks),
@@ -205,10 +209,9 @@ export function parseMentions(
  * @param highlights An array of highlights to search for and replace in the text.
  * @returns The text containing the highlights replaced with HTML.
  */
-export function parseHighlights(text: SanitizedHtml, highlights: string | string[]): SanitizedHtml {
+export function parseHighlights(text: SanitizedHtml, highlights: readonly string[]): SanitizedHtml {
     let parsedText = text;
-    const highlightsArray = highlights instanceof Array ? highlights : [highlights];
-    for (const highlight of highlightsArray) {
+    for (const highlight of highlights) {
         if (highlight.trim() !== '') {
             parsedText = parsedText
                 // Split text at the locations where it matches the highlight string.

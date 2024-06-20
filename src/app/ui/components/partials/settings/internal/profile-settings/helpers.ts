@@ -34,7 +34,7 @@ export function getProfilePictureShareWithDropdownLabel(
  */
 export function getProfilePictureShareWithDropdown(
     i18n: I18nType,
-    currentAllowList: Readonly<IdentityString[]>,
+    currentAllowList: readonly IdentityString[],
 ): SettingsDropdown<ProfileSettingsView, ProfilePictureShareWith> {
     return {
         updateKey: 'profilePictureShareWith',

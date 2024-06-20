@@ -1,4 +1,5 @@
 import {InactiveContactsPolicy, TimeFormat} from '~/common/enum';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {ServicesForModel} from '~/common/model/types/common';
 import type {
     AppearanceSettingsUpdate,
@@ -9,7 +10,7 @@ import type {
 } from '~/common/model/types/settings';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
 
 export class AppearanceSettingsModelController implements AppearanceSettingsController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;

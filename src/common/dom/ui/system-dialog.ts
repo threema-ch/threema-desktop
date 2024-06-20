@@ -1,3 +1,4 @@
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {
     DialogAction,
     SystemDialog,
@@ -5,7 +6,7 @@ import type {
     SystemDialogService,
 } from '~/common/system-dialog';
 import {unwrap} from '~/common/utils/assert';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {WritableStore} from '~/common/utils/store';
 

@@ -4,11 +4,11 @@ import {ensurePublicKey} from '~/common/crypto';
 import type {ThreemaWorkCredentials} from '~/common/device';
 import {TransferTag} from '~/common/enum';
 import {BaseError, type BaseErrorOptions} from '~/common/error';
+import {TRANSFER_HANDLER} from '~/common/index';
 import {ensureIdentityString} from '~/common/network/types';
 import {ensureU53} from '~/common/types';
 import {base64ToU8a} from '~/common/utils/base64';
 import {
-    TRANSFER_HANDLER,
     registerErrorTransferHandler,
     type ProxyMarked,
     PROXY_HANDLER,

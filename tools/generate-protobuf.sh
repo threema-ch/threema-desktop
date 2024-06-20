@@ -53,12 +53,6 @@ node_modules/.bin/pbts \
 mv $OUTFILE.new $OUTFILE
 
 # Local protobuf modules
-TS_PROTO_FILES=(
-    './src/common/node/key-storage/key-storage-file.proto'
-    './src/common/node/settings/settings.proto'
-    './src/common/node/status/status.proto'
-    './src/common/model/global-property/global-property.proto'
-)
 protoc \
     --plugin=./node_modules/.bin/protoc-gen-ts_proto \
     --ts_proto_out=. \
@@ -72,7 +66,4 @@ protoc \
     --ts_proto_opt=outputServices=false \
     --ts_proto_opt=env=browser \
     --ts_proto_opt=exportCommonSymbols=false \
-    "${TS_PROTO_FILES[@]}"
-for file in "${TS_PROTO_FILES[@]}"; do
-    prettier --write "${file/.proto/.ts}"
-done
+    src/common/internal-protobuf/*.proto

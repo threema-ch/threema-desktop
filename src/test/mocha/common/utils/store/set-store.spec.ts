@@ -1,13 +1,9 @@
 import {expect} from 'chai';
 
 import {DeltaUpdateType} from '~/common/enum';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {u53} from '~/common/types';
-import {
-    TRANSFER_HANDLER,
-    type PropertiesMarked,
-    type PROXY_HANDLER,
-    type ProxyMarked,
-} from '~/common/utils/endpoint';
+import type {PropertiesMarked, PROXY_HANDLER, ProxyMarked} from '~/common/utils/endpoint';
 import {ReadableStore, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {type DeltaUpdate, LocalSetBasedSetStore} from '~/common/utils/store/set-store';

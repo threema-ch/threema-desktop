@@ -10,6 +10,7 @@ import type {ServicesForViewModel} from '~/common/viewmodel';
 import {getConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
 import type {ConversationMessageViewModel} from '~/common/viewmodel/conversation/main/message/store/types';
 import {getMentions} from '~/common/viewmodel/utils/mentions';
+import {getSenderData} from '~/common/viewmodel/utils/sender';
 
 /**
  * Returns the {@link ConversationMessageViewModelBundle} of the quoted message in the supplied
@@ -19,7 +20,7 @@ import {getMentions} from '~/common/viewmodel/utils/mentions';
  */
 export function getMessageQuote(
     log: Logger,
-    services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     messageModel: AnyMessageModel,
     conversationModelStore: ConversationModelStore,
     getAndSubscribe: GetAndSubscribeFunction,
@@ -71,29 +72,17 @@ export function getMessageQuote(
  * {@link ConversationMessageViewModel}.
  */
 export function getMessageReactions(
-    services: Pick<ServicesForViewModel, 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'model'>,
     messageModel: AnyMessageModel,
+    getAndSubscribe: GetAndSubscribeFunction,
 ): ConversationMessageViewModel['reactions'] {
-    const {contacts} = services.model;
-
-    return messageModel.view.reactions.map((reaction) => {
-        // If the contact doesn't exist, doesn't have a `displayName` or the sender was the user
-        // themself, fall back to `undefined`.
-        const reactionSenderName =
-            reaction.senderIdentity === 'me'
-                ? undefined
-                : contacts.getByIdentity(reaction.senderIdentity)?.get().view.displayName;
-
-        return {
-            at: reaction.reactionAt,
-            direction: reaction.senderIdentity === 'me' ? 'outbound' : 'inbound',
-            type: reaction.reaction === MessageReaction.ACKNOWLEDGE ? 'acknowledged' : 'declined',
-            sender: {
-                identity: reaction.senderIdentity,
-                name: reactionSenderName,
-            },
-        };
-    });
+    return messageModel.view.reactions.map((reaction) => ({
+        at: reaction.reactionAt,
+        direction:
+            reaction.senderIdentity === services.device.identity.string ? 'outbound' : 'inbound',
+        type: reaction.reaction === MessageReaction.ACKNOWLEDGE ? 'acknowledged' : 'declined',
+        sender: getSenderData(services, reaction.senderIdentity, getAndSubscribe),
+    }));
 }
 
 /**
@@ -157,12 +146,13 @@ export function getMessageStatus(
  * Returns data related to the sender of a message for the {@link ConversationMessageViewModel}.
  */
 export function getMessageSender(
-    services: Pick<ServicesForViewModel, 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'model'>,
     messageModel: AnyMessageModel,
     getAndSubscribe: GetAndSubscribeFunction,
 ): Required<ConversationMessageViewModel>['sender'] {
     switch (messageModel.ctx) {
         case MessageDirection.INBOUND: {
+            // TODO(DESK-770): Use `getSenderData` here instead
             const sender = getAndSubscribe(messageModel.controller.sender());
 
             return {
@@ -180,9 +170,11 @@ export function getMessageSender(
 
             return {
                 type: 'self',
+                id: 'self',
                 color: profilePicture.color,
                 initials: getUserInitials(displayName),
                 name: displayName,
+                identity: services.device.identity.string,
             };
         }
 
@@ -197,11 +189,12 @@ export function getMessageSender(
 export function getMessageText(
     services: Pick<ServicesForViewModel, 'model'>,
     messageModel: AnyMessageModel,
+    getAndSubscribe: GetAndSubscribeFunction,
 ): ConversationMessageViewModel['text'] | undefined {
     switch (messageModel.type) {
         case 'text':
             return {
-                mentions: getMentions(services, messageModel),
+                mentions: getMentions(services, messageModel, getAndSubscribe),
                 raw: messageModel.view.text,
             };
 
@@ -212,7 +205,7 @@ export function getMessageText(
             return messageModel.view.caption === undefined
                 ? undefined
                 : {
-                      mentions: getMentions(services, messageModel),
+                      mentions: getMentions(services, messageModel, getAndSubscribe),
                       raw: messageModel.view.caption,
                   };
         case 'deleted':

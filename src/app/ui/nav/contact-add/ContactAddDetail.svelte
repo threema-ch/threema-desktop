@@ -1,7 +1,6 @@
 <script lang="ts">
   import {onMount} from 'svelte';
 
-  import {assertRoute} from '~/app/routing';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
   import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
@@ -23,7 +22,6 @@
   } from '~/common/enum';
   import type {ContactInit, RemoteModelStoreFor} from '~/common/model';
   import type {ContactModelStore} from '~/common/model/contact';
-  import type {ValidIdentityData} from '~/common/network/protocol/directory';
   import {assertUnreachable} from '~/common/utils/assert';
   import {idColorIndex} from '~/common/utils/id-color';
 
@@ -35,17 +33,16 @@
   let contactFirstnameTextField: Text;
 
   // Extract identity data from router params
-  let identityData: ValidIdentityData;
-  $: identityData = assertRoute('nav', $router.nav, ['contactAddDetails']).params.identityData;
+  const {identityData} = router.assert('nav', ['contactAddDetails']);
 
   function navigateBack(): void {
-    router.replaceNav(
-      ROUTE_DEFINITIONS.nav.contactAdd.withTypedParams({identity: identityData.identity}),
-    );
+    router.go({
+      nav: ROUTE_DEFINITIONS.nav.contactAdd.withParams({identity: identityData.identity}),
+    });
   }
 
   function navigateToContactList(): void {
-    router.replaceNav(ROUTE_DEFINITIONS.nav.contactList.withoutParams());
+    router.go({nav: ROUTE_DEFINITIONS.nav.contactList.withoutParams()});
   }
 
   async function handleAddContact(): Promise<void> {
@@ -70,15 +67,14 @@
       });
     }
 
-    router.go(
-      ROUTE_DEFINITIONS.nav.contactList.withoutParams(),
-      ROUTE_DEFINITIONS.main.conversation.withTypedParams({
+    router.goToConversation(
+      {
         receiverLookup: {
           type: ReceiverType.CONTACT,
           uid: contactStore.ctx,
         },
-      }),
-      undefined,
+      },
+      {nav: ROUTE_DEFINITIONS.nav.contactList.withoutParams()},
     );
   }
 

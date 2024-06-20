@@ -1076,8 +1076,5 @@ export function mediaTypeToIconName(mediaType: string): string {
  * Get all valid file extensions by media type.
  */
 export function mediaTypeToExtensions(mediaType: string): string[] | undefined {
-    if (types.has(mediaType)) {
-        return types.get(mediaType);
-    }
-    return undefined;
+    return types.get(mediaType);
 }

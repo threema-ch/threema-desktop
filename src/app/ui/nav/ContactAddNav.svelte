@@ -2,7 +2,6 @@
   import {onMount} from 'svelte';
 
   import {globals} from '~/app/globals';
-  import {assertRoute} from '~/app/routing';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
   import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
@@ -22,7 +21,7 @@
   export let services: AppServices;
   const {backend, router} = services;
 
-  const params = assertRoute('nav', $router.nav, ['contactAdd']).params;
+  const params = router.assert('nav', ['contactAdd']);
 
   let identity = params.identity ?? '';
   let identityFieldError: string | undefined = undefined;
@@ -37,11 +36,11 @@
   }
 
   function navigateToContactList(): void {
-    router.replaceNav(ROUTE_DEFINITIONS.nav.contactList.withoutParams());
+    router.go({nav: ROUTE_DEFINITIONS.nav.contactList.withoutParams()});
   }
 
   function navigateToContactDetails(identityData: ValidIdentityData): void {
-    router.replaceNav(ROUTE_DEFINITIONS.nav.contactAddDetails.withTypedParams({identityData}));
+    router.go({nav: ROUTE_DEFINITIONS.nav.contactAddDetails.withParams({identityData})});
   }
 
   async function handleNextClicked(): Promise<void> {

@@ -5,7 +5,6 @@
   import {onMount} from 'svelte';
 
   import {globals} from '~/app/globals';
-  import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import AddressBook from '~/app/ui/components/partials/address-book/AddressBook.svelte';
   import type {TabState} from '~/app/ui/components/partials/address-book/types';
@@ -51,12 +50,10 @@
       messageId: id,
     };
 
-    router.replaceMain(
-      ROUTE_DEFINITIONS.main.conversation.withTypedParams({
-        receiverLookup: event.detail,
-        forwardedMessage: messageToForward,
-      }),
-    );
+    router.goToConversation({
+      receiverLookup: event.detail,
+      forwardedMessage: messageToForward,
+    });
 
     modalComponent?.close();
   }

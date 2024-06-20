@@ -4,6 +4,7 @@ import * as process from 'node:process';
 import * as readline from 'node:readline/promises';
 
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
+import {extractErrorTraceback} from '~/common/error';
 import {CONSOLE_LOGGER} from '~/common/logging';
 import {randomBytes} from '~/common/node/crypto/random';
 import {FileSystemKeyStorage} from '~/common/node/key-storage';
@@ -149,7 +150,7 @@ async function runSqlite(argv: string[]): Promise<void> {
     return undefined;
 }
 
-setAssertFailLogger((error) => CONSOLE_LOGGER.trace(error));
+setAssertFailLogger((error) => CONSOLE_LOGGER.error(extractErrorTraceback(error)));
 main()
     .then(() => {})
     .catch((error: unknown) => {

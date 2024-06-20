@@ -5,5 +5,5 @@
     "types": [],
     "resolveJsonModule": true
   },
-  "include": ["i18next.d.ts", "vite-client.d.ts", "**/*.ts"]
+  "include": ["crypto.d.ts", "i18next.d.ts", "vite-client.d.ts", "webrtc-patches.d.ts", "**/*.ts"]
 }

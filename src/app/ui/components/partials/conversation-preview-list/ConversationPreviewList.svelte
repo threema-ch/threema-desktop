@@ -2,14 +2,14 @@
   @component Renders a list of preview cards for the given conversations.
 -->
 <script lang="ts" generics="THandlerProps = never">
-  import {createEventDispatcher} from 'svelte';
-
+  import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {ConversationRouteParams} from '~/app/ui/components/partials/conversation/types';
   import ConversationPreview from '~/app/ui/components/partials/conversation-preview-list/internal/conversation-preview/ConversationPreview.svelte';
   import type {ConversationPreviewListProps} from '~/app/ui/components/partials/conversation-preview-list/props';
   import {transformContextMenuItemsToContextMenuOptions} from '~/app/ui/components/partials/conversation-preview-list/transformers';
   import {reactive, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import type {DbReceiverLookup} from '~/common/db';
+  import {ReceiverType} from '~/common/enum';
 
   // Generic parameters are not yet recognized by the linter.
   // See https://github.com/sveltejs/eslint-plugin-svelte/issues/521
@@ -28,11 +28,6 @@
 
   let containerElement: SvelteNullableBinding<HTMLElement> = null;
 
-  const dispatch = createEventDispatcher<{
-    // eslint-disable-next-line no-undef
-    clickjoincall: THandlerProps;
-  }>();
-
   function handleChangeRouterState(): void {
     const routerState = router.get();
 
@@ -44,35 +39,39 @@
     }
   }
 
-  function handleClickItem(event: MouseEvent, lookup: DbReceiverLookup, active?: boolean): void {
+  function handleClickItem(
+    event: MouseEvent,
+    receiverLookup: DbReceiverLookup,
+    active?: boolean,
+  ): void {
     event.preventDefault();
 
     if (active === true) {
       // Close conversation if it was already open.
       router.goToWelcome();
     } else {
-      router.openConversationAndDetailsForReceiver(lookup);
+      router.goToConversation({receiverLookup});
     }
   }
 
-  // eslint-disable-next-line no-undef
-  function handleClickJoinCall(event: MouseEvent, handlerProps: THandlerProps): void {
-    event.preventDefault();
-
-    dispatch('clickjoincall', handlerProps);
+  function handleclickjoincall(receiverLookup: DbReceiverLookup): void {
+    if (receiverLookup.type !== ReceiverType.GROUP) {
+      return;
+    }
+    router.go({
+      activity: ROUTE_DEFINITIONS.activity.call.withParams({receiverLookup, intent: 'join'}),
+    });
   }
 
   $: reactive(handleChangeRouterState, [$router]);
 </script>
 
 <ul bind:this={containerElement} class="container">
-  {#each items as item (`${item.receiver.lookup.type}.${item.receiver.lookup.uid}`)}
-    {@const {lastMessage, receiver, totalMessageCount, unreadMessageCount} = item}
+  {#each items as item (item.receiver.id)}
     {@const active =
-      routeParams?.receiverLookup.type === receiver.lookup.type &&
-      routeParams.receiverLookup.uid === receiver.lookup.uid}
+      routeParams?.receiverLookup.type === item.receiver.lookup.type &&
+      routeParams.receiverLookup.uid === item.receiver.lookup.uid}
 
-    <!-- eslint-disable @typescript-eslint/no-unsafe-argument -->
     <ConversationPreview
       {active}
       call={item.call}
@@ -86,15 +85,14 @@
       isArchived={item.isArchived}
       isPinned={item.isPinned}
       isPrivate={item.isPrivate}
-      {lastMessage}
-      {receiver}
+      lastMessage={item.lastMessage}
+      receiver={item.receiver}
       {services}
-      {totalMessageCount}
-      {unreadMessageCount}
-      on:click={(event) => handleClickItem(event.detail, receiver.lookup, active)}
-      on:clickjoincall={(event) => handleClickJoinCall(event.detail, item.handlerProps)}
+      totalMessageCount={item.totalMessageCount}
+      unreadMessageCount={item.unreadMessageCount}
+      on:click={(event) => handleClickItem(event.detail, item.receiver.lookup, active)}
+      on:clickjoincall={() => handleclickjoincall(item.receiver.lookup)}
     />
-    <!-- eslint-enable @typescript-eslint/no-unsafe-argument -->
   {/each}
 </ul>
 

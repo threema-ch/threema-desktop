@@ -1,11 +1,11 @@
-import type {AnyCallProps} from '~/common/viewmodel/utils/call';
+import type {AnyCallData} from '~/common/viewmodel/utils/call';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
  * Props accepted by the `Charms` component.
  */
 export interface CharmsProps {
-    readonly call?: AnyCallProps;
+    readonly call?: AnyCallData;
     readonly isBlocked?: boolean;
     readonly isPinned?: boolean;
     readonly isPrivate?: boolean;

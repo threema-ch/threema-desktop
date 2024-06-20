@@ -6,11 +6,20 @@ import type {
     DbGroupUid,
     DbReceiverLookup,
 } from '~/common/db';
-import {Existence, GroupUserState, ReceiverType, TriggerSource} from '~/common/enum';
+import {
+    Existence,
+    GroupCallPolicy,
+    GroupUserState,
+    ReceiverType,
+    StatusMessageType,
+    TriggerSource,
+} from '~/common/enum';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import * as contact from '~/common/model/contact';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import * as conversation from '~/common/model/conversation';
+import type {OngoingGroupCall} from '~/common/model/group-call';
 import type {GroupProfilePictureFields} from '~/common/model/profile-picture';
 import type {GuardedStoreHandle, ServicesForModel} from '~/common/model/types/common';
 import type {Contact} from '~/common/model/types/contact';
@@ -18,7 +27,6 @@ import type {Conversation, ConversationUpdateFromToSync} from '~/common/model/ty
 import type {
     Group,
     GroupController,
-    GroupCreator,
     GroupInit,
     GroupRepository,
     GroupUpdate,
@@ -30,13 +38,17 @@ import type {ProfilePicture} from '~/common/model/types/profile-picture';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ChosenGroupCall, GroupCallBaseData} from '~/common/network/protocol/call/group-call';
+import type {SfuToken} from '~/common/network/protocol/directory';
 import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
+import {OutgoingGroupCallStartTask} from '~/common/network/protocol/task/csp/outgoing-group-call-start';
 import {ReflectGroupSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-group-sync-transaction';
 import type {GroupId, IdentityString} from '~/common/network/types';
 import {getNotificationTagForGroup, type NotificationTag} from '~/common/notification';
 import type {Mutable, u53} from '~/common/types';
-import {assert, unreachable} from '~/common/utils/assert';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
+import {byteEquals} from '~/common/utils/byte';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import {idColorIndexToString} from '~/common/utils/id-color';
 import {AsyncLock} from '~/common/utils/lock';
 import {u64ToHexLe} from '~/common/utils/number';
@@ -48,6 +60,8 @@ import {
     REQUIRED,
 } from '~/common/utils/property-validator';
 import {SequenceNumberU53} from '~/common/utils/sequence-number';
+import type {AbortListener} from '~/common/utils/signal';
+import {WritableStore, type ReadableStore} from '~/common/utils/store';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 import {getGraphemeClusters} from '~/common/utils/string';
 
@@ -347,13 +361,13 @@ export function getByUid(
 function getByGroupIdAndCreator(
     services: ServicesForModel,
     id: GroupId,
-    creator: GroupCreator,
+    creatorIdentity: IdentityString,
 ): LocalModelStore<Group> | undefined {
     const {db} = services;
 
     let contactUid: DbContactUid | undefined = undefined;
-    if (creator !== 'me') {
-        contactUid = db.hasContactByIdentity(creator);
+    if (creatorIdentity !== services.device.identity.string) {
+        contactUid = db.hasContactByIdentity(creatorIdentity);
         if (contactUid === undefined) {
             return undefined;
         }
@@ -368,7 +382,6 @@ function getByGroupIdAndCreator(
 }
 
 function all(services: ServicesForModel): LocalSetStore<LocalModelStore<Group>> {
-    // TODO(DESK-543): Remove this mock and implement it correctly :)
     return cache.setRef.derefOrCreate(() => {
         const {db, logging} = services;
         // Note: This may be inefficient. It would be more efficient to get all UIDs, then filter
@@ -644,19 +657,30 @@ export class GroupModelController implements GroupController {
         },
     };
 
+    /** @inheritdoc */
+    public readonly registerCall: GroupController['registerCall'] = {
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
+        fromRemote: async (handle, call) => {
+            await this._registerCall(call);
+        },
+        fromSync: (call) => {
+            // TODO(DESK-1466): This is wrong. this._registerCall must be awaited or the
+            // registration may get lost.
+            this._registerCall(call).catch((error: unknown) =>
+                this._log.error('Unable to register call', error),
+            );
+        },
+    };
+
     private readonly _log: Logger;
     private readonly _groupDebugString: string;
     private readonly _lookup: DbReceiverLookup;
-
-    /**
-     * A version counter that should be incremented for every group update.
-     */
+    /** A version counter that should be incremented for every group update. */
     private readonly _versionSequence = new SequenceNumberU53<u53>(0);
-
-    /**
-     * Async lock for group updates.
-     */
+    /** Async lock for group updates. */
     private readonly _lock = new AsyncLock();
+    /** Contains the _chosen_ group call. May only be written to by the `GroupCallManager`. */
+    private readonly _call = new WritableStore<ChosenGroupCall | undefined>(undefined);
 
     /**
      * Instantiate the GroupModelController.
@@ -670,6 +694,7 @@ export class GroupModelController implements GroupController {
         private readonly _creatorIdentity: IdentityString,
         private readonly _groupId: GroupId,
         initialProfilePictureData: GroupProfilePictureFields,
+        private readonly _store: () => GroupModelStore,
     ) {
         this._lookup = {
             type: ReceiverType.GROUP,
@@ -688,13 +713,13 @@ export class GroupModelController implements GroupController {
     }
 
     /** @inheritdoc */
-    public conversation(): LocalModelStore<Conversation> {
-        return this._conversation();
+    public get call(): ReadableStore<ChosenGroupCall | undefined> {
+        return this._call;
     }
 
     /** @inheritdoc */
-    public creator(): LocalModelStore<Contact> | 'me' {
-        return this.meta.run((handle) => handle.view().creator);
+    public conversation(): LocalModelStore<Conversation> {
+        return this._conversation();
     }
 
     /** @inheritdoc */
@@ -704,14 +729,45 @@ export class GroupModelController implements GroupController {
             if (contact_ === 'me') {
                 return view.userState === GroupUserState.MEMBER;
             }
-            const identity = contact_.get().view.identity;
-            for (const member of view.members) {
-                if (member.get().view.identity === identity) {
-                    return true;
-                }
-            }
-            return false;
+            return contact_ === view.creator || view.members.has(contact_);
         });
+    }
+
+    /** @inheritdoc */
+    public async refreshCall(token: SfuToken | undefined): Promise<ChosenGroupCall | undefined> {
+        return await this._services.model.call.group.refresh(this._store(), token);
+    }
+
+    /** @inheritdoc */
+    public async joinCall<TIntent = 'join' | 'join-or-create'>(
+        intent: TIntent,
+        cancel: AbortListener<unknown>,
+    ): Promise<TIntent extends 'join' ? OngoingGroupCall | undefined : OngoingGroupCall> {
+        // Note: We do not need to use `ModelLifetimeGuard.run(...)` here because whether the group
+        // still exists is initially (and continuously for the duration of the group call) checked
+        // by `GroupCallmanager.join`.
+        const call = await this._services.model.call.group.join(
+            {store: this._store(), chosen: this._call},
+            intent,
+            cancel,
+        );
+
+        // When the group call was created by the user, announce it
+        if (call?.ctx.type === 'new') {
+            assert(intent === 'join-or-create');
+            this._services.taskManager
+                .schedule(
+                    new OutgoingGroupCallStartTask(
+                        this._services,
+                        this._store(),
+                        call.get().controller.base,
+                    ),
+                )
+                .catch(() => {
+                    // Ignore (task should persist)
+                });
+        }
+        return call;
     }
 
     /**
@@ -926,7 +982,7 @@ export class GroupModelController implements GroupController {
             this.conversation()
                 .get()
                 .controller.createStatusMessage({
-                    type: 'group-name-change',
+                    type: StatusMessageType.GROUP_NAME_CHANGED,
                     value: {
                         oldName,
                         newName: name,
@@ -1039,13 +1095,60 @@ export class GroupModelController implements GroupController {
         }
 
         groupConversation.controller.createStatusMessage({
-            type: 'group-member-change',
+            type: StatusMessageType.GROUP_MEMBER_CHANGED,
             value: {
                 added: added.map((c) => c.get().view.identity),
                 removed: removed.map((c) => c.get().view.identity),
             },
             createdAt,
         });
+    }
+
+    /**
+     * Register a call on the `GroupCallManager`
+     *
+     * Note: This automatically creates status messages.
+     */
+    private async _registerCall(call: GroupCallBaseData): Promise<void> {
+        // Register the call first
+        const registered = await this._services.model.call.group.register(
+            {store: this._store(), chosen: this._call},
+            [{type: 'init', base: call}],
+            'new',
+        );
+
+        // Notify the user if the group call has been determined as _chosen_.
+        //
+        // Note: Waiting for _chosen_ ensures that the user does not get notified when it is no
+        // longer running.
+        registered.chosen
+            .then((chosen) => {
+                if (
+                    chosen !== undefined &&
+                    byteEquals(chosen.base.derivations.callId.bytes, call.derivations.callId.bytes)
+                ) {
+                    if (
+                        // TODO(DESK-858): Remove sandbox restriction once group calls should be released
+                        import.meta.env.BUILD_ENVIRONMENT === 'sandbox' &&
+                        this._services.model.user.callsSettings.get().view.groupCallPolicy ===
+                            GroupCallPolicy.ALLOW_GROUP_CALL
+                    ) {
+                        // TODO(DESK-1405): Make a proper notification. Should we also sound a ringtone
+                        // here? Note: The ringing should not be looped as we have plans to create a
+                        // separate message for ringing a particular group member.
+                        this._services.systemDialog
+                            .open({
+                                type: 'server-alert',
+                                context: {
+                                    title: 'TODO(DESK-1405)',
+                                    text: 'Replace me with new group call notification',
+                                },
+                            })
+                            .catch(assertUnreachable);
+                    }
+                }
+            })
+            .catch(assertUnreachable);
     }
 }
 
@@ -1061,7 +1164,7 @@ export class GroupModelStore extends LocalModelStore<Group> {
         services: ServicesForModel,
         group: GroupView,
         uid: DbGroupUid,
-        initialGrofilePictureData: GroupProfilePictureFields,
+        initialProfilePictureData: GroupProfilePictureFields,
     ) {
         const {logging} = services;
         const tag = `group.${uid}`;
@@ -1072,7 +1175,8 @@ export class GroupModelStore extends LocalModelStore<Group> {
                 uid,
                 contact.getIdentityString(services.device, group.creator),
                 group.groupId,
-                initialGrofilePictureData,
+                initialProfilePictureData,
+                () => this,
             ),
             uid,
             ReceiverType.GROUP,
@@ -1131,9 +1235,9 @@ export class GroupModelRepository implements GroupRepository {
     /** @inheritdoc */
     public getByGroupIdAndCreator(
         id: GroupId,
-        creator: GroupCreator,
+        creatorIdentity: IdentityString,
     ): LocalModelStore<Group> | undefined {
-        return getByGroupIdAndCreator(this._services, id, creator);
+        return getByGroupIdAndCreator(this._services, id, creatorIdentity);
     }
 
     /** @inheritdoc */

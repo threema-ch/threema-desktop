@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 
 import type {DbReceiverLookup} from '~/common/db';
-import {MessageDirection, ReceiverType} from '~/common/enum';
+import {MessageDirection, ReceiverType, StatusMessageType} from '~/common/enum';
 import type {Conversation} from '~/common/model';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {randomMessageId} from '~/common/network/protocol/utils';
@@ -104,7 +104,7 @@ export function run(): void {
             for (let i = 0; i < 10; i += 1) {
                 const createdAt = new Date();
                 singleConversation.get().controller.createStatusMessage({
-                    type: 'group-name-change',
+                    type: StatusMessageType.GROUP_NAME_CHANGED,
                     value: {
                         oldName: 'bli',
                         newName: 'blub',
@@ -114,7 +114,7 @@ export function run(): void {
             }
             const lastMessageDate = new Date();
             singleConversation.get().controller.createStatusMessage({
-                type: 'group-name-change',
+                type: StatusMessageType.GROUP_NAME_CHANGED,
                 value: {
                     oldName: 'bli',
                     newName: 'blub',
@@ -148,7 +148,7 @@ export function run(): void {
             for (let i = 0; i < 10; i += 1) {
                 if (i % 2 === 0) {
                     singleConversation.get().controller.createStatusMessage({
-                        type: 'group-name-change',
+                        type: StatusMessageType.GROUP_NAME_CHANGED,
                         value: {
                             oldName: 'bli',
                             newName: 'blub',
@@ -169,7 +169,7 @@ export function run(): void {
 
             const lastStatusMessageDate = new Date(now + 3000);
             singleConversation.get().controller.createStatusMessage({
-                type: 'group-name-change',
+                type: StatusMessageType.GROUP_NAME_CHANGED,
                 value: {
                     oldName: 'bli',
                     newName: 'blub',

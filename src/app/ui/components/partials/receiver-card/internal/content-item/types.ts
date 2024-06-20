@@ -33,7 +33,7 @@ export interface ReceiverNameContentItemOptions {
     /**
      * Substrings to highlight.
      */
-    readonly highlights?: string | string[];
+    readonly highlights?: string | readonly string[];
 }
 
 export interface StatusContentItemOptions extends IndicatorProps {

@@ -39,19 +39,17 @@
   } = services;
 
   function handleClickMessage(receiverLookup: DbReceiverLookup, messageId: MessageId): void {
-    router.replaceMain(
-      ROUTE_DEFINITIONS.main.conversation.withTypedParams({
+    router.go({
+      main: ROUTE_DEFINITIONS.main.conversation.withParams({
         receiverLookup,
-        initialMessage: {
-          messageId,
-        },
+        initialMessage: {messageId},
       }),
-    );
+    });
   }
 </script>
 
 <ul class="container">
-  {#each items as item (`${item.conversation.receiver.lookup.type}.${item.conversation.receiver.lookup.uid}`)}
+  {#each items as item (item.conversation.receiver.id)}
     {@const receiver = item.conversation.receiver}
 
     <li class="conversation">

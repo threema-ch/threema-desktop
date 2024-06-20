@@ -3,6 +3,7 @@ import type {ConversationCategory, MessageDirection} from '~/common/enum';
 import type {FEATURE_MASK_FLAG, MessageId, StatusMessageId} from '~/common/network/types';
 import type {u53} from '~/common/types';
 import type {ConversationMessageSetStore} from '~/common/viewmodel/conversation/main/store';
+import type {AnyCallData} from '~/common/viewmodel/utils/call';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
@@ -16,6 +17,7 @@ export interface ConversationViewModel {
      * The `MessageId` of the first (i.e. earliest) message that is still unread in the conversation.
      */
     readonly firstUnreadMessageId: MessageId | undefined;
+    readonly call: AnyCallData | undefined;
     readonly id: DbConversationUid;
     readonly isArchived: boolean;
     readonly isPinned: boolean;

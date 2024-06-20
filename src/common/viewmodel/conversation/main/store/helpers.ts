@@ -267,11 +267,11 @@ function supportsFeature(
                 }
             }
 
-            const groupCreator = receiver.get().view.creator;
-            // The user is not the creator, hence we need to check the creator's feature mask as well.
-            // If the creator is a Gateway ID that is not monitored, don't show it in the list.
-            if (groupCreator !== 'me') {
-                const creatorIdentity = groupCreator.get().view.identity;
+            const creator = receiver.get().view.creator;
+            if (creator !== 'me') {
+                // The user is not the creator, hence we need to check the creator's feature mask as well.
+                // If the creator is a Gateway ID that is not monitored, don't show it in the list.
+                const creatorIdentity = creator.get().view.identity;
                 if (
                     !(
                         isGroupManagedByGateway(creatorIdentity) &&
@@ -280,9 +280,9 @@ function supportsFeature(
                             creatorIdentity,
                         )
                     ) &&
-                    !checkFeatureMaskSupportsFeature(groupCreator.get().view.featureMask, feature)
+                    !checkFeatureMaskSupportsFeature(creator.get().view.featureMask, feature)
                 ) {
-                    notSupportedNames.push(groupCreator.get().view.displayName);
+                    notSupportedNames.push(creator.get().view.displayName);
                 }
             }
 

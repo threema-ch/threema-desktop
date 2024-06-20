@@ -45,7 +45,7 @@ export function run(): void {
             it('adds a status message', function () {
                 conversation.get().controller.createStatusMessage({
                     createdAt: new Date(),
-                    type: 'group-name-change',
+                    type: StatusMessageType.GROUP_NAME_CHANGED,
                     value: {
                         oldName: 'Hoi',
                         newName: 'Ciao',
@@ -55,7 +55,7 @@ export function run(): void {
                 const statusMessages = conversation.get().controller.getAllStatusMessages();
                 expect(statusMessages.get().size).to.eq(1);
                 expect([...statusMessages.get()].at(0)?.type).to.eq(
-                    StatusMessageType.GROUP_NAME_CHANGE,
+                    StatusMessageType.GROUP_NAME_CHANGED,
                 );
                 expect([...statusMessages.get()].at(0)?.get().view.value).to.deep.eq({
                     oldName: 'Hoi',
@@ -68,7 +68,7 @@ export function run(): void {
                     .get()
                     .controller.createStatusMessage({
                         createdAt: new Date(),
-                        type: 'group-name-change',
+                        type: StatusMessageType.GROUP_NAME_CHANGED,
                         value: {
                             oldName: 'Hoi',
                             newName: 'Ciao',
@@ -80,7 +80,7 @@ export function run(): void {
                     .get()
                     .controller.createStatusMessage({
                         createdAt: new Date(),
-                        type: 'group-name-change',
+                        type: StatusMessageType.GROUP_NAME_CHANGED,
                         value: {
                             oldName: 'Hoi',
                             newName: 'Ciao-zeme',
@@ -99,7 +99,7 @@ export function run(): void {
 
                 expect(statusMessages.get().size).to.eq(1);
                 expect([...statusMessages.get()].at(0)?.type).to.eq(
-                    StatusMessageType.GROUP_NAME_CHANGE,
+                    StatusMessageType.GROUP_NAME_CHANGED,
                 );
                 expect([...statusMessages.get()].at(0)?.get().view.value).to.deep.eq({
                     oldName: 'Hoi',
@@ -111,7 +111,7 @@ export function run(): void {
                     .get()
                     .controller.createStatusMessage({
                         createdAt: new Date(),
-                        type: 'group-name-change',
+                        type: StatusMessageType.GROUP_NAME_CHANGED,
                         value: {
                             oldName: 'Hoi',
                             newName: 'Ciao-zeme',

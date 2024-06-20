@@ -11,8 +11,8 @@ export interface MessageDetailsModalProps {
     readonly direction?: MessageProps['direction'];
     readonly file?: MessageProps['file'];
     readonly id?: MessageId | StatusMessageId;
-    readonly reactions: Readonly<Reaction[]>;
-    readonly history: Readonly<HistoryEntry[]>;
+    readonly reactions: readonly Reaction[];
+    readonly history: readonly HistoryEntry[];
     readonly services: AppServicesForSvelte;
     readonly status: MessageProps['status'];
     readonly statusMessageType?: StatusMessageProps['status']['type'];

@@ -207,7 +207,7 @@ export function groupLeaveTests(
     }
 
     it('remove member from local group if present', async function () {
-        const {crypto, model} = services;
+        const {crypto, device, model} = services;
 
         // Add member sender (user1) contact
         const member = user1;
@@ -229,13 +229,13 @@ export function groupLeaveTests(
         });
 
         // Ensure that user1 is member of the group
-        assertGroupHasMembers(services, groupId, 'me', [member.identity.string]);
+        assertGroupHasMembers(services, groupId, device.identity.string, [member.identity.string]);
 
         // Run task: Leave from member
         await runTask(services, groupId, creator, memberContact, [], mode, 'Leave from member');
 
         // Ensure that group member was removed
-        assertGroupHasMembers(services, groupId, 'me', []);
+        assertGroupHasMembers(services, groupId, device.identity.string, []);
 
         // Run task: Leave from non-member
         await runTask(
@@ -249,7 +249,7 @@ export function groupLeaveTests(
         );
 
         // No changes to member list
-        assertGroupHasMembers(services, groupId, 'me', []);
+        assertGroupHasMembers(services, groupId, device.identity.string, []);
     });
 }
 

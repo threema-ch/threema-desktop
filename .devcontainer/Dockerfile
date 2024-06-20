@@ -8,6 +8,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     apt-utils \
     build-essential \
     ca-certificates \
+    clang-format \
     curl \
     git \
     less \

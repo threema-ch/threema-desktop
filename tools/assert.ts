@@ -20,9 +20,8 @@ export function assert(condition: boolean, message?: string): asserts condition 
  *
  * @throws {Error} Always.
  */
-export function unreachable(value: never, error?: Error): never {
-    error ??= new Error('Unreachable code section!');
-    throw error;
+export function unreachable(value: never, message?: string): never {
+    throw new Error(message ?? 'Unreachable code section!');
 }
 
 /**

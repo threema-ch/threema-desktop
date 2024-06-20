@@ -1,9 +1,9 @@
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import type {LocalModel, LocalModelController} from '~/common/model';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import type {u53} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
-import {TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {
     type IQueryableStore,
     type IQueryableStoreValue,
@@ -141,7 +141,7 @@ export function derive<
  *  The {@param TOutDerivedValue} provides type variance for the output type inference.
  */
 export class DerivedStore<
-        const TSourceStores extends IQueryableStore<unknown>[],
+        const TSourceStores extends readonly IQueryableStore<unknown>[],
         TInDerivedValue extends TOutDerivedValue,
         TOutDerivedValue = TInDerivedValue,
     >

@@ -1,8 +1,8 @@
 <script lang="ts">
   import {createEventDispatcher, onDestroy, onMount} from 'svelte';
 
-  import {unwrap} from '~/app/ui/svelte-components/utils/assert';
   import type {u53} from '~/common/types';
+  import {unwrap} from '~/common/utils/assert';
 
   import emoji from './emoji.html?raw';
 

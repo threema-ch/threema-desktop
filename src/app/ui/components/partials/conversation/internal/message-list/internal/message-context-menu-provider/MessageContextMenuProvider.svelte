@@ -206,7 +206,7 @@
     }
   }
 
-  let menuItems: Readonly<ContextMenuItem[]>;
+  let menuItems: readonly ContextMenuItem[];
   $: menuItems = getContextMenuItems({
     copyLink:
       enabledOptions.copyLink && selectedLink !== undefined ? handleClickCopyLink : undefined,

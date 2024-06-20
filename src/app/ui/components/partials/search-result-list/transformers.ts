@@ -7,6 +7,7 @@ import {ConversationCategory, ConversationVisibility} from '~/common/enum';
 import {conversationCompareFn} from '~/common/model/utils/conversation';
 import type {u53} from '~/common/types';
 import {chunkBy} from '~/common/utils/array';
+import {unwrap} from '~/common/utils/assert';
 import type {Remote} from '~/common/utils/endpoint';
 import type {IQueryableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
@@ -95,8 +96,7 @@ export function messageSearchResultSetStoreToMessagePreviewListPropsStore(
             ).map((groupedResults) => ({
                 // As the results were only chunked, it is certain that each chunk has at least one
                 // element.
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                conversation: groupedResults[0]!.conversation,
+                conversation: unwrap(groupedResults[0]).conversation,
                 messages: groupedResults
                     .map((result) => {
                         const messageViewModel = getAndSubscribe(result.message.viewModelStore);

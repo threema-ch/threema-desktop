@@ -11,7 +11,6 @@ import type {
     ControllerCustomUpdateFromSource,
     ControllerUpdateFromSource,
     ControllerUpdateFromSync,
-    IdentityStringOrMe,
 } from '~/common/model/types/common';
 import type {Contact} from '~/common/model/types/contact';
 import type {Conversation} from '~/common/model/types/conversation';
@@ -32,7 +31,7 @@ export type TextBasedMessageType = MessageType.TEXT;
 export interface MessageReactionView {
     readonly reactionAt: Date;
     readonly reaction: MessageReaction;
-    readonly senderIdentity: IdentityStringOrMe;
+    readonly senderIdentity: IdentityString;
 }
 
 export interface MessageHistoryViewEntry {
@@ -186,7 +185,7 @@ export type InboundBaseMessageController<TView extends InboundBaseMessageView> =
          */
         readonly reaction: ControllerCustomUpdateFromSource<
             [type: MessageReaction, reactedAt: Date], // From Local
-            [type: MessageReaction, reactedAt: Date, reactionSender: IdentityStringOrMe], // FromSync
+            [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString], // FromSync
             [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString] // FromRemote
         >;
 
@@ -226,7 +225,7 @@ export type OutboundBaseMessageController<TView extends OutboundBaseMessageView>
          */
         readonly reaction: ControllerCustomUpdateFromSource<
             [type: MessageReaction, reactedAt: Date], // From Local
-            [type: MessageReaction, reactedAt: Date, reactionSender: IdentityStringOrMe], // FromSync
+            [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString], // FromSync
             [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString] // FromRemote
         >;
 

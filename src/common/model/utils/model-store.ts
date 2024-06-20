@@ -1,4 +1,5 @@
 import {TransferTag} from '~/common/enum';
+import {RELEASE_PROXY, TRANSFERRED_MARKER, TRANSFER_HANDLER} from '~/common/index';
 import type {Logger, LogPrefix} from '~/common/logging';
 import type {
     LocalModel,
@@ -9,21 +10,20 @@ import type {
 import type {WeakOpaque} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {
-    type CreatedEndpoint,
     type CustomTransferable,
     type CustomTransferredRemoteMarker,
-    type Endpoint,
     type EndpointFor,
     type EndpointPairFor,
     type EndpointService,
-    type MessageEvent,
+    type MessageEventLike,
     type ObjectId,
     type ProxyEndpointMethods,
     type RegisteredTransferHandler,
     registerTransferHandler,
-    RELEASE_PROXY,
-    TRANSFER_HANDLER,
-    TRANSFERRED_MARKER,
+    type Endpoint,
+    type ProxyEndpoint,
+    type ProxyMarked,
+    type ProxyEndpointPair,
 } from '~/common/utils/endpoint';
 import type {AbortRaiser} from '~/common/utils/signal';
 import {
@@ -138,7 +138,7 @@ function releaseRemoteModelStore({
     controller,
 }: {
     readonly view: {
-        readonly endpoint: Endpoint;
+        readonly endpoint: Endpoint<undefined, unknown>;
         readonly releaser?: AbortRaiser;
     };
     readonly controller: ProxyEndpointMethods;
@@ -171,7 +171,7 @@ export class RemoteModelStore<
         public readonly id: ObjectId<RemoteModelStore<TModel>>,
         view: {
             readonly value: TView;
-            readonly endpoint: EndpointFor<'view'>;
+            readonly endpoint: EndpointFor<'view', undefined, TView>;
         },
         controller: RemoteModelController<TLocalController>,
         public readonly ctx: TCtx,
@@ -193,7 +193,7 @@ export class RemoteModelStore<
 
         // Forward model view updates to all underlying subscribers
         const self = new WeakRef(this);
-        function listener({data}: MessageEvent): void {
+        function listener({data}: MessageEventLike<TView>): void {
             // Unregister listener when the reference disappears
             const self_ = self.deref();
             if (self_ === undefined) {
@@ -204,7 +204,7 @@ export class RemoteModelStore<
             // Update the underlying view and dispatch the model.
             // Note: We need to clone the `value` object, so the diffing
             //       algorithm of Svelte works!
-            const updated = data as TView;
+            const updated = data;
             self_._value = {...self_._value, view: updated};
             self_._dispatch(self_._value);
         }
@@ -234,11 +234,11 @@ export class RemoteModelStore<
         id: ObjectId<RemoteModelStore<TModel>>,
         view: {
             readonly value: TView;
-            readonly endpoint: EndpointFor<'view'>;
+            readonly endpoint: EndpointFor<'view', undefined, TView>;
             readonly releaser?: AbortRaiser;
         },
         controller: {
-            readonly endpoint: EndpointFor<'controller'>;
+            readonly endpoint: ProxyEndpoint<TLocalController>;
             readonly log?: Logger;
         },
         ctx: TCtx,
@@ -284,10 +284,10 @@ export class RemoteModelStore<
         service: EndpointService,
         storeListener: ISubscribableStore<TModel>,
         view: {
-            readonly endpoint: EndpointFor<'view'>;
+            readonly endpoint: EndpointFor<'view', unknown, undefined>;
         },
         controller: {
-            readonly endpoint: EndpointFor<'controller'>;
+            readonly endpoint: ProxyEndpoint<TLocalController>;
             readonly log?: Logger;
         },
     ): [view: TView, ctx: TCtx, type: TType] {
@@ -328,9 +328,9 @@ const MODEL_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
         type: unknown,
         tag: string | undefined,
         prefix: LogPrefix | undefined,
-        viewEndpoint: EndpointFor<'view', CreatedEndpoint>,
+        viewEndpoint: EndpointFor<'view', undefined, unknown>,
         viewValue: unknown,
-        controllerEndpoint: EndpointFor<'controller', CreatedEndpoint>,
+        controllerEndpoint: ProxyEndpoint<ProxyMarked>,
     ],
     [
         id: ObjectId<RemoteModelStore<never>>,
@@ -338,9 +338,9 @@ const MODEL_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
         type: unknown,
         tag: string | undefined,
         prefix: LogPrefix | undefined,
-        viewEndpoint: EndpointFor<'view', CreatedEndpoint>,
+        viewEndpoint: EndpointFor<'view', undefined, unknown>,
         viewValue: unknown,
-        controllerEndpoint: EndpointFor<'controller', CreatedEndpoint>,
+        controllerEndpoint: ProxyEndpoint<ProxyMarked>,
     ],
     TransferTag.MODEL_STORE
 > = registerTransferHandler({
@@ -356,29 +356,29 @@ const MODEL_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
             type: unknown,
             tag: string | undefined,
             prefix: LogPrefix | undefined,
-            viewEndpoint: EndpointFor<'view', CreatedEndpoint>,
+            viewEndpoint: EndpointFor<'view', undefined, unknown>,
             viewValue: unknown,
-            controllerEndpoint: EndpointFor<'controller', CreatedEndpoint>,
+            controllerEndpoint: ProxyEndpoint<ProxyMarked>,
         ],
         transfers: [
-            viewEndpoint: EndpointFor<'view', CreatedEndpoint>,
-            controllerEndpoint: EndpointFor<'controller', CreatedEndpoint>,
+            viewEndpoint: EndpointFor<'view', undefined, unknown>,
+            controllerEndpoint: ProxyEndpoint<ProxyMarked>,
         ],
     ] => {
         // Get or assign an ID and transmit the necessary store data
         const id = service.cache().local.getOrAssignId(store);
         const view: {
-            readonly endpoints: EndpointPairFor<'view'>;
+            readonly endpoints: EndpointPairFor<'view', unknown, undefined>;
             value: unknown;
         } = {
-            endpoints: service.createEndpointPair<'view'>(),
+            endpoints: service.createEndpointPair(),
             value: undefined,
         };
         const controller: {
-            readonly endpoints: EndpointPairFor<'controller'>;
+            readonly endpoints: ProxyEndpointPair<ProxyMarked>;
             log?: Logger;
         } = {
-            endpoints: service.createEndpointPair<'controller'>(),
+            endpoints: service.createEndpointPair<ProxyMarked>(),
         };
         if (import.meta.env.DEBUG) {
             const count = service.cache().counter?.get(id);
@@ -395,7 +395,8 @@ const MODEL_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
                 endpoint: view.endpoints.local,
             },
             {
-                endpoint: controller.endpoints.local,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                endpoint: controller.endpoints.local as ProxyEndpoint<any>,
                 log: controller.log,
             },
         );
@@ -421,9 +422,9 @@ const MODEL_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
             type: unknown,
             tag: string | undefined,
             prefix: LogPrefix | undefined,
-            viewEndpoint: EndpointFor<'view', CreatedEndpoint>,
+            viewEndpoint: EndpointFor<'view', undefined, unknown>,
             viewValue: unknown,
-            controllerEndpoint: EndpointFor<'controller', CreatedEndpoint>,
+            controllerEndpoint: ProxyEndpoint<ProxyMarked>,
         ],
         service: EndpointService,
     ): RemoteModelStore<never> => {
@@ -464,14 +465,14 @@ const MODEL_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
                     id,
                     {
                         value: viewValue as never, // Ugly cast
-                        endpoint: viewEndpoint,
+                        endpoint: viewEndpoint as EndpointFor<'view', undefined, never>, // Ugly cast
                         releaser: debug?.model.releaser,
                     },
                     {
-                        endpoint: controllerEndpoint,
+                        endpoint: controllerEndpoint as ProxyEndpoint<never>, // Ugly cast
                         log: debug?.controller.log,
                     },
-                    ctx as never, // Ugly cast,
+                    ctx as never, // Ugly cast
                     type as never, // Ugly cast
                     {
                         debug: {

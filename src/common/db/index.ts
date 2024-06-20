@@ -26,7 +26,6 @@ import type {
     WorkVerificationLevel,
 } from '~/common/enum';
 import type {FileEncryptionKey, FileId} from '~/common/file-storage';
-import type {IdentityStringOrMe} from '~/common/model/types/common';
 import type {
     AnyNonDeletedMessageType,
     MediaBasedMessageType,
@@ -417,9 +416,9 @@ export interface DbMessageReaction {
     readonly reaction: MessageReaction;
 
     /**
-     * The sender of the reaction. If it is the user, the identity string is 'me'
+     * The sender of the reaction.
      */
-    readonly senderIdentity: IdentityStringOrMe;
+    readonly senderIdentity: IdentityString;
 
     readonly messageUid: DbMessageUid;
 }
@@ -596,7 +595,7 @@ export interface DbMessageLastEdit {
  */
 export type DbStatusMessageUid = WeakOpaque<DbUid, {readonly DbStatusMessageUid: unique symbol}>;
 
-export interface DbStatusMessage {
+export interface DbStatusMessage<TType extends StatusMessageType> {
     readonly createdAt: Date;
     readonly conversationUid: DbConversationUid;
     /**
@@ -605,9 +604,12 @@ export interface DbStatusMessage {
     readonly id: StatusMessageId;
     readonly ordinal: u53;
     readonly statusBytes: ReadonlyUint8Array;
-    readonly type: StatusMessageType;
+    readonly type: TType;
     readonly uid: DbStatusMessageUid;
 }
+
+/** Any status message. */
+export type DbAnyStatusMessage = DbStatusMessage<StatusMessageType>;
 
 /**
  * Data required to create a status message entry.
@@ -816,8 +818,8 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      * Add a status message to the db.
      */
     readonly createStatusMessage: (
-        statusMessage: DbCreateStatusMessage<DbStatusMessage>,
-    ) => DbCreated<DbStatusMessage>;
+        statusMessage: DbCreateStatusMessage<DbAnyStatusMessage>,
+    ) => DbCreated<DbAnyStatusMessage>;
 
     /**
      * If the message ID exists in the conversation, return its UID.
@@ -854,7 +856,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     /**
      * Get the status message with the specified UID.
      */
-    readonly getStatusMessageByUid: (uid: DbStatusMessageUid) => DbGet<DbStatusMessage>;
+    readonly getStatusMessageByUid: (uid: DbStatusMessageUid) => DbGet<DbAnyStatusMessage>;
 
     /**
      * Get the last (most recent) message of the conversation.
@@ -864,7 +866,9 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     /**
      * Get the last (most recent) status message of the conversation.
      */
-    readonly getLastStatusMessage: (conversationUid: DbConversationUid) => DbGet<DbStatusMessage>;
+    readonly getLastStatusMessage: (
+        conversationUid: DbConversationUid,
+    ) => DbGet<DbAnyStatusMessage>;
 
     /**
      * Get the first (oldest), unread message of the conversation.
@@ -876,7 +880,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      */
     readonly getStatusMessagesOfConversation: (
         conversationUid: DbConversationUid,
-    ) => Omit<DbStatusMessage, 'conversationUid' | 'id' | 'ordinal'>[];
+    ) => Omit<DbAnyStatusMessage, 'conversationUid' | 'id' | 'ordinal'>[];
 
     /**
      * Update the specified message. Fields that are missing will be ignored.
@@ -971,7 +975,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      *
      * @returns whether a status message was deleted or not
      */
-    readonly removeStatusMessage: (uid: DbRemove<DbStatusMessage>) => boolean;
+    readonly removeStatusMessage: (uid: DbRemove<DbAnyStatusMessage>) => boolean;
 
     /**
      * Remove all status messages of a given conversation, no matter the type.
@@ -1038,7 +1042,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
             readonly direction: MessageQueryDirection;
             readonly ordinal: u53;
         },
-    ) => DbList<DbStatusMessage, 'uid'>;
+    ) => DbList<DbAnyStatusMessage, 'uid'>;
 
     /**
      * Return the message count of a conversation

@@ -1,4 +1,4 @@
-import {unwrap} from '~/app/ui/svelte-components/utils/assert';
+import {unwrap} from '~/common/utils/assert';
 
 /**
  * A handler for resize events.

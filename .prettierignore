@@ -7,6 +7,7 @@
 /package-lock.json
 /packaging/flatpak/generated-sources.json
 /src/common/network/protobuf/js
+/src/common/internal-protobuf/
 /threema-protocols/
 
 # Forked code, keep differences to original minimal

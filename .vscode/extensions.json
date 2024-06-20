@@ -3,6 +3,10 @@
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
     "stkb.rewrap",
-    "svelte.svelte-vscode"
+    "svelte.svelte-vscode",
+    "meganrogge.template-string-converter",
+    "yoavbls.pretty-ts-errors",
+    "nick-lvov-dev.typescript-explicit-types",
+    "zxh404.vscode-proto3"
   ]
 }

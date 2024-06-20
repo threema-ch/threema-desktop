@@ -7,6 +7,11 @@ import type {
     SelfReceiverData,
 } from '~/common/viewmodel/utils/receiver';
 
+export type ProfilePictureReceiverData =
+    | (Pick<AnyReceiverData, 'color' | 'initials' | 'lookup' | 'name' | 'type'> &
+          Pick<ContactReceiverData, 'badge'>)
+    | Pick<SelfReceiverData, 'color' | 'initials' | 'name' | 'type'>;
+
 /**
  * Props accepted by the `ProfilePicture` component.
  */

@@ -2,7 +2,7 @@ import type {CryptoBox} from '~/common/crypto/box';
 import type {INonceService} from '~/common/crypto/nonce';
 import type {NonceScope} from '~/common/enum';
 import {CryptoError} from '~/common/error';
-import type {ReadonlyUint8Array, u53, u64, WeakOpaque} from '~/common/types';
+import {tag, type ReadonlyUint8Array, type u53, type u64, type WeakOpaque} from '~/common/types';
 import {byteEquals} from '~/common/utils/byte';
 
 export type {CryptoBox};
@@ -59,7 +59,7 @@ export type SignatureLength = 64;
  *       another thread.
  */
 class SecretKey<TLength extends SecretKeyLength> {
-    #_key?: Uint8Array;
+    #_key: () => Uint8Array | undefined;
 
     private constructor(
         key: Uint8Array,
@@ -70,57 +70,63 @@ class SecretKey<TLength extends SecretKeyLength> {
                 `Expected key to be ${length} bytes but has ${key.byteLength} bytes`,
             );
         }
-        this.#_key = key;
+        // Note: When the key is unwrapped and transferred, it will become empty bytes which means
+        // it is effectively purged.
+        this.#_key = () => (key.byteLength !== 0 ? key : undefined);
     }
 
-    /**
-     * Wrap raw key (bytes).
-     */
+    /** Wrap raw key (bytes). */
     public static wrap<TLength extends SecretKeyLength>(
         key: Uint8Array,
         length: TLength,
     ): RawKey<TLength> {
-        return new SecretKey<TLength>(key, length) as RawKey<TLength>;
+        return tag<RawKey<TLength>>(new SecretKey<TLength>(key, length));
     }
 
-    /**
-     * Cast a {@link RawKey} to a {@link ReadonlyRawKey}.
-     */
+    /** Check if the key has been purged (or transferred). */
+    public get purged(): boolean {
+        return this.#_key() !== undefined;
+    }
+
+    /** Cast a {@link RawKey} to a {@link ReadonlyRawKey}. */
     public asReadonly(): ReadonlyRawKey<TLength> {
-        return this as ReadonlyRawKey<TLength>;
+        return tag<ReadonlyRawKey<TLength>>(this);
     }
 
     /**
      * Unwrap the raw key (bytes).
      *
      * IMPORTANT: UNSAFE! Only use this briefly! **DO NOT** hand out a reference of the key to
-     *            another function that is not a foreign API!
+     * another function that is not a foreign API! **DO NOT** modify the key unless you absolutely
+     * know what you're doing.
      */
-    public unwrap(): ReadonlyUint8Array {
+    public unwrap(): UnwrappedRawKey {
+        const key = this.#_key();
+
         // Check if key was purged
-        if (this.#_key === undefined) {
+        if (key === undefined) {
             throw new Error('Cannot unwrap, key purged');
         }
 
         // Hand out
-        return this.#_key;
+        return tag<UnwrappedRawKey>(key);
     }
 
-    /**
-     * Purge the key from memory.
-     */
+    /** Purge the key from memory. */
     public purge(): void {
+        const key = this.#_key();
+
         // Ignore if already purged
-        if (this.#_key === undefined) {
+        if (key === undefined) {
             return;
         }
 
         // Purge the secret key (with a debug-friendly '#')
         // Loop to hopefully circumvent any optimisation attempts of the JS engine
-        for (let offset = 0; offset < this.#_key.byteLength; ++offset) {
-            this.#_key[offset] = 0x23;
+        for (let offset = 0; offset < key.byteLength; ++offset) {
+            key[offset] = 0x23;
         }
-        this.#_key = undefined;
+        this.#_key = () => undefined;
     }
 
     /**
@@ -131,10 +137,11 @@ class SecretKey<TLength extends SecretKeyLength> {
      * @throws {@link Error} if the other key was already purged
      */
     public equals(other: Pick<SecretKey<TLength>, 'unwrap'>): boolean {
-        if (this.#_key === undefined) {
+        const key = this.#_key();
+        if (key === undefined) {
             return false;
         }
-        return byteEquals(this.#_key, other.unwrap());
+        return byteEquals(key, other.unwrap());
     }
 }
 
@@ -159,6 +166,14 @@ export function wrapRawKey<TLength extends SecretKeyLength>(
 ): RawKey<TLength> {
     return SecretKey.wrap<TLength>(key, length);
 }
+
+/**
+ * An unwrapped raw key (bytes). Must be exactly 32 bytes long.
+ *
+ * IMPORTANT: UNSAFE! Only use this briefly! **DO NOT** hand out a reference of the key to
+ *            another function that is not a foreign API or a worker!
+ */
+export type UnwrappedRawKey = WeakOpaque<Uint8Array, {readonly UnwrappedRawKey: unique symbol}>;
 
 /**
  * A readonly raw key (bytes). May be of any valid {@link SecretKeyLength}.
@@ -190,7 +205,7 @@ export type PublicKey = WeakOpaque<ReadonlyUint8Array, {readonly PublicKey: uniq
 /**
  * Type guard for {@link PublicKey}.
  */
-export function isPublicKey(raw: unknown): raw is PublicKey {
+export function isPublicKey<TKey extends PublicKey>(raw: unknown): raw is TKey {
     return raw instanceof Uint8Array && raw.byteLength === NACL_CONSTANTS.KEY_LENGTH;
 }
 
@@ -199,13 +214,13 @@ export function isPublicKey(raw: unknown): raw is PublicKey {
  *
  * @throws If the array is not a valid public key.
  */
-export function ensurePublicKey(key: ReadonlyUint8Array): PublicKey {
+export function ensurePublicKey<TKey extends PublicKey>(key: ReadonlyUint8Array): TKey {
     if (!isPublicKey(key)) {
         throw new Error(
             `Expected public key to be ${NACL_CONSTANTS.KEY_LENGTH} bytes but has ${key.byteLength} bytes`,
         );
     }
-    return key;
+    return key as TKey;
 }
 
 /**
@@ -299,9 +314,35 @@ export function ensureEd25519Signature(signature: ReadonlyUint8Array): Ed25519Si
 }
 
 /**
- * The first 16 byte of an NaCl nonce as used in the chat server protocol.
+ * Length of a {@link Cookie} in bytes.
+ */
+export const COOKIE_LENGTH = 16;
+
+/**
+ * The first 16 byte of an NaCl nonce as used in the chat server and other protocols.
  */
 export type Cookie = WeakOpaque<Uint8Array, {readonly Cookie: unique symbol}>;
+
+/**
+ * Type guard for {@link Cookie}.
+ */
+export function isCookie<TCookie extends Cookie>(raw: unknown): raw is TCookie {
+    return raw instanceof Uint8Array && raw.byteLength === COOKIE_LENGTH;
+}
+
+/**
+ * Ensure input is a valid {@link Cookie}.
+ *
+ * @throws If the array is not a valid cookie.
+ */
+export function ensureCookie<TCookie extends Cookie>(cookie: Uint8Array): TCookie {
+    if (!isCookie(cookie)) {
+        throw new Error(
+            `Expected cookie to be ${COOKIE_LENGTH} bytes but has ${cookie.byteLength} bytes`,
+        );
+    }
+    return cookie as TCookie;
+}
 
 /**
  * Encrypted data with {@link Backend.encryptedHeadroom} upfront.

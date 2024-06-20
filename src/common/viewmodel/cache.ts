@@ -9,6 +9,7 @@ import type {AnyStatusMessageModelStore} from '~/common/model/types/status';
 import {LazyWeakRef} from '~/common/model/utils/model-cache';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {WeakValueMap} from '~/common/utils/map';
+import type {LocalStore} from '~/common/utils/store';
 import type {ContactDetailViewModelBundle} from '~/common/viewmodel/contact/detail';
 import type {ContactListViewModelBundle} from '~/common/viewmodel/contact/list';
 import type {ContactListItemViewModelBundle} from '~/common/viewmodel/contact/list/item';
@@ -21,6 +22,7 @@ import type {DebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import type {ProfileViewModelStore} from '~/common/viewmodel/profile';
 import type {SearchViewModelBundle} from '~/common/viewmodel/search/nav';
 import type {SettingsViewModelBundle} from '~/common/viewmodel/settings';
+import type {SelfReceiverData} from '~/common/viewmodel/utils/receiver';
 
 export class ViewModelCache {
     public readonly conversationList = new LazyWeakRef<ConversationListViewModelBundle>();
@@ -49,6 +51,8 @@ export class ViewModelCache {
         AnyReceiverStore,
         ContactDetailViewModelBundle<AnyReceiver>
     >();
+    // TODO(DESK-1504): Investigate merging `user` with `profile`
+    public readonly user = new LazyWeakRef<LocalStore<SelfReceiverData>>();
 
     public readonly debugPanel = new LazyWeakRef<DebugPanelViewModel>();
     public readonly profile = new LazyWeakRef<ProfileViewModelStore>();

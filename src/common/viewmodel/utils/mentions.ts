@@ -1,9 +1,15 @@
-import type {DbContactReceiverLookup} from '~/common/db';
 import {ReceiverType} from '~/common/enum';
 import type {AnyNonDeletedMessageModel} from '~/common/model/types/message';
-import {type IdentityString, isIdentityString} from '~/common/network/types';
+import {isIdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
+import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
+import {getRemovedContactData} from '~/common/viewmodel/utils/contact';
+import type {
+    SenderDataContact,
+    SenderDataContactRemoved,
+    SenderDataSelf,
+} from '~/common/viewmodel/utils/sender';
 
 /**
  * Regex to match user mentions.
@@ -17,30 +23,19 @@ export const REGEX_MATCH_MENTION = /@\[(?<identity>[A-Z0-9*]{1}[A-Z0-9]{7}|@{8})
 const EVERYONE_IDENTITY_STRING = '@@@@@@@@';
 
 /**
- * Union of all types of mention.
- */
-export type AnyMention = MentionSelf | MentionContact | MentionEveryone;
-
-/**
  * A mention that matches the user themself.
  */
-export interface MentionSelf {
-    readonly type: 'self';
-    readonly identity: IdentityString;
-    /** Display name of the user. */
-    readonly name: string | undefined;
-}
+export type MentionSelf = Pick<SenderDataSelf, 'type' | 'identity' | 'nickname'>;
 
 /**
  * A mention that matches a contact.
  */
-export interface MentionContact {
-    readonly type: 'contact';
-    readonly identity: IdentityString;
-    readonly lookup: DbContactReceiverLookup;
-    /** Display name of the contact. */
-    readonly name: string;
-}
+export type MentionContact = Pick<SenderDataContact, 'type' | 'identity' | 'lookup' | 'name'>;
+
+/**
+ * A mention that matches a contact that has been removed from the contact list of the user.
+ */
+export type MentionContactRemoved = Pick<SenderDataContactRemoved, 'type' | 'identity'>;
 
 /**
  * A mention that matches everyone (e.g., all members of a group).
@@ -49,6 +44,11 @@ export interface MentionEveryone {
     readonly type: 'everyone';
     readonly identity: typeof EVERYONE_IDENTITY_STRING;
 }
+
+/**
+ * Union of all types of mention.
+ */
+export type AnyMention = MentionSelf | MentionContact | MentionContactRemoved | MentionEveryone;
 
 /**
  * Extract all raw mentions from the specified {@link messageModel}.
@@ -93,6 +93,7 @@ function getMentionedIdentityStrings(
 export function getMentions(
     services: Pick<ServicesForViewModel, 'model'>,
     messageModel: AnyNonDeletedMessageModel,
+    getAndSubscribe: GetAndSubscribeFunction,
 ): AnyMention[] {
     const {model} = services;
 
@@ -108,10 +109,11 @@ export function getMentions(
         }
 
         if (identity === model.user.identity) {
+            const {user} = services.model;
             mentions.push({
                 type: 'self',
                 identity,
-                name: model.user.profileSettings.get().view.nickname,
+                nickname: getAndSubscribe(user.profileSettings).view.nickname,
             });
             continue;
         }
@@ -125,8 +127,10 @@ export function getMentions(
                     type: ReceiverType.CONTACT,
                     uid: contact.ctx,
                 },
-                name: contact.get().view.displayName,
+                name: getAndSubscribe(contact).view.displayName,
             });
+        } else {
+            mentions.push(getRemovedContactData(identity));
         }
     }
 

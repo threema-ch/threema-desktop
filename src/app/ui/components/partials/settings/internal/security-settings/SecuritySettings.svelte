@@ -16,7 +16,7 @@
   const {router} = services;
 
   function handleClickChangePassword(): void {
-    router.replaceModal(ROUTE_DEFINITIONS.modal.changePassword.withoutParams());
+    router.go({modal: ROUTE_DEFINITIONS.modal.changePassword.withoutParams()});
   }
 </script>
 

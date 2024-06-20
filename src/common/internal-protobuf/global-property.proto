@@ -1,0 +1,13 @@
+// ## Global Property
+//
+// Global app properties. Each property is serialized to the according key in
+// the GlobalPropertyKey safe-enum.
+
+syntax = "proto3";
+
+// Properties of the last successful mediator connection.
+message LastMediatorConnection { optional uint64 date = 1; }
+
+message ApplicationState {
+  optional bool unrecoverableStateDetected = 1; // default: false
+}

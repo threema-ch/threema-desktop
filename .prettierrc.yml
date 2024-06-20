@@ -20,7 +20,7 @@ xmlWhitespaceSensitivity: preserve
 
 # Overrides
 overrides:
-  - files: '*.{css,html,json,md,scss,svelte,yml}'
+  - files: '*.{css,html,json,md,proto,scss,svelte,yml}'
     options:
       tabWidth: 2
   - files: '*.json'

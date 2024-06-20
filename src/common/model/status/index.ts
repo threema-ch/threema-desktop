@@ -5,27 +5,28 @@ import type {
     UidOf,
     DbStatusMessageUid,
     DbCreateStatusMessage,
+    DbAnyStatusMessage,
 } from '~/common/db';
-import {Existence, StatusMessageType} from '~/common/enum';
+import {Existence, type StatusMessageType, StatusMessageTypeUtils} from '~/common/enum';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
-import {GroupMemberChangeStatusModelStore} from '~/common/model/status/group-member-change';
-import {GroupNameChangeStatusModelStore} from '~/common/model/status/group-name-change';
 import type {ServicesForModel} from '~/common/model/types/common';
 import type {ConversationControllerHandle} from '~/common/model/types/conversation';
 import type {
     AnyStatusMessageModelStore,
     AnyStatusMessageView,
-    GroupMemberChangeStatus,
-    GroupNameChangeStatus,
     StatusMessageController,
+    StatusMessageModelStores,
+    StatusMessageModels,
     StatusMessageView,
 } from '~/common/model/types/status';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
+import {LocalModelStore} from '~/common/model/utils/model-store';
 import {STATUS_CODEC} from '~/common/status';
 import type {u53} from '~/common/types';
-import {assert, unreachable} from '~/common/utils/assert';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {assert} from '~/common/utils/assert';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import {LazyMap} from '~/common/utils/map';
 import {omit} from '~/common/utils/object';
 import {LocalSetStore, type IDerivableSetStore} from '~/common/utils/store/set-store';
@@ -35,8 +36,8 @@ import {LocalSetStore, type IDerivableSetStore} from '~/common/utils/store/set-s
 function createCaches() {
     return new LazyMap<
         UidOf<DbConversation>,
-        LocalModelStoreCache<UidOf<DbStatusMessage>, AnyStatusMessageModelStore>
-    >(() => new LocalModelStoreCache<UidOf<DbStatusMessage>, AnyStatusMessageModelStore>());
+        LocalModelStoreCache<UidOf<DbAnyStatusMessage>, AnyStatusMessageModelStore>
+    >(() => new LocalModelStoreCache<UidOf<DbAnyStatusMessage>, AnyStatusMessageModelStore>());
 }
 
 let caches = createCaches();
@@ -46,6 +47,15 @@ let caches = createCaches();
  */
 export function recreateCaches(): void {
     caches = createCaches();
+}
+
+/**
+ * Deactivate the model controller for all specified status messages.
+ */
+function deactivateStatusMessages(statusMessages: AnyStatusMessageModelStore[]): void {
+    for (const statusMessage of statusMessages) {
+        statusMessage.get().controller.meta.deactivate();
+    }
 }
 
 export function deactivateAndPurgeCache(conversationUid: UidOf<DbConversation>): void {
@@ -59,35 +69,43 @@ export function deactivateAndPurgeCache(conversationUid: UidOf<DbConversation>):
     deactivateStatusMessages([...set]);
 }
 
-/**
- * Deactivate the model controller for all specified status messages.
- */
-function deactivateStatusMessages(statusMessages: AnyStatusMessageModelStore[]): void {
-    for (const statusMessage of statusMessages) {
-        statusMessage.get().controller.meta.deactivate();
+export class StatusModelController<TType extends StatusMessageType>
+    implements StatusMessageController<TType>
+{
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
+    public readonly meta = new ModelLifetimeGuard<StatusMessageView<TType>>();
+
+    public constructor(public readonly uid: DbStatusMessageUid) {}
+}
+
+export class StatusModelStore<TType extends StatusMessageType> extends LocalModelStore<
+    StatusMessageModels[TType]
+> {
+    public constructor(
+        services: ServicesForModel,
+        dbConversationUid: DbConversationUid,
+        statusMessageUid: DbStatusMessageUid,
+        view: StatusMessageView<TType>,
+    ) {
+        const {logging} = services;
+        const tag = `status-message.${StatusMessageTypeUtils.NAME_OF[view.type]}`;
+        super(view, new StatusModelController(statusMessageUid), dbConversationUid, view.type, {
+            debug: {
+                log: logging.logger(`model.${tag}`),
+                tag,
+            },
+        });
     }
 }
 
-function statusMessageToView(message: DbStatusMessage): AnyStatusMessageView {
-    const common = {
+function statusMessageToView<TType extends StatusMessageType>(
+    message: DbStatusMessage<TType>,
+): AnyStatusMessageView {
+    return {
         ...omit(message, ['statusBytes']),
-    };
-    switch (message.type) {
-        case 'group-member-change':
-            return {
-                ...common,
-                type: StatusMessageType.GROUP_MEMBER_CHANGE,
-                value: STATUS_CODEC[message.type].decode(message.statusBytes as Uint8Array),
-            };
-        case 'group-name-change':
-            return {
-                ...common,
-                type: StatusMessageType.GROUP_NAME_CHANGE,
-                value: STATUS_CODEC[message.type].decode(message.statusBytes as Uint8Array),
-            };
-        default:
-            return unreachable(message.type);
-    }
+        type: message.type,
+        value: STATUS_CODEC[message.type].decode(message.statusBytes),
+    } as AnyStatusMessageView;
 }
 
 function createStore(
@@ -96,24 +114,12 @@ function createStore(
     statusMessageUid: DbStatusMessageUid,
     statusMessageView: AnyStatusMessageView,
 ): AnyStatusMessageModelStore {
-    switch (statusMessageView.type) {
-        case 'group-member-change':
-            return new GroupMemberChangeStatusModelStore(
-                statusMessageUid,
-                services,
-                conversationUid,
-                statusMessageView,
-            );
-        case 'group-name-change':
-            return new GroupNameChangeStatusModelStore(
-                statusMessageUid,
-                services,
-                conversationUid,
-                statusMessageView,
-            );
-        default:
-            return unreachable(statusMessageView);
-    }
+    return new StatusModelStore(
+        services,
+        conversationUid,
+        statusMessageUid,
+        statusMessageView,
+    ) as AnyStatusMessageModelStore;
 }
 
 export function createStatusMessageModelStore(
@@ -175,7 +181,7 @@ export function removeAllOfConversation(
 export function getByUid(
     services: ServicesForModel,
     conversation: ConversationControllerHandle,
-    uid: UidOf<DbStatusMessage>,
+    uid: UidOf<DbAnyStatusMessage>,
     existence: Existence.ENSURED,
 ): AnyStatusMessageModelStore {
     const {db} = services;
@@ -193,7 +199,7 @@ export function getByUid(
 export function checkExistenceAndGetByUid(
     services: ServicesForModel,
     conversation: ConversationControllerHandle,
-    uid: UidOf<DbStatusMessage>,
+    uid: UidOf<DbAnyStatusMessage>,
 ): AnyStatusMessageModelStore | undefined {
     const {db} = services;
     if (!db.hasStatusMessageByUid(conversation.uid, uid)) {
@@ -235,43 +241,32 @@ export function getConversationStatusMessageCount(
     return db.getConversationStatusMessageCount(conversation.uid);
 }
 
-export function createStatusMessage(
+export function createStatusMessage<TType extends StatusMessageType>(
     services: ServicesForModel,
-    statusMessage:
-        | Omit<GroupMemberChangeStatus['view'], 'id' | 'ordinal'>
-        | Omit<GroupNameChangeStatus['view'], 'id' | 'ordinal'>,
-): AnyStatusMessageModelStore {
+    statusMessage: Omit<StatusMessageView<TType>, 'id' | 'ordinal'>,
+): StatusMessageModelStores[TType] {
     const {db} = services;
 
-    let statusBytes: Uint8Array;
-    switch (statusMessage.type) {
-        case 'group-member-change':
-            statusBytes = STATUS_CODEC[statusMessage.type].encode(statusMessage.value);
-            break;
-        case 'group-name-change':
-            statusBytes = STATUS_CODEC[statusMessage.type].encode(statusMessage.value);
-            break;
-        default:
-            return unreachable(statusMessage);
-    }
-
-    const dbCreate: DbCreateStatusMessage<DbStatusMessage> = {
+    // Encode and create
+    const statusBytes = STATUS_CODEC[statusMessage.type].encode(statusMessage.value);
+    const dbCreate: DbCreateStatusMessage<DbAnyStatusMessage> = {
         conversationUid: statusMessage.conversationUid,
         createdAt: statusMessage.createdAt,
         statusBytes,
         type: statusMessage.type,
     };
-
     const uid = db.createStatusMessage(dbCreate);
     const fullStatusMessage = db.getStatusMessageByUid(uid);
     assert(fullStatusMessage !== undefined);
 
-    return createStatusMessageModelStore(
+    const store = createStatusMessageModelStore(
         services,
         fullStatusMessage.conversationUid,
         uid,
         statusMessageToView(fullStatusMessage),
     );
+    assert(store.type === statusMessage.type);
+    return store as StatusMessageModelStores[TType];
 }
 
 export function allStatusMessagesOfConversation(
@@ -295,16 +290,4 @@ export function allStatusMessagesOfConversation(
             },
         );
     });
-}
-
-export class GenericStatusModelController<TType extends StatusMessageType, TValue>
-    implements StatusMessageController<TType, TValue>
-{
-    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public readonly meta = new ModelLifetimeGuard<StatusMessageView<TType, TValue>>();
-
-    public constructor(
-        public readonly uid: UidOf<DbStatusMessage>,
-        private readonly _services: ServicesForModel,
-    ) {}
 }

@@ -1,4 +1,5 @@
 import type {ServicesForBackend} from '~/common/backend';
+import {COOKIE_LENGTH, ensureCookie} from '~/common/crypto';
 import type {DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import {ProtocolError} from '~/common/error';
 import type {CloseInfo} from '~/common/network';
@@ -98,7 +99,9 @@ class CspController {
 
     public constructor(services: Pick<ServicesForBackend, 'crypto'>, source: CspControllerSource) {
         // Generate a cryptographically random client cookie
-        const cck = services.crypto.randomBytes(new Uint8Array(16)) as ClientCookie;
+        const cck = services.crypto.randomBytes(
+            ensureCookie<ClientCookie>(new Uint8Array(COOKIE_LENGTH)),
+        );
 
         this.ck = source.ck;
         this.tck = source.tck;

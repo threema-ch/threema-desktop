@@ -1,7 +1,8 @@
 import {MessageDirection, MessageReaction, MessageType} from '~/common/enum';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {AnyMessageModelStore} from '~/common/model';
 import {unreachable} from '~/common/utils/assert';
-import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, type ProxyMarked} from '~/common/utils/endpoint';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 
 export interface IConversationMessageViewModelController extends ProxyMarked {

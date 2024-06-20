@@ -1,6 +1,5 @@
 import {expect} from 'chai';
 
-import {assertRoute} from '~/app/routing';
 import {Router, type RouterEnvironment, type RouterState} from '~/app/routing/router';
 import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
 import type {DbContactUid} from '~/common/db';
@@ -54,15 +53,14 @@ class TestRouter extends Router {
         this.env = env;
     }
 
-    public assertRoutes(
-        nav: RouterState['nav']['id'],
-        main: RouterState['main']['id'],
-        aside?: Exclude<RouterState['aside'], undefined>['id'],
-        modal?: Exclude<RouterState['modal'], undefined>['id'],
-    ): void {
-        const state = this.get();
-        const ids = [state.nav.id, state.main.id, state.aside?.id, state.modal?.id] as const;
-        expect([nav, main, aside, modal]).to.eql(ids);
+    public assertRouteIds(expectedIds: {
+        [TPanel in keyof RouterState]?: Exclude<RouterState[TPanel], undefined>['id'] | undefined;
+    }): void {
+        const actualIdsList = Object.fromEntries(
+            Object.entries({...this.get()}).map(([panel, route]) => [panel, route?.id]),
+        );
+        const expectedIdsList = {...actualIdsList, ...expectedIds};
+        expect(expectedIdsList).to.eql(actualIdsList);
     }
 }
 
@@ -73,52 +71,100 @@ export function run(): void {
     describe('Router', function () {
         it('initial state', function () {
             const router = new TestRouter();
-            router.assertRoutes('conversationList', 'welcome', undefined, undefined);
+            router.assertRouteIds({
+                nav: 'conversationList',
+                main: 'welcome',
+                aside: undefined,
+                modal: undefined,
+                activity: undefined,
+            });
         });
 
         it('single-panel navigation', function () {
             const router = new TestRouter();
-            router.assertRoutes('conversationList', 'welcome', undefined, undefined);
+            router.assertRouteIds({
+                nav: 'conversationList',
+                main: 'welcome',
+                aside: undefined,
+                modal: undefined,
+                activity: undefined,
+            });
 
             // Nav
-            router.replaceNav(ROUTE_DEFINITIONS.nav.contactList.withoutParams());
-            router.assertRoutes('contactList', 'welcome', undefined, undefined);
+            router.go({nav: ROUTE_DEFINITIONS.nav.contactList.withoutParams()});
+            router.assertRouteIds({
+                nav: 'contactList',
+                main: 'welcome',
+                aside: undefined,
+                modal: undefined,
+                activity: undefined,
+            });
 
             // Main
-            router.replaceMain(
-                ROUTE_DEFINITIONS.main.conversation.withTypedParams({
+            router.go({
+                main: ROUTE_DEFINITIONS.main.conversation.withParams({
                     receiverLookup: {type: ReceiverType.CONTACT, uid: 1n as DbContactUid},
                 }),
-            );
-            router.assertRoutes('contactList', 'conversation', undefined, undefined);
+            });
+            router.assertRouteIds({
+                nav: 'contactList',
+                main: 'conversation',
+                aside: undefined,
+                modal: undefined,
+                activity: undefined,
+            });
 
             // Aside
-            router.replaceAside(
-                ROUTE_DEFINITIONS.aside.contactDetails.withTypedParams({
-                    contactUid: 1n as DbContactUid,
+            router.go({
+                aside: ROUTE_DEFINITIONS.aside.receiverDetails.withParams({
+                    type: ReceiverType.CONTACT,
+                    uid: 1n as DbContactUid,
                 }),
-            );
-            router.assertRoutes('contactList', 'conversation', 'contactDetails', undefined);
+            });
+            router.assertRouteIds({
+                nav: 'contactList',
+                main: 'conversation',
+                aside: 'receiverDetails',
+                modal: undefined,
+                activity: undefined,
+            });
 
             // Modal
-            router.replaceModal(ROUTE_DEFINITIONS.modal.changePassword.withoutParams());
-            router.assertRoutes('contactList', 'conversation', 'contactDetails', 'changePassword');
+            router.go({modal: ROUTE_DEFINITIONS.modal.changePassword.withoutParams()});
+            router.assertRouteIds({
+                nav: 'contactList',
+                main: 'conversation',
+                aside: 'receiverDetails',
+                modal: 'changePassword',
+                activity: undefined,
+            });
 
             // Close aside
-            router.closeAside();
-            router.assertRoutes('contactList', 'conversation', undefined, 'changePassword');
+            router.go({aside: 'close'});
+            router.assertRouteIds({
+                nav: 'contactList',
+                main: 'conversation',
+                aside: undefined,
+                modal: 'changePassword',
+                activity: undefined,
+            });
 
             // Close modal
-            router.closeModal();
-            router.assertRoutes('contactList', 'conversation', undefined, undefined);
+            router.go({modal: 'close'});
+            router.assertRouteIds({
+                nav: 'contactList',
+                main: 'conversation',
+                aside: undefined,
+                modal: undefined,
+                activity: undefined,
+            });
         });
 
         it('state from valid fragment', function () {
             const router = new TestRouter('/conversation/0/123/');
             expect(router.env.fragment).to.equal('/conversation/0/123/');
-            router.assertRoutes('conversationList', 'conversation');
-            const state = router.get();
-            expect(assertRoute('main', state.main, ['conversation']).params.receiverLookup).to.eql({
+            router.assertRouteIds({nav: 'conversationList', main: 'conversation'});
+            expect(router.assert('main', ['conversation']).receiverLookup).to.eql({
                 type: ReceiverType.CONTACT,
                 uid: 123n as DbContactUid,
             });
@@ -127,13 +173,46 @@ export function run(): void {
         it('state from invalid fragment', function () {
             const router = new TestRouter('/consasdf/0/123/');
             expect(router.env.fragment).to.equal('/');
-            router.assertRoutes('conversationList', 'welcome');
+            router.assertRouteIds({nav: 'conversationList', main: 'welcome'});
         });
 
         it('state from fragment with invalid params', function () {
             const router = new TestRouter('/conversation/99/123/'); // Receiver type 99 does not exist
             expect(router.env.fragment).to.equal('/');
-            router.assertRoutes('conversationList', 'welcome');
+            router.assertRouteIds({nav: 'conversationList', main: 'welcome'});
+        });
+
+        describe('assert', function () {
+            it('can successfully assert a route', function () {
+                const router = new TestRouter();
+                router.go({
+                    main: ROUTE_DEFINITIONS.main.conversation.withParams({
+                        receiverLookup: {
+                            type: ReceiverType.CONTACT,
+                            uid: 42n as DbContactUid,
+                        },
+                    }),
+                });
+                const assertedRoute = router.assert('main', ['conversation']);
+                expect(assertedRoute.receiverLookup.type).to.equal(ReceiverType.CONTACT);
+                expect(assertedRoute.receiverLookup.uid).to.equal(42n);
+            });
+
+            it('does not accept the wrong route type', function () {
+                const router = new TestRouter();
+                router.go({
+                    main: ROUTE_DEFINITIONS.main.conversation.withParams({
+                        receiverLookup: {
+                            type: ReceiverType.CONTACT,
+                            uid: 42n as DbContactUid,
+                        },
+                    }),
+                });
+                // @ts-expect-error The `contactList` route is a nav route, not a main route
+                expect(() => router.assert('main', ['contactList'])).to.throw(
+                    'Unexpected state for panel main (expected=contactList, got=conversation)',
+                );
+            });
         });
     });
 }

@@ -1,3 +1,5 @@
+import {GroupCallPolicy, O2oCallConnectionPolicy, O2oCallPolicy} from '~/common/enum';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {ServicesForModel} from '~/common/model';
 import type {
     CallsSettings,
@@ -7,7 +9,14 @@ import type {
 } from '~/common/model/types/settings';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
+import {filterUndefinedProperties} from '~/common/utils/object';
+
+export const DEFAULT_CALLS_SETTINGS: CallsSettingsView = {
+    o2oCallPolicy: O2oCallPolicy.ALLOW_CALL,
+    o2oCallConnectionPolicy: O2oCallConnectionPolicy.ALLOW_DIRECT,
+    groupCallPolicy: GroupCallPolicy.ALLOW_GROUP_CALL,
+};
 
 export class CallsSettingsModelController implements CallsSettingsController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
@@ -20,23 +29,28 @@ export class CallsSettingsModelController implements CallsSettingsController {
         this.meta.update((view) =>
             this._services.db.setSettings('calls', {
                 ...view,
-                ...change,
+                ...filterUndefinedProperties(change),
             }),
         );
     }
 }
 
 export class CallsSettingsModelStore extends LocalModelStore<CallsSettings> {
-    public constructor(services: ServicesForModel, callsSettingsDefaults: CallsSettingsView) {
+    public constructor(services: ServicesForModel) {
         const {logging} = services;
         const tag = 'settings.calls';
-        const callsSettings = services.db.getSettings('calls') ?? callsSettingsDefaults;
-
-        super(callsSettings, new CallsSettingsModelController(services), undefined, undefined, {
-            debug: {
-                log: logging.logger(`model.${tag}`),
-                tag,
+        const stored = services.db.getSettings('calls');
+        super(
+            {...DEFAULT_CALLS_SETTINGS, ...filterUndefinedProperties(stored ?? {})},
+            new CallsSettingsModelController(services),
+            undefined,
+            undefined,
+            {
+                debug: {
+                    log: logging.logger(`model.${tag}`),
+                    tag,
+                },
             },
-        });
+        );
     }
 }

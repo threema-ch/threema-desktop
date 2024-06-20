@@ -1,7 +1,7 @@
 import * as v from '@badrap/valita';
 
 import {InactiveContactsPolicyUtils, TimeFormatUtils} from '~/common/enum';
-import * as proto from '~/common/node/settings/settings';
+import * as proto from '~/common/internal-protobuf/settings';
 import type {SettingsCategoryCodec} from '~/common/settings';
 import {optionalEnum} from '~/common/utils/valita-helpers';
 

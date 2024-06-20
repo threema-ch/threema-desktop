@@ -75,7 +75,7 @@ export function run(): void {
         });
 
         it('process incoming delivery receipt for outbound message', async function () {
-            const {crypto} = services;
+            const {crypto, device} = services;
 
             // Add outgoing message
             const messageId = randomMessageId(crypto);
@@ -112,7 +112,7 @@ export function run(): void {
                         messageIds: [messageId],
                     },
                     timestamp,
-                    'me',
+                    device.identity.string,
                 ).run(handle);
                 handle.finish();
             }
@@ -134,12 +134,12 @@ export function run(): void {
             expect(msg.get().view.reactions[0], 'lastReaction').to.eql({
                 reactionAt: decTimestamp,
                 reaction: MessageReaction.DECLINE,
-                senderIdentity: 'me',
+                senderIdentity: device.identity.string,
             });
         });
 
         it('process outgoing delivery receipt for inbound message', async function () {
-            const {crypto} = services;
+            const {crypto, device} = services;
 
             // Add incoming message
             const messageId = randomMessageId(crypto);
@@ -169,7 +169,7 @@ export function run(): void {
                         messageIds: [messageId],
                     },
                     timestamp,
-                    'me',
+                    device.identity.string,
                 ).run(handle);
                 handle.finish();
             }
@@ -197,7 +197,7 @@ export function run(): void {
             expect(msg.get().view.reactions[0], 'reactions').to.deep.equal({
                 reactionAt: ackTimestamp,
                 reaction: MessageReaction.ACKNOWLEDGE,
-                senderIdentity: 'me',
+                senderIdentity: device.identity.string,
             });
 
             // Process DECLINED
@@ -208,7 +208,7 @@ export function run(): void {
             expect(msg.get().view.reactions[0], 'reactions').to.deep.equal({
                 reactionAt: decTimestamp,
                 reaction: MessageReaction.DECLINE,
-                senderIdentity: 'me',
+                senderIdentity: device.identity.string,
             });
         });
     });

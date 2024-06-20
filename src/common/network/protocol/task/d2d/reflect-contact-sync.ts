@@ -302,7 +302,7 @@ async function getD2dContactSyncUpdateProfilePicture(
                         blob: protobuf.utils.creator(protobuf.common.Blob, {
                             id: blobInfo.id as ReadonlyUint8Array as Uint8Array,
                             nonce: undefined, // Obvious from context, may be omitted
-                            key: blobInfo.key.unwrap() as Uint8Array,
+                            key: blobInfo.key.unwrap() as ReadonlyUint8Array as Uint8Array,
                             uploadedAt: undefined, // Only relevant for own profile picture
                         }),
                     }),
@@ -326,7 +326,7 @@ async function getD2dContactSyncUpdateProfilePicture(
                             id: profilePicture.profilePictureContactDefined
                                 .blobId as ReadonlyUint8Array as Uint8Array,
                             nonce: undefined, // Obvious from context, may be omitted
-                            key: profilePicture.profilePictureContactDefined.blobKey.unwrap() as Uint8Array,
+                            key: profilePicture.profilePictureContactDefined.blobKey.unwrap() as ReadonlyUint8Array as Uint8Array,
                             uploadedAt: undefined, // Unknown, only relevant for own profile picture
                         }),
                     }),

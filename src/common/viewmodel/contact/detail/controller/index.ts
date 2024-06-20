@@ -1,5 +1,6 @@
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {AnyReceiver} from '~/common/model';
-import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, type ProxyMarked} from '~/common/utils/endpoint';
 import {updateReceiverData, type ReceiverUpdateDataFor} from '~/common/viewmodel/utils/receiver';
 
 export interface IContactDetailViewModelController<TReceiver extends AnyReceiver>

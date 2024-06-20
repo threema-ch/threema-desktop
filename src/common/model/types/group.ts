@@ -5,11 +5,12 @@ import type {
     NotificationSoundPolicy,
     ReceiverType,
 } from '~/common/enum';
+import type {GroupModelStore} from '~/common/model/group';
+import type {OngoingGroupCall} from '~/common/model/group-call';
 import type {
     ControllerUpdateFromLocal,
     ControllerUpdateFromSource,
     ControllerUpdateFromSync,
-    IdentityStringOrMe,
     LocalModel,
 } from '~/common/model/types/common';
 import type {Contact} from '~/common/model/types/contact';
@@ -18,11 +19,15 @@ import type {ProfilePicture} from '~/common/model/types/profile-picture';
 import type {ReceiverController} from '~/common/model/types/receiver';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
-import type {GroupId} from '~/common/network/types';
+import type {ChosenGroupCall, GroupCallBaseData} from '~/common/network/protocol/call/group-call';
+import type {SfuToken} from '~/common/network/protocol/directory';
+import type {GroupId, IdentityString} from '~/common/network/types';
 import type {u8, u53} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
 import type {IdColor} from '~/common/utils/id-color';
 import type {SequenceNumberU53} from '~/common/utils/sequence-number';
+import type {AbortListener} from '~/common/utils/signal';
+import type {ReadableStore} from '~/common/utils/store';
 import type {LocalSetStore} from '~/common/utils/store/set-store';
 
 export interface GroupView {
@@ -41,17 +46,13 @@ export interface GroupView {
     readonly notificationSoundPolicyOverride?: NotificationSoundPolicy;
 
     /**
-     * The member set contains all members of the group that are not the creator. The creator must
-     * never be in the member set!
+     * Contains all members of the group except
      *
-     * The sole exception is the `User` who is never found in the member list. Its state
-     * within the group is entirely managed by `userState`.
+     * - the creator, and
+     * - the user itself (the user's membership must be checked via `userState`).
      */
     readonly members: Set<LocalModelStore<Contact>>;
 }
-
-/** A group creator can either be the user or any other contact. */
-export type GroupCreator = IdentityStringOrMe;
 
 export type GroupInit = Omit<GroupView, 'displayName' | 'members' | 'color'> &
     ConversationInitMixin;
@@ -77,6 +78,11 @@ export type GroupController = ReceiverController & {
     readonly uid: UidOf<DbGroup>;
 
     readonly meta: ModelLifetimeGuard<GroupView>;
+
+    /**
+     * Current _chosen_ group call (if any).
+     */
+    readonly call: ReadableStore<ChosenGroupCall | undefined>;
 
     /**
      * Add given contacts to the group (if they are not in it already).
@@ -166,12 +172,40 @@ export type GroupController = ReceiverController & {
      * Returns true if the given contact is a member (or the creator) of this group.
      */
     readonly hasMember: (contact: LocalModelStore<Contact> | 'me') => boolean;
+
+    /**
+     * Register a group call received from a remote or reflected `GroupCallStart` message.
+     */
+    readonly registerCall: Omit<ControllerUpdateFromSource<[call: GroupCallBaseData]>, 'fromLocal'>;
+
+    /**
+     * Run the _Group Call Refresh Steps_ for this group.
+     *
+     * @param token A pre-acquired SFU token, if any.
+     * @returns the chosen call, if any.
+     */
+    readonly refreshCall: (token: SfuToken | undefined) => Promise<ChosenGroupCall | undefined>;
+
+    /**
+     * Join an existing group call (intent `'join'`), or join or create a new group call and
+     * potentially send a `GroupCallStart` message (intent `'join-or-create'`).
+     *
+     * @throws {GroupCallError} if the user is participating in another group call, or if the user
+     *   is not a member of the group or the call could not be joined for any other reason.
+     */
+    readonly joinCall: <TIntent = 'join' | 'join-or-create'>(
+        intent: TIntent,
+        cancel: AbortListener<unknown>,
+    ) => Promise<TIntent extends 'join' ? OngoingGroupCall | undefined : OngoingGroupCall>;
 } & ProxyMarked;
 export interface GroupControllerHandle {
     /**
      * UID of the group.
      */
     readonly uid: UidOf<DbGroup>;
+
+    /** Reference to the associated group model store. */
+    readonly store: () => GroupModelStore;
 
     /**
      * Debug string of the group.
@@ -225,7 +259,7 @@ export type GroupRepository = {
      */
     readonly getByGroupIdAndCreator: (
         groupId: GroupId,
-        creator: GroupCreator,
+        creatorIdentity: IdentityString,
     ) => LocalModelStore<Group> | undefined;
     readonly getAll: () => LocalSetStore<LocalModelStore<Group>>;
 } & ProxyMarked;

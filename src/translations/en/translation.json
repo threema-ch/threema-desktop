@@ -379,9 +379,11 @@
     "error--send-file-miscellaneous-errors": "Some files contain errors",
     "hint--drop-files-to-send": "Drop files here to send",
     "hint--media-thumbnail": "Media preview",
-    "label--call-join-long": "Join Call",
+    "label--call-connecting": "Connecting…",
+    "label--call-join-long": "Join call",
     "label--call-join-short": "Join",
     "label--call-participant-count": "{n, plural, =0 {No Participants} =1 {1 Participant} other {# Participants}}",
+    "label--call-start-long": "Start call",
     "label--compose-area": "Write a message…",
     "label--default-audio-message-preview": "Voice Message",
     "label--default-file-message-preview": "File",
@@ -516,9 +518,11 @@
     "prose--subtitle": "Password"
   },
   "status": {
+    "prose--group-call-ended": "Group call has ended",
+    "prose--group-call-started": "{startedBy} started a group call",
     "prose--group-created-name": "Group created with name \"{name}\"",
-    "prose--group-member-change": "{addedCount, plural, =0 {} =1 {{addedMembers} was added to the group} other {{addedMembers} were added to the group}}{and, plural, =0 {} other {, and }}{removedCount, plural, =0 {} =1 {{removedMembers} was removed from the group} other {{removedMembers} were removed from the group}}",
-    "prose--group-name-change": "The group name was changed from \"{old}\" to \"{new}\""
+    "prose--group-member-changed": "{addedCount, plural, =0 {} =1 {{addedMembers} was added to the group} other {{addedMembers} were added to the group}}{and, plural, =0 {} other {, and }}{removedCount, plural, =0 {} =1 {{removedMembers} was removed from the group} other {{removedMembers} were removed from the group}}",
+    "prose--group-name-changed": "The group name was changed from \"{old}\" to \"{new}\""
   },
   "system": {
     "error--check-internet-and-retry": "Please check your Internet connection and try again.",

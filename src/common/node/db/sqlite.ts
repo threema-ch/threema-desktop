@@ -49,11 +49,11 @@ import type {
     DbMessageReaction,
     DbMessageEditFor,
     DbMessageLastEdit,
-    DbStatusMessage,
     DbStatusMessageUid,
     DbCreateStatusMessage,
     DbAnyNonDeletedMessage,
     DbDeletedMessage,
+    DbAnyStatusMessage,
 } from '~/common/db';
 import {
     type GlobalPropertyKey,
@@ -1601,7 +1601,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 };
 
             default:
-                return unreachable(common.type, new Error(`Unknown message type ${common.type}`));
+                return unreachable(common.type, `Unknown message type ${common.type}`);
         }
     }
 
@@ -1683,7 +1683,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public getStatusMessageByUid(uid: DbStatusMessageUid): DbGet<DbStatusMessage> {
+    public getStatusMessageByUid(uid: DbStatusMessageUid): DbGet<DbAnyStatusMessage> {
         const statusMessage = sync(
             this._db
                 .selectFrom(tStatusMessage)
@@ -1728,7 +1728,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public getLastStatusMessage(conversationUid: DbConversationUid): DbGet<DbStatusMessage> {
+    public getLastStatusMessage(conversationUid: DbConversationUid): DbGet<DbAnyStatusMessage> {
         const statusMessage = sync(
             this._db
                 .selectFrom(tStatusMessage)
@@ -2863,7 +2863,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public removeStatusMessage(uid: DbRemove<DbStatusMessage>): boolean {
+    public removeStatusMessage(uid: DbRemove<DbAnyStatusMessage>): boolean {
         const removed = sync(
             this._db
                 .deleteFrom(tStatusMessage)
@@ -2960,7 +2960,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         ordinal: u53,
         direction: MessageQueryDirection,
         limit?: u53,
-    ): DbList<DbStatusMessage, 'uid'> {
+    ): DbList<DbAnyStatusMessage, 'uid'> {
         // Determine ordering and dynamic WHERE clause: Filter by conversation
         // and by processedAt timestamp.
         let createdAtCondition;
@@ -3040,7 +3040,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             readonly ordinal: u53;
             readonly direction: MessageQueryDirection;
         },
-    ): DbList<DbStatusMessage, 'uid'> {
+    ): DbList<DbAnyStatusMessage, 'uid'> {
         // Fields to select
         const selectFields = {
             uid: tStatusMessage.uid,
@@ -3128,8 +3128,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
 
     /** @inheritdoc */
     public createStatusMessage(
-        statusMessage: DbCreateStatusMessage<DbStatusMessage>,
-    ): DbCreated<DbStatusMessage> {
+        statusMessage: DbCreateStatusMessage<DbAnyStatusMessage>,
+    ): DbCreated<DbAnyStatusMessage> {
         const uid = sync(
             this._db
                 .insertInto(tStatusMessage)
@@ -3148,7 +3148,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     /** @inheritdoc */
     public getStatusMessagesOfConversation(
         conversationUid: DbConversationUid,
-    ): Omit<DbStatusMessage, 'conversationUid' | 'id' | 'ordinal'>[] {
+    ): Omit<DbAnyStatusMessage, 'conversationUid' | 'id' | 'ordinal'>[] {
         return sync(
             this._db
                 .selectFrom(tStatusMessage)

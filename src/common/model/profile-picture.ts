@@ -7,6 +7,7 @@ import type {
     DbUpdate,
 } from '~/common/db';
 import {ReceiverType, TriggerSource} from '~/common/enum';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import type {ServicesForModel} from '~/common/model/types/common';
 import type {
@@ -27,7 +28,7 @@ import type {ConversationId, GroupId, IdentityString} from '~/common/network/typ
 import type {RawBlobKey} from '~/common/network/types/keys';
 import type {ReadonlyUint8Array, u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
-import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, type ProxyMarked} from '~/common/utils/endpoint';
 import {idColorIndexToString} from '~/common/utils/id-color';
 import {AsyncLock} from '~/common/utils/lock';
 import {hasPropertyStrict} from '~/common/utils/object';

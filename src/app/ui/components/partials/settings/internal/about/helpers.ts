@@ -1,3 +1,4 @@
+import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
 import type {AppServicesForSvelte} from '~/app/types';
 import {toast} from '~/app/ui/snackbar';
 import {ReceiverType} from '~/common/enum';
@@ -19,24 +20,28 @@ export async function collectLogsAndComposeMessageToSupport(
                         '*SUPPORT',
                     ),
             );
-
-        services.router.openConversationAndFileDialogForReceiver(
+        services.router.goToConversation(
             {
-                type: ReceiverType.CONTACT,
-                uid: supportContact.ctx,
+                receiverLookup: {
+                    type: ReceiverType.CONTACT,
+                    uid: supportContact.ctx,
+                },
+                preloadedFiles: [
+                    {
+                        bytes: logFiles.app,
+                        fileName: 'desktop-log-app.txt.gz',
+                        mediaType: 'application/gzip',
+                    },
+                    {
+                        bytes: logFiles.bw,
+                        fileName: 'desktop-log-bw.txt.gz',
+                        mediaType: 'application/gzip',
+                    },
+                ],
             },
-            [
-                {
-                    bytes: logFiles.app,
-                    fileName: 'desktop-log-app.txt.gz',
-                    mediaType: 'application/gzip',
-                },
-                {
-                    bytes: logFiles.bw,
-                    fileName: 'desktop-log-bw.txt.gz',
-                    mediaType: 'application/gzip',
-                },
-            ],
+            {
+                nav: ROUTE_DEFINITIONS.nav.conversationList.withoutParams(),
+            },
         );
     } catch (error) {
         log.error(

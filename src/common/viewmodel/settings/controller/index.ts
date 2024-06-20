@@ -1,7 +1,8 @@
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {Contact} from '~/common/model';
 import type {PredefinedContactIdentity} from '~/common/model/types/contact';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
-import {PROXY_HANDLER, TRANSFER_HANDLER, type ProxyMarked} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, type ProxyMarked} from '~/common/utils/endpoint';
 import type {ServicesForViewModel} from '~/common/viewmodel';
 
 export interface ISettingsViewModelController extends ProxyMarked {

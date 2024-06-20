@@ -8,8 +8,8 @@ import {
     TypingIndicatorPolicyUtils,
     UnknownContactPolicyUtils,
 } from '~/common/enum';
+import * as proto from '~/common/internal-protobuf/settings';
 import * as validate from '~/common/network/protobuf/validate';
-import * as proto from '~/common/node/settings/settings';
 import type {SettingsCategoryCodec} from '~/common/settings';
 import {nullOptional, optionalEnum} from '~/common/utils/valita-helpers';
 

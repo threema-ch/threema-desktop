@@ -12,12 +12,13 @@ import {
 } from '~/common/viewmodel/conversation/main/message/store';
 
 export interface ConversationMessageViewModelBundle extends PropertiesMarked {
+    readonly type: 'message';
     readonly viewModelController: IConversationMessageViewModelController;
     readonly viewModelStore: ConversationMessageViewModelStore;
 }
 
 export function getConversationMessageViewModelBundle(
-    services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     messageModelStore: AnyMessageModelStore,
     conversationModelStore: ConversationModelStore,
     resolveQuote: boolean,
@@ -35,6 +36,7 @@ export function getConversationMessageViewModelBundle(
     );
 
     return endpoint.exposeProperties({
+        type: 'message',
         viewModelController,
         viewModelStore,
     });

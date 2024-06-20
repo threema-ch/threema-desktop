@@ -293,13 +293,15 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
 
         // Verbose debug logging
         VERBOSE_LOGGING: {
-            ENDPOINT: false,
+            CALLS: false,
+            CALLS_MEDIA_CRYPTO: false,
             DB: false,
-            STORES: false,
+            ENDPOINT: false,
             EVENTS: false,
+            HOTKEY: false,
             NETWORK: false,
             ROUTER: false,
-            HOTKEY: false,
+            STORES: false,
         },
 
         // Build config
@@ -506,6 +508,7 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
                 strict: true,
                 allow: ['.', '../libs', '../node_modules'],
             },
+            hmr: true,
         },
         worker: {
             format: 'iife',

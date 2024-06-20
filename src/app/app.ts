@@ -14,6 +14,7 @@ import type {LinkingParams, OppfConfig} from '~/app/ui/linking';
 import LinkingWizard from '~/app/ui/linking/LinkingWizard.svelte';
 import {attachSystemDialogs} from '~/app/ui/system-dialogs';
 import {SystemTimeStore} from '~/app/ui/time';
+import type {ServicesForBackendController} from '~/common/backend';
 import type {LinkingState} from '~/common/dom/backend';
 import {BackendController} from '~/common/dom/backend/controller';
 import {randomBytes} from '~/common/dom/crypto/random';
@@ -28,7 +29,8 @@ import {FrontendSystemDialogService} from '~/common/dom/ui/system-dialog';
 import {applyThemeBranding} from '~/common/dom/ui/theme';
 import {checkForUpdate} from '~/common/dom/update-check';
 import {initCrashReportingInSandboxBuilds} from '~/common/dom/utils/crash-reporting';
-import {createEndpointService} from '~/common/dom/utils/endpoint';
+import {createEndpointService, ensureEndpoint} from '~/common/dom/utils/endpoint';
+import {WebRtcServiceProvider} from '~/common/dom/webrtc';
 import type {ElectronIpc, SystemInfo} from '~/common/electron-ipc';
 import {extractErrorTraceback} from '~/common/error';
 import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
@@ -167,7 +169,7 @@ async function main(): Promise<() => void> {
     const log = logging.logger('main');
     {
         const assertFailLogger = logging.logger('assert');
-        setAssertFailLogger((error) => assertFailLogger.trace(error));
+        setAssertFailLogger((error) => assertFailLogger.error(extractErrorTraceback(error)));
     }
     initCrashReportingInSandboxBuilds(log);
 
@@ -267,7 +269,10 @@ async function main(): Promise<() => void> {
         `../worker/backend/${import.meta.env.BUILD_TARGET}/backend-worker.ts`,
         import.meta.url,
     );
-    const worker = new Worker(workerUrl, {type: import.meta.env.DEBUG ? 'module' : 'classic'});
+    const worker = new Worker(workerUrl, {
+        name: 'Backend Worker',
+        type: import.meta.env.DEBUG ? 'module' : 'classic',
+    });
 
     // Forward unhandled errors in the worker to the main application
     worker.onerror = (event: ErrorEvent): void => {
@@ -334,12 +339,18 @@ async function main(): Promise<() => void> {
     // Initialize early services and global dialog component
     const appServices: Delayed<AppServices> = Delayed.simple('AppServices');
     attachSystemDialogs(logging, elements.systemDialogs, appServices);
-
-    // Instantiate early services
-    const frontendMediaService = new FrontendMediaService();
-    const notification = new FrontendNotificationCreator();
-    const systemDialog = new FrontendSystemDialogService();
     const endpoint = createEndpointService({logging});
+    const systemDialog = new FrontendSystemDialogService();
+    const webRtc = new WebRtcServiceProvider({endpoint, logging});
+    const backendControllerServices: ServicesForBackendController = {
+        endpoint,
+        logging,
+        media: new FrontendMediaService(appServices),
+        notification: new FrontendNotificationCreator(),
+        systemDialog,
+        systemInfo,
+        webRtc,
+    };
 
     // Check for updates in the background, if this is an Electron release build.
     // Note: For now, we don't support custom update links provisioned by .oppf files.
@@ -355,18 +366,8 @@ async function main(): Promise<() => void> {
     log.info('Instantiating Backend');
     // Instantiate backend
     const [backend, isNewIdentity] = await BackendController.create(
-        {
-            frontendMediaService,
-            notification,
-            systemDialog,
-        },
-        systemInfo,
-        {
-            crypto: {randomBytes},
-            endpoint,
-            logging,
-        },
-        endpoint.wrap(worker, logging.logger('com.backend-creator')),
+        backendControllerServices,
+        endpoint.wrap(ensureEndpoint(worker), logging.logger('com.backend-creator')),
         showLinkingWizard,
         requestUserPassword,
         forwardPins,
@@ -395,6 +396,7 @@ async function main(): Promise<() => void> {
         calls: callsSettings,
         media: mediaSettings,
     };
+
     // Create app services
     const services: AppServices = {
         crypto: {randomBytes},
@@ -407,11 +409,9 @@ async function main(): Promise<() => void> {
         backend,
         router,
         settings,
+        webRtc,
     };
     appServices.set(services);
-
-    // We pass the blob cache to the thumbnail creator so that it can directly write into the cache
-    frontendMediaService.setBlobCacheService(services.blobCache);
 
     // If this is an existing identity, resolve `identityReady` promise
     if (!isNewIdentity) {
@@ -451,7 +451,7 @@ async function main(): Promise<() => void> {
 }
 
 // Temporarily set primitive assertion failed logger, then run main
-setAssertFailLogger((error) => CONSOLE_LOGGER.trace(error));
+setAssertFailLogger((error) => CONSOLE_LOGGER.error(extractErrorTraceback(error)));
 main().catch((error: unknown) => {
-    throw new Error(`Critical error while initializing app`, {cause: error});
+    throw new Error('Critical error while initializing app', {cause: error});
 });

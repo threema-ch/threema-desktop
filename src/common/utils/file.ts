@@ -12,15 +12,19 @@ export interface FileBytesAndMediaType {
 /**
  * Get file basename and extension of the given filename.
  */
-export function getFileNameAndExtension(filename: string): {basename: string; extension: string} {
+export function getFileNameAndExtension(filename: string): {
+    readonly basename: string;
+    readonly extension: string;
+} {
     if (filename === '') {
         return {basename: '', extension: ''};
     }
     const filenameSegments = filename.split(/\./u);
-    const noExtensionFound = filenameSegments.length === 1;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const extension = filenameSegments.pop()!.substring(0, 4);
-    if (noExtensionFound || extension === '') {
+    if (filenameSegments.length === 1) {
+        return {basename: filename, extension: ''};
+    }
+    const extension = filenameSegments.pop();
+    if (extension === undefined || extension === '') {
         return {basename: filename, extension: ''};
     }
     return {basename: filenameSegments.join('.'), extension};
@@ -33,7 +37,7 @@ export interface FilenameDetails {
     readonly displayType: string | undefined;
 }
 
-function pickExtension<T extends string>(array: T[]): T {
+function pickExtension<T extends string>(array: readonly T[]): T {
     const first = array.at(0);
     if (first !== undefined && first.length <= 4) {
         return first;
@@ -43,7 +47,10 @@ function pickExtension<T extends string>(array: T[]): T {
     return shortest;
 }
 
-export function getSanitizedFileNameDetails(file: {name: string; type: string}): FilenameDetails {
+export function getSanitizedFileNameDetails(file: {
+    readonly name: string;
+    readonly type: string;
+}): FilenameDetails {
     const originalFilename = file.name;
     const validExtensionsForMediaType = mediaTypeToExtensions(file.type);
 

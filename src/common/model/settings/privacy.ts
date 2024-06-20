@@ -1,4 +1,5 @@
 import {UnknownContactPolicy} from '~/common/enum';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {ServicesForModel} from '~/common/model';
 import type {
     PrivacySettings,
@@ -9,7 +10,7 @@ import type {
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import type {IdentityString} from '~/common/network/types';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
 
 export class PrivacySettingsModelController implements PrivacySettingsController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
@@ -62,16 +63,20 @@ export class PrivacySettingsModelController implements PrivacySettingsController
 }
 
 export class PrivacySettingsModelStore extends LocalModelStore<PrivacySettings> {
-    public constructor(services: ServicesForModel, privacySettingsDefaults: PrivacySettingsView) {
+    public constructor(services: ServicesForModel) {
         const {logging} = services;
         const tag = 'privacy-settings';
-        const privacySettings = services.db.getSettings('privacy') ?? privacySettingsDefaults;
-
-        super(privacySettings, new PrivacySettingsModelController(services), undefined, undefined, {
-            debug: {
-                log: logging.logger(`model.${tag}`),
-                tag,
+        super(
+            services.db.getSettings('privacy') ?? {},
+            new PrivacySettingsModelController(services),
+            undefined,
+            undefined,
+            {
+                debug: {
+                    log: logging.logger(`model.${tag}`),
+                    tag,
+                },
             },
-        });
+        );
     }
 }

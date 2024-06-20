@@ -18,7 +18,7 @@
   const {router} = services;
 
   function handleClickItem(category: SettingsCategory): void {
-    router.replaceMain(ROUTE_DEFINITIONS.main.settings.withTypedParams({category}));
+    router.go({main: ROUTE_DEFINITIONS.main.settings.withParams({category})});
   }
 
   // TODO(DESK-1238): Let svelte 4 directly iterate over the object.

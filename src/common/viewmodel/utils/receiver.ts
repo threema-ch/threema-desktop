@@ -67,9 +67,11 @@ export function getConversationReceiverData(
     conversationModel: Conversation,
     getAndSubscribe: GetAndSubscribeFunction,
 ): AnyReceiverData {
-    const receiverModel = getAndSubscribe(conversationModel.controller.receiver());
-
-    return getReceiverData(services, receiverModel, getAndSubscribe);
+    return getReceiverData(
+        services,
+        getAndSubscribe(conversationModel.controller.receiver()),
+        getAndSubscribe,
+    );
 }
 
 /**
@@ -115,6 +117,7 @@ export function getCommonReceiverData(receiverModel: AnyReceiver): CommonReceive
     switch (receiverModel.type) {
         case ReceiverType.CONTACT:
             return {
+                id: `${receiverModel.type}.${receiverModel.ctx}`,
                 color: receiverModel.view.color,
                 initials: receiverModel.view.initials,
                 isDisabled: isReceiverDisabled(receiverModel),
@@ -128,6 +131,7 @@ export function getCommonReceiverData(receiverModel: AnyReceiver): CommonReceive
 
         case ReceiverType.GROUP:
             return {
+                id: `${receiverModel.type}.${receiverModel.ctx}`,
                 color: receiverModel.view.color,
                 initials: getGroupInitials(receiverModel.view),
                 isDisabled: isReceiverDisabled(receiverModel),
@@ -161,6 +165,7 @@ export function getSelfReceiverData(
     const profileSettings = getAndSubscribe(user.profileSettings);
 
     return {
+        id: 'self',
         type: 'self',
         color: profilePicture.color,
         identity: user.identity,
@@ -175,7 +180,7 @@ export function getSelfReceiverData(
  * Returns the collected {@link ContactReceiverData} object for a specific receiver of type
  * {@link ReceiverType.CONTACT}.
  */
-function getContactReceiverData(
+export function getContactReceiverData(
     services: Pick<ServicesForViewModel, 'model'>,
     contactModel: Contact,
     getAndSubscribe: GetAndSubscribeFunction,
@@ -525,6 +530,13 @@ interface VerificationData {
 }
 
 interface CommonReceiverData {
+    /**
+     * Unique key across all receivers for keyed-each.
+     *
+     * WARNING: This will crash keyed-each usages when a receiver can appear multiple times in a
+     * list!
+     */
+    readonly id: string;
     /** Color used as the backdrop. */
     readonly color: IdColor;
     /** Fallback initials if the image is not provided or unavailable. */
@@ -542,6 +554,7 @@ interface CommonReceiverData {
 export interface SelfReceiverData
     extends Omit<CommonReceiverData, 'lookup' | 'notificationPolicy'> {
     readonly type: 'self';
+    readonly id: 'self';
     readonly nickname?: string;
     readonly identity: IdentityString;
 }

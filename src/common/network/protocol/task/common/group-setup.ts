@@ -6,7 +6,6 @@ import {
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact, Group, GroupInit} from '~/common/model';
-import {getIdentityString} from '~/common/model/contact';
 import {groupDebugString} from '~/common/model/group';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {
@@ -60,10 +59,8 @@ export abstract class GroupSetupTaskBase<
         const memberIdentities = new Set(this._groupSetup.members); // Set to avoid duplicates
         memberIdentities.delete(creatorIdentity); // Creator is an implicit member
 
-        const creator = getIdentityString(this._services.device, creatorIdentity);
-
         // 2. Look up group
-        const group = model.groups.getByGroupIdAndCreator(groupId, creator)?.get();
+        const group = model.groups.getByGroupIdAndCreator(groupId, creatorIdentity)?.get();
 
         // 3. If the group could not be found
         if (group === undefined) {

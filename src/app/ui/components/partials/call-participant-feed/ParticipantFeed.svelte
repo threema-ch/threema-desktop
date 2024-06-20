@@ -1,0 +1,226 @@
+<!--
+  @component Renders the participant feed (microphone / camera) of a single receiver.
+-->
+<script lang="ts">
+  import {onDestroy} from 'svelte';
+
+  import Text from '~/app/ui/components/atoms/text/Text.svelte';
+  import type {ParticipantFeedProps} from '~/app/ui/components/partials/call-participant-feed/props';
+  import ProfilePicture from '~/app/ui/components/partials/profile-picture/ProfilePicture.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
+  import {unusedProp} from '~/common/utils/svelte-helpers';
+
+  type $$Props = ParticipantFeedProps<'local' | 'remote'>;
+
+  export let services: $$Props['services'];
+  export let type: $$Props['type'];
+  export let receiver: $$Props['receiver'];
+  export let participantId: $$Props['participantId'];
+  export let tracks: $$Props['tracks'];
+  export let capture: $$Props['capture'];
+
+  unusedProp(participantId);
+
+  let microphoneAudioElement: SvelteNullableBinding<HTMLAudioElement> = null;
+  let cameraVideoElement: SvelteNullableBinding<HTMLVideoElement> = null;
+
+  // Note: Caching mitigates re-attaching tracks to <audio> and <video> elements which would result
+  // in audio cutoff and video flickering.
+  const cachedTracks: {
+    microphone: MediaStreamTrack | undefined;
+    camera: MediaStreamTrack | undefined;
+  } = {microphone: undefined, camera: undefined};
+
+  $: {
+    if (microphoneAudioElement !== null) {
+      if (tracks.type === 'local') {
+        microphoneAudioElement.srcObject = null;
+      } else if (cachedTracks.microphone !== tracks.microphone) {
+        microphoneAudioElement.srcObject = new MediaStream([tracks.microphone]);
+        cachedTracks.microphone = tracks.microphone;
+      }
+    }
+
+    if (cameraVideoElement !== null) {
+      if (tracks.camera === undefined) {
+        cameraVideoElement.srcObject = null;
+      } else if (cachedTracks.camera !== tracks.camera) {
+        cameraVideoElement.srcObject = new MediaStream([tracks.camera]);
+        cachedTracks.camera = tracks.camera;
+      }
+    }
+  }
+
+  // Track camera stream health
+  let unsubscribeCameraHealth: (() => void) | undefined;
+  let cameraHealth: 'good' | 'stalled' | 'unknown' = 'unknown';
+  function cameraHealthStalledHandler(): void {
+    cameraHealth = 'stalled';
+  }
+  function cameraHealthGoodHandler(): void {
+    cameraHealth = 'good';
+  }
+  onDestroy(() => unsubscribeCameraHealth?.());
+  $: {
+    const track = tracks.camera;
+    unsubscribeCameraHealth?.();
+    unsubscribeCameraHealth = undefined;
+    cameraHealth = 'unknown';
+
+    if (track !== undefined) {
+      track.addEventListener('mute', cameraHealthStalledHandler);
+      track.addEventListener('unmute', cameraHealthGoodHandler);
+      unsubscribeCameraHealth = () => {
+        track.addEventListener('mute', cameraHealthStalledHandler);
+        track.addEventListener('unmute', cameraHealthGoodHandler);
+      };
+      cameraHealth = track.muted ? 'stalled' : 'good';
+    }
+  }
+</script>
+
+<div class="container" data-camera-capture={capture.camera} data-camera-health={cameraHealth}>
+  <audio bind:this={microphoneAudioElement} autoplay playsinline />
+
+  <div class="video-container">
+    <div class="placeholder" data-color={receiver.color}>
+      <ProfilePicture
+        options={{
+          isClickable: false,
+        }}
+        {receiver}
+        {services}
+        size="md"
+      />
+    </div>
+
+    <video bind:this={cameraVideoElement} autoplay disablepictureinpicture muted playsinline />
+  </div>
+
+  <div class="footer">
+    <span class="pills left">
+      <span class="pill name">
+        <Text family="primary" size="body-small" text={receiver.name} />
+      </span>
+    </span>
+
+    {#if type === 'remote'}
+      <span class="pills right">
+        <div class="pill control">
+          <MdIcon theme="Outlined">
+            {#if capture.camera === 'on'}
+              videocam
+            {:else}
+              videocam_off
+            {/if}
+          </MdIcon>
+        </div>
+
+        <div class="pill control">
+          <MdIcon theme="Outlined">
+            {#if capture.microphone === 'on'}
+              mic
+            {:else}
+              mic_off
+            {/if}
+          </MdIcon>
+        </div>
+      </span>
+    {/if}
+  </div>
+</div>
+
+<style lang="scss">
+  @use 'component' as *;
+
+  .container {
+    position: relative;
+    width: 100%;
+    border-radius: rem(10px);
+    overflow: hidden;
+
+    audio {
+      display: none;
+    }
+
+    .video-container {
+      position: relative;
+      display: block;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+    }
+
+    .placeholder,
+    video {
+      position: absolute;
+      display: block;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+    }
+
+    .placeholder {
+      display: flex;
+      place-items: center;
+      place-content: center;
+      padding-bottom: rem(8px);
+
+      @each $color in map-get-req($config, profile-picture-colors) {
+        &[data-color='#{$color}'] {
+          color: var(--c-profile-picture-initials-#{$color}, default);
+          background-color: var(--c-profile-picture-background-#{$color}, default);
+        }
+      }
+    }
+
+    video {
+      object-fit: cover;
+      object-position: center;
+    }
+    &[data-camera-capture='off'],
+    &[data-camera-health='stalled'] {
+      video {
+        visibility: hidden;
+      }
+    }
+
+    .footer {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: rem(8px);
+
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      padding: rem(8px);
+
+      .pills {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        justify-content: center;
+        gap: rem(4px);
+
+        .pill {
+          display: flex;
+          flex-direction: row;
+          align-items: stretch;
+          justify-content: center;
+
+          padding: rem(4px) rem(8px);
+          border-radius: rem(13px);
+          color: white;
+          background-color: rgba(0, 0, 0, 0.8);
+          backdrop-filter: blur(10px);
+
+          &.control {
+            font-size: rem(18px);
+            padding: rem(4px);
+          }
+        }
+      }
+    }
+  }
+</style>

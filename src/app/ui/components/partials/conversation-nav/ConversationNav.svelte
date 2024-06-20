@@ -10,7 +10,6 @@
   import {
     conversationListEvent,
     getContextMenuItems,
-    goToSettings,
   } from '~/app/ui/components/partials/conversation-nav/helpers';
   import TopBar from '~/app/ui/components/partials/conversation-nav/internal/top-bar/TopBar.svelte';
   import type {ConversationNavProps} from '~/app/ui/components/partials/conversation-nav/props';
@@ -31,8 +30,8 @@
   import {scrollIntoViewIfNeededAsync} from '~/app/ui/utils/scroll';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import type {DbReceiverLookup} from '~/common/db';
-  import {display} from '~/common/dom/ui/state';
   import {extractErrorMessage} from '~/common/error';
+  import {DEFAULT_CATEGORY} from '~/common/settings';
   import {ensureError, unreachable} from '~/common/utils/assert';
   import {ReadableStore, type IQueryableStore} from '~/common/utils/store';
 
@@ -69,15 +68,15 @@
   }
 
   function handleClickContactListButton(): void {
-    router.replaceNav(ROUTE_DEFINITIONS.nav.contactList.withoutParams());
+    router.go({nav: ROUTE_DEFINITIONS.nav.contactList.withoutParams()});
   }
 
   function handleClickProfilePicture(): void {
-    goToSettings(router, $display);
+    router.goToSettings({category: DEFAULT_CATEGORY});
   }
 
   function handleClickSettingsButton(): void {
-    goToSettings(router, $display);
+    router.goToSettings({category: DEFAULT_CATEGORY});
   }
 
   async function handleClearSearchBar(): Promise<void> {
@@ -91,11 +90,6 @@
 
   function handleRequestRefreshSearchResults(): void {
     searchResultListComponent?.refresh();
-  }
-
-  function handleClickJoinCall(event: CustomEvent<ContextMenuItemHandlerProps>): void {
-    // TODO(DESK-1447): Handle joining group call (example below).
-    // event.detail.viewModelBundle.viewModelController.joinCall();
   }
 
   function handleCloseModal(): void {
@@ -275,18 +269,13 @@
   <div bind:this={listElement} class="list">
     {#if $conversationPreviewListProps !== undefined && $conversationPreviewListProps.items.length > 0}
       {#if searchTerm === undefined || searchTerm === ''}
-        <!-- Suppress `any` type warnings, as the types are fine, but not recognized by the linter
-        in Svelte. -->
-        <!-- eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call -->
         <ConversationPreviewList
           bind:this={conversationPreviewListComponent}
           contextMenuItems={(item) =>
             getContextMenuItems(item, $i18n, log, handleOpenClearModal, handleOpenDeleteModal)}
           {...$conversationPreviewListProps}
           {services}
-          on:clickjoincall={handleClickJoinCall}
         />
-        <!-- eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call -->
       {:else}
         <SearchResultList bind:this={searchResultListComponent} {searchTerm} {services} />
       {/if}

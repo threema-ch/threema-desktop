@@ -5,32 +5,24 @@ import {
     BackendCreationError,
     type OppfFetchConfig,
     type BackendCreator,
-    type BackendInitAfterTransfer,
     type DeviceLinkingSetup,
     type LinkingState,
     type PinForwarder,
     type BackendHandle,
+    type BackendInit,
 } from '~/common/dom/backend';
-import type {SystemInfo} from '~/common/electron-ipc';
-import type {D2mLeaderState} from '~/common/enum';
+import type {ConnectionState, D2mLeaderState} from '~/common/enum';
 import {extractErrorMessage} from '~/common/error';
+import {RELEASE_PROXY, TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import type {IFrontendMediaService} from '~/common/media';
 import type {ProfilePictureView} from '~/common/model';
 import type {DisplayPacket} from '~/common/network/protocol/capture';
-import type {ConnectionState} from '~/common/network/protocol/state';
 import type {IdentityString} from '~/common/network/types';
 import type {NotificationCreator} from '~/common/notification';
 import type {SystemDialogService} from '~/common/system-dialog';
 import {assertError, ensureError, unreachable} from '~/common/utils/assert';
-import {
-    type EndpointFor,
-    PROXY_HANDLER,
-    RELEASE_PROXY,
-    type RemoteProxy,
-    TRANSFER_HANDLER,
-    type TransferredToRemote,
-} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, type RemoteProxy, type ProxyEndpoint} from '~/common/utils/endpoint';
 import {eternalPromise} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {
@@ -40,10 +32,10 @@ import {
     WritableStore,
 } from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
+import type {WebRtcService} from '~/common/webrtc';
 
 export interface UserData {
     readonly identity: IdentityString;
-    readonly displayName: RemoteStore<string>;
     readonly profilePicture: RemoteStore<ProfilePictureView>;
 }
 
@@ -84,7 +76,6 @@ export class BackendController {
     };
 
     public constructor(
-        private readonly _services: ServicesForBackendController,
         private readonly _log: Logger,
         private readonly _remote: RemoteProxy<BackendHandle>,
 
@@ -106,12 +97,6 @@ export class BackendController {
     }
 
     public static async create(
-        init: {
-            readonly notification: NotificationCreator;
-            readonly systemDialog: SystemDialogService;
-            readonly frontendMediaService: IFrontendMediaService;
-        },
-        systemInfo: SystemInfo,
         services: ServicesForBackendController,
         creator: RemoteProxy<BackendCreator>,
         showLinkingWizard: (
@@ -128,53 +113,57 @@ export class BackendController {
         /**
          * Helper function to assemble a {@link BackendInit} object.
          */
-        function assembleBackendInit(): BackendInitAfterTransfer {
-            // Frontend media service
-            const {local: localFrontendMediaServiceEndpoint, remote: frontendMediaServiceEndpoint} =
+        function assembleBackendInit(): BackendInit {
+            // Media
+            const {local: localMediaEndpoint, remote: mediaEndpoint} =
                 endpoint.createEndpointPair<IFrontendMediaService>();
-            endpoint.exposeProxy(
-                init.frontendMediaService,
-                localFrontendMediaServiceEndpoint,
-                logging.logger('com.frontend-media-service'),
-            );
+            endpoint.exposeProxy(services.media, localMediaEndpoint, logging.logger('com.media'));
 
             // Notifications
             const {local: localNotificationEndpoint, remote: notificationEndpoint} =
                 endpoint.createEndpointPair<NotificationCreator>();
             endpoint.exposeProxy(
-                init.notification,
+                services.notification,
                 localNotificationEndpoint,
                 logging.logger('com.notification'),
             );
 
-            // System Dialog
+            // System dialog
             const {local: localSystemDialogEndpoint, remote: systemDialogEndpoint} =
                 endpoint.createEndpointPair<SystemDialogService>();
             endpoint.exposeProxy(
-                init.systemDialog,
+                services.systemDialog,
                 localSystemDialogEndpoint,
                 logging.logger('com.system-dialog'),
             );
 
+            // WebRTC
+            const {local: localWebRtcEndpoint, remote: webRtcEndpoint} =
+                endpoint.createEndpointPair<WebRtcService>();
+            endpoint.exposeProxy(
+                services.webRtc,
+                localWebRtcEndpoint,
+                logging.logger('com.webrtc'),
+            );
+
             // Transfer
-            const result = {
-                frontendMediaServiceEndpoint,
-                notificationEndpoint,
-                systemDialogEndpoint,
-                systemInfo,
-            };
-            return endpoint.transfer(result, [
-                result.frontendMediaServiceEndpoint,
-                result.notificationEndpoint,
-                result.systemDialogEndpoint,
-            ]);
+            return endpoint.transfer(
+                {
+                    mediaEndpoint,
+                    notificationEndpoint,
+                    systemDialogEndpoint,
+                    webRtcEndpoint,
+                    systemInfo: services.systemInfo,
+                },
+                [mediaEndpoint, notificationEndpoint, systemDialogEndpoint, webRtcEndpoint],
+            );
         }
 
         function assembleDeviceLinkingSetup(
             linkingStateStore: WritableStore<LinkingState>,
             userPassword: Promise<string>,
             oppfConfig: Promise<OppfFetchConfig>,
-        ): TransferredToRemote<EndpointFor<DeviceLinkingSetup>> {
+        ): ProxyEndpoint<DeviceLinkingSetup> {
             const {local, remote} = endpoint.createEndpointPair<DeviceLinkingSetup>();
 
             // Add transfer markers
@@ -200,7 +189,7 @@ export class BackendController {
 
         function assembleForwardPinCommunication(
             forwardPin: PinForwarder['forward'],
-        ): TransferredToRemote<EndpointFor<PinForwarder>> {
+        ): ProxyEndpoint<PinForwarder> {
             const {local, remote} = endpoint.createEndpointPair<PinForwarder>();
             const forwardPinSetup: PinForwarder = {
                 [TRANSFER_HANDLER]: PROXY_HANDLER,
@@ -340,22 +329,21 @@ export class BackendController {
 
         // Gather startup data
         log.debug('Waiting for startup data to be available');
-        const [connectionState, leaderState, identity, deviceIds, profilePicture, displayName] =
+        const [connectionState, leaderState, identity, deviceIds, profilePicture] =
             await Promise.all([
                 remote.connectionManager.state,
                 remote.connectionManager.leaderState,
                 remote.model.user.identity,
                 remote.deviceIds,
                 remote.model.user.profilePicture,
-                remote.model.user.displayName,
             ]);
         // Done
         log.debug('Creating backend controller');
-        const backend = new BackendController({...services}, log, remote, {
+        const backend = new BackendController(log, remote, {
             deviceIds,
             connectionState,
             leaderState,
-            user: {identity, profilePicture, displayName},
+            user: {identity, profilePicture},
         });
 
         return [backend, isNewIdentity];

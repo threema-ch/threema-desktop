@@ -1,35 +1,19 @@
 import {SyncEvent} from 'ts-events';
 
-import type {Router} from '~/app/routing/router';
-import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
 import type {ContextMenuItemHandlerProps} from '~/app/ui/components/partials/conversation-nav/types';
 import type {
     ContextMenuItemWithHandlerProps,
     ConversationPreviewListItem,
 } from '~/app/ui/components/partials/conversation-preview-list/props';
 import type {I18nType} from '~/app/ui/i18n-types';
-import type {DisplayMode} from '~/common/dom/ui/layout';
 import {extractErrorMessage} from '~/common/error';
 import type {Logger} from '~/common/logging';
-import {DEFAULT_CATEGORY} from '~/common/settings';
 import {ensureError} from '~/common/utils/assert';
 
 interface ConversationNavEvent {
     action: 'scroll-to-top';
 }
 export const conversationListEvent = new SyncEvent<ConversationNavEvent>();
-
-export function goToSettings(router: Router, display?: DisplayMode): void {
-    router.go(
-        ROUTE_DEFINITIONS.nav.settingsList.withoutParams(),
-        // Note: When opening settings in small display mode, we want to see the settings
-        //       categories, not the profile settings.
-        display === 'small'
-            ? ROUTE_DEFINITIONS.main.welcome.withoutParams()
-            : ROUTE_DEFINITIONS.main.settings.withTypedParams({category: DEFAULT_CATEGORY}),
-        undefined,
-    );
-}
 
 export function getContextMenuItems(
     item: ConversationPreviewListItem<ContextMenuItemHandlerProps>,

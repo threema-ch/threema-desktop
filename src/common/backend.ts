@@ -7,17 +7,19 @@ import type {SystemInfo} from '~/common/electron-ipc';
 import type {FileStorage} from '~/common/file-storage';
 import type {KeyStorage} from '~/common/key-storage';
 import type {LoggerFactory} from '~/common/logging';
-import type {BackendMediaService} from '~/common/media';
+import type {BackendMediaService, IFrontendMediaService} from '~/common/media';
 import type {Repositories} from '~/common/model';
 import type {BlobBackend} from '~/common/network/protocol/blob';
 import type {DirectoryBackend} from '~/common/network/protocol/directory';
+import type {SfuHttpBackend} from '~/common/network/protocol/sfu';
 import type {TaskManager} from '~/common/network/protocol/task/manager';
 import type {VolatileProtocolState} from '~/common/network/protocol/volatile-protocol-state';
 import type {WorkBackend} from '~/common/network/protocol/work';
-import type {NotificationService} from '~/common/notification';
+import type {NotificationCreator, NotificationService} from '~/common/notification';
 import type {SystemDialogService} from '~/common/system-dialog';
 import type {EndpointService, Remote} from '~/common/utils/endpoint';
 import type {IViewModelRepository} from '~/common/viewmodel';
+import type {WebRtcService} from '~/common/webrtc';
 
 /**
  * Services available in the backend.
@@ -37,18 +39,20 @@ export interface ServicesForBackend {
     readonly model: Repositories;
     readonly nonces: INonceService;
     readonly notification: NotificationService;
+    readonly sfu: SfuHttpBackend;
     readonly systemDialog: Remote<SystemDialogService>;
     readonly systemInfo: SystemInfo;
     readonly taskManager: TaskManager;
     readonly viewModel: IViewModelRepository;
     readonly volatileProtocolState: VolatileProtocolState;
     readonly work: WorkBackend;
+    readonly webrtc: Remote<WebRtcService>;
 }
 
 /**
- * Services that don't require an initialized identity before they can be instantiated.
+ * Backend services that don't require an initialized identity before they can be instantiated.
  */
-export type EarlyServices = Omit<
+export type EarlyBackendServices = Omit<
     ServicesForBackend,
     'device' | 'blob' | 'model' | 'nonces' | 'viewModel'
 >;
@@ -57,20 +61,29 @@ export type EarlyServices = Omit<
  * Early backend services that require neither an active identity nor a dynamic config for being
  * initialized.
  */
-export type EarlyServicesThatRequireConfig = Pick<EarlyServices, 'directory' | 'file'>;
+export type EarlyBackendServicesThatRequireConfig = Pick<
+    EarlyBackendServices,
+    'directory' | 'file' | 'sfu'
+>;
 
 /**
  * Early backend services that don't require an active identity, but a dynamic config for being
  * initialized.
  */
-export type EarlyServicesThatDontRequireConfig = Omit<
-    EarlyServices,
-    'config' | 'work' | keyof EarlyServicesThatRequireConfig
+export type EarlyBackendServicesThatDontRequireConfig = Omit<
+    EarlyBackendServices,
+    'config' | 'work' | keyof EarlyBackendServicesThatRequireConfig
 >;
 
 /**
  * Services available in the backend controller.
  */
-export type ServicesForBackendController = Pick<ServicesForBackend, 'endpoint' | 'logging'> & {
-    crypto: Pick<CryptoBackend, 'randomBytes'>;
-};
+export interface ServicesForBackendController {
+    readonly endpoint: EndpointService;
+    readonly logging: LoggerFactory;
+    readonly media: IFrontendMediaService;
+    readonly notification: NotificationCreator;
+    readonly systemDialog: SystemDialogService;
+    readonly systemInfo: SystemInfo;
+    readonly webRtc: WebRtcService;
+}

@@ -38,11 +38,7 @@
   function handleClickCallCharm(event: MouseEvent): void {
     event.preventDefault();
     event.stopPropagation();
-
-    // Only dispatch a join request if there is an active call that hasn't been joined yet.
-    if (call?.isJoined === false) {
-      dispatch('clickjoincall', event);
-    }
+    dispatch('clickjoincall', event);
   }
 
   function getNumberCountOf(timestamp: string): u53 {
@@ -55,22 +51,21 @@
 <span class="container">
   {#if call !== undefined}
     <span class="item">
-      <button class="charm call" class:joined={call.isJoined} on:click={handleClickCallCharm}>
+      <button class="charm call" class:joined={call.joined} on:click={handleClickCallCharm}>
         <span class="icon">
           <MdIcon theme="Filled">call</MdIcon>
         </span>
-        {#if call.isJoined}
-          <Timer from={call.startedAt}>
-            <span
-              slot="default"
-              let:current
-              class="timer"
-              style={`--c-t-number-count: ${getNumberCountOf(current)}ch;`}
-            >
-              {current}
-            </span>
-          </Timer>
-        {:else}
+        <Timer from={call.startedAt}>
+          <span
+            slot="default"
+            let:current
+            class="timer"
+            style={`--c-t-number-count: ${getNumberCountOf(current)}ch;`}
+          >
+            {current}
+          </span>
+        </Timer>
+        {#if !call.joined}
           <span>{$i18n.t('messaging.label--call-join-short', 'Join')}</span>
         {/if}
       </button>

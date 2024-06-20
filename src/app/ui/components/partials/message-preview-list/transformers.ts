@@ -24,9 +24,9 @@ export function transformMessageReactionsProps(
             ...reaction,
             sender: {
                 name:
-                    reaction.sender.identity === 'me'
+                    reaction.sender.type === 'self'
                         ? i18n.t('contacts.label--own-name', 'Me')
-                        : reaction.sender.name ?? reaction.sender.identity,
+                        : reaction.sender.name,
             },
         }))
         .sort((a, b) => localeSort(a.sender.name, b.sender.name));

@@ -1,16 +1,52 @@
-import type {DbConversationUid, DbStatusMessage, UidOf} from '~/common/db';
+import type {DbConversationUid, DbStatusMessageUid} from '~/common/db';
 import type {StatusMessageType} from '~/common/enum';
 import type {LocalModel} from '~/common/model/types/common';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {GroupCallId} from '~/common/network/protocol/call/group-call';
 import type {IdentityString, StatusMessageId} from '~/common/network/types';
 import type {u53} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
 
+/** Values associated to status messages. */
+export interface StatusMessageValues {
+    /** Status message that indicates a change in group members. */
+    [StatusMessageType.GROUP_MEMBER_CHANGED]: {
+        /** IDs that were added to the group (including the user). */
+        readonly added: IdentityString[];
+        /** IDs that were removed from the group (including the user). */
+        readonly removed: IdentityString[];
+    };
+
+    /** Status message that indicates a changed group name. */
+    [StatusMessageType.GROUP_NAME_CHANGED]: {
+        /** The old name of the group. */
+        readonly oldName: string;
+        /** The new name of the group. */
+        readonly newName: string;
+    };
+
+    /** Status message that indicates a group call has been started. */
+    [StatusMessageType.GROUP_CALL_STARTED]: {
+        /** Group Call ID identifying the group call. */
+        readonly callId: GroupCallId;
+        /** Group member (including the creator and the user) who started the group call. */
+        readonly startedBy: IdentityString;
+    };
+
+    /** Status message that indicates a group call ended. */
+    [StatusMessageType.GROUP_CALL_ENDED]: {
+        /** Group Call ID identifying the group call. */
+        readonly callId: GroupCallId;
+        /** Group member (including the creator and the user) who started the group call. */
+        readonly startedBy: IdentityString;
+    };
+}
+
 /**
  * The base status message with the mandatory fields all status messages must have.
  */
-export interface StatusMessageView<TType extends StatusMessageType, TValue> {
+export interface StatusMessageView<TType extends StatusMessageType> {
     /**
      * UID of the associated conversation.
      */
@@ -34,54 +70,32 @@ export interface StatusMessageView<TType extends StatusMessageType, TValue> {
     /**
      * Structured data associated with this status message.
      */
-    readonly value: TValue;
+    readonly value: StatusMessageValues[TType];
 }
 
 /**
- * BaseStatusMessage Controller with no functionality, whatsoever.
- * It is mainly used for creation of {@link LocalModelStores} of {@link StatusMessages}.
+ * Status message controller with no functionality, whatsoever. It is mainly used for creation of
+ * {@link LocalModelStores} of {@link StatusMessages}.
  */
-export type StatusMessageController<TType extends StatusMessageType, TValue> = {
-    readonly uid: UidOf<DbStatusMessage>;
-    readonly meta: ModelLifetimeGuard<StatusMessageView<TType, TValue>>;
+export type StatusMessageController<TType extends StatusMessageType> = {
+    readonly meta: ModelLifetimeGuard<StatusMessageView<TType>>;
+    readonly uid: DbStatusMessageUid;
 } & ProxyMarked;
 
-type StatusModel<TType extends StatusMessageType, TValue> = LocalModel<
-    StatusMessageView<TType, TValue>,
-    StatusMessageController<TType, TValue>,
-    DbConversationUid,
-    TType
->;
-
-/**
- * Status message that indicates a change in group members.
- */
-export type GroupMemberChangeStatus = StatusModel<
-    StatusMessageType.GROUP_MEMBER_CHANGE,
-    {
-        /** IDs that were added to the group. */
-        readonly added: IdentityString[];
-        /** IDs that were removed from the group. */
-        readonly removed: IdentityString[];
-    }
->;
-
-/**
- * Status message that indicates a changed group name.
- */
-export type GroupNameChangeStatus = StatusModel<
-    StatusMessageType.GROUP_NAME_CHANGE,
-    {
-        /** The old name of the group. */
-        readonly oldName: string;
-        /** The new name of the group. */
-        readonly newName: string;
-    }
->;
+/** Models associated to status messages. */
+export type StatusMessageModels = {
+    readonly [TType in StatusMessageType]: LocalModel<
+        StatusMessageView<TType>,
+        StatusMessageController<TType>,
+        DbConversationUid,
+        TType
+    >;
+};
+export type StatusMessageModelStores = {
+    [TType in StatusMessageType]: LocalModelStore<StatusMessageModels[TType]>;
+};
 
 // Union Types
-export type AnyStatusMessageView = GroupMemberChangeStatus['view'] | GroupNameChangeStatus['view'];
-export type AnyStatusMessageModel = GroupMemberChangeStatus | GroupNameChangeStatus;
-export type AnyStatusMessageModelStore =
-    | LocalModelStore<GroupMemberChangeStatus>
-    | LocalModelStore<GroupNameChangeStatus>;
+export type AnyStatusMessageModel = StatusMessageModels[StatusMessageType];
+export type AnyStatusMessageView = StatusMessageModels[StatusMessageType]['view'];
+export type AnyStatusMessageModelStore = StatusMessageModelStores[StatusMessageType];

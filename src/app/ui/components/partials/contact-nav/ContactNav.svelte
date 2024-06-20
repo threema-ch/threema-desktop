@@ -8,7 +8,6 @@
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import AddressBook from '~/app/ui/components/partials/address-book/AddressBook.svelte';
   import type {TabState} from '~/app/ui/components/partials/address-book/types';
-  import {goToSettings} from '~/app/ui/components/partials/contact-nav/helpers';
   import TopBar from '~/app/ui/components/partials/contact-nav/internal/top-bar/TopBar.svelte';
   import type {ContactNavProps} from '~/app/ui/components/partials/contact-nav/props';
   import {contactListViewModelStoreToReceiverPreviewListPropsStore} from '~/app/ui/components/partials/contact-nav/transformers';
@@ -21,9 +20,9 @@
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
-  import {display} from '~/common/dom/ui/state';
   import {ConnectionState} from '~/common/enum';
   import type {AnyReceiver} from '~/common/model';
+  import {DEFAULT_CATEGORY} from '~/common/settings';
   import {ensureError, unreachable} from '~/common/utils/assert';
   import {ReadableStore, type IQueryableStore} from '~/common/utils/store';
 
@@ -52,11 +51,11 @@
   }
 
   function handleClickBackButton(): void {
-    router.replaceNav(ROUTE_DEFINITIONS.nav.conversationList.withoutParams());
+    router.go({nav: ROUTE_DEFINITIONS.nav.conversationList.withoutParams()});
   }
 
   function handleClickSettingsButton(): void {
-    goToSettings(router, $display);
+    router.goToSettings({category: DEFAULT_CATEGORY});
   }
 
   function handleClickAdd(): void {
@@ -73,7 +72,7 @@
       return;
     }
 
-    router.replaceNav(ROUTE_DEFINITIONS.nav.contactAdd.withTypedParams({identity: undefined}));
+    router.go({nav: ROUTE_DEFINITIONS.nav.contactAdd.withParams({identity: undefined})});
   }
 
   function handleClickEditItem(event: CustomEvent<ContextMenuItemHandlerProps<AnyReceiver>>): void {

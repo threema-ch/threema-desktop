@@ -467,7 +467,7 @@ async function init(): Promise<MainInit> {
     }
     {
         const assertFailLogger = logging.logger('assert');
-        setAssertFailLogger((error) => assertFailLogger.trace(error));
+        setAssertFailLogger((error) => assertFailLogger.error(extractErrorTraceback(error)));
     }
     // eslint-disable-next-line require-atomic-updates
     log = logging.logger('main');
@@ -992,18 +992,17 @@ function main(
                 return deny(`Permission request from non-main thread: ${permission}`);
             }
 
-            // Allow notifications
-            if (permission === 'notifications') {
-                return allow();
-            }
-
-            // Allow writing to clipboard
-            if (permission === 'clipboard-sanitized-write') {
-                return allow();
-            }
-
-            // Allow fullscreen (e.g. for video playback)
-            if (permission === 'fullscreen') {
+            // Allow specific permissions
+            //
+            // Rationale for non-obvious ones:
+            //
+            // - fullscreen: For video playback
+            // - media: For microphone/camera access in a call
+            if (
+                ['notifications', 'clipboard-sanitized-write', 'fullscreen', 'media'].includes(
+                    permission,
+                )
+            ) {
                 return allow();
             }
 
@@ -1199,7 +1198,7 @@ function main(
 }
 
 // Temporarily set primitive assertion failed logger, then initialise and run main app
-setAssertFailLogger((error) => CONSOLE_LOGGER.trace(error));
+setAssertFailLogger((error) => CONSOLE_LOGGER.error(extractErrorTraceback(error)));
 (async () => {
     const signal = {start: false};
 

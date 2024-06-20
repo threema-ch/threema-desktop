@@ -59,12 +59,14 @@ export class ReflectedOutgoingGroupSetupTask
         const creatorIdentity = device.identity.string; // We're the group creator
         const groupId = this._container.groupId;
 
-        // Ensure that we're not part of the group member list
+        // Ensure that the creator is not part of the group member list
         const memberIdentities = new Set(this._groupSetup.members);
         memberIdentities.delete(creatorIdentity);
 
         // Look up group
-        const group = model.groups.getByGroupIdAndCreator(groupId, 'me')?.get();
+        const group = model.groups
+            .getByGroupIdAndCreator(groupId, this._services.device.identity.string)
+            ?.get();
 
         // Look up group member contacts
         const memberContacts: LocalModelStore<Contact>[] = [];

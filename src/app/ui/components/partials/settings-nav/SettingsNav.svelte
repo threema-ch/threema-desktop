@@ -18,12 +18,7 @@
   const {router} = services;
 
   function handleClickBack(): void {
-    router.go(
-      ROUTE_DEFINITIONS.nav.conversationList.withoutParams(),
-      ROUTE_DEFINITIONS.main.welcome.withoutParams(),
-      undefined,
-      undefined,
-    );
+    router.goToWelcome({nav: ROUTE_DEFINITIONS.nav.conversationList.withoutParams()});
   }
 </script>
 

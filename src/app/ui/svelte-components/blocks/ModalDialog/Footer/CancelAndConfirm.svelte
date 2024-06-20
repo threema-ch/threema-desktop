@@ -2,8 +2,8 @@
   import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
   import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
   import type {Modal} from '~/app/ui/svelte-components/blocks/ModalDialog';
-  import {unreachable} from '~/app/ui/svelte-components/utils/assert';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
+  import {unreachable} from '~/common/utils/assert';
 
   interface ConfirmOnlyProps {
     readonly cancelText?: undefined;

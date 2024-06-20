@@ -1,3 +1,4 @@
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {ServicesForModel} from '~/common/model/types/common';
 import type {
     DevicesSettingsController,
@@ -8,7 +9,7 @@ import type {
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {ensureDeviceName} from '~/common/network/types';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
 
 export class DevicesSettingsModelController implements DevicesSettingsController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;

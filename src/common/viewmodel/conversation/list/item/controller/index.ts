@@ -1,6 +1,7 @@
 import {ConversationVisibility} from '~/common/enum';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {ConversationModelStore} from '~/common/model/conversation';
-import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, type ProxyMarked} from '~/common/utils/endpoint';
 
 export interface IConversationListItemViewModelController extends ProxyMarked {
     /**

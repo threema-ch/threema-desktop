@@ -20,7 +20,7 @@ type Blake2bHashLength = 32 | 64;
  */
 export type Blake2bKeyLength = SecretKeyLength & (32 | 64);
 
-/** Blake2b hash parameters */
+/** Blake2b hash parameters. */
 export interface Blake2bParameters {
     /**
      * The 'personal' to use for hashing, usually for namespacing. Limited to 8 bytes for
@@ -33,6 +33,12 @@ export interface Blake2bParameters {
      * compatibility with the high-level libsodium API.
      */
     readonly salt: Uint8Array | string;
+}
+
+/** Extended Blake2b hash parameters for deriving keys. */
+export interface Blake2bKdfParameters extends Blake2bParameters {
+    /** Additional input to be applied to the Blake2b hash. */
+    readonly input?: ReadonlyUint8Array;
 }
 
 function encodeAndZeroPad(
@@ -91,10 +97,13 @@ export function hash(
  */
 export function deriveKey<TDerivedKeyLength extends Blake2bKeyLength>(
     length: TDerivedKeyLength,
-    key: RawKey<Blake2bKeyLength>,
-    parameters: Blake2bParameters,
+    key: ReadonlyRawKey<Blake2bKeyLength>,
+    parameters: Blake2bKdfParameters,
 ): RawKey<TDerivedKeyLength> {
     // Derive and immediately tag as a raw secure secret key
-    const derived = hash(length, key.asReadonly(), parameters).digest();
-    return wrapRawKey(derived, length);
+    const derived = hash(length, key.asReadonly(), parameters);
+    if (parameters.input !== undefined) {
+        derived.update(parameters.input);
+    }
+    return wrapRawKey(derived.digest(), length);
 }

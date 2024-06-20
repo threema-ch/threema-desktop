@@ -13,13 +13,14 @@
 
 import type {ServicesForBackend} from '~/common/backend';
 import {TransferTag} from '~/common/enum';
+import {RELEASE_PROXY, TRANSFERRED_MARKER, TRANSFER_HANDLER} from '~/common/index';
 import type {Logger, LoggerFactory} from '~/common/logging';
 import type {LocalModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
-import type {BareFromTag, i53, Primitive, u53, WeakOpaque} from '~/common/types';
+import type {i53, Primitive, u53, WeakOpaque} from '~/common/types';
 import {assert, assertUnreachable, unreachable, unwrap} from '~/common/utils/assert';
 import {WeakValueMap} from '~/common/utils/map';
 import {SequenceNumberU53} from '~/common/utils/sequence-number';
-import {AbortRaiser} from '~/common/utils/signal';
+import type {AbortListener, AbortRaiser, RemoteAbortListener} from '~/common/utils/signal';
 import type {LocalStore, RemoteStore} from '~/common/utils/store';
 import type {IDerivableSetStore, ISetStore, RemoteSetStore} from '~/common/utils/store/set-store';
 
@@ -27,7 +28,7 @@ import type {IDerivableSetStore, ISetStore, RemoteSetStore} from '~/common/utils
  * Symbol to mark a remote as an object with transferred properties.
  */
 // eslint-disable-next-line @typescript-eslint/no-inferrable-types
-export const OBJECT_PROPERTIES_TRANSFERRED_REMOTE_MARKER: symbol = Symbol(
+const OBJECT_PROPERTIES_TRANSFERRED_REMOTE_MARKER: symbol = Symbol(
     'object-properties-transferred-remote-marker',
 );
 
@@ -38,105 +39,88 @@ export const OBJECT_PROPERTIES_TRANSFERRED_REMOTE_MARKER: symbol = Symbol(
 const PROXY_OJBECT_REMOTE_MARKER: symbol = Symbol('proxy-object-remote-marker');
 
 // Minimal incomplete but DOM-compatible interfaces for MessagePort and co.
-export interface MessageEvent {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    readonly data: any;
+export interface MessageEventLike<TMessage> {
+    readonly data: TMessage;
 }
-type EndpointListener = (ev: MessageEvent) => unknown;
+type EndpointListener<TMessage> = (event: MessageEventLike<TMessage>) => unknown;
 // Note: The transferable type is incorrect but it's probably impossible to shim in non-DOM land
 //       since we would have to reference many DOM types...
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type DomTransferable = any;
-interface PostMessageOptions {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    readonly transfer?: DomTransferable[];
-}
 interface AddEventListenerOptions {
     readonly once?: boolean;
-}
-
-interface EndpointMixin {
-    readonly addEventListener: (
-        type: 'message' | 'messageerror',
-        listener: EndpointListener,
-        options?: AddEventListenerOptions,
-    ) => void;
-    readonly removeEventListener: (
-        type: 'message' | 'messageerror',
-        listener: EndpointListener,
-    ) => void;
-    readonly start?: () => void;
-    readonly close?: () => void;
 }
 
 /**
  * A generic endpoint.
  */
-export interface Endpoint extends EndpointMixin {
-    readonly postMessage: (
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        message: any,
-        transfer?: readonly DomTransferable[],
+export interface Endpoint<TLocalMessage, TRemoteMessage> {
+    readonly postMessage: (message: TLocalMessage, transfer?: readonly DomTransferable[]) => void;
+
+    readonly addEventListener: (
+        type: 'message' | 'messageerror',
+        listener: EndpointListener<TRemoteMessage>,
+        options?: AddEventListenerOptions,
     ) => void;
-}
 
-/**
- * A DOM endpoint has a bit of a type mismatch on `postMessage` (`transfer` is not a `readonly`
- * array) which we can ignore.
- */
-interface DomEndpoint extends EndpointMixin {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    readonly postMessage: ((message: any, transfer: DomTransferable[]) => void) &
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ((message: any, options?: PostMessageOptions) => void);
-}
+    readonly removeEventListener: (
+        type: 'message' | 'messageerror',
+        listener: EndpointListener<TRemoteMessage>,
+    ) => void;
 
-/**
- * Minimal interface to represent a DOM {@link CreatedEndpoint}.
- */
-export interface CreatedEndpoint extends Endpoint {
-    readonly close: () => void;
-    readonly start: () => void;
+    readonly start?: () => void;
+    readonly close?: () => void;
 }
 
 /**
  * A specific endpoint.
  */
-export type EndpointFor<TTarget, TEndpoint extends Endpoint = Endpoint> = WeakOpaque<
-    TEndpoint,
+export type EndpointFor<TTarget, TLocalMessage, TRemoteMessage> = WeakOpaque<
+    Endpoint<TLocalMessage, TRemoteMessage>,
     {readonly Endpoint: TTarget}
 >;
 
 /**
- * A object that was transferred to another thread (resp. marked to be transfered at a later time)
+ * Marker used as a placeholder for messages transferred via a proxy {@link Endpoint}.
  */
-export type TransferredToRemote<TObject> = WeakOpaque<
-    TObject,
-    {readonly Transferred: unique symbol}
->;
+const PROXY_MESSAGE_PLACEHOLDER = Symbol('proxy-message-placeholder');
 
 /**
- * A object that was transfered here from a remote thread.
+ * A proxy endpoint.
  */
-export type TransferredFromRemote<TObject> = WeakOpaque<
-    TObject,
-    {readonly Transferred: unique symbol}
+export type ProxyEndpoint<TTarget extends ProxyMarked> = EndpointFor<
+    TTarget,
+    typeof PROXY_MESSAGE_PLACEHOLDER,
+    typeof PROXY_MESSAGE_PLACEHOLDER
 >;
 
 /**
  * A pair of specific endpoints.
  */
-export interface EndpointPairFor<TTarget, TEndpoint extends CreatedEndpoint = CreatedEndpoint> {
-    readonly local: EndpointFor<TTarget, TEndpoint>;
-    readonly remote: EndpointFor<TTarget, TEndpoint>;
+export interface EndpointPairFor<TTarget, TLocalMessage, TRemoteMessage> {
+    readonly local: EndpointFor<TTarget, TLocalMessage, TRemoteMessage>;
+    readonly remote: EndpointFor<TTarget, TRemoteMessage, TLocalMessage>;
 }
+
+/**
+ * A proxy endpoint pair.
+ */
+export type ProxyEndpointPair<TTarget extends ProxyMarked> = EndpointPairFor<
+    TTarget,
+    typeof PROXY_MESSAGE_PLACEHOLDER,
+    typeof PROXY_MESSAGE_PLACEHOLDER
+>;
 
 /**
  * A creator for an endpoint pair.
  */
-export type EndpointPairCreator<TEndpoint extends CreatedEndpoint = CreatedEndpoint> = <
+export type EndpointPairCreator = <
     TTarget,
->() => EndpointPairFor<TTarget, TEndpoint>;
+    TLocalMessage = unknown,
+    TRemoteMessage = unknown,
+>() => TTarget extends ProxyMarked
+    ? ProxyEndpointPair<TTarget>
+    : EndpointPairFor<TTarget, TLocalMessage, TRemoteMessage>;
 
 // eslint-disable-next-line jsdoc/no-bad-blocks
 /* eslint-disable
@@ -204,16 +188,6 @@ interface ReleaseMessage {
 type Message = GetMessage | SetMessage | ApplyMessage | ReleaseMessage;
 
 /**
- * Marker for an object that requires serialization in a special form.
- */
-export const TRANSFER_HANDLER = Symbol('endpoint-transfer-handler');
-
-/**
- * Called from the remote side to explicitly release a proxy on the local side.
- */
-export const RELEASE_PROXY = Symbol('endpoint-release-proxy');
-
-/**
  * Marks an object as a special transfer type that requires custom serialization.
  */
 export interface CustomTransferable<
@@ -253,11 +227,6 @@ interface ThrowMarked extends CustomTransferable<typeof THROW_HANDLER> {
 }
 
 /**
- * Marker for the representation of an object on the remote side.
- */
-export const TRANSFERRED_MARKER = Symbol('endpoint-transferred-marker');
-
-/**
  * Marks an object on the remote side as a special transferred type.
  */
 export interface CustomTransferredRemoteMarker<TMarker> {
@@ -282,6 +251,27 @@ export interface ProxyEndpointMethods {
 //
 // Remote type
 //
+
+/**
+ * A minimal interface of {@link ReadableStream}, just enough to map it but don't confuse other
+ * types with it.
+ */
+interface ReadableStream<I> extends AsyncIterable<I> {
+    readonly locked: boolean;
+    readonly cancel: (...args: unknown[]) => Promise<unknown>;
+    readonly getReader: (...args: unknown[]) => unknown;
+}
+
+/**
+ * A minimal interface of {@link WritableStream}, just enough to map it but don't confuse other
+ * types with it.
+ */
+interface WritableStream {
+    readonly locked: boolean;
+    readonly abort: (...args: unknown[]) => Promise<unknown>;
+    readonly close: () => Promise<unknown>;
+    readonly getWriter: () => unknown;
+}
 
 /**
  * A Proxy type as returned by {@link EndpointService.wrap}.
@@ -322,15 +312,17 @@ export type CustomTransferableLocal<T extends CustomTransferredRemoteMarker<unkn
           ? ISetStore<TValue>
           : T extends RemoteStore<infer TValue>
             ? LocalStore<TValue>
-            : T extends PropertiesMarkedRemote<infer TValue>
-              ? TValue & PropertiesMarked
-              : T extends RemoteProxy<infer TValue>
-                ? TValue & ProxyMarked
-                : // Remote inferrence doesen't work in every case due to the complexity / depth of the inferred
-                  // types. Use the following as fallback for other cases:
-                  //     T extends Remote<infer TValue>
-                  //   ? TValue :
-                  never;
+            : T extends RemoteAbortListener<infer TEvent>
+              ? AbortListener<TEvent>
+              : T extends PropertiesMarkedRemote<infer TValue>
+                ? TValue & PropertiesMarked
+                : T extends RemoteProxy<infer TValue>
+                  ? TValue & ProxyMarked
+                  : // Remote inferrence doesen't work in every case due to the complexity / depth of the inferred
+                    // types. Use the following as fallback for other cases:
+                    //     T extends Remote<infer TValue>
+                    //   ? TValue :
+                    never;
 
 /**
  * A proxied remote function type. See {@link RemoteProxy}.
@@ -396,11 +388,6 @@ export type PropertiesMarkedRemote<T> = {
 } & CustomTransferredRemoteMarker<typeof OBJECT_PROPERTIES_TRANSFERRED_REMOTE_MARKER>;
 
 /**
- * Make sure that {@param T} extends {@param TType}.
- */
-type MustExtend<TType, T extends TType> = T;
-
-/**
  * Maps our custom local transfer marked types to the matching remote counterpart type.
  *
  * IMPORTANT: Only types that are **uniquely** tagged with symbols or unique key/value types may be
@@ -412,17 +399,19 @@ type CustomTransferableRemote<T extends CustomTransferable> =
         : T extends IDerivableSetStore<infer TValue>
           ? // TValue must extends CustomTransferrable. We cannot enforce this since the remote mapping
             // of a CustomTransferrable is a plain object.
-            RemoteSetStore<MustExtend<object, Remote<TValue>>>
+            RemoteSetStore<Remote<TValue> extends object ? Remote<TValue> : never>
           : T extends LocalStore<
                   infer TValue,
                   RegisteredTransferHandler<any, any, any, any, TransferTag>
               >
             ? RemoteStore<Remote<TValue>>
-            : T extends PropertiesMarked
-              ? PropertiesMarkedRemote<T>
-              : T extends ProxyMarked
-                ? RemoteProxy<T>
-                : never;
+            : T extends AbortListener<infer TEvent>
+              ? RemoteAbortListener<TEvent>
+              : T extends PropertiesMarked
+                ? PropertiesMarkedRemote<T>
+                : T extends ProxyMarked
+                  ? RemoteProxy<T>
+                  : never;
 
 /**
  * Approximation of Structured Clone Algorithm result type. See
@@ -431,25 +420,35 @@ type CustomTransferableRemote<T extends CustomTransferable> =
  */
 type StructuredCloneOf<T> = T extends StructuredCloneUnclonableTypes
     ? never
-    : T extends TransferredToRemote<infer TTransferred>
-      ? TransferredFromRemote<TTransferred>
-      : T extends TransferredFromRemote<infer TTransferred>
-        ? TransferredToRemote<TTransferred>
-        : T extends Map<infer TKey, infer TValue>
-          ? Map<StructuredCloneOf<TKey>, StructuredCloneOf<TValue>>
+    : T extends Endpoint<any, any>
+      ? T
+      : T extends Map<infer TKey, infer TValue>
+        ? Map<StructuredCloneOf<TKey>, StructuredCloneOf<TValue>>
+        : T extends ReadonlyMap<infer TKey, infer TValue>
+          ? ReadonlyMap<StructuredCloneOf<TKey>, StructuredCloneOf<TValue>>
           : T extends Set<infer TValue>
             ? Set<StructuredCloneOf<TValue>>
-            : T extends (infer TValue)[]
-              ? StructuredCloneOf<TValue>[]
-              : T extends ArrayBuffer | Boolean | DataView | Date | RegExp | String
-                ? T
-                : T extends Primitive // Required to be handled before object for OpaqueTag types
+            : T extends ReadonlySet<infer TValue>
+              ? ReadonlySet<StructuredCloneOf<TValue>>
+              : T extends (infer TValue)[]
+                ? StructuredCloneOf<TValue>[]
+                : T extends
+                        | ArrayBuffer
+                        | ReadableStream<any>
+                        | WritableStream
+                        | Boolean
+                        | DataView
+                        | Date
+                        | RegExp
+                        | String
                   ? T
-                  : T extends object
-                    ? {
-                          readonly [P in keyof T]: StructuredCloneOf<T[P]>;
-                      }
-                    : unknown;
+                  : T extends Primitive // Required to be handled before object for OpaqueTag types
+                    ? T
+                    : T extends object
+                      ? {
+                            readonly [P in keyof T]: StructuredCloneOf<T[P]>;
+                        }
+                      : unknown;
 
 /**
  * Types that are not cloned by the structuredClone Algorithm, taken from
@@ -528,16 +527,6 @@ export type RegisteredTransferHandler<
     {readonly RegisteredTransferHandler: unique symbol}
 >;
 
-function isMessagePort(endpoint: Endpoint): endpoint is CreatedEndpoint {
-    return endpoint.constructor.name === 'MessagePort';
-}
-
-function maybeCloseEndpoint(endpoint: Endpoint): void {
-    if (isMessagePort(endpoint)) {
-        endpoint.close();
-    }
-}
-
 function throwIfProxyReleased(isReleased: boolean): void {
     if (isReleased) {
         throw new Error('Proxy has been released and is not useable');
@@ -545,25 +534,25 @@ function throwIfProxyReleased(isReleased: boolean): void {
 }
 
 interface EndpointDebugContext {
-    readonly tap: (endpoint: Endpoint, log: Logger) => AbortRaiser;
+    readonly tap: (endpoint: Endpoint<any, any>, log: Logger) => AbortRaiser;
     counter: u53;
 }
 
-function getEndpointDebugContext(): EndpointDebugContext {
-    const endpoints = new Map<Endpoint, AbortRaiser>();
+function getEndpointDebugContext(createAbortRaiser: () => AbortRaiser): EndpointDebugContext {
+    const endpoints = new Map<Endpoint<unknown, unknown>, AbortRaiser>();
     return {
-        tap: (endpoint: Endpoint, log: Logger): AbortRaiser => {
+        tap: (endpoint: Endpoint<unknown, unknown>, log: Logger): AbortRaiser => {
             // Detach if we're already listening this endpoint
             endpoints.get(endpoint)?.raise(undefined);
 
             // Attach listener and log data
-            function listener({data}: MessageEvent): void {
+            function listener({data}: MessageEventLike<unknown>): void {
                 log.debug(data);
             }
             endpoint.addEventListener('message', listener);
 
             // Remove the listener on release
-            const releaser = new AbortRaiser();
+            const releaser = createAbortRaiser();
             releaser.listener.subscribe(() => {
                 endpoint.removeEventListener('message', listener);
                 log.debug('(Detached)');
@@ -649,6 +638,14 @@ export interface ObjectCache<
     readonly counter?: DebugObjectCacheCounter;
 }
 
+function maybeReleaseEndpoint(endpoint: Endpoint<any, any>): void {
+    // We only want to close `MessagePort` as we'd otherwise close the `Window` (main thread) or the
+    // `Worker` (worker thread) which would be a bit silly.
+    if (endpoint.constructor.name === 'MessagePort') {
+        endpoint.close?.();
+    }
+}
+
 export class EndpointService {
     /** Shared endpoint state. */
     private static readonly _SHARED: {
@@ -666,9 +663,9 @@ export class EndpointService {
     private readonly _debug?: EndpointDebugContext;
     private readonly _id = new SequenceNumberU53<u53>(0);
     private readonly _proxy: {
-        readonly counter: WeakMap<Endpoint, u53>;
+        readonly counter: WeakMap<ProxyEndpoint<ProxyMarked>, u53>;
         readonly registry: FinalizationRegistry<{
-            ep: Endpoint;
+            ep: ProxyEndpoint<ProxyMarked>;
             releaser?: AbortRaiser;
         }>;
     } = {
@@ -678,7 +675,7 @@ export class EndpointService {
             this._proxy.counter.set(ep, newCount);
             if (newCount === 0) {
                 releaser?.raise(undefined);
-                ep.close?.();
+                maybeReleaseEndpoint(ep);
             }
         }),
     };
@@ -686,6 +683,9 @@ export class EndpointService {
 
     public constructor(
         services: Pick<ServicesForBackend, 'logging'>,
+        // The `AbortRaiser` registers itself for transferring but is also required in here
+        // internally resulting in a messy cyclic dependency, so this is our ugly workaround
+        createAbortRaiser: () => AbortRaiser,
         public readonly createEndpointPair: EndpointPairCreator,
         private readonly _cache: ObjectCache<CustomTransferable, object>,
     ) {
@@ -697,7 +697,7 @@ export class EndpointService {
         EndpointService._SHARED.started = true;
 
         if (import.meta.env.VERBOSE_LOGGING.ENDPOINT) {
-            this._debug = getEndpointDebugContext();
+            this._debug = getEndpointDebugContext(createAbortRaiser);
         }
     }
 
@@ -757,67 +757,81 @@ export class EndpointService {
     /**
      * Wraps an endpoint to proxy a remote interface.
      *
-     * Warning: This is an inherently unsafe method. You must make sure that the `TTarget` type
-     *          actually matches the `endpoint` passed in.
+     * Warning: This is an inherently unsafe method. You must make sure that `TTarget` type actually
+     * matches the `endpoint` passed in.
      *
      * @param endpoint The endpoint.
      * @param log Optional logger.
      * @returns The remote interface.
      */
-    public wrap<TTarget>(endpoint: Endpoint | DomEndpoint, log?: Logger): RemoteProxy<TTarget> {
+    public wrap<TTarget extends ProxyMarked>(
+        endpoint: ProxyEndpoint<TTarget>,
+        log?: Logger,
+    ): RemoteProxy<TTarget> {
         let releaser: AbortRaiser | undefined = undefined;
         if (this._debug !== undefined) {
             releaser = this.debug?.(
-                endpoint as Endpoint,
+                endpoint,
                 log ??
                     this.logging.logger(
                         `com.wrapped.${(++this._debug.counter).toString(16).padStart(4, '0')}`,
                     ),
             );
         }
-        return this._createProxy<TTarget>(endpoint as Endpoint, releaser);
+        return this._createProxy<TTarget>(endpoint, releaser);
     }
 
     /**
      * Expose a local interface on an endpoint.
+     *
+     * Warning: This is an inherently unsafe method. You must make sure that `TTarget` type actually
+     * matches the `endpoint` passed in.
      *
      * @param target The target object to expose.
      * @param endpoint The endpoint to attach to.
      */
     public exposeProxy<TTarget extends ProxyMarked>(
         target: TTarget,
-        endpoint: Endpoint | DomEndpoint,
+        endpoint: ProxyEndpoint<TTarget>,
         log?: Logger,
     ): void {
         let releaser: AbortRaiser | undefined = undefined;
         if (this._debug !== undefined) {
             releaser = this.debug?.(
-                endpoint as Endpoint,
+                endpoint,
                 log ??
                     this.logging.logger(
                         `com.exposed.${(++this._debug.counter).toString(16).padStart(4, '0')}`,
                     ),
             );
         }
-        return this._expose(target, endpoint as Endpoint, releaser);
+        return this._expose(target, endpoint, releaser);
     }
 
     /**
      * Mark an object such that all of its properties are serialised with their respective transfer
      * handler, if existing (fall back to structured cloning).
      */
-    public exposeProperties<const TObject extends Record<string | u53, unknown>>(
+    public exposeProperties<const TObject extends object>(
         object: TObject,
     ): TObject & PropertiesMarked {
         return Object.assign(object, {[TRANSFER_HANDLER]: PROPERTIES_HANDLER});
     }
 
-    public transfer<
-        TInput extends BareFromTag<TResult, TransferredToRemote<unknown>>,
-        TTransferable extends any[],
-        TResult,
-    >(value: TInput, transfers: TTransferable): TResult {
-        return this._transfer(value, transfers);
+    /**
+     * Mark a subset of the desired values for transferring.
+     *
+     * @param values The set of all values that will be sent.
+     * @param transfers A subset of items included `values` that need to be transferred instead of
+     *   structurally cloned.
+     * @returns The set of all values unmodified.
+     */
+    public transfer<TValues, TTransferable extends readonly DomTransferable[]>(
+        values: TValues,
+        transfers: TTransferable,
+    ): TValues {
+        this._transferCache.set(values, transfers);
+        return values;
     }
 
     /**
@@ -898,7 +912,7 @@ export class EndpointService {
     // Below is heavily modified comlink code
 
     private _createProxy<T>(
-        ep: Endpoint,
+        ep: ProxyEndpoint<ProxyMarked>,
         releaser?: AbortRaiser,
         path: (string | i53 | symbol)[] = [],
         // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -987,9 +1001,9 @@ export class EndpointService {
         return proxy as any;
     }
 
-    private _expose(obj: any, ep: Endpoint, releaser?: AbortRaiser): void {
+    private _expose(obj: any, ep: ProxyEndpoint<ProxyMarked>, releaser?: AbortRaiser): void {
         const service = this;
-        function listener(ev: MessageEvent): void {
+        function listener(ev: MessageEventLike<any>): void {
             const {id, type, path} = {
                 path: [] as string[],
                 ...(ev.data as Message),
@@ -1047,26 +1061,21 @@ export class EndpointService {
                 .catch((error: unknown) => ({error, [TRANSFER_HANDLER]: THROW_HANDLER}))
                 .then((returnValue_) => {
                     const [wireValue, transfers] = service._toWireValue(returnValue_);
-                    ep.postMessage({...wireValue, id}, transfers as any[]);
+                    (ep as Endpoint<unknown, unknown>).postMessage(
+                        {...wireValue, id},
+                        transfers as any[],
+                    );
                     if (type === MessageType.RELEASE) {
                         // Detach and deactive after sending release response above.
                         ep.removeEventListener('message', listener);
                         releaser?.raise(undefined);
-                        maybeCloseEndpoint(ep);
+                        maybeReleaseEndpoint(ep);
                     }
                 })
                 .catch(assertUnreachable);
         }
         ep.addEventListener('message', listener);
         ep.start?.();
-    }
-
-    private _transfer<TResult, TInput extends BareFromTag<TResult, TransferredToRemote<unknown>>>(
-        obj: TInput,
-        transfers: readonly DomTransferable[],
-    ): TResult {
-        this._transferCache.set(obj, transfers);
-        return obj as unknown as TResult;
     }
 
     /**
@@ -1150,7 +1159,11 @@ export class EndpointService {
         }
     }
 
-    private _registerProxy(proxy: object, ep: Endpoint, releaser?: AbortRaiser): void {
+    private _registerProxy(
+        proxy: object,
+        ep: ProxyEndpoint<ProxyMarked>,
+        releaser?: AbortRaiser,
+    ): void {
         const newCount = (this._proxy.counter.get(ep) ?? 0) + 1;
         this._proxy.counter.set(ep, newCount);
         this._proxy.registry.register(proxy, {ep, releaser}, proxy);
@@ -1169,13 +1182,13 @@ export class EndpointService {
     }
 
     private _requestResponseMessage(
-        ep: Endpoint,
+        ep: ProxyEndpoint<ProxyMarked>,
         msg: Message,
         transfers?: readonly DomTransferable[],
     ): Promise<WireValue> {
         return new Promise((resolve) => {
             const id = this._id.next();
-            function listener({data}: MessageEvent): void {
+            function listener({data}: MessageEventLike<any>): void {
                 const value = data as WireValue;
                 if (value.id !== id) {
                     return;
@@ -1186,16 +1199,19 @@ export class EndpointService {
             ep.addEventListener('message', listener);
             ep.start?.();
             // Ugly cast for `transfers` due to lack of `readonly` in lib.dom.ts
-            ep.postMessage({id, ...msg}, (transfers as any[] | undefined) ?? []);
+            (ep as Endpoint<unknown, unknown>).postMessage(
+                {id, ...msg},
+                (transfers as any[] | undefined) ?? [],
+            );
         });
     }
 
-    private _releaseEndpoint(ep: Endpoint, release?: AbortRaiser): Promise<void> {
+    private _releaseEndpoint(ep: ProxyEndpoint<ProxyMarked>, release?: AbortRaiser): Promise<void> {
         return this._requestResponseMessage(ep, {
             type: MessageType.RELEASE,
         }).then(() => {
             release?.raise(undefined);
-            maybeCloseEndpoint(ep);
+            maybeReleaseEndpoint(ep);
         });
     }
 }
@@ -1219,8 +1235,8 @@ export const registerTransferHandler: <
 export const PROXY_HANDLER: RegisteredTransferHandler<
     ProxyMarked,
     Remote<unknown>,
-    CreatedEndpoint,
-    CreatedEndpoint,
+    ProxyEndpoint<ProxyMarked>,
+    ProxyEndpoint<ProxyMarked>,
     TransferTag.PROXY
 > = registerTransferHandler({
     tag: TransferTag.PROXY,
@@ -1228,15 +1244,15 @@ export const PROXY_HANDLER: RegisteredTransferHandler<
     serialize: (
         object,
         service,
-    ): [value: CreatedEndpoint, transfers: [endpoint: CreatedEndpoint]] => {
-        const {local, remote} = service.createEndpointPair();
-        service.exposeProxy(object, local as DomEndpoint);
+    ): [value: ProxyEndpoint<ProxyMarked>, transfers: [endpoint: ProxyEndpoint<ProxyMarked>]] => {
+        const {local, remote} = service.createEndpointPair<ProxyMarked>();
+        service.exposeProxy(object, local);
         return [remote, [remote]];
     },
 
     deserialize: (endpoint, service): Remote<unknown> => {
-        endpoint.start();
-        const remote = service.wrap(endpoint as DomEndpoint);
+        endpoint.start?.();
+        const remote = service.wrap(endpoint);
         return remote;
     },
 });

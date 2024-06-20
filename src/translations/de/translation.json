@@ -379,9 +379,11 @@
     "error--send-file-miscellaneous-errors": "Einige Dateien enthalten Fehler",
     "hint--drop-files-to-send": "Dateien zum Senden hier ablegen",
     "hint--media-thumbnail": "Medien-Vorschau",
-    "label--call-join-long": "Anruf Beitreten",
+    "label--call-connecting": "Connecting…",
+    "label--call-join-long": "Anruf beitreten",
     "label--call-join-short": "Beitreten",
     "label--call-participant-count": "{n, plural, =0 {Keine Teilnehmer} =1 {1 Teilnehmer} other {# Teilnehmer}}",
+    "label--call-start-long": "Anruf starten",
     "label--compose-area": "Neue Nachricht...",
     "label--default-audio-message-preview": "Sprachnachricht",
     "label--default-file-message-preview": "Datei",
@@ -516,9 +518,11 @@
     "prose--subtitle": "Passwort"
   },
   "status": {
+    "prose--group-call-ended": "Gruppenanruf hat geendet",
+    "prose--group-call-started": "{startedBy} hat einen Gruppenanruf gestartet",
     "prose--group-created-name": "Gruppe \"{name}\" wurde erstellt",
-    "prose--group-member-change": "{addedCount, plural, =0 {} =1 {{addedMembers} wurde zu der Gruppe hinzugefügt} other {{addedMembers} wurden zu der Gruppe hinzugefügt}}{and, plural, =0 {} other { und }}{removedCount, plural, =0 {} =1 {{removedMembers} wurde von der Gruppe entfernt} other {{removedMembers} wurden von der Gruppe entfernt}}",
-    "prose--group-name-change": "Der Gruppenname wurde von \"{old}\" zu \"{new}\" geändert"
+    "prose--group-member-changed": "{addedCount, plural, =0 {} =1 {{addedMembers} wurde zu der Gruppe hinzugefügt} other {{addedMembers} wurden zu der Gruppe hinzugefügt}}{and, plural, =0 {} other { und }}{removedCount, plural, =0 {} =1 {{removedMembers} wurde von der Gruppe entfernt} other {{removedMembers} wurden von der Gruppe entfernt}}",
+    "prose--group-name-changed": "Der Gruppenname wurde von \"{old}\" zu \"{new}\" geändert"
   },
   "system": {
     "error--check-internet-and-retry": "Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",

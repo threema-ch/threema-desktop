@@ -19,7 +19,7 @@ export interface IndicatorProps {
          */
         readonly alwaysShowNumber?: boolean;
     };
-    readonly reactions: Readonly<Reaction[]>;
+    readonly reactions: readonly Reaction[];
     readonly status: Status;
 }
 

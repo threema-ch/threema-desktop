@@ -8,13 +8,13 @@ import type {AnyMention} from '~/common/viewmodel/utils/mentions';
  */
 export function getTextContent(
     raw: string | undefined,
-    highlights: string | string[] | undefined,
-    mentions: AnyMention | AnyMention[] | undefined,
+    highlights: string | readonly string[] | undefined,
+    mentions: readonly AnyMention[] | undefined,
     t: I18nType['t'],
     truncate?: u53,
 ): SanitizedHtml | undefined {
     const html = sanitizeAndParseTextToHtml(raw, t, {
-        highlights,
+        highlights: typeof highlights === 'string' ? [highlights] : highlights,
         mentions,
         shouldLinkMentions: false,
         shouldParseLinks: false,

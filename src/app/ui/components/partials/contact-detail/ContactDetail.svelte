@@ -20,9 +20,8 @@
   import type {DbReceiverLookup} from '~/common/db';
   import {ReceiverType} from '~/common/enum';
   import type {AnyReceiver} from '~/common/model';
-  import {assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
+  import {assert, assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
-  import {hasProperty} from '~/common/utils/object';
   import {ReadableStore, type IQueryableStore} from '~/common/utils/store';
   import type {ContactDetailViewModelBundle} from '~/common/viewmodel/contact/detail';
 
@@ -48,11 +47,11 @@
   let modalState: ModalState = {type: 'none'};
 
   function handleClickBack(): void {
-    router.closeAside();
+    router.go({aside: 'close'});
   }
 
   function handleClickClose(): void {
-    router.closeAside();
+    router.go({aside: 'close'});
   }
 
   function handleCloseModal(): void {
@@ -127,7 +126,7 @@
   function handleChangeRouterState(): void {
     const routerState = router.get();
 
-    if (routerState.aside?.id === 'contactDetails' || routerState.aside?.id === 'groupDetails') {
+    if (routerState.aside?.id === 'receiverDetails') {
       routeParams = routerState.aside.params;
     } else {
       // If no detail is open, reset `routeParams` to `undefined` to clear the view.
@@ -138,17 +137,8 @@
   async function handleChangeContactDetail(): Promise<void> {
     let receiver: DbReceiverLookup | undefined = undefined;
     if (routeParams !== undefined) {
-      if (hasProperty(routeParams, 'contactUid')) {
-        receiver = {
-          type: ReceiverType.CONTACT,
-          uid: routeParams.contactUid,
-        };
-      } else if (hasProperty(routeParams, 'groupUid')) {
-        receiver = {
-          type: ReceiverType.GROUP,
-          uid: routeParams.groupUid,
-        };
-      }
+      assert(routeParams.type !== ReceiverType.DISTRIBUTION_LIST, 'TODO(DESK-236');
+      receiver = routeParams;
     }
 
     // If the receiver is the same, it's not necessary to reload the `viewModelBundle`.
@@ -186,7 +176,7 @@
         );
 
         // Close aside pane.
-        router.closeAside();
+        router.go({aside: 'close'});
       });
   }
 

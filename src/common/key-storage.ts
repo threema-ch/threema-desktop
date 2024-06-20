@@ -6,6 +6,8 @@ import {wrapRawDatabaseKey} from '~/common/db';
 import type {ThreemaWorkCredentials} from '~/common/device';
 import {TransferTag} from '~/common/enum';
 import {BaseError, type BaseErrorOptions} from '~/common/error';
+import {TRANSFER_HANDLER} from '~/common/index';
+import {EncryptedKeyStorage_Argon2idParameters_Argon2Version} from '~/common/internal-protobuf/key-storage-file';
 import {
     ensureCspDeviceId,
     ensureD2mDeviceId,
@@ -14,14 +16,9 @@ import {
     ensureServerGroup,
 } from '~/common/network/types';
 import {wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/network/types/keys';
-import {EncryptedKeyStorage_Argon2idParameters_Argon2Version} from '~/common/node/key-storage/key-storage-file';
 import {KiB, MiB, type u8, type u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
-import {
-    type ProxyMarked,
-    registerErrorTransferHandler,
-    TRANSFER_HANDLER,
-} from '~/common/utils/endpoint';
+import {type ProxyMarked, registerErrorTransferHandler} from '~/common/utils/endpoint';
 import {instanceOf, unsignedLongAsU64} from '~/common/utils/valita-helpers';
 
 /**
@@ -123,10 +120,7 @@ export class Argon2Version {
             case EncryptedKeyStorage_Argon2idParameters_Argon2Version.VERSION_1_3:
                 return new Argon2Version(0x13);
             default:
-                return unreachable(
-                    version,
-                    new Error(`Unknown Argon2 version ${version} in protobuf data`),
-                );
+                return unreachable(version, `Unknown Argon2 version ${version} in protobuf data`);
         }
     }
 

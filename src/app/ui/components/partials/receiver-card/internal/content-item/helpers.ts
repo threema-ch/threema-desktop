@@ -7,7 +7,7 @@ import {unreachable} from '~/common/utils/assert';
 
 export function getTextContentItemOptionsFromReceiverNameContentItemOptions(
     receiver: ReceiverNameContentItemOptions['receiver'],
-    highlights?: string | string[],
+    highlights?: string | readonly string[],
 ): TextContentItemOptions {
     let decoration: TextContentItemOptions['decoration'];
     switch (receiver.type) {
@@ -37,7 +37,12 @@ export function getTextContentItemOptionsFromReceiverNameContentItemOptions(
         text:
             highlights === undefined
                 ? {raw: receiver.name}
-                : {html: parseHighlights(escapeHtmlUnsafeChars(receiver.name), highlights)},
+                : {
+                      html: parseHighlights(
+                          escapeHtmlUnsafeChars(receiver.name),
+                          typeof highlights === 'string' ? [highlights] : highlights,
+                      ),
+                  },
         decoration,
     };
 }

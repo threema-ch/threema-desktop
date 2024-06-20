@@ -2,11 +2,11 @@
   import {onMount, type SvelteComponent} from 'svelte';
 
   import type {AppServices, AppServicesForSvelte} from '~/app/types';
+  import GroupCallActivity from '~/app/ui/components/partials/call-activity/GroupCallActivity.svelte';
   import ContactDetail from '~/app/ui/components/partials/contact-detail/ContactDetail.svelte';
   import ContactNav from '~/app/ui/components/partials/contact-nav/ContactNav.svelte';
   import ConversationView from '~/app/ui/components/partials/conversation/ConversationView.svelte';
   import ConversationNav from '~/app/ui/components/partials/conversation-nav/ConversationNav.svelte';
-  import GroupCallActivity from '~/app/ui/components/partials/group-call-activity/GroupCallActivity.svelte';
   import Settings from '~/app/ui/components/partials/settings/Settings.svelte';
   import NavSettingsList from '~/app/ui/components/partials/settings-nav/SettingsNav.svelte';
   import MainWelcome from '~/app/ui/components/partials/welcome/Welcome.svelte';
@@ -116,10 +116,11 @@
   let activityComponent:
     | typeof SvelteComponent<{
         isExpanded: boolean;
-        services: AppServices;
+        services: AppServicesForSvelte;
       }>
     | undefined;
   $: {
+    // Navigation
     switch ($router.nav.id) {
       case 'conversationList':
         navPanelComponent = ConversationNav;
@@ -137,8 +138,10 @@
         navPanelComponent = NavSettingsList;
         break;
       default:
-        unreachable($router.nav, new Error('Unhandled nav panel router state'));
+        unreachable($router.nav, 'Unhandled nav panel router state');
     }
+
+    // Main
     switch ($router.main.id) {
       case 'welcome':
         mainPanelComponent = MainWelcome;
@@ -150,41 +153,53 @@
         mainPanelComponent = Settings;
         break;
       default:
-        unreachable($router.main, new Error('Unhandled main panel router state'));
+        unreachable($router.main, 'Unhandled main panel router state');
     }
-    const asideId = $router.aside?.id;
-    switch (asideId) {
-      case undefined:
-        asidePanelComponent = undefined;
-        break;
-      case 'contactDetails':
-      case 'groupDetails':
-        asidePanelComponent = ContactDetail;
-        break;
-      default:
-        unreachable(asideId, new Error('Unhandled aside panel router state'));
+
+    // Aside
+    if ($router.aside !== undefined) {
+      switch ($router.aside.id) {
+        case undefined:
+          break;
+        case 'receiverDetails':
+          asidePanelComponent = ContactDetail;
+          break;
+        default:
+          unreachable($router.aside.id, 'Unhandled aside panel router state');
+      }
     }
-    const modalId = $router.modal?.id;
-    switch (modalId) {
-      case undefined:
-        modalComponent = undefined;
-        break;
-      case 'changePassword':
-        modalComponent = ChangePassword;
-        break;
-      default:
-        unreachable(modalId, new Error('Unhandled modal router state'));
+
+    // Modal
+    modalComponent = undefined;
+    if ($router.modal !== undefined) {
+      switch ($router.modal.id) {
+        case undefined:
+          modalComponent = undefined;
+          break;
+        case 'changePassword':
+          modalComponent = ChangePassword;
+          break;
+        default:
+          unreachable($router.modal.id, 'Unhandled modal router state');
+      }
     }
-    const activityId = $router.activity?.id;
-    switch (activityId) {
-      case undefined:
-        activityComponent = undefined;
-        break;
-      case 'groupCall':
-        activityComponent = GroupCallActivity;
-        break;
-      default:
-        unreachable(activityId, new Error('Unhandled activity router state'));
+
+    // Activity
+    activityComponent = undefined;
+    if ($router.activity !== undefined) {
+      switch ($router.activity.id) {
+        case undefined:
+          activityComponent = undefined;
+          break;
+        case 'call':
+          // TODO(DESK-858): Remove sandbox restriction once group calls should be released
+          if (import.meta.env.BUILD_ENVIRONMENT === 'sandbox') {
+            activityComponent = GroupCallActivity;
+          }
+          break;
+        default:
+          unreachable($router.activity.id, 'Unhandled activity router state');
+      }
     }
   }
 

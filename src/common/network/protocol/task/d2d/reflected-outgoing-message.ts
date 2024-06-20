@@ -31,7 +31,13 @@ import {
 import {getTextForLocation} from '~/common/network/protocol/task/common/location';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/reflected-delivery-receipt';
+import {ReflectedGroupCallStartTask} from '~/common/network/protocol/task/d2d/reflected-group-call-start';
+import {ReflectedGroupNameTask} from '~/common/network/protocol/task/d2d/reflected-group-name';
+import {ReflectedGroupProfilePictureTask} from '~/common/network/protocol/task/d2d/reflected-group-profile-picture';
+import {ReflectedMessageTaskBase} from '~/common/network/protocol/task/d2d/reflected-message';
 import {ReflectedMessageContentUpdateTask} from '~/common/network/protocol/task/d2d/reflected-message-content-update';
+import {ReflectedOutgoingGroupLeaveTask} from '~/common/network/protocol/task/d2d/reflected-outgoing-group-leave';
+import {ReflectedOutgoingGroupSetupTask} from '~/common/network/protocol/task/d2d/reflected-outgoing-group-setup';
 import {
     type AnyOutboundMessageInitFragment,
     getConversationById,
@@ -53,12 +59,6 @@ import type {
 import {assert, unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {u64ToHexLe} from '~/common/utils/number';
-
-import {ReflectedGroupNameTask} from './reflected-group-name';
-import {ReflectedGroupProfilePictureTask} from './reflected-group-profile-picture';
-import {ReflectedMessageTaskBase} from './reflected-message';
-import {ReflectedOutgoingGroupLeaveTask} from './reflected-outgoing-group-leave';
-import {ReflectedOutgoingGroupSetupTask} from './reflected-outgoing-group-setup';
 
 type CommonOutboundMessageInitFragment = Omit<
     MessageFor<MessageDirection.OUTBOUND, MessageType, 'init'>,
@@ -507,6 +507,20 @@ export class ReflectedOutgoingMessageTask
                 // Ignore for now
                 return 'discard';
 
+            case CspE2eGroupControlType.GROUP_CALL_START: {
+                const instructions: GroupControlMessageInstructions = {
+                    messageCategory: 'group-control',
+                    task: new ReflectedGroupCallStartTask(
+                        this._services,
+                        messageId,
+                        this._services.device.identity.string,
+                        validatedBody.container,
+                        validatedBody.message,
+                    ),
+                };
+                return instructions;
+            }
+
             // Status messages
             case CspE2eStatusUpdateType.DELIVERY_RECEIPT: {
                 const instructions: StatusUpdateInstructions = {
@@ -517,7 +531,7 @@ export class ReflectedOutgoingMessageTask
                         conversationId,
                         validatedBody.message,
                         createdAt,
-                        'me',
+                        this._services.device.identity.string,
                     ),
                 };
                 return instructions;
@@ -538,7 +552,7 @@ export class ReflectedOutgoingMessageTask
                         },
                         {status: deliveryReceipt.status, messageIds: deliveryReceipt.messageIds},
                         createdAt,
-                        'me',
+                        this._services.device.identity.string,
                     ),
                 };
                 return instructions;
@@ -562,24 +576,17 @@ export class ReflectedOutgoingMessageTask
                 return instructions;
             }
             case CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE: {
-                const editMessage = protobuf.validate.csp_e2e.EditMessage.SCHEMA.parse(
-                    protobuf.csp_e2e.EditMessage.decode(
-                        validatedBody.message.innerData,
-                        validatedBody.message.innerData.byteLength,
-                    ),
-                );
-
                 const instructions: MessageContentUpdateInstructions = {
                     messageCategory: 'message-content-update',
                     task: new ReflectedMessageContentUpdateTask(
                         this._services,
-                        editMessage.messageId,
+                        validatedBody.message.messageId,
                         {
                             type: ReceiverType.GROUP,
-                            creatorIdentity: validatedBody.message.creatorIdentity,
-                            groupId: validatedBody.message.groupId,
+                            creatorIdentity: validatedBody.container.creatorIdentity,
+                            groupId: validatedBody.container.groupId,
                         },
-                        {type: 'edit', newText: editMessage.text},
+                        {type: 'edit', newText: validatedBody.message.text},
                         createdAt,
                         MessageDirection.OUTBOUND,
                         this._log,
@@ -607,21 +614,15 @@ export class ReflectedOutgoingMessageTask
             }
 
             case CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE: {
-                const deletedMessage = protobuf.validate.csp_e2e.DeleteMessage.SCHEMA.parse(
-                    protobuf.csp_e2e.DeleteMessage.decode(
-                        validatedBody.message.innerData,
-                        validatedBody.message.innerData.byteLength,
-                    ),
-                );
                 const instructions: MessageContentUpdateInstructions = {
                     messageCategory: 'message-content-update',
                     task: new ReflectedMessageContentUpdateTask(
                         this._services,
-                        deletedMessage.messageId,
+                        validatedBody.message.messageId,
                         {
                             type: ReceiverType.GROUP,
-                            creatorIdentity: validatedBody.message.creatorIdentity,
-                            groupId: validatedBody.message.groupId,
+                            creatorIdentity: validatedBody.container.creatorIdentity,
+                            groupId: validatedBody.container.groupId,
                         },
                         {type: 'delete'},
                         createdAt,

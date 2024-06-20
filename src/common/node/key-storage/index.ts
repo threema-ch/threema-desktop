@@ -64,6 +64,11 @@ import {
 } from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import type {ThreemaWorkCredentials} from '~/common/device';
+import {TRANSFER_HANDLER} from '~/common/index';
+import {
+    DecryptedKeyStorage,
+    EncryptedKeyStorage,
+} from '~/common/internal-protobuf/key-storage-file';
 import {
     ARGON2_MIN_PARAMS,
     type Argon2idParameters,
@@ -82,10 +87,9 @@ import type {Logger} from '~/common/logging';
 import {fileModeInternalObjectIfPosix} from '~/common/node/fs';
 import {KiB, MiB, type ReadonlyUint8Array, type u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import {intoUnsignedLong} from '~/common/utils/number';
 
-import {DecryptedKeyStorage, EncryptedKeyStorage} from './key-storage-file';
 import {
     DECRYPTED_KEY_STORAGE_SCHEMA_VERSION,
     ENCRYPTED_KEY_STORAGE_SCHEMA_VERSION,
@@ -534,12 +538,13 @@ export class FileSystemKeyStorage implements KeyStorage {
                     schemaVersion: decryptedKeyStorage.schemaVersion,
                     identityData: {
                         identity: decryptedKeyStorage.identityData.identity,
-                        ck: decryptedKeyStorage.identityData.ck.unwrap() as Uint8Array,
+                        ck: decryptedKeyStorage.identityData.ck.unwrap() as ReadonlyUint8Array as Uint8Array,
                         serverGroup: decryptedKeyStorage.identityData.serverGroup,
                         deprecatedServerGroup: 0,
                     },
-                    dgk: decryptedKeyStorage.dgk.unwrap() as Uint8Array,
-                    databaseKey: decryptedKeyStorage.databaseKey.unwrap() as Uint8Array,
+                    dgk: decryptedKeyStorage.dgk.unwrap() as ReadonlyUint8Array as Uint8Array,
+                    databaseKey:
+                        decryptedKeyStorage.databaseKey.unwrap() as ReadonlyUint8Array as Uint8Array,
                     deviceIds: {
                         d2mDeviceId: intoUnsignedLong(decryptedKeyStorage.deviceIds.d2mDeviceId),
                         cspDeviceId: intoUnsignedLong(decryptedKeyStorage.deviceIds.cspDeviceId),

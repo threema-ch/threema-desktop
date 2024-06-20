@@ -2075,20 +2075,20 @@ export function backendTests(
             assert(conversation2 !== undefined);
 
             db.createStatusMessage({
-                type: 'group-member-change',
+                type: StatusMessageType.GROUP_MEMBER_CHANGED,
                 conversationUid: conversation1.uid,
                 createdAt: new Date(),
-                statusBytes: STATUS_CODEC['group-member-change'].encode({
+                statusBytes: STATUS_CODEC[StatusMessageType.GROUP_MEMBER_CHANGED].encode({
                     added: [ensureIdentityString('ASDFGHJK')],
                     removed: [],
                 }),
             });
 
             db.createStatusMessage({
-                type: 'group-name-change',
+                type: StatusMessageType.GROUP_NAME_CHANGED,
                 conversationUid: conversation1.uid,
                 createdAt: new Date(),
-                statusBytes: STATUS_CODEC['group-name-change'].encode({
+                statusBytes: STATUS_CODEC[StatusMessageType.GROUP_NAME_CHANGED].encode({
                     oldName: 'old',
                     newName: 'new',
                 }),
@@ -2096,7 +2096,7 @@ export function backendTests(
             const statusMessages = db.getStatusMessagesOfConversation(conversation1.uid);
             expect(statusMessages.length).to.eq(2);
             expect(
-                statusMessages.filter((s) => s.type === StatusMessageType.GROUP_MEMBER_CHANGE)
+                statusMessages.filter((s) => s.type === StatusMessageType.GROUP_MEMBER_CHANGED)
                     .length,
             ).to.eq(1);
         });
@@ -2130,20 +2130,20 @@ export function backendTests(
             assert(conversation2 !== undefined);
 
             db.createStatusMessage({
-                type: 'group-member-change',
+                type: StatusMessageType.GROUP_MEMBER_CHANGED,
                 conversationUid: conversation1.uid,
                 createdAt: new Date(),
-                statusBytes: STATUS_CODEC['group-member-change'].encode({
+                statusBytes: STATUS_CODEC[StatusMessageType.GROUP_MEMBER_CHANGED].encode({
                     added: [ensureIdentityString('ASDFGHJK')],
                     removed: [],
                 }),
             });
 
             db.createStatusMessage({
-                type: 'group-name-change',
+                type: StatusMessageType.GROUP_NAME_CHANGED,
                 conversationUid: conversation1.uid,
                 createdAt: new Date(),
-                statusBytes: STATUS_CODEC['group-name-change'].encode({
+                statusBytes: STATUS_CODEC[StatusMessageType.GROUP_NAME_CHANGED].encode({
                     oldName: 'old',
                     newName: 'new',
                 }),
@@ -2159,20 +2159,20 @@ export function backendTests(
             expect(newStatusMessages[0]?.type).to.not.eq(statusMessage.type);
 
             db.createStatusMessage({
-                type: 'group-name-change',
+                type: StatusMessageType.GROUP_NAME_CHANGED,
                 conversationUid: conversation1.uid,
                 createdAt: new Date(),
-                statusBytes: STATUS_CODEC['group-name-change'].encode({
+                statusBytes: STATUS_CODEC[StatusMessageType.GROUP_NAME_CHANGED].encode({
                     oldName: 'old',
                     newName: 'new',
                 }),
             });
 
             db.createStatusMessage({
-                type: 'group-name-change',
+                type: StatusMessageType.GROUP_NAME_CHANGED,
                 conversationUid: conversation2.uid,
                 createdAt: new Date(),
-                statusBytes: STATUS_CODEC['group-name-change'].encode({
+                statusBytes: STATUS_CODEC[StatusMessageType.GROUP_NAME_CHANGED].encode({
                     oldName: 'second conversation',
                     newName: 'new second conversation',
                 }),
@@ -2186,7 +2186,9 @@ export function backendTests(
             const conv2Status = db.getStatusMessagesOfConversation(conversation2.uid);
             expect(conv2Status.length).to.eq(1);
             expect(
-                STATUS_CODEC['group-name-change'].decode(conv2Status[0]?.statusBytes as Uint8Array),
+                STATUS_CODEC[StatusMessageType.GROUP_NAME_CHANGED].decode(
+                    conv2Status[0]?.statusBytes as Uint8Array,
+                ),
             ).to.deep.eq({
                 oldName: 'second conversation',
                 newName: 'new second conversation',

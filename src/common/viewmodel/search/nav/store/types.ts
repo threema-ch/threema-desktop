@@ -34,7 +34,10 @@ export interface ConversationSearchResult extends PropertiesMarked {
  */
 export interface MessageSearchResult extends PropertiesMarked {
     readonly conversation: {
-        readonly receiver: Pick<AnyReceiverData, 'color' | 'initials' | 'name' | 'lookup' | 'type'>;
+        readonly receiver: Pick<
+            AnyReceiverData,
+            'id' | 'color' | 'initials' | 'name' | 'lookup' | 'type'
+        >;
     };
     readonly message: ConversationMessageViewModelBundle;
 }

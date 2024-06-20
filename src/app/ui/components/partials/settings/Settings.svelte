@@ -5,7 +5,6 @@
 <script lang="ts">
   import type {SvelteComponent} from 'svelte';
 
-  import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import About from '~/app/ui/components/partials/settings/internal/about/About.svelte';
   import type {AboutProps} from '~/app/ui/components/partials/settings/internal/about/props';
@@ -49,7 +48,7 @@
   let settingsPage: SettingsPage;
 
   function handleClickBack(): void {
-    router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withoutParams());
+    router.goToWelcome();
   }
 
   function handleChangeRoute(): void {

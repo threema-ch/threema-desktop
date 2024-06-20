@@ -84,7 +84,7 @@ export function getContextMenuItems({
     openDetails?: ContextMenuItemHandler;
     deleteMessage?: ContextMenuItemHandler;
     t: I18nType['t'];
-}): Readonly<ContextMenuItem[]> {
+}): readonly ContextMenuItem[] {
     return [
         ...(copySelection !== undefined
             ? [

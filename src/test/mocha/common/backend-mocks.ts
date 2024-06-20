@@ -47,6 +47,7 @@ import {
 } from '~/common/enum';
 import {ConnectionClosed} from '~/common/error';
 import {InMemoryFileStorage} from '~/common/file-storage';
+import {TRANSFER_HANDLER} from '~/common/index';
 import {type Logger, type LoggerFactory, NOOP_LOGGER, TagLogger} from '~/common/logging';
 import {BackendMediaService, type IFrontendMediaService} from '~/common/media';
 import type {
@@ -89,6 +90,7 @@ import type {User} from '~/common/model/types/user';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {CloseInfo} from '~/common/network';
 import * as protobuf from '~/common/network/protobuf';
+import type {JoinResponse} from '~/common/network/protobuf/validate/group-call';
 import {
     CspPayloadType,
     D2mPayloadType,
@@ -103,12 +105,16 @@ import {
     type BlobScope,
     ensureBlobId,
 } from '~/common/network/protocol/blob';
+import {CallManager} from '~/common/network/protocol/call';
+import {GroupCallError, type GroupCallBaseData} from '~/common/network/protocol/call/group-call';
 import {
     type DirectoryBackend,
     DirectoryError,
     type IdentityData,
     type IdentityPrivateData,
+    type SfuToken,
 } from '~/common/network/protocol/directory';
+import type {PeekResponse, SfuHttpBackend} from '~/common/network/protocol/sfu';
 import type {
     ActiveTaskCodecHandle,
     ServicesForTasks,
@@ -128,7 +134,6 @@ import {
     ensureD2mDeviceId,
     ensureFeatureMask,
     ensureIdentityString,
-    ensureNickname,
     ensureServerGroup,
     FEATURE_MASK_FLAG,
     type DeviceCookie,
@@ -161,23 +166,21 @@ import {
     type Remote,
     RemoteObjectMapper,
     type RemoteProxy,
-    TRANSFER_HANDLER,
 } from '~/common/utils/endpoint';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 import {Identity} from '~/common/utils/identity';
 import {ValueObject} from '~/common/utils/object';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
-import type {AbortSubscriber} from '~/common/utils/signal';
+import {AbortRaiser} from '~/common/utils/signal';
 import type {LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {ViewModelRepository} from '~/common/viewmodel';
 import {ViewModelCache} from '~/common/viewmodel/cache';
+import type {DtlsFingerprint, WebRtcService} from '~/common/webrtc';
 import {assertCspPayloadType, assertD2mPayloadType} from '~/test/mocha/common/assertions';
 
-export class TestCrypto extends TweetNaClBackend {}
-
 export const MOCK_URL = ensureBaseUrl('https://127.0.0.1:9999/', 'https:');
-export const TEST_CONFIG: Config = {
+const TEST_CONFIG: Config = {
     CHAT_SERVER_KEY: ensurePublicKey(nodeRandomBytes(32)),
     mediatorServerUrl: () => MOCK_URL,
     MEDIATOR_FRAME_MIN_BYTE_LENGTH: 4,
@@ -229,7 +232,7 @@ export function initSqliteBackend(logger: Logger): SqliteDatabaseBackend {
  * A test directory backend that allows registering data that should be returned by the mocked
  * directory.
  */
-export class TestDirectoryBackend implements DirectoryBackend {
+class TestDirectoryBackend implements DirectoryBackend {
     public [TRANSFER_HANDLER] = FAKE_PROXY_HANDLER;
 
     private readonly _knownUsers: Record<IdentityString, IdentityData | undefined> = {};
@@ -244,12 +247,21 @@ export class TestDirectoryBackend implements DirectoryBackend {
     }
 
     public async authToken(): Promise<string> {
-        return await new Promise<string>((resolve, recject) => {
-            resolve('mock token');
-        });
+        return await Promise.resolve('mock token');
     }
 
-    /** @inheritdoc */
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public async sfuToken(identity: IdentityString, ck: ClientKey): Promise<SfuToken> {
+        const expiration = new Date();
+        expiration.setMinutes(expiration.getMinutes() + 10);
+        return {
+            sfuBaseUrl: {raw: MOCK_URL.toString(), parsed: MOCK_URL},
+            allowedSfuHostnameSuffixes: [MOCK_URL.hostname],
+            sfuToken: 'lolroflxD#cringe',
+            expiration,
+        };
+    }
+
     // eslint-disable-next-line @typescript-eslint/require-await
     public async identity(identity: IdentityString): Promise<IdentityData> {
         const data = this._knownUsers[identity];
@@ -261,7 +273,6 @@ export class TestDirectoryBackend implements DirectoryBackend {
         );
     }
 
-    /** @inheritdoc */
     public async identities(
         identities: IdentityString[],
     ): Promise<Map<IdentityString, IdentityData>> {
@@ -272,7 +283,6 @@ export class TestDirectoryBackend implements DirectoryBackend {
         return data;
     }
 
-    /** @inheritdoc */
     // eslint-disable-next-line @typescript-eslint/require-await
     public async privateData(
         identity: IdentityString,
@@ -285,6 +295,22 @@ export class TestDirectoryBackend implements DirectoryBackend {
             );
         }
         return this._privateData;
+    }
+}
+
+class TestSfuHttpBackend implements SfuHttpBackend {
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public async peek(data: GroupCallBaseData, token: SfuToken): Promise<PeekResponse | undefined> {
+        return {startedAt: new Date(), maxParticipants: 1337, participants: []};
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public async join(
+        data: GroupCallBaseData,
+        fingerprint: DtlsFingerprint,
+        token: SfuToken,
+    ): Promise<JoinResponse> {
+        throw new GroupCallError({kind: 'sfu-timeout'}, 'Bad luck, mate');
     }
 }
 
@@ -387,12 +413,9 @@ class UserRepository implements User {
 
     public constructor(userIdentity: IdentityString, services: ServicesForModel) {
         this.identity = userIdentity;
-        this.profileSettings = new ProfileSettingsModelStore(services, {
-            nickname: ensureNickname('Mocha Tests'),
-            profilePictureShareWith: {group: 'everyone'},
-        });
-        this.privacySettings = new PrivacySettingsModelStore(services, {});
-        this.callsSettings = new CallsSettingsModelStore(services, {});
+        this.profileSettings = new ProfileSettingsModelStore(services);
+        this.privacySettings = new PrivacySettingsModelStore(services);
+        this.callsSettings = new CallsSettingsModelStore(services);
         this.devicesSettings = new DevicesSettingsModelStore(services);
         this.appearanceSettings = new AppearanceSettingsModelStore(services);
         this.mediaSettings = new MediaSettingsModelStore(services);
@@ -413,31 +436,36 @@ class UserRepository implements User {
     }
 }
 
-export class TestModelRepositories implements Repositories {
-    public [TRANSFER_HANDLER] = FAKE_PROXY_HANDLER;
+class TestModelRepositories implements Repositories {
+    public readonly [TRANSFER_HANDLER] = FAKE_PROXY_HANDLER;
 
-    public user: User;
-    public contacts: ContactRepository;
-    public groups: GroupRepository;
-    public conversations: ConversationRepository;
-    public messages: MessageRepository;
-    public profilePictures: ProfilePictureRepository;
-    public globalProperties: IGlobalPropertyRepository;
-    public db: DatabaseBackend;
+    public readonly user: User;
+    public readonly contacts: ContactRepository;
+    public readonly groups: GroupRepository;
+    public readonly conversations: ConversationRepository;
+    public readonly messages: MessageRepository;
+    public readonly profilePictures: ProfilePictureRepository;
+    public readonly globalProperties: IGlobalPropertyRepository;
+    public readonly call: CallManager;
+
+    // Custom properties for testing
+    public readonly db: DatabaseBackend;
 
     public constructor(
         userIdentity: IdentityString,
-        services: Omit<ServicesForBackend, 'model' | 'viewModel'>,
+        services_: Omit<ServicesForBackend, 'model' | 'viewModel'>,
     ) {
-        this.db = initSqliteBackend(services.logging.logger('db'));
-        const servicesForModel = {...services, db: this.db, model: this};
-        this.user = new UserRepository(userIdentity, servicesForModel);
-        this.contacts = new ContactModelRepository(servicesForModel);
-        this.groups = new GroupModelRepository(servicesForModel);
-        this.conversations = new ConversationModelRepository(servicesForModel);
-        this.messages = new MessageModelRepository(servicesForModel);
-        this.profilePictures = new ProfilePictureModelRepository(servicesForModel);
-        this.globalProperties = new GlobalPropertyRepository(servicesForModel);
+        this.db = initSqliteBackend(services_.logging.logger('db'));
+        const services = {...services_, db: this.db, model: this};
+
+        this.user = new UserRepository(userIdentity, services);
+        this.contacts = new ContactModelRepository(services);
+        this.groups = new GroupModelRepository(services);
+        this.conversations = new ConversationModelRepository(services);
+        this.messages = new MessageModelRepository(services);
+        this.profilePictures = new ProfilePictureModelRepository(services);
+        this.globalProperties = new GlobalPropertyRepository(services);
+        this.call = new CallManager(services);
     }
 }
 
@@ -472,7 +500,7 @@ export class TestNonceService implements INonceService {
     public importNonces(scope: NonceScope, hashes: ReadonlySet<NonceHash>): void {}
 }
 
-export class TestNotificationService extends NotificationService {
+class TestNotificationService extends NotificationService {
     public constructor(log: Logger) {
         // Mock remote NotificationCreator
         // eslint-disable-next-line @typescript-eslint/require-await
@@ -485,7 +513,7 @@ export class TestNotificationService extends NotificationService {
     }
 }
 
-export class TestMediaService extends BackendMediaService {
+class TestMediaService extends BackendMediaService {
     public constructor(log: Logger) {
         // eslint-disable-next-line @typescript-eslint/require-await
         async function generateImageThumbnail(
@@ -522,7 +550,7 @@ const TEST_SYSTEM_DIALOG_SERVICE: Remote<SystemDialogService> = {
     open,
 } as unknown as Remote<SystemDialogService>;
 
-export class TestBlobBackend implements BlobBackend {
+class TestBlobBackend implements BlobBackend {
     // eslint-disable-next-line @typescript-eslint/require-await
     public async upload(scope: BlobScope, data: EncryptedData): Promise<BlobId> {
         return ensureBlobId(nodeRandomBytes(16));
@@ -538,7 +566,7 @@ export class TestBlobBackend implements BlobBackend {
     }
 }
 
-export class TestWorkBackend implements WorkBackend {
+class TestWorkBackend implements WorkBackend {
     public [TRANSFER_HANDLER] = FAKE_PROXY_HANDLER;
 
     // eslint-disable-next-line @typescript-eslint/require-await
@@ -613,32 +641,39 @@ export function makeTestServices(identity: IdentityString): TestServices {
     };
     const systemInfo: SystemInfo = {os: 'other', arch: 'pentium386', locale: 'de_CH.utf8'};
 
-    const partialServices = {
+    const services: Omit<TestServices, 'rawClientKeyBytes' | 'model' | 'viewModel'> = {
+        blob: new TestBlobBackend(),
+        compressor: new ZlibCompressor(),
         config: TEST_CONFIG,
         crypto,
         device,
         directory: new TestDirectoryBackend(),
+        endpoint: {
+            cache: () => endpointCache,
+            exposeProperties: (object: unknown) => object,
+        } as unknown as EndpointService,
+        file,
         keyStorage,
         logging,
         media,
         nonces,
         notification,
-        compressor: new ZlibCompressor(),
-        blob: new TestBlobBackend(),
+        sfu: new TestSfuHttpBackend(),
         systemDialog: TEST_SYSTEM_DIALOG_SERVICE,
         systemInfo,
-        file,
-        endpoint: {
-            cache: () => endpointCache,
-            exposeProperties: (object: unknown) => object,
-        } as unknown as EndpointService,
         taskManager,
+        webrtc: {
+            [TRANSFER_HANDLER]: FAKE_PROXY_HANDLER,
+            createGroupCallContext: () => {
+                throw new GroupCallError({kind: 'webrtc-connect'}, 'Nope!');
+            },
+        } satisfies WebRtcService as unknown as RemoteProxy<WebRtcService>,
         work: new TestWorkBackend(),
         volatileProtocolState: new VolatileProtocolStateBackend(),
     };
-    const model = new TestModelRepositories(identity, partialServices);
-    const viewModel = new ViewModelRepository({...partialServices, model}, new ViewModelCache());
-    return {...partialServices, model, rawClientKeyBytes, viewModel};
+    const model = new TestModelRepositories(identity, services);
+    const viewModel = new ViewModelRepository({...services, model}, new ViewModelCache());
+    return {...services, rawClientKeyBytes, model, viewModel};
 }
 
 type OutboundNonTransactionalL4Message = Exclude<
@@ -770,7 +805,7 @@ export class NetworkExpectationFactory {
     }
 }
 
-export interface TestHandleOptions {
+interface TestHandleOptions {
     promotedToLeader: boolean;
 }
 
@@ -783,6 +818,7 @@ export interface TestHandleOptions {
  */
 export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
     public controller: TaskController;
+    public abort = new AbortRaiser<CloseInfo>();
 
     private readonly _options: TestHandleOptions;
     private readonly _expectationErrors: string[] = [];
@@ -950,17 +986,6 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
         // Return result
         return [_only_for_testing.transactionComplete(expectation.id, scope), result];
     }
-
-    // Abort handler
-    // eslint-disable-next-line @typescript-eslint/member-ordering
-    public abort = {
-        aborted: false,
-        promise: new ResolvablePromise<CloseInfo>({uncaught: 'default'}),
-        subscribe: (subscriber: AbortSubscriber<CloseInfo>) => () => undefined,
-        attach: () => {
-            throw new Error('Not implemented');
-        },
-    };
 
     public async step<T>(executor: () => Promise<T>): Promise<T> {
         // Ensure the task has not been aborted, then run the executor

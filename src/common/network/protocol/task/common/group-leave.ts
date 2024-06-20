@@ -4,7 +4,6 @@
 import {GroupUserState} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact, ContactInit, Group} from '~/common/model';
-import {getIdentityString} from '~/common/model/contact';
 import {groupDebugString} from '~/common/model/group';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import type {
@@ -63,10 +62,8 @@ export abstract class GroupLeaveTaskBase<
             return;
         }
 
-        const creator = getIdentityString(this._services.device, creatorIdentity);
-
         // 2. Look up the group
-        const group = model.groups.getByGroupIdAndCreator(groupId, creator);
+        const group = model.groups.getByGroupIdAndCreator(groupId, creatorIdentity);
 
         // 3. If the group could not be found or is marked as left:
         if (

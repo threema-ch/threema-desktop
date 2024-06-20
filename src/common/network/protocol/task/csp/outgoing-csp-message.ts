@@ -542,14 +542,13 @@ export class OutgoingCspMessageTask<
                     distributionList: undefined,
                 });
             case ReceiverType.GROUP: {
-                const creatorIdentity = getIdentityString(
-                    this._services.device,
-                    this._receiver.view.creator,
-                );
                 return protobuf.utils.creator(protobuf.d2d.ConversationId, {
                     contact: undefined,
                     group: protobuf.utils.creator(protobuf.common.GroupIdentity, {
-                        creatorIdentity,
+                        creatorIdentity: getIdentityString(
+                            this._services.device,
+                            this._receiver.view.creator,
+                        ),
                         groupId: intoUnsignedLong(this._receiver.view.groupId),
                     }),
                     distributionList: undefined,

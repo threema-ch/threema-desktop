@@ -14,7 +14,7 @@ import type {SearchViewModel} from '~/common/viewmodel/search/nav/store/types';
 export type SearchViewModelStore = LocalStore<SearchViewModel & PropertiesMarked>;
 
 export function getSearchViewModelStore(
-    services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     searchViewModelController: ISearchViewModelController,
 ): SearchViewModelStore {
     const {endpoint} = services;

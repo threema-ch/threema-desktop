@@ -1,0 +1,200 @@
+// ## Settings
+//
+// The user settings. Each message corresponds roughly to a particular settings
+// screen.
+
+syntax = "proto3";
+
+message Unit {}
+
+// Container for a list of identities
+message Identities {
+  // List of identities
+  repeated string identities = 1;
+}
+
+// _Read_ receipt policy (when an unread message has been read)
+enum ReadReceiptPolicy {
+  // Send _read_ receipt when an unread message has been read
+  SEND_READ_RECEIPT = 0;
+  // Don't send _read_ receipts
+  DONT_SEND_READ_RECEIPT = 1;
+}
+
+// Typing indicator policy (signal _currently typing_)
+enum TypingIndicatorPolicy {
+  // Send _typing_ indicator when a message is being composed
+  SEND_TYPING_INDICATOR = 0;
+  // Don't send _typing_ indicators
+  DONT_SEND_TYPING_INDICATOR = 1;
+}
+
+// Profile settings
+message ProfileSettings {
+  // Nickname
+  optional string nickname = 1;
+
+  // Profile picture
+  optional bytes profile_picture = 2;
+  message ProfilePictureShareWith {
+    oneof policy {
+      // Don't share
+      Unit nobody = 1;
+      // Share with everyone
+      Unit everyone = 2;
+      // Share only with explicitly listed contacts
+      //
+      // When the user selected _allow list_ but did not select any contacts,
+      // send an empty list. Do not fall back to `nobody`.
+      Identities allow_list = 3;
+    }
+  }
+  optional ProfilePictureShareWith profile_picture_share_with = 3;
+}
+
+// Privacy settings
+message PrivacySettings {
+  // Contact synchronisation policy
+  //
+  // Required towards a new device. Optional otherwise.
+  enum ContactSyncPolicy {
+    // Not synced
+    NOT_SYNCED = 0;
+    // Synced
+    SYNC = 1;
+  }
+  optional ContactSyncPolicy contact_sync_policy = 1;
+
+  // Unknown contacts policy
+  //
+  // Required towards a new device. Optional otherwise.
+  enum UnknownContactPolicy {
+    // Allowed to contact the user
+    ALLOW_UNKNOWN = 0;
+    // Will be blocked by the user
+    BLOCK_UNKNOWN = 1;
+  }
+  optional UnknownContactPolicy unknown_contact_policy = 2;
+
+  // _Read_ receipt policy (when an unread message has been read)
+  //
+  // Required towards a new device. Optional otherwise.
+  optional ReadReceiptPolicy read_receipt_policy = 3;
+
+  // Typing indicator policy (signal _currently typing_)
+  //
+  // Required towards a new device. Optional otherwise.
+  optional TypingIndicatorPolicy typing_indicator_policy = 4;
+
+  // Screenshot policy
+  //
+  // Required towards a new device. Optional otherwise.
+  enum ScreenshotPolicy {
+    // Allow taking screenshots
+    ALLOW_SCREENSHOT = 0;
+    // Deny taking screenshots, if possible
+    DENY_SCREENSHOT = 1;
+  }
+  optional ScreenshotPolicy screenshot_policy = 5;
+
+  // Keyboard data collection policy (e.g. for personalised suggestions)
+  //
+  // Required towards a new device. Optional otherwise.
+  enum KeyboardDataCollectionPolicy {
+    // Allow keyboard input data to be collected
+    ALLOW_DATA_COLLECTION = 0;
+    // Deny collecting of keyboard input data
+    DENY_DATA_COLLECTION = 1;
+  }
+  optional KeyboardDataCollectionPolicy keyboard_data_collection_policy = 6;
+
+  // List of Threema IDs whose messages are blocked
+  //
+  // Required towards a new device. Optional otherwise.
+  //
+  // An empty list is valid.
+  Identities blocked_identities = 7;
+
+  // Threema IDs to be excluded when syncing the contact list
+  //
+  // Required towards a new device. Optional otherwise.
+  //
+  // An empty list is valid.
+  Identities exclude_from_sync_identities = 8;
+}
+
+// Calls settings
+message CallsSettings {
+  // Threema Call policy
+  //
+  // Required towards a new device. Optional otherwise.
+  enum O2oCallPolicy {
+    // Allow creating/receiving Threema Calls
+    ALLOW_CALL = 0;
+    // Denied from creating/receiving any Threema Calls
+    DENY_CALL = 1;
+  }
+  optional O2oCallPolicy o2o_call_policy = 1;
+
+  // Threema Call connection policy
+  //
+  // Required towards a new device. Optional otherwise.
+  enum O2oCallConnectionPolicy {
+    // Allow direct (peer-to-peer) connections for Threema Calls
+    ALLOW_DIRECT = 0;
+    // Require relayed connections for Threema Calls
+    REQUIRE_RELAY = 1;
+  }
+  optional O2oCallConnectionPolicy o2o_call_connection_policy = 2;
+
+  // Threema Group Call policy
+  //
+  // Required towards a new device. Optional otherwise.
+  enum GroupCallPolicy {
+    // Allow creating/receiving Threema Group Calls
+    ALLOW_GROUP_CALL = 0;
+    // Denied from creating/receiving any Threema Group Calls
+    DENY_GROUP_CALL = 1;
+  }
+  optional GroupCallPolicy group_call_policy = 3;
+}
+
+// Devices Settings
+message DevicesSettings {
+  // The name of the local device
+  optional string deviceName = 1;
+}
+
+// Appearance Settings
+message AppearanceSettings {
+  // Time format (12h vs 24h display)
+  enum TimeFormat {
+    TIME_24H = 0;
+    TIME_12H = 1;
+  }
+  optional TimeFormat time_format = 1;
+
+  // Whether to show or hide inactive contacts
+  enum HideInactive {
+    SHOW = 0;
+    HIDE = 1;
+  }
+  optional HideInactive inactive_contacts_policy = 2;
+}
+// Media Settings
+message MediaSettings {
+  // Whether or not to automatically download file and media content for
+  // incoming messages.
+  message AutoDownload {
+    message AutoDownloadOn {
+      Unit on = 1;
+      // If 0: No limit
+      uint32 limitInMb = 2;
+    }
+    oneof policy {
+      Unit off = 1;
+      AutoDownloadOn on = 2;
+    }
+  }
+  optional AutoDownload auto_download = 1;
+}

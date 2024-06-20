@@ -12,7 +12,7 @@ export interface MessagePreviewListProps {
     /**
      * Optional substring(s) to highlight in message preview text.
      */
-    readonly highlights?: string | string[];
+    readonly highlights?: string | readonly string[];
     readonly items: MessagePreviewListItemProps[];
     readonly services: Pick<
         AppServicesForSvelte,
@@ -25,7 +25,10 @@ interface MessagePreviewListItemProps {
      * The conversation which the messages are part of.
      */
     readonly conversation: {
-        readonly receiver: Pick<AnyReceiverData, 'color' | 'initials' | 'name' | 'lookup' | 'type'>;
+        readonly receiver: Pick<
+            AnyReceiverData,
+            'id' | 'color' | 'initials' | 'name' | 'lookup' | 'type'
+        >;
     };
     /**
      * Messages are grouped by receiver, which means each receiver (i.e., each list item) could have

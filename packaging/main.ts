@@ -96,8 +96,8 @@ function fail(errormsg: string): never {
     process.exit(1);
 }
 
-function unreachable(value: never, error?: Error): never {
-    throw error ?? new Error('Unreachable code section!');
+function unreachable(value: never, message?: string): never {
+    throw new Error(message ?? 'Unreachable code section!');
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types

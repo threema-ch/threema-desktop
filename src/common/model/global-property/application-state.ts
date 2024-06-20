@@ -1,7 +1,7 @@
 import * as v from '@badrap/valita';
 
 import type {GlobalPropertyKey} from '~/common/enum';
-import * as proto from '~/common/model/global-property/global-property';
+import * as proto from '~/common/internal-protobuf/global-property';
 import type {GlobalPropertyValues} from '~/common/model/types/settings';
 import type {ReadonlyUint8Array} from '~/common/types';
 

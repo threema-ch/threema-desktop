@@ -5,7 +5,9 @@
     "types": ["chai", "mocha"]
   },
   "include": [
+    "../../../../common/dom/crypto.d.ts",
     "../../../../common/dom/vite-client.d.ts",
+    "../../../../common/dom/webrtc-patches.d.ts",
     "../../../common/chai.d.ts",
     "**/*.ts",
     "../../../mocha/common/network/protocol/work-sync.spec.ts"

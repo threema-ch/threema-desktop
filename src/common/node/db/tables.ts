@@ -40,7 +40,6 @@ import type {
     WorkVerificationLevel,
 } from '~/common/enum';
 import type {FileEncryptionKey, FileId} from '~/common/file-storage';
-import type {IdentityStringOrMe} from '~/common/model/types/common';
 import type {BlobId} from '~/common/network/protocol/blob';
 import type {
     DistributionListId,
@@ -1155,13 +1154,11 @@ export const tMessageReaction = new (class TMessageReaction extends Table<
 
     /**
      * The sender of the reaction
-     *
-     * If the current user sent the reaction, the special string 'me' is used.
      */
-    public senderIdentity = this.column<IdentityStringOrMe>(
+    public senderIdentity = this.column<IdentityString>(
         'senderIdentity',
         'custom',
-        CUSTOM_TYPES.IDENTITY_OR_ME,
+        CUSTOM_TYPES.IDENTITY,
     );
 
     /**

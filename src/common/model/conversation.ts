@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/member-ordering */
 import type {DbConversationUid, DbReceiverLookup, UidOf} from '~/common/db';
 import {
     AcquaintanceLevel,
@@ -11,7 +10,9 @@ import {
     ReadReceiptPolicy,
     ReceiverType,
     TriggerSource,
+    type StatusMessageType,
 } from '~/common/enum';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import type {ServicesForModel} from '~/common/model/types/common';
 import type {
@@ -40,8 +41,8 @@ import type {
 import type {AnyReceiver, AnyReceiverStore} from '~/common/model/types/receiver';
 import type {
     AnyStatusMessageModelStore,
-    GroupMemberChangeStatus,
-    GroupNameChangeStatus,
+    StatusMessageModelStores,
+    StatusMessageView,
 } from '~/common/model/types/status';
 import {getDebugTagForReceiver} from '~/common/model/utils/debug-tags';
 import {LazyWeakRef, LocalModelStoreCache} from '~/common/model/utils/model-cache';
@@ -64,7 +65,7 @@ import {
 } from '~/common/network/types';
 import type {i53, Mutable, u53} from '~/common/types';
 import {assert, assertUnreachable, isNotUndefined, unreachable} from '~/common/utils/assert';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import {AsyncLock} from '~/common/utils/lock';
 import {
     createExactPropertyValidator,
@@ -290,21 +291,6 @@ export class ConversationModelController implements ConversationController {
             return store;
         },
     };
-
-    /** @inheritdoc */
-    public createStatusMessage(
-        statusMessage:
-            | Omit<GroupMemberChangeStatus['view'], 'conversationUid' | 'id' | 'ordinal'>
-            | Omit<GroupNameChangeStatus['view'], 'conversationUid' | 'id' | 'ordinal'>,
-    ): AnyStatusMessageModelStore {
-        const statusMessageModelStore = status.createStatusMessage(this._services, {
-            ...statusMessage,
-            conversationUid: this.uid,
-        });
-        this._updateStatusStoresOnConversationUpdate();
-
-        return statusMessageModelStore;
-    }
 
     /** @inheritdoc */
     public readonly removeMessage: ConversationController['removeMessage'] = {
@@ -800,6 +786,19 @@ export class ConversationModelController implements ConversationController {
     /** @inheritdoc */
     public getFirstUnreadMessageId(): MessageId | undefined {
         return message.getFirstUnreadMessageId(this._services, this._handle);
+    }
+
+    /** @inheritdoc */
+    public createStatusMessage<TType extends StatusMessageType>(
+        statusMessage: Omit<StatusMessageView<TType>, 'conversationUid' | 'id' | 'ordinal'>,
+    ): StatusMessageModelStores[TType] {
+        const statusMessageModelStore = status.createStatusMessage(this._services, {
+            ...statusMessage,
+            conversationUid: this.uid,
+        });
+        this._updateStatusStoresOnConversationUpdate();
+
+        return statusMessageModelStore;
     }
 
     /**

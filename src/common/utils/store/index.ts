@@ -1,21 +1,18 @@
 import {TransferTag} from '~/common/enum';
+import {TRANSFER_HANDLER, TRANSFERRED_MARKER} from '~/common/index';
 import type {Logger, LogPrefix} from '~/common/logging';
 import {ensureU53, type u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {
-    type CreatedEndpoint,
     type CustomTransferable,
     type CustomTransferredRemoteMarker,
     type DomTransferable,
-    type Endpoint,
     type EndpointFor,
     type EndpointService,
-    type MessageEvent,
+    type MessageEventLike,
     type ObjectId,
     type RegisteredTransferHandler,
     registerTransferHandler,
-    TRANSFER_HANDLER,
-    TRANSFERRED_MARKER,
     type WireValue,
 } from '~/common/utils/endpoint';
 import type {AbortRaiser} from '~/common/utils/signal';
@@ -382,10 +379,10 @@ export class WritableStore<TInValue extends TOutValue, TOutValue = TInValue>
     }
 
     /**
-     * Update a non-primitive value value in a callback function.
+     * Update a non-primitive value in a callback function.
      *
-     * This method is intended to be used to update the content inside of a non-primitive value,
-     * e.g. an array, object or an instance.
+     * Note: This method is intended to be used to update the content inside of a non-primitive
+     * value, e.g. an array, object or an instance.
      *
      * @param fn A function which will be called with the current value. Once it returns, the
      *   modified value will be dispatched to all subscribers.
@@ -521,14 +518,14 @@ export const STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
         id: ObjectId<LocalStore<unknown, never>>,
         tag: string | undefined,
         prefix: LogPrefix | undefined,
-        endpoint: EndpointFor<unknown, CreatedEndpoint>,
+        endpoint: EndpointFor<'value', undefined, WireValue>,
         value: WireValue,
     ],
     [
         id: ObjectId<RemoteStore<unknown>>,
         tag: string | undefined,
         prefix: LogPrefix | undefined,
-        endpoint: EndpointFor<unknown, CreatedEndpoint>,
+        endpoint: EndpointFor<'value', undefined, WireValue>,
         value: WireValue,
     ],
     TransferTag.STORE
@@ -545,7 +542,7 @@ export const STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
         //       optimise this by lazily creating ports on demand
         //       (requiring another RTT).
         const id = service.cache().local.getOrAssignId(store);
-        const {local, remote} = service.createEndpointPair();
+        const {local, remote} = service.createEndpointPair<'value', WireValue, undefined>();
         const [serialized, transfers] = RemoteStore.expose(service, store, local);
         return [
             [id, store.debug.tag, store.debug.prefix, remote, serialized],
@@ -583,7 +580,13 @@ export const STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
 /**
  * Release a remote store to be garbage collected on the local side.
  */
-function releaseRemote({endpoint, releaser}: {endpoint: Endpoint; releaser?: AbortRaiser}): void {
+function releaseRemote({
+    endpoint,
+    releaser,
+}: {
+    readonly endpoint: EndpointFor<'value', undefined, unknown>;
+    readonly releaser?: AbortRaiser;
+}): void {
     endpoint.postMessage(undefined);
     endpoint.close?.();
     releaser?.raise(undefined);
@@ -609,14 +612,14 @@ export class RemoteStore<TValue>
     private constructor(
         service: EndpointService,
         initial: WireValue,
-        endpoint: EndpointFor<TValue>,
+        endpoint: EndpointFor<'value', undefined, WireValue>,
         options: StoreOptions<TValue>,
     ) {
         super(service.deserialize<TValue>(initial, true), options);
 
         // Forward store value updates to all underlying subscribers
         const self = new WeakRef(this);
-        function listener({data}: MessageEvent): void {
+        function listener({data}: MessageEventLike<WireValue>): void {
             // Unregister listener when the reference disappears
             const self_ = self.deref();
             if (self_ === undefined) {
@@ -625,7 +628,7 @@ export class RemoteStore<TValue>
             }
 
             // Update the underlying value and dispatch value to subscribers.
-            const serialized = data as WireValue;
+            const serialized = data;
             const value = service.deserialize<TValue>(serialized, true);
             self_._value = value;
             self_._dispatch(value);
@@ -647,7 +650,7 @@ export class RemoteStore<TValue>
     public static wrap<TValue>(
         service: EndpointService,
         initial: WireValue,
-        endpoint: EndpointFor<TValue>,
+        endpoint: EndpointFor<'value', undefined, WireValue>,
         releaser: AbortRaiser | undefined,
         options: StoreOptions<TValue>,
     ): RemoteStore<TValue> {
@@ -672,7 +675,7 @@ export class RemoteStore<TValue>
     public static expose<TValue>(
         service: EndpointService,
         storeListener: ISubscribableStore<TValue>,
-        endpoint: EndpointFor<TValue>,
+        endpoint: EndpointFor<'value', WireValue, undefined>,
     ): readonly [value: WireValue, transfers: readonly DomTransferable[]] {
         // Subscribe on the local listener and forward it via the endpoint.
         let initial: readonly [value: WireValue, transfers: readonly DomTransferable[]] | undefined;

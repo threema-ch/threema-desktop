@@ -13,6 +13,7 @@ import {
 } from '~/common/dom/streams';
 import {RendezvousCloseCode, TransferTag} from '~/common/enum';
 import {BaseError, RendezvousCloseError} from '~/common/error';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import * as protobuf from '~/common/network/protobuf';
 import {UNIT_MESSAGE} from '~/common/network/protobuf';
@@ -25,7 +26,7 @@ import type {ReadonlyUint8Array, u32} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {u8aToBase64} from '~/common/utils/base64';
 import {byteSplit} from '~/common/utils/byte';
-import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {registerErrorTransferHandler} from '~/common/utils/endpoint';
 import {Queue} from '~/common/utils/queue';
 import {AbortRaiser} from '~/common/utils/signal';
 
@@ -470,7 +471,7 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
                 try {
                     protocol = libthreema.RendezvousProtocol.newAsRid(
                         false,
-                        setup.ak.unwrap() as Uint8Array,
+                        setup.ak.unwrap() as ReadonlyUint8Array as Uint8Array,
                         Uint32Array.from(paths.map(({pid}) => pid)),
                     );
                 } catch (error) {
@@ -608,7 +609,7 @@ function getJoinUri(setup: RendezvousProtocolSetup): string {
     );
     const rendezvousInit = protobuf.utils.creator(protobuf.rendezvous.RendezvousInit, {
         version: protobuf.rendezvous.RendezvousInit.Version.V1_0,
-        ak: setup.ak.unwrap() as Uint8Array,
+        ak: setup.ak.unwrap() as ReadonlyUint8Array as Uint8Array,
         relayedWebSocket,
         directTcpServer: undefined,
     });

@@ -5,7 +5,7 @@ import type {
 } from '~/app/ui/components/partials/conversation/internal/message-list/props';
 import type {I18nType} from '~/app/ui/i18n-types';
 import type {u53} from '~/common/types';
-import {unreachable} from '~/common/utils/assert';
+import {assert, unreachable} from '~/common/utils/assert';
 import type {Remote} from '~/common/utils/endpoint';
 import type {IQueryableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
@@ -24,20 +24,19 @@ export function messageSetStoreToMessageListMessagesStore(
 ): IQueryableStore<AnyMessageListMessage[]> {
     return derive([messageSetStore], ([{currentValue: messageSet}], getAndSubscribe) =>
         [...messageSet]
-            .map((value): AnyMessageListMessage & {readonly ordinal: u53} => {
-                const viewModel = getAndSubscribe(value.viewModelStore);
-                switch (viewModel.type) {
+            .map((bundle): AnyMessageListMessage & {readonly ordinal: u53} => {
+                const viewModel = getAndSubscribe(bundle.viewModelStore);
+                switch (bundle.type) {
                     case 'status-message': {
+                        assert(viewModel.type === bundle.type);
                         return {
                             ...getStatusMessageProps(viewModel),
                             ordinal: viewModel.ordinal,
                         };
                     }
                     case 'message': {
-                        // If the `viewModel` is of type `"message"`, the controller (which is part
-                        // of the same bundle) must be as well.
-                        const controller =
-                            value.viewModelController as Remote<ConversationMessageViewModelBundle>['viewModelController'];
+                        assert(viewModel.type === bundle.type);
+                        const controller = bundle.viewModelController;
 
                         const quoteProps =
                             viewModel.quote !== undefined && viewModel.quote !== 'not-found'
@@ -55,7 +54,7 @@ export function messageSetStoreToMessageListMessagesStore(
                     }
 
                     default:
-                        return unreachable(viewModel);
+                        return unreachable(bundle);
                 }
             })
             .sort((a, b) => a.ordinal - b.ordinal),
@@ -126,9 +125,9 @@ export function getMessageReactionsProps(
             ...reaction,
             sender: {
                 name:
-                    reaction.sender.identity === 'me'
+                    reaction.sender.type === 'self'
                         ? i18n.t('contacts.label--own-name', 'Me')
-                        : reaction.sender.name ?? reaction.sender.identity,
+                        : reaction.sender.name,
             },
         }))
         .sort((a, b) => localeSort(a.sender.name, b.sender.name));

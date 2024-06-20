@@ -5,6 +5,7 @@ import type {Contact} from '~/common/model';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import {ensureIdentityString, ensureNickname} from '~/common/network/types';
+import {derive} from '~/common/utils/store/derived-store';
 import {type AnyMention, getMentions} from '~/common/viewmodel/utils/mentions';
 import {
     type TestUser,
@@ -38,7 +39,7 @@ export function run(): void {
                 recipient: LocalModelStore<Contact>,
                 expectedMentions: AnyMention[],
             ): Promise<void> {
-                const msg = await recipient
+                const messageStore = await recipient
                     .get()
                     .controller.conversation()
                     .get()
@@ -49,8 +50,12 @@ export function run(): void {
                         createdAt: new Date(),
                         text: message,
                     });
-                const mentions = getMentions(services, msg.get());
-                expect(mentions).to.deep.equal(expectedMentions);
+                const mentions = derive(
+                    [messageStore],
+                    ([{currentValue: messageModel}], getAndSubscribe) =>
+                        getMentions(services, messageModel, getAndSubscribe),
+                );
+                expect(mentions.get()).to.deep.equal(expectedMentions);
             }
 
             it('single contact mention', async () => {

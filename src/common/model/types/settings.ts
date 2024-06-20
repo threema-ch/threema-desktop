@@ -12,6 +12,7 @@ import type {
     TimeFormat,
     TypingIndicatorPolicy,
     UnknownContactPolicy,
+    GroupCallPolicy,
 } from '~/common/enum';
 import type {AutoDownload} from '~/common/model/settings/media';
 import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
@@ -72,8 +73,9 @@ export type PrivacySettings = LocalModel<PrivacySettingsView, PrivacySettingsCon
 
 // Note: Type must be compatible with common.settings.CallsSettings
 export interface CallsSettingsView {
-    readonly o2oCallPolicy?: O2oCallPolicy;
-    readonly o2oCallConnectionPolicy?: O2oCallConnectionPolicy;
+    readonly o2oCallPolicy: O2oCallPolicy;
+    readonly o2oCallConnectionPolicy: O2oCallConnectionPolicy;
+    readonly groupCallPolicy: GroupCallPolicy;
 }
 export type CallsSettingsUpdate = Partial<CallsSettingsView>;
 export type CallsSettingsController = {

@@ -112,7 +112,6 @@ export const CUSTOM_TYPES = {
     FILE_ID: 'FileId',
     FEATURE_MASK: 'FeatureMask',
     IDENTITY: 'IdentityString',
-    IDENTITY_OR_ME: 'IdentityOrMe',
     PUBLIC_KEY: 'PublicKey',
     NICKNAME: 'Nickname',
     NONCE_HASH: 'NonceHash',
@@ -162,7 +161,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case 'dateTime':
                 return 'Unix time milliseconds as integer';
             default:
-                return unreachable(type, new Error('Invalid date time format type'));
+                return unreachable(type, 'Invalid date time format type');
         }
     }
 
@@ -333,8 +332,6 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return isFeatureMask(value) ? value : fail();
             case CUSTOM_TYPES.IDENTITY:
                 return isIdentityString(value) ? value : fail();
-            case CUSTOM_TYPES.IDENTITY_OR_ME:
-                return isIdentityString(value) || value === 'me' ? value : fail();
             case CUSTOM_TYPES.PUBLIC_KEY:
                 return isPublicKey(value) ? value : fail();
             case CUSTOM_TYPES.NICKNAME:
@@ -463,7 +460,6 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.FILE_ID:
             case CUSTOM_TYPES.FEATURE_MASK:
             case CUSTOM_TYPES.IDENTITY:
-            case CUSTOM_TYPES.IDENTITY_OR_ME:
             case CUSTOM_TYPES.NICKNAME:
             case CUSTOM_TYPES.PUBLIC_KEY:
             case CUSTOM_TYPES.NONCE_HASH:

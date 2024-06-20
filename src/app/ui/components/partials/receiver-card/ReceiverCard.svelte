@@ -42,7 +42,7 @@
     {#if topLeft.length > 0 || topRight.length > 0}
       <div class="top">
         {#if topLeft.length > 0}
-          <div class={`left items`}>
+          <div class="left items">
             {#each topLeft as itemOptions}
               <ContentItem options={itemOptions} />
             {/each}
@@ -50,7 +50,7 @@
         {/if}
 
         {#if topRight.length > 0}
-          <div class={`right items`}>
+          <div class="right items">
             {#each topRight as itemOptions}
               <ContentItem options={itemOptions} on:clickjoincall />
             {/each}
@@ -62,7 +62,7 @@
     {#if bottomLeft.length > 0 || bottomRight.length > 0}
       <div class="bottom">
         {#if bottomLeft.length > 0}
-          <div class={`left items`}>
+          <div class="left items">
             {#each bottomLeft as itemOptions}
               <ContentItem options={itemOptions} />
             {/each}
@@ -70,7 +70,7 @@
         {/if}
 
         {#if bottomRight.length > 0}
-          <div class={`right items`}>
+          <div class="right items">
             {#each bottomRight as itemOptions}
               <ContentItem options={itemOptions} />
             {/each}

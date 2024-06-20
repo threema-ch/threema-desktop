@@ -1,10 +1,12 @@
 import type {DbReceiverLookup} from '~/common/db';
 import type {BlobCacheService} from '~/common/dom/ui/blob-cache';
 import {downsizeImage} from '~/common/dom/utils/image';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {IFrontendMediaService} from '~/common/media';
 import type {MessageId} from '~/common/network/types';
 import type {ReadonlyUint8Array} from '~/common/types';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import type {Delayed} from '~/common/utils/delayed';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 
 /**
@@ -24,19 +26,10 @@ const LOCAL_THUMBNAIL_QUALITY = 0.88;
 
 export class FrontendMediaService implements IFrontendMediaService {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    private _blobCacheService: BlobCacheService | undefined = undefined;
 
-    /**
-     * Pass in a reference to the {@link BlobCacheService}.
-     *
-     * Note: This is necessary because the blob cache service does not yet exist when creating the
-     * frontend media service.
-     */
-    public setBlobCacheService(blobCacheService: BlobCacheService): void {
-        if (this._blobCacheService === undefined) {
-            this._blobCacheService = blobCacheService;
-        }
-    }
+    public constructor(
+        private readonly _services: Delayed<{readonly blobCache: BlobCacheService}>,
+    ) {}
 
     /** @inheritdoc */
     public async generateImageThumbnail(
@@ -75,11 +68,6 @@ export class FrontendMediaService implements IFrontendMediaService {
         messageId: MessageId,
         receiverLookup: DbReceiverLookup,
     ): Promise<void> {
-        if (this._blobCacheService === undefined) {
-            throw new Error(
-                'Cannot set message thumbnail because the blob cache service is not initialized.',
-            );
-        }
-        this._blobCacheService.refreshCacheForMessage(messageId, receiverLookup);
+        this._services.unwrap().blobCache.refreshCacheForMessage(messageId, receiverLookup);
     }
 }

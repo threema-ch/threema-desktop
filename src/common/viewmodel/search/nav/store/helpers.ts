@@ -24,7 +24,7 @@ const TAG_BASE = `search.nav.store`;
  * {@link searchViewModelController}.
  */
 export function getConversationSearchResults(
-    services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     searchParams: SearchParams,
     getAndSubscribe: GetAndSubscribeFunction,
 ): SearchViewModel['conversationSearchResults'] {
@@ -70,7 +70,7 @@ export function getConversationSearchResults(
  * Derives {@link ConversationSearchResult} data from a {@link ConversationModelStore}.
  */
 export function getConversationSearchResult(
-    services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     conversationModelStore: ConversationModelStore,
     getAndSubscribe: GetAndSubscribeFunction,
 ): ConversationSearchResult {
@@ -103,7 +103,7 @@ export function getConversationSearchResult(
  * {@link searchViewModelController}.
  */
 export function getMessageSearchResults(
-    services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     searchParams: SearchParams,
     getAndSubscribe: GetAndSubscribeFunction,
 ): SearchViewModel['messageSearchResults'] {

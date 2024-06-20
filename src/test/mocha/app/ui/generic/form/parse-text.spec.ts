@@ -7,13 +7,14 @@ import {
     parseMentions,
     sanitizeAndParseTextToHtml,
 } from '~/app/ui/utils/text';
-import type {DbContact, DbContactUid} from '~/common/db';
+import type {DbContactUid} from '~/common/db';
 import {ReceiverType} from '~/common/enum';
 import {ensureIdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import type {
     AnyMention,
     MentionContact,
+    MentionContactRemoved,
     MentionEveryone,
     MentionSelf,
 } from '~/common/viewmodel/utils/mentions';
@@ -30,12 +31,13 @@ export function run(): void {
         const testMentions: {
             self: MentionSelf;
             contact: MentionContact;
+            contactRemoved: MentionContactRemoved;
             everyone: MentionEveryone;
         } = {
             self: {
                 type: 'self',
                 identity: ensureIdentityString(testContactId),
-                name: 'Test',
+                nickname: 'Test',
             },
             contact: {
                 type: 'contact',
@@ -45,6 +47,10 @@ export function run(): void {
                     type: ReceiverType.CONTACT,
                     uid: BigInt(0) as DbContactUid,
                 },
+            },
+            contactRemoved: {
+                type: 'contact-removed',
+                identity: ensureIdentityString(testContactId),
             },
             everyone: {
                 type: 'everyone',
@@ -64,24 +70,24 @@ export function run(): void {
 
         function mentionHtmlTemplate(
             props:
-                | {type: 'self'; name: string | undefined; identity: string}
-                | {
-                      type: 'contact';
-                      name: string;
-                      lookup: Pick<DbContact, 'type' | 'uid'>;
-                      linkMentions?: boolean;
-                  }
-                | {type: 'everyone'},
+                | MentionSelf
+                | (MentionContact & {
+                      readonly linkMentions?: boolean;
+                  })
+                | MentionContactRemoved
+                | MentionEveryone,
         ): string {
             switch (props.type) {
                 case 'everyone':
                     return `<span class="mention all">@All</span>`;
                 case 'self':
-                    return `<span class="mention me">@${props.name ?? 'Me'}</span>`;
+                    return `<span class="mention me">@${props.nickname ?? 'Me'}</span>`;
                 case 'contact':
                     return props.linkMentions === false
                         ? `<span class="mention">@${props.name}</span>`
                         : `<a href="#/conversation/${props.lookup.type}/${props.lookup.uid}/" draggable="false" class="mention">@${props.name}</a>`;
+                case 'contact-removed':
+                    return `<span class="mention">@${props.identity}</span>`;
                 default:
                     return unreachable(props);
             }
@@ -100,7 +106,7 @@ export function run(): void {
                 const parsedText = parseMentions(
                     mockedT,
                     `Hello, @[${testContactId}]!` as SanitizedHtml,
-                    testMentions.self,
+                    [testMentions.self],
                     true,
                 );
                 const expected = `Hello, ${mentionHtmlTemplate(testMentions.self)}!`;
@@ -116,7 +122,7 @@ export function run(): void {
                 const parsedText = parseMentions(
                     mockedT,
                     `Hello, @[${testContactId}]!` as SanitizedHtml,
-                    testMentionWithoutName,
+                    [testMentionWithoutName],
                     true,
                 );
                 const expected = `Hello, ${mentionHtmlTemplate(testMentionWithoutName)}!`;
@@ -128,10 +134,10 @@ export function run(): void {
                 const parsedText = parseMentions(
                     mockedT,
                     `Hello, @[${testAllId}]!` as SanitizedHtml,
-                    testMentions.everyone,
+                    [testMentions.everyone],
                     true,
                 );
-                const expected = `Hello, ${mentionHtmlTemplate({type: 'everyone'})}!`;
+                const expected = `Hello, ${mentionHtmlTemplate({type: 'everyone', identity: '@@@@@@@@'})}!`;
 
                 expect(parsedText).to.equal(expected);
             });
@@ -140,7 +146,7 @@ export function run(): void {
                 const parsedText = parseMentions(
                     mockedT,
                     `Hello, @[${testContactId}]!` as SanitizedHtml,
-                    testMentions.contact,
+                    [testMentions.contact],
                     true,
                 );
                 const expected = `Hello, ${mentionHtmlTemplate(testMentions.contact)}!`;
@@ -157,6 +163,7 @@ export function run(): void {
                 );
                 const expected = `Hello, ${mentionHtmlTemplate({
                     type: 'everyone',
+                    identity: '@@@@@@@@',
                 })} and ${mentionHtmlTemplate(testMentions.contact)}!`;
 
                 expect(parsedText).to.equal(expected);
@@ -169,7 +176,7 @@ export function run(): void {
             it('should replace all search string occurrences in text with HTML (case-insensitive)', function () {
                 const parsedText = parseHighlights(
                     'Testgroup of adventurous testers' as SanitizedHtml,
-                    testSearchString,
+                    [testSearchString],
                 );
                 const expected = `${highlightHtmlTemplate(
                     'Test',
@@ -215,17 +222,17 @@ export function run(): void {
 
         describe('parseText', function () {
             const testCases: readonly {
-                skipped?: boolean;
-                description: string;
-                input: string;
-                features: {
-                    markup: boolean;
-                    mentions: AnyMention | AnyMention[] | false;
-                    highlights: string | false;
-                    links: boolean;
-                    linkMentions?: boolean;
+                readonly skipped?: boolean;
+                readonly description: string;
+                readonly input: string;
+                readonly features: {
+                    readonly markup: boolean;
+                    readonly mentions: readonly AnyMention[];
+                    readonly highlights: readonly string[];
+                    readonly links: boolean;
+                    readonly linkMentions?: boolean;
                 };
-                expected: string;
+                readonly expected: string;
             }[] = [
                 {
                     description:
@@ -233,8 +240,8 @@ export function run(): void {
                     input: 'Hello, @[ECHOECHO]! Hello, *world*. Lorem *ipsum*, @[ECHOECHO] dolor: threema.ch or https://threema.ch.',
                     features: {
                         markup: true,
-                        mentions: testMentions.contact,
-                        highlights: 'hello',
+                        mentions: [testMentions.contact],
+                        highlights: ['hello'],
                         links: true,
                     },
                     expected: `${highlightHtmlTemplate('Hello')}, ${mentionHtmlTemplate(
@@ -258,8 +265,8 @@ export function run(): void {
                     input: 'Hello, *@[ECHOECHO]*!',
                     features: {
                         markup: true,
-                        mentions: testMentions.contact,
-                        highlights: false,
+                        mentions: [testMentions.contact],
+                        highlights: [],
                         links: true,
                     },
                     expected: `Hello, ${markupHtmlTemplate({
@@ -275,11 +282,13 @@ export function run(): void {
                     input: 'Hello, @[*SUPPORT]!*',
                     features: {
                         markup: true,
-                        mentions: {
-                            ...testMentions.contact,
-                            identity: ensureIdentityString('*SUPPORT'),
-                        },
-                        highlights: false,
+                        mentions: [
+                            {
+                                ...testMentions.contact,
+                                identity: ensureIdentityString('*SUPPORT'),
+                            },
+                        ],
+                        highlights: [],
                         links: false,
                     },
                     expected: `Hello, ${mentionHtmlTemplate(testMentions.contact)}!*`,
@@ -289,11 +298,13 @@ export function run(): void {
                     input: 'Hello, @[ECHOECHO]!',
                     features: {
                         markup: true,
-                        mentions: {
-                            ...testMentions.contact,
-                            name: '*Test*',
-                        },
-                        highlights: false,
+                        mentions: [
+                            {
+                                ...testMentions.contact,
+                                name: '*Test*',
+                            },
+                        ],
+                        highlights: [],
                         links: false,
                     },
                     expected: `Hello, ${mentionHtmlTemplate({
@@ -309,8 +320,8 @@ export function run(): void {
                     input: 'Hello, *@[ECHOECHO]*!',
                     features: {
                         markup: true,
-                        mentions: testMentions.contact,
-                        highlights: 'conversation',
+                        mentions: [testMentions.contact],
+                        highlights: ['conversation'],
                         links: true,
                     },
                     expected: `Hello, ${markupHtmlTemplate({
@@ -326,8 +337,8 @@ export function run(): void {
                     input: 'More on threema.ch',
                     features: {
                         markup: false,
-                        mentions: false,
-                        highlights: 'ee',
+                        mentions: [],
+                        highlights: ['ee'],
                         links: true,
                     },
                     expected: `More on ${linkHtmlTemplate({
@@ -343,8 +354,8 @@ export function run(): void {
                     input: 'Hello, *bold* world!',
                     features: {
                         markup: true,
-                        mentions: false,
-                        highlights: '<span class="md-bold">bo',
+                        mentions: [],
+                        highlights: ['<span class="md-bold">bo'],
                         links: false,
                     },
                     expected: `Hello, ${markupHtmlTemplate({
@@ -360,11 +371,13 @@ export function run(): void {
                     input: 'Hello, @[ECHOECHO]!',
                     features: {
                         markup: false,
-                        mentions: {
-                            ...testMentions.contact,
-                            name: 'https://threema.ch',
-                        },
-                        highlights: false,
+                        mentions: [
+                            {
+                                ...testMentions.contact,
+                                name: 'https://threema.ch',
+                            },
+                        ],
+                        highlights: [],
                         links: true,
                     },
                     expected: `Hello, ${mentionHtmlTemplate({
@@ -378,11 +391,13 @@ export function run(): void {
                     input: 'Hello, @[ECHOECHO]!',
                     features: {
                         markup: false,
-                        mentions: {
-                            ...testMentions.contact,
-                            name: 'https://threema.ch',
-                        },
-                        highlights: false,
+                        mentions: [
+                            {
+                                ...testMentions.contact,
+                                name: 'https://threema.ch',
+                            },
+                        ],
+                        highlights: [],
                         links: true,
                         linkMentions: false,
                     },
@@ -402,8 +417,8 @@ export function run(): void {
                 expected,
             } of testCases) {
                 const extraArgs = {
-                    mentions: mentions === false ? undefined : mentions,
-                    highlights: highlights === false ? undefined : highlights,
+                    mentions,
+                    highlights,
                     shouldLinkMentions: linkMentions,
                     shouldParseMarkup: markup,
                     shouldParseLinks: links,

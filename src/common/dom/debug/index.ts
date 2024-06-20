@@ -5,8 +5,9 @@ import {
     generateFakeGroupConversation,
     importScreenshotData,
 } from '~/common/dom/debug/fake';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
-import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, type ProxyMarked} from '~/common/utils/endpoint';
 
 /**
  * Exposed functionality used by the debug panels.

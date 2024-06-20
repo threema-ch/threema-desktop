@@ -6,21 +6,19 @@ import {
     ImageRenderingType,
     MessageDirection,
     MessageType,
+    ReceiverType,
 } from '~/common/enum';
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import type {Conversation} from '~/common/model';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import type {MessageId, StatusMessageId} from '~/common/network/types';
 import {wrapRawBlobKey} from '~/common/network/types/keys';
-import {unreachable} from '~/common/utils/assert';
-import {
-    PROXY_HANDLER,
-    type ProxyMarked,
-    type Remote,
-    TRANSFER_HANDLER,
-} from '~/common/utils/endpoint';
+import {assert, unreachable} from '~/common/utils/assert';
+import {PROXY_HANDLER, type ProxyMarked, type Remote} from '~/common/utils/endpoint';
 import {isSupportedImageType} from '~/common/utils/image';
+import type {RemoteAbortListener} from '~/common/utils/signal';
 import {type IQueryableStore, WritableStore} from '~/common/utils/store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
 import type {
@@ -29,8 +27,13 @@ import type {
     OutboundMessageInitFragment,
 } from '~/common/viewmodel/conversation/main/controller/types';
 import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
+import {
+    getOngoingGroupCallViewModelBundle,
+    type OngoingGroupCallViewModelBundle,
+} from '~/common/viewmodel/group-call/activity';
 
 export interface IConversationViewModelController extends ProxyMarked {
+    readonly currentViewportMessages: IQueryableStore<Set<MessageId | StatusMessageId>>;
     readonly archive: () => Promise<void>;
     /**
      * Clear the conversation by deleting all stored messages.
@@ -58,11 +61,41 @@ export interface IConversationViewModelController extends ProxyMarked {
     readonly setCurrentViewportMessages: (messageIds: Set<MessageId | StatusMessageId>) => void;
     readonly unarchive: () => Promise<void>;
     readonly unpin: () => Promise<void>;
-    get currentViewportMessages(): IQueryableStore<Set<MessageId | StatusMessageId>>;
+
+    /**
+     * Group-specific controller.
+     *
+     * TODO(DESK-1469): Workaround because we're unable to narrow down conversation view model type
+     * based on `ReceiverType` because of a limitation of `Remote` that erases the possibility to
+     * narrow. We may want to resolve this properly at some point.
+     */
+    readonly group: {
+        /** See `GroupController.joinCall<'join'>` */
+        readonly joinCall: (
+            cancel: RemoteAbortListener<unknown>,
+        ) => Promise<OngoingGroupCallViewModelBundle | undefined>;
+
+        /** See `GroupController.joinCall<'join-or-create'>` */
+        readonly joinOrCreateCall: (
+            cancel: RemoteAbortListener<unknown>,
+        ) => Promise<OngoingGroupCallViewModelBundle>;
+    } & ProxyMarked;
 }
 
 export class ConversationViewModelController implements IConversationViewModelController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
+
+    public group = {
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
+        joinCall: async (
+            cancel: RemoteAbortListener<unknown>,
+        ): Promise<OngoingGroupCallViewModelBundle | undefined> =>
+            await this._joinCall('join', cancel),
+        joinOrCreateCall: async (
+            cancel: RemoteAbortListener<unknown>,
+        ): Promise<OngoingGroupCallViewModelBundle> =>
+            await this._joinCall('join-or-create', cancel),
+    };
 
     private readonly _log: Logger;
     private readonly _currentViewportMessagesStore = new WritableStore<
@@ -202,6 +235,25 @@ export class ConversationViewModelController implements IConversationViewModelCo
         return await this._conversation
             .get()
             .controller.updateVisibility.fromLocal(ConversationVisibility.SHOW);
+    }
+
+    private async _joinCall<TIntent = 'join' | 'join-or-create'>(
+        intent: TIntent,
+        cancel: RemoteAbortListener<unknown>,
+    ): Promise<
+        TIntent extends 'join'
+            ? OngoingGroupCallViewModelBundle | undefined
+            : OngoingGroupCallViewModelBundle
+    > {
+        const receiver = this._conversation.get().controller.receiver();
+        assert(receiver.type === ReceiverType.GROUP);
+        const ongoing = await receiver.get().controller.joinCall(intent, cancel);
+        if (ongoing === undefined) {
+            return undefined as TIntent extends 'join'
+                ? OngoingGroupCallViewModelBundle | undefined
+                : OngoingGroupCallViewModelBundle;
+        }
+        return getOngoingGroupCallViewModelBundle(this._services, ongoing);
     }
 
     /**

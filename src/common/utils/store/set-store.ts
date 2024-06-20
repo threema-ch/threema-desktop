@@ -1,21 +1,18 @@
 import {DeltaUpdateType, TransferTag} from '~/common/enum';
+import {TRANSFERRED_MARKER, TRANSFER_HANDLER} from '~/common/index';
 import type {LogPrefix} from '~/common/logging';
 import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
 import {
-    type CreatedEndpoint,
     type CustomTransferable,
     type CustomTransferredRemoteMarker,
     type DomTransferable,
-    type Endpoint,
     type EndpointFor,
     type EndpointService,
     type HandlerWireValue,
-    type MessageEvent,
+    type MessageEventLike,
     type ObjectId,
     type RegisteredTransferHandler,
     registerTransferHandler,
-    TRANSFER_HANDLER,
-    TRANSFERRED_MARKER,
     LocalObjectMapper,
     RemoteObjectMapper,
 } from '~/common/utils/endpoint';
@@ -53,11 +50,11 @@ export type ISetStore<TValue> = IQueryableStore<ReadonlySet<TValue>> &
 /**
  * A SetStore that can be derived from with delta update support.
  */
-export interface IDerivableSetStore<TValue extends CustomTransferable>
+export interface IDerivableSetStore<TValue>
     extends ISetStore<TValue>,
         SetStoreDeltaListener<TValue> {}
 
-export class LocalSetStore<TValue extends CustomTransferable>
+export class LocalSetStore<TValue>
     extends ReadableStore<Set<TValue>, ReadonlySet<TValue>>
     implements IDerivableSetStore<TValue>
 {
@@ -123,7 +120,7 @@ export class LocalSetStore<TValue extends CustomTransferable>
  *
  * Note that only changed object references are compared when calculating the delta update.
  */
-export class LocalSetBasedSetStore<TValue extends CustomTransferable>
+export class LocalSetBasedSetStore<TValue>
     extends ReadableStore<ReadonlySet<TValue>>
     implements IDerivableSetStore<TValue>
 {
@@ -198,10 +195,7 @@ export class LocalSetBasedSetStore<TValue extends CustomTransferable>
  * - subscribes only to changes of the set itself, **not** the inner value,
  * - call a derivation function for a single item.
  */
-export class LocalDerivedSetStore<
-        TValue extends CustomTransferable,
-        TDerived extends CustomTransferable,
-    >
+export class LocalDerivedSetStore<TValue, TDerived>
     extends ReadableStore<Set<TDerived>, ReadonlySet<TDerived>>
     implements IDerivableSetStore<TDerived>
 {
@@ -292,7 +286,7 @@ function releaseRemoteSetValues({
     set,
 }: {
     readonly set: {
-        readonly endpoint: Endpoint;
+        readonly endpoint: EndpointFor<'set', undefined, unknown>;
         readonly releaser?: AbortRaiser;
     };
 }): void {
@@ -349,7 +343,7 @@ export class RemoteSetStore<TValue extends object>
         service: EndpointService,
         mapper: RemoteObjectMapper<TValue>,
         set: {
-            readonly endpoint: EndpointFor<'set'>;
+            readonly endpoint: EndpointFor<'set', undefined, SerializedSetStoreWireValue<TValue>>;
             readonly values: Map<ObjectId<TValue>, TValue>;
         },
         options: StoreOptions<ReadonlySet<TValue>>,
@@ -366,7 +360,7 @@ export class RemoteSetStore<TValue extends object>
 
         // Forward set updates to all underlying subscribers
         const self = new WeakRef(this);
-        const listener = ({data}: MessageEvent): void => {
+        const listener = ({data}: MessageEventLike<SerializedSetStoreWireValue<TValue>>): void => {
             // Unregister listener when the reference disappears
             const self_ = self.deref();
             if (self_ === undefined) {
@@ -378,7 +372,7 @@ export class RemoteSetStore<TValue extends object>
             //
             // Note: We need to create a new `Set` instance, so the diffing algorithm of Svelte
             //       works in _immutable_ mode!
-            const delta = data as SerializedSetStoreWireValue<TValue>;
+            const delta = data;
             let deltaUpdate: DeltaUpdate<TValue>;
             switch (delta.type) {
                 case DeltaUpdateType.ADDED: {
@@ -449,7 +443,7 @@ export class RemoteSetStore<TValue extends object>
     public static wrap<TValue extends object>(
         service: EndpointService,
         set: {
-            readonly endpoint: EndpointFor<'set'>;
+            readonly endpoint: EndpointFor<'set', undefined, SerializedSetStoreWireValue<TValue>>;
             readonly values: readonly SerializedSetStoreWireValue<TValue>[];
         },
         options: StoreOptions<ReadonlySet<TValue>>,
@@ -501,7 +495,7 @@ export class RemoteSetStore<TValue extends object>
         service: EndpointService,
         store: LocalSetStore<TValue>,
         set: {
-            readonly endpoint: EndpointFor<'set'>;
+            readonly endpoint: EndpointFor<'set', SerializedSetStoreWireValue<TValue>, undefined>;
         },
     ): readonly [
         values: readonly SerializedSetStoreWireValue<TValue>[],
@@ -594,14 +588,14 @@ const SET_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
         id: ObjectId<LocalSetStore<CustomTransferable>>,
         tag: string | undefined,
         prefix: LogPrefix | undefined,
-        endpoint: EndpointFor<'set', CreatedEndpoint>,
+        endpoint: EndpointFor<'set', undefined, SerializedSetStoreWireValue<unknown>>,
         values: readonly SerializedSetStoreWireValue<CustomTransferable>[],
     ],
     readonly [
         id: ObjectId<RemoteSetStore<CustomTransferable>>,
         tag: string | undefined,
         prefix: LogPrefix | undefined,
-        endpoint: EndpointFor<'set', CreatedEndpoint>,
+        endpoint: EndpointFor<'set', undefined, SerializedSetStoreWireValue<unknown>>,
         values: readonly SerializedSetStoreWireValue<CustomTransferable>[],
     ],
     TransferTag.SET_STORE
@@ -611,7 +605,11 @@ const SET_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
     serialize: (store, service) => {
         // Get or assign an ID and transmit the necessary store data
         const id = service.cache().local.getOrAssignId(store);
-        const endpoint = service.createEndpointPair<'set'>();
+        const endpoint = service.createEndpointPair<
+            'set',
+            SerializedSetStoreWireValue<unknown>,
+            undefined
+        >();
         const [values, transfers] = RemoteSetStore.expose(service, store, {
             endpoint: endpoint.local,
         });
@@ -643,7 +641,12 @@ const SET_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
                 RemoteSetStore.wrap<CustomTransferable>(
                     service,
                     {
-                        endpoint,
+                        endpoint: endpoint as EndpointFor<
+                            'set',
+                            undefined,
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            SerializedSetStoreWireValue<any>
+                        >,
                         values,
                     },
                     {

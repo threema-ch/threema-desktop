@@ -7,6 +7,11 @@ import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {DATABASE_KEY_LENGTH, wrapRawDatabaseKey} from '~/common/db';
 import {
+    DecryptedKeyStorage,
+    EncryptedKeyStorage,
+    EncryptedKeyStorage_Argon2idParameters_Argon2Version,
+} from '~/common/internal-protobuf/key-storage-file';
+import {
     ARGON2_MIN_PARAMS,
     type Argon2idParameters,
     Argon2Version,
@@ -22,11 +27,6 @@ import {
 } from '~/common/network/types';
 import {wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/network/types/keys';
 import type {FileSystemKeyStorage} from '~/common/node/key-storage';
-import {
-    DecryptedKeyStorage,
-    EncryptedKeyStorage,
-    EncryptedKeyStorage_Argon2idParameters_Argon2Version,
-} from '~/common/node/key-storage/key-storage-file';
 import {MiB} from '~/common/types';
 import {assert, assertError} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';

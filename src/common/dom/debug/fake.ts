@@ -31,9 +31,8 @@ import {
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact} from '~/common/model';
-import {getIdentityString, type ContactModelStore} from '~/common/model/contact';
+import type {ContactModelStore} from '~/common/model/contact';
 import type {GroupModelStore} from '~/common/model/group';
-import type {IdentityStringOrMe} from '~/common/model/types/common';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {BLOB_ID_LENGTH, ensureBlobId} from '~/common/network/protocol/blob';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
@@ -128,9 +127,10 @@ function generateFakeReaction(
  */
 export async function generateFakeContactConversation({
     crypto,
+    device,
     file,
     model,
-}: Pick<ServicesForBackend, 'crypto' | 'file' | 'model'>): Promise<void> {
+}: Pick<ServicesForBackend, 'crypto' | 'device' | 'file' | 'model'>): Promise<void> {
     // Add contact
     const identity = ensureIdentityString(`Q${randomString(crypto, 7).toUpperCase()}`);
     const contact = model.contacts.add.fromSync({
@@ -184,7 +184,11 @@ export async function generateFakeContactConversation({
                     if (reaction !== undefined) {
                         modelStore
                             .get()
-                            .controller.reaction.fromSync(reaction.type, reaction.at, 'me');
+                            .controller.reaction.fromSync(
+                                reaction.type,
+                                reaction.at,
+                                device.identity.string,
+                            );
                     }
                 }
                 break;
@@ -494,9 +498,6 @@ export async function importScreenshotData(
 
     // Add groups
     for (const group of data.groups) {
-        const creatorIdentity = getIdentityString(device, group.creator);
-        const creator = getIdentityString(services.device, creatorIdentity);
-
         // Look up group contacts
         const groupMemberUids = [];
         let isMember = false;
@@ -512,7 +513,12 @@ export async function importScreenshotData(
 
         // Create group
         const groupName = getTranslatedValue(group.name, locale);
-        if (model.groups.getByGroupIdAndCreator(group.id, creator)) {
+        if (
+            model.groups.getByGroupIdAndCreator(
+                group.id,
+                group.creator === 'me' ? device.identity.string : group.creator,
+            )
+        ) {
             // Group already exists
             log.warn(`Skipping group ${groupName}, already exists`);
             continue;
@@ -531,10 +537,13 @@ export async function importScreenshotData(
                 colorIndex: idColorIndex({
                     type: ReceiverType.GROUP,
                     groupId: group.id,
-                    creatorIdentity,
+                    creatorIdentity:
+                        group.creator === 'me' ? device.identity.string : group.creator,
                 }),
                 userState:
-                    isMember || creator === 'me' ? GroupUserState.MEMBER : GroupUserState.LEFT,
+                    isMember || group.creator === 'me'
+                        ? GroupUserState.MEMBER
+                        : GroupUserState.LEFT,
                 category: ConversationCategory.DEFAULT,
                 visibility: ConversationVisibility.SHOW,
             },
@@ -565,7 +574,7 @@ async function addConversationMessages(
     receiver: ContactModelStore | GroupModelStore,
     // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
     messages: ScreenshotDataJsonContact['conversation'] | ScreenshotDataJsonGroup['conversation'],
-    {crypto, file, model}: Pick<ServicesForBackend, 'crypto' | 'file' | 'model'>,
+    {crypto, device, file, model}: Pick<ServicesForBackend, 'crypto' | 'device' | 'file' | 'model'>,
     log: Logger,
     locale: I18nLocales,
 ): Promise<void> {
@@ -580,16 +589,17 @@ async function addConversationMessages(
         const reactions: {
             readonly at: Date;
             readonly type: MessageReaction;
-            readonly senderIdentity: IdentityStringOrMe;
-        }[] = [];
-
-        message.reactions?.forEach((reaction, idx) => {
+            readonly senderIdentity: IdentityString;
+        }[] = (message.reactions ?? []).map((reaction, idx) => {
             const randomOffset = randomU8(crypto);
-            reactions.push({
+            return {
                 at: new Date(messageDate.getTime() + idx * 60 * 1000 * randomOffset),
                 type: reaction.reaction,
-                senderIdentity: reaction.senderIdentity,
-            });
+                senderIdentity:
+                    reaction.senderIdentity === 'me'
+                        ? device.identity.string
+                        : reaction.senderIdentity,
+            };
         });
 
         switch (message.type) {

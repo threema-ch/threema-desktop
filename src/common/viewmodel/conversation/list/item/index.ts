@@ -16,7 +16,7 @@ export interface ConversationListItemViewModelBundle extends PropertiesMarked {
 }
 
 export function getConversationListItemViewModelBundle(
-    services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     conversationModelStore: ConversationModelStore,
 ): ConversationListItemViewModelBundle {
     const {endpoint} = services;

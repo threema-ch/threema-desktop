@@ -256,14 +256,12 @@ export type ServerSequenceNumber = WeakOpaque<
 >;
 
 /**
- * Client Connection Cookie (16 bytes, replaced for each
- * connection attempt).
+ * Client Connection Cookie (16 bytes, replaced for each connection attempt).
  */
 export type ClientCookie = WeakOpaque<Cookie, {readonly ClientCookie: unique symbol}>;
 
 /**
- * Server Connection Cookie (16 bytes), available after `server-hello`
- * has been received.
+ * Server Connection Cookie (16 bytes), available after `server-hello` has been received.
  */
 export type ServerCookie = WeakOpaque<Cookie, {readonly ServerCookie: unique symbol}>;
 

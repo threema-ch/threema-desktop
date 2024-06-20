@@ -76,7 +76,7 @@
     }
     const wasSuccessfullyChanged = await attemptPasswordChange();
     if (wasSuccessfullyChanged) {
-      router.closeModal();
+      router.go({modal: 'close'});
       toast.addSimpleSuccess(
         $i18n.t(
           'dialog--change-password.success--password-changed',
@@ -135,7 +135,7 @@
     if (isAttemptingToChangePassword) {
       return;
     }
-    router.closeModal();
+    router.go({modal: 'close'});
   }
 </script>
 

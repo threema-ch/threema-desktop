@@ -4,6 +4,7 @@ import type {
     ConversationVisibility,
     MessageDirection,
     ReceiverType,
+    StatusMessageType,
 } from '~/common/enum';
 import type {
     ControllerCustomUpdateFromSource,
@@ -19,11 +20,7 @@ import type {
     SetOfAnyLocalMessageModelStore,
 } from '~/common/model/types/message';
 import type {AnyReceiverStore} from '~/common/model/types/receiver';
-import type {
-    AnyStatusMessageModelStore,
-    GroupMemberChangeStatus,
-    GroupNameChangeStatus,
-} from '~/common/model/types/status';
+import type {AnyStatusMessageModelStore, StatusMessageView} from '~/common/model/types/status';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {ConversationId, MessageId, StatusMessageId} from '~/common/network/types';
@@ -166,10 +163,8 @@ export type ConversationController = {
      *
      * Note: This triggers an update of the `_lastModificationStore`.
      */
-    readonly createStatusMessage: (
-        statusMessage:
-            | Omit<GroupMemberChangeStatus['view'], 'conversationUid' | 'id' | 'ordinal'>
-            | Omit<GroupNameChangeStatus['view'], 'conversationUid' | 'id' | 'ordinal'>,
+    readonly createStatusMessage: <TType extends StatusMessageType>(
+        statusMessage: Omit<StatusMessageView<TType>, 'conversationUid' | 'id' | 'ordinal'>,
     ) => AnyStatusMessageModelStore;
 
     /**

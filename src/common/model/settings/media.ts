@@ -1,3 +1,4 @@
+import {TRANSFER_HANDLER} from '~/common/index';
 import type {ServicesForModel} from '~/common/model';
 import type {
     MediaSettings,
@@ -9,7 +10,7 @@ import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {RESTRICTED_DOWNLOAD_SIZE_IN_MB} from '~/common/settings/media';
 import type {u53} from '~/common/types';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
 
 /**
  * Whether or not to automatically download file and media content for incoming messages.

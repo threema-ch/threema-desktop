@@ -1,6 +1,7 @@
 import type {ServicesForBackend} from '~/common/backend';
 import type {ThreemaWorkCredentials} from '~/common/device';
 import {getBrowserInfo, makeCspClientInfo} from '~/common/dom/utils/browser';
+import {TRANSFER_HANDLER} from '~/common/index';
 import {
     WORK_LICENSE_CHECK_RESPONSE_SCHEMA,
     WorkError,
@@ -8,7 +9,7 @@ import {
     type WorkLicenseStatus,
 } from '~/common/network/protocol/work';
 import type {BaseUrl} from '~/common/network/types';
-import {TRANSFER_HANDLER, PROXY_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
 
 /**
  * Work backend implementation based on the [Fetch API].
