@@ -2,7 +2,7 @@ import Long from 'long';
 
 import type {i53, u32, u53, u64} from '~/common/types';
 
-import {ensureError} from './assert';
+import {assert, ensureError} from './assert';
 import {bytesToHex, byteView, hexToBytes} from './byte';
 
 /**
@@ -94,7 +94,7 @@ export function u64ToBytesLe(value: u64): Uint8Array {
 /**
  * Convert a unix timestamp (in seconds) to a Date object.
  */
-export function unixTimestamptoDateS(timestamp: u32): Date {
+export function unixTimestampToDateS(timestamp: u32): Date {
     return new Date(timestamp * 1000);
 }
 
@@ -151,13 +151,15 @@ export function byteSizeToHumanReadable(size: u53): string {
  * Limits the supplied value to the given range. `min` and `max` values are optional, so that the
  * value can only be clamped in one direction if necessary.
  *
+ * IMPORTANT: The caller must ensure that {@link range.max} >= {@link range.min}.
+ *
  * @param value The number to clamp.
- * @param param1 Configuration of `min` and `max` values.
+ * @param range Configuration of `min` and `max` values.
  * @returns Clamped `value` to satisfy `min` and `max` constraints.
  */
-export function clamp(
-    value: i53,
-    {min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER}: {min?: i53; max?: i53},
-): i53 {
+export function clamp(value: i53, range: {readonly min?: i53; readonly max?: i53}): i53 {
+    const min = range.min ?? Number.MIN_SAFE_INTEGER;
+    const max = range.max ?? Number.MAX_SAFE_INTEGER;
+    assert(max >= min, 'Expected clamped value range to satisfy range.max >= range.min');
     return Math.max(Math.min(value, max), min);
 }

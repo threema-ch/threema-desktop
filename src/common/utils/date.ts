@@ -1,4 +1,5 @@
 import type {u53} from '~/common/types';
+import {clamp} from '~/common/utils/number';
 
 /**
  * Determine whether `a` and `b` {@link Date}s are in the same minute.
@@ -110,4 +111,53 @@ export function durationToString(seconds: u53): string {
     }
 
     return `${pad(m)}:${pad(s)}`;
+}
+
+/**
+ * Cache for a value that expires at a specific date.
+ */
+export class ExpiringValue<T> {
+    private _state: {readonly value: T; readonly expiresAtMs: u53} | undefined;
+
+    /**
+     * Construct an expiring value cache.
+     *
+     * @param _expirationMultiplier Multiplier applied to the time period between the time of
+     *   setting a value and the expiration date. Defaults to `0.75` (to expire 25% earlier).
+     */
+    public constructor(private readonly _expirationMultiplier = 0.75) {}
+
+    /**
+     * Return the value or `undefined` if it was not set or it expired.
+     *
+     * @param key The lookup key.
+     */
+    public get(): T | undefined {
+        if (this._state === undefined) {
+            return undefined;
+        }
+        if (this._state.expiresAtMs < new Date().getTime()) {
+            this._state = undefined;
+            return undefined;
+        }
+        return this._state.value;
+    }
+
+    /**
+     * Update the value with an expiration date.
+     *
+     * @param value The value to be stored.
+     * @param expiration The date when the value will expire.
+     * @returns the value.
+     */
+    public set(value: T, expiration: Date): T {
+        const nowMs = new Date().getTime();
+        const deltaMs = Math.floor(
+            clamp((expiration.getTime() - nowMs) * this._expirationMultiplier, {
+                min: 0,
+            }),
+        );
+        this._state = {value, expiresAtMs: nowMs + deltaMs};
+        return value;
+    }
 }
