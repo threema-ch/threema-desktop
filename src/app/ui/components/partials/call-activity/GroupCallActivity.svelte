@@ -84,6 +84,11 @@
       }
     });
   }
+  $: {
+    if (containerLayout === 'pocket') {
+      setCameraCaptureState('off');
+    }
+  }
 
   const handleChangeFeedElement = TIMER.debounce(
     (isInViewport: boolean, currentSize: Dimensions, participantId: 'local' | ParticipantId) => {
