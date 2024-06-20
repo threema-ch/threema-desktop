@@ -7,18 +7,18 @@ import {WritableStore, type IQueryableStore} from '~/common/utils/store';
  * Glue between view and controller.
  *
  * Ensures that the controller is attached to an active view when accessing it and throws in case
- * the associated view has been removed from underlying storage.
+ * the associated model's underlying data source has been removed.
  */
 export class ModelLifetimeGuard<in out TView> {
     private readonly _isActiveStore = new WritableStore<boolean>(false);
     private _handle: Delayed<GuardedStoreHandle<TView>> = ModelLifetimeGuard._createDelayed();
 
     private static _createDelayed<TView>(): Delayed<GuardedStoreHandle<TView>> {
-        return Delayed.simple('Controller inactive', 'Controller already activated');
+        return Delayed.simple('ModelLifetimeGuard');
     }
 
     /**
-     * Return whether or not this controller is activated.
+     * Return whether or not the associated model has an underlying data source.
      */
     public get active(): IQueryableStore<boolean> {
         return this._isActiveStore;
@@ -29,14 +29,14 @@ export class ModelLifetimeGuard<in out TView> {
      *
      * This will be called by the store during its construction.
      */
-    public activate(store: {
+    public activate(handle: {
         readonly getView: () => TView;
         readonly updateView: (fn: ViewUpdateFn<TView>) => void;
     }): void {
         this._handle.set({
-            view: () => store.getView(),
+            view: () => handle.getView(),
             update: (fn) =>
-                store.updateView((view) => {
+                handle.updateView((view) => {
                     const change = fn(view);
                     return {...view, ...change} as UpdatedView<TView>;
                 }),

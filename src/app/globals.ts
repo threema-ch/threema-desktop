@@ -19,7 +19,4 @@ export interface Globals {
     readonly systemTime: SystemTimeStore;
 }
 
-export const globals: Delayed<Globals> = Delayed.simple(
-    'Globals not yet set',
-    'Globals already set',
-);
+export const globals: Delayed<Globals> = Delayed.simple('Globals');

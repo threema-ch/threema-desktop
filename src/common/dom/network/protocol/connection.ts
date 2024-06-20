@@ -150,10 +150,7 @@ class Connection {
         }
 
         // Create protocol controller
-        const delayedConnection = Delayed.simple<ConnectionHandle>(
-            'Tried to access connection handle before connected',
-            'Connection handle has already been set',
-        );
+        const delayedConnection = Delayed.simple<ConnectionHandle>('ConnectionHandle');
         const browserInfo = getBrowserInfo(self.navigator.userAgent);
         const cspClientInfo = makeCspClientInfo(browserInfo, services.systemInfo);
         const d2mPlatformDetails = makeD2mPlatformDetails(browserInfo, services.systemInfo);

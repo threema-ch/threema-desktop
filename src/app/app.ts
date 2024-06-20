@@ -331,11 +331,8 @@ async function main(): Promise<() => void> {
         return password;
     }
 
-    // Initialize global dialog component
-    const appServices = new Delayed<AppServices>(
-        () => new Error('App services for system dialogs not available'),
-        () => new Error('App services for system dialogs already set'),
-    );
+    // Initialize early services and global dialog component
+    const appServices: Delayed<AppServices> = Delayed.simple('AppServices');
     attachSystemDialogs(logging, elements.systemDialogs, appServices);
 
     // Instantiate early services

@@ -122,10 +122,7 @@ export function reflectAndSendDeliveryReceipt(
     status: CspE2eDeliveryReceiptStatus,
 ): NetworkExpectation[] {
     const {device} = services;
-    const messageIdDelayed = Delayed.simple<MessageId>(
-        'Message ID not yet ready',
-        'Message ID already set',
-    );
+    const messageIdDelayed = Delayed.simple<MessageId>('MessageId');
     return [
         // Reflect outgoing delivery receipt
         NetworkExpectationFactory.reflectSingle((payload) => {
@@ -178,10 +175,7 @@ export function sendGroupSetupToUser(
     options: {reflect: boolean},
 ): NetworkExpectation[] {
     const {device} = services;
-    const messageIdDelayed = Delayed.simple<MessageId>(
-        'Message ID not yet ready',
-        'Message ID already set',
-    );
+    const messageIdDelayed = Delayed.simple<MessageId>('MessageId');
     return [
         ...(options.reflect
             ? [
@@ -257,10 +251,7 @@ export function reflectAndSendGroupNameToUser(
     expectedName: string,
 ): NetworkExpectation[] {
     const {device} = services;
-    const messageIdDelayed = Delayed.simple<MessageId>(
-        'Message ID not yet ready',
-        'Message ID already set',
-    );
+    const messageIdDelayed = Delayed.simple<MessageId>('MessageId');
     return [
         // Outgoing group name should be reflected
         NetworkExpectationFactory.reflectSingle((payload) => {
@@ -329,10 +320,7 @@ export function reflectAndSendGroupProfilePictureToUser(
     profilePictureSent: boolean,
 ): NetworkExpectation[] {
     const {device} = services;
-    const messageIdDelayed = Delayed.simple<MessageId>(
-        'Message ID not yet ready',
-        'Message ID already set',
-    );
+    const messageIdDelayed = Delayed.simple<MessageId>('MessageId');
     const cspMessageType = profilePictureSent
         ? CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE
         : CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE;

@@ -111,10 +111,7 @@ export function groupLeaveTests(
 
         // This promise will be resolved with the message ID that will be used later for the
         // outgoing message ack.
-        const groupSyncRequestMessageId = Delayed.simple<MessageId>(
-            'Message ID not yet ready',
-            'Message ID already set',
-        );
+        const groupSyncRequestMessageId = Delayed.simple<MessageId>('MessageId');
 
         // Determine expectations
         const expectations: NetworkExpectation[] =

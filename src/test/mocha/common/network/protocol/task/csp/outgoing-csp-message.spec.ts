@@ -110,11 +110,7 @@ export function run(): void {
             messageId: MessageId,
             type: CspE2eType,
         ): NetworkExpectation[] {
-            const messageIdDelayed = Delayed.simple<MessageId>(
-                'Message ID not yet ready',
-                'Message ID already set',
-                messageId,
-            );
+            const messageIdDelayed = Delayed.simple<MessageId>('MessageId', messageId);
             return [
                 NetworkExpectationFactory.write((m) => {
                     assertD2mPayloadType(m.type, D2mPayloadType.PROXY);
@@ -217,11 +213,7 @@ export function run(): void {
                 receiverContact.get(),
                 makeProperties(messageId),
             );
-            const messageIdDelayed = Delayed.simple<MessageId>(
-                'Message ID not yet ready',
-                'Message ID already set',
-                messageId,
-            );
+            const messageIdDelayed = Delayed.simple<MessageId>('MessageId', messageId);
             const expectations: NetworkExpectation[] = [
                 // First, the outgoing message must be reflected
                 NetworkExpectationFactory.reflectSingle(),

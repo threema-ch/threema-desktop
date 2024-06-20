@@ -87,8 +87,7 @@ class Layer3Codec {
         log.debug('Initial CSP auth state:', CspAuthStateUtils.NAME_OF[controller.csp.state.get()]);
         log.debug('Initial D2M auth state:', D2mAuthStateUtils.NAME_OF[controller.d2m.state.get()]);
         const delayed = Delayed.simple<{readonly forward: (message: OutboundL2Message) => void}>(
-            'L3 encoder handle not yet ready',
-            'L3 encoder handle already set',
+            'L3 encoder',
         );
         this.decoder = new Layer3Decoder(services, controller, delayed, capture?.inbound);
         this.encoder = new Layer3Encoder(services, controller, delayed, capture?.outbound);
@@ -108,8 +107,7 @@ class Layer4Codec {
         capture?: RawCaptureHandlerPair,
     ) {
         const delayed = Delayed.simple<{readonly forward: (message: OutboundL3Message) => void}>(
-            'L4 encoder handle not yet ready',
-            'L4 encoder handle already set',
+            'L4 encoder',
         );
         const ongoingEchoRequests: TimerCanceller[] = [];
         this.decoder = new Layer4Decoder(
