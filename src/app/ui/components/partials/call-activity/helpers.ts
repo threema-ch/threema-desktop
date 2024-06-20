@@ -6,7 +6,7 @@ import {
 import {CAMERA_STREAM_CONSTRAINTS, MICROPHONE_STREAM_CONSTRAINTS} from '~/common/dom/webrtc';
 import type {Logger} from '~/common/logging';
 import type {ParticipantId} from '~/common/network/protocol/call/group-call';
-import type {i53} from '~/common/types';
+import type {Dimensions} from '~/common/types';
 import {unwrap, unreachable, assert, assertUnreachable} from '~/common/utils/assert';
 import type {Remote} from '~/common/utils/endpoint';
 import {AsyncLock} from '~/common/utils/lock';
@@ -193,61 +193,44 @@ const remoteParticipantRemoteCamerasAsyncLock = new AsyncLock();
  */
 export function updateRemoteParticipantRemoteCameras({
     controller,
-    isInViewport,
     log,
     participantId,
     stop,
-    width,
+    dimensions,
 }: {
-    controller: AugmentedOngoingGroupCallViewModelBundle['controller'];
+    readonly controller: AugmentedOngoingGroupCallViewModelBundle['controller'];
+    readonly log: Logger;
+    readonly participantId: ParticipantId;
+    readonly stop: AbortRaiser<AnyExtendedGroupCallContextAbort>;
+
     /**
-     * Whether the element that renders the camera feed is currently in the viewport. If `false`,
-     * the camera feed will temporarily be unsubscribed until it's set to `true` again.
+     * The dimensions the camera feed will be displayed at in pixels. This is the dimensions of the
+     * `<video>` element's container. Should be set to `undefined` when the participant is not in
+     * view.
+     *
+     * Note: Dimension change detection should be debounced, to avoid updating the camera
+     * subscription too often while resizing.
      */
-    isInViewport: boolean;
-    log: Logger;
-    participantId: ParticipantId;
-    stop: AbortRaiser<AnyExtendedGroupCallContextAbort>;
-    /**
-     * The width the camera feed will be displayed at. This is usually the width of the `<video>`
-     * element's container. Note: Width change detection should be debounced, to avoid updating the
-     * camera subscription too often while resizing.
-     */
-    width: i53;
+    readonly dimensions: Dimensions | undefined;
 }): void {
     remoteParticipantRemoteCamerasAsyncLock
         .with(() => {
-            if (!isInViewport) {
-                log.debug(`Unsubscribing remote camera for participant ${participantId}`);
-
-                controller
-                    .remoteCamera(participantId, {
-                        type: 'unsubscribe',
-                    })
-                    .catch((error: unknown) => {
-                        log.error('Unsubscribing camera failed', error);
-                        stop.raise({origin: 'ui-component', cause: 'unexpected-error'});
-                    });
-                return;
-            }
-
-            log.debug(
-                `Subscribing or updating remote camera for participant ${participantId} with dimensions ${width}×${width / (16 / 9)}`,
-            );
             controller
-                .remoteCamera(participantId, {
-                    type: 'subscribe',
-                    // Aspect ratio is currently fixed to `16/9`.
-                    resolution: {width, height: width / (16 / 9)},
-                })
+                .remoteCamera(
+                    participantId,
+                    dimensions !== undefined
+                        ? {
+                              type: 'subscribe',
+                              resolution: dimensions,
+                          }
+                        : {type: 'unsubscribe'},
+                )
                 .catch((error: unknown) => {
-                    log.error('Subscribing to camera failed', error);
+                    log.error('Updating camera subscription failed', error);
                     stop.raise({origin: 'ui-component', cause: 'unexpected-error'});
                 });
         })
-        .catch((error: unknown) => {
-            log.error(`Error in "remoteParticipantRemoteCamerasAsyncLock": ${error}`);
-        });
+        .catch(assertUnreachable);
 }
 
 export async function startCall(

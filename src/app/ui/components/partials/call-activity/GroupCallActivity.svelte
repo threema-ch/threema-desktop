@@ -42,6 +42,7 @@
   export let services: $$Props['services'];
 
   const FEED_MIN_WIDTH_PX = 256;
+  const FEED_PADDING_PX = 16;
 
   const {router} = services;
   const {uiLogging} = globals.unwrap();
@@ -77,11 +78,7 @@
     const width = event.detail.entries[0]?.contentRect.width;
 
     requestAnimationFrame(() => {
-      if ((width ?? 0) < FEED_MIN_WIDTH_PX) {
-        containerLayout = 'pocket';
-      } else {
-        containerLayout = 'regular';
-      }
+      containerLayout = (width ?? 0) < FEED_MIN_WIDTH_PX ? 'pocket' : 'regular';
     });
   }
   $: {
@@ -90,30 +87,29 @@
     }
   }
 
-  const handleChangeFeedElement = TIMER.debounce(
-    (isInViewport: boolean, currentSize: Dimensions, participantId: 'local' | ParticipantId) => {
+  const handleUpdateCameraSubscription = TIMER.debounce(
+    (dimensions: Dimensions | undefined, participantId: 'local' | ParticipantId) => {
       if (call === undefined || stop === undefined || participantId === 'local') {
         // If call is `undefined` (i.e., not running) or not started, there's no need to un- or
-        // resubscribe any feeds. Additionally, if it's the user's own feed, there's no need to
-        // manage it.
+        // resubscribe the camera feed. Additionally, if it's the user's own camera feed, there's no
+        // need to manage it.
         return;
       }
 
       updateRemoteParticipantRemoteCameras({
         controller: call.controller,
-        isInViewport,
         log,
         participantId,
         stop,
-        width: currentSize.width,
+        dimensions,
       });
     },
     500,
     true,
-    // Debounce using `distinctArgs` and use the perticipant id as the key, so the debounced
+    // Debounce using `distinctArgs` and use the participant id as the key, so the debounced
     // function is called once for each participant.
     true,
-    (currentSize_, isInViewport_, id) => `${id}`,
+    (_, id) => `${id}`,
   );
 
   function handleClickLeaveCall(): void {
@@ -183,10 +179,8 @@
           microphone: microphone?.state ?? 'off',
         },
         container: feedContainerElement,
-        onEnterOrExitViewport: (isInViewport, currentSize) =>
-          handleChangeFeedElement(isInViewport, currentSize, 'local'),
-        onResize: (currentSize, isInViewport) =>
-          handleChangeFeedElement(isInViewport, currentSize, 'local'),
+        updateCameraSubscription: (dimensions) =>
+          handleUpdateCameraSubscription(dimensions, 'local'),
         participantId: 'local',
         receiver: $user,
         tracks: {
@@ -330,10 +324,8 @@
             type: 'remote',
             capture: participant.capture,
             container: feedContainerElement,
-            onEnterOrExitViewport: (isInViewport, currentSize) =>
-              handleChangeFeedElement(isInViewport, currentSize, participant.id),
-            onResize: (currentSize, isInViewport) =>
-              handleChangeFeedElement(isInViewport, currentSize, participant.id),
+            updateCameraSubscription: (dimensions) =>
+              handleUpdateCameraSubscription(dimensions, participant.id),
             participantId: participant.id,
             receiver: participant.receiver,
             tracks: {
@@ -406,6 +398,7 @@
   use:size
   class="container"
   class:expanded={isExpanded}
+  style={`--c-t-feed-padding: ${FEED_PADDING_PX}px;`}
   data-layout={containerLayout}
   on:changesize={handleChangeSizeContainerElement}
 >
@@ -445,6 +438,9 @@
 <style lang="scss">
   @use 'component' as *;
 
+  $-vars: (feed-padding);
+  $-temp-vars: format-each($-vars, $prefix: --c-t-);
+
   .container {
     display: grid;
     overflow: hidden;
@@ -476,7 +472,7 @@
         justify-content: start;
         gap: rem(12px);
 
-        padding: rem(16px) 0;
+        padding: var($-temp-vars, --c-t-feed-padding) 0;
       }
 
       .footer {
@@ -531,7 +527,7 @@
         grid-auto-rows: min-content;
         gap: rem(8px);
 
-        padding: rem(16px);
+        padding: var($-temp-vars, --c-t-feed-padding);
       }
 
       .footer {

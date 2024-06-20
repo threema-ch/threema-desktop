@@ -20,8 +20,7 @@
   export let activity: $$Props['activity'];
   export let capture: $$Props['capture'];
   export let container: $$Props['container'];
-  export let onEnterOrExitViewport: $$Props['onEnterOrExitViewport'];
-  export let onResize: $$Props['onResize'];
+  export let updateCameraSubscription: $$Props['updateCameraSubscription'];
   export let participantId: $$Props['participantId'];
   export let receiver: $$Props['receiver'];
   export let services: $$Props['services'];
@@ -33,7 +32,7 @@
   let microphoneAudioElement: SvelteNullableBinding<HTMLAudioElement> = null;
   let cameraVideoElement: SvelteNullableBinding<HTMLVideoElement> = null;
 
-  let currentSize: Dimensions | undefined = undefined;
+  let dimensions: Dimensions | undefined = undefined;
   let isInViewport: boolean | undefined = undefined;
 
   // Note: Caching mitigates re-attaching tracks to <audio> and <video> elements which would result
@@ -47,7 +46,10 @@
     if (microphoneAudioElement !== null) {
       if (tracks.type === 'local') {
         microphoneAudioElement.srcObject = null;
-      } else if (cachedTracks.microphone !== tracks.microphone) {
+      } else if (
+        microphoneAudioElement.srcObject === null ||
+        cachedTracks.microphone !== tracks.microphone
+      ) {
         microphoneAudioElement.srcObject = new MediaStream([tracks.microphone]);
         cachedTracks.microphone = tracks.microphone;
       }
@@ -56,10 +58,18 @@
     if (cameraVideoElement !== null) {
       if (tracks.camera === undefined) {
         cameraVideoElement.srcObject = null;
-      } else if (cachedTracks.camera !== tracks.camera) {
+      } else if (cameraVideoElement.srcObject === null || cachedTracks.camera !== tracks.camera) {
         cameraVideoElement.srcObject = new MediaStream([tracks.camera]);
         cachedTracks.camera = tracks.camera;
       }
+    }
+  }
+
+  $: {
+    if (isInViewport !== undefined && dimensions !== undefined) {
+      updateCameraSubscription(
+        activity.layout === 'regular' && isInViewport ? dimensions : undefined,
+      );
     }
   }
 
@@ -68,27 +78,18 @@
     if (entry === undefined) {
       return;
     }
-
-    currentSize = {
-      width: entry.contentRect.width,
-      height: entry.contentRect.height,
+    dimensions = {
+      width: Math.round(entry.contentRect.width),
+      height: Math.round(entry.contentRect.height),
     };
-
-    if (isInViewport === undefined) {
-      return;
-    }
-
-    onResize(currentSize, isInViewport);
   }
 
   function handleEnterOrExit(event: CustomEvent<IntersectionEventDetail>): void {
-    currentSize = {
-      width: event.detail.entry.target.clientWidth,
-      height: event.detail.entry.target.clientHeight,
+    dimensions = {
+      width: Math.round(event.detail.entry.target.clientWidth),
+      height: Math.round(event.detail.entry.target.clientHeight),
     };
     isInViewport = event.detail.entry.isIntersecting;
-
-    onEnterOrExitViewport(isInViewport, currentSize);
   }
 
   // Track camera stream health

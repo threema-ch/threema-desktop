@@ -1461,6 +1461,9 @@ class AuthenticatedRemoteParticipant implements BaseRemoteParticipant<'done'> {
         >;
         switch (intent.type) {
             case 'subscribe':
+                this._log.debug(
+                    `Subscribing camera: ${intent.resolution.width}x${intent.resolution.height}`,
+                );
                 requestParticipantCamera = protobuf.utils.creator(
                     protobuf.groupcall.ParticipantToSfu.ParticipantCamera,
                     {
@@ -1480,6 +1483,7 @@ class AuthenticatedRemoteParticipant implements BaseRemoteParticipant<'done'> {
                 );
                 break;
             case 'unsubscribe':
+                this._log.debug('Unsubscribing camera');
                 requestParticipantCamera = protobuf.utils.creator(
                     protobuf.groupcall.ParticipantToSfu.ParticipantCamera,
                     {

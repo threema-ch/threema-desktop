@@ -19,14 +19,17 @@ export interface ParticipantFeedProps<TType extends 'local' | 'remote'> {
      */
     readonly container: SvelteNullableBinding<HTMLElement>;
     /**
-     * Callback which is called when this `ParticipantFeed` enters or exits the viewport of the
-     * `container`.
+     * Callback which is called when the camera feed should be subscribed.
+     *
+     * It should be called when:
+     *
+     * - the video element to render the camera feed is removed/added,
+     * - the video element to render the camera feed disappears from or reappears in the viewport.
+     *
+     * @param dimensions the viewport Dimensions or `undefined` if not in the viewport or no video
+     *   should be shown
      */
-    readonly onEnterOrExitViewport: (isInViewport: boolean, currentSize: Dimensions) => void;
-    /**
-     * Callback which is called when this `ParticipantFeed` is resized.
-     */
-    readonly onResize: (size: Dimensions, isInViewport: boolean) => void;
+    readonly updateCameraSubscription: (dimensions: Dimensions | undefined) => void;
     readonly participantId: TType extends 'local' ? 'local' : ParticipantId;
     readonly receiver: GroupCallParticipantReceiverData;
     readonly services: Pick<AppServices, 'profilePicture'>;
