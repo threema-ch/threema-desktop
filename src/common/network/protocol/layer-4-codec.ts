@@ -74,7 +74,7 @@ export interface Layer4Controller {
         /**
          * Client idle timeout interval in seconds.
          *
-         * If no echo request has been received from the server within this timespan, we will
+         * If no echo response has been received from the server within this timespan, we will
          * consider the connection stalled. The average waiting time until we discover that the
          * connection has been severed will be `(echoRequestIntervalS + clientIdleTimeoutS) / 2`.
          */
@@ -210,28 +210,25 @@ export class Layer4Decoder implements SyncTransformerCodec<InboundL3Message, Inb
                 // For now, we only handle this message only when the device cookie has already been installed once.
                 if (this._controller.csp.deviceCookie !== undefined) {
                     this._log.debug('Received DEVICE_COOKIE_CHANGED_INDICATION message');
-                    /**
-                     * TODO(DESK-1371) Turn this on
-                     * this._showDeviceCookieMismatchDialog()
-                     * .then(() => {
-                     * this._encoder.unwrap().forward({
-                     * type: D2mPayloadType.PROXY,
-                     * payload: {
-                     * type: CspPayloadType.CLEAR_DEVICE_COOKIE_CHANGED_INDICATION,
-                     * payload: struct.encoder(
-                     * structbuf.csp.payload.ClearDeviceCookieChangeIndication,
-                     * {
-                     * },
-                     * ),
-                     * },
-                     * });
-                     * })
-                     * .catch((error) => {
-                     * this._log.error(
-                     * `Failed to show device cookie mismatch system dialog: ${error}`,
-                     * );
-                     * });
-                     */
+                    // TODO(DESK-1371): Re-enable this
+                    // this._showDeviceCookieMismatchDialog()
+                    //     .then(() => {
+                    //         this._encoder.unwrap().forward({
+                    //             type: D2mPayloadType.PROXY,
+                    //             payload: {
+                    //                 type: CspPayloadType.CLEAR_DEVICE_COOKIE_CHANGED_INDICATION,
+                    //                 payload: struct.encoder(
+                    //                     structbuf.csp.payload.ClearDeviceCookieChangeIndication,
+                    //                     {},
+                    //                 ),
+                    //             },
+                    //         });
+                    //     })
+                    //     .catch((error: unknown) => {
+                    //         this._log.error(
+                    //             `Failed to show device cookie mismatch system dialog: ${error}`,
+                    //         );
+                    //     });
                 } else {
                     this._log.warn(
                         'Received DEVICE_COOKIE_CHANGED_INDICATION, but no device cookie is available',
@@ -307,41 +304,45 @@ export class Layer4Encoder implements SyncTransformerCodec<OutboundL4Message, Ou
                 // measure RTT.
                 this._log.debug('Starting echo timer');
                 this._controller.connection.closing.subscribe(
-                    TIMER.repeat((canceller) => {
-                        const now = dateToUnixTimestampMs(new Date());
-                        try {
-                            const message: OutboundL3Message = {
-                                type: D2mPayloadType.PROXY,
-                                payload: {
-                                    type: CspPayloadType.ECHO_REQUEST,
-                                    payload: struct.encoder(structbuf.csp.payload.EchoRequest, {
-                                        data: struct.encoder(
-                                            structbuf.extra.monitoring.RttMeasurement,
-                                            {
-                                                timestamp: now,
-                                            },
-                                        ),
-                                    }),
-                                },
-                            };
-                            this._capture?.(message, {info: 'EchoRequest'});
-                            forward(message);
-                            this._ongoingEchoRequests.push(
-                                TIMER.timeout(() => {
-                                    this._log.info(
-                                        'Considering connection lost due to echo request exceeding client timeout',
-                                    );
-                                    connection.current.unwrap().disconnect({
-                                        code: CloseCode.CLIENT_TIMEOUT,
-                                        origin: 'local',
-                                    });
-                                }, csp.clientIdleTimeoutS * 1000),
-                            );
-                        } catch (error) {
-                            this._log.error('Cancelling echo timer due to an error', error);
-                            canceller();
-                        }
-                    }, csp.echoRequestIntervalS * 1000),
+                    TIMER.repeat(
+                        (canceller) => {
+                            const now = dateToUnixTimestampMs(new Date());
+                            try {
+                                const message: OutboundL3Message = {
+                                    type: D2mPayloadType.PROXY,
+                                    payload: {
+                                        type: CspPayloadType.ECHO_REQUEST,
+                                        payload: struct.encoder(structbuf.csp.payload.EchoRequest, {
+                                            data: struct.encoder(
+                                                structbuf.extra.monitoring.RttMeasurement,
+                                                {
+                                                    timestamp: now,
+                                                },
+                                            ),
+                                        }),
+                                    },
+                                };
+                                this._capture?.(message, {info: 'EchoRequest'});
+                                forward(message);
+                                this._ongoingEchoRequests.push(
+                                    TIMER.timeout(() => {
+                                        this._log.info(
+                                            'Considering connection lost due to echo request exceeding client timeout',
+                                        );
+                                        connection.current.unwrap().disconnect({
+                                            code: CloseCode.CLIENT_TIMEOUT,
+                                            origin: 'local',
+                                        });
+                                    }, csp.clientIdleTimeoutS * 1000),
+                                );
+                            } catch (error) {
+                                this._log.error('Cancelling echo timer due to an error', error);
+                                canceller();
+                            }
+                        },
+                        csp.echoRequestIntervalS * 1000,
+                        'after-interval',
+                    ),
                 );
 
                 // Set connection idle timeout

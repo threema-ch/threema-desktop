@@ -22,7 +22,7 @@ export class SystemTimeStore extends ReadableStore<SystemTimeStoreValue> {
         this._log.debug('SystemTimeStore created with initial state:', this.get());
 
         const intervalMs = 1000; // 1 second
-        TIMER.repeat(this._updateState, intervalMs);
+        TIMER.repeat(this._updateState, intervalMs, 'after-interval');
         this._log.debug(`System time observer started with interval: ${intervalMs}ms`);
     }
 

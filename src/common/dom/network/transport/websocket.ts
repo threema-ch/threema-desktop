@@ -144,15 +144,19 @@ class WebSocketEventWrapperSink implements UnderlyingSink<BufferSource | string>
         // Apply backpressure (if needed)
         if (this._ws.bufferedAmount >= this._options.highWaterMark) {
             return new Promise((resolve) => {
-                TIMER.repeat((cancel) => {
-                    if (
-                        this._ws.readyState === WebSocket.CLOSED ||
-                        this._ws.bufferedAmount <= this._options.lowWaterMark
-                    ) {
-                        cancel();
-                        resolve();
-                    }
-                }, this._options.pollIntervalMs);
+                TIMER.repeat(
+                    (cancel) => {
+                        if (
+                            this._ws.readyState === WebSocket.CLOSED ||
+                            this._ws.bufferedAmount <= this._options.lowWaterMark
+                        ) {
+                            cancel();
+                            resolve();
+                        }
+                    },
+                    this._options.pollIntervalMs,
+                    'after-interval',
+                );
             });
         }
         return undefined;

@@ -19,9 +19,13 @@
   $: currentDuration = formatDurationBetween(from, now);
 
   onMount(() => {
-    nowUpdateCanceller = TIMER.repeat(() => {
-      now = new Date();
-    }, 1000);
+    nowUpdateCanceller = TIMER.repeat(
+      () => {
+        now = new Date();
+      },
+      1000,
+      'after-interval',
+    );
 
     return nowUpdateCanceller;
   });

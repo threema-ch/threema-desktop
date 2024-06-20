@@ -1,4 +1,5 @@
 import type {u53, WeakOpaque} from '~/common/types';
+import {unwrap} from '~/common/utils/assert';
 
 // The following globals exist in both DOM and Node, so we'll just assume they're always available.
 type TimeoutId = WeakOpaque<u53, {readonly TimeoutId: unique symbol}>;
@@ -65,10 +66,8 @@ class GlobalTimer {
         let id: TimeoutId | undefined = undefined;
 
         function canceller(): void {
-            // Note: We know the id will exist prior to the canceller being
-            //       callable.
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            clearTimeout(id!);
+            // Note: We know the id will exist prior to the canceller being callable.
+            clearTimeout(unwrap(id));
         }
 
         // Create timeout and return canceller.
@@ -77,25 +76,35 @@ class GlobalTimer {
     }
 
     /**
-     * Calls the given callback repetitively until the canceller function has
-     * been invoked.
+     * Calls the given callback repetitively until the canceller function has been invoked.
      *
      * @param callback The callback to be called in the given interval.
      * @param intervalMs Amount of milliseconds to wait in between the calls.
+     * @param firstCall When to invoke the callback the first time (now or after the first
+     *   interval).
      * @returns A function that allows to cancel the timer.
      */
-    public repeat(callback: TimerCallback, intervalMs: u53): TimerCanceller {
+    public repeat(
+        callback: TimerCallback,
+        intervalMs: u53,
+        firstCall: 'now' | 'after-interval',
+    ): TimerCanceller {
         let id: IntervalId | undefined = undefined;
 
         function canceller(): void {
             // Note: We know the id will exist prior to the canceller being
             //       callable.
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            clearInterval(id!);
+            clearInterval(unwrap(id));
         }
 
         // Create interval and return canceller.
         id = setInterval(() => callback(canceller), intervalMs);
+
+        // Make first call now, if necessary
+        if (firstCall === 'now') {
+            callback(canceller);
+        }
+
         return canceller;
     }
 

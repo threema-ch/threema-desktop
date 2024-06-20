@@ -70,7 +70,9 @@ export class BackgroundJobScheduler {
             job(log, cancel);
 
             // Schedule subsequent execution and cancel timer on abort
-            abort.subscribe(TIMER.repeat(() => job(log, cancel), options.intervalS * 1000));
+            abort.subscribe(
+                TIMER.repeat(() => job(log, cancel), options.intervalS * 1000, 'after-interval'),
+            );
         };
 
         // Schedule to run later or immediately (as a microtask)
