@@ -249,6 +249,18 @@ export class ReadableStore<in out TInValue extends TOutValue, in out TOutValue =
     }
 
     /**
+     * Get the current value in a callback function.
+     *
+     * Note: Use this method to minimise the scope of the access to the view and/or to mitigate
+     * multiple calls to {@link get}.
+     *
+     * @param fn A function which will be called with the current value.
+     */
+    public run<TReturn>(fn: (value: TInValue) => TReturn): TReturn {
+        return fn(this._value);
+    }
+
+    /**
      * Subscribe to store update events.
      *
      * @param subscriber An update event subscriber.
