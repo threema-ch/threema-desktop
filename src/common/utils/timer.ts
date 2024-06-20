@@ -139,23 +139,53 @@ class GlobalTimer {
      * @param resetOnUpdate Whether the timer is reset on updates or not. If set to `true`, the
      *   function is only executed if there is no call within {@link waitForMs}. If set to `false`,
      *   the function is executed {@link waitForMs} after the first call.
-     * @returns A debounced version of `func`
+     * @param distinctArgs Whether to call the function multiple times with all sets of distinct
+     *   args as soon as the debounce timer has elapsed.
+     * @param distinctArgsKeySelector Supply a function that calculates the key for a set of args.
+     *   Only if a subsequent call of the debounced function resolves to the same key as an already
+     *   remembered set of args, the existing set of args will be replaced. If not given and
+     *   `distinctArgs` is enabled, the JSON-stringified args will be used as the key. Note: Has no
+     *   effect if `distinctArgs` is `false`.
+     * @returns A debounced version of `func`.
      */
     public debounce<
         F extends (...args: Parameters<F>) => Exclude<ReturnType<F>, PromiseLike<unknown>>,
-    >(func: F, waitForMs: u53, resetOnUpdate: boolean = true): (...args: Parameters<F>) => void {
+    >(
+        func: F,
+        waitForMs: u53,
+        resetOnUpdate: boolean = true,
+        distinctArgs: boolean = false,
+        distinctArgsKeySelector?: (...args: Parameters<F>) => string,
+    ): (...args: Parameters<F>) => void {
         let cancel: TimerCanceller | undefined;
-        let lastArgs: Parameters<F>;
+        // Store each distinct set of args to call the function with later.
+        const argsMap = new Map<string, Parameters<F>>();
 
         return (...args: Parameters<F>): void => {
-            lastArgs = args;
+            // Generate the key using the supplied key selector or default to JSON.stringify.
+            const key = distinctArgsKeySelector
+                ? distinctArgsKeySelector(...args)
+                : JSON.stringify(args);
+            argsMap.set(key, args);
 
             // (Re-)schedule, if necessary
             if (cancel === undefined || resetOnUpdate) {
                 cancel?.();
                 cancel = this.timeout(() => {
                     cancel = undefined;
-                    func(...lastArgs);
+                    if (distinctArgs) {
+                        // Call the function for each distinct set of arguments.
+                        argsMap.forEach((value) => {
+                            func(...value);
+                        });
+                    } else {
+                        // Get the last set of arguments from the `Map`.
+                        const lastArgs = Array.from(argsMap.values()).pop();
+                        if (lastArgs !== undefined) {
+                            func(...(lastArgs as Parameters<F>));
+                        }
+                    }
+                    argsMap.clear();
                 }, waitForMs);
             }
         };

@@ -1,14 +1,15 @@
 import type {AppServices} from '~/app/types';
 import {
     transformOngoingGroupCallProps,
-    type AugmentedOngoingGroupCallStateViewModel,
     type AugmentedOngoingGroupCallViewModelBundle,
 } from '~/app/ui/components/partials/call-activity/transformer';
-import type {ParticipantFeedProps} from '~/app/ui/components/partials/call-participant-feed/props';
 import {CAMERA_STREAM_CONSTRAINTS, MICROPHONE_STREAM_CONSTRAINTS} from '~/common/dom/webrtc';
 import type {Logger} from '~/common/logging';
+import type {ParticipantId} from '~/common/network/protocol/call/group-call';
+import type {i53} from '~/common/types';
 import {unwrap, unreachable, assert, assertUnreachable} from '~/common/utils/assert';
 import type {Remote} from '~/common/utils/endpoint';
+import {AsyncLock} from '~/common/utils/lock';
 import type {AbortRaiser} from '~/common/utils/signal';
 import type {ConversationViewModelBundle} from '~/common/viewmodel/conversation/main';
 import type {AnyGroupCallContextAbort, CaptureState} from '~/common/webrtc/group-call';
@@ -186,46 +187,67 @@ export function attachLocalDeviceAndAnnounceCaptureState(
     return target;
 }
 
+const remoteParticipantRemoteCamerasAsyncLock = new AsyncLock();
 /**
- * Map (all existing and newly added) participants to their respective feed properties.
+ * Update the `remoteCamera` subscription for a specific participant.
  */
-export function updateRemoteParticipantFeeds(
-    log: Logger,
-    controller: AugmentedOngoingGroupCallViewModelBundle['controller'],
-    stop: AbortRaiser<AnyExtendedGroupCallContextAbort>,
-    state: AugmentedOngoingGroupCallStateViewModel,
-): readonly Omit<ParticipantFeedProps<'remote'>, 'activity' | 'services'>[] {
-    // TODO(DESK-1405): Only subscribe remote participants when they are in view with the current
-    // canvas dimensions. Call `remoteCamera` again whenever the canvas dimensions change (debounced
-    // to ~3s) or when the participant moves out of the viewport (also debounced but maybe just
-    // ~1s).
-    for (const participant of state.remote) {
-        controller
-            .remoteCamera(participant.id, {
-                type: 'subscribe',
-                // TODO(DESK-1405): Apply the correct canvas dimensions here
-                resolution: {width: 640, height: 480},
-            })
-            // eslint-disable-next-line @typescript-eslint/no-loop-func
-            .catch((error: unknown) => {
-                log.error('Subscribing to camera failed', error);
-                stop.raise({origin: 'ui-component', cause: 'unexpected-error'});
-            });
-    }
+export function updateRemoteParticipantRemoteCameras({
+    controller,
+    isInViewport,
+    log,
+    participantId,
+    stop,
+    width,
+}: {
+    controller: AugmentedOngoingGroupCallViewModelBundle['controller'];
+    /**
+     * Whether the element that renders the camera feed is currently in the viewport. If `false`,
+     * the camera feed will temporarily be unsubscribed until it's set to `true` again.
+     */
+    isInViewport: boolean;
+    log: Logger;
+    participantId: ParticipantId;
+    stop: AbortRaiser<AnyExtendedGroupCallContextAbort>;
+    /**
+     * The width the camera feed will be displayed at. This is usually the width of the `<video>`
+     * element's container. Note: Width change detection should be debounced, to avoid updating the
+     * camera subscription too often while resizing.
+     */
+    width: i53;
+}): void {
+    remoteParticipantRemoteCamerasAsyncLock
+        .with(() => {
+            if (!isInViewport) {
+                log.debug(`Unsubscribing remote camera for participant ${participantId}`);
 
-    return state.remote.map(
-        (participant): Omit<ParticipantFeedProps<'remote'>, 'activity' | 'services'> => ({
-            type: 'remote',
-            receiver: participant.receiver,
-            participantId: participant.id,
-            tracks: {
-                type: 'remote',
-                microphone: participant.transceivers.microphone.receiver.track,
-                camera: participant.transceivers.camera.receiver.track,
-            },
-            capture: participant.capture,
-        }),
-    );
+                controller
+                    .remoteCamera(participantId, {
+                        type: 'unsubscribe',
+                    })
+                    .catch((error: unknown) => {
+                        log.error('Unsubscribing camera failed', error);
+                        stop.raise({origin: 'ui-component', cause: 'unexpected-error'});
+                    });
+                return;
+            }
+
+            log.debug(
+                `Subscribing or updating remote camera for participant ${participantId} with dimensions ${width}×${width / (16 / 9)}`,
+            );
+            controller
+                .remoteCamera(participantId, {
+                    type: 'subscribe',
+                    // Aspect ratio is currently fixed to `16/9`.
+                    resolution: {width, height: width / (16 / 9)},
+                })
+                .catch((error: unknown) => {
+                    log.error('Subscribing to camera failed', error);
+                    stop.raise({origin: 'ui-component', cause: 'unexpected-error'});
+                });
+        })
+        .catch((error: unknown) => {
+            log.error(`Error in "remoteParticipantRemoteCamerasAsyncLock": ${error}`);
+        });
 }
 
 export async function startCall(

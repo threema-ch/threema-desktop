@@ -9,11 +9,11 @@
   import {
     startCall,
     type AnyExtendedGroupCallContextAbort,
-    updateRemoteParticipantFeeds,
     selectInitialCaptureDevices,
     type CaptureDevices,
     attachLocalDeviceAndAnnounceCaptureState,
     type ActivityLayout,
+    updateRemoteParticipantRemoteCameras,
   } from '~/app/ui/components/partials/call-activity/helpers';
   import ControlBar from '~/app/ui/components/partials/call-activity/internal/control-bar/ControlBar.svelte';
   import TopBar from '~/app/ui/components/partials/call-activity/internal/top-bar/TopBar.svelte';
@@ -23,12 +23,16 @@
   import type {ParticipantFeedProps} from '~/app/ui/components/partials/call-participant-feed/props';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
+  import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import type {DbGroupReceiverLookup} from '~/common/db';
+  import type {ParticipantId} from '~/common/network/protocol/call/group-call';
+  import type {Dimensions} from '~/common/types';
   import {assert, assertUnreachable, unreachable, unwrap} from '~/common/utils/assert';
   import {byteEquals} from '~/common/utils/byte';
   import type {Remote} from '~/common/utils/endpoint';
   import {AbortRaiser} from '~/common/utils/signal';
   import type {RemoteStore} from '~/common/utils/store';
+  import {TIMER} from '~/common/utils/timer';
   import type {ConversationViewModelBundle} from '~/common/viewmodel/conversation/main';
   import type {SelfReceiverData} from '~/common/viewmodel/utils/receiver';
 
@@ -44,10 +48,11 @@
   const log = uiLogging.logger('ui.component.call-activity');
 
   let containerLayout: ActivityLayout = 'regular';
+  let feedContainerElement: SvelteNullableBinding<HTMLDivElement> = null;
 
   let microphone: CaptureDevices['microphone'];
   let camera: CaptureDevices['microphone'];
-  let localFeed: Omit<ParticipantFeedProps<'local'>, 'services'> | undefined;
+  let localFeed: Omit<ParticipantFeedProps<'local'>, 'activity' | 'services'> | undefined;
 
   let stop: AbortRaiser<AnyExtendedGroupCallContextAbort> | undefined;
   let call: AugmentedOngoingGroupCallViewModelBundle | undefined;
@@ -79,6 +84,32 @@
       }
     });
   }
+
+  const handleChangeFeedElement = TIMER.debounce(
+    (isInViewport: boolean, currentSize: Dimensions, participantId: 'local' | ParticipantId) => {
+      if (call === undefined || stop === undefined || participantId === 'local') {
+        // If call is `undefined` (i.e., not running) or not started, there's no need to un- or
+        // resubscribe any feeds. Additionally, if it's the user's own feed, there's no need to
+        // manage it.
+        return;
+      }
+
+      updateRemoteParticipantRemoteCameras({
+        controller: call.controller,
+        isInViewport,
+        log,
+        participantId,
+        stop,
+        width: currentSize.width,
+      });
+    },
+    500,
+    true,
+    // Debounce using `distinctArgs` and use the perticipant id as the key, so the debounced
+    // function is called once for each participant.
+    true,
+    (currentSize_, isInViewport_, id) => `${id}`,
+  );
 
   function handleClickLeaveCall(): void {
     // Stop any ongoing call
@@ -142,18 +173,20 @@
     if (user !== undefined && $user !== undefined) {
       localFeed = {
         type: 'local',
-        activity: {
-          layout: containerLayout,
-        },
-        receiver: $user,
-        participantId: 'local',
-        tracks: {
-          type: 'local',
-          camera: camera?.track,
-        },
         capture: {
           camera: camera?.state ?? 'off',
           microphone: microphone?.state ?? 'off',
+        },
+        container: feedContainerElement,
+        onEnterOrExitViewport: (isInViewport, currentSize) =>
+          handleChangeFeedElement(isInViewport, currentSize, 'local'),
+        onResize: (currentSize, isInViewport) =>
+          handleChangeFeedElement(isInViewport, currentSize, 'local'),
+        participantId: 'local',
+        receiver: $user,
+        tracks: {
+          type: 'local',
+          camera: camera?.track,
         },
       };
     }
@@ -287,7 +320,24 @@
         }
 
         // Update feeds state
-        remoteFeeds = updateRemoteParticipantFeeds(log, call.controller, stop, state);
+        remoteFeeds = state.remote.map(
+          (participant): Omit<ParticipantFeedProps<'remote'>, 'activity' | 'services'> => ({
+            type: 'remote',
+            capture: participant.capture,
+            container: feedContainerElement,
+            onEnterOrExitViewport: (isInViewport, currentSize) =>
+              handleChangeFeedElement(isInViewport, currentSize, participant.id),
+            onResize: (currentSize, isInViewport) =>
+              handleChangeFeedElement(isInViewport, currentSize, participant.id),
+            participantId: participant.id,
+            receiver: participant.receiver,
+            tracks: {
+              type: 'remote',
+              microphone: participant.transceivers.microphone.receiver.track,
+              camera: participant.transceivers.camera.receiver.track,
+            },
+          }),
+        );
       }),
     );
 
@@ -368,7 +418,7 @@
     />
   </div>
 
-  <div class="content">
+  <div bind:this={feedContainerElement} class="content">
     <div class="feeds">
       {#each feeds as feed (feed.participantId)}
         <ParticipantFeed {...feed} activity={{layout: containerLayout}} {services} />

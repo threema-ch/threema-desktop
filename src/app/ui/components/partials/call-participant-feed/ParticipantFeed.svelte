@@ -4,28 +4,37 @@
 <script lang="ts">
   import {onDestroy} from 'svelte';
 
+  import {intersection, type IntersectionEventDetail} from '~/app/ui/actions/intersection';
+  import {size} from '~/app/ui/actions/size';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import type {ParticipantFeedProps} from '~/app/ui/components/partials/call-participant-feed/props';
   import ProfilePicture from '~/app/ui/components/partials/profile-picture/ProfilePicture.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
+  import type {Dimensions} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
   import {unusedProp} from '~/common/utils/svelte-helpers';
 
   type $$Props = ParticipantFeedProps<'local' | 'remote'>;
 
   export let activity: $$Props['activity'];
-  export let services: $$Props['services'];
-  export let type: $$Props['type'];
-  export let receiver: $$Props['receiver'];
-  export let participantId: $$Props['participantId'];
-  export let tracks: $$Props['tracks'];
   export let capture: $$Props['capture'];
+  export let container: $$Props['container'];
+  export let onEnterOrExitViewport: $$Props['onEnterOrExitViewport'];
+  export let onResize: $$Props['onResize'];
+  export let participantId: $$Props['participantId'];
+  export let receiver: $$Props['receiver'];
+  export let services: $$Props['services'];
+  export let tracks: $$Props['tracks'];
+  export let type: $$Props['type'];
 
   unusedProp(participantId);
 
   let microphoneAudioElement: SvelteNullableBinding<HTMLAudioElement> = null;
   let cameraVideoElement: SvelteNullableBinding<HTMLVideoElement> = null;
+
+  let currentSize: Dimensions | undefined = undefined;
+  let isInViewport: boolean | undefined = undefined;
 
   // Note: Caching mitigates re-attaching tracks to <audio> and <video> elements which would result
   // in audio cutoff and video flickering.
@@ -54,6 +63,34 @@
     }
   }
 
+  function handleChangeSize(event: CustomEvent<{entries: ResizeObserverEntry[]}>): void {
+    const entry: ResizeObserverEntry | undefined = event.detail.entries.at(0);
+    if (entry === undefined) {
+      return;
+    }
+
+    currentSize = {
+      width: entry.contentRect.width,
+      height: entry.contentRect.height,
+    };
+
+    if (isInViewport === undefined) {
+      return;
+    }
+
+    onResize(currentSize, isInViewport);
+  }
+
+  function handleEnterOrExit(event: CustomEvent<IntersectionEventDetail>): void {
+    currentSize = {
+      width: event.detail.entry.target.clientWidth,
+      height: event.detail.entry.target.clientHeight,
+    };
+    isInViewport = event.detail.entry.isIntersecting;
+
+    onEnterOrExitViewport(isInViewport, currentSize);
+  }
+
   // Track camera stream health
   let unsubscribeCameraHealth: (() => void) | undefined;
   let cameraHealth: 'good' | 'stalled' | 'unknown' = 'unknown';
@@ -80,13 +117,23 @@
       cameraHealth = track.muted ? 'stalled' : 'good';
     }
   }
+
+  $: sizeObserverOptions = {
+    root: container,
+    threshold: 0,
+  };
 </script>
 
 <div
+  use:size
+  use:intersection={{options: sizeObserverOptions}}
   class="container"
   data-camera-capture={capture.camera}
   data-camera-health={cameraHealth}
   data-layout={activity.layout}
+  on:changesize={handleChangeSize}
+  on:intersectionenter={handleEnterOrExit}
+  on:intersectionexit={handleEnterOrExit}
 >
   <audio bind:this={microphoneAudioElement} autoplay playsinline />
 

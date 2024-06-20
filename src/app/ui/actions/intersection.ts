@@ -7,7 +7,7 @@ import type {ActionReturn} from 'svelte/action';
 /**
  * The data that is sent as the `detail` of the {@link CustomEvent}.
  */
-interface IntersectionEventDetail {
+export interface IntersectionEventDetail {
     readonly entry: IntersectionObserverEntry;
 }
 
