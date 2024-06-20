@@ -5,6 +5,7 @@ import type {
     CustomNotification,
     DeletedMessageNotification,
     ExtendedNotificationOptions,
+    GroupCallStartNotification,
     NotificationCreator,
     NotificationHandle,
     NotificationTag,
@@ -67,8 +68,20 @@ export class FrontendNotificationCreator implements NotificationCreator {
                 proxyNotification = new ProxyNotification(notification.title, options, identifier);
                 break;
             }
+
+            case 'group-call-start':
+                proxyNotification = new ProxyNotification(
+                    notification.groupName,
+                    {
+                        ...options,
+                        body: this._getGroupCallStartBody(notification.startedByContactName),
+                    },
+                    identifier,
+                );
+                break;
+
             case 'new-message': {
-                const title = this._createNewMessageTitle(
+                const title = this._getNewMessageTitle(
                     notification.unreadCount,
                     notification.receiverConversation,
                     notification.senderName,
@@ -87,7 +100,9 @@ export class FrontendNotificationCreator implements NotificationCreator {
         return proxyNotification;
     }
 
-    public update(notification: CustomNotification): NotificationHandle | undefined {
+    public update(
+        notification: Exclude<CustomNotification, GroupCallStartNotification>,
+    ): NotificationHandle | undefined {
         const {options, identifier} = notification;
         const {tag} = options;
 
@@ -107,8 +122,9 @@ export class FrontendNotificationCreator implements NotificationCreator {
                 }
                 return proxyNotification;
             }
+
             case 'new-message': {
-                const title = this._createNewMessageTitle(
+                const title = this._getNewMessageTitle(
                     notification.unreadCount,
                     notification.receiverConversation,
                     notification.senderName,
@@ -121,7 +137,7 @@ export class FrontendNotificationCreator implements NotificationCreator {
             }
 
             case 'deleted-message': {
-                const title = this._createNewMessageTitle(
+                const title = this._getNewMessageTitle(
                     notification.unreadCount,
                     notification.receiverConversation,
                     notification.senderName,
@@ -147,7 +163,7 @@ export class FrontendNotificationCreator implements NotificationCreator {
         }
     }
 
-    private _createNewMessageTitle(
+    private _getNewMessageTitle(
         unreadCount: number,
         recipientName: string,
         senderName: string | undefined,
@@ -174,6 +190,27 @@ export class FrontendNotificationCreator implements NotificationCreator {
                     n: unreadCount.toString(),
                     senderName,
                     recipientName,
+                },
+            );
+    }
+
+    private _getGroupCallStartBody(startedByContactName: string | undefined): string {
+        if (startedByContactName === undefined) {
+            return i18n
+                .get()
+                .t(
+                    'messaging.prose--notification-group-call-start-body-generic',
+                    'Group call started',
+                );
+        }
+
+        return i18n
+            .get()
+            .t(
+                'messaging.prose--notification-group-call-start-body',
+                'Group call started by {name}',
+                {
+                    name: startedByContactName,
                 },
             );
     }

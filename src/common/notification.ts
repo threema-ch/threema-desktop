@@ -1,9 +1,11 @@
 import {ConversationCategory, ReceiverType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import type {ConversationView} from '~/common/model';
+import type {Contact, ConversationView, Group} from '~/common/model';
 import type {InboundDeletedMessageModelStore} from '~/common/model/message/deleted-message';
 import type {AnyInboundNonDeletedMessageModelStore} from '~/common/model/types/message';
 import type {AnyReceiverStore} from '~/common/model/types/receiver';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ChosenGroupCall} from '~/common/network/protocol/call/group-call';
 import type {GroupId, IdentityString} from '~/common/network/types';
 import type {u53, WeakOpaque} from '~/common/types';
 import type {ProxyMarked, RemoteProxy} from '~/common/utils/endpoint';
@@ -88,7 +90,8 @@ export type NotificationHandle = {
 export type CustomNotification =
     | GenericNotification
     | NewMessageNotification
-    | DeletedMessageNotification;
+    | DeletedMessageNotification
+    | GroupCallStartNotification;
 
 interface GenericNotification {
     readonly type: 'generic';
@@ -115,12 +118,22 @@ export interface DeletedMessageNotification {
     readonly identifier: string;
 }
 
+export interface GroupCallStartNotification {
+    readonly type: 'group-call-start';
+    readonly groupName: string;
+    readonly identifier: string;
+    readonly options: ExtendedNotificationOptions;
+    readonly startedByContactName?: string;
+}
+
 export interface NotificationCreator extends ProxyMarked {
     readonly create: (
         notification: Exclude<CustomNotification, DeletedMessageNotification>,
     ) => NotificationHandle | undefined;
 
-    readonly update: (notification: CustomNotification) => NotificationHandle | undefined;
+    readonly update: (
+        notification: Exclude<CustomNotification, GroupCallStartNotification>,
+    ) => NotificationHandle | undefined;
 }
 
 export class NotificationService {
@@ -137,7 +150,7 @@ export class NotificationService {
         },
     ): Promise<void> {
         const {receiverConversation, unreadCount, senderName, body, tag} =
-            this._getNotificationParameters(message, conversation);
+            this._getMessageNotificationParameters(message, conversation);
 
         await this._creator.create({
             type: 'new-message',
@@ -161,7 +174,7 @@ export class NotificationService {
         },
     ): Promise<void> {
         const {receiverConversation, unreadCount, senderName, body, tag} =
-            this._getNotificationParameters(message, conversation);
+            this._getMessageNotificationParameters(message, conversation);
 
         await this._creator.update({
             type: 'new-message',
@@ -185,7 +198,7 @@ export class NotificationService {
         },
     ): Promise<void> {
         const {receiverConversation, unreadCount, senderName, tag} =
-            this._getNotificationParameters(message, conversation);
+            this._getMessageNotificationParameters(message, conversation);
 
         await this._creator.update({
             type: 'deleted-message',
@@ -201,7 +214,31 @@ export class NotificationService {
         });
     }
 
-    private _getNotificationParameters(
+    public async notifyGroupCallStart(
+        chosenGroupCall: ChosenGroupCall,
+        groupModel: Group,
+    ): Promise<void> {
+        const {groupName, startedByContactName, tag} = this._getGroupCallNotificationParameters(
+            chosenGroupCall,
+            groupModel,
+        );
+
+        await this._creator.create({
+            type: 'group-call-start',
+            groupName,
+            startedByContactName,
+            options: {
+                tag,
+                creator: {},
+            },
+            identifier:
+                chosenGroupCall.type === 'ongoing'
+                    ? chosenGroupCall.call.get().ctx.callId.id
+                    : chosenGroupCall.base.derivations.callId.id,
+        });
+    }
+
+    private _getMessageNotificationParameters(
         message: AnyInboundNonDeletedMessageModelStore | InboundDeletedMessageModelStore,
         conversation: {
             readonly receiver: AnyReceiverStore;
@@ -251,6 +288,30 @@ export class NotificationService {
             senderName,
             body,
             tag: receiverModel.controller.notificationTag,
+        };
+    }
+
+    private _getGroupCallNotificationParameters(
+        chosenGroupCall: ChosenGroupCall,
+        groupModel: Group,
+    ): {
+        groupName: string;
+        startedByContactName?: string;
+        tag: NotificationTag;
+    } {
+        const callStartedBy: LocalModelStore<Contact> | undefined = [
+            groupModel.view.creator,
+            ...groupModel.view.members,
+        ].find(
+            (memberOrCreatorModel): memberOrCreatorModel is LocalModelStore<Contact> =>
+                memberOrCreatorModel !== 'me' &&
+                memberOrCreatorModel.get().view.identity === chosenGroupCall.base.startedBy,
+        );
+
+        return {
+            groupName: groupModel.view.displayName,
+            startedByContactName: callStartedBy?.get().view.displayName,
+            tag: groupModel.controller.notificationTag,
         };
     }
 }

@@ -1133,18 +1133,12 @@ export class GroupModelController implements GroupController {
                         this._services.model.user.callsSettings.get().view.groupCallPolicy ===
                             GroupCallPolicy.ALLOW_GROUP_CALL
                     ) {
-                        // TODO(DESK-1405): Make a proper notification. Should we also sound a ringtone
-                        // here? Note: The ringing should not be looped as we have plans to create a
-                        // separate message for ringing a particular group member.
-                        this._services.systemDialog
-                            .open({
-                                type: 'server-alert',
-                                context: {
-                                    title: 'TODO(DESK-1405)',
-                                    text: 'Replace me with new group call notification',
-                                },
-                            })
-                            .catch(assertUnreachable);
+                        // TODO(DESK-1505): Implement proper call start notifications with ringtones.
+                        this._services.notification
+                            .notifyGroupCallStart(chosen, this._store().get())
+                            .catch((error: unknown) => {
+                                this._log.error(`Group call start notification failed: ${error}`);
+                            });
                     }
                 }
             })

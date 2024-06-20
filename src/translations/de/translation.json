@@ -413,6 +413,8 @@
     "prose--message-deleted": "Diese Nachricht wurde gelöscht",
     "prose--message-edited": "Bearbeitet",
     "prose--notification-deleted-message": "Diese Nachricht wurde gelöscht",
+    "prose--notification-group-call-start-body": "Gruppenanruf wurde gestartet von {name}",
+    "prose--notification-group-call-start-body-generic": "Gruppenanruf wurde gestartet",
     "prose--notification-title-group": "{n, plural, =1 {Neue Nachricht von {senderName}} other {{n} neue Nachrichten von}} in Gruppe {recipientName}",
     "prose--notification-title-single": "{n, plural, =1 {Neue Nachricht} other {{n} neue Nachrichten}} von {recipientName}",
     "prose--paste-image-in-edit": "Beim Bearbeiten einer Nachricht kann keine Datei eingefügt werden.",

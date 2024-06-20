@@ -413,6 +413,8 @@
     "prose--message-deleted": "This message was deleted",
     "prose--message-edited": "Edited",
     "prose--notification-deleted-message": "This message was deleted",
+    "prose--notification-group-call-start-body": "Group call started by {name}",
+    "prose--notification-group-call-start-body-generic": "Group call started",
     "prose--notification-title-group": "{n, plural, =1 {New message from {senderName}} other {{n} new messages}} in group {recipientName}",
     "prose--notification-title-single": "{n, plural, =1 {New message} other {{n} new messages}} from {recipientName}",
     "prose--paste-image-in-edit": "It’s not possible to paste a file when editing a message.",
