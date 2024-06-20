@@ -44,6 +44,24 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta34" date="2024-06-24">
+            <description>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Improved positioning of context menus</li>
+                    <li>Defined mininum dimensions for the application window</li>
+                    <li>Improved stability of the device-linking process</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>
+                        Fixed a crash that occurred when deleting a contact while the global search
+                        was open
+                    </li>
+                </ul>
+                <p>…and various under-the-hood changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta33" date="2024-05-22">
             <description>
                 <p>New features:</p>
