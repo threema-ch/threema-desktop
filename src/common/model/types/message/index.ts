@@ -11,6 +11,8 @@ import type {
     InboundDeletedMessageModelStore,
     OutboundDeletedMessageModelStore,
     OutboundDeletedMessage,
+    InboundDeletedMessageModel,
+    OutboundDeletedMessageModel,
 } from '~/common/model/types/message/deleted';
 import type {
     IInboundFileMessageModelStore,
@@ -134,6 +136,10 @@ export type AnyNonDeletedMessageModelStore = Exclude<
     AnyMessageModelStore,
     OutboundDeletedMessageModelStore | InboundDeletedMessageModelStore
 >;
+export type AnyDeletedMessageModel = InboundDeletedMessageModel | OutboundDeletedMessageModel;
+export type AnyDeletedMessageModelStore =
+    | InboundDeletedMessageModelStore
+    | OutboundDeletedMessageModelStore;
 
 export type AnyFileBasedMessageModel =
     | InboundAudioMessage['model']
@@ -190,9 +196,6 @@ export type AnyVideoMessageModelStore =
 export type AnyAudioMessageModelStore =
     | IInboundAudioMessageModelStore
     | IOutboundAudioMessageModelStore;
-export type AnyDeletedMessageModelStore =
-    | InboundDeletedMessageModelStore
-    | OutboundDeletedMessageModelStore;
 
 export type SetOfAnyRemoteMessageModel =
     | ReadonlySet<RemoteModelStore<InboundTextMessage['model']>>

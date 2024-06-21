@@ -4,6 +4,7 @@ import {ReceiverType} from '~/common/enum';
 import {TRANSFER_HANDLER} from '~/common/index';
 import type {AnyMessageModelStore, AnyReceiver} from '~/common/model';
 import type {ConversationModelStore} from '~/common/model/conversation';
+import type {AnyDeletedMessageModelStore} from '~/common/model/types/message';
 import type {ReceiverStoreFor} from '~/common/model/types/receiver';
 import type {AnyStatusMessageModelStore} from '~/common/model/types/status';
 import {unreachable} from '~/common/utils/assert';
@@ -36,6 +37,10 @@ import {
     type ConversationViewModelBundle,
     getConversationViewModelBundle,
 } from '~/common/viewmodel/conversation/main';
+import {
+    getConversationDeletedMessageViewModelBundle,
+    type ConversationDeletedMessageViewModelBundle,
+} from '~/common/viewmodel/conversation/main/message/deleted-message';
 import {
     getConversationRegularMessageViewModelBundle,
     type ConversationRegularMessageViewModelBundle,
@@ -78,6 +83,15 @@ export interface IViewModelRepository extends ProxyMarked {
      * Returns the {@link ConversationViewModelBundle} that belongs to the given {@link receiver}.
      */
     readonly conversation: (receiver: DbReceiverLookup) => ConversationViewModelBundle | undefined;
+
+    /**
+     * Returns the {@link ConversationDeletedMessageViewModelBundle} that belongs to the given
+     * {@link messageStore} in the given {@link conversation}.
+     */
+    readonly conversationDeletedMessage: (
+        conversation: ConversationModelStore,
+        messageStore: AnyDeletedMessageModelStore,
+    ) => ConversationDeletedMessageViewModelBundle;
 
     /**
      * Returns the {@link ConversationRegularMessageViewModelBundle} that belongs to the given
@@ -161,6 +175,25 @@ export class ViewModelRepository implements IViewModelRepository {
         return this._cache.conversation.getOrCreate(conversationModelStore, () =>
             getConversationViewModelBundle(this._services, this, conversationModelStore),
         );
+    }
+
+    /** @inheritdoc */
+    public conversationDeletedMessage(
+        conversation: ConversationModelStore,
+        messageStore: AnyDeletedMessageModelStore,
+    ): ConversationDeletedMessageViewModelBundle {
+        return this._cache.conversationDeletedMessage
+            .getOrCreate(
+                conversation,
+                () =>
+                    new WeakValueMap<
+                        AnyDeletedMessageModelStore,
+                        ConversationDeletedMessageViewModelBundle
+                    >(),
+            )
+            .getOrCreate(messageStore, () =>
+                getConversationDeletedMessageViewModelBundle(this._services, messageStore),
+            );
     }
 
     /** @inheritdoc */
