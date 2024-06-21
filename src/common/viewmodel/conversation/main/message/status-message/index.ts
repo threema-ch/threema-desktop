@@ -4,7 +4,7 @@ import type {ServicesForViewModel} from '~/common/viewmodel';
 import {
     getConversationStatusMessageViewModelStore,
     type ConversationStatusMessageViewModelStore,
-} from '~/common/viewmodel/conversation/main/status-message/store';
+} from '~/common/viewmodel/conversation/main/message/status-message/store';
 
 export interface ConversationStatusMessageViewModelBundle extends PropertiesMarked {
     readonly type: 'status-message';

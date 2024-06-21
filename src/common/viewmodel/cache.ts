@@ -16,8 +16,8 @@ import type {ContactListItemViewModelBundle} from '~/common/viewmodel/contact/li
 import type {ConversationListViewModelBundle} from '~/common/viewmodel/conversation/list';
 import type {ConversationListItemViewModelBundle} from '~/common/viewmodel/conversation/list/item';
 import type {ConversationViewModelBundle} from '~/common/viewmodel/conversation/main';
-import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
-import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/conversation/main/status-message';
+import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
+import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/status-message';
 import type {DebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import type {ProfileViewModelStore} from '~/common/viewmodel/profile';
 import type {SearchViewModelBundle} from '~/common/viewmodel/search/nav';
@@ -38,9 +38,9 @@ export class ViewModelCache {
         ConversationModelStore,
         ConversationViewModelBundle
     >();
-    public readonly conversationMessage = new WeakValueMap<
+    public readonly conversationRegularMessage = new WeakValueMap<
         ConversationModelStore,
-        WeakValueMap<AnyMessageModelStore, ConversationMessageViewModelBundle>
+        WeakValueMap<AnyMessageModelStore, ConversationRegularMessageViewModelBundle>
     >();
     public readonly contactList = new LazyWeakRef<ContactListViewModelBundle>();
     public readonly contactListItem = new WeakValueMap<

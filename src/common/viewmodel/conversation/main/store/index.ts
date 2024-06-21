@@ -7,8 +7,8 @@ import {derive} from '~/common/utils/store/derived-store';
 import type {LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
 import type {ConversationViewModelController} from '~/common/viewmodel/conversation/main/controller';
-import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
-import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/conversation/main/status-message';
+import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
+import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/status-message';
 import {
     getLastMessage,
     getMessageSetStore,
@@ -38,7 +38,7 @@ export type ConversationViewModelStore = LocalStore<
  */
 export type ConversationMessageSetStore = LocalDerivedSetStore<
     SetOfAnyLocalMessageOrStatusMessageModelStore,
-    ConversationMessageViewModelBundle | ConversationStatusMessageViewModelBundle
+    ConversationRegularMessageViewModelBundle | ConversationStatusMessageViewModelBundle
 >;
 
 export function getConversationViewModelStore(

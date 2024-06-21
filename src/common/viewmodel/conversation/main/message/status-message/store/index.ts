@@ -3,8 +3,8 @@ import type {PropertiesMarked} from '~/common/utils/endpoint';
 import type {LocalStore} from '~/common/utils/store';
 import {derive, type GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
-import {getStatusMessageStatus} from '~/common/viewmodel/conversation/main/status-message/store/helpers';
-import type {ConversationStatusMessageViewModel} from '~/common/viewmodel/conversation/main/status-message/store/types';
+import {getStatusMessageStatus} from '~/common/viewmodel/conversation/main/message/status-message/store/helpers';
+import type {ConversationStatusMessageViewModel} from '~/common/viewmodel/conversation/main/message/status-message/store/types';
 
 export type ConversationStatusMessageViewModelStore = LocalStore<
     ConversationStatusMessageViewModel & PropertiesMarked

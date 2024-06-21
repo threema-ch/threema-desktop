@@ -1,5 +1,5 @@
 import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
-import type {AnyStatusMessageStatus} from '~/common/viewmodel/conversation/main/status-message/store/types';
+import type {AnyStatusMessageStatus} from '~/common/viewmodel/conversation/main/message/status-message/store/types';
 
 /**
  * Props accepted by the `StatusMessage` component.

@@ -2,7 +2,7 @@ import type {ConversationCategory, ConversationVisibility} from '~/common/enum';
 import type {u53} from '~/common/types';
 import type {PropertiesMarked} from '~/common/utils/endpoint';
 import type {LocalSetStore} from '~/common/utils/store/set-store';
-import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
+import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
@@ -21,7 +21,7 @@ export interface SearchViewModel {
  */
 export interface ConversationSearchResult extends PropertiesMarked {
     readonly category: ConversationCategory;
-    readonly lastMessage: ConversationMessageViewModelBundle | undefined;
+    readonly lastMessage: ConversationRegularMessageViewModelBundle | undefined;
     readonly lastUpdate: Date | undefined;
     readonly receiver: AnyReceiverData;
     readonly totalMessageCount: u53;
@@ -39,7 +39,7 @@ export interface MessageSearchResult extends PropertiesMarked {
             'id' | 'color' | 'initials' | 'name' | 'lookup' | 'type'
         >;
     };
-    readonly message: ConversationMessageViewModelBundle;
+    readonly message: ConversationRegularMessageViewModelBundle;
 }
 
 /**

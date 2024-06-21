@@ -12,7 +12,7 @@ import type {Remote} from '~/common/utils/endpoint';
 import type {IQueryableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import type {RemoteSetStore} from '~/common/utils/store/set-store';
-import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
+import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
 import type {
     ConversationSearchResult,
     MessageSearchResult,
@@ -152,8 +152,10 @@ export function receiverSearchResultSetStoreToReceiverPreviewListPropsStore(
 }
 
 function transformMessageProps(
-    viewModelController: Remote<ConversationMessageViewModelBundle>['viewModelController'],
-    viewModel: ReturnType<Remote<ConversationMessageViewModelBundle>['viewModelStore']['get']>,
+    viewModelController: Remote<ConversationRegularMessageViewModelBundle>['viewModelController'],
+    viewModel: ReturnType<
+        Remote<ConversationRegularMessageViewModelBundle>['viewModelStore']['get']
+    >,
     i18n: I18nType,
 ): Omit<MessagePreviewListProps['items'][u53]['messages'][u53], 'quote'> {
     return {
@@ -168,8 +170,10 @@ function transformMessageProps(
 }
 
 function transformMessageFileProps(
-    viewModelController: Remote<ConversationMessageViewModelBundle>['viewModelController'],
-    viewModel: ReturnType<Remote<ConversationMessageViewModelBundle>['viewModelStore']['get']>,
+    viewModelController: Remote<ConversationRegularMessageViewModelBundle>['viewModelController'],
+    viewModel: ReturnType<
+        Remote<ConversationRegularMessageViewModelBundle>['viewModelStore']['get']
+    >,
 ): MessagePreviewListProps['items'][u53]['messages'][u53]['file'] {
     if (viewModel.file !== undefined) {
         return {

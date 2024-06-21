@@ -57,7 +57,7 @@
   } from '~/common/utils/store';
   import type {ConversationViewModelBundle} from '~/common/viewmodel/conversation/main';
   import type {SendMessageEventDetail} from '~/common/viewmodel/conversation/main/controller/types';
-  import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
+  import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
   import type {FeatureSupport} from '~/common/viewmodel/conversation/main/store/types';
 
   const {uiLogging} = globals.unwrap();
@@ -484,7 +484,7 @@
   }
 
   async function getForwardedMessageViewModelBundle(): Promise<
-    Remote<ConversationMessageViewModelBundle> | undefined
+    Remote<ConversationRegularMessageViewModelBundle> | undefined
   > {
     if (routeParams?.forwardedMessage === undefined) {
       return undefined;

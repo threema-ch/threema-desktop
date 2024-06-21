@@ -10,8 +10,8 @@ import type {Remote} from '~/common/utils/endpoint';
 import type {IQueryableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {localeSort} from '~/common/utils/string';
-import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
-import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/conversation/main/status-message';
+import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
+import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/status-message';
 import type {ConversationMessageSetStore} from '~/common/viewmodel/conversation/main/store';
 
 /**
@@ -62,8 +62,10 @@ export function messageSetStoreToMessageListMessagesStore(
 }
 
 function getMessageProps(
-    viewModelController: Remote<ConversationMessageViewModelBundle>['viewModelController'],
-    viewModel: ReturnType<Remote<ConversationMessageViewModelBundle>['viewModelStore']['get']>,
+    viewModelController: Remote<ConversationRegularMessageViewModelBundle>['viewModelController'],
+    viewModel: ReturnType<
+        Remote<ConversationRegularMessageViewModelBundle>['viewModelStore']['get']
+    >,
     i18n: I18nType,
 ): Omit<MessageListMessage, 'quote'> {
     return {
@@ -103,8 +105,10 @@ function getMessageProps(
 }
 
 function getMessageFileProps(
-    viewModelController: Remote<ConversationMessageViewModelBundle>['viewModelController'],
-    viewModel: ReturnType<Remote<ConversationMessageViewModelBundle>['viewModelStore']['get']>,
+    viewModelController: Remote<ConversationRegularMessageViewModelBundle>['viewModelController'],
+    viewModel: ReturnType<
+        Remote<ConversationRegularMessageViewModelBundle>['viewModelStore']['get']
+    >,
 ): MessageListMessage['file'] {
     if (viewModel.file !== undefined) {
         return {
@@ -117,7 +121,9 @@ function getMessageFileProps(
 }
 
 export function getMessageReactionsProps(
-    viewModel: ReturnType<Remote<ConversationMessageViewModelBundle>['viewModelStore']['get']>,
+    viewModel: ReturnType<
+        Remote<ConversationRegularMessageViewModelBundle>['viewModelStore']['get']
+    >,
     i18n: I18nType,
 ): MessageListMessage['reactions'] {
     return viewModel.reactions

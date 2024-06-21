@@ -14,26 +14,26 @@ import {
     getMessageSender,
     getMessageStatus,
     getMessageText,
-} from '~/common/viewmodel/conversation/main/message/store/helpers';
-import type {ConversationMessageViewModel} from '~/common/viewmodel/conversation/main/message/store/types';
+} from '~/common/viewmodel/conversation/main/message/regular-message/store/helpers';
+import type {ConversationRegularMessageViewModel} from '~/common/viewmodel/conversation/main/message/regular-message/store/types';
 
-export type ConversationMessageViewModelStore = LocalStore<
-    ConversationMessageViewModel & PropertiesMarked
+export type ConversationRegularMessageViewModelStore = LocalStore<
+    ConversationRegularMessageViewModel & PropertiesMarked
 >;
 
-export function getConversationMessageViewModelStore(
+export function getConversationRegularMessageViewModelStore(
     log: Logger,
     services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     messageModelStore: AnyMessageModelStore,
     conversationModelStore: ConversationModelStore,
     resolveQuote: boolean,
-): ConversationMessageViewModelStore {
+): ConversationRegularMessageViewModelStore {
     const {endpoint} = services;
 
     // eslint-disable-next-line arrow-body-style
     return derive([messageModelStore], ([{currentValue: messageModel}], getAndSubscribe) => {
-        const conversationMessageViewModel: ConversationMessageViewModel =
-            getConversationMessageViewModel(
+        const conversationRegularMessageViewModel: ConversationRegularMessageViewModel =
+            getConversationRegularMessageViewModel(
                 log,
                 services,
                 messageModel,
@@ -43,19 +43,19 @@ export function getConversationMessageViewModelStore(
             );
 
         return endpoint.exposeProperties({
-            ...conversationMessageViewModel,
+            ...conversationRegularMessageViewModel,
         });
     });
 }
 
-function getConversationMessageViewModel(
+function getConversationRegularMessageViewModel(
     log: Logger,
     services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     messageModel: AnyMessageModel,
     conversationModelStore: ConversationModelStore,
     getAndSubscribe: GetAndSubscribeFunction,
     resolveQuote: boolean,
-): ConversationMessageViewModel {
+): ConversationRegularMessageViewModel {
     if (messageModel.type === MessageType.DELETED) {
         return {
             type: 'message',

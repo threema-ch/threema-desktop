@@ -4,7 +4,7 @@ import type {LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
 import type {ConversationListItemViewModel} from '~/common/viewmodel/conversation/list/item/store/types';
-import {getConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
+import {getConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
 import {getCallData} from '~/common/viewmodel/utils/call';
 import {getReceiverData} from '~/common/viewmodel/utils/receiver';
 
@@ -31,7 +31,7 @@ export function getConversationListItemViewModelStore(
                 lastMessage:
                     lastMessageModelStore === undefined
                         ? undefined
-                        : getConversationMessageViewModelBundle(
+                        : getConversationRegularMessageViewModelBundle(
                               services,
                               lastMessageModelStore,
                               store,

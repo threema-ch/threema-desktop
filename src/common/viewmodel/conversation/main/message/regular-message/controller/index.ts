@@ -5,7 +5,7 @@ import {unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, type ProxyMarked} from '~/common/utils/endpoint';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 
-export interface IConversationMessageViewModelController extends ProxyMarked {
+export interface IConversationRegularMessageViewModelController extends ProxyMarked {
     /**
      * React to a message using the "acknowledge" reaction.
      */
@@ -25,8 +25,8 @@ export interface IConversationMessageViewModelController extends ProxyMarked {
     readonly getBlob: () => Promise<FileBytesAndMediaType | undefined>;
 }
 
-export class ConversationMessageViewModelController
-    implements IConversationMessageViewModelController
+export class ConversationRegularMessageViewModelController
+    implements IConversationRegularMessageViewModelController
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 

@@ -1,7 +1,7 @@
 import type {DbContactUid} from '~/common/db';
 import type {MessageId} from '~/common/network/types';
 import type {Dimensions, f64, u53} from '~/common/types';
-import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
+import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
 import type {AnyMention} from '~/common/viewmodel/utils/mentions';
 import type {ContactReceiverData} from '~/common/viewmodel/utils/receiver';
 import type {AnySender, SenderDataSelf} from '~/common/viewmodel/utils/sender';
@@ -55,7 +55,7 @@ interface StatusDetailData {
  * possible to the `MessageProps` that the message component expects, excluding props that only
  * exist in the ui layer.
  */
-export interface ConversationMessageViewModel {
+export interface ConversationRegularMessageViewModel {
     readonly type: 'message';
     readonly direction: 'inbound' | 'outbound';
     readonly file?: {
@@ -92,7 +92,7 @@ export interface ConversationMessageViewModel {
      * Ordinal for message ordering in the conversation list.
      */
     readonly ordinal: u53;
-    readonly quote?: ConversationMessageViewModelBundle | 'not-found' | undefined;
+    readonly quote?: ConversationRegularMessageViewModelBundle | 'not-found' | undefined;
     readonly reactions: readonly ReactionData[];
     readonly sender?: AnyMessageSender;
     readonly status: StatusData;

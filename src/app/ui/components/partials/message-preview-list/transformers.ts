@@ -10,13 +10,15 @@ import type {MessageId} from '~/common/network/types';
 import type {u53} from '~/common/types';
 import type {Remote} from '~/common/utils/endpoint';
 import {localeSort} from '~/common/utils/string';
-import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
+import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
 
 /**
  * Returns the message's reactions props in the shape expected by {@link MessageProps}.
  */
 export function transformMessageReactionsProps(
-    viewModel: ReturnType<Remote<ConversationMessageViewModelBundle>['viewModelStore']['get']>,
+    viewModel: ReturnType<
+        Remote<ConversationRegularMessageViewModelBundle>['viewModelStore']['get']
+    >,
     i18n: I18nType,
 ): MessageProps['reactions'] {
     return viewModel.reactions

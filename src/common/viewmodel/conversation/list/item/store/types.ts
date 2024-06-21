@@ -1,6 +1,6 @@
 import type {ConversationCategory, ConversationVisibility} from '~/common/enum';
 import type {u53} from '~/common/types';
-import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
+import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
 import type {AnyCallData} from '~/common/viewmodel/utils/call';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
@@ -12,7 +12,7 @@ import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 export interface ConversationListItemViewModel {
     readonly category: ConversationCategory;
     readonly call: AnyCallData | undefined;
-    readonly lastMessage: ConversationMessageViewModelBundle | undefined;
+    readonly lastMessage: ConversationRegularMessageViewModelBundle | undefined;
     readonly lastUpdate: Date | undefined;
     readonly receiver: AnyReceiverData;
     readonly totalMessageCount: u53;

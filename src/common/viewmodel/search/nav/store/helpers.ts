@@ -4,7 +4,7 @@ import {isNotUndefined} from '~/common/utils/assert';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
-import {getConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
+import {getConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
 import type {SearchParams} from '~/common/viewmodel/search/nav/controller';
 import type {
     ConversationSearchResult,
@@ -84,7 +84,7 @@ export function getConversationSearchResult(
         lastMessage:
             lastMessageModelStore === undefined
                 ? undefined
-                : getConversationMessageViewModelBundle(
+                : getConversationRegularMessageViewModelBundle(
                       services,
                       lastMessageModelStore,
                       conversationModelStore,
@@ -141,7 +141,7 @@ export function getMessageSearchResults(
                             getAndSubscribe,
                         ),
                     },
-                    message: getConversationMessageViewModelBundle(
+                    message: getConversationRegularMessageViewModelBundle(
                         services,
                         messageModelStore,
                         conversationModelStore,

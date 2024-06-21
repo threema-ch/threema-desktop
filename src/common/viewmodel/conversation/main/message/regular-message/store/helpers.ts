@@ -1,30 +1,34 @@
 import {ImageRenderingType, MessageDirection, MessageReaction, MessageType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {ConversationModelStore} from '~/common/model/conversation';
-import type {AnyFileBasedMessageModel, AnyMessageModel} from '~/common/model/types/message';
+import type {
+    AnyFileBasedMessageModel,
+    AnyMessageModel,
+    AnyNonDeletedMessageModel,
+} from '~/common/model/types/message';
 import {getUserInitials} from '~/common/model/user';
 import {unreachable} from '~/common/utils/assert';
 import {u64ToHexLe} from '~/common/utils/number';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
-import {getConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
-import type {ConversationMessageViewModel} from '~/common/viewmodel/conversation/main/message/store/types';
+import {getConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
+import type {ConversationRegularMessageViewModel} from '~/common/viewmodel/conversation/main/message/regular-message/store/types';
 import {getMentions} from '~/common/viewmodel/utils/mentions';
 import {getSenderData} from '~/common/viewmodel/utils/sender';
 
 /**
- * Returns the {@link ConversationMessageViewModelBundle} of the quoted message in the supplied
- * {@link messageModel}, if the original message contains a quote, else returns `undefined`. If the
- * message contains a quote which can't be resolved (i.e., its {@link MessageId} doesn't exist in
- * the db) `"not-found"` is returned instead.
+ * Returns the {@link ConversationRegularMessageViewModelBundle} of the quoted message in the
+ * supplied {@link messageModel}, if the original message contains a quote, else returns
+ * `undefined`. If the message contains a quote which can't be resolved (i.e., its {@link MessageId}
+ * doesn't exist in the db) `"not-found"` is returned instead.
  */
 export function getMessageQuote(
     log: Logger,
     services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
-    messageModel: AnyMessageModel,
+    messageModel: AnyNonDeletedMessageModel,
     conversationModelStore: ConversationModelStore,
     getAndSubscribe: GetAndSubscribeFunction,
-): ConversationMessageViewModel['quote'] {
+): ConversationRegularMessageViewModel['quote'] {
     if (messageModel.type !== MessageType.TEXT) {
         // Quotes are only permitted in text messages.
         return undefined;
@@ -59,7 +63,7 @@ export function getMessageQuote(
         return undefined;
     }
 
-    return getConversationMessageViewModelBundle(
+    return getConversationRegularMessageViewModelBundle(
         services,
         quotedMessageModelStore,
         conversationModelStore,
@@ -69,13 +73,13 @@ export function getMessageQuote(
 
 /**
  * Returns the reactions that belong to a specific message for the
- * {@link ConversationMessageViewModel}.
+ * {@link ConversationRegularMessageViewModel}.
  */
 export function getMessageReactions(
     services: Pick<ServicesForViewModel, 'device' | 'model'>,
     messageModel: AnyMessageModel,
     getAndSubscribe: GetAndSubscribeFunction,
-): ConversationMessageViewModel['reactions'] {
+): ConversationRegularMessageViewModel['reactions'] {
     return messageModel.view.reactions.map((reaction) => ({
         at: reaction.reactionAt,
         direction:
@@ -86,11 +90,11 @@ export function getMessageReactions(
 }
 
 /**
- * Returns data related to the status of a message for the {@link ConversationMessageViewModel}.
+ * Returns data related to the status of a message for the {@link ConversationRegularMessageViewModel}.
  */
 export function getMessageStatus(
     messageModel: AnyMessageModel,
-): ConversationMessageViewModel['status'] {
+): ConversationRegularMessageViewModel['status'] {
     const {view} = messageModel;
 
     return {
@@ -143,13 +147,13 @@ export function getMessageStatus(
 }
 
 /**
- * Returns data related to the sender of a message for the {@link ConversationMessageViewModel}.
+ * Returns data related to the sender of a message for the {@link ConversationRegularMessageViewModel}.
  */
 export function getMessageSender(
     services: Pick<ServicesForViewModel, 'device' | 'model'>,
     messageModel: AnyMessageModel,
     getAndSubscribe: GetAndSubscribeFunction,
-): Required<ConversationMessageViewModel>['sender'] {
+): Required<ConversationRegularMessageViewModel>['sender'] {
     switch (messageModel.ctx) {
         case MessageDirection.INBOUND: {
             // TODO(DESK-770): Use `getSenderData` here instead
@@ -184,13 +188,13 @@ export function getMessageSender(
 }
 
 /**
- * Returns the text of a message for the {@link ConversationMessageViewModel}.
+ * Returns the text of a message for the {@link ConversationRegularMessageViewModel}.
  */
 export function getMessageText(
     services: Pick<ServicesForViewModel, 'model'>,
     messageModel: AnyMessageModel,
     getAndSubscribe: GetAndSubscribeFunction,
-): ConversationMessageViewModel['text'] | undefined {
+): ConversationRegularMessageViewModel['text'] | undefined {
     switch (messageModel.type) {
         case 'text':
             return {
@@ -217,23 +221,25 @@ export function getMessageText(
 
 export function getMessageHistory(
     messageModel: AnyMessageModel,
-): ConversationMessageViewModel['history'] {
+): ConversationRegularMessageViewModel['history'] {
     return messageModel.view.history;
 }
 
 /**
- * Returns file data related to a message for the {@link ConversationMessageViewModel}.
+ * Returns file data related to a message for the {@link ConversationRegularMessageViewModel}.
  */
 export function getMessageFile(
     messageModel: AnyMessageModel,
-): ConversationMessageViewModel['file'] {
+): ConversationRegularMessageViewModel['file'] {
     const {type} = messageModel;
     if (type === 'text' || type === 'deleted') {
         return undefined;
     }
 
     const renderingType = type === 'image' ? messageModel.view.renderingType : undefined;
-    let imageRenderingType: NonNullable<ConversationMessageViewModel['file']>['imageRenderingType'];
+    let imageRenderingType: NonNullable<
+        ConversationRegularMessageViewModel['file']
+    >['imageRenderingType'];
     switch (renderingType) {
         case ImageRenderingType.REGULAR:
             imageRenderingType = 'regular';
@@ -271,7 +277,7 @@ export function getMessageFile(
 
 function getMessageFileSyncDirection(
     messageModel: AnyFileBasedMessageModel,
-): Required<ConversationMessageViewModel>['file']['sync']['direction'] {
+): Required<ConversationRegularMessageViewModel>['file']['sync']['direction'] {
     if (messageModel.view.state === 'unsynced' || messageModel.view.state === 'syncing') {
         const fileData = messageModel.view.fileData;
         const blobId = messageModel.view.blobId;
@@ -288,7 +294,7 @@ function getMessageFileSyncDirection(
 
 function getMessageFileThumbnail(
     messageModel: AnyFileBasedMessageModel,
-): Required<ConversationMessageViewModel>['file']['thumbnail'] {
+): Required<ConversationRegularMessageViewModel>['file']['thumbnail'] {
     switch (messageModel.type) {
         case 'file':
         case 'audio':

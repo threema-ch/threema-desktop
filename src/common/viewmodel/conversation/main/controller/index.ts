@@ -26,7 +26,7 @@ import type {
     SendFileBasedMessageEventDetail,
     OutboundMessageInitFragment,
 } from '~/common/viewmodel/conversation/main/controller/types';
-import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
+import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
 import {
     getOngoingGroupCallViewModelBundle,
     type OngoingGroupCallViewModelBundle,
@@ -46,7 +46,7 @@ export interface IConversationViewModelController extends ProxyMarked {
     readonly findForwardedMessage: (
         receiverLookup: DbReceiverLookup,
         messageId: MessageId,
-    ) => ConversationMessageViewModelBundle | undefined;
+    ) => ConversationRegularMessageViewModelBundle | undefined;
     readonly markAllMessagesAsRead: () => Promise<void>;
     readonly pin: () => Promise<void>;
     readonly sendMessage: (messageEventDetail: Remote<SendMessageEventDetail>) => Promise<void>;
@@ -154,7 +154,7 @@ export class ConversationViewModelController implements IConversationViewModelCo
     public findForwardedMessage(
         receiverLookup: DbReceiverLookup,
         messageId: MessageId,
-    ): ConversationMessageViewModelBundle | undefined {
+    ): ConversationRegularMessageViewModelBundle | undefined {
         const forwardedConversationModelStore =
             this._services.model.conversations.getForReceiver(receiverLookup);
         if (forwardedConversationModelStore === undefined) {
@@ -168,7 +168,7 @@ export class ConversationViewModelController implements IConversationViewModelCo
             return undefined;
         }
 
-        return this._viewModelRepository.conversationMessage(
+        return this._viewModelRepository.conversationRegularMessage(
             forwardedConversationModelStore,
             forwardedMessageModelStore,
         );

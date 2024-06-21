@@ -3,7 +3,7 @@ import type {AnyStatusMessageModel} from '~/common/model/types/status';
 import {unreachable} from '~/common/utils/assert';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
-import type {ConversationStatusMessageViewModel} from '~/common/viewmodel/conversation/main/status-message/store/types';
+import type {ConversationStatusMessageViewModel} from '~/common/viewmodel/conversation/main/message/status-message/store/types';
 import {getContactDisplayName} from '~/common/viewmodel/utils/contact';
 
 export function getStatusMessageStatus(

@@ -134,7 +134,7 @@ export function getMessageSetStore(
         deltaSetStore,
         (messageStore) => {
             if (MessageTypeUtils.containsString(messageStore.get().type)) {
-                return viewModelRepository.conversationMessage(
+                return viewModelRepository.conversationRegularMessage(
                     conversationModelStore,
                     messageStore as AnyMessageModelStore,
                 );

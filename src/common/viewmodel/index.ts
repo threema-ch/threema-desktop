@@ -37,13 +37,13 @@ import {
     getConversationViewModelBundle,
 } from '~/common/viewmodel/conversation/main';
 import {
-    getConversationMessageViewModelBundle,
-    type ConversationMessageViewModelBundle,
-} from '~/common/viewmodel/conversation/main/message';
+    getConversationRegularMessageViewModelBundle,
+    type ConversationRegularMessageViewModelBundle,
+} from '~/common/viewmodel/conversation/main/message/regular-message';
 import {
     getConversationStatusMessageViewModelBundle,
     type ConversationStatusMessageViewModelBundle,
-} from '~/common/viewmodel/conversation/main/status-message';
+} from '~/common/viewmodel/conversation/main/message/status-message';
 import {type DebugPanelViewModel, getDebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/viewmodel/profile';
 import {getSearchViewModelBundle, type SearchViewModelBundle} from '~/common/viewmodel/search/nav';
@@ -80,14 +80,14 @@ export interface IViewModelRepository extends ProxyMarked {
     readonly conversation: (receiver: DbReceiverLookup) => ConversationViewModelBundle | undefined;
 
     /**
-     * Returns the {@link ConversationMessageViewModelBundle} that belongs to the given
+     * Returns the {@link ConversationRegularMessageViewModelBundle} that belongs to the given
      * {@link messageStore} in the given {@link conversation}. Note: If the message contains a
      * quote, it will always be resolved.
      */
-    readonly conversationMessage: (
+    readonly conversationRegularMessage: (
         conversation: ConversationModelStore,
         messageStore: AnyMessageModelStore,
-    ) => ConversationMessageViewModelBundle;
+    ) => ConversationRegularMessageViewModelBundle;
 
     /**
      * Returns the {@link ConversationStatusMessageViewModelBundle} that belongs to the given
@@ -164,17 +164,21 @@ export class ViewModelRepository implements IViewModelRepository {
     }
 
     /** @inheritdoc */
-    public conversationMessage(
+    public conversationRegularMessage(
         conversation: ConversationModelStore,
         messageStore: AnyMessageModelStore,
-    ): ConversationMessageViewModelBundle {
-        return this._cache.conversationMessage
+    ): ConversationRegularMessageViewModelBundle {
+        return this._cache.conversationRegularMessage
             .getOrCreate(
                 conversation,
-                () => new WeakValueMap<AnyMessageModelStore, ConversationMessageViewModelBundle>(),
+                () =>
+                    new WeakValueMap<
+                        AnyMessageModelStore,
+                        ConversationRegularMessageViewModelBundle
+                    >(),
             )
             .getOrCreate(messageStore, () =>
-                getConversationMessageViewModelBundle(
+                getConversationRegularMessageViewModelBundle(
                     this._services,
                     messageStore,
                     conversation,
