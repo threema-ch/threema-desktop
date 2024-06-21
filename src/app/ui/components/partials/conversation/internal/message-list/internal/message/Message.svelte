@@ -4,7 +4,6 @@
 -->
 <script lang="ts">
   import {globals} from '~/app/globals';
-  import Avatar from '~/app/ui/components/atoms/avatar/Avatar.svelte';
   import OverlayProvider from '~/app/ui/components/hocs/overlay-provider/OverlayProvider.svelte';
   import BasicMessage from '~/app/ui/components/molecules/message/Message.svelte';
   import type {MessageProps as BasicMessageProps} from '~/app/ui/components/molecules/message/props';
@@ -16,6 +15,7 @@
   } from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/helpers';
   import type {MessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
   import {transformMessageFileProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/transformers';
+  import MessageAvatarProvider from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-avatar-provider/MessageAvatarProvider.svelte';
   import MessageContextMenuProvider from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-context-menu-provider/MessageContextMenuProvider.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
@@ -26,11 +26,9 @@
   import {reactive} from '~/app/ui/utils/svelte';
   import {escapeHtmlUnsafeChars} from '~/app/ui/utils/text';
   import {formatDateLocalized} from '~/app/ui/utils/timestamp';
-  import {ReceiverType} from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
   import {EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES} from '~/common/network/protocol/constants';
   import {assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
-  import {type IQueryableStore, ReadableStore} from '~/common/utils/store';
 
   const {uiLogging, systemTime} = globals.unwrap();
   const log = uiLogging.logger('ui.component.message');
@@ -52,31 +50,10 @@
   export let text: $$Props['text'] = undefined;
 
   const {
-    router,
     settings: {appearance},
   } = services;
 
   let quoteProps: BasicMessageProps['quote'];
-
-  let profilePictureStore: IQueryableStore<Blob | undefined> = new ReadableStore(undefined);
-
-  function handleClickAvatar(): void {
-    if (sender === undefined) {
-      log.error('Clicked avatar when sender was undefined');
-      return;
-    }
-    if (sender.type === 'self') {
-      log.error('Sender type is self of clicked avatar');
-      return;
-    }
-
-    router.goToConversation({
-      receiverLookup: {
-        type: ReceiverType.CONTACT,
-        uid: sender.uid,
-      },
-    });
-  }
 
   function handleClickCopyOption(): void {
     if (text !== undefined) {
@@ -186,36 +163,6 @@
     handleSaveAsFile(file, log, $i18n.t, toast.addSimpleFailure).catch(assertUnreachable);
   }
 
-  function updateProfilePictureStore(
-    conversationValue: typeof conversation,
-    senderValue: typeof sender,
-    directionValue: typeof direction,
-  ): void {
-    if (
-      conversationValue.receiver.type === 'group' &&
-      senderValue !== undefined &&
-      directionValue === 'inbound' &&
-      senderValue.type !== 'self'
-    ) {
-      services.profilePicture
-        .getProfilePictureForReceiver({
-          type: ReceiverType.CONTACT,
-          uid: senderValue.uid,
-        })
-        .then((store) => {
-          if (store === undefined) {
-            profilePictureStore = new ReadableStore(undefined);
-          } else {
-            profilePictureStore = store;
-          }
-        })
-        .catch((error: unknown) => {
-          log.warn(`Failed to fetch profile picture store: ${error}`);
-          profilePictureStore = new ReadableStore(undefined);
-        });
-    }
-  }
-
   function updateQuoteProps(rawQuote: $$Props['quote']): void {
     if (rawQuote === undefined) {
       quoteProps = undefined;
@@ -302,142 +249,127 @@
   );
 
   $: updateQuoteProps(quote);
-
-  $: updateProfilePictureStore(conversation, sender, direction);
 </script>
 
 <div class="container">
-  {#if conversation.receiver.type === 'group' && sender !== undefined && direction === 'inbound'}
-    <span class="avatar">
-      <Avatar
-        byteStore={profilePictureStore}
-        color={sender.color}
-        description={$i18n.t('contacts.hint--profile-picture', {
-          name: sender.name,
-        })}
-        initials={sender.initials}
-        size={24}
-        on:click={handleClickAvatar}
-      />
-    </span>
-  {/if}
+  <MessageAvatarProvider {conversation} {direction} {services} {sender}>
+    <MessageContextMenuProvider
+      {boundary}
+      placement={direction === 'inbound' ? 'right' : 'left'}
+      enabledOptions={{
+        copyLink: true,
+        copySelection: true,
+        copyImage: file !== undefined && file.type === 'image',
+        copy: text !== undefined,
+        edit: showEditButton ? {disabled: !conversation.isEditingSupported} : false,
+        saveAsFile: file !== undefined,
+        acknowledge: showReactionButtons
+          ? {
+              used: reactions.some(
+                (reaction) => reaction.direction === 'outbound' && reaction.type === 'acknowledged',
+              ),
+            }
+          : false,
+        decline: showReactionButtons
+          ? {
+              used: reactions.some(
+                (reaction) => reaction.direction === 'outbound' && reaction.type === 'declined',
+              ),
+            }
+          : false,
+        quote:
+          (conversation.receiver.type === 'contact'
+            ? !conversation.receiver.isBlocked
+            : !conversation.receiver.isDisabled) && status.deleted === undefined,
+        // TODO(DESK-1400)
+        forward: text !== undefined && file === undefined && status.deleted === undefined,
+        openDetails: true,
+        deleteMessage: true,
+      }}
+      on:clickcopyimageoption={handleClickCopyImageOption}
+      on:clickcopymessageoption={handleClickCopyOption}
+      on:clicksaveasfileoption={handleClickSaveAsFileOption}
+      on:clickacknowledgeoption={handleClickAcknowledgeOption}
+      on:clickdeclineoption={handleClickDeclineOption}
+      on:clickquoteoption
+      on:clickeditoption
+      on:clickforwardoption
+      on:clickopendetailsoption
+      on:clickdeleteoption
+    >
+      <div class="message" slot="message">
+        <OverlayProvider show={isUnsyncedOrSyncingFile(file)}>
+          <svelte:fragment slot="above">
+            {#if isUnsyncedOrSyncingFile(file)}
+              {@const {sync} = file}
 
-  <MessageContextMenuProvider
-    {boundary}
-    placement={direction === 'inbound' ? 'right' : 'left'}
-    enabledOptions={{
-      copyLink: true,
-      copySelection: true,
-      copyImage: file !== undefined && file.type === 'image',
-      copy: text !== undefined,
-      edit: showEditButton ? {disabled: !conversation.isEditingSupported} : false,
-      saveAsFile: file !== undefined,
-      acknowledge: showReactionButtons
-        ? {
-            used: reactions.some(
-              (reaction) => reaction.direction === 'outbound' && reaction.type === 'acknowledged',
-            ),
-          }
-        : false,
-      decline: showReactionButtons
-        ? {
-            used: reactions.some(
-              (reaction) => reaction.direction === 'outbound' && reaction.type === 'declined',
-            ),
-          }
-        : false,
-      quote:
-        (conversation.receiver.type === 'contact'
-          ? !conversation.receiver.isBlocked
-          : !conversation.receiver.isDisabled) && status.deleted === undefined,
-      // TODO(DESK-1400)
-      forward: text !== undefined && file === undefined && status.deleted === undefined,
-      openDetails: true,
-      deleteMessage: true,
-    }}
-    on:clickcopyimageoption={handleClickCopyImageOption}
-    on:clickcopymessageoption={handleClickCopyOption}
-    on:clicksaveasfileoption={handleClickSaveAsFileOption}
-    on:clickacknowledgeoption={handleClickAcknowledgeOption}
-    on:clickdeclineoption={handleClickDeclineOption}
-    on:clickquoteoption
-    on:clickeditoption
-    on:clickforwardoption
-    on:clickopendetailsoption
-    on:clickdeleteoption
-  >
-    <div class="message" slot="message">
-      <OverlayProvider show={isUnsyncedOrSyncingFile(file)}>
-        <svelte:fragment slot="above">
-          {#if isUnsyncedOrSyncingFile(file)}
-            {@const {sync} = file}
+              <button class="sync-button" on:click={handleClickSync}>
+                {#if sync.state === 'unsynced'}
+                  <MdIcon theme="Filled" title={getTranslatedSyncButtonTitle(file, $i18n.t)}>
+                    {#if sync.direction === 'download'}
+                      file_download
+                    {:else if sync.direction === 'upload'}
+                      file_upload
+                    {:else if sync.direction === undefined}
+                      help
+                    {:else}
+                      {unreachable(sync.direction)}
+                    {/if}
+                  </MdIcon>
+                {:else if sync.state === 'syncing'}
+                  <!-- TODO(DESK-948): Cancellation <MdIcon theme="Filled">close</MdIcon>. -->
+                  <IconButtonProgressBarOverlay />
+                {:else}
+                  {unreachable(sync.state)}
+                {/if}
+              </button>
+            {/if}
+          </svelte:fragment>
 
-            <button class="sync-button" on:click={handleClickSync}>
-              {#if sync.state === 'unsynced'}
-                <MdIcon theme="Filled" title={getTranslatedSyncButtonTitle(file, $i18n.t)}>
-                  {#if sync.direction === 'download'}
-                    file_download
-                  {:else if sync.direction === 'upload'}
-                    file_upload
-                  {:else if sync.direction === undefined}
-                    help
-                  {:else}
-                    {unreachable(sync.direction)}
-                  {/if}
-                </MdIcon>
-              {:else if sync.state === 'syncing'}
-                <!-- TODO(DESK-948): Cancellation <MdIcon theme="Filled">close</MdIcon>. -->
-                <IconButtonProgressBarOverlay />
-              {:else}
-                {unreachable(sync.state)}
-              {/if}
-            </button>
-          {/if}
-        </svelte:fragment>
-
-        <svelte:fragment slot="below">
-          <!--TODO(DESK-771) handle distribution list conversation type-->
-          <BasicMessage
-            alt={$i18n.t('messaging.hint--media-thumbnail')}
-            content={htmlContent === undefined
-              ? undefined
-              : {
-                  sanitizedHtml: htmlContent,
-                }}
-            {direction}
-            file={transformMessageFileProps(file, id, conversation.receiver.lookup, services)}
-            {highlighted}
-            footerHint={status.edited
-              ? $i18n.t('messaging.prose--message-edited', 'Edited')
-              : undefined}
-            onError={(error) =>
-              log.error(
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                `An error occurred in a child component: ${extractErrorMessage(error, 'short')}`,
-              )}
-            options={{
-              hideSender: conversation.receiver.type !== 'contact',
-              indicatorOptions: {
-                hideStatus: conversation.receiver.type !== 'contact' && status.sent !== undefined,
-                fillReactions: conversation.receiver.type === 'contact',
-                alwaysShowNumber: conversation.receiver.type === 'group',
-              },
-              hideVideoPlayButton: isUnsyncedOrSyncingFile(file),
-            }}
-            quote={quoteProps}
-            {reactions}
-            {sender}
-            {status}
-            {timestamp}
-            on:clickfileinfo={handleClickFileInfo}
-            on:clickthumbnail
-            on:clickquote
-            on:completehighlightanimation
-          />
-        </svelte:fragment>
-      </OverlayProvider>
-    </div>
-  </MessageContextMenuProvider>
+          <svelte:fragment slot="below">
+            <!--TODO(DESK-771) handle distribution list conversation type-->
+            <BasicMessage
+              alt={$i18n.t('messaging.hint--media-thumbnail')}
+              content={htmlContent === undefined
+                ? undefined
+                : {
+                    sanitizedHtml: htmlContent,
+                  }}
+              {direction}
+              file={transformMessageFileProps(file, id, conversation.receiver.lookup, services)}
+              {highlighted}
+              footerHint={status.edited
+                ? $i18n.t('messaging.prose--message-edited', 'Edited')
+                : undefined}
+              onError={(error) =>
+                log.error(
+                  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                  `An error occurred in a child component: ${extractErrorMessage(error, 'short')}`,
+                )}
+              options={{
+                hideSender: conversation.receiver.type !== 'contact',
+                indicatorOptions: {
+                  hideStatus: conversation.receiver.type !== 'contact' && status.sent !== undefined,
+                  fillReactions: conversation.receiver.type === 'contact',
+                  alwaysShowNumber: conversation.receiver.type === 'group',
+                },
+                hideVideoPlayButton: isUnsyncedOrSyncingFile(file),
+              }}
+              quote={quoteProps}
+              {reactions}
+              {sender}
+              {status}
+              {timestamp}
+              on:clickfileinfo={handleClickFileInfo}
+              on:clickthumbnail
+              on:clickquote
+              on:completehighlightanimation
+            />
+          </svelte:fragment>
+        </OverlayProvider>
+      </div>
+    </MessageContextMenuProvider>
+  </MessageAvatarProvider>
 </div>
 
 <style lang="scss">
@@ -448,10 +380,6 @@
     align-items: start;
     justify-content: start;
     gap: rem(8px);
-
-    .avatar {
-      flex: none;
-    }
 
     .message {
       border-radius: rem(10px);
