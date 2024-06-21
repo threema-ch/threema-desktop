@@ -97,7 +97,7 @@
   }
 
   function handleClickAcknowledgeOption(): void {
-    actions.acknowledge?.().catch((error: unknown) => {
+    actions.acknowledge().catch((error: unknown) => {
       log.error(`Could not react to message: ${extractErrorMessage(ensureError(error), 'short')}`);
 
       toast.addSimpleFailure(
@@ -107,7 +107,7 @@
   }
 
   function handleClickDeclineOption(): void {
-    actions.decline?.().catch((error: unknown) => {
+    actions.decline().catch((error: unknown) => {
       log.error(`Could not react to message: ${extractErrorMessage(ensureError(error), 'short')}`);
 
       toast.addSimpleFailure(

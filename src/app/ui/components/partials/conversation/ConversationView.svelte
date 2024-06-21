@@ -417,8 +417,7 @@
       return;
     }
 
-    // TODO(DESK-1314)
-    // For file messages, we allow empty captions
+    // For file messages, we allow empty captions.
     if (event.detail.trim() === '' && composeBarState.quotedMessage?.props.file === undefined) {
       log.warn('Cannot change message to empty message');
       resetComposeBar();
@@ -426,7 +425,7 @@
       return;
     }
 
-    await composeBarState.editedMessage.actions.edit?.(event.detail).catch((error: unknown) => {
+    await composeBarState.editedMessage.actions.edit(event.detail).catch((error: unknown) => {
       log.error('Failed to update message with error:', error);
     });
     resetComposeBar();

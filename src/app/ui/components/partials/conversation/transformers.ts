@@ -109,24 +109,15 @@ function getMessageProps(
     return {
         type: viewModel.type,
         actions: {
-            acknowledge:
-                viewModel.status.deleted === undefined
-                    ? async () => {
-                          await viewModelController.acknowledge();
-                      }
-                    : undefined,
-            decline:
-                viewModel.status.deleted === undefined
-                    ? async () => {
-                          await viewModelController.decline();
-                      }
-                    : undefined,
-            edit:
-                viewModel.status.deleted === undefined
-                    ? async (newText: string) => {
-                          await viewModelController.edit(newText, new Date());
-                      }
-                    : undefined,
+            acknowledge: async () => {
+                await viewModelController.acknowledge();
+            },
+            decline: async () => {
+                await viewModelController.decline();
+            },
+            edit: async (newText: string) => {
+                await viewModelController.edit(newText, new Date());
+            },
         },
         direction: viewModel.direction,
         file: getMessageFileProps(viewModelController, viewModel),

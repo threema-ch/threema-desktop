@@ -13,9 +13,9 @@ import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
  */
 export interface RegularMessageProps {
     readonly actions: {
-        readonly acknowledge: (() => Promise<void>) | undefined;
-        readonly decline: (() => Promise<void>) | undefined;
-        readonly edit: ((newText: string) => Promise<void>) | undefined;
+        readonly acknowledge: () => Promise<void>;
+        readonly decline: () => Promise<void>;
+        readonly edit: (newText: string) => Promise<void>;
     };
     readonly boundary?: MessageContextMenuProviderProps['boundary'];
     readonly conversation: {
