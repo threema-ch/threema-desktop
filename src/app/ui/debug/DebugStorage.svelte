@@ -199,19 +199,17 @@
     <Button flavor="filled" on:click={resetAndUnlink}>
       <span class="icon-and-text"
         ><MdIcon theme="Filled">restart_alt</MdIcon>
-        Delete Data and Unlink{#if import.meta.env.DEBUG}¹{/if}
+        {#if import.meta.env.DEBUG}Unlink and Exit{:else}Unlink and Relink{/if}
       </span>
     </Button>
     <p>
-      <em>
-        This will delete the profile data on this device, unlink the device from your Threema ID and
-        restart.
-      </em>
       {#if import.meta.env.DEBUG}
-        <br />
+        <em> This will unlink the device from your device group and close the application.</em>
+      {:else}
         <em>
-          ¹ Due to the way the dev server is started, the button above will not be able to properly
-          restart the app in dev mode.
+          This will unlink the device from your device group, delete the profile data on this device
+          and restart. (Note that this will not work properly when not started through the launcher
+          binary.)
         </em>
       {/if}
     </p>
