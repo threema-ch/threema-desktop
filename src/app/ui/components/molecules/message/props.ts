@@ -62,7 +62,7 @@ export interface MessageProps {
     readonly footerHint?: string;
     readonly onError: (error: Error) => void;
     readonly options?: {
-        readonly hideSender?: boolean;
+        readonly showSender?: boolean;
         readonly hideVideoPlayButton?: boolean;
         readonly indicatorOptions?: IndicatorProps['options'];
     };

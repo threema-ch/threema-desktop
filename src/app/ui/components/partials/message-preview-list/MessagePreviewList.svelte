@@ -129,7 +129,7 @@
                     )}`,
                   )}
                 options={{
-                  hideSender: true,
+                  showSender: true,
                   hideVideoPlayButton: true,
                   indicatorOptions: {
                     hideStatus: true,

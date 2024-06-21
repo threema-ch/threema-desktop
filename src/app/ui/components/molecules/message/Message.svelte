@@ -1,6 +1,5 @@
 <!--
-  @component
-  Renders a chat message.
+  @component Renders a chat message.
 -->
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
@@ -90,7 +89,7 @@
   on:completehighlightanimation
 >
   <div class={`body ${direction}`} class:clickable>
-    {#if options.hideSender !== false && sender !== undefined && direction !== 'outbound'}
+    {#if options.showSender !== false && sender !== undefined && direction !== 'outbound'}
       <span class="sender">
         <Sender name={sender.name} color={sender.color} />
       </span>

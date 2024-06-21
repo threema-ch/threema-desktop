@@ -346,7 +346,7 @@
                   `An error occurred in a child component: ${extractErrorMessage(error, 'short')}`,
                 )}
               options={{
-                hideSender: conversation.receiver.type !== 'contact',
+                showSender: conversation.receiver.type !== 'contact',
                 indicatorOptions: {
                   hideStatus: conversation.receiver.type !== 'contact' && status.sent !== undefined,
                   fillReactions: conversation.receiver.type === 'contact',
