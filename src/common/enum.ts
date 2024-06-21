@@ -2446,6 +2446,10 @@ export namespace ElectronIpcCommand {
     export type UPDATE_APP_BADGE = typeof UPDATE_APP_BADGE;
     export const UPDATE_PUBLIC_KEY_PINS = 'updatePublicKeyPins';
     export type UPDATE_PUBLIC_KEY_PINS = typeof UPDATE_PUBLIC_KEY_PINS;
+    export const GET_SPELLCHECK = 'getSpellcheck';
+    export type GET_SPELLCHECK = typeof GET_SPELLCHECK;
+    export const SET_SPELLCHECK = 'setSpellcheck';
+    export type SET_SPELLCHECK = typeof SET_SPELLCHECK;
 }
 /**
  * ELECTRON

@@ -309,12 +309,20 @@
     "action--confirm": "Confirm and Restart",
     "label--application-log-path": "Application Log",
     "label--backend-worker-log-path": "Backend Worker Log",
-    "label--title-disable": "Disable Logging",
-    "label--title-enable": "Enable Logging",
+    "label--title-disable": "Turn off Logging",
+    "label--title-enable": "Turn on Logging",
     "prose--description-disable": "This will turn off logging. The following files will be emptied irrevocably:",
     "prose--description-enable": "The events will be logged to the following files:",
     "prose--warning-disable": "Turning off the logger will trigger a restart of the application.",
     "prose--warning-enable": "Turning on the logger will trigger a restart of the application."
+  },
+  "dialog--toggle-spellcheck": {
+    "action--cancel": "Cancel",
+    "action--confirm": "Confirm and Restart",
+    "label--title-disable": "Turn off Spellcheck",
+    "label--title-enable": "Turn on Spellcheck",
+    "prose--warning-disable": "Turning off the spellcheck will trigger a restart of the application.",
+    "prose--warning-enable": "Turning on the spellcheck will trigger a restart of the application."
   },
   "dialog--unrecoverable-state": {
     "action--cancel": "OK",
@@ -499,15 +507,18 @@
     "label--24-hour-time-format-value": "Enable 24-Hour Time",
     "label--contact-list": "Contact List",
     "label--locale": "Language",
-    "label--section-date-time": "Date and Time",
     "label--section-general-appearance": "General Appearance",
+    "label--section-language-and-region": "Language & Region",
     "label--show-inactive-contacts": "Show Inactive Contacts",
+    "label--spellcheck": "Spellcheck",
     "label--theme": "Theme",
     "label--theme-dark": "Dark",
     "label--theme-light": "Light",
     "label--theme-system": "System",
     "label--title": "Appearance Settings",
-    "prose--subtitle": "Theme, language, time format"
+    "prose--spellcheck-turned-off": "Spellcheck is currently turned off",
+    "prose--spellcheck-turned-on": "Spellcheck is currently turned on",
+    "prose--subtitle": "Theme, language, hour format"
   },
   "settings--devices": {
     "label--this-device": "This Device",

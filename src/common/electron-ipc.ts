@@ -82,6 +82,18 @@ export interface ElectronIpc {
      */
     readonly restartApp: () => void;
 
+    /*
+     * Return whether or not the spellcheck is enabled. Returns undefined if the spellchecker is not
+     * implemented.
+     */
+    readonly isSpellcheckEnabled: () => Promise<boolean | undefined>;
+
+    /**
+     * Enable or disable the spellcheck (currently only acts on MacOS). TODO(DESK-1458) Implement
+     * spellcheck for non darwin systems.
+     */
+    readonly setSpelleckEnabledAndRestart: (enabled: boolean) => void;
+
     /**
      * Delete the user profile and restart the application.
      *

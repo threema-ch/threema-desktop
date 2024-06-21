@@ -36,6 +36,9 @@ const appApi: ElectronIpc = {
     deleteProfileAndRestartApp: (options: DeleteProfileOptions) =>
         ipcRenderer.send(ElectronIpcCommand.DELETE_PROFILE_AND_RESTART, options),
     restartApp: () => ipcRenderer.send(ElectronIpcCommand.RESTART_APP),
+    isSpellcheckEnabled: () => ipcRenderer.invoke(ElectronIpcCommand.GET_SPELLCHECK),
+    setSpelleckEnabledAndRestart: (enabled) =>
+        ipcRenderer.send(ElectronIpcCommand.SET_SPELLCHECK, enabled),
     closeApp: () => ipcRenderer.send(ElectronIpcCommand.CLOSE_APP),
     removeOldProfiles: () => ipcRenderer.send(ElectronIpcCommand.REMOVE_OLD_PROFILES),
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return

@@ -765,6 +765,8 @@ export enum ElectronIpcCommand {
     CLOSE_APP = 'closeApp',
     UPDATE_APP_BADGE = 'updateAppBadge',
     UPDATE_PUBLIC_KEY_PINS = 'updatePublicKeyPins',
+    GET_SPELLCHECK = 'getSpellcheck',
+    SET_SPELLCHECK = 'setSpellcheck',
 }
 
 /**

@@ -306,7 +306,7 @@
   },
   "dialog--toggle-logger": {
     "action--cancel": "Abbrechen",
-    "action--confirm": "Bestätigen und neustarten",
+    "action--confirm": "Bestätigen und neu starten",
     "label--application-log-path": "Applikations-Log",
     "label--backend-worker-log-path": "Backend-Worker-Log",
     "label--title-disable": "Logging deaktivieren",
@@ -315,6 +315,14 @@
     "prose--description-enable": "Die Ereignisse werden in folgende Dateien geloggt:",
     "prose--warning-disable": "Die Deaktivierung des Loggers wird einen Neustart der App erzwingen.",
     "prose--warning-enable": "Die Aktivierung des Loggers wird einen Neustart der App erzwingen."
+  },
+  "dialog--toggle-spellcheck": {
+    "action--cancel": "Abbrechen",
+    "action--confirm": "Bestätigen und neustarten",
+    "label--title-disable": "Rechtschreibprüfung deaktivieren",
+    "label--title-enable": "Rechtschreibprüfung aktivieren",
+    "prose--warning-disable": "Die Deaktivierung der Rechtschreibprüfung wird einen Neustart der App erzwingen.",
+    "prose--warning-enable": "Die Aktivierung der Rechtschreibprüfung wird einen Neustart der App erzwingen."
   },
   "dialog--unrecoverable-state": {
     "action--cancel": "OK",
@@ -499,14 +507,17 @@
     "label--24-hour-time-format-value": "24-Stunden-Anzeige aktivieren",
     "label--contact-list": "Kontaktliste",
     "label--locale": "Sprache",
-    "label--section-date-time": "Datum und Uhrzeit",
     "label--section-general-appearance": "Allgemeines Erscheinungsbild",
+    "label--section-language-and-region": "Sprache & Region",
     "label--show-inactive-contacts": "Inaktive Kontakte anzeigen",
+    "label--spellcheck": "Rechtschreibprüfung",
     "label--theme": "Designstil",
     "label--theme-dark": "Dunkel",
     "label--theme-light": "Hell",
     "label--theme-system": "System",
     "label--title": "Erscheinungsbild",
+    "prose--spellcheck-turned-off": "Die Rechtschreibprüfung ist derzeit deaktiviert",
+    "prose--spellcheck-turned-on": "Die Rechtschreibprüfung ist derzeit aktiviert",
     "prose--subtitle": "Designstil, Sprache, Zeitformat"
   },
   "settings--devices": {

@@ -1,6 +1,5 @@
 <!--
-  @component
-  Renders a list of settings nav items that link to the various settings pages.
+  @component Renders a list of settings nav items that link to the various settings pages.
 -->
 <script lang="ts">
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
@@ -22,7 +21,9 @@
   }
 
   // TODO(DESK-1238): Let svelte 4 directly iterate over the object.
-  $: settingsNavItems = Object.entries<SettingsNavItemProps>({...getSettingsNavItems($i18n)});
+  $: settingsNavItems = Object.entries<SettingsNavItemProps>({
+    ...getSettingsNavItems($i18n),
+  });
 </script>
 
 <div class="settings-category-list">

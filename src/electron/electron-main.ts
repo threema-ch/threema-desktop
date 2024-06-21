@@ -778,6 +778,26 @@ function main(
             },
         );
 
+        electron.ipcMain.handle(ElectronIpcCommand.GET_SPELLCHECK, (_) => {
+            if (process.platform === 'darwin') {
+                return session.spellCheckerEnabled;
+            }
+            return undefined;
+        });
+
+        electron.ipcMain.on(ElectronIpcCommand.SET_SPELLCHECK, (event, enable: boolean) => {
+            validateSenderFrame(event.senderFrame);
+            // TODO(DESK-1458) Enable spellcheck in other systems as well
+            if (process.platform === 'darwin') {
+                updateElectronSettings({spellCheck: {enabled: enable}}, appPath, log);
+                restartApplication('restart');
+                return;
+            }
+            log.warn(
+                'Trying to set the spellcheck on a non-darwin platform. This is not implemented yet',
+            );
+        });
+
         electron.ipcMain.handle(ElectronIpcCommand.GET_LOG_INFORMATION, (event) => {
             validateSenderFrame(event.senderFrame);
             const logInfo: LogInfo = {
@@ -867,7 +887,7 @@ function main(
                 contextIsolation: true,
                 webviewTag: false,
                 navigateOnDragDrop: false,
-                spellcheck: false,
+                spellcheck: electronSettings.spellCheck.enabled,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 enableWebSQL: false,
             },
@@ -893,6 +913,42 @@ function main(
         });
         window.on('closed', () => {
             window = undefined;
+        });
+
+        window.webContents.on('context-menu', (event, params) => {
+            const menu = new electron.Menu();
+
+            // Do nothing if we don't have a window
+            if (window === undefined) {
+                return;
+            }
+
+            // Add each spelling suggestion
+            for (const suggestion of params.dictionarySuggestions) {
+                menu.append(
+                    new electron.MenuItem({
+                        label: suggestion,
+                        // eslint-disable-next-line @typescript-eslint/no-loop-func
+                        click: () => window?.webContents.replaceMisspelling(suggestion),
+                    }),
+                );
+            }
+
+            // Allow users to add the misspelled word to the dictionary
+            // TODO(DESK-1512) Add a mapping for different languages
+            if (params.misspelledWord.length !== 0) {
+                menu.append(
+                    new electron.MenuItem({
+                        label: 'Add to dictionary',
+                        click: () =>
+                            window?.webContents.session.addWordToSpellCheckerDictionary(
+                                params.misspelledWord,
+                            ),
+                    }),
+                );
+            }
+
+            menu.popup();
         });
 
         if (import.meta.env.DEBUG) {
@@ -1055,7 +1111,7 @@ function main(
 
         // Disable the dictionary for good
         session.setSpellCheckerDictionaryDownloadURL('https://threema.invalid/');
-        session.setSpellCheckerEnabled(false);
+        session.setSpellCheckerEnabled(electronSettings.spellCheck.enabled);
     }
 
     // Disallow navigation, creation of new windows or web views

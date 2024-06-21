@@ -18,6 +18,8 @@ const DEFAULT_WINDOW_HEIGHT = 720;
 const DEFAULT_LOGGING_ENABLED =
     import.meta.env.DEBUG || import.meta.env.BUILD_ENVIRONMENT === 'sandbox';
 
+const DEFAULT_SPELLCHECK_ENABLED = process.platform === 'darwin';
+
 const ELECTRON_SETTINGS_SCHEMA = v
     .object({
         window: v
@@ -41,6 +43,9 @@ const ELECTRON_SETTINGS_SCHEMA = v
                 enabled: v.boolean().optional().default(DEFAULT_LOGGING_ENABLED),
             })
             .rest(v.unknown()),
+        spellCheck: v.object({
+            enabled: v.boolean().optional().default(DEFAULT_SPELLCHECK_ENABLED),
+        }),
     })
     .rest(v.unknown());
 export type ElectronSettings = v.Infer<typeof ELECTRON_SETTINGS_SCHEMA>;
@@ -52,6 +57,9 @@ export const DEFAULT_ELECTRON_SETTINGS: ElectronSettings = {
     },
     logging: {
         enabled: DEFAULT_LOGGING_ENABLED,
+    },
+    spellCheck: {
+        enabled: DEFAULT_SPELLCHECK_ENABLED,
     },
 };
 
