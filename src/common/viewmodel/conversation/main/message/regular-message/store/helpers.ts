@@ -1,4 +1,4 @@
-import {ImageRenderingType, MessageDirection, MessageReaction, MessageType} from '~/common/enum';
+import {ImageRenderingType, MessageReaction, MessageType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import type {
@@ -6,7 +6,6 @@ import type {
     AnyMessageModel,
     AnyNonDeletedMessageModel,
 } from '~/common/model/types/message';
-import {getUserInitials} from '~/common/model/user';
 import {unreachable} from '~/common/utils/assert';
 import {u64ToHexLe} from '~/common/utils/number';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
@@ -87,104 +86,6 @@ export function getMessageReactions(
         type: reaction.reaction === MessageReaction.ACKNOWLEDGE ? 'acknowledged' : 'declined',
         sender: getSenderData(services, reaction.senderIdentity, getAndSubscribe),
     }));
-}
-
-/**
- * Returns data related to the status of a message for the {@link ConversationRegularMessageViewModel}.
- */
-export function getMessageStatus(
-    messageModel: AnyMessageModel,
-): ConversationRegularMessageViewModel['status'] {
-    const {view} = messageModel;
-
-    return {
-        created: {
-            at: view.createdAt,
-        },
-        ...(view.direction === MessageDirection.INBOUND
-            ? {
-                  received: {
-                      at: view.receivedAt,
-                  },
-              }
-            : {}),
-        ...(view.direction === MessageDirection.OUTBOUND && view.sentAt !== undefined
-            ? {
-                  sent: {
-                      at: view.sentAt,
-                  },
-              }
-            : {}),
-        ...(view.direction === MessageDirection.OUTBOUND && view.deliveredAt !== undefined
-            ? {
-                  delivered: {
-                      at: view.deliveredAt,
-                  },
-              }
-            : {}),
-        ...(view.readAt !== undefined
-            ? {
-                  read: {
-                      at: view.readAt,
-                  },
-              }
-            : {}),
-        ...(view.deletedAt !== undefined
-            ? {
-                  deleted: {
-                      at: view.deletedAt,
-                  },
-              }
-            : {}),
-        ...(view.lastEditedAt !== undefined
-            ? {
-                  edited: {
-                      at: view.lastEditedAt,
-                  },
-              }
-            : {}),
-    };
-}
-
-/**
- * Returns data related to the sender of a message for the {@link ConversationRegularMessageViewModel}.
- */
-export function getMessageSender(
-    services: Pick<ServicesForViewModel, 'device' | 'model'>,
-    messageModel: AnyMessageModel,
-    getAndSubscribe: GetAndSubscribeFunction,
-): Required<ConversationRegularMessageViewModel>['sender'] {
-    switch (messageModel.ctx) {
-        case MessageDirection.INBOUND: {
-            // TODO(DESK-770): Use `getSenderData` here instead
-            const sender = getAndSubscribe(messageModel.controller.sender());
-
-            return {
-                type: 'contact',
-                color: sender.view.color,
-                initials: sender.view.initials,
-                name: sender.view.displayName,
-                uid: sender.ctx,
-            };
-        }
-
-        case MessageDirection.OUTBOUND: {
-            const profilePicture = getAndSubscribe(services.model.user.profilePicture);
-            const displayName = getAndSubscribe(services.model.user.displayName);
-
-            return {
-                type: 'self',
-                id: 'self',
-                color: profilePicture.color,
-                initials: getUserInitials(displayName),
-                name: displayName,
-                identity: services.device.identity.string,
-            };
-        }
-
-        default:
-            return unreachable(messageModel);
-    }
 }
 
 /**

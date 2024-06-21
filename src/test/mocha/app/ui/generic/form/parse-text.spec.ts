@@ -49,7 +49,7 @@ export function run(): void {
                 },
             },
             contactRemoved: {
-                type: 'contact-removed',
+                type: 'removed-contact',
                 identity: ensureIdentityString(testContactId),
             },
             everyone: {
@@ -86,7 +86,7 @@ export function run(): void {
                     return props.linkMentions === false
                         ? `<span class="mention">@${props.name}</span>`
                         : `<a href="#/conversation/${props.lookup.type}/${props.lookup.uid}/" draggable="false" class="mention">@${props.name}</a>`;
-                case 'contact-removed':
+                case 'removed-contact':
                     return `<span class="mention">@${props.identity}</span>`;
                 default:
                     return unreachable(props);

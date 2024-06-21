@@ -1,7 +1,7 @@
 import type {IdentityString} from '~/common/network/types';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
-import {getRemovedContactData, type ContactRemoved} from '~/common/viewmodel/utils/contact';
+import {getRemovedContactData, type RemovedContactData} from '~/common/viewmodel/utils/contact';
 import {
     type SelfReceiverData,
     type ContactReceiverData,
@@ -22,28 +22,28 @@ export type SenderDataContact = Pick<
 >;
 
 /** The sender was a contact that has since been removed from the contact list of the user. */
-export type SenderDataContactRemoved = ContactRemoved;
+export type SenderDataRemovedContact = RemovedContactData;
 
 /** Data related to a sender. */
-export type AnySender = SenderDataSelf | SenderDataContact | SenderDataContactRemoved;
+export type AnySenderData = SenderDataSelf | SenderDataContact | SenderDataRemovedContact;
 
 /**
  * Returns data related to a sender of a reaction, message, etc.
  *
- * Note: In contrast to `AnyReceiver`, `AnySender` is determined by a Threema ID only. Therefore, it
- * can exist without a corresponding contact entry in the database.
+ * Note: In contrast to `AnyReceiverData`, `AnySenderData` is determined by a Threema ID only.
+ * Therefore, it can exist without a corresponding contact entry in the database.
  */
 export function getSenderData(
     services: Pick<ServicesForViewModel, 'device' | 'model'>,
     senderIdentity: IdentityString,
     getAndSubscribe: GetAndSubscribeFunction,
-): AnySender {
-    // Special case for the user itself
+): AnySenderData {
+    // Special case for the user itself.
     if (senderIdentity === services.device.identity.string) {
         return getSelfReceiverData(services, getAndSubscribe);
     }
 
-    // Handle all other contacts (existing or removed)
+    // Handle all other contacts (existing or removed).
     const sender = services.model.contacts.getByIdentity(senderIdentity);
     if (sender === undefined) {
         return getRemovedContactData(senderIdentity);

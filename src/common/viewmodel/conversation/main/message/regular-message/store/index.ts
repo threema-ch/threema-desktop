@@ -7,12 +7,14 @@ import type {LocalStore} from '~/common/utils/store';
 import {type GetAndSubscribeFunction, derive} from '~/common/utils/store/derived-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
 import {
+    getMessageSenderData,
+    getMessageStatusData,
+} from '~/common/viewmodel/conversation/main/message/helpers';
+import {
     getMessageFile,
     getMessageHistory,
     getMessageQuote,
     getMessageReactions,
-    getMessageSender,
-    getMessageStatus,
     getMessageText,
 } from '~/common/viewmodel/conversation/main/message/regular-message/store/helpers';
 import type {ConversationRegularMessageViewModel} from '~/common/viewmodel/conversation/main/message/regular-message/store/types';
@@ -66,9 +68,9 @@ function getConversationRegularMessageViewModel(
             ordinal: messageModel.view.ordinal,
             quote: undefined,
             reactions: [],
-            status: getMessageStatus(messageModel),
+            status: getMessageStatusData(messageModel),
             history: [],
-            sender: getMessageSender(services, messageModel, getAndSubscribe),
+            sender: getMessageSenderData(services, messageModel, getAndSubscribe),
             text: undefined,
         };
     }
@@ -84,8 +86,8 @@ function getConversationRegularMessageViewModel(
             ? getMessageQuote(log, services, messageModel, conversationModelStore, getAndSubscribe)
             : undefined,
         reactions: getMessageReactions(services, messageModel, getAndSubscribe),
-        status: getMessageStatus(messageModel),
-        sender: getMessageSender(services, messageModel, getAndSubscribe),
+        status: getMessageStatusData(messageModel),
+        sender: getMessageSenderData(services, messageModel, getAndSubscribe),
         text: getMessageText(services, messageModel, getAndSubscribe),
     };
 }

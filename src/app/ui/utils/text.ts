@@ -138,7 +138,7 @@ function getMentionHtml(
             }
             return `<span class="mention">@${name}</span>` as SanitizedHtml;
         }
-        case 'contact-removed': {
+        case 'removed-contact': {
             const name = escapeHtmlUnsafeChars(mention.identity);
             return `<span class="mention">@${name}</span>` as SanitizedHtml;
         }

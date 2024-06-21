@@ -7,7 +7,7 @@ import type {ServicesForViewModel} from '~/common/viewmodel';
 import {getRemovedContactData} from '~/common/viewmodel/utils/contact';
 import type {
     SenderDataContact,
-    SenderDataContactRemoved,
+    SenderDataRemovedContact,
     SenderDataSelf,
 } from '~/common/viewmodel/utils/sender';
 
@@ -35,7 +35,7 @@ export type MentionContact = Pick<SenderDataContact, 'type' | 'identity' | 'look
 /**
  * A mention that matches a contact that has been removed from the contact list of the user.
  */
-export type MentionContactRemoved = Pick<SenderDataContactRemoved, 'type' | 'identity'>;
+export type MentionContactRemoved = Pick<SenderDataRemovedContact, 'type' | 'identity'>;
 
 /**
  * A mention that matches everyone (e.g., all members of a group).

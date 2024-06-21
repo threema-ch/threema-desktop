@@ -1,54 +1,12 @@
-import type {DbContactUid} from '~/common/db';
 import type {MessageId} from '~/common/network/types';
 import type {Dimensions, f64, u53} from '~/common/types';
+import type {
+    DeprecatedAnySenderData,
+    MessageStatusData,
+} from '~/common/viewmodel/conversation/main/message/helpers';
 import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
 import type {AnyMention} from '~/common/viewmodel/utils/mentions';
-import type {ContactReceiverData} from '~/common/viewmodel/utils/receiver';
-import type {AnySender, SenderDataSelf} from '~/common/viewmodel/utils/sender';
-
-/** @deprecated */
-interface DeprecatedSenderDataContact
-    extends Pick<ContactReceiverData, 'type' | 'color' | 'initials' | 'name'> {
-    readonly uid: DbContactUid;
-}
-
-/**
- * Data related to the message sender.
- *
- * TODO(DESK-770): Remove and replace all usages with `AnySender` instead.
- *
- * @deprecated Use {@link AnySender} instead.
- */
-type AnyMessageSender = SenderDataSelf | DeprecatedSenderDataContact;
-
-/**
- * Data related to a single message reaction.
- */
-interface ReactionData {
-    readonly at: Date;
-    readonly direction: 'inbound' | 'outbound';
-    readonly sender: AnySender;
-    readonly type: 'acknowledged' | 'declined';
-}
-
-/**
- * Data about the status of a message.
- */
-interface StatusData {
-    readonly created: StatusDetailData;
-    readonly received?: StatusDetailData;
-    readonly sent?: StatusDetailData;
-    readonly delivered?: StatusDetailData;
-    readonly read?: StatusDetailData;
-    readonly error?: StatusDetailData;
-    readonly deleted?: StatusDetailData;
-    readonly edited?: StatusDetailData;
-}
-
-interface StatusDetailData {
-    /** When the status was reached. */
-    readonly at: Date;
-}
+import type {AnySenderData} from '~/common/viewmodel/utils/sender';
 
 /**
  * Data to be supplied to the UI layer as part of the `ViewModelStore`. This should be as close as
@@ -94,8 +52,8 @@ export interface ConversationRegularMessageViewModel {
     readonly ordinal: u53;
     readonly quote?: ConversationRegularMessageViewModelBundle | 'not-found' | undefined;
     readonly reactions: readonly ReactionData[];
-    readonly sender?: AnyMessageSender;
-    readonly status: StatusData;
+    readonly sender?: DeprecatedAnySenderData;
+    readonly status: MessageStatusData;
     readonly text?: {
         readonly mentions: readonly AnyMention[];
         /** Raw, unparsed, text. */
@@ -105,4 +63,14 @@ export interface ConversationRegularMessageViewModel {
         readonly editedAt: Date;
         readonly text: string;
     }[];
+}
+
+/**
+ * Data related to a single message reaction.
+ */
+interface ReactionData {
+    readonly at: Date;
+    readonly direction: 'inbound' | 'outbound';
+    readonly sender: AnySenderData;
+    readonly type: 'acknowledged' | 'declined';
 }

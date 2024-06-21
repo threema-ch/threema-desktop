@@ -7,8 +7,8 @@ import {unreachable} from '~/common/utils/assert';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import type {ReceiverBadgeType} from '~/common/viewmodel/types';
 
-/** Acontact that has been removed from the contact list of the user. */
-export interface ContactRemoved {
+/** A contact that has been removed from the contact list of the user. */
+export interface RemovedContactData {
     /**
      * Unique key across all receivers for keyed-each.
      *
@@ -16,7 +16,7 @@ export interface ContactRemoved {
      * list!
      */
     readonly id: string;
-    readonly type: 'contact-removed';
+    readonly type: 'removed-contact';
     readonly identity: IdentityString;
     readonly name: string;
 }
@@ -42,16 +42,16 @@ export function getContactDisplayName(
 }
 
 /**
- * Get the {@link ContactRemoved} data for a contact that no longer exists in the user's contact
+ * Get the {@link RemovedContactData} data for a contact that no longer exists in the user's contact
  * list.
  *
  * Note: The caller must check that the provided contact does not exist in the user's contact list
  * before calling this.
  */
-export function getRemovedContactData(identity: IdentityString): ContactRemoved {
+export function getRemovedContactData(identity: IdentityString): RemovedContactData {
     return {
-        id: `contact-removed.${identity}`,
-        type: 'contact-removed',
+        id: `removed-contact.${identity}`,
+        type: 'removed-contact',
         identity,
         name: getDisplayName({
             firstName: '',
