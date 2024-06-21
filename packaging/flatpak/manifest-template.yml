@@ -14,12 +14,15 @@ finish-args:
   # Show window using Wayland or X11
   - --socket=wayland
   - --socket=x11
-  # Play sound using pulseaudio
+  # Access sound devices using pulseaudio
   - --socket=pulseaudio
   # Allow access to network
   - --share=network
   # OpenGL rendering
   - --device=dri
+  # Webcam access for video calls (portal doesn't yet seem to be supported)
+  # https://github.com/electron/electron/issues/42608
+  - --device=all
   # Access directories
   - --filesystem=xdg-download
   # Allow desktop notifications
