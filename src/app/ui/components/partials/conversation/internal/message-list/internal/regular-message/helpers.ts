@@ -1,4 +1,4 @@
-import type {MessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
+import type {RegularMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/regular-message/props';
 import type {I18nType} from '~/app/ui/i18n-types';
 import {type SanitizedHtml, sanitizeAndParseTextToHtml} from '~/app/ui/utils/text';
 import type {u53} from '~/common/types';
@@ -30,8 +30,8 @@ export function getTextContent(
 /**
  * Returns whether the given value is a file which is unsynced or syncing.
  */
-export function isUnsyncedOrSyncingFile(value: MessageProps['file']): value is NonNullable<
-    MessageProps['file'] & {
+export function isUnsyncedOrSyncingFile(value: RegularMessageProps['file']): value is NonNullable<
+    RegularMessageProps['file'] & {
         sync: {
             state: 'unsynced' | 'syncing';
         };
@@ -60,7 +60,7 @@ export function isUnsyncedOrSyncingFile(value: MessageProps['file']): value is N
  * @param t The function used for translating.
  */
 export function getTranslatedSyncButtonTitle(
-    file: NonNullable<MessageProps['file']>,
+    file: NonNullable<RegularMessageProps['file']>,
     t: I18nType['t'],
 ): string {
     switch (file.sync.direction) {

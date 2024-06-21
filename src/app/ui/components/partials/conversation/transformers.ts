@@ -1,4 +1,4 @@
-import type {AnyQuotedMessage} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
+import type {AnyQuotedMessage} from '~/app/ui/components/partials/conversation/internal/message-list/internal/regular-message/props';
 import type {
     AnyMessageListMessage,
     MessageListDeletedMessage,

@@ -1,7 +1,7 @@
 import type {AppServicesForSvelte} from '~/app/types';
 import type {DeletedMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/deleted-message/props';
-import type {MessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
 import type {MessageDetailsModalProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-details-modal/props';
+import type {RegularMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/regular-message/props';
 import type {StatusMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/props';
 import type {DbConversationUid} from '~/common/db';
 import type {MessageDirection} from '~/common/enum';
@@ -14,7 +14,7 @@ import type {IQueryableStore} from '~/common/utils/store';
  */
 export interface MessageListProps {
     /** Details about the conversation. */
-    readonly conversation: MessageProps['conversation'] & {
+    readonly conversation: RegularMessageProps['conversation'] & {
         /**
          * The `MessageId` of the first (i.e. earliest) message that is still unread in the
          * conversation. Note: The `MessageList` will make sure this message is visible when the
@@ -66,7 +66,7 @@ export interface MessageListDeletedMessage
  * Type of a regular message that is part of a `MessageList`.
  */
 export interface MessageListRegularMessage
-    extends Omit<MessageProps, 'boundary' | 'conversation' | 'services'> {
+    extends Omit<RegularMessageProps, 'boundary' | 'conversation' | 'services'> {
     readonly type: 'regular-message';
     readonly history: MessageDetailsModalProps['history'];
 }

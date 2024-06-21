@@ -3,7 +3,7 @@
 -->
 <script lang="ts">
   import {globals} from '~/app/globals';
-  import BasicMessage from '~/app/ui/components/molecules/message/Message.svelte';
+  import Message from '~/app/ui/components/molecules/message/Message.svelte';
   import type {DeletedMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/deleted-message/props';
   import MessageAvatarProvider from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-avatar-provider/MessageAvatarProvider.svelte';
   import MessageContextMenuProvider from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-context-menu-provider/MessageContextMenuProvider.svelte';
@@ -61,7 +61,7 @@
       on:clickdeleteoption
     >
       <div class="message" slot="message">
-        <BasicMessage
+        <Message
           alt={$i18n.t('messaging.hint--media-thumbnail')}
           content={{
             text: $i18n.t('messaging.prose--message-deleted', 'This message was deleted'),

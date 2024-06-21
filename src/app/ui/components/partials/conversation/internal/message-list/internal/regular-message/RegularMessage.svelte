@@ -4,18 +4,18 @@
 <script lang="ts">
   import {globals} from '~/app/globals';
   import OverlayProvider from '~/app/ui/components/hocs/overlay-provider/OverlayProvider.svelte';
-  import BasicMessage from '~/app/ui/components/molecules/message/Message.svelte';
-  import type {MessageProps as BasicMessageProps} from '~/app/ui/components/molecules/message/props';
+  import Message from '~/app/ui/components/molecules/message/Message.svelte';
+  import type {MessageProps} from '~/app/ui/components/molecules/message/props';
+  import MessageAvatarProvider from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-avatar-provider/MessageAvatarProvider.svelte';
+  import MessageContextMenuProvider from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-context-menu-provider/MessageContextMenuProvider.svelte';
   import {
     getTextContent,
     getTranslatedSyncButtonTitle,
     isUnsyncedOrSyncingFile,
     shouldShowReactionButtons,
-  } from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/helpers';
-  import type {MessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
-  import {transformMessageFileProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/transformers';
-  import MessageAvatarProvider from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-avatar-provider/MessageAvatarProvider.svelte';
-  import MessageContextMenuProvider from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-context-menu-provider/MessageContextMenuProvider.svelte';
+  } from '~/app/ui/components/partials/conversation/internal/message-list/internal/regular-message/helpers';
+  import type {RegularMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/regular-message/props';
+  import {transformMessageFileProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/regular-message/transformers';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import IconButtonProgressBarOverlay from '~/app/ui/svelte-components/blocks/Button/IconButtonProgressBarOverlay.svelte';
@@ -32,7 +32,7 @@
   const {uiLogging, systemTime} = globals.unwrap();
   const log = uiLogging.logger('ui.component.message');
 
-  type $$Props = MessageProps;
+  type $$Props = RegularMessageProps;
 
   export let actions: $$Props['actions'];
   export let boundary: $$Props['boundary'] = undefined;
@@ -52,7 +52,7 @@
     settings: {appearance},
   } = services;
 
-  let quoteProps: BasicMessageProps['quote'];
+  let quoteProps: MessageProps['quote'];
 
   function handleClickCopyOption(): void {
     if (text !== undefined) {
@@ -327,7 +327,7 @@
 
           <svelte:fragment slot="below">
             <!--TODO(DESK-771) handle distribution list conversation type-->
-            <BasicMessage
+            <Message
               alt={$i18n.t('messaging.hint--media-thumbnail')}
               content={htmlContent === undefined
                 ? undefined

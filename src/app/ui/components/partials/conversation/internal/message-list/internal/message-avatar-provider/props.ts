@@ -1,5 +1,5 @@
 import type {AppServicesForSvelte} from '~/app/types';
-import type {MessageProps as BasicMessageProps} from '~/app/ui/components/molecules/message/props';
+import type {MessageProps} from '~/app/ui/components/molecules/message/props';
 import type {DbContactUid} from '~/common/db';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
@@ -10,8 +10,8 @@ export interface MessageAvatarProviderProps {
     readonly conversation: {
         readonly receiver: AnyReceiverData;
     };
-    readonly direction: BasicMessageProps['direction'];
-    readonly sender?: NonNullable<BasicMessageProps['sender']> &
+    readonly direction: MessageProps['direction'];
+    readonly sender?: NonNullable<MessageProps['sender']> &
         (
             | {
                   readonly type: 'self';

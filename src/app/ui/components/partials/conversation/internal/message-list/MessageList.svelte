@@ -1,6 +1,5 @@
 <!--
-  @component
-  Renders a conversation as a chat view.
+  @component Renders a conversation as a chat view.
 -->
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
@@ -11,10 +10,10 @@
   import type {LazyListProps} from '~/app/ui/components/hocs/lazy-list/props';
   import {Viewport} from '~/app/ui/components/partials/conversation/internal/message-list/helpers';
   import DeletedMessage from '~/app/ui/components/partials/conversation/internal/message-list/internal/deleted-message/DeletedMessage.svelte';
-  import Message from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/Message.svelte';
   import MessageDetailsModal from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-details-modal/MessageDetailsModal.svelte';
   import MessageForwardModal from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-forward-modal/MessageForwardModal.svelte';
   import MessageMediaViewerModal from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-media-viewer-modal/MessageMediaViewerModal.svelte';
+  import Message from '~/app/ui/components/partials/conversation/internal/message-list/internal/regular-message/RegularMessage.svelte';
   import StatusMessage from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/StatusMessage.svelte';
   import UnreadMessagesIndicator from '~/app/ui/components/partials/conversation/internal/message-list/internal/unread-messages-indicator/UnreadMessagesIndicator.svelte';
   import type {

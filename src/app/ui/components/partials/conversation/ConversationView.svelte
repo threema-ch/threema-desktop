@@ -14,8 +14,8 @@
   import ComposeBar from '~/app/ui/components/partials/conversation/internal/compose-bar/ComposeBar.svelte';
   import DeleteMessageModal from '~/app/ui/components/partials/conversation/internal/delete-message-modal/DeleteMessageModal.svelte';
   import MessageList from '~/app/ui/components/partials/conversation/internal/message-list/MessageList.svelte';
-  import {getTextContent} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/helpers';
-  import {transformMessageFileProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/transformers';
+  import {getTextContent} from '~/app/ui/components/partials/conversation/internal/message-list/internal/regular-message/helpers';
+  import {transformMessageFileProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/regular-message/transformers';
   import type {
     AnyMessageListMessage,
     MessageListRegularMessage,
