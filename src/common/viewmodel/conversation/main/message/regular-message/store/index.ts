@@ -1,7 +1,10 @@
-import {MessageDirection, MessageType} from '~/common/enum';
+import {MessageDirection} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {ConversationModelStore} from '~/common/model/conversation';
-import type {AnyMessageModel, AnyMessageModelStore} from '~/common/model/types/message';
+import type {
+    AnyNonDeletedMessageModel,
+    AnyNonDeletedMessageModelStore,
+} from '~/common/model/types/message';
 import type {PropertiesMarked} from '~/common/utils/endpoint';
 import type {LocalStore} from '~/common/utils/store';
 import {type GetAndSubscribeFunction, derive} from '~/common/utils/store/derived-store';
@@ -26,7 +29,7 @@ export type ConversationRegularMessageViewModelStore = LocalStore<
 export function getConversationRegularMessageViewModelStore(
     log: Logger,
     services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
-    messageModelStore: AnyMessageModelStore,
+    messageModelStore: AnyNonDeletedMessageModelStore,
     conversationModelStore: ConversationModelStore,
     resolveQuote: boolean,
 ): ConversationRegularMessageViewModelStore {
@@ -34,7 +37,7 @@ export function getConversationRegularMessageViewModelStore(
 
     // eslint-disable-next-line arrow-body-style
     return derive([messageModelStore], ([{currentValue: messageModel}], getAndSubscribe) => {
-        const conversationRegularMessageViewModel: ConversationRegularMessageViewModel =
+        const viewModel: ConversationRegularMessageViewModel =
             getConversationRegularMessageViewModel(
                 log,
                 services,
@@ -45,7 +48,7 @@ export function getConversationRegularMessageViewModelStore(
             );
 
         return endpoint.exposeProperties({
-            ...conversationRegularMessageViewModel,
+            ...viewModel,
         });
     });
 }
@@ -53,29 +56,13 @@ export function getConversationRegularMessageViewModelStore(
 function getConversationRegularMessageViewModel(
     log: Logger,
     services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
-    messageModel: AnyMessageModel,
+    messageModel: AnyNonDeletedMessageModel,
     conversationModelStore: ConversationModelStore,
     getAndSubscribe: GetAndSubscribeFunction,
     resolveQuote: boolean,
 ): ConversationRegularMessageViewModel {
-    if (messageModel.type === MessageType.DELETED) {
-        return {
-            type: 'message',
-            direction:
-                messageModel.view.direction === MessageDirection.INBOUND ? 'inbound' : 'outbound',
-            id: messageModel.view.id,
-            file: undefined,
-            ordinal: messageModel.view.ordinal,
-            quote: undefined,
-            reactions: [],
-            status: getMessageStatusData(messageModel),
-            history: [],
-            sender: getMessageSenderData(services, messageModel, getAndSubscribe),
-            text: undefined,
-        };
-    }
     return {
-        type: 'message',
+        type: 'regular-message',
         direction:
             messageModel.view.direction === MessageDirection.INBOUND ? 'inbound' : 'outbound',
         file: getMessageFile(messageModel),

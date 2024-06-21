@@ -1,10 +1,11 @@
 import type {MessageId} from '~/common/network/types';
 import type {Dimensions, f64, u53} from '~/common/types';
 import type {
+    AnyConversationMessageViewModelBundle,
     DeprecatedAnySenderData,
     MessageStatusData,
 } from '~/common/viewmodel/conversation/main/message/helpers';
-import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
+import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/status-message';
 import type {AnyMention} from '~/common/viewmodel/utils/mentions';
 import type {AnySenderData} from '~/common/viewmodel/utils/sender';
 
@@ -14,7 +15,7 @@ import type {AnySenderData} from '~/common/viewmodel/utils/sender';
  * exist in the ui layer.
  */
 export interface ConversationRegularMessageViewModel {
-    readonly type: 'message';
+    readonly type: 'regular-message';
     readonly direction: 'inbound' | 'outbound';
     readonly file?: {
         readonly duration?: f64;
@@ -50,7 +51,11 @@ export interface ConversationRegularMessageViewModel {
      * Ordinal for message ordering in the conversation list.
      */
     readonly ordinal: u53;
-    readonly quote?: ConversationRegularMessageViewModelBundle | 'not-found' | undefined;
+    readonly quote?:
+        | Exclude<AnyConversationMessageViewModelBundle, ConversationStatusMessageViewModelBundle>
+        | 'not-found'
+        | undefined;
+
     readonly reactions: readonly ReactionData[];
     readonly sender?: DeprecatedAnySenderData;
     readonly status: MessageStatusData;

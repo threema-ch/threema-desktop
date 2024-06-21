@@ -1,4 +1,5 @@
 import type {AppServicesForSvelte} from '~/app/types';
+import type {DeletedMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/deleted-message/props';
 import type {MessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
 import type {MessageDetailsModalProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-details-modal/props';
 import type {StatusMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/props';
@@ -47,14 +48,26 @@ export interface MessageListProps {
 /**
  * Union of single message types that are part of a `MessageList`.
  */
-export type AnyMessageListMessage = MessageListMessage | MessageListStatusMessage;
+export type AnyMessageListMessage =
+    | MessageListRegularMessage
+    | MessageListDeletedMessage
+    | MessageListStatusMessage;
+
+/**
+ * Type of a deleted message that is part of a `MessageList`.
+ */
+export interface MessageListDeletedMessage
+    extends Omit<DeletedMessageProps, 'boundary' | 'conversation' | 'services'> {
+    readonly type: 'deleted-message';
+    readonly id: MessageId;
+}
 
 /**
  * Type of a regular message that is part of a `MessageList`.
  */
-export interface MessageListMessage
+export interface MessageListRegularMessage
     extends Omit<MessageProps, 'boundary' | 'conversation' | 'services'> {
-    readonly type: 'message';
+    readonly type: 'regular-message';
     readonly history: MessageDetailsModalProps['history'];
 }
 

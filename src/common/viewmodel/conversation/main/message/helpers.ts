@@ -5,8 +5,19 @@ import {getUserInitials} from '~/common/model/user';
 import {unreachable} from '~/common/utils/assert';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
+import type {ConversationDeletedMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/deleted-message';
+import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
+import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/status-message';
 import type {ContactReceiverData} from '~/common/viewmodel/utils/receiver';
 import type {SenderDataSelf} from '~/common/viewmodel/utils/sender';
+
+/**
+ * Union of all possible MessageViewModelBundle types.
+ */
+export type AnyConversationMessageViewModelBundle =
+    | ConversationDeletedMessageViewModelBundle
+    | ConversationRegularMessageViewModelBundle
+    | ConversationStatusMessageViewModelBundle;
 
 /**
  * Data related to a (message) sender.

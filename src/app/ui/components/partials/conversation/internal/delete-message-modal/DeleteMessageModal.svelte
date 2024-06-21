@@ -9,7 +9,10 @@
     deleteForEveryoneSupported,
   } from '~/app/ui/components/partials/conversation/internal/delete-message-modal/helpers';
   import type {DeleteMessageModalProps} from '~/app/ui/components/partials/conversation/internal/delete-message-modal/props';
-  import type {MessageListMessage} from '~/app/ui/components/partials/conversation/internal/message-list/props';
+  import type {
+    AnyMessageListMessage,
+    MessageListRegularMessage,
+  } from '~/app/ui/components/partials/conversation/internal/message-list/props';
   import {i18n} from '~/app/ui/i18n';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
 
@@ -24,17 +27,23 @@
   let modalComponent: SvelteNullableBinding<Modal> = null;
 
   const dispatch = createEventDispatcher<{
-    clickdeletelocally: MessageListMessage;
-    clickdeleteforeveryone: MessageListMessage;
+    clickdeletelocally: AnyMessageListMessage;
+    clickdeleteforeveryone: MessageListRegularMessage;
   }>();
 
   function handleClickDeleteLocally(): void {
     dispatch('clickdeletelocally', message);
     modalComponent?.close();
   }
+
   function handleClickDeleteForEveryone(): void {
-    if (message.status.deleted !== undefined) {
+    if (message.type === 'deleted-message') {
       log.warn('Cannot delete a message that was already deleted');
+      modalComponent?.close();
+      return;
+    }
+    if (message.type === 'status-message') {
+      log.warn('Cannot delete a status message for everyone, as they are local-only');
       modalComponent?.close();
       return;
     }
@@ -44,13 +53,11 @@
   }
 
   $: buttons = getModalButtons(
-    message.status.deleted?.at,
-    message.direction,
-    message.status.sent,
+    message,
     featureSupport.supported,
-    $i18n,
     handleClickDeleteLocally,
     handleClickDeleteForEveryone,
+    $i18n,
   );
 </script>
 
@@ -85,16 +92,16 @@
           )}
         />
       </p>
-      {#if deleteForEveryoneSupported(message.status.deleted?.at, message.direction, message.status.sent, featureSupport.supported) && featureSupport.supported && featureSupport.notSupportedNames.length > 0}
+      {#if deleteForEveryoneSupported(message, featureSupport.supported) && featureSupport.supported && featureSupport.notSupportedNames.length > 0}
         <p>
           <Text
             text={$i18n.t(
               'dialog--delete-message.prose--delete-not-supported-partial',
               'Note: If you select "{buttonText}", this message will not be deleted for the following group members: {names}{n, plural, =0 {.} other { and {n} others.}} To support deleted messages, they need to install the latest Threema version.',
               {
-                names: featureSupport.notSupportedNames.slice(0, 5).join(', '),
-                n: `${featureSupport.notSupportedNames.length > 5 ? featureSupport.notSupportedNames.length - 5 : 0}`,
                 buttonText: $i18n.t('dialog--delete-message.action--delete-for-everyone'),
+                n: `${featureSupport.notSupportedNames.length > 5 ? featureSupport.notSupportedNames.length - 5 : 0}`,
+                names: featureSupport.notSupportedNames.slice(0, 5).join(', '),
               },
             )}
           />

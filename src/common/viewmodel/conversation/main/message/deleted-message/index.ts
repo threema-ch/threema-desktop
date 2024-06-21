@@ -7,6 +7,7 @@ import {
 } from '~/common/viewmodel/conversation/main/message/deleted-message/store';
 
 export interface ConversationDeletedMessageViewModelBundle extends PropertiesMarked {
+    readonly type: 'deleted-message';
     readonly viewModelStore: ConversationDeletedMessageViewModelStore;
 }
 
@@ -19,6 +20,7 @@ export function getConversationDeletedMessageViewModelBundle(
     const viewModelStore = getConversationDeletedMessageViewModelStore(services, messageModelStore);
 
     return endpoint.exposeProperties({
+        type: 'deleted-message',
         viewModelStore,
     });
 }

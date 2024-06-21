@@ -4,6 +4,8 @@ import {transformMessageReactionsProps} from '~/app/ui/components/partials/messa
 import type {I18nType} from '~/app/ui/i18n-types';
 import {ConversationCategory, ConversationVisibility} from '~/common/enum';
 import {conversationCompareFn} from '~/common/model/utils/conversation';
+import type {u53} from '~/common/types';
+import {unreachable} from '~/common/utils/assert';
 import type {Remote} from '~/common/utils/endpoint';
 import type {IQueryableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
@@ -41,6 +43,40 @@ export function conversationListItemSetStoreToConversationPreviewListPropsStore(
                         lastMessageViewModelStore === undefined
                             ? undefined
                             : getAndSubscribe(lastMessageViewModelStore);
+                    let lastMessage: ConversationPreviewListProps['items'][u53]['lastMessage'] =
+                        undefined;
+                    if (lastMessageViewModel !== undefined) {
+                        switch (lastMessageViewModel.type) {
+                            case 'deleted-message':
+                                lastMessage = {
+                                    reactions: [],
+                                    sender: lastMessageViewModel.sender,
+                                    status: lastMessageViewModel.status,
+                                };
+                                break;
+
+                            case 'regular-message':
+                                lastMessage = {
+                                    file: lastMessageViewModel.file,
+                                    reactions: transformMessageReactionsProps(
+                                        lastMessageViewModel,
+                                        i18n,
+                                    ),
+                                    sender: lastMessageViewModel.sender,
+                                    status: lastMessageViewModel.status,
+                                    text: lastMessageViewModel.text,
+                                };
+                                break;
+
+                            case 'status-message':
+                                throw new Error(
+                                    'TODO(DESK-1517): Implement status messages in last message previews',
+                                );
+
+                            default:
+                                unreachable(lastMessageViewModel);
+                        }
+                    }
 
                     return {
                         call: viewModel.call,
@@ -50,19 +86,7 @@ export function conversationListItemSetStoreToConversationPreviewListPropsStore(
                         isArchived: viewModel.visibility === ConversationVisibility.ARCHIVED,
                         isPinned: viewModel.visibility === ConversationVisibility.PINNED,
                         isPrivate: viewModel.category === ConversationCategory.PROTECTED,
-                        lastMessage:
-                            lastMessageViewModel === undefined
-                                ? undefined
-                                : {
-                                      file: lastMessageViewModel.file,
-                                      reactions: transformMessageReactionsProps(
-                                          lastMessageViewModel,
-                                          i18n,
-                                      ),
-                                      sender: lastMessageViewModel.sender,
-                                      status: lastMessageViewModel.status,
-                                      text: lastMessageViewModel.text,
-                                  },
+                        lastMessage,
                         receiver: viewModel.receiver,
                         totalMessageCount: viewModel.totalMessageCount,
                         unreadMessageCount: viewModel.unreadMessageCount,

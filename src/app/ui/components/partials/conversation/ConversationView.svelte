@@ -18,7 +18,7 @@
   import {transformMessageFileProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/transformers';
   import type {
     AnyMessageListMessage,
-    MessageListMessage,
+    MessageListRegularMessage,
   } from '~/app/ui/components/partials/conversation/internal/message-list/props';
   import TopBar from '~/app/ui/components/partials/conversation/internal/top-bar/TopBar.svelte';
   import type {ConversationViewProps} from '~/app/ui/components/partials/conversation/props';
@@ -113,7 +113,8 @@
 
   function handleClickDeleteMessageLocally(event: CustomEvent<AnyMessageListMessage>): void {
     switch (event.detail.type) {
-      case 'message':
+      case 'deleted-message':
+      case 'regular-message':
         viewModelController?.removeMessage(event.detail.id).catch((error: unknown) => {
           log.error(`Could not delete message with id ${event.detail.id}`, error);
           toast.addSimpleFailure(
@@ -136,11 +137,14 @@
     }
   }
 
-  function handleClickDeleteMessageForEveryone(event: CustomEvent<MessageListMessage>): void {
+  function handleClickDeleteMessageForEveryone(
+    event: CustomEvent<MessageListRegularMessage>,
+  ): void {
     if (event.detail.status.deleted !== undefined) {
       log.warn('Tried to delete an already deleted message on all devices');
       return;
     }
+
     viewModelController?.markMessageAsDeleted(event.detail.id).catch((error: unknown) => {
       log.error(`Could not delete message with id ${event.detail.id}`, error);
       toast.addSimpleFailure($i18n.t('messaging.error--delete-message'));
@@ -148,7 +152,7 @@
   }
 
   function getComposeBarQuoteComponent(
-    quotedMessageProps: MessageListMessage,
+    quotedMessageProps: MessageListRegularMessage,
   ): QuotedMessage | undefined {
     const conversationReceiverLookup = viewModelStore.get()?.receiver.lookup;
 
@@ -190,7 +194,7 @@
     };
   }
 
-  function handleClickQuoteMessage(event: CustomEvent<MessageListMessage>): void {
+  function handleClickQuoteMessage(event: CustomEvent<MessageListRegularMessage>): void {
     if (composeBarState.type === 'edit') {
       composeBarComponent?.clear();
     }
@@ -202,7 +206,7 @@
     composeBarState = {type: 'insert', quotedMessage, editedMessage: undefined};
   }
 
-  function handleClickEditMessage(messageProperties: MessageListMessage): void {
+  function handleClickEditMessage(messageProperties: MessageListRegularMessage): void {
     if (!receiverSupportsEditedMessages.supported) {
       if ($viewModelStore?.receiver.type === 'contact') {
         toast.addSimpleFailure(
@@ -511,6 +515,7 @@
       handleClickDeleteMessageLocally(event);
       return;
     }
+
     modalState = {
       type: 'delete-message',
       props: event.detail,
@@ -625,11 +630,14 @@
     ) {
       const lastMessage = $viewModelStore.lastMessage;
 
-      // Because `lastMessage` must have a direction, if we find a match, we can be certain that
-      // it's a `MessageListMessage` and not a `MessageListStatusMessage`.
+      // While searching for a match, also ensure that the message is a `MessageListRegularMessage`,
+      // because that's the only type of message which can be edited.
       const messageToEdit = messagesStore
         ?.get()
-        .find((message): message is MessageListMessage => message.id === lastMessage.id);
+        .find(
+          (message): message is MessageListRegularMessage =>
+            message.type === 'regular-message' && message.id === lastMessage.id,
+        );
 
       if (
         messageToEdit?.status.sent !== undefined &&

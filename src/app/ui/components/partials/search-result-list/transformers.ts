@@ -1,5 +1,8 @@
 import type {ConversationPreviewListProps} from '~/app/ui/components/partials/conversation-preview-list/props';
-import type {MessagePreviewListProps} from '~/app/ui/components/partials/message-preview-list/props';
+import type {
+    AnyQuotedMessage,
+    MessagePreviewListProps,
+} from '~/app/ui/components/partials/message-preview-list/props';
 import {transformMessageReactionsProps} from '~/app/ui/components/partials/message-preview-list/transformers';
 import type {ReceiverPreviewListProps} from '~/app/ui/components/partials/receiver-preview-list/props';
 import type {I18nType} from '~/app/ui/i18n-types';
@@ -7,7 +10,7 @@ import {ConversationCategory, ConversationVisibility} from '~/common/enum';
 import {conversationCompareFn} from '~/common/model/utils/conversation';
 import type {u53} from '~/common/types';
 import {chunkBy} from '~/common/utils/array';
-import {unwrap} from '~/common/utils/assert';
+import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import type {Remote} from '~/common/utils/endpoint';
 import type {IQueryableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
@@ -46,25 +49,47 @@ export function conversationSearchResultSetStoreToConversationPreviewListPropsSt
                         lastMessageViewModelStore === undefined
                             ? undefined
                             : getAndSubscribe(lastMessageViewModelStore);
+                    let lastMessage: ConversationPreviewListProps['items'][u53]['lastMessage'] =
+                        undefined;
+                    if (lastMessageViewModel !== undefined) {
+                        switch (lastMessageViewModel.type) {
+                            case 'deleted-message':
+                                lastMessage = {
+                                    reactions: [],
+                                    sender: lastMessageViewModel.sender,
+                                    status: lastMessageViewModel.status,
+                                };
+                                break;
+
+                            case 'regular-message':
+                                lastMessage = {
+                                    file: lastMessageViewModel.file,
+                                    reactions: transformMessageReactionsProps(
+                                        lastMessageViewModel,
+                                        i18n,
+                                    ),
+                                    sender: lastMessageViewModel.sender,
+                                    status: lastMessageViewModel.status,
+                                    text: lastMessageViewModel.text,
+                                };
+                                break;
+
+                            case 'status-message':
+                                throw new Error(
+                                    'TODO(DESK-1517): Implement status messages in last message previews',
+                                );
+
+                            default:
+                                unreachable(lastMessageViewModel);
+                        }
+                    }
 
                     return {
                         handlerProps: undefined,
                         isArchived: result.visibility === ConversationVisibility.ARCHIVED,
                         isPinned: result.visibility === ConversationVisibility.PINNED,
                         isPrivate: result.category === ConversationCategory.PROTECTED,
-                        lastMessage:
-                            lastMessageViewModel === undefined
-                                ? undefined
-                                : {
-                                      file: lastMessageViewModel.file,
-                                      reactions: transformMessageReactionsProps(
-                                          lastMessageViewModel,
-                                          i18n,
-                                      ),
-                                      sender: lastMessageViewModel.sender,
-                                      status: lastMessageViewModel.status,
-                                      text: lastMessageViewModel.text,
-                                  },
+                        lastMessage,
                         receiver: result.receiver,
                         totalMessageCount: result.totalMessageCount,
                         unreadMessageCount: result.unreadMessageCount,
@@ -101,15 +126,45 @@ export function messageSearchResultSetStoreToMessagePreviewListPropsStore(
                     .map((result) => {
                         const messageViewModel = getAndSubscribe(result.message.viewModelStore);
 
-                        const quoteProps =
+                        let quoteProps: AnyQuotedMessage | undefined = undefined;
+                        if (messageViewModel.quote === 'not-found') {
+                            quoteProps = 'not-found';
+                        }
+                        if (
                             messageViewModel.quote !== undefined &&
                             messageViewModel.quote !== 'not-found'
-                                ? transformMessageProps(
-                                      messageViewModel.quote.viewModelController,
-                                      getAndSubscribe(messageViewModel.quote.viewModelStore),
-                                      i18n,
-                                  )
-                                : messageViewModel.quote;
+                        ) {
+                            const quoteViewModel = getAndSubscribe(
+                                messageViewModel.quote.viewModelStore,
+                            );
+
+                            switch (messageViewModel.quote.type) {
+                                case 'deleted-message':
+                                    assert(quoteViewModel.type === messageViewModel.quote.type);
+
+                                    quoteProps = {
+                                        type: 'deleted-message',
+                                        id: quoteViewModel.id,
+                                    };
+                                    break;
+
+                                case 'regular-message':
+                                    assert(quoteViewModel.type === messageViewModel.quote.type);
+
+                                    quoteProps = {
+                                        type: 'regular-message',
+                                        ...transformMessageProps(
+                                            messageViewModel.quote.viewModelController,
+                                            quoteViewModel,
+                                            i18n,
+                                        ),
+                                    };
+                                    break;
+
+                                default:
+                                    unreachable(messageViewModel.quote);
+                            }
+                        }
 
                         return {
                             ...transformMessageProps(

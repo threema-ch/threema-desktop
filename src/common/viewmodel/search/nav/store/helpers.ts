@@ -1,9 +1,12 @@
+import {MessageType} from '~/common/enum';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import {conversationCompareFn} from '~/common/model/utils/conversation';
-import {isNotUndefined} from '~/common/utils/assert';
+import {isNotUndefined, unreachable} from '~/common/utils/assert';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
+import {getConversationDeletedMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/deleted-message';
+import type {AnyConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/helpers';
 import {getConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
 import type {SearchParams} from '~/common/viewmodel/search/nav/controller';
 import type {
@@ -79,17 +82,37 @@ export function getConversationSearchResult(
     const conversationModel = getAndSubscribe(conversationModelStore);
     const lastMessageModelStore = conversationModel.controller.lastMessageStore().get();
 
+    let lastMessageViewModelBundle: AnyConversationMessageViewModelBundle | undefined = undefined;
+    if (lastMessageModelStore !== undefined) {
+        switch (lastMessageModelStore.type) {
+            case MessageType.DELETED:
+                lastMessageViewModelBundle = getConversationDeletedMessageViewModelBundle(
+                    services,
+                    lastMessageModelStore,
+                );
+                break;
+
+            case MessageType.AUDIO:
+            case MessageType.FILE:
+            case MessageType.IMAGE:
+            case MessageType.TEXT:
+            case MessageType.VIDEO:
+                lastMessageViewModelBundle = getConversationRegularMessageViewModelBundle(
+                    services,
+                    lastMessageModelStore,
+                    conversationModelStore,
+                    false,
+                );
+                break;
+
+            default:
+                return unreachable(lastMessageModelStore);
+        }
+    }
+
     return endpoint.exposeProperties({
         category: conversationModel.view.category,
-        lastMessage:
-            lastMessageModelStore === undefined
-                ? undefined
-                : getConversationRegularMessageViewModelBundle(
-                      services,
-                      lastMessageModelStore,
-                      conversationModelStore,
-                      false,
-                  ),
+        lastMessage: lastMessageViewModelBundle,
         lastUpdate: conversationModel.view.lastUpdate,
         receiver: getConversationReceiverData(services, conversationModel, getAndSubscribe),
         totalMessageCount: conversationModel.controller.getMessageCount(),

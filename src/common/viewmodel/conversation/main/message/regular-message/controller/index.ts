@@ -1,6 +1,6 @@
 import {MessageDirection, MessageReaction, MessageType} from '~/common/enum';
 import {TRANSFER_HANDLER} from '~/common/index';
-import type {AnyMessageModelStore} from '~/common/model';
+import type {AnyNonDeletedMessageModelStore} from '~/common/model/types/message';
 import {unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, type ProxyMarked} from '~/common/utils/endpoint';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
@@ -30,7 +30,7 @@ export class ConversationRegularMessageViewModelController
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
-    public constructor(private readonly _message: AnyMessageModelStore) {}
+    public constructor(private readonly _message: AnyNonDeletedMessageModelStore) {}
 
     public async acknowledge(): Promise<void> {
         return await this._applyReaction(MessageReaction.ACKNOWLEDGE);
@@ -49,7 +49,6 @@ export class ConversationRegularMessageViewModelController
                 return await this._message.get().controller.blob();
 
             case MessageType.TEXT:
-            case MessageType.DELETED:
                 return undefined;
 
             default:
@@ -67,9 +66,7 @@ export class ConversationRegularMessageViewModelController
         if (messageModel.ctx !== MessageDirection.OUTBOUND) {
             return;
         }
-        if (messageModel.type === MessageType.DELETED) {
-            return;
-        }
+
         await messageModel.controller.editMessage.fromLocal({
             newText,
             lastEditedAt: editedAt,
@@ -78,10 +75,6 @@ export class ConversationRegularMessageViewModelController
 
     private async _applyReaction(reaction: MessageReaction): Promise<void> {
         const messageModel = this._message.get();
-
-        if (messageModel.type === MessageType.DELETED) {
-            return undefined;
-        }
 
         switch (reaction) {
             case MessageReaction.ACKNOWLEDGE:

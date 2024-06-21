@@ -3,13 +3,13 @@ import type {Logger} from '~/common/logging';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import type {
     AnyFileBasedMessageModel,
-    AnyMessageModel,
     AnyNonDeletedMessageModel,
 } from '~/common/model/types/message';
 import {unreachable} from '~/common/utils/assert';
 import {u64ToHexLe} from '~/common/utils/number';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
+import {getConversationDeletedMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/deleted-message';
 import {getConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
 import type {ConversationRegularMessageViewModel} from '~/common/viewmodel/conversation/main/message/regular-message/store/types';
 import {getMentions} from '~/common/viewmodel/utils/mentions';
@@ -62,12 +62,18 @@ export function getMessageQuote(
         return undefined;
     }
 
-    return getConversationRegularMessageViewModelBundle(
-        services,
-        quotedMessageModelStore,
-        conversationModelStore,
-        false,
-    );
+    switch (quotedMessageModelStore.type) {
+        case MessageType.DELETED:
+            return getConversationDeletedMessageViewModelBundle(services, quotedMessageModelStore);
+
+        default:
+            return getConversationRegularMessageViewModelBundle(
+                services,
+                quotedMessageModelStore,
+                conversationModelStore,
+                false,
+            );
+    }
 }
 
 /**
@@ -76,7 +82,7 @@ export function getMessageQuote(
  */
 export function getMessageReactions(
     services: Pick<ServicesForViewModel, 'device' | 'model'>,
-    messageModel: AnyMessageModel,
+    messageModel: AnyNonDeletedMessageModel,
     getAndSubscribe: GetAndSubscribeFunction,
 ): ConversationRegularMessageViewModel['reactions'] {
     return messageModel.view.reactions.map((reaction) => ({
@@ -93,7 +99,7 @@ export function getMessageReactions(
  */
 export function getMessageText(
     services: Pick<ServicesForViewModel, 'model'>,
-    messageModel: AnyMessageModel,
+    messageModel: AnyNonDeletedMessageModel,
     getAndSubscribe: GetAndSubscribeFunction,
 ): ConversationRegularMessageViewModel['text'] | undefined {
     switch (messageModel.type) {
@@ -113,15 +119,14 @@ export function getMessageText(
                       mentions: getMentions(services, messageModel, getAndSubscribe),
                       raw: messageModel.view.caption,
                   };
-        case 'deleted':
-            return undefined;
+
         default:
             return unreachable(messageModel);
     }
 }
 
 export function getMessageHistory(
-    messageModel: AnyMessageModel,
+    messageModel: AnyNonDeletedMessageModel,
 ): ConversationRegularMessageViewModel['history'] {
     return messageModel.view.history;
 }
@@ -130,10 +135,10 @@ export function getMessageHistory(
  * Returns file data related to a message for the {@link ConversationRegularMessageViewModel}.
  */
 export function getMessageFile(
-    messageModel: AnyMessageModel,
+    messageModel: AnyNonDeletedMessageModel,
 ): ConversationRegularMessageViewModel['file'] {
     const {type} = messageModel;
-    if (type === 'text' || type === 'deleted') {
+    if (type === 'text') {
         return undefined;
     }
 

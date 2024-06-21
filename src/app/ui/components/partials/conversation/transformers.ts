@@ -1,6 +1,8 @@
+import type {AnyQuotedMessage} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
 import type {
     AnyMessageListMessage,
-    MessageListMessage,
+    MessageListDeletedMessage,
+    MessageListRegularMessage,
     MessageListStatusMessage,
 } from '~/app/ui/components/partials/conversation/internal/message-list/props';
 import type {I18nType} from '~/app/ui/i18n-types';
@@ -10,6 +12,7 @@ import type {Remote} from '~/common/utils/endpoint';
 import type {IQueryableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {localeSort} from '~/common/utils/string';
+import type {ConversationDeletedMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/deleted-message';
 import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
 import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/status-message';
 import type {ConversationMessageSetStore} from '~/common/viewmodel/conversation/main/store';
@@ -24,28 +27,54 @@ export function messageSetStoreToMessageListMessagesStore(
 ): IQueryableStore<AnyMessageListMessage[]> {
     return derive([messageSetStore], ([{currentValue: messageSet}], getAndSubscribe) =>
         [...messageSet]
-            .map((bundle): AnyMessageListMessage & {readonly ordinal: u53} => {
-                const viewModel = getAndSubscribe(bundle.viewModelStore);
-                switch (bundle.type) {
-                    case 'status-message': {
-                        assert(viewModel.type === bundle.type);
+            .map((viewModelBundle): AnyMessageListMessage & {readonly ordinal: u53} => {
+                const viewModel = getAndSubscribe(viewModelBundle.viewModelStore);
+
+                switch (viewModelBundle.type) {
+                    case 'deleted-message': {
+                        assert(viewModel.type === viewModelBundle.type);
+
                         return {
-                            ...getStatusMessageProps(viewModel),
+                            ...getDeletedMessageProps(viewModel),
                             ordinal: viewModel.ordinal,
                         };
                     }
-                    case 'message': {
-                        assert(viewModel.type === bundle.type);
-                        const controller = bundle.viewModelController;
 
-                        const quoteProps =
-                            viewModel.quote !== undefined && viewModel.quote !== 'not-found'
-                                ? getMessageProps(
-                                      viewModel.quote.viewModelController,
-                                      getAndSubscribe(viewModel.quote.viewModelStore),
-                                      i18n,
-                                  )
-                                : viewModel.quote;
+                    case 'regular-message': {
+                        assert(viewModel.type === viewModelBundle.type);
+
+                        const controller = viewModelBundle.viewModelController;
+
+                        let quoteProps: AnyQuotedMessage | undefined = undefined;
+                        if (viewModel.quote === 'not-found') {
+                            quoteProps = 'not-found';
+                        }
+                        if (viewModel.quote !== undefined && viewModel.quote !== 'not-found') {
+                            const quoteViewModel = getAndSubscribe(viewModel.quote.viewModelStore);
+
+                            switch (quoteViewModel.type) {
+                                case 'deleted-message':
+                                    quoteProps = {
+                                        type: 'deleted-message',
+                                        id: quoteViewModel.id,
+                                    };
+                                    break;
+
+                                case 'regular-message':
+                                    assert(quoteViewModel.type === viewModel.quote.type);
+
+                                    quoteProps = getMessageProps(
+                                        viewModel.quote.viewModelController,
+                                        quoteViewModel,
+                                        i18n,
+                                    );
+                                    break;
+
+                                default:
+                                    unreachable(quoteViewModel);
+                            }
+                        }
+
                         return {
                             ...getMessageProps(controller, viewModel, i18n),
                             ordinal: viewModel.ordinal,
@@ -53,8 +82,17 @@ export function messageSetStoreToMessageListMessagesStore(
                         };
                     }
 
+                    case 'status-message': {
+                        assert(viewModel.type === viewModelBundle.type);
+
+                        return {
+                            ...getStatusMessageProps(viewModel),
+                            ordinal: viewModel.ordinal,
+                        };
+                    }
+
                     default:
-                        return unreachable(bundle);
+                        return unreachable(viewModelBundle);
                 }
             })
             .sort((a, b) => a.ordinal - b.ordinal),
@@ -67,7 +105,7 @@ function getMessageProps(
         Remote<ConversationRegularMessageViewModelBundle>['viewModelStore']['get']
     >,
     i18n: I18nType,
-): Omit<MessageListMessage, 'quote'> {
+): Omit<MessageListRegularMessage, 'quote'> {
     return {
         type: viewModel.type,
         actions: {
@@ -109,7 +147,7 @@ function getMessageFileProps(
     viewModel: ReturnType<
         Remote<ConversationRegularMessageViewModelBundle>['viewModelStore']['get']
     >,
-): MessageListMessage['file'] {
+): MessageListRegularMessage['file'] {
     if (viewModel.file !== undefined) {
         return {
             ...viewModel.file,
@@ -125,7 +163,7 @@ export function getMessageReactionsProps(
         Remote<ConversationRegularMessageViewModelBundle>['viewModelStore']['get']
     >,
     i18n: I18nType,
-): MessageListMessage['reactions'] {
+): MessageListRegularMessage['reactions'] {
     return viewModel.reactions
         .map((reaction) => ({
             ...reaction,
@@ -137,6 +175,20 @@ export function getMessageReactionsProps(
             },
         }))
         .sort((a, b) => localeSort(a.sender.name, b.sender.name));
+}
+
+function getDeletedMessageProps(
+    viewModel: ReturnType<
+        Remote<ConversationDeletedMessageViewModelBundle>['viewModelStore']['get']
+    >,
+): Omit<MessageListDeletedMessage, 'quote'> {
+    return {
+        type: 'deleted-message',
+        direction: viewModel.direction,
+        id: viewModel.id,
+        sender: viewModel.sender,
+        status: viewModel.status,
+    };
 }
 
 function getStatusMessageProps(

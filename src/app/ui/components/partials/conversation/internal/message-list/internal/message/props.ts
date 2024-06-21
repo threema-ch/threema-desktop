@@ -45,7 +45,7 @@ export interface MessageProps {
      */
     readonly highlighted?: BasicMessageProps['highlighted'];
     readonly id: MessageId;
-    readonly quote?: Omit<MessageProps, 'boundary' | 'conversation' | 'services'> | 'not-found';
+    readonly quote?: AnyQuotedMessage;
     readonly reactions: BasicMessageProps['reactions'] & MessageDetailsModalProps['reactions'];
     readonly sender?: NonNullable<BasicMessageProps['sender']> &
         (
@@ -60,6 +60,18 @@ export interface MessageProps {
     readonly services: AppServicesForSvelte;
     readonly status: BasicMessageProps['status'];
     readonly text?: TextContent;
+}
+
+export type AnyQuotedMessage = QuotedRegularMessage | QuotedDeletedMessage | 'not-found';
+
+interface QuotedRegularMessage
+    extends Omit<MessageProps, 'boundary' | 'conversation' | 'services'> {
+    readonly type: 'regular-message';
+}
+
+interface QuotedDeletedMessage {
+    readonly type: 'deleted-message';
+    readonly id: MessageId;
 }
 
 interface TextContent {

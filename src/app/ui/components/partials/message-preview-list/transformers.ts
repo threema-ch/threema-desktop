@@ -55,7 +55,7 @@ export function transformMessageQuoteProps(
                 'The quoted message could not be found',
             ),
         };
-    } else if (rawQuoteProps === 'deleted') {
+    } else if (rawQuoteProps.type === 'deleted-message') {
         return {
             type: 'deleted',
             fallbackText: i18n.t(

@@ -1,11 +1,9 @@
-import type {
-    AnyMessageModelStore,
-    AnyReceiver,
-    AnyReceiverStore,
-    Conversation,
-} from '~/common/model';
+import type {AnyReceiver, AnyReceiverStore, Conversation} from '~/common/model';
 import type {ConversationModelStore} from '~/common/model/conversation';
-import type {AnyDeletedMessageModelStore} from '~/common/model/types/message';
+import type {
+    AnyDeletedMessageModelStore,
+    AnyNonDeletedMessageModelStore,
+} from '~/common/model/types/message';
 import type {AnyStatusMessageModelStore} from '~/common/model/types/status';
 import {LazyWeakRef} from '~/common/model/utils/model-cache';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
@@ -42,7 +40,7 @@ export class ViewModelCache {
     >();
     public readonly conversationRegularMessage = new WeakValueMap<
         ConversationModelStore,
-        WeakValueMap<AnyMessageModelStore, ConversationRegularMessageViewModelBundle>
+        WeakValueMap<AnyNonDeletedMessageModelStore, ConversationRegularMessageViewModelBundle>
     >();
     public readonly conversationStatusMessage = new WeakValueMap<
         LocalModelStore<Conversation>,

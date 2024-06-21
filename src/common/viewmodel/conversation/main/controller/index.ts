@@ -167,6 +167,10 @@ export class ConversationViewModelController implements IConversationViewModelCo
         if (forwardedMessageModelStore === undefined) {
             return undefined;
         }
+        if (forwardedMessageModelStore.type === MessageType.DELETED) {
+            this._log.error(`Message with id "${messageId}" is deleted and cannot be forwarded`);
+            return undefined;
+        }
 
         return this._viewModelRepository.conversationRegularMessage(
             forwardedConversationModelStore,

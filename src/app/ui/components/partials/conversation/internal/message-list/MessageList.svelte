@@ -10,6 +10,7 @@
   import LazyList from '~/app/ui/components/hocs/lazy-list/LazyList.svelte';
   import type {LazyListProps} from '~/app/ui/components/hocs/lazy-list/props';
   import {Viewport} from '~/app/ui/components/partials/conversation/internal/message-list/helpers';
+  import DeletedMessage from '~/app/ui/components/partials/conversation/internal/message-list/internal/deleted-message/DeletedMessage.svelte';
   import Message from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/Message.svelte';
   import MessageDetailsModal from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-details-modal/MessageDetailsModal.svelte';
   import MessageForwardModal from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-forward-modal/MessageForwardModal.svelte';
@@ -18,9 +19,8 @@
   import UnreadMessagesIndicator from '~/app/ui/components/partials/conversation/internal/message-list/internal/unread-messages-indicator/UnreadMessagesIndicator.svelte';
   import type {
     AnyMessageListMessage,
-    MessageListMessage,
     MessageListProps,
-    MessageListStatusMessage,
+    MessageListRegularMessage,
   } from '~/app/ui/components/partials/conversation/internal/message-list/props';
   import type {
     UnreadState,
@@ -44,9 +44,9 @@
   export let services: $$Props['services'];
 
   const dispatch = createEventDispatcher<{
-    clickquote: MessageListMessage;
+    clickquote: MessageListRegularMessage;
     clickdelete: AnyMessageListMessage;
-    clickedit: MessageListMessage;
+    clickedit: MessageListRegularMessage;
   }>();
 
   let element: HTMLElement;
@@ -160,7 +160,7 @@
     }).catch(assertUnreachable);
   }
 
-  function handleClickForwardOption(message: MessageListMessage): void {
+  function handleClickForwardOption(message: MessageListRegularMessage): void {
     modalState = {
       type: 'message-forward',
       props: {
@@ -171,38 +171,60 @@
     };
   }
 
-  function handleClickOpenDetailsOption(message: MessageListMessage): void {
-    modalState = {
-      type: 'message-details',
-      props: {
-        conversation,
-        direction: message.direction,
-        file: message.file,
-        history: message.history,
-        id: message.id,
-        reactions: message.reactions,
-        services,
-        status: message.status,
-      },
-    };
+  function handleClickOpenDetailsOption(message: AnyMessageListMessage): void {
+    switch (message.type) {
+      case 'deleted-message':
+        modalState = {
+          type: 'message-details',
+          props: {
+            conversation,
+            direction: message.direction,
+            history: [],
+            id: message.id,
+            reactions: [],
+            services,
+            status: message.status,
+          },
+        };
+        break;
+
+      case 'regular-message':
+        modalState = {
+          type: 'message-details',
+          props: {
+            conversation,
+            direction: message.direction,
+            file: message.file,
+            history: message.history,
+            id: message.id,
+            reactions: message.reactions,
+            services,
+            status: message.status,
+          },
+        };
+        break;
+
+      case 'status-message':
+        modalState = {
+          type: 'message-details',
+          props: {
+            conversation,
+            history: [],
+            id: message.id,
+            reactions: [],
+            services,
+            status: {created: message.created},
+            statusMessageType: message.status.type,
+          },
+        };
+        break;
+
+      default:
+        unreachable(message);
+    }
   }
 
-  function handleClickOpenStatusDetailsOption(message: MessageListStatusMessage): void {
-    modalState = {
-      type: 'message-details',
-      props: {
-        conversation,
-        history: [],
-        id: message.id,
-        reactions: [],
-        services,
-        status: {created: message.created},
-        statusMessageType: message.status.type,
-      },
-    };
-  }
-
-  function handleClickThumbnail(message: MessageListMessage): void {
+  function handleClickThumbnail(message: MessageListRegularMessage): void {
     if (message.file !== undefined) {
       switch (message.file.type) {
         case 'audio':
@@ -223,7 +245,7 @@
                * TS doesn't manage to narrow the type, but we can be sure that the file type is
                * `image` or `video` at this point.
                */
-              file: message.file as NonNullable<MessageListMessage['file']> & {
+              file: message.file as NonNullable<MessageListRegularMessage['file']> & {
                 readonly type: 'image' | 'video';
               },
             },
@@ -242,12 +264,13 @@
     }
   }
 
-  function handleClickQuote(message: MessageListMessage): void {
+  function handleClickQuote(message: MessageListRegularMessage): void {
     switch (message.quote) {
       case undefined:
       case 'not-found':
         log.error('Quote was clicked but it was either undefined or not found');
         return;
+
       default:
         scrollToMessage(message.quote.id, {
           behavior: 'smooth',
@@ -452,7 +475,10 @@
         slot="item"
         let:item
       >
-        {#if item.type === 'message'}
+        <!-- Because the linter infers the wrong type for `item`, we have to disable
+          `no-unsafe-argument` for this entire block, unfortunately. -->
+        <!-- eslint-disable @typescript-eslint/no-unsafe-argument -->
+        {#if item.type === 'regular-message' || item.type === 'deleted-message'}
           {#if item.id === rememberedUnreadState.firstUnreadMessageId}
             <div class="separator">
               <UnreadMessagesIndicator
@@ -462,40 +488,58 @@
               />
             </div>
           {/if}
-          <!-- eslint-disable @typescript-eslint/no-unsafe-argument -->
-          <Message
-            actions={item.actions}
-            boundary={element}
-            {conversation}
-            direction={item.direction}
-            file={item.file}
-            highlighted={item.id === highlightedMessageId}
-            id={item.id}
-            quote={item.quote}
-            reactions={item.reactions}
-            sender={item.sender}
-            {services}
-            status={item.status}
-            text={item.text}
-            on:clickquoteoption={() => dispatch('clickquote', item)}
-            on:clickeditoption={() => dispatch('clickedit', item)}
-            on:clickforwardoption={() => handleClickForwardOption(item)}
-            on:clickopendetailsoption={() => handleClickOpenDetailsOption(item)}
-            on:clickdeleteoption={() => dispatch('clickdelete', item)}
-            on:clickthumbnail={() => handleClickThumbnail(item)}
-            on:clickquote={() => handleClickQuote(item)}
-            on:completehighlightanimation={handleCompleteHighlightAnimation}
-          />
+
+          {#if item.type === 'deleted-message'}
+            <DeletedMessage
+              boundary={element}
+              {conversation}
+              direction={item.direction}
+              highlighted={item.id === highlightedMessageId}
+              sender={item.sender}
+              {services}
+              status={item.status}
+              on:clickdeleteoption={() => dispatch('clickdelete', item)}
+              on:clickopendetailsoption={() => handleClickOpenDetailsOption(item)}
+              on:completehighlightanimation={handleCompleteHighlightAnimation}
+            />
+          {:else if item.type === 'regular-message'}
+            <Message
+              actions={item.actions}
+              boundary={element}
+              {conversation}
+              direction={item.direction}
+              file={item.file}
+              highlighted={item.id === highlightedMessageId}
+              id={item.id}
+              quote={item.quote}
+              reactions={item.reactions}
+              sender={item.sender}
+              {services}
+              status={item.status}
+              text={item.text}
+              on:clickdeleteoption={() => dispatch('clickdelete', item)}
+              on:clickeditoption={() => dispatch('clickedit', item)}
+              on:clickforwardoption={() => handleClickForwardOption(item)}
+              on:clickopendetailsoption={() => handleClickOpenDetailsOption(item)}
+              on:clickquote={() => handleClickQuote(item)}
+              on:clickquoteoption={() => dispatch('clickquote', item)}
+              on:clickthumbnail={() => handleClickThumbnail(item)}
+              on:completehighlightanimation={handleCompleteHighlightAnimation}
+            />
+          {:else}
+            {unreachable(item)}
+          {/if}
         {:else if item.type === 'status-message'}
           <StatusMessage
             boundary={element}
             status={item.status}
             on:clickdeleteoption={() => dispatch('clickdelete', item)}
-            on:clickopendetailsoption={() => handleClickOpenStatusDetailsOption(item)}
+            on:clickopendetailsoption={() => handleClickOpenDetailsOption(item)}
           />
         {:else}
           {unreachable(item)}
         {/if}
+        <!-- eslint-enable @typescript-eslint/no-unsafe-argument -->
       </div>
     </LazyList>
   {/if}

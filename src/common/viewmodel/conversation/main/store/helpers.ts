@@ -1,4 +1,4 @@
-import {MessageTypeUtils, ReceiverType, StatusMessageTypeUtils} from '~/common/enum';
+import {MessageType, ReceiverType, StatusMessageType} from '~/common/enum';
 import type {Conversation} from '~/common/model';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import type {AnyMessageModelStore} from '~/common/model/types/message';
@@ -132,20 +132,36 @@ export function getMessageSetStore(
     // Fetch the view model for every message in the set store.
     const conversationMessageSetStore = new LocalDerivedSetStore(
         deltaSetStore,
-        (messageStore) => {
-            if (MessageTypeUtils.containsString(messageStore.get().type)) {
-                return viewModelRepository.conversationRegularMessage(
-                    conversationModelStore,
-                    messageStore as AnyMessageModelStore,
-                );
-            } else if (StatusMessageTypeUtils.containsString(messageStore.get().type)) {
-                return viewModelRepository.conversationStatusMessage(
-                    conversationModelStore,
-                    messageStore as AnyStatusMessageModelStore,
-                );
-            }
+        (messageModelStore) => {
+            switch (messageModelStore.type) {
+                case MessageType.DELETED:
+                    return viewModelRepository.conversationDeletedMessage(
+                        conversationModelStore,
+                        messageModelStore,
+                    );
 
-            throw new Error('Tried to fetch a conversation message with an unknown type');
+                case MessageType.AUDIO:
+                case MessageType.FILE:
+                case MessageType.IMAGE:
+                case MessageType.TEXT:
+                case MessageType.VIDEO:
+                    return viewModelRepository.conversationRegularMessage(
+                        conversationModelStore,
+                        messageModelStore,
+                    );
+
+                case StatusMessageType.GROUP_CALL_ENDED:
+                case StatusMessageType.GROUP_CALL_STARTED:
+                case StatusMessageType.GROUP_MEMBER_CHANGED:
+                case StatusMessageType.GROUP_NAME_CHANGED:
+                    return viewModelRepository.conversationStatusMessage(
+                        conversationModelStore,
+                        messageModelStore,
+                    );
+
+                default:
+                    return unreachable(messageModelStore);
+            }
         },
         storeOptions,
     );

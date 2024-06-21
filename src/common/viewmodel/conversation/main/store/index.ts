@@ -7,8 +7,7 @@ import {derive} from '~/common/utils/store/derived-store';
 import type {LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
 import type {ConversationViewModelController} from '~/common/viewmodel/conversation/main/controller';
-import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
-import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/status-message';
+import type {AnyConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/helpers';
 import {
     getLastMessage,
     getMessageSetStore,
@@ -38,7 +37,7 @@ export type ConversationViewModelStore = LocalStore<
  */
 export type ConversationMessageSetStore = LocalDerivedSetStore<
     SetOfAnyLocalMessageOrStatusMessageModelStore,
-    ConversationRegularMessageViewModelBundle | ConversationStatusMessageViewModelBundle
+    AnyConversationMessageViewModelBundle
 >;
 
 export function getConversationViewModelStore(
@@ -63,6 +62,7 @@ export function getConversationViewModelStore(
             if (!active) {
                 return undefined;
             }
+
             const receiver = getAndSubscribe(conversationModel.controller.receiver());
             const properties: ConversationViewModel = {
                 call: getCallData(services, receiver, getAndSubscribe),
@@ -79,6 +79,7 @@ export function getConversationViewModelStore(
                 totalMessagesCount: conversationModel.controller.getMessageCount(),
                 unreadMessagesCount: conversationModel.view.unreadMessageCount,
             };
+
             return endpoint.exposeProperties(properties);
         },
     );

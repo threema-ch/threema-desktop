@@ -47,10 +47,7 @@ interface MessagePreviewProps {
     };
     readonly id: MessageId;
     readonly deletedAt?: Date;
-    readonly quote?:
-        | Omit<MessagePreviewProps, 'boundary' | 'conversation' | 'services'>
-        | 'not-found'
-        | 'deleted';
+    readonly quote?: AnyQuotedMessage;
     readonly reactions: MessageProps['reactions'];
     readonly sender?: NonNullable<MessageProps['sender']> &
         (
@@ -64,6 +61,18 @@ interface MessagePreviewProps {
         );
     readonly status: MessageProps['status'];
     readonly text?: TextContent;
+}
+
+export type AnyQuotedMessage = QuotedRegularMessage | QuotedDeletedMessage | 'not-found';
+
+interface QuotedRegularMessage
+    extends Omit<MessagePreviewProps, 'boundary' | 'conversation' | 'services'> {
+    readonly type: 'regular-message';
+}
+
+interface QuotedDeletedMessage {
+    readonly type: 'deleted-message';
+    readonly id: MessageId;
 }
 
 interface TextContent {

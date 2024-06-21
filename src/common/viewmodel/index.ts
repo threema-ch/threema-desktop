@@ -2,9 +2,12 @@ import type {ServicesForBackend} from '~/common/backend';
 import type {DbReceiverLookup} from '~/common/db';
 import {ReceiverType} from '~/common/enum';
 import {TRANSFER_HANDLER} from '~/common/index';
-import type {AnyMessageModelStore, AnyReceiver} from '~/common/model';
+import type {AnyReceiver} from '~/common/model';
 import type {ConversationModelStore} from '~/common/model/conversation';
-import type {AnyDeletedMessageModelStore} from '~/common/model/types/message';
+import type {
+    AnyDeletedMessageModelStore,
+    AnyNonDeletedMessageModelStore,
+} from '~/common/model/types/message';
 import type {ReceiverStoreFor} from '~/common/model/types/receiver';
 import type {AnyStatusMessageModelStore} from '~/common/model/types/status';
 import {unreachable} from '~/common/utils/assert';
@@ -100,7 +103,7 @@ export interface IViewModelRepository extends ProxyMarked {
      */
     readonly conversationRegularMessage: (
         conversation: ConversationModelStore,
-        messageStore: AnyMessageModelStore,
+        messageStore: AnyNonDeletedMessageModelStore,
     ) => ConversationRegularMessageViewModelBundle;
 
     /**
@@ -199,14 +202,14 @@ export class ViewModelRepository implements IViewModelRepository {
     /** @inheritdoc */
     public conversationRegularMessage(
         conversation: ConversationModelStore,
-        messageStore: AnyMessageModelStore,
+        messageStore: AnyNonDeletedMessageModelStore,
     ): ConversationRegularMessageViewModelBundle {
         return this._cache.conversationRegularMessage
             .getOrCreate(
                 conversation,
                 () =>
                     new WeakValueMap<
-                        AnyMessageModelStore,
+                        AnyNonDeletedMessageModelStore,
                         ConversationRegularMessageViewModelBundle
                     >(),
             )

@@ -1,6 +1,5 @@
 <!--
-  @component
-  Renders a message that can be used as part of a conversation.
+  @component Renders a message that can be used as part of a conversation.
 -->
 <script lang="ts">
   import {globals} from '~/app/globals';
@@ -174,7 +173,7 @@
           'The quoted message could not be found',
         ),
       };
-    } else if (rawQuote.status.deleted !== undefined) {
+    } else if (rawQuote.type === 'deleted-message') {
       quoteProps = {
         type: 'deleted',
         fallbackText: $i18n.t(
