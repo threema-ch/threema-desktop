@@ -99,7 +99,8 @@ dist:
     - *before_script_show_versions
   script:
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
-    - npm run "dist:consumer-sandbox"
+    # Note: Launcher binary is tested using a separate job, so we skip it here
+    - SKIP_LAUNCHER_BINARY=true npm run "dist:consumer-sandbox"
 
 flatpak-source-generator:
   stage: build

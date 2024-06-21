@@ -62,7 +62,7 @@ modules:
             # --enable-features="WaylandWindowDecorations" \
             #
             # See https://github.com/electron/electron/issues/37531
-            /app/main/threema-desktop-launcher --launcher-target-bin /app/bin/zypak-wrapper.sh /app/main/ThreemaDesktop "$@"
+            /app/main/ThreemaDesktopLauncher --launcher-target-bin /app/bin/zypak-wrapper.sh /app/main/ThreemaDesktop "$@"
     build-commands:
       # Build and install launcher binary
       - cd src/launcher/ && cargo --offline fetch --manifest-path Cargo.toml --verbose
@@ -80,14 +80,14 @@ modules:
       # Build Threema Desktop
       - |
         ln -s $XDG_CACHE_HOME/node-gyp $HOME/.electron-gyp # https://github.com/flatpak/flatpak-builder-tools/pull/260#discussion_r822084602
-        npm run dist:{{flavor}}
+        SKIP_LAUNCHER_BINARY=true npm run dist:{{flavor}}
 
       # Bundle app and dependencies
       - ls -lah build/electron/packaged/
       - cp -a build/electron/packaged/Threema*-linux-* /app/main
       # Install app wrappers
       - install -Dm755 -t /app/bin/ run.sh
-      - install -Dm755 -t /app/main/ src/launcher/target/release/threema-desktop-launcher
+      - install -Dm755 -t /app/main/ src/launcher/target/release/ThreemaDesktopLauncher
       # Install metadata
       - install -Dm644 packaging/metadata/ch.threema.threema-desktop.metainfo.xml /app/share/metainfo/{{app-id}}.metainfo.xml
       - install -Dm644 packaging/metadata/ch.threema.threema-desktop.desktop /app/share/applications/{{app-id}}.desktop

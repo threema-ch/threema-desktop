@@ -1,3 +1,4 @@
+const {spawnSync} = require('node:child_process');
 const fs = require('node:fs');
 const {join, resolve} = require('node:path');
 const process = require('node:process');
@@ -11,8 +12,17 @@ const {GotDownloader} = require('@electron/get/dist/cjs/GotDownloader');
 const packager = require('@electron/packager');
 const {populateIgnoredPaths} = require('@electron/packager/dist/copy-filter');
 const debug = require('debug');
+const fsExtra = require('fs-extra');
 
 const log = debug('dist-electron');
+
+/**
+ * Error handling.
+ */
+function fail(errormsg) {
+    console.error(errormsg);
+    process.exit(1);
+}
 
 function allow(directory, pattern) {
     return (path) => {
@@ -58,6 +68,7 @@ function allow(directory, pattern) {
  * https://www.electronjs.org/docs/latest/tutorial/fuses
  */
 async function setElectronFuses(binaryPath) {
+    console.log(`Setting electron fuses for ${binaryPath}`);
     await flipFuses(binaryPath, {
         version: FuseVersion.V1,
         // See: https://github.com/electron/fuses?tab=readme-ov-file#new-fuses.
@@ -140,6 +151,73 @@ function determineBinaryName(flavor) {
     }
 }
 
+function determineLauncherBinaryName() {
+    switch (process.platform) {
+        case 'win32':
+            return 'ThreemaDesktopLauncher.exe';
+        default:
+            return 'ThreemaDesktopLauncher';
+    }
+}
+
+function buildAndCopyLauncherBinary(flavor, outputPath) {
+    // Build launcher
+    console.log(`🦀 Building launcher binary for ${flavor} through cargo`);
+    const resultLauncher = spawnSync('cargo', ['build', `--release`], {
+        cwd: resolve(__dirname, '..', 'src', 'launcher'),
+        encoding: 'utf8',
+        shell: false,
+        stdio: [null, 1, 2],
+        env: {
+            ...process.env,
+            THREEMA_BUILD_FLAVOR: flavor,
+        },
+    });
+    if (resultLauncher.status !== 0) {
+        console.warn(resultLauncher);
+        fail(`Building launcher binary failed, exit code ${resultLauncher.status}`);
+    }
+
+    // Copy launcher into application dir
+    const launcherBinaryName = determineLauncherBinaryName();
+    const launcherBinaryPath = resolve(
+        __dirname,
+        '..',
+        'src',
+        'launcher',
+        'target',
+        'release',
+        launcherBinaryName,
+    );
+    if (!fs.existsSync(launcherBinaryPath)) {
+        fail(
+            `Could not find launcher binary after building, path\n    ${launcherBinaryPath}\n    does not exist`,
+        );
+    }
+    const launcherBinaryPathNew =
+        process.platform === 'darwin'
+            ? join(outputPath, determineBinaryName(flavor), 'Contents', 'MacOS', launcherBinaryName)
+            : join(outputPath, launcherBinaryName);
+    fsExtra.copySync(launcherBinaryPath, launcherBinaryPathNew, {
+        errorOnExist: true,
+        dereference: false,
+        preserveTimestamps: false,
+    });
+    console.log(`Copied launcher binary ${launcherBinaryName} to output directory`);
+
+    // On macOS, patch bundle executable in `Info.plist`
+    if (process.platform === 'darwin') {
+        const plistPath = join(outputPath, determineBinaryName(flavor), 'Contents', 'Info.plist');
+        const plist = fs
+            .readFileSync(plistPath, 'utf8')
+            .replace(
+                /<key>CFBundleExecutable<\/key>(?<whitespace>[\s]+)<string>ThreemaDesktop<\/string>/u,
+                `<key>CFBundleExecutable</key>$<whitespace><string>${launcherBinaryName}</string>`,
+            );
+        fs.writeFileSync(plistPath, plist, 'utf8');
+    }
+}
+
 async function packageApp(variant, environment) {
     const options = {};
     populateIgnoredPaths(options);
@@ -160,7 +238,6 @@ async function packageApp(variant, environment) {
     // DOC: https://electron.github.io/electron-packager/v16.0.0/interfaces/electronpackager.options.html#icon
     let icon;
     let platformSpecificOptions = {};
-
     switch (process.platform) {
         case 'darwin': {
             let appBundleId;
@@ -233,6 +310,7 @@ async function packageApp(variant, environment) {
 
     // Package
     // DOC: https://electron.github.io/electron-packager/v16.0.0/interfaces/electronpackager.options.html
+    console.info('📦 Packaging application with electron-packager');
     const [outputPath] = await packager({
         appCopyright: '© Threema GmbH, all rights reserved',
         name: appName,
@@ -347,8 +425,12 @@ async function packageApp(variant, environment) {
 
     // Set electron fuses
     const binaryPath = join(outputPath, determineBinaryName(flavor));
-    console.log(`Setting electron fuses for ${binaryPath}`);
     await setElectronFuses(binaryPath);
+
+    // Build launcher binary (unless the $SKIP_LAUNCHER_BINARY env var is set to "true")
+    if (process.env.SKIP_LAUNCHER_BINARY !== 'true') {
+        buildAndCopyLauncherBinary(flavor, outputPath);
+    }
 
     console.info(`Packaged: ${outputPath}`);
 }
@@ -357,14 +439,12 @@ if (require.main === module) {
     // Parse arguments
     const [node, script, ...argv] = process.argv;
     if (argv.length !== 2) {
-        console.error(`Usage: ${node} ${script} (consumer|work) (sandbox|live)`);
-        process.exit(1);
+        fail(`Usage: ${node} ${script} (consumer|work) (sandbox|live)`);
     }
     const variant = argv[0];
     const environment = argv[1];
 
     packageApp(variant, environment).catch((error) => {
-        console.error(error);
-        process.exit(1);
+        fail(error);
     });
 }

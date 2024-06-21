@@ -12,6 +12,10 @@ colored = "2.0.4"
 home = "0.5.5"
 time = "0.3.30"
 
+[[bin]]
+name = "ThreemaDesktopLauncher"
+path = "src/main.rs"
+
 [profile.release]
 overflow-checks = true
 lto = true

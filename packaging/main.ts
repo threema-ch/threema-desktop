@@ -352,7 +352,7 @@ function buildSource(dirs: Directories, args: string[]): void {
 /**
  * Build both the electron application and the launcher binary.
  */
-function buildApplicationAndLauncherBinary(
+function buildApplication(
     dirs: Directories,
     flavor: BuildFlavor,
 ): {
@@ -364,24 +364,6 @@ function buildApplicationAndLauncherBinary(
     const binaryBasename = determineAppName(flavor);
     const binaryDir = `${binaryBasename}-${process.platform}-${process.arch}`;
     const binaryDirPath = path.join(buildOutputDir, binaryDir);
-
-    // Build launcher
-    log.minor('Building launcher binary through cargo');
-    const resultLauncher = spawnSync('cargo', ['build', `--release`], {
-        cwd: path.join(dirs.root, 'src', 'launcher'),
-        encoding: 'utf8',
-        shell: false,
-        stdio: [null, 1, 2],
-        env: {
-            ...process.env,
-            THREEMA_BUILD_FLAVOR: flavor,
-        },
-    });
-    if (resultLauncher.status !== 0) {
-        console.warn(resultLauncher);
-        fail(`Building launcher binary failed, exit code ${resultLauncher.status}`);
-    }
-    log.minor('Launcher binary successfully built');
 
     // Build application
     log.minor('Running dist script to package binary release');
@@ -401,30 +383,6 @@ function buildApplicationAndLauncherBinary(
         );
     }
     log.minor('Binary successfully built');
-
-    // Copy launcher into application output dir
-    const launcherBinaryPath = path.join(
-        dirs.root,
-        'src',
-        'launcher',
-        'target',
-        'release',
-        `threema-desktop-launcher${IS_WINDOWS ? '.exe' : ''}`,
-    );
-    if (!fs.existsSync(launcherBinaryPath)) {
-        fail(
-            `Could not find launcher binary after building, path\n    ${launcherBinaryPath}\n    does not exist`,
-        );
-    }
-    const launcherBinaryPathNew = path.join(
-        binaryDirPath,
-        IS_WINDOWS ? 'ThreemaDesktopLauncher.exe' : 'threema-desktop-launcher',
-    );
-    copySync(launcherBinaryPath, launcherBinaryPathNew, {
-        errorOnExist: true,
-        dereference: false,
-        preserveTimestamps: false,
-    });
 
     return {binaryBasename, binaryDirPath};
 }
@@ -528,7 +486,7 @@ function buildBinaryArchives(dirs: Directories, signed: boolean, args: string[])
 
 function buildBinaryArchive(dirs: Directories, flavor: BuildFlavor, sign: boolean): void {
     // Build
-    const {binaryDirPath: binaryDirPathOld} = buildApplicationAndLauncherBinary(dirs, flavor);
+    const {binaryDirPath: binaryDirPathOld} = buildApplication(dirs, flavor);
 
     // Rename and copy to temporary directory
     log.minor(`Packaging binary: ${flavor}`);
@@ -649,7 +607,7 @@ async function buildDmg(
         checkCommandAvailability('sha256sum') && checkCommandAvailability('b2sum');
 
     // Build
-    const {binaryDirPath, binaryBasename} = buildApplicationAndLauncherBinary(dirs, flavor);
+    const {binaryDirPath, binaryBasename} = buildApplication(dirs, flavor);
 
     // Variables depending on build flavor
     const appName = determineAppName(flavor);
@@ -690,24 +648,6 @@ async function buildDmg(
     const originalAppPath = `${binaryDirPath}/${binaryBasename}.app`;
     const appPath = `${binaryDirPath}/${appName}.app`;
     const outPath = path.join(dirs.root, 'build', 'installers', 'mac');
-
-    // Copy launcher binary into app bundle and modify Info.plist
-    const launcherBinaryName = 'threema-desktop-launcher';
-    const plistPath = path.join(appPath, 'Contents', 'Info.plist');
-    const launcherBinaryPath = path.join(binaryDirPath, launcherBinaryName);
-    const launcherBinaryPathNew = path.join(appPath, 'Contents', 'MacOS', launcherBinaryName);
-    copySync(launcherBinaryPath, launcherBinaryPathNew, {
-        errorOnExist: true,
-        dereference: false,
-        preserveTimestamps: false,
-    });
-    const plist = fs
-        .readFileSync(plistPath, 'utf8')
-        .replace(
-            /<key>CFBundleExecutable<\/key>(?<whitespace>[\s]+)<string>ThreemaDesktop<\/string>/u,
-            `<key>CFBundleExecutable</key>$<whitespace><string>${launcherBinaryName}</string>`,
-        );
-    fs.writeFileSync(plistPath, plist, 'utf8');
 
     // Rename app directory
     fs.renameSync(originalAppPath, appPath);
@@ -883,7 +823,7 @@ function buildMsix(dirs: Directories, flavor: BuildFlavor, sign: boolean): void 
     );
 
     // Build electron distribution
-    const {binaryDirPath} = buildApplicationAndLauncherBinary(dirs, flavor);
+    const {binaryDirPath} = buildApplication(dirs, flavor);
 
     // Determine version
     //
