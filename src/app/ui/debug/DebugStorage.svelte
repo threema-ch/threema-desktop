@@ -1,10 +1,9 @@
 <script lang="ts">
   import type {AppServices} from '~/app/types';
-  import {i18n, type Locale, LOCALES} from '~/app/ui/i18n';
+  import {i18n} from '~/app/ui/i18n';
   import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {resetProfile} from '~/app/ui/utils/profile';
-  import {type Theme, THEMES} from '~/common/dom/ui/theme';
   import {ReceiverType} from '~/common/enum';
   import type {
     AnyMessage,
@@ -14,15 +13,12 @@
     GroupView,
   } from '~/common/model';
   import type {AnyStatusMessageView} from '~/common/model/types/status';
-  import {assertUnreachable, unreachable, unwrap} from '~/common/utils/assert';
+  import {assertUnreachable, unreachable} from '~/common/utils/assert';
 
   export let services: AppServices;
 
   // Unpack services
-  const {backend, storage} = services;
-
-  // Unpack stores
-  const {theme, locale} = storage;
+  const {backend} = services;
 
   let notificationPermission: NotificationPermission = Notification.permission;
 
@@ -134,52 +130,10 @@
       .catch(assertUnreachable);
     /* eslint-enable no-console */
   }
-
-  const themes: Theme[] = [...THEMES];
-
-  function cycleTheme(): void {
-    $theme = themes.shift() ?? THEMES[0];
-    themes.push($theme);
-  }
-
-  // Cycle theme once if the current theme is the first in the list to avoid a NoOp the first time
-  // we click on the "Cycle Theme" button
-  if ($theme === themes[0]) {
-    cycleTheme();
-  }
-
-  const locales: Locale[] = [...LOCALES];
-
-  function cycleLocale(): void {
-    $locale = locales.shift() ?? unwrap(LOCALES[0]);
-    locales.push($locale);
-  }
-
-  // Cycle locale once if the current locale is the first in the list to avoid a NoOp the first time
-  // we click on the "Cycle Locale" button
-  if ($locale === locales[0]) {
-    cycleLocale();
-  }
 </script>
 
 <template>
   <section class="storage">
-    <h3>Local Storage</h3>
-
-    <Button flavor="filled" on:click={cycleTheme}>
-      <span class="icon-and-text"
-        ><MdIcon theme="Filled">invert_colors</MdIcon>
-        Cycle Theme [{$theme}]</span
-      >
-    </Button>
-
-    <Button flavor="filled" on:click={cycleLocale}>
-      <span class="icon-and-text"
-        ><MdIcon theme="Filled">language</MdIcon>
-        Cycle Locale [{$locale}]</span
-      >
-    </Button>
-
     <h3>Permissions</h3>
 
     <Button
