@@ -760,7 +760,6 @@ export enum ElectronIpcCommand {
     SET_FILE_LOGGING_ENABLED_AND_RESTART = 'setFileLoggingEnabledAndRestart',
     RESTART_APP = 'restartApp',
     DELETE_PROFILE_AND_RESTART = 'deleteProfileAndRestart',
-    CREATE_PROFILE_SNAPSHOT = 'createProfileSnapshot',
     REMOVE_OLD_PROFILES = 'removeOldProfiles',
     GET_LATEST_PROFILE_PATH = 'getLatestProfilePath',
     CLOSE_APP = 'closeApp',

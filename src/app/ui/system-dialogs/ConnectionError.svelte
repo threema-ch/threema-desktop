@@ -18,16 +18,11 @@
   export let context: ConnectionErrorDialog['context'];
   unusedProp(log, appServices);
 
-  function deleteProfileAndRestartApp(): void {
-    window.app.deleteProfileAndRestartApp();
-  }
-
   function handleConfirmEvent(event: Event): void {
     if (context.type === 'client-was-dropped' || context.type === 'device-slot-state-mismatch') {
       event.preventDefault();
       event.stopPropagation();
-      window.app.createProfileSnapshot();
-      deleteProfileAndRestartApp();
+      window.app.deleteProfileAndRestartApp({createBackup: true});
     }
   }
 </script>

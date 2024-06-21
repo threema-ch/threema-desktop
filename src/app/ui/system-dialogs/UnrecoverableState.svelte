@@ -16,15 +16,10 @@
   export let context: UnrecoverableStateDialog['context'];
   unusedProp(log, appServices, context);
 
-  function deleteProfileAndRestartApp(): void {
-    const ipc = window.app;
-    ipc.deleteProfileAndRestartApp();
-  }
-
   function handleConfirmEvent(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-    deleteProfileAndRestartApp();
+    window.app.deleteProfileAndRestartApp({createBackup: true});
   }
 </script>
 

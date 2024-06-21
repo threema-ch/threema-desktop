@@ -7,11 +7,6 @@ export async function resetProfile(services: AppServices): Promise<void> {
     // First, unlink from mediator
     await services.backend.selfKickFromMediator();
 
-    const ipc = window.app;
-
-    // Copy the profile
-    ipc.createProfileSnapshot();
-
     // Then, request deletion of profile directory and app restart
-    ipc.deleteProfileAndRestartApp();
+    window.app.deleteProfileAndRestartApp({createBackup: true});
 }

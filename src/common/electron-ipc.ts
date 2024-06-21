@@ -16,6 +16,15 @@ export interface SystemInfo {
     readonly locale: string;
 }
 
+export interface DeleteProfileOptions {
+    /**
+     * Whether to create a backup of the old profile before deleting the directory.
+     *
+     * If a backup is created, then it can be restored when re-linking a new profile.
+     */
+    readonly createBackup: boolean;
+}
+
 /**
  * An IPC interface to call Electron functions from the application.
  */
@@ -79,18 +88,12 @@ export interface ElectronIpc {
      * Restarting is done using `app.exit(...)`, which means that the application will be
      * force-closed immediately.
      */
-    readonly deleteProfileAndRestartApp: () => void;
+    readonly deleteProfileAndRestartApp: (options: DeleteProfileOptions) => void;
 
     /**
      * Close the application.
      */
     readonly closeApp: () => void;
-
-    /**
-     * Copy the current profile to the root app path for restoration, adding a timestamp to the
-     * name.
-     */
-    readonly createProfileSnapshot: () => void;
 
     /**
      * Delete all old profiles that are found at the root of the app path.

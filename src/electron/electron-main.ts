@@ -9,7 +9,7 @@ import type {MenuItemConstructorOptions} from 'electron';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import * as electron from 'electron';
 
-import type {ErrorDetails, SystemInfo} from '~/common/electron-ipc';
+import type {DeleteProfileOptions, ErrorDetails, SystemInfo} from '~/common/electron-ipc';
 import {ElectronIpcCommand} from '~/common/enum';
 import {extractErrorTraceback} from '~/common/error';
 import {
@@ -528,7 +528,7 @@ function main(
      * Note: In development mode, the application will exit, but it will not be restarted and the
      * profile won't be deleted.
      */
-    function restartApplication(options: {deleteProfile: boolean}): void {
+    function restartApplication(options: {readonly deleteProfile: boolean}): void {
         if (options.deleteProfile) {
             log.info(`Requesting profile deletion and app restart`);
             electron.app.exit(EXIT_CODE_DELETE_PROFILE_AND_RESTART);
@@ -624,11 +624,6 @@ function main(
 
         // Set up IPC message handlers
         electron.ipcMain
-            .on(ElectronIpcCommand.CREATE_PROFILE_SNAPSHOT, (event) => {
-                validateSenderFrame(event.senderFrame);
-                log.info(`Copied old profile from: ${appPath} to ${appPath}-${Date.now()}`);
-                fs.cpSync(appPath, `${appPath}.${Date.now()}`, {recursive: true});
-            })
             .on(ElectronIpcCommand.GET_LATEST_PROFILE_PATH, (event) => {
                 validateSenderFrame(event.senderFrame);
                 event.returnValue = getLatestProfilePath(appPath, parameters.profile, log);
@@ -649,10 +644,21 @@ function main(
                 validateSenderFrame(event.senderFrame);
                 event.returnValue = electron.app.getPath(ELECTRON_PATH_USER_DATA);
             })
-            .on(ElectronIpcCommand.DELETE_PROFILE_AND_RESTART, (event: electron.IpcMainEvent) => {
-                validateSenderFrame(event.senderFrame);
-                restartApplication({deleteProfile: true});
-            })
+            .on(
+                ElectronIpcCommand.DELETE_PROFILE_AND_RESTART,
+                (event: electron.IpcMainEvent, options: DeleteProfileOptions) => {
+                    validateSenderFrame(event.senderFrame);
+                    if (options.createBackup) {
+                        const now = Date.now();
+                        log.info(`Copying old profile from ${appPath} to ${appPath}-${now}`);
+                        fs.cpSync(appPath, `${appPath}.${now}`, {recursive: true});
+                        log.info('Successfully copied old profile directory');
+                    } else {
+                        log.info('Not creating a backup');
+                    }
+                    restartApplication({deleteProfile: true});
+                },
+            )
             .on(ElectronIpcCommand.RESTART_APP, (event: electron.IpcMainEvent) => {
                 validateSenderFrame(event.senderFrame);
                 restartApplication({deleteProfile: false});

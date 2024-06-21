@@ -2436,8 +2436,6 @@ export namespace ElectronIpcCommand {
     export type RESTART_APP = typeof RESTART_APP;
     export const DELETE_PROFILE_AND_RESTART = 'deleteProfileAndRestart';
     export type DELETE_PROFILE_AND_RESTART = typeof DELETE_PROFILE_AND_RESTART;
-    export const CREATE_PROFILE_SNAPSHOT = 'createProfileSnapshot';
-    export type CREATE_PROFILE_SNAPSHOT = typeof CREATE_PROFILE_SNAPSHOT;
     export const REMOVE_OLD_PROFILES = 'removeOldProfiles';
     export type REMOVE_OLD_PROFILES = typeof REMOVE_OLD_PROFILES;
     export const GET_LATEST_PROFILE_PATH = 'getLatestProfilePath';

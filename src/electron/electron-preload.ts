@@ -9,7 +9,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {contextBridge, ipcRenderer} from 'electron';
 
-import type {ElectronIpc, ErrorDetails} from '~/common/electron-ipc';
+import type {DeleteProfileOptions, ElectronIpc, ErrorDetails} from '~/common/electron-ipc';
 import {ElectronIpcCommand} from '~/common/enum';
 import {CONSOLE_LOGGER} from '~/common/logging';
 import type {DomainCertificatePin, u53} from '~/common/types';
@@ -33,11 +33,10 @@ const appApi: ElectronIpc = {
     getGzippedLogFiles: () => ipcRenderer.invoke(ElectronIpcCommand.GET_GZIPPED_LOG_FILE),
     setFileLoggingEnabledAndRestart: (enabled) =>
         ipcRenderer.send(ElectronIpcCommand.SET_FILE_LOGGING_ENABLED_AND_RESTART, enabled),
-    deleteProfileAndRestartApp: () =>
-        ipcRenderer.send(ElectronIpcCommand.DELETE_PROFILE_AND_RESTART),
+    deleteProfileAndRestartApp: (options: DeleteProfileOptions) =>
+        ipcRenderer.send(ElectronIpcCommand.DELETE_PROFILE_AND_RESTART, options),
     restartApp: () => ipcRenderer.send(ElectronIpcCommand.RESTART_APP),
     closeApp: () => ipcRenderer.send(ElectronIpcCommand.CLOSE_APP),
-    createProfileSnapshot: () => ipcRenderer.send(ElectronIpcCommand.CREATE_PROFILE_SNAPSHOT),
     removeOldProfiles: () => ipcRenderer.send(ElectronIpcCommand.REMOVE_OLD_PROFILES),
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     getLatestProfilePath: () => ipcRenderer.sendSync(ElectronIpcCommand.GET_LATEST_PROFILE_PATH),

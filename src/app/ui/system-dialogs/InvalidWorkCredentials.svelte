@@ -121,14 +121,12 @@
       });
   }
 
-  function copyAndDeleteProfileAndRestartApp(): void {
+  function deleteProfileAndRestartApp(): void {
     deletingProfile = true;
-    const ipc = window.app;
-    ipc.createProfileSnapshot();
     backend
       .selfKickFromMediator()
       .then(() => {
-        ipc.deleteProfileAndRestartApp();
+        window.app.deleteProfileAndRestartApp({createBackup: true});
       })
       .catch((error: unknown) => {
         // TODO(DESK-1228): Delete profile anyways if selfkick failed?
@@ -293,7 +291,7 @@
             <Button
               flavor="filled"
               disabled={deletingProfile}
-              on:click={copyAndDeleteProfileAndRestartApp}
+              on:click={deleteProfileAndRestartApp}
             >
               {$i18n.t(
                 'dialog--invalid-work-credentials.action--relink',
