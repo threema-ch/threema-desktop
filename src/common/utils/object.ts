@@ -1,5 +1,3 @@
-import type {u53} from '~/common/types';
-
 /**
  * A {@link Record} of unknown keys and values.
  */
@@ -21,10 +19,10 @@ export function hasProperty<TKey extends PropertyKey>(
  * Note: The functionality of this function is equivalent to {@link Object.hasOwn} with the
  *       difference that the `key` parameter needs to exist in the provided object.
  */
-export function hasPropertyStrict<
-    TObject extends Record<string | u53 | symbol, unknown>,
-    TKey extends keyof TObject,
->(object: TObject, key: TKey): boolean {
+export function hasPropertyStrict<TObject extends UnknownRecord, TKey extends keyof TObject>(
+    object: TObject,
+    key: TKey,
+): boolean {
     return Object.hasOwn(object, key);
 }
 
@@ -35,7 +33,7 @@ export function hasPropertyStrict<
  * Example: The type `{a: string, b: boolean | undefined, c: undefined}` is transformed to `{a:
  * string, b: boolean}`.
  */
-type RecordWithoutUndefinedValues<R extends Record<string | u53 | symbol, unknown>> = {
+type RecordWithoutUndefinedValues<R extends UnknownRecord> = {
     // Note: If the part behind "as" evaluates to "never", then the key is removed from the set of keys.
     // See https://www.typescriptlang.org/docs/handbook/2/mapped-types.html#key-remapping-via-as
     [K in keyof R as Exclude<R[K], undefined> extends never ? never : K]: Exclude<R[K], undefined>;
@@ -44,7 +42,7 @@ type RecordWithoutUndefinedValues<R extends Record<string | u53 | symbol, unknow
 /**
  * Return a copy of a record with all keys removed where the value is `undefined`.
  */
-export function filterUndefinedProperties<const R extends Record<string | u53 | symbol, unknown>>(
+export function filterUndefinedProperties<const R extends UnknownRecord>(
     record: R,
 ): RecordWithoutUndefinedValues<R> {
     return Object.fromEntries(
