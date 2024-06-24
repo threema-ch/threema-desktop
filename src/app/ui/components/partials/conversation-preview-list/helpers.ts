@@ -121,6 +121,7 @@ function getLastMessagePreviewText(
         text = sanitizeAndParseTextToHtml(lastMessage.text.raw, i18n.t, {
             mentions: lastMessage.text.mentions,
             shouldLinkMentions: false,
+            shouldParseMentionsAsRawText: true,
             shouldParseLinks: false,
             shouldParseMarkup: true,
         });

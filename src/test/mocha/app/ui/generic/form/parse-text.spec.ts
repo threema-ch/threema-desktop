@@ -108,6 +108,7 @@ export function run(): void {
                     `Hello, @[${testContactId}]!` as SanitizedHtml,
                     [testMentions.self],
                     true,
+                    true,
                 );
                 const expected = `Hello, ${mentionHtmlTemplate(testMentions.self)}!`;
 
@@ -124,6 +125,7 @@ export function run(): void {
                     `Hello, @[${testContactId}]!` as SanitizedHtml,
                     [testMentionWithoutName],
                     true,
+                    true,
                 );
                 const expected = `Hello, ${mentionHtmlTemplate(testMentionWithoutName)}!`;
 
@@ -135,6 +137,7 @@ export function run(): void {
                     mockedT,
                     `Hello, @[${testAllId}]!` as SanitizedHtml,
                     [testMentions.everyone],
+                    true,
                     true,
                 );
                 const expected = `Hello, ${mentionHtmlTemplate({type: 'everyone', identity: '@@@@@@@@'})}!`;
@@ -148,6 +151,7 @@ export function run(): void {
                     `Hello, @[${testContactId}]!` as SanitizedHtml,
                     [testMentions.contact],
                     true,
+                    true,
                 );
                 const expected = `Hello, ${mentionHtmlTemplate(testMentions.contact)}!`;
 
@@ -160,11 +164,25 @@ export function run(): void {
                     `Hello, @[${testAllId}] and @[${testContactId}]!` as SanitizedHtml,
                     [testMentions.everyone, testMentions.contact],
                     true,
+                    true,
                 );
                 const expected = `Hello, ${mentionHtmlTemplate({
                     type: 'everyone',
                     identity: '@@@@@@@@',
                 })} and ${mentionHtmlTemplate(testMentions.contact)}!`;
+
+                expect(parsedText).to.equal(expected);
+            });
+
+            it('should replace mentions with raw text if requested', function () {
+                const parsedText = parseMentions(
+                    mockedT,
+                    `Hello, @[${testAllId}] and @[${testContactId}]!` as SanitizedHtml,
+                    [testMentions.everyone, testMentions.contact],
+                    true,
+                    false,
+                );
+                const expected = `Hello, @All and @${testMentions.contact.name}!`;
 
                 expect(parsedText).to.equal(expected);
             });

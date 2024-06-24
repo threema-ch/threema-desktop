@@ -17,6 +17,11 @@ export interface SanitizeAndParseTextToHtmlOptions {
     readonly highlights?: readonly string[];
     /** If mentions should link to the conversation with the respective contact. */
     readonly shouldLinkMentions?: boolean;
+    /**
+     * Whether to replace mentions with raw text instead of markup. Note: This will override
+     * `shouldLinkMentions` if set to `true`. Defaults to `false`.
+     */
+    readonly shouldParseMentionsAsRawText?: boolean;
     /** If simple markup tokens (bold, italic, strikethrough) should be replaced. */
     readonly shouldParseMarkup?: boolean;
     /** If links should be detected and replaced. */
@@ -46,6 +51,7 @@ export function sanitizeAndParseTextToHtml(
         mentions,
         highlights,
         shouldLinkMentions = true,
+        shouldParseMentionsAsRawText = false,
         shouldParseMarkup = false,
         shouldParseLinks = false,
         truncate: truncateMax,
@@ -76,7 +82,13 @@ export function sanitizeAndParseTextToHtml(
     }
 
     if (mentions !== undefined) {
-        sanitizedText = parseMentions(t, sanitizedText, mentions, shouldLinkMentions);
+        sanitizedText = parseMentions(
+            t,
+            sanitizedText,
+            mentions,
+            shouldLinkMentions,
+            !shouldParseMentionsAsRawText,
+        );
     }
 
     if (highlights !== undefined) {
@@ -116,22 +128,30 @@ export function escapeHtmlUnsafeChars(text: string | undefined): SanitizedHtml {
  * @param t The function to use for translating labels of special mentions, such as "@All".
  * @param mention The mention to generate HTML code for.
  * @param enableLinks Whether to format mentions of contacts as links.
+ * @param enableMarkup Whether to replace the mention with markup or raw text. Note: This will
+ *   override `enableLinks` if set to `false`.
  * @returns A string containing a HTML tag which represents the supplied `Mention`.
  */
 function getMentionHtml(
     t: I18nType['t'],
     mention: AnyMention,
     enableLinks: boolean,
+    enableMarkup: boolean,
 ): SanitizedHtml {
     switch (mention.type) {
         case 'self': {
             const text = escapeHtmlUnsafeChars(
                 mention.nickname ?? t('messaging.label--mention-me', 'Me'),
             );
-            return `<span class="mention me">@${text}</span>` as SanitizedHtml;
+            return (
+                enableMarkup ? `<span class="mention me">@${text}</span>` : `@${text}`
+            ) as SanitizedHtml;
         }
         case 'contact': {
             const name = escapeHtmlUnsafeChars(mention.name);
+            if (!enableMarkup) {
+                return `@${name}` as SanitizedHtml;
+            }
             if (enableLinks) {
                 const href = `#/conversation/${mention.lookup.type}/${mention.lookup.uid}/`;
                 return `<a href="${href}" draggable="false" class="mention">@${name}</a>` as SanitizedHtml;
@@ -140,11 +160,15 @@ function getMentionHtml(
         }
         case 'removed-contact': {
             const name = escapeHtmlUnsafeChars(mention.identity);
-            return `<span class="mention">@${name}</span>` as SanitizedHtml;
+            return (
+                enableMarkup ? `<span class="mention">@${name}</span>` : `@${name}`
+            ) as SanitizedHtml;
         }
         case 'everyone': {
             const text = escapeHtmlUnsafeChars(t('messaging.label--mention-all', 'All'));
-            return `<span class="mention all">@${text}</span>` as SanitizedHtml;
+            return (
+                enableMarkup ? `<span class="mention all">@${text}</span>` : `@${text}`
+            ) as SanitizedHtml;
         }
         default:
             return unreachable(mention);
@@ -183,6 +207,8 @@ function parseMarkup(text: SanitizedHtml): SanitizedHtml {
  * @param text The text to parse.
  * @param mentions One or more mentions to search for and replace in the text.
  * @param enableLinks Whether to format mentions of contacts as links.
+ * @param enableMarkup Whether to replace the mention with markup or raw text. Note: This will
+ *   override `enableLinks` if set to `false`.
  * @returns The text containing the mentions replaced with HTML.
  */
 export function parseMentions(
@@ -190,12 +216,13 @@ export function parseMentions(
     text: SanitizedHtml,
     mentions: readonly AnyMention[],
     enableLinks: boolean,
+    enableMarkup: boolean,
 ): SanitizedHtml {
     let parsedText = text;
     for (const mention of mentions) {
         parsedText = parsedText.replaceAll(
             `@[${mention.identity}]`,
-            getMentionHtml(t, mention, enableLinks),
+            getMentionHtml(t, mention, enableLinks, enableMarkup),
         ) as SanitizedHtml;
     }
 
