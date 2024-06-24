@@ -11,7 +11,7 @@ export type ConversationStatusMessageViewModelStore = LocalStore<
 >;
 
 export function getConversationStatusMessageViewModelStore(
-    services: Pick<ServicesForViewModel, 'endpoint' | 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'model'>,
     statusMessageModelStore: AnyStatusMessageModelStore,
 ): ConversationStatusMessageViewModelStore {
     const {endpoint} = services;
@@ -34,7 +34,7 @@ export function getConversationStatusMessageViewModelStore(
 }
 
 function getConversationStatusMessageViewModel(
-    services: Pick<ServicesForViewModel, 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'model'>,
     statusMessageModel: AnyStatusMessageModel,
     getAndSubscribe: GetAndSubscribeFunction,
 ): ConversationStatusMessageViewModel {

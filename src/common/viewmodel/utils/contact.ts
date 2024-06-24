@@ -25,17 +25,20 @@ export interface RemovedContactData {
  * Get the display name for a contact that may or may not exist in the user's contact list.
  */
 export function getContactDisplayName(
-    services: Pick<ServicesForBackend, 'model'>,
-    contactOrIdentity: IdentityString,
+    services: Pick<ServicesForBackend, 'device' | 'model'>,
+    identity: IdentityString,
     getAndSubscribe: GetAndSubscribeFunction,
 ): string {
-    const contact = services.model.contacts.getByIdentity(contactOrIdentity);
+    if (identity === services.device.identity.string) {
+        return getAndSubscribe(services.model.user.displayName);
+    }
+    const contact = services.model.contacts.getByIdentity(identity);
     if (contact === undefined) {
         return getDisplayName({
             firstName: '',
             lastName: '',
             nickname: undefined,
-            identity: contactOrIdentity,
+            identity,
         });
     }
     return getAndSubscribe(contact).view.displayName;

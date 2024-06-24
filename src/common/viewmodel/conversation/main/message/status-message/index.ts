@@ -12,7 +12,7 @@ export interface ConversationStatusMessageViewModelBundle extends PropertiesMark
 }
 
 export function getConversationStatusMessageViewModelBundle(
-    services: Pick<ServicesForViewModel, 'endpoint' | 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'model'>,
     messageModelStore: AnyStatusMessageModelStore,
 ): ConversationStatusMessageViewModelBundle {
     const viewModelStore = getConversationStatusMessageViewModelStore(services, messageModelStore);

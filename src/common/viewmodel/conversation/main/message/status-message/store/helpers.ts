@@ -7,7 +7,7 @@ import type {ConversationStatusMessageViewModel} from '~/common/viewmodel/conver
 import {getContactDisplayName} from '~/common/viewmodel/utils/contact';
 
 export function getStatusMessageStatus(
-    services: Pick<ServicesForViewModel, 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'model'>,
     statusMessageModel: AnyStatusMessageModel,
     getAndSubscribe: GetAndSubscribeFunction,
 ): ConversationStatusMessageViewModel['status'] {
