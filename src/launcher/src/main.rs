@@ -28,6 +28,7 @@ const VALID_BUILD_FLAVORS: [&str; 5] = [
 const EXIT_CODE_EXIT: i32 = 0;
 const EXIT_CODE_RESTART: i32 = 8;
 const EXIT_CODE_DELETE_PROFILE_AND_RESTART: i32 = 9;
+const EXIT_CODE_RENAME_PROFILE_AND_RESTART: i32 = 10;
 const EXIT_CODE_LAUNCHER_ERROR: i32 = 20;
 
 // Delays
@@ -159,6 +160,13 @@ fn determine_profile_directory(args: &[String]) -> PathBuf {
     };
 
     profile_directory_location.join(format!("{BUILD_FLAVOR}-{profile}"))
+}
+
+/// Append a suffix to a path and return the modified path
+fn append_to_path(p: PathBuf, s: &str) -> PathBuf {
+    let mut p = p.into_os_string();
+    p.push(s);
+    p.into()
 }
 
 fn main() {
@@ -310,6 +318,31 @@ fn main() {
                 print_log!("Restarting");
                 continue;
             }
+            Some(EXIT_CODE_RENAME_PROFILE_AND_RESTART) => {
+                // Determine renamed path by appending a dot and the current unix timestamp
+                let now = time::OffsetDateTime::now_utc();
+                let renamed_path = append_to_path(
+                    profile_directory.clone(),
+                    &format!(".{}", now.unix_timestamp()),
+                );
+
+                // Log and rename
+                print_log!("------");
+                print_log!(
+                    "{}",
+                    format!(
+                        "Moving profile directory at {profile_directory:?} to {renamed_path:?}!",
+                    )
+                    .yellow()
+                );
+                if let Err(e) = fs::rename(&profile_directory, renamed_path) {
+                    print_error!("Failed to rename profile directory: {:#}", e);
+                    std::thread::sleep(Duration::from_millis(DELAY_BEFORE_ERROR_EXIT_MS));
+                    process::exit(EXIT_CODE_LAUNCHER_ERROR);
+                }
+                print_log!("Restarting");
+                continue;
+            }
             Some(other) => {
                 print_error!("Unexpected exit code: {}", other);
                 std::thread::sleep(Duration::from_millis(DELAY_BEFORE_ERROR_EXIT_MS));
@@ -321,5 +354,17 @@ fn main() {
                 process::exit(EXIT_CODE_LAUNCHER_ERROR);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_append_to_path() {
+        let path = PathBuf::from("/usr/bin/cp");
+        let updated_path = append_to_path(path, ".old");
+        assert_eq!(updated_path.to_str().unwrap(), "/usr/bin/cp.old");
     }
 }

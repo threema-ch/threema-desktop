@@ -51,6 +51,7 @@ import {createTlsCertificateVerifier} from './tls-cert-verifier';
 const EXIT_CODE_UNCAUGHT_ERROR = 7;
 const EXIT_CODE_RESTART = 8;
 const EXIT_CODE_DELETE_PROFILE_AND_RESTART = 9;
+const EXIT_CODE_RENAME_PROFILE_AND_RESTART = 10;
 
 // Path name for user data, see
 // https://www.electronjs.org/docs/latest/api/app#appgetpathname
@@ -522,19 +523,31 @@ function main(
 
     /**
      * Quit immediately with the appropriate exit code, indicating to the launcher binary that the
-     * application should be restarted (and - depending on the options - the profile directory
-     * should be deleted).
+     * application should be restarted.
      *
-     * Note: In development mode, the application will exit, but it will not be restarted and the
-     * profile won't be deleted.
+     * Note: In development mode, when running without the launcher binary, the application will
+     * exit, but it will not be restarted and the profile won't be deleted. To test logic depending
+     * on a restart, create a dist build (npm run dist:<flavor>) and run the launcher binary (Linux)
+     * or app bundle (macOS) from there.
      */
-    function restartApplication(options: {readonly deleteProfile: boolean}): void {
-        if (options.deleteProfile) {
-            log.info(`Requesting profile deletion and app restart`);
-            electron.app.exit(EXIT_CODE_DELETE_PROFILE_AND_RESTART);
-        } else {
-            log.info(`Requesting app restart`);
-            electron.app.exit(EXIT_CODE_RESTART);
+    function restartApplication(
+        mode: 'restart' | 'delete-profile-and-restart' | 'rename-profile-and-restart',
+    ): void {
+        switch (mode) {
+            case 'restart': {
+                log.info(`Requesting app restart`);
+                return electron.app.exit(EXIT_CODE_RESTART);
+            }
+            case 'delete-profile-and-restart': {
+                log.info(`Requesting profile deletion and app restart`);
+                return electron.app.exit(EXIT_CODE_DELETE_PROFILE_AND_RESTART);
+            }
+            case 'rename-profile-and-restart': {
+                log.info(`Requesting profile renaming and app restart`);
+                return electron.app.exit(EXIT_CODE_RENAME_PROFILE_AND_RESTART);
+            }
+            default:
+                return unreachable(mode);
         }
     }
 
@@ -648,20 +661,16 @@ function main(
                 ElectronIpcCommand.DELETE_PROFILE_AND_RESTART,
                 (event: electron.IpcMainEvent, options: DeleteProfileOptions) => {
                     validateSenderFrame(event.senderFrame);
-                    if (options.createBackup) {
-                        const now = Date.now();
-                        log.info(`Copying old profile from ${appPath} to ${appPath}-${now}`);
-                        fs.cpSync(appPath, `${appPath}.${now}`, {recursive: true});
-                        log.info('Successfully copied old profile directory');
-                    } else {
-                        log.info('Not creating a backup');
-                    }
-                    restartApplication({deleteProfile: true});
+                    restartApplication(
+                        options.createBackup
+                            ? 'rename-profile-and-restart'
+                            : 'delete-profile-and-restart',
+                    );
                 },
             )
             .on(ElectronIpcCommand.RESTART_APP, (event: electron.IpcMainEvent) => {
                 validateSenderFrame(event.senderFrame);
-                restartApplication({deleteProfile: false});
+                restartApplication('restart');
             })
             .on(ElectronIpcCommand.CLOSE_APP, (event: electron.IpcMainEvent) => {
                 validateSenderFrame(event.senderFrame);
@@ -765,7 +774,7 @@ function main(
                     appPath,
                     log,
                 );
-                restartApplication({deleteProfile: false});
+                restartApplication('restart');
             },
         );
 

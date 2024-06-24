@@ -18,7 +18,7 @@ export interface SystemInfo {
 
 export interface DeleteProfileOptions {
     /**
-     * Whether to create a backup of the old profile before deleting the directory.
+     * Whether to create a backup of the old profile by renaming it instead of deleting it.
      *
      * If a backup is created, then it can be restored when re-linking a new profile.
      */
