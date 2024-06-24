@@ -650,7 +650,7 @@ class GroupCallRunningContext {
                 const currentStartedAt = (
                     current.type === 'peeked' ? current.state : current.call.ctx
                 ).startedAt.getTime();
-                return otherStartedAt < currentStartedAt ? other : current;
+                return otherStartedAt > currentStartedAt ? other : current;
             }, undefined);
 
         // Return calls considered _running_ and the _chosen_ call.
