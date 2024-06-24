@@ -10,10 +10,10 @@
     startCall,
     type AnyExtendedGroupCallContextAbort,
     selectInitialCaptureDevices,
-    type CaptureDevices,
     attachLocalDeviceAndAnnounceCaptureState,
     type ActivityLayout,
     updateRemoteParticipantRemoteCameras,
+    createCaptureDevices,
   } from '~/app/ui/components/partials/call-activity/helpers';
   import ControlBar from '~/app/ui/components/partials/call-activity/internal/control-bar/ControlBar.svelte';
   import TopBar from '~/app/ui/components/partials/call-activity/internal/top-bar/TopBar.svelte';
@@ -51,8 +51,7 @@
   let containerLayout: ActivityLayout = 'regular';
   let feedContainerElement: SvelteNullableBinding<HTMLDivElement> = null;
 
-  let microphone: CaptureDevices['microphone'];
-  let camera: CaptureDevices['microphone'];
+  const {guard: localDevicesGuard, store: localDevices} = createCaptureDevices();
   let localFeed: Omit<ParticipantFeedProps<'local'>, 'activity' | 'services'> | undefined;
 
   let stop: AbortRaiser<AnyExtendedGroupCallContextAbort> | undefined;
@@ -68,8 +67,13 @@
     stop?.raise({origin: 'ui-component', cause: 'destroy'});
 
     // Stop capturing
-    microphone?.track.stop();
-    camera?.track.stop();
+    localDevicesGuard
+      .with((store) => {
+        const devices = store.get();
+        devices.microphone?.track.stop();
+        devices.camera?.track.stop();
+      }, 'stop')
+      .catch(assertUnreachable);
   });
 
   function handleChangeSizeContainerElement(
@@ -98,10 +102,11 @@
 
       updateRemoteParticipantRemoteCameras({
         controller: call.controller,
-        log,
         participantId,
-        stop,
         dimensions,
+      }).catch((error) => {
+        log.error('Updating remote camera subscription failed', error);
+        stop?.raise({origin: 'ui-component', cause: 'unexpected-error'});
       });
     },
     500,
@@ -123,46 +128,61 @@
   }
 
   function setMicrophoneCaptureState(state: 'on' | 'off' | 'toggle'): void {
-    microphone = attachLocalDeviceAndAnnounceCaptureState(
-      log,
-      call,
-      stop,
-      'microphone',
-      microphone,
-      microphone === undefined
-        ? undefined
-        : {
-            track: microphone.track,
-            state,
-          },
-    );
+    localDevicesGuard
+      .with(async (store) => {
+        const microphone = store.get().microphone;
+        return await attachLocalDeviceAndAnnounceCaptureState(
+          localDevicesGuard,
+          call,
+          store,
+          'microphone',
+          microphone === undefined
+            ? undefined
+            : {
+                track: microphone.track,
+                state,
+              },
+        );
+      }, 'attach')
+      .catch((error) => {
+        log.error(`Setting local microphone capture state failed`, error);
+        stop?.raise({origin: 'ui-component', cause: 'unexpected-error'});
+      });
   }
 
   function setCameraCaptureState(state: 'on' | 'off' | 'toggle'): void {
-    camera = attachLocalDeviceAndAnnounceCaptureState(
-      log,
-      call,
-      stop,
-      'camera',
-      camera,
-      camera === undefined
-        ? undefined
-        : {
-            track: camera.track,
-            state,
-          },
-    );
+    localDevicesGuard
+      .with(async (store) => {
+        const camera = store.get().camera;
+        return await attachLocalDeviceAndAnnounceCaptureState(
+          localDevicesGuard,
+          call,
+          store,
+          'camera',
+          camera === undefined
+            ? undefined
+            : {
+                track: camera.track,
+                state,
+              },
+        );
+      }, 'attach')
+      .catch((error) => {
+        log.error(`Setting local camera capture state failed`, error);
+        stop?.raise({origin: 'ui-component', cause: 'unexpected-error'});
+      });
   }
 
   // Setup capture devices at startup
   //
-  // Note: Devices will always be muted initially.
-  selectInitialCaptureDevices(log, {microphone: 'on', camera: 'off'})
-    .then((devices) => {
-      microphone = devices.microphone;
-      camera = devices.camera;
-    })
-    .catch(assertUnreachable);
+  // Note: Microphone capture will be 'on' by default whereas camera capture will be 'off' by
+  // default. However, the call may auto-mute the microphone after joining.
+  selectInitialCaptureDevices(log, localDevicesGuard, {microphone: 'on', camera: 'off'}).catch(
+    (error) => {
+      log.error(`Setting initial local capture devices failed`, error);
+      stop?.raise({origin: 'ui-component', cause: 'unexpected-error'});
+    },
+  );
 
   // Update local feed
   let user: RemoteStore<SelfReceiverData> | undefined;
@@ -175,8 +195,8 @@
       localFeed = {
         type: 'local',
         capture: {
-          camera: camera?.state ?? 'off',
-          microphone: microphone?.state ?? 'off',
+          camera: $localDevices.camera?.state ?? 'off',
+          microphone: $localDevices.microphone?.state ?? 'off',
         },
         container: feedContainerElement,
         updateCameraSubscription: (dimensions) =>
@@ -185,7 +205,7 @@
         receiver: $user,
         tracks: {
           type: 'local',
-          camera: camera?.track,
+          camera: $localDevices.camera?.track,
         },
       };
     }
@@ -341,15 +361,39 @@
     // Attach local tracks to local transceivers, mute microphone if desired by the group call and
     // otherwise announce devices as defined by the user.
     //
-    // Note 1: Because starting the call is async and the user may change the capture state in
+    // Note: Because starting the call is async and the user may change the capture state in
     // between, we'll need to do this explicitly here.
-    //
-    // Note 2: Changing the capture state implicitly adds any local tracks to the associated local
-    // transceivers.
-    setMicrophoneCaptureState(
-      call.state.get().local.capture.microphone === 'off' ? 'off' : microphone?.state ?? 'off',
-    );
-    setCameraCaptureState(camera?.state ?? 'off');
+    localDevicesGuard
+      .with(async (store) => {
+        if (call === undefined) {
+          return;
+        }
+        const {microphone, camera} = store.get();
+        await attachLocalDeviceAndAnnounceCaptureState(
+          localDevicesGuard,
+          call,
+          store,
+          'microphone',
+          microphone === undefined
+            ? undefined
+            : {
+                state:
+                  call.state.get().local.capture.microphone === 'off' ? 'off' : microphone.state,
+                track: microphone.track,
+              },
+        );
+        await attachLocalDeviceAndAnnounceCaptureState(
+          localDevicesGuard,
+          call,
+          store,
+          'camera',
+          camera,
+        );
+      }, 'attach')
+      .catch((error) => {
+        log.error(`Attaching local capture devices to new call failed`, error);
+        stop?.raise({origin: 'ui-component', cause: 'unexpected-error'});
+      });
   }
 
   // Start call and switch whenever the receiver changes.
@@ -364,10 +408,10 @@
       group = receiver;
       services.backend.viewModel
         .conversation(receiver)
-        .then((conversation_) => {
+        .then(async (conversation_) => {
           conversation = unwrap(conversation_);
           store = conversation.viewModelStore;
-          start(conversation, intent).catch(assertUnreachable);
+          return await start(conversation, intent);
         })
         .catch(assertUnreachable);
     }
@@ -425,8 +469,8 @@
 
     <div class="footer">
       <ControlBar
-        isAudioEnabled={microphone?.track.enabled ?? false}
-        isVideoEnabled={camera?.track.enabled ?? false}
+        isAudioEnabled={$localDevices.microphone?.track.enabled ?? false}
+        isVideoEnabled={$localDevices.camera?.track.enabled ?? false}
         on:clickleavecall={handleClickLeaveCall}
         on:clicktoggleaudio={() => setMicrophoneCaptureState('toggle')}
         on:clicktogglevideo={() => setCameraCaptureState('toggle')}

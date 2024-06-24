@@ -7,10 +7,11 @@ import {CAMERA_STREAM_CONSTRAINTS, MICROPHONE_STREAM_CONSTRAINTS} from '~/common
 import type {Logger} from '~/common/logging';
 import type {ParticipantId} from '~/common/network/protocol/call/group-call';
 import type {Dimensions} from '~/common/types';
-import {unwrap, unreachable, assert, assertUnreachable} from '~/common/utils/assert';
+import {unwrap, unreachable, assert} from '~/common/utils/assert';
 import type {Remote} from '~/common/utils/endpoint';
 import {AsyncLock} from '~/common/utils/lock';
 import type {AbortRaiser} from '~/common/utils/signal';
+import {WritableStore, type ReadableStore} from '~/common/utils/store';
 import type {ConversationViewModelBundle} from '~/common/viewmodel/conversation/main';
 import type {AnyGroupCallContextAbort, CaptureState} from '~/common/webrtc/group-call';
 
@@ -36,10 +37,28 @@ export interface CaptureDevices {
 
 export type ActivityLayout = 'pocket' | 'regular';
 
+export type CaptureDevicesGuard = AsyncLock<
+    'initial-setup' | 'select-microphone' | 'select-camera' | 'attach' | 'stop',
+    WritableStore<CaptureDevices>
+>;
+
+export function createCaptureDevices(): {
+    readonly guard: CaptureDevicesGuard;
+    readonly store: ReadableStore<CaptureDevices>;
+} {
+    const guard: CaptureDevicesGuard = new AsyncLock(
+        new WritableStore<CaptureDevices>({microphone: undefined, camera: undefined}),
+    );
+    return {
+        guard,
+        store: guard.unwrap(),
+    };
+}
+
 /**
  * Select the default or a specific microphone device.
  */
-export async function selectMicrophoneDevice(
+async function selectMicrophoneDeviceInternal(
     current: MediaStreamTrack | undefined,
     target: {
         readonly device: 'default' | {readonly deviceId: string};
@@ -64,10 +83,26 @@ export async function selectMicrophoneDevice(
     return {track, state: target.state};
 }
 
+export async function selectMicrophoneDevice(
+    guard: CaptureDevicesGuard,
+    target: {
+        readonly device: 'default' | {readonly deviceId: string};
+        readonly state: 'on' | 'off';
+    },
+): Promise<void> {
+    return await guard.with(async (store) => {
+        const microphone = await selectMicrophoneDeviceInternal(
+            store.get().microphone?.track,
+            target,
+        );
+        store.update((devices) => ({...devices, microphone}));
+    }, 'select-microphone');
+}
+
 /**
  * Select the default or a specific camera device.
  */
-export async function selectCameraDevice(
+async function selectCameraDeviceInternal(
     current: MediaStreamTrack | undefined,
     target: {
         readonly device: 'default' | {readonly deviceId: string};
@@ -94,35 +129,61 @@ export async function selectCameraDevice(
     return {track, state: target.state};
 }
 
+export async function selectCameraDevice(
+    guard: CaptureDevicesGuard,
+    target: {
+        readonly device: 'default' | {readonly deviceId: string};
+        readonly facing: 'user' | 'environment';
+        readonly state: 'on' | 'off';
+    },
+): Promise<void> {
+    return await guard.with(async (store) => {
+        const camera = await selectCameraDeviceInternal(store.get().camera?.track, target);
+        store.update((devices) => ({...devices, camera}));
+    }, 'select-camera');
+}
+
 /**
  * Select the default microphone and camera device.
  */
 export async function selectInitialCaptureDevices(
     log: Logger,
+    guard: CaptureDevicesGuard,
     state: CaptureState,
-): Promise<CaptureDevices> {
-    // Request microphone and camera access
-    log.debug('Setting up microphone/camera');
-    let microphone;
-    try {
-        microphone = await selectMicrophoneDevice(undefined, {
-            device: 'default',
-            state: state.microphone,
-        });
-    } catch (error) {
-        log.debug('No microphone device to capture from');
-    }
-    let camera;
-    try {
-        camera = await selectCameraDevice(undefined, {
-            device: 'default',
-            facing: 'user',
-            state: state.camera,
-        });
-    } catch (error) {
-        log.debug('No camera device to capture from');
-    }
-    return {microphone, camera};
+): Promise<void> {
+    return await guard.with(async (store) => {
+        // Sanity-check
+        assert(
+            store.run(
+                (devices) => devices.camera === undefined && devices.microphone === undefined,
+            ),
+        );
+
+        // Request microphone and camera access
+        log.debug('Setting up microphone/camera');
+        let microphone: CaptureDevices['microphone'];
+        try {
+            microphone = await selectMicrophoneDeviceInternal(undefined, {
+                device: 'default',
+                state: state.microphone,
+            });
+        } catch (error) {
+            log.debug('No microphone device to capture from');
+        }
+        let camera: CaptureDevices['camera'];
+        try {
+            camera = await selectCameraDeviceInternal(undefined, {
+                device: 'default',
+                facing: 'user',
+                state: state.camera,
+            });
+        } catch (error) {
+            log.debug('No camera device to capture from');
+        }
+
+        // Update capture devices store
+        store.update(() => ({microphone, camera}));
+    }, 'initial-setup');
 }
 
 /**
@@ -131,20 +192,25 @@ export async function selectInitialCaptureDevices(
  * - Attaches a device track change to the local transceiver.
  * - Applies a device state change to the device track.
  * - Announces a device state change to the call.
+ *
+ * IMPORTANT: MUST be called with the {@link CaptureDevicesGuard} lock held with context
+ * 'attach'!
  */
-export function attachLocalDeviceAndAnnounceCaptureState(
-    log: Logger,
+export async function attachLocalDeviceAndAnnounceCaptureState(
+    guard: CaptureDevicesGuard,
     call: AugmentedOngoingGroupCallViewModelBundle | undefined,
-    stop: AbortRaiser<AnyExtendedGroupCallContextAbort> | undefined,
+    store: WritableStore<CaptureDevices>,
     kind: 'microphone' | 'camera',
-    current: CaptureDevice,
     updated:
         | {
               readonly track: MediaStreamTrack;
               readonly state: 'on' | 'off' | 'toggle';
           }
         | undefined,
-): CaptureDevice {
+): Promise<void> {
+    assert(guard.context === 'attach');
+    const current = store.get()[kind];
+
     // Toggle capture state, if necessary
     //
     // Note: If no current device exists, toggling is kinda stupid and therefore we'll set the state
@@ -163,7 +229,7 @@ export function attachLocalDeviceAndAnnounceCaptureState(
         const track = target?.track ?? null;
         const transceivers = call?.state.get().local.transceivers;
         if (transceivers !== undefined && transceivers[kind].sender.track !== track) {
-            transceivers[kind].sender.replaceTrack(track).catch(assertUnreachable);
+            await transceivers[kind].sender.replaceTrack(track);
         }
     }
 
@@ -176,32 +242,26 @@ export function attachLocalDeviceAndAnnounceCaptureState(
     {
         const state = target?.state ?? 'off';
         if (call !== undefined && state !== call.state.get().local.capture[kind]) {
-            call.controller.localCaptureState(kind, state).catch((error: unknown) => {
-                log.error(`Setting ${kind} capture state failed`, error);
-                stop?.raise({origin: 'ui-component', cause: 'unexpected-error'});
-            });
+            await call.controller.localCaptureState(kind, state);
         }
     }
 
-    // Done
-    return target;
+    // Update capture devices store
+    store.update((devices) => ({...devices, [kind]: target}));
 }
 
-const remoteParticipantRemoteCamerasAsyncLock = new AsyncLock();
+const remoteDevicesLock = new AsyncLock();
+
 /**
  * Update the `remoteCamera` subscription for a specific participant.
  */
-export function updateRemoteParticipantRemoteCameras({
+export async function updateRemoteParticipantRemoteCameras({
     controller,
-    log,
     participantId,
-    stop,
     dimensions,
 }: {
     readonly controller: AugmentedOngoingGroupCallViewModelBundle['controller'];
-    readonly log: Logger;
     readonly participantId: ParticipantId;
-    readonly stop: AbortRaiser<AnyExtendedGroupCallContextAbort>;
 
     /**
      * The dimensions the camera feed will be displayed at in pixels. This is the dimensions of the
@@ -212,25 +272,18 @@ export function updateRemoteParticipantRemoteCameras({
      * subscription too often while resizing.
      */
     readonly dimensions: Dimensions | undefined;
-}): void {
-    remoteParticipantRemoteCamerasAsyncLock
-        .with(() => {
-            controller
-                .remoteCamera(
-                    participantId,
-                    dimensions !== undefined
-                        ? {
-                              type: 'subscribe',
-                              resolution: dimensions,
-                          }
-                        : {type: 'unsubscribe'},
-                )
-                .catch((error: unknown) => {
-                    log.error('Updating camera subscription failed', error);
-                    stop.raise({origin: 'ui-component', cause: 'unexpected-error'});
-                });
-        })
-        .catch(assertUnreachable);
+}): Promise<void> {
+    return await remoteDevicesLock.with(async () => {
+        await controller.remoteCamera(
+            participantId,
+            dimensions !== undefined
+                ? {
+                      type: 'subscribe',
+                      resolution: dimensions,
+                  }
+                : {type: 'unsubscribe'},
+        );
+    });
 }
 
 export async function startCall(
