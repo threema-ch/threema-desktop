@@ -6,6 +6,7 @@
   - [Sequence Diagrams](./sequence-diagrams.md)
   - [Stores](./stores.md)
   - [RPC](./rpc.md)
+  - [Launcher Binary](./launcher-binary.md)
 - [Guidelines](./guidelines.md)
   - [Dependencies](./dependencies.md)
   - [Models](./models.md)

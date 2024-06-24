@@ -44,6 +44,7 @@ All source code is in the `src` directory:
   database. It allows access to the WebWorker API (which is a subset of the DOM).
 - `src/worker/backend/electron` is the entrypoint for the electron build variant. Code in this
   directory should be as short as possible (glue code).
+- `src/launcher` contains the [launcher binary](./launcher-binary.md) source code.
 
 Only source files matching `entry.*.ts` or `entry.ts` are valid entry points. This ensures that no
 functions are being invoked implicitly when including sources for unit testing since any
