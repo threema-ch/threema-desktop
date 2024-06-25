@@ -243,7 +243,7 @@
     .emoji-picker {
       position: absolute;
       z-index: $z-index-modal;
-      bottom: calc(100% + rem(22px));
+      bottom: calc(100% + rem(12px));
 
       &[data-is-visible='false'] {
         display: none;
