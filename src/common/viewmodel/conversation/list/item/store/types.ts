@@ -18,4 +18,5 @@ export interface ConversationListItemViewModel {
     readonly totalMessageCount: u53;
     readonly unreadMessageCount: u53;
     readonly visibility: ConversationVisibility;
+    readonly isTyping: boolean;
 }

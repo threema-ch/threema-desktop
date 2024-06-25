@@ -72,6 +72,7 @@ export function getConversationViewModelStore(
                 isArchived: conversationModel.view.visibility === ConversationVisibility.ARCHIVED,
                 isPinned: conversationModel.view.visibility === ConversationVisibility.PINNED,
                 isPrivate: conversationModel.view.category === ConversationCategory.PROTECTED,
+                isTyping: conversationModel.view.isTyping ?? false,
                 lastMessage: getLastMessage(conversationModel, getAndSubscribe),
                 messageSetStore,
                 receiver: getReceiverData(services, receiver, getAndSubscribe),

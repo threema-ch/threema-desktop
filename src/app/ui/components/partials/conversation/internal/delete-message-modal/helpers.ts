@@ -3,6 +3,7 @@ import type {
     MessageListDeletedMessage,
     MessageListRegularMessage,
     MessageListStatusMessage,
+    MessageListTypingIndicator,
 } from '~/app/ui/components/partials/conversation/internal/message-list/props';
 import type {I18nType} from '~/app/ui/i18n-types';
 import {DELETE_MESSAGE_GRACE_PERIOD_IN_MINUTES} from '~/common/network/protocol/constants';
@@ -21,13 +22,18 @@ export function deleteForEveryoneSupported(
               MessageListRegularMessage | MessageListDeletedMessage,
               'direction' | 'status' | 'type'
           >
-        | MessageListStatusMessage,
+        | MessageListStatusMessage
+        | MessageListTypingIndicator,
     /**
      * Whether the feature is enabled for the user, regardless of the message specifics.
      */
     isFeatureSupported: boolean,
 ): boolean {
-    if (message.type === 'deleted-message' || message.type === 'status-message') {
+    if (
+        message.type === 'deleted-message' ||
+        message.type === 'status-message' ||
+        message.type === 'typing-indicator'
+    ) {
         // Makes no sense, because messages of type `"deleted-message"` have already been deleted
         // for everyone and messages of type `"status-message"` are local-only.
         return false;
@@ -53,7 +59,8 @@ export function getModalButtons(
               MessageListRegularMessage | MessageListDeletedMessage,
               'direction' | 'status' | 'type'
           >
-        | MessageListStatusMessage,
+        | MessageListStatusMessage
+        | MessageListTypingIndicator,
     /**
      * Whether the feature is enabled for the user, regardless of the message specifics.
      */

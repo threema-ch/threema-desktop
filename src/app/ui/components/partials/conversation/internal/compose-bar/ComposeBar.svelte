@@ -27,6 +27,7 @@
     attachfiles: FileResult;
     clicksend: string;
     clickapplyedit: string;
+    istyping: boolean;
   }>();
 
   let emojiButtonElement: SvelteNullableBinding<HTMLDivElement> = null;
@@ -65,6 +66,7 @@
   }
 
   function handleAttachFiles(event: CustomEvent<FileResult>): void {
+    dispatch('istyping', true);
     dispatch('attachfiles', event.detail);
   }
 
@@ -73,6 +75,7 @@
   }
 
   async function handleClickSendButton(): Promise<void> {
+    dispatch('istyping', false);
     textAreaByteLength = textAreaComponent?.getTextByteLength() ?? 0;
 
     // Prevent sending if message is too long.
@@ -105,6 +108,10 @@
 
   function handleChangeTextByteLength(event: CustomEvent<u53>): void {
     textAreaByteLength = event.detail;
+  }
+
+  function handleIsTyping(event: CustomEvent<boolean>): void {
+    dispatch('istyping', event.detail);
   }
 
   function handlePressHotkeyControlE(): void {
@@ -149,6 +156,7 @@
         on:pastefiles
         on:submit={handleClickSendButton}
         on:textbytelengthdidchange={handleChangeTextByteLength}
+        on:istyping={handleIsTyping}
       />
     </div>
   </div>

@@ -15,9 +15,11 @@
   import MessageMediaViewerModal from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-media-viewer-modal/MessageMediaViewerModal.svelte';
   import Message from '~/app/ui/components/partials/conversation/internal/message-list/internal/regular-message/RegularMessage.svelte';
   import StatusMessage from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/StatusMessage.svelte';
+  import TypingIndicator from '~/app/ui/components/partials/conversation/internal/message-list/internal/typing-indicator/TypingIndicator.svelte';
   import UnreadMessagesIndicator from '~/app/ui/components/partials/conversation/internal/message-list/internal/unread-messages-indicator/UnreadMessagesIndicator.svelte';
   import type {
     AnyMessageListMessage,
+    MessageListTypingIndicator,
     MessageListProps,
     MessageListRegularMessage,
   } from '~/app/ui/components/partials/conversation/internal/message-list/props';
@@ -30,7 +32,7 @@
   import {reactive, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import {appVisibility} from '~/common/dom/ui/state';
   import {MessageDirection} from '~/common/enum';
-  import type {MessageId, StatusMessageId} from '~/common/network/types';
+  import {ensureMessageId, type MessageId, type StatusMessageId} from '~/common/network/types';
   import type {u53} from '~/common/types';
   import {assertUnreachable, unreachable} from '~/common/utils/assert';
 
@@ -41,12 +43,19 @@
   export let conversation: $$Props['conversation'];
   export let messagesStore: $$Props['messagesStore'];
   export let services: $$Props['services'];
+  export let isTyping: $$Props['isTyping'];
 
   const dispatch = createEventDispatcher<{
     clickquote: MessageListRegularMessage;
     clickdelete: AnyMessageListMessage;
     clickedit: MessageListRegularMessage;
   }>();
+
+  const typingIndicatorMessage: MessageListTypingIndicator = {
+    type: 'typing-indicator',
+    id: ensureMessageId(1n),
+    direction: 'inbound',
+  };
 
   let element: HTMLElement;
   let lazyListComponent: SvelteNullableBinding<LazyList<AnyMessageListMessage>> = null;
@@ -170,7 +179,9 @@
     };
   }
 
-  function handleClickOpenDetailsOption(message: AnyMessageListMessage): void {
+  function handleClickOpenDetailsOption(
+    message: Exclude<AnyMessageListMessage, MessageListTypingIndicator>,
+  ): void {
     switch (message.type) {
       case 'deleted-message':
         modalState = {
@@ -461,7 +472,7 @@
   {:else}
     <LazyList
       bind:this={lazyListComponent}
-      items={$messagesStore}
+      items={isTyping ? $messagesStore.concat(typingIndicatorMessage) : $messagesStore}
       onError={handleLazyListError}
       visibleItemId={anchoredMessageId}
       on:itemanchored={handleItemAnchored}
@@ -535,6 +546,8 @@
             on:clickdeleteoption={() => dispatch('clickdelete', item)}
             on:clickopendetailsoption={() => handleClickOpenDetailsOption(item)}
           />
+        {:else if item.type === 'typing-indicator'}
+          <TypingIndicator />
         {:else}
           {unreachable(item)}
         {/if}

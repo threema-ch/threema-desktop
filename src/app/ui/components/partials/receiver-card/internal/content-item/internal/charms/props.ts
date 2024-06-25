@@ -8,6 +8,7 @@ export interface CharmsProps {
     readonly call?: AnyCallData;
     readonly isBlocked?: boolean;
     readonly isPinned?: boolean;
+    readonly isTyping?: boolean;
     readonly isPrivate?: boolean;
     readonly notificationPolicy?: AnyReceiverData['notificationPolicy'];
 }

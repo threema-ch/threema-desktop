@@ -86,6 +86,7 @@ export function conversationListItemSetStoreToConversationPreviewListPropsStore(
                         isArchived: viewModel.visibility === ConversationVisibility.ARCHIVED,
                         isPinned: viewModel.visibility === ConversationVisibility.PINNED,
                         isPrivate: viewModel.category === ConversationCategory.PROTECTED,
+                        isTyping: viewModel.isTyping,
                         lastMessage,
                         receiver: viewModel.receiver,
                         totalMessageCount: viewModel.totalMessageCount,

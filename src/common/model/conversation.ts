@@ -52,6 +52,7 @@ import type {InternalActiveTaskCodecHandle} from '~/common/network/protocol/task
 import {OutgoingConversationMessageTask} from '~/common/network/protocol/task/csp/outgoing-conversation-message';
 import {OutgoingDeleteMessageTask} from '~/common/network/protocol/task/csp/outgoing-delete-message';
 import {OutgoingDeliveryReceiptTask} from '~/common/network/protocol/task/csp/outgoing-delivery-receipt';
+import {OutgoingTypingIndicatorTask} from '~/common/network/protocol/task/csp/outgoing-typing-indicator';
 import {ReflectContactSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-contact-sync-transaction';
 import {ReflectGroupSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-group-sync-transaction';
 import {ReflectIncomingMessageUpdateTask} from '~/common/network/protocol/task/d2d/reflect-message-update';
@@ -75,6 +76,7 @@ import {
 import {type LocalStore, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {LocalSetStore, type IDerivableSetStore} from '~/common/utils/store/set-store';
+import {TIMER, type TimerCanceller} from '~/common/utils/timer';
 
 import * as contact from './contact';
 import * as group from './group';
@@ -117,6 +119,7 @@ const ensureExactConversationUpdate = createExactPropertyValidator<ConversationU
         lastUpdate: OPTIONAL,
         category: OPTIONAL,
         visibility: OPTIONAL,
+        isTyping: OPTIONAL,
     },
 );
 
@@ -527,6 +530,58 @@ export class ConversationModelController implements ConversationController {
         },
     };
 
+    public readonly updateTyping: ConversationController['updateTyping'] = {
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
+        // eslint-disable-next-line @typescript-eslint/require-await
+        fromRemote: async (handle, isTyping: boolean) => {
+            // (Re-)schedule timer if isTyping === true
+            if (isTyping) {
+                this._isTypingIncomingTimerCanceller?.();
+                this._isTypingIncomingTimerCanceller = TIMER.timeout(() => {
+                    this.meta.update((view) => this._update(view, {isTyping: false}));
+                    this._isTypingIncomingTimerCanceller = undefined;
+                }, this._isTypingIncomingTimeout);
+            } else {
+                this._isTypingIncomingTimerCanceller?.();
+            }
+
+            this.meta.update((view) => this._update(view, {isTyping}));
+        },
+
+        // eslint-disable-next-line @typescript-eslint/require-await
+        fromLocal: async (isTyping: boolean) => {
+            const contactReceiver = this.receiver();
+            assert(contactReceiver.type === ReceiverType.CONTACT);
+            const scheduleTask = (): void => {
+                this._services.taskManager
+                    .schedule(
+                        new OutgoingTypingIndicatorTask(
+                            this._services,
+                            contactReceiver.get(),
+                            isTyping,
+                        ),
+                    )
+                    .catch(() => {
+                        // Ignore (task should persist)
+                    });
+            };
+
+            scheduleTask();
+
+            // Keep sending typing indicator
+            if (isTyping && this._isTypingOutgoingTimerCanceller === undefined) {
+                this._isTypingOutgoingTimerCanceller = TIMER.repeat(
+                    scheduleTask,
+                    this._isTypingOutgoingInterval,
+                    'after-interval',
+                );
+            } else {
+                this._isTypingOutgoingTimerCanceller?.();
+                this._isTypingOutgoingTimerCanceller = undefined;
+            }
+        },
+    };
+
     private readonly _handle: ConversationControllerHandle;
     private readonly _lock = new AsyncLock();
     private readonly _log: Logger;
@@ -538,6 +593,11 @@ export class ConversationModelController implements ConversationController {
     // stale data should be refreshed. This is e.g. used for subscribers to react to added or
     // removed messages.
     private readonly _lastModificationStore: WritableStore<Date>;
+
+    private readonly _isTypingIncomingTimeout = 15000;
+    private readonly _isTypingOutgoingInterval = 10000;
+    private _isTypingIncomingTimerCanceller: TimerCanceller | undefined;
+    private _isTypingOutgoingTimerCanceller: TimerCanceller | undefined;
 
     public constructor(
         private readonly _services: ServicesForModel,

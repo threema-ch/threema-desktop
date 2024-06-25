@@ -52,6 +52,7 @@
     textbytelengthdidchange: u53;
     heightwillchange: undefined;
     heightdidchange: undefined;
+    istyping: boolean;
   }>();
 
   let area: ComposeArea;
@@ -146,6 +147,7 @@
       // Fix this, see this discussion for details:
       // https://git.threema.ch/clients/web/threema-desktop-web/-/merge_requests/92#note_31788
       isEmptyStore.set(area.is_empty());
+      dispatch('istyping', !area.is_empty());
     });
   }
 
@@ -184,6 +186,7 @@
     // Handle submission.
     if (submit) {
       dispatch('submit');
+      dispatch('istyping', false);
     }
   }
 

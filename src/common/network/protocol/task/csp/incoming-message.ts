@@ -79,6 +79,7 @@ import {IncomingGroupProfilePictureTask} from '~/common/network/protocol/task/cs
 import {IncomingGroupSetupTask} from '~/common/network/protocol/task/csp/incoming-group-setup';
 import {IncomingGroupSyncRequestTask} from '~/common/network/protocol/task/csp/incoming-group-sync-request';
 import {IncomingMessageContentUpdateTask} from '~/common/network/protocol/task/csp/incoming-message-content-update';
+import {IncomingTypingIndicatorTask} from '~/common/network/protocol/task/csp/incoming-typing-indicator';
 import {OutgoingCspMessageTask} from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import {
     messageReferenceDebugFor,
@@ -372,6 +373,15 @@ interface StatusUpdateInstructions extends BaseProcessingInstructions {
     readonly messageCategory: 'status-update';
     readonly deliveryReceipt: false;
     readonly conversationId: ContactConversationId | GroupConversationId;
+    readonly missingContactHandling: 'discard';
+    readonly reflectFragment: D2dIncomingMessageFragment;
+    readonly task: ComposableTask<ActiveTaskCodecHandle<'volatile'>, unknown>;
+}
+
+interface TypingIndicatorInstructions extends BaseProcessingInstructions {
+    readonly messageCategory: 'status-update';
+    readonly deliveryReceipt: false;
+    readonly conversationId: ContactConversationId;
     readonly missingContactHandling: 'discard';
     readonly reflectFragment: D2dIncomingMessageFragment;
     readonly task: ComposableTask<ActiveTaskCodecHandle<'volatile'>, unknown>;
@@ -1624,9 +1634,26 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 };
                 return instructions;
             }
-            case CspE2eStatusUpdateType.TYPING_INDICATOR:
-                // TODO(DESK-589): Implement
-                return 'discard';
+            case CspE2eStatusUpdateType.TYPING_INDICATOR: {
+                const typingIndicator = structbuf.csp.e2e.TypingIndicator.decode(
+                    cspMessageBody as Uint8Array,
+                );
+                const instructions: TypingIndicatorInstructions = {
+                    messageCategory: 'status-update',
+                    deliveryReceipt: false,
+                    conversationId: senderConversationId,
+                    missingContactHandling: 'discard',
+                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    task: new IncomingTypingIndicatorTask(
+                        this._services,
+                        messageId,
+                        senderConversationId,
+                        typingIndicator,
+                        clampedCreatedAt,
+                    ),
+                };
+                return instructions;
+            }
 
             // Forward security messages (not currently supported)
             case CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE: {

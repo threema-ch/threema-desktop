@@ -22,6 +22,7 @@ export interface ConversationPreviewProps {
     readonly highlights?: string | readonly string[];
     readonly isArchived: boolean;
     readonly isPinned: boolean;
+    readonly isTyping?: boolean;
     readonly isPrivate: boolean;
     readonly lastMessage?: {
         readonly file?: Pick<NonNullable<MessageProps['file']>, 'type'>;

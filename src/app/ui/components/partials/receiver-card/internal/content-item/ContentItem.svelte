@@ -31,6 +31,7 @@
       call={options.call}
       isBlocked={options.isBlocked}
       isPinned={options.isPinned}
+      isTyping={options.isTyping}
       isPrivate={options.isPrivate}
       notificationPolicy={options.notificationPolicy}
       on:clickjoincall

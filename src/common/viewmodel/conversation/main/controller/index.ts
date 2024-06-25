@@ -50,6 +50,7 @@ export interface IConversationViewModelController extends ProxyMarked {
     readonly markAllMessagesAsRead: () => Promise<void>;
     readonly pin: () => Promise<void>;
     readonly sendMessage: (messageEventDetail: Remote<SendMessageEventDetail>) => Promise<void>;
+    readonly sendIsTyping: (value: boolean) => Promise<void>;
     /**
      * Set the currently visible messages in conversation viewport.
      *
@@ -186,6 +187,10 @@ export class ConversationViewModelController implements IConversationViewModelCo
         return await this._conversation
             .get()
             .controller.updateVisibility.fromLocal(ConversationVisibility.PINNED);
+    }
+
+    public async sendIsTyping(value: boolean): Promise<void> {
+        return await this._conversation.get().controller.updateTyping.fromLocal(value);
     }
 
     public async sendMessage(messageEventDetail: Remote<SendMessageEventDetail>): Promise<void> {

@@ -55,6 +55,7 @@
     type IQueryableStore,
     type StoreUnsubscriber,
   } from '~/common/utils/store';
+  import {TIMER} from '~/common/utils/timer';
   import type {ConversationViewModelBundle} from '~/common/viewmodel/conversation/main';
   import type {SendMessageEventDetail} from '~/common/viewmodel/conversation/main/controller/types';
   import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
@@ -101,6 +102,20 @@
   let receiverSupportsEditedMessages: FeatureSupport;
   let receiverSupportsDeletedMessages: FeatureSupport;
 
+  // Setup isTyping timer to 5s
+  let isTyping = false;
+  const resetIsTypingTimer = TIMER.debounce(() => {
+    dispatchIsTyping(false);
+  }, 5000);
+
+  // Set and dispatch isTyping event
+  function dispatchIsTyping(values: boolean): void {
+    if (isTyping !== values) {
+      isTyping = values;
+      viewModelController?.sendIsTyping(isTyping).catch(assertUnreachable);
+    }
+  }
+
   function handleclickjoincall(
     receiverLookup: DbReceiverLookup,
     intent: 'join' | 'join-or-create',
@@ -130,6 +145,10 @@
             $i18n.t('messaging.error--delete-status-message', 'Could not delete status message'),
           );
         });
+        break;
+
+      case 'typing-indicator':
+        // Nothing to do here, typing-indicator is not deletable
         break;
 
       default:
@@ -268,6 +287,8 @@
   function handleAddFiles(
     event: CustomEvent<FileResult> | CustomEvent<FileLoadResult> | CustomEvent<File[]>,
   ): void {
+    resetIsTypingTimer();
+    dispatchIsTyping(true);
     if (!isReceiverDisabled) {
       openMediaComposeModal(event.detail).catch(assertUnreachable);
     }
@@ -284,6 +305,8 @@
   }
 
   async function handleChangeConversation(): Promise<void> {
+    dispatchIsTyping(false);
+
     const receiver = routeParams?.receiverLookup;
     if (receiver === undefined) {
       viewModelStore = new ReadableStore(undefined);
@@ -510,7 +533,7 @@
   }
 
   function handleClickDeleteMessage(event: CustomEvent<AnyMessageListMessage>): void {
-    if (event.detail.type === 'status-message') {
+    if (event.detail.type === 'status-message' || event.detail.type === 'typing-indicator') {
       handleClickDeleteMessageLocally(event);
       return;
     }
@@ -651,6 +674,11 @@
     }
   }
 
+  function handleIsTyping(event: CustomEvent<boolean>): void {
+    resetIsTypingTimer();
+    dispatchIsTyping(event.detail);
+  }
+
   $: reactive(handleChangeRouterState, [$router]);
   $: reactive(handleChangeConversation, [
     routeParams?.receiverLookup,
@@ -760,6 +788,7 @@
       {:else}
         <div class="messages">
           <MessageList
+            isTyping={$viewModelStore.isTyping}
             bind:this={messageListComponent}
             conversation={{
               firstUnreadMessageId: $viewModelStore.firstUnreadMessageId,
@@ -844,6 +873,7 @@
               on:clicksend={handleClickSend}
               on:pastefiles={handleAddFiles}
               on:clickapplyedit={handleClickApplyEdit}
+              on:istyping={handleIsTyping}
             />
           {/if}
         </div>

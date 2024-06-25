@@ -15,6 +15,7 @@
   } from '~/app/ui/components/partials/conversation/internal/message-list/props';
   import {i18n} from '~/app/ui/i18n';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
+  import {unreachable} from '~/common/utils/assert';
 
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.delete-message-modal');
@@ -37,18 +38,27 @@
   }
 
   function handleClickDeleteForEveryone(): void {
-    if (message.type === 'deleted-message') {
-      log.warn('Cannot delete a message that was already deleted');
-      modalComponent?.close();
-      return;
-    }
-    if (message.type === 'status-message') {
-      log.warn('Cannot delete a status message for everyone, as they are local-only');
-      modalComponent?.close();
-      return;
+    switch (message.type) {
+      case 'deleted-message':
+        log.warn('Cannot delete a message that was already deleted');
+        break;
+
+      case 'regular-message':
+        dispatch('clickdeleteforeveryone', message);
+        break;
+
+      case 'status-message':
+        log.warn('Cannot delete a status message for everyone, as they are local-only');
+        break;
+
+      case 'typing-indicator':
+        log.warn('Cannot delete a typing indicator message');
+        break;
+
+      default:
+        unreachable(message);
     }
 
-    dispatch('clickdeleteforeveryone', message);
     modalComponent?.close();
   }
 

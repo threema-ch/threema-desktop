@@ -42,6 +42,7 @@ export interface ConversationView {
     readonly unreadMessageCount: u53;
     readonly category: ConversationCategory;
     readonly visibility: ConversationVisibility;
+    readonly isTyping?: boolean;
 }
 export type ConversationInit = Omit<ConversationView, 'type'>;
 export type ConversationUpdate = Partial<Omit<ConversationView, 'unreadMessageCount' | 'type'>>;
@@ -96,6 +97,8 @@ export type ConversationController = {
         ControllerUpdateFromSource<[visibility: ConversationVisibility]>,
         'fromRemote' | 'fromSync'
     >;
+
+    readonly updateTyping: Omit<ControllerUpdateFromSource<[typing: boolean]>, 'fromSync'>;
 
     /**
      * Add a new message to this conversation.
@@ -193,7 +196,7 @@ export type ConversationController = {
      *   last message ID is the only entry in {@link anyMessageIds}, then at most 10 messages and 10
      *   status messages will be returned. If `contextSize` is 50 and 5 messages in the middle of
      *   the conversation are part of {@link anyMessageIds}, then at most 50 messages and 50 status
-     *   messages + the five message in the middle (no matter if they are status or nomal messages)
+     *   messages + the five message in the middle (no matter if they are status or normal messages)
      *   will be returned.
      */
     readonly getMessagesWithSurroundingMessages: (

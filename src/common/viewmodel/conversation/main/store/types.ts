@@ -22,6 +22,7 @@ export interface ConversationViewModel {
     readonly isArchived: boolean;
     readonly isPinned: boolean;
     readonly isPrivate: boolean;
+    readonly isTyping: boolean;
     readonly lastMessage:
         | {
               readonly id: MessageId;

@@ -34,6 +34,7 @@
   export let highlights: $$Props['highlights'] = undefined;
   export let isArchived: $$Props['isArchived'];
   export let isPinned: $$Props['isPinned'];
+  export let isTyping: $$Props['isTyping'] = false;
   export let isPrivate: $$Props['isPrivate'];
   export let lastMessage: $$Props['lastMessage'] = undefined;
   export let popover: $$Props['popover'] = undefined;
@@ -156,6 +157,7 @@
               call,
               isBlocked: receiver.type === 'contact' && receiver.isBlocked,
               isPinned,
+              isTyping,
               isPrivate,
               notificationPolicy: receiver.notificationPolicy,
             },

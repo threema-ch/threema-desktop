@@ -17,6 +17,7 @@
   export let call: $$Props['call'] = undefined;
   export let isBlocked: NonNullable<$$Props['isBlocked']> = false;
   export let isPinned: NonNullable<$$Props['isPinned']> = false;
+  export let isTyping: NonNullable<$$Props['isTyping']> = false;
   export let isPrivate: NonNullable<$$Props['isPrivate']> = false;
   export let notificationPolicy: NonNullable<$$Props['notificationPolicy']> = {
     type: 'default',
@@ -122,6 +123,19 @@
       <RadialExclusionMaskProvider cutouts={hasNeighborLeft ? [DEFAULT_CUTOUT] : []}>
         <span class="charm pinned">
           <MdIcon theme="Filled">push_pin</MdIcon>
+        </span>
+      </RadialExclusionMaskProvider>
+    </span>
+  {/if}
+
+  {#if isTyping}
+    {@const hasNeighborLeft =
+      call !== undefined || isBlocked || hasNotificationPolicy || isPrivate || isPinned}
+
+    <span class="item">
+      <RadialExclusionMaskProvider cutouts={hasNeighborLeft ? [DEFAULT_CUTOUT] : []}>
+        <span class="charm">
+          <MdIcon theme="Filled">sms</MdIcon>
         </span>
       </RadialExclusionMaskProvider>
     </span>

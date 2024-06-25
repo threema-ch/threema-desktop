@@ -84,6 +84,7 @@
       {highlights}
       isArchived={item.isArchived}
       isPinned={item.isPinned}
+      isTyping={item.isTyping}
       isPrivate={item.isPrivate}
       lastMessage={item.lastMessage}
       receiver={item.receiver}
