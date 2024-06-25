@@ -10,6 +10,7 @@ import {
     ReadReceiptPolicy,
     ReceiverType,
     TriggerSource,
+    TypingIndicatorPolicy,
     type StatusMessageType,
 } from '~/common/enum';
 import {TRANSFER_HANDLER} from '~/common/index';
@@ -550,34 +551,36 @@ export class ConversationModelController implements ConversationController {
 
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (isTyping: boolean) => {
-            const contactReceiver = this.receiver();
-            assert(contactReceiver.type === ReceiverType.CONTACT);
-            const scheduleTask = (): void => {
-                this._services.taskManager
-                    .schedule(
-                        new OutgoingTypingIndicatorTask(
-                            this._services,
-                            contactReceiver.get(),
-                            isTyping,
-                        ),
-                    )
-                    .catch(() => {
-                        // Ignore (task should persist)
-                    });
-            };
+            if (this._shouldSendTypingIndicator()) {
+                const contactReceiver = this.receiver();
+                assert(contactReceiver.type === ReceiverType.CONTACT);
+                const scheduleTask = (): void => {
+                    this._services.taskManager
+                        .schedule(
+                            new OutgoingTypingIndicatorTask(
+                                this._services,
+                                contactReceiver.get(),
+                                isTyping,
+                            ),
+                        )
+                        .catch(() => {
+                            // Ignore (task should persist)
+                        });
+                };
 
-            scheduleTask();
+                scheduleTask();
 
-            // Keep sending typing indicator
-            if (isTyping && this._isTypingOutgoingTimerCanceller === undefined) {
-                this._isTypingOutgoingTimerCanceller = TIMER.repeat(
-                    scheduleTask,
-                    this._isTypingOutgoingInterval,
-                    'after-interval',
-                );
-            } else {
-                this._isTypingOutgoingTimerCanceller?.();
-                this._isTypingOutgoingTimerCanceller = undefined;
+                // Keep sending typing indicator
+                if (isTyping && this._isTypingOutgoingTimerCanceller === undefined) {
+                    this._isTypingOutgoingTimerCanceller = TIMER.repeat(
+                        scheduleTask,
+                        this._isTypingOutgoingInterval,
+                        'after-interval',
+                    );
+                } else {
+                    this._isTypingOutgoingTimerCanceller?.();
+                    this._isTypingOutgoingTimerCanceller = undefined;
+                }
             }
         },
     };
@@ -1014,6 +1017,24 @@ export class ConversationModelController implements ConversationController {
             .catch(() => {
                 // Ignore (task should persist)
             });
+    }
+
+    private _shouldSendTypingIndicator(): boolean {
+        if (this.receiverLookup.type !== ReceiverType.CONTACT) {
+            return false;
+        }
+
+        // Check contact typing indicator policy override
+        const contactReceiver = this.receiver();
+        assert(contactReceiver.type === ReceiverType.CONTACT);
+        const {typingIndicatorPolicyOverride} = contactReceiver.get().view;
+        if (typingIndicatorPolicyOverride !== undefined) {
+            return typingIndicatorPolicyOverride === TypingIndicatorPolicy.SEND_TYPING_INDICATOR;
+        }
+
+        // Otherwise, fall back to global default
+        const {typingIndicatorPolicy} = this._services.model.user.privacySettings.get().view;
+        return typingIndicatorPolicy !== TypingIndicatorPolicy.DONT_SEND_TYPING_INDICATOR;
     }
 
     private async _ensureDirectAcquaintanceLevelForDirectMessages(
