@@ -103,17 +103,13 @@
   let receiverSupportsDeletedMessages: FeatureSupport;
 
   // Setup isTyping timer to 5s
-  let isTyping = false;
   const resetIsTypingTimer = TIMER.debounce(() => {
     dispatchIsTyping(false);
   }, 5000);
 
   // Set and dispatch isTyping event
-  function dispatchIsTyping(values: boolean): void {
-    if (isTyping !== values) {
-      isTyping = values;
-      viewModelController?.sendIsTyping(isTyping).catch(assertUnreachable);
-    }
+  function dispatchIsTyping(isTyping: boolean): void {
+    viewModelController?.sendIsTyping(isTyping).catch(assertUnreachable);
   }
 
   function handleclickjoincall(

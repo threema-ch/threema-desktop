@@ -1649,7 +1649,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         messageId,
                         senderConversationId,
                         typingIndicator,
-                        clampedCreatedAt,
                     ),
                 };
                 return instructions;

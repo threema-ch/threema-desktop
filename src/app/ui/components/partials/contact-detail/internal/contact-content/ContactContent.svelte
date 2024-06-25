@@ -249,29 +249,23 @@
         {/if}
       </KeyValueList.Item>
 
-      <!-- TODO(DESK-209):  When typing indicator sending is implemented, show this in all
-      environments. -->
-      {#if import.meta.env.DEBUG}
-        <KeyValueList.Item
-          key={`🐞 ${$i18n.t('settings.label--typing-indicator', 'Typing Indicator')}`}
-        >
-          {#if receiver.typingIndicatorPolicy === 'default'}
-            <Text
-              text={$i18n.t('settings.action--control-message-default-send', 'Default (Send)')}
-              selectable
-            />
-          {:else if receiver.typingIndicatorPolicy === 'do-not-send'}
-            <Text
-              text={$i18n.t('settings.action--control-message-do-not-send', "Don't Send")}
-              selectable
-            />
-          {:else if receiver.typingIndicatorPolicy === 'send'}
-            <Text text={$i18n.t('settings.action--control-message-send', 'Send')} selectable />
-          {:else}
-            {unreachable(receiver.typingIndicatorPolicy)}
-          {/if}
-        </KeyValueList.Item>
-      {/if}
+      <KeyValueList.Item key={$i18n.t('settings.label--typing-indicator', 'Typing Indicator')}>
+        {#if receiver.typingIndicatorPolicy === 'default'}
+          <Text
+            text={$i18n.t('settings.action--control-message-default-send', 'Default (Send)')}
+            selectable
+          />
+        {:else if receiver.typingIndicatorPolicy === 'do-not-send'}
+          <Text
+            text={$i18n.t('settings.action--control-message-do-not-send', "Don't Send")}
+            selectable
+          />
+        {:else if receiver.typingIndicatorPolicy === 'send'}
+          <Text text={$i18n.t('settings.action--control-message-send', 'Send')} selectable />
+        {:else}
+          {unreachable(receiver.typingIndicatorPolicy)}
+        {/if}
+      </KeyValueList.Item>
     </KeyValueList.Section>
   </KeyValueList>
 </div>

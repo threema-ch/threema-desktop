@@ -552,38 +552,36 @@ export class ConversationModelController implements ConversationController {
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (isTyping: boolean) => {
             if (this._shouldSendTypingIndicator()) {
-                const contactReceiver = this.receiver();
-                assert(contactReceiver.type === ReceiverType.CONTACT);
-                const scheduleTask = (): void => {
-                    this._services.taskManager
-                        .schedule(
-                            new OutgoingTypingIndicatorTask(
-                                this._services,
-                                contactReceiver.get(),
-                                isTyping,
-                            ),
-                        )
-                        .catch(() => {
-                            // Ignore (task should persist)
-                        });
-                };
-
-                scheduleTask();
-
-                // Keep sending typing indicator
-                if (isTyping && this._isTypingOutgoingTimerCanceller === undefined) {
-                    this._isTypingOutgoingTimerCanceller = TIMER.repeat(
-                        scheduleTask,
-                        this._isTypingOutgoingInterval,
-                        'after-interval',
-                    );
+                if (isTyping) {
+                    this._resetIsTypingOutgoingTimer();
+                    if (this._isTypingOutgoingTimerCanceller === undefined) {
+                        this._scheduleOutgoingTypingIndicatorTask(true);
+                        this._isTypingOutgoingTimerCanceller = TIMER.repeat(
+                            () => this._scheduleOutgoingTypingIndicatorTask(true),
+                            this._isTypingOutgoingInterval,
+                            'after-interval',
+                        );
+                    }
                 } else {
+                    this._scheduleOutgoingTypingIndicatorTask(false);
                     this._isTypingOutgoingTimerCanceller?.();
                     this._isTypingOutgoingTimerCanceller = undefined;
                 }
             }
         },
     };
+
+    private readonly _isTypingIncomingTimeout = 15000;
+    private readonly _isTypingOutgoingInterval = 10000;
+    private readonly _isTypingOutgoingTimeout = 5000;
+
+    private readonly _resetIsTypingOutgoingTimer = TIMER.debounce(() => {
+        if (this._isTypingOutgoingTimerCanceller !== undefined) {
+            this._scheduleOutgoingTypingIndicatorTask(false);
+            this._isTypingOutgoingTimerCanceller();
+            this._isTypingOutgoingTimerCanceller = undefined;
+        }
+    }, this._isTypingOutgoingTimeout);
 
     private readonly _handle: ConversationControllerHandle;
     private readonly _lock = new AsyncLock();
@@ -597,8 +595,6 @@ export class ConversationModelController implements ConversationController {
     // removed messages.
     private readonly _lastModificationStore: WritableStore<Date>;
 
-    private readonly _isTypingIncomingTimeout = 15000;
-    private readonly _isTypingOutgoingInterval = 10000;
     private _isTypingIncomingTimerCanceller: TimerCanceller | undefined;
     private _isTypingOutgoingTimerCanceller: TimerCanceller | undefined;
 
@@ -1035,6 +1031,18 @@ export class ConversationModelController implements ConversationController {
         // Otherwise, fall back to global default
         const {typingIndicatorPolicy} = this._services.model.user.privacySettings.get().view;
         return typingIndicatorPolicy !== TypingIndicatorPolicy.DONT_SEND_TYPING_INDICATOR;
+    }
+
+    private _scheduleOutgoingTypingIndicatorTask(isTyping: boolean): void {
+        const contactReceiver = this.receiver();
+        assert(contactReceiver.type === ReceiverType.CONTACT);
+        this._services.taskManager
+            .schedule(
+                new OutgoingTypingIndicatorTask(this._services, contactReceiver.get(), isTyping),
+            )
+            .catch(() => {
+                // Ignore (task should persist)
+            });
     }
 
     private async _ensureDirectAcquaintanceLevelForDirectMessages(

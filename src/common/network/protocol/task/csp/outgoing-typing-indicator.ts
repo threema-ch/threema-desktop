@@ -30,7 +30,7 @@ export class OutgoingTypingIndicatorTask<TReceiver extends Contact>
         private readonly _receiver: TReceiver,
         private readonly _isTyping: boolean,
     ) {
-        this._log = _services.logging.logger(`network.protocol.task.out-delivery-receipt`);
+        this._log = _services.logging.logger(`network.protocol.task.outgoing-typing-indicator`);
     }
 
     public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {

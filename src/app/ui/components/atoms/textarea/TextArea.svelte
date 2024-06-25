@@ -68,6 +68,14 @@
   // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/isComposing.
   let isComposing = false;
 
+  const dispatchIsTyping = TIMER.debounce(
+    (isTyping: boolean) => {
+      dispatch('istyping', isTyping);
+    },
+    1000,
+    false,
+  );
+
   /**
    * Clears the contents of the text area.
    */
@@ -147,7 +155,7 @@
       // Fix this, see this discussion for details:
       // https://git.threema.ch/clients/web/threema-desktop-web/-/merge_requests/92#note_31788
       isEmptyStore.set(area.is_empty());
-      dispatch('istyping', !area.is_empty());
+      dispatchIsTyping(!area.is_empty());
     });
   }
 

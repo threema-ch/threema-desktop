@@ -16,18 +16,16 @@ export class IncomingTypingIndicatorTask
 
     public constructor(
         private readonly _services: ServicesForTasks,
-        private readonly _typingIndicatorMessageId: MessageId,
+        typingIndicatorMessageId: MessageId,
         private readonly _conversationId: ContactConversationId,
         private readonly _typingIndicator: TypingIndicator,
-        private readonly _createdAt: Date,
     ) {
-        const messageIdHex = u64ToHexLe(_typingIndicatorMessageId);
+        const messageIdHex = u64ToHexLe(typingIndicatorMessageId);
         this._log = _services.logging.logger(
-            `network.protocol.task.typing-indicator.${messageIdHex}`,
+            `network.protocol.task.incoming-typing-indicator.${messageIdHex}`,
         );
     }
 
-    // eslint-disable-next-line @typescript-eslint/require-await
     public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
         // Look up conversation
         const conversation = getConversationById(this._services, this._conversationId);
@@ -36,12 +34,9 @@ export class IncomingTypingIndicatorTask
             return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const conversationController = conversation.get().controller;
-        await conversationController.updateTyping.fromRemote(
-            handle,
-            this._typingIndicator.isTyping > 0,
-        );
+        await conversation
+            .get()
+            .controller.updateTyping.fromRemote(handle, this._typingIndicator.isTyping > 0);
 
         this._log.info(
             `Processing typing indicator with value ${this._typingIndicator.isTyping} for conversation: ${this._conversationId.identity}`,
