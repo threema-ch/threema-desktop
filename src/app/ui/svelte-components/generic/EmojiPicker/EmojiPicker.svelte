@@ -114,7 +114,7 @@
   // Big list of emoji, grouped by group
   .wrapper {
     height: 100%;
-    overflow-y: scroll;
+    overflow-y: auto;
 
     // Get rid of default button styling
     :global(button) {

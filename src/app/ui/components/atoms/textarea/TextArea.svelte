@@ -373,7 +373,7 @@
     outline: 0 solid transparent;
     cursor: text;
     max-height: var($-temp-vars, --c-t-compose-area-max-height);
-    overflow-y: scroll;
+    overflow-y: auto;
     display: grid;
     align-items: end;
     word-wrap: anywhere;

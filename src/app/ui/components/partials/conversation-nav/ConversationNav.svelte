@@ -323,7 +323,7 @@
     .list {
       grid-area: list;
 
-      overflow-y: scroll;
+      overflow-y: auto;
     }
   }
 </style>
