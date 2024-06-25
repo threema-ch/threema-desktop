@@ -347,7 +347,7 @@ export abstract class ReflectedMessageTaskBase<
                     return {
                         type: CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE,
                         message: protobuf.validate.csp_e2e.EditMessage.SCHEMA.parse(
-                            protobuf.csp_e2e.EditMessage.decode(body),
+                            protobuf.csp_e2e.EditMessage.decode(container.innerData),
                         ),
                         container,
                     };
@@ -372,7 +372,7 @@ export abstract class ReflectedMessageTaskBase<
                     return {
                         type: CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE,
                         message: protobuf.validate.csp_e2e.DeleteMessage.SCHEMA.parse(
-                            protobuf.csp_e2e.GroupCallStart.decode(container.innerData),
+                            protobuf.csp_e2e.DeleteMessage.decode(container.innerData),
                         ),
                         container,
                     };
