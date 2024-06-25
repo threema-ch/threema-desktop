@@ -86,17 +86,17 @@ export type ValidatedCspE2eTypesStructbuf =
       >
     | ValidatedCspE2eMessageType<
           CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE,
-          void,
+          undefined,
           GroupCreatorContainer.Type
       >
     | ValidatedCspE2eMessageType<
           CspE2eGroupControlType.GROUP_LEAVE,
-          void,
+          undefined,
           GroupMemberContainer.Type
       >
     | ValidatedCspE2eMessageType<
           CspE2eGroupControlType.GROUP_SYNC_REQUEST,
-          void,
+          undefined,
           GroupCreatorContainer.Type
       >
 
@@ -104,5 +104,6 @@ export type ValidatedCspE2eTypesStructbuf =
     | ValidatedCspE2eMessageType<CspE2eStatusUpdateType.DELIVERY_RECEIPT, DeliveryReceipt.Type>
     | ValidatedCspE2eMessageType<
           CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT,
+          DeliveryReceipt.Type,
           GroupMemberContainer.Type
       >;

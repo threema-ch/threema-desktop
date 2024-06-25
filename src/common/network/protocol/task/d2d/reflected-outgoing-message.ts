@@ -48,7 +48,7 @@ import {
     type OutboundTextMessageInitFragment,
     type OutboundVideoMessageInitFragment,
 } from '~/common/network/protocol/task/message-processing-helpers';
-import * as structbuf from '~/common/network/structbuf';
+import type * as structbuf from '~/common/network/structbuf';
 import type {
     ContactConversationId,
     ConversationId,
@@ -537,9 +537,6 @@ export class ReflectedOutgoingMessageTask
                 return instructions;
             }
             case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: {
-                const deliveryReceipt = structbuf.validate.csp.e2e.DeliveryReceipt.SCHEMA.parse(
-                    structbuf.csp.e2e.DeliveryReceipt.decode(validatedBody.message.innerData),
-                );
                 const instructions: StatusUpdateInstructions = {
                     messageCategory: 'status-update',
                     task: new ReflectedDeliveryReceiptTask(
@@ -547,10 +544,10 @@ export class ReflectedOutgoingMessageTask
                         messageId,
                         {
                             type: ReceiverType.GROUP,
-                            creatorIdentity: validatedBody.message.creatorIdentity,
-                            groupId: validatedBody.message.groupId,
+                            creatorIdentity: validatedBody.container.creatorIdentity,
+                            groupId: validatedBody.container.groupId,
                         },
-                        {status: deliveryReceipt.status, messageIds: deliveryReceipt.messageIds},
+                        validatedBody.message,
                         createdAt,
                         this._services.device.identity.string,
                     ),

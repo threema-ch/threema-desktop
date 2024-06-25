@@ -323,12 +323,10 @@ export abstract class ReflectedMessageTaskBase<
                     );
                     return {
                         type: CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT,
-                        message: {
-                            groupId: container.groupId,
-                            creatorIdentity: container.creatorIdentity,
-                            innerData: container.innerData,
-                        },
-                        container: undefined,
+                        message: structbuf.validate.csp.e2e.DeliveryReceipt.SCHEMA.parse(
+                            structbuf.csp.e2e.DeliveryReceipt.decode(container.innerData),
+                        ),
+                        container,
                     };
                 }
 

@@ -49,7 +49,7 @@ import {
     type InboundVideoMessageInitFragment,
     messageReferenceDebugFor,
 } from '~/common/network/protocol/task/message-processing-helpers';
-import * as structbuf from '~/common/network/structbuf';
+import type * as structbuf from '~/common/network/structbuf';
 import type {
     ContactConversationId,
     D2mDeviceId,
@@ -495,9 +495,6 @@ export class ReflectedIncomingMessageTask
 
             // Status messages
             case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: {
-                const deliveryReceipt = structbuf.validate.csp.e2e.DeliveryReceipt.SCHEMA.parse(
-                    structbuf.csp.e2e.DeliveryReceipt.decode(validatedBody.message.innerData),
-                );
                 const instructions: StatusUpdateInstructions = {
                     messageCategory: 'status-update',
                     task: new ReflectedDeliveryReceiptTask(
@@ -505,10 +502,10 @@ export class ReflectedIncomingMessageTask
                         messageId,
                         {
                             type: ReceiverType.GROUP,
-                            creatorIdentity: validatedBody.message.creatorIdentity,
-                            groupId: validatedBody.message.groupId,
+                            creatorIdentity: validatedBody.container.creatorIdentity,
+                            groupId: validatedBody.container.groupId,
                         },
-                        deliveryReceipt,
+                        validatedBody.message,
                         createdAt,
                         senderContact.get().view.identity,
                     ),
