@@ -32,11 +32,15 @@ export function removeOldProfiles(appPath: string, profile: string, log: Logger)
 function findOldProfiles(appPath: string, profile: string): string[] {
     const files = fs.readdirSync(path.join(appPath, '..'));
     const oldProfiles: string[] = [];
+    const profileDirPattern = `^${import.meta.env.BUILD_FLAVOR}-${profile}.[0-9]{10}$`;
 
+    // Find all profile directories where the directory name ends with a timestamp and where a key
+    // storage file exists.
     for (const file of files) {
-        if (file.match(`^${import.meta.env.BUILD_FLAVOR}-${profile}.[0-9]+$`)) {
-            const timestamp = parseInt(file.slice(-1), 10);
-            if (!isNaN(timestamp)) {
+        if (file.match(profileDirPattern)) {
+            const profileDirPath = path.resolve(appPath, '..', file);
+            const keyStoragePath = path.join(profileDirPath, 'data', 'keystorage.pb3');
+            if (fs.lstatSync(keyStoragePath, {throwIfNoEntry: false})?.isFile() === true) {
                 oldProfiles.push(path.resolve(appPath, '..', file));
             }
         }
