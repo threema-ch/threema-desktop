@@ -143,10 +143,6 @@
         });
         break;
 
-      case 'typing-indicator':
-        // Nothing to do here, typing-indicator is not deletable
-        break;
-
       default:
         unreachable(event.detail);
     }
@@ -529,7 +525,7 @@
   }
 
   function handleClickDeleteMessage(event: CustomEvent<AnyMessageListMessage>): void {
-    if (event.detail.type === 'status-message' || event.detail.type === 'typing-indicator') {
+    if (event.detail.type === 'status-message') {
       handleClickDeleteMessageLocally(event);
       return;
     }
@@ -784,13 +780,13 @@
       {:else}
         <div class="messages">
           <MessageList
-            isTyping={$viewModelStore.isTyping}
             bind:this={messageListComponent}
             conversation={{
               firstUnreadMessageId: $viewModelStore.firstUnreadMessageId,
               id: $viewModelStore.id,
               initiallyVisibleMessageId,
               isEditingSupported: receiverSupportsEditedMessages.supported,
+              isTyping: $viewModelStore.isTyping,
               lastMessage: $viewModelStore.lastMessage,
               markAllMessagesAsRead: () => {
                 viewModelController

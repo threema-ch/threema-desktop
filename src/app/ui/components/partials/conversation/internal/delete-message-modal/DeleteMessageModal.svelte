@@ -51,10 +51,6 @@
         log.warn('Cannot delete a status message for everyone, as they are local-only');
         break;
 
-      case 'typing-indicator':
-        log.warn('Cannot delete a typing indicator message');
-        break;
-
       default:
         unreachable(message);
     }

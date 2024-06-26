@@ -247,6 +247,9 @@
     </li>
   {/each}
 
+  <!-- Display an element at the very end of the list. -->
+  <slot name="after" />
+
   <span
     bind:this={anchorElement}
     use:intersection={{

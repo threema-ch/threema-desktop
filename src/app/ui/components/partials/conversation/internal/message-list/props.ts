@@ -27,6 +27,7 @@ export interface MessageListProps {
          * defined, the `firstUnreadMessageId` will be used instead, or the `lastMessage`.
          */
         readonly initiallyVisibleMessageId?: MessageId;
+        readonly isTyping: boolean;
         readonly lastMessage:
             | {
                   readonly id: AnyMessageListMessage['id'];
@@ -43,7 +44,6 @@ export interface MessageListProps {
     readonly messagesStore: IQueryableStore<AnyMessageListMessage[]>;
     /** `AppServicesForSvelte` bundle to pass through to child components. */
     readonly services: AppServicesForSvelte;
-    readonly isTyping: boolean;
 }
 
 /**
@@ -52,8 +52,7 @@ export interface MessageListProps {
 export type AnyMessageListMessage =
     | MessageListRegularMessage
     | MessageListDeletedMessage
-    | MessageListStatusMessage
-    | MessageListTypingIndicator;
+    | MessageListStatusMessage;
 
 /**
  * Type of a deleted message that is part of a `MessageList`.
@@ -82,12 +81,4 @@ export interface MessageListStatusMessage extends Omit<StatusMessageProps, 'boun
         readonly at: Date;
     };
     readonly id: StatusMessageId;
-}
-
-export interface MessageListTypingIndicator
-    extends Omit<
-        RegularMessageProps,
-        'boundary' | 'conversation' | 'services' | 'actions' | 'reactions' | 'status'
-    > {
-    readonly type: 'typing-indicator';
 }

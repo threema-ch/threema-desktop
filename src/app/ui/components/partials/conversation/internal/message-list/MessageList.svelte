@@ -3,6 +3,8 @@
 -->
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
+  import type {AnimationConfig} from 'svelte/animate';
+  import {expoOut} from 'svelte/easing';
 
   import {globals} from '~/app/globals';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
@@ -19,7 +21,6 @@
   import UnreadMessagesIndicator from '~/app/ui/components/partials/conversation/internal/message-list/internal/unread-messages-indicator/UnreadMessagesIndicator.svelte';
   import type {
     AnyMessageListMessage,
-    MessageListTypingIndicator,
     MessageListProps,
     MessageListRegularMessage,
   } from '~/app/ui/components/partials/conversation/internal/message-list/props';
@@ -32,8 +33,8 @@
   import {reactive, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import {appVisibility} from '~/common/dom/ui/state';
   import {MessageDirection} from '~/common/enum';
-  import {ensureMessageId, type MessageId, type StatusMessageId} from '~/common/network/types';
-  import type {u53} from '~/common/types';
+  import type {MessageId, StatusMessageId} from '~/common/network/types';
+  import type {f64, u53} from '~/common/types';
   import {assertUnreachable, unreachable} from '~/common/utils/assert';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.message-list');
@@ -43,19 +44,12 @@
   export let conversation: $$Props['conversation'];
   export let messagesStore: $$Props['messagesStore'];
   export let services: $$Props['services'];
-  export let isTyping: $$Props['isTyping'];
 
   const dispatch = createEventDispatcher<{
     clickquote: MessageListRegularMessage;
     clickdelete: AnyMessageListMessage;
     clickedit: MessageListRegularMessage;
   }>();
-
-  const typingIndicatorMessage: MessageListTypingIndicator = {
-    type: 'typing-indicator',
-    id: ensureMessageId(1n),
-    direction: 'inbound',
-  };
 
   let element: HTMLElement;
   let lazyListComponent: SvelteNullableBinding<LazyList<AnyMessageListMessage>> = null;
@@ -179,9 +173,7 @@
     };
   }
 
-  function handleClickOpenDetailsOption(
-    message: Exclude<AnyMessageListMessage, MessageListTypingIndicator>,
-  ): void {
+  function handleClickOpenDetailsOption(message: AnyMessageListMessage): void {
     switch (message.type) {
       case 'deleted-message':
         modalState = {
@@ -439,6 +431,18 @@
     conversation.markAllMessagesAsRead();
   }
 
+  function scaleInOut(node: Element): AnimationConfig {
+    return {
+      css: (progress: f64) => `
+        overflow: hidden;
+        transform: scale3d(${progress}, ${progress}, ${progress});
+        transform-origin: bottom left;
+      `,
+      duration: 200,
+      easing: expoOut,
+    };
+  }
+
   $: reactive(handleChangeConversation, [currentConversationId]);
   $: reactive(handleChangeApplicationFocus, [$appVisibility]);
   $: reactive(handleChangeConversationOrLastMessage, [currentConversationId, currentLastMessage]);
@@ -472,7 +476,7 @@
   {:else}
     <LazyList
       bind:this={lazyListComponent}
-      items={isTyping ? $messagesStore.concat(typingIndicatorMessage) : $messagesStore}
+      items={$messagesStore}
       onError={handleLazyListError}
       visibleItemId={anchoredMessageId}
       on:itemanchored={handleItemAnchored}
@@ -546,12 +550,18 @@
             on:clickdeleteoption={() => dispatch('clickdelete', item)}
             on:clickopendetailsoption={() => handleClickOpenDetailsOption(item)}
           />
-        {:else if item.type === 'typing-indicator'}
-          <TypingIndicator />
         {:else}
           {unreachable(item)}
         {/if}
         <!-- eslint-enable @typescript-eslint/no-unsafe-argument -->
+      </div>
+
+      <div slot="after">
+        {#if conversation.isTyping}
+          <div class="typing-indicator" in:scaleInOut out:scaleInOut>
+            <TypingIndicator />
+          </div>
+        {/if}
       </div>
     </LazyList>
   {/if}
@@ -648,6 +658,10 @@
         padding: rem(8px) 0 rem(16px) 0;
         width: 100%;
       }
+    }
+
+    .typing-indicator {
+      padding: 0 rem(8px) rem(8px);
     }
   }
 
