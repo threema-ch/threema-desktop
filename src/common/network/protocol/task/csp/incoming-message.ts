@@ -1638,6 +1638,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 const typingIndicator = structbuf.csp.e2e.TypingIndicator.decode(
                     cspMessageBody as Uint8Array,
                 );
+                const validatedTypingIndicator =
+                    structbuf.validate.csp.e2e.TypingIndicator.SCHEMA.parse(typingIndicator);
                 const instructions: TypingIndicatorInstructions = {
                     messageCategory: 'status-update',
                     deliveryReceipt: false,
@@ -1648,7 +1650,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         this._services,
                         messageId,
                         senderConversationId,
-                        typingIndicator,
+                        validatedTypingIndicator.isTyping,
                     ),
                 };
                 return instructions;

@@ -5,7 +5,6 @@ import type {
     ServicesForTasks,
 } from '~/common/network/protocol/task';
 import {getConversationById} from '~/common/network/protocol/task/message-processing-helpers';
-import type {TypingIndicator} from '~/common/network/structbuf/csp/e2e';
 import type {MessageId, ContactConversationId} from '~/common/network/types';
 import {u64ToHexLe} from '~/common/utils/number';
 
@@ -18,7 +17,7 @@ export class IncomingTypingIndicatorTask
         private readonly _services: ServicesForTasks,
         typingIndicatorMessageId: MessageId,
         private readonly _conversationId: ContactConversationId,
-        private readonly _typingIndicator: TypingIndicator,
+        private readonly _isTyping: boolean,
     ) {
         const messageIdHex = u64ToHexLe(typingIndicatorMessageId);
         this._log = _services.logging.logger(
@@ -34,12 +33,10 @@ export class IncomingTypingIndicatorTask
             return;
         }
 
-        await conversation
-            .get()
-            .controller.updateTyping.fromRemote(handle, this._typingIndicator.isTyping > 0);
+        await conversation.get().controller.updateTyping.fromRemote(handle, this._isTyping);
 
         this._log.info(
-            `Processing typing indicator with value ${this._typingIndicator.isTyping} for conversation: ${this._conversationId.identity}`,
+            `Processing typing indicator with value ${this._isTyping} for conversation: ${conversation.ctx}`,
         );
     }
 }
