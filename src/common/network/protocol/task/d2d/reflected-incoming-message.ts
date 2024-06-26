@@ -37,6 +37,7 @@ import {ReflectedGroupNameTask} from '~/common/network/protocol/task/d2d/reflect
 import {ReflectedGroupProfilePictureTask} from '~/common/network/protocol/task/d2d/reflected-group-profile-picture';
 import {ReflectedIncomingGroupLeaveTask} from '~/common/network/protocol/task/d2d/reflected-incoming-group-leave';
 import {ReflectedIncomingGroupSetupTask} from '~/common/network/protocol/task/d2d/reflected-incoming-group-setup';
+import {ReflectedIncomingTypingIndicatorTask} from '~/common/network/protocol/task/d2d/reflected-incoming-typing-indicator';
 import {ReflectedMessageTaskBase} from '~/common/network/protocol/task/d2d/reflected-message';
 import {ReflectedMessageContentUpdateTask} from '~/common/network/protocol/task/d2d/reflected-message-content-update';
 import {
@@ -343,6 +344,7 @@ export class ReflectedIncomingMessageTask
                 };
                 return instructions;
             }
+
             case CspE2eConversationType.LOCATION: {
                 const initFragment = getLocationMessageInitFragment(
                     validatedBody.message,
@@ -390,6 +392,7 @@ export class ReflectedIncomingMessageTask
                 };
                 return instructions;
             }
+
             case CspE2eGroupConversationType.GROUP_LOCATION: {
                 const initFragment = getLocationMessageInitFragment(
                     validatedBody.message,
@@ -422,6 +425,7 @@ export class ReflectedIncomingMessageTask
                 };
                 return instructions;
             }
+
             case CspE2eGroupControlType.GROUP_NAME: {
                 const instructions: GroupControlMessageInstructions = {
                     messageCategory: 'group-control',
@@ -436,6 +440,7 @@ export class ReflectedIncomingMessageTask
                 };
                 return instructions;
             }
+
             case CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE: {
                 const instructions: GroupControlMessageInstructions = {
                     messageCategory: 'group-control',
@@ -449,6 +454,7 @@ export class ReflectedIncomingMessageTask
                 };
                 return instructions;
             }
+
             case CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE: {
                 const instructions: GroupControlMessageInstructions = {
                     messageCategory: 'group-control',
@@ -462,6 +468,7 @@ export class ReflectedIncomingMessageTask
                 };
                 return instructions;
             }
+
             case CspE2eGroupControlType.GROUP_LEAVE: {
                 const instructions: GroupControlMessageInstructions = {
                     messageCategory: 'group-control',
@@ -512,6 +519,7 @@ export class ReflectedIncomingMessageTask
                 };
                 return instructions;
             }
+
             case CspE2eStatusUpdateType.DELIVERY_RECEIPT: {
                 const instructions: StatusUpdateInstructions = {
                     messageCategory: 'status-update',
@@ -522,6 +530,19 @@ export class ReflectedIncomingMessageTask
                         validatedBody.message,
                         createdAt,
                         senderContact.get().view.identity,
+                    ),
+                };
+                return instructions;
+            }
+
+            case CspE2eStatusUpdateType.TYPING_INDICATOR: {
+                const instructions: StatusUpdateInstructions = {
+                    messageCategory: 'status-update',
+                    task: new ReflectedIncomingTypingIndicatorTask(
+                        this._services,
+                        messageId,
+                        {type: ReceiverType.CONTACT, identity: senderIdentity},
+                        validatedBody.message.isTyping,
                     ),
                 };
                 return instructions;
@@ -543,6 +564,7 @@ export class ReflectedIncomingMessageTask
                 };
                 return instructions;
             }
+
             case CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE: {
                 const instructions: MessageContentUpdateInstructions = {
                     messageCategory: 'message-content-update',
@@ -599,6 +621,7 @@ export class ReflectedIncomingMessageTask
                 };
                 return instructions;
             }
+
             default:
                 return unreachable(validatedBody);
         }

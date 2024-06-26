@@ -535,18 +535,11 @@ export class ConversationModelController implements ConversationController {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle, isTyping: boolean) => {
-            // (Re-)schedule timer if isTyping === true
-            if (isTyping) {
-                this._isTypingIncomingTimerCanceller?.();
-                this._isTypingIncomingTimerCanceller = TIMER.timeout(() => {
-                    this.meta.update((view) => this._update(view, {isTyping: false}));
-                    this._isTypingIncomingTimerCanceller = undefined;
-                }, this._isTypingIncomingTimeout);
-            } else {
-                this._isTypingIncomingTimerCanceller?.();
-            }
+            this._updateIsTyping(isTyping);
+        },
 
-            this.meta.update((view) => this._update(view, {isTyping}));
+        fromSync: (isTyping) => {
+            this._updateIsTyping(isTyping);
         },
 
         // eslint-disable-next-line @typescript-eslint/require-await
@@ -862,6 +855,25 @@ export class ConversationModelController implements ConversationController {
         this._updateStatusStoresOnConversationUpdate();
 
         return statusMessageModelStore;
+    }
+
+    /**
+     * Update `isTyping` in the associated {@link ConversationView}, and schedule a timeout to
+     * change it back to `false` if this method isn't called again in the given timeframe.
+     */
+    private _updateIsTyping(isTyping: boolean): void {
+        // (Re-)schedule timer if `isTyping === true`.
+        if (isTyping) {
+            this._isTypingIncomingTimerCanceller?.();
+            this._isTypingIncomingTimerCanceller = TIMER.timeout(() => {
+                this.meta.update((view) => this._update(view, {isTyping: false}));
+                this._isTypingIncomingTimerCanceller = undefined;
+            }, this._isTypingIncomingTimeout);
+        } else {
+            this._isTypingIncomingTimerCanceller?.();
+        }
+
+        this.meta.update((view) => this._update(view, {isTyping}));
     }
 
     /**

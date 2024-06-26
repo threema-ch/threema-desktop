@@ -16,6 +16,7 @@ import * as GroupSetup from './group-setup';
 import * as Location from './location';
 import * as SetProfilePicture from './set-profile-picture';
 import * as Text from './text';
+import * as TypingIndicator from './typing-indicator';
 
 export {
     DeliveryReceipt,
@@ -27,6 +28,7 @@ export {
     GroupSetup,
     SetProfilePicture,
     Text,
+    TypingIndicator,
 };
 
 /**
@@ -102,6 +104,7 @@ export type ValidatedCspE2eTypesStructbuf =
 
     // Status messages
     | ValidatedCspE2eMessageType<CspE2eStatusUpdateType.DELIVERY_RECEIPT, DeliveryReceipt.Type>
+    | ValidatedCspE2eMessageType<CspE2eStatusUpdateType.TYPING_INDICATOR, TypingIndicator.Type>
     | ValidatedCspE2eMessageType<
           CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT,
           DeliveryReceipt.Type,

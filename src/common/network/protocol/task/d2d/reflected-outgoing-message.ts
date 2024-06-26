@@ -630,6 +630,10 @@ export class ReflectedOutgoingMessageTask
                 return instructions;
             }
 
+            case CspE2eStatusUpdateType.TYPING_INDICATOR:
+                // Outgoing typing indicators are not reflected, because it doesn't make sense.
+                return 'discard';
+
             default:
                 return unreachable(validatedBody);
         }

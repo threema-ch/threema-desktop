@@ -98,7 +98,7 @@ export type ConversationController = {
         'fromRemote' | 'fromSync'
     >;
 
-    readonly updateTyping: Omit<ControllerUpdateFromSource<[typing: boolean]>, 'fromSync'>;
+    readonly updateTyping: ControllerUpdateFromSource<[typing: boolean]>;
 
     /**
      * Add a new message to this conversation.

@@ -378,8 +378,13 @@ export abstract class ReflectedMessageTaskBase<
                     };
                 }
                 case CspE2eStatusUpdateType.TYPING_INDICATOR:
-                    // TODO(DESK-589): Implement
-                    return undefined;
+                    return {
+                        type: CspE2eStatusUpdateType.TYPING_INDICATOR,
+                        message: structbuf.validate.csp.e2e.TypingIndicator.SCHEMA.parse(
+                            structbuf.csp.e2e.TypingIndicator.decode(body),
+                        ),
+                        container: undefined,
+                    };
 
                 // Forward security messages (not currently supported, should not get reflected)
                 case CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE:
