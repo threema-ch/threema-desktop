@@ -2,15 +2,42 @@
   @component Renders a top bar with the user's profile picture and action buttons.
 -->
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte';
+  import {createEventDispatcher, onMount} from 'svelte';
 
+  import {globals} from '~/app/globals';
+  import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
+  import type {ContextMenuItem} from '~/app/ui/components/hocs/context-menu-provider/types';
+  import RadialExclusionMaskProvider from '~/app/ui/components/hocs/radial-exclusion-mask-provider/RadialExclusionMaskProvider.svelte';
   import type {ControlBarProps} from '~/app/ui/components/partials/call-activity/internal/control-bar/props';
+  import type {
+    AudioDeviceInfo,
+    VideoDeviceInfo,
+  } from '~/app/ui/components/partials/call-activity/internal/control-bar/types';
+  import type Popover from '~/app/ui/generic/popover/Popover.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
+  import {AsyncLock} from '~/common/utils/lock';
+  import {truncate} from '~/common/utils/string';
+
+  const log = globals.unwrap().uiLogging.logger('ui.component.call-activity-control-bar');
 
   type $$Props = ControlBarProps;
 
+  export let container: $$Props['container'];
+  export let currentAudioDeviceId: $$Props['currentAudioDeviceId'];
+  export let currentVideoDeviceId: $$Props['currentVideoDeviceId'];
   export let isAudioEnabled: $$Props['isAudioEnabled'];
   export let isVideoEnabled: $$Props['isVideoEnabled'];
+  export let onSelectAudioDevice: $$Props['onSelectAudioDevice'];
+  export let onSelectVideoDevice: $$Props['onSelectVideoDevice'];
+
+  const mediaDevicesAsyncLock: AsyncLock = new AsyncLock();
+
+  let audioDeviceSelectionPopover: SvelteNullableBinding<Popover> = null;
+  let videoDeviceSelectionPopover: SvelteNullableBinding<Popover> = null;
+
+  let audioDevices: AudioDeviceInfo[] = [];
+  let videoDevices: VideoDeviceInfo[] = [];
 
   const dispatch = createEventDispatcher<{
     clickleavecall: MouseEvent;
@@ -29,35 +56,178 @@
   function handleClickToggleVideo(event: MouseEvent): void {
     dispatch('clicktogglevideo', event);
   }
+
+  function updateMediaDevices(): void {
+    mediaDevicesAsyncLock
+      .with(
+        async () =>
+          await navigator.mediaDevices.enumerateDevices().then((devices) => {
+            videoDevices = devices.filter(
+              (device): device is VideoDeviceInfo => device.kind === 'videoinput',
+            );
+            audioDevices = devices.filter(
+              (device): device is AudioDeviceInfo => device.kind === 'audioinput',
+            );
+          }),
+      )
+      .catch((error) => {
+        log.error(`Error enumerating media devices: ${error}`);
+      });
+  }
+
+  $: audioDeviceContextMenuItems = audioDevices.map<ContextMenuItem>((device) => ({
+    handler: () => {
+      if (device.deviceId !== currentAudioDeviceId) {
+        onSelectAudioDevice(device);
+      }
+    },
+    icon: device.deviceId === currentAudioDeviceId ? {name: 'check'} : undefined,
+    label: truncate(device.label, 24, 'end'),
+  }));
+
+  $: videoDeviceContextMenuItems = videoDevices.map<ContextMenuItem>((device) => ({
+    handler: () => {
+      if (device.deviceId !== currentVideoDeviceId) {
+        onSelectVideoDevice(device);
+      }
+    },
+    icon: device.deviceId === currentVideoDeviceId ? {name: 'check'} : undefined,
+    label: truncate(device.label, 24, 'end'),
+  }));
+
+  onMount(() => {
+    updateMediaDevices();
+    navigator.mediaDevices.addEventListener('devicechange', updateMediaDevices);
+
+    return () => {
+      navigator.mediaDevices.removeEventListener('devicechange', updateMediaDevices);
+    };
+  });
 </script>
 
 <header class="container">
   <div class="left">
-    <button class="control video" class:enabled={isVideoEnabled} on:click={handleClickToggleVideo}>
-      <MdIcon theme="Outlined">
-        {#if isVideoEnabled}
-          videocam
-        {:else}
-          videocam_off
-        {/if}
-      </MdIcon>
-    </button>
+    <div class="control video">
+      <RadialExclusionMaskProvider
+        cutouts={[
+          {
+            diameter: 24,
+            position: {
+              x: 90,
+              y: 10,
+            },
+          },
+        ]}
+      >
+        <button class="toggle" class:enabled={isVideoEnabled} on:click={handleClickToggleVideo}>
+          <MdIcon theme="Outlined">
+            {#if isVideoEnabled}
+              videocam
+            {:else}
+              videocam_off
+            {/if}
+          </MdIcon>
+        </button>
+      </RadialExclusionMaskProvider>
 
-    <button class="control audio" class:enabled={isAudioEnabled} on:click={handleClickToggleAudio}>
-      <MdIcon theme="Outlined">
-        {#if isAudioEnabled}
-          mic
-        {:else}
-          mic_off
-        {/if}
-      </MdIcon>
-    </button>
+      <div class="chooser">
+        <ContextMenuProvider
+          bind:popover={videoDeviceSelectionPopover}
+          anchorPoints={{
+            reference: {
+              horizontal: 'left',
+              vertical: 'top',
+            },
+            popover: {
+              horizontal: 'left',
+              vertical: 'bottom',
+            },
+          }}
+          {container}
+          flip={false}
+          items={videoDeviceContextMenuItems}
+          offset={{
+            left: 0,
+            top: -4,
+          }}
+          safetyGap={{
+            bottom: 12,
+            left: 12,
+            right: 12,
+            top: 12,
+          }}
+        >
+          <button class="trigger">
+            <MdIcon theme="Outlined">keyboard_arrow_up</MdIcon>
+          </button>
+        </ContextMenuProvider>
+      </div>
+    </div>
+
+    <div class="control audio">
+      <RadialExclusionMaskProvider
+        cutouts={[
+          {
+            diameter: 24,
+            position: {
+              x: 90,
+              y: 10,
+            },
+          },
+        ]}
+      >
+        <button class="toggle" class:enabled={isAudioEnabled} on:click={handleClickToggleAudio}>
+          <MdIcon theme="Outlined">
+            {#if isAudioEnabled}
+              mic
+            {:else}
+              mic_off
+            {/if}
+          </MdIcon>
+        </button>
+      </RadialExclusionMaskProvider>
+
+      <div class="chooser">
+        <ContextMenuProvider
+          bind:popover={audioDeviceSelectionPopover}
+          anchorPoints={{
+            reference: {
+              horizontal: 'left',
+              vertical: 'top',
+            },
+            popover: {
+              horizontal: 'left',
+              vertical: 'bottom',
+            },
+          }}
+          {container}
+          flip={false}
+          items={audioDeviceContextMenuItems}
+          offset={{
+            left: 0,
+            top: -4,
+          }}
+          safetyGap={{
+            bottom: 12,
+            left: 12,
+            right: 12,
+            top: 12,
+          }}
+        >
+          <button class="trigger">
+            <MdIcon theme="Outlined">keyboard_arrow_up</MdIcon>
+          </button>
+        </ContextMenuProvider>
+      </div>
+    </div>
   </div>
 
   <div class="right">
-    <button class="control destructive leave" on:click={handleClickLeaveCall}>
-      <MdIcon theme="Outlined">call_end</MdIcon>
-    </button>
+    <div class="control">
+      <button class="toggle destructive" on:click={handleClickLeaveCall}>
+        <MdIcon theme="Outlined">call_end</MdIcon>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -84,58 +254,92 @@
       gap: rem(6px);
 
       .control {
-        @extend %neutral-input;
+        position: relative;
 
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        padding: rem(11px);
-        font-size: rem(24px);
-        line-height: rem(24px);
-        border-radius: 50%;
-
-        color: white;
-        background-color: rgb(38, 38, 38);
-
-        transition: 0.15s ease-out;
-
-        &.video,
-        &.audio {
+        &.audio,
+        &.video {
           display: none;
         }
 
-        &.enabled {
-          background-color: rgb(25, 209, 84);
-        }
+        .toggle {
+          @extend %neutral-input;
 
-        &.destructive {
-          background-color: rgb(255, 0, 0);
-        }
+          display: flex;
+          align-items: center;
+          justify-content: center;
 
-        &:hover {
-          cursor: pointer;
-          background-color: rgb(29, 28, 28);
+          padding: rem(11px);
+          font-size: rem(24px);
+          line-height: rem(24px);
+          border-radius: 50%;
+
+          color: white;
+          background-color: rgb(38, 38, 38);
+
+          transition: 0.1s ease-out;
 
           &.enabled {
-            background-color: rgb(24, 181, 73);
+            background-color: rgb(25, 209, 84);
           }
 
           &.destructive {
-            background-color: rgb(217, 8, 8);
+            background-color: rgb(255, 0, 0);
+          }
+
+          &:hover {
+            cursor: pointer;
+            background-color: rgb(29, 28, 28);
+
+            &.enabled {
+              background-color: rgb(24, 181, 73);
+            }
+
+            &.destructive {
+              background-color: rgb(217, 8, 8);
+            }
+          }
+
+          &:active {
+            cursor: pointer;
+            background-color: rgb(23, 22, 22);
+
+            &.enabled {
+              background-color: rgb(22, 164, 67);
+            }
+
+            &.destructive {
+              background-color: rgb(196, 11, 11);
+            }
           }
         }
 
-        &:active {
-          cursor: pointer;
-          background-color: rgb(23, 22, 22);
+        .chooser {
+          position: absolute;
+          top: 0;
+          left: 100%;
+          transform: translate(calc(-50% - rem(5px)), calc(-50% + rem(5px)));
 
-          &.enabled {
-            background-color: rgb(22, 164, 67);
-          }
+          .trigger {
+            @extend %neutral-input;
 
-          &.destructive {
-            background-color: rgb(196, 11, 11);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: rem(2px);
+            font-size: rem(14px);
+            line-height: rem(14px);
+            border-radius: 50%;
+
+            color: white;
+            background-color: rgb(38, 38, 38);
+
+            transition: 0.1s ease-out;
+
+            &:hover {
+              cursor: pointer;
+              background-color: rgb(29, 28, 28);
+            }
           }
         }
       }
@@ -159,9 +363,9 @@
       .left,
       .right {
         .control {
-          &.video,
-          &.audio {
-            display: flex;
+          &.audio,
+          &.video {
+            display: block;
           }
         }
       }

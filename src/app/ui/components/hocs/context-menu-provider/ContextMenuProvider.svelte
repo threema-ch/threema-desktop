@@ -89,6 +89,8 @@
 
     <div class="menu" slot="popover">
       <MenuContainer mode="small">
+        {@const hasAnyIcon = items.some((item) => item !== 'divider' && item.icon !== undefined)}
+
         {#each items as item}
           {#if item === 'divider'}
             <MenuItemDivider />
@@ -99,11 +101,11 @@
                   >{item.icon.name}</MdIcon
                 >
               </span>
-              <span>{item.label}</span>
+              <span class="label">{item.label}</span>
             </MenuItem>
           {:else}
             <MenuItem on:click={() => handleClickItem(item)} disabled={item.disabled}>
-              <span>{item.label}</span>
+              <span class="label" class:padded={hasAnyIcon}>{item.label}</span>
             </MenuItem>
           {/if}
         {/each}
@@ -132,6 +134,14 @@
 
       &.declined {
         color: var(--mc-message-status-declined-color);
+      }
+    }
+
+    .label {
+      line-height: rem(18px);
+
+      &.padded {
+        padding-left: rem(18px + 8px);
       }
     }
   }

@@ -14,8 +14,14 @@
     type ActivityLayout,
     updateRemoteParticipantRemoteCameras,
     createCaptureDevices,
+    selectMicrophoneDevice,
+    selectCameraDevice,
   } from '~/app/ui/components/partials/call-activity/helpers';
   import ControlBar from '~/app/ui/components/partials/call-activity/internal/control-bar/ControlBar.svelte';
+  import type {
+    AudioDeviceInfo,
+    VideoDeviceInfo,
+  } from '~/app/ui/components/partials/call-activity/internal/control-bar/types';
   import TopBar from '~/app/ui/components/partials/call-activity/internal/top-bar/TopBar.svelte';
   import type {GroupCallActivityProps} from '~/app/ui/components/partials/call-activity/props';
   import type {AugmentedOngoingGroupCallViewModelBundle} from '~/app/ui/components/partials/call-activity/transformer';
@@ -116,6 +122,25 @@
     true,
     (_, id) => `${id}`,
   );
+
+  function handleSelectAudioDevice(device: AudioDeviceInfo): void {
+    selectMicrophoneDevice(localDevicesGuard, {
+      device,
+      state: $localDevices.microphone?.track.enabled ?? false ? 'on' : 'off',
+    }).catch((error) => {
+      log.error(`Unable to select audio device ${device.label}: ${error}`);
+    });
+  }
+
+  function handleSelectVideoDevice(device: VideoDeviceInfo): void {
+    selectCameraDevice(localDevicesGuard, {
+      device,
+      facing: 'user',
+      state: $localDevices.camera?.track.enabled ?? false ? 'on' : 'off',
+    }).catch((error) => {
+      log.error(`Unable to select video device ${device.label}: ${error}`);
+    });
+  }
 
   function handleClickLeaveCall(): void {
     // Stop any ongoing call
@@ -469,8 +494,13 @@
 
     <div class="footer">
       <ControlBar
+        container={feedContainerElement}
+        currentAudioDeviceId={$localDevices.microphone?.track.getSettings().deviceId}
+        currentVideoDeviceId={$localDevices.camera?.track.getSettings().deviceId}
         isAudioEnabled={$localDevices.microphone?.track.enabled ?? false}
         isVideoEnabled={$localDevices.camera?.track.enabled ?? false}
+        onSelectAudioDevice={handleSelectAudioDevice}
+        onSelectVideoDevice={handleSelectVideoDevice}
         on:clickleavecall={handleClickLeaveCall}
         on:clicktoggleaudio={() => setMicrophoneCaptureState('toggle')}
         on:clicktogglevideo={() => setCameraCaptureState('toggle')}
