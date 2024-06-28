@@ -2,7 +2,7 @@
   @component Renders the group call activity sidebar.
 -->
 <script lang="ts">
-  import {onDestroy} from 'svelte';
+  import {createEventDispatcher, onDestroy, onMount} from 'svelte';
 
   import {globals} from '~/app/globals';
   import {size} from '~/app/ui/actions/size';
@@ -68,19 +68,9 @@
     [];
   $: feeds = [...(localFeed !== undefined ? [localFeed] : []), ...remoteFeeds];
 
-  onDestroy(() => {
-    // Stop any ongoing call
-    stop?.raise({origin: 'ui-component', cause: 'destroy'});
-
-    // Stop capturing
-    localDevicesGuard
-      .with((store) => {
-        const devices = store.get();
-        devices.microphone?.track.stop();
-        devices.camera?.track.stop();
-      }, 'stop')
-      .catch(assertUnreachable);
-  });
+  const dispatch = createEventDispatcher<{
+    clicktoggleexpand: undefined;
+  }>();
 
   function handleChangeSizeContainerElement(
     event: CustomEvent<{entries: ResizeObserverEntry[]}>,
@@ -140,6 +130,16 @@
     }).catch((error) => {
       log.error(`Unable to select video device ${device.label}: ${error}`);
     });
+  }
+
+  function handleKeydown(event: KeyboardEvent): void {
+    if (event.repeat) {
+      return;
+    }
+
+    if (isExpanded && event.key === 'Escape') {
+      dispatch('clicktoggleexpand');
+    }
   }
 
   function handleClickLeaveCall(): void {
@@ -461,6 +461,26 @@
     log.debug('Switching to chosen group call');
     start(conversation, 'join').catch(assertUnreachable);
   }
+
+  onMount(() => {
+    window.addEventListener('keydown', handleKeydown);
+
+    return () => window.removeEventListener('keydown', handleKeydown);
+  });
+
+  onDestroy(() => {
+    // Stop any ongoing call.
+    stop?.raise({origin: 'ui-component', cause: 'destroy'});
+
+    // Stop capturing.
+    localDevicesGuard
+      .with((localDevicesStore) => {
+        const devices = localDevicesStore.get();
+        devices.microphone?.track.stop();
+        devices.camera?.track.stop();
+      }, 'stop')
+      .catch(assertUnreachable);
+  });
 </script>
 
 <div
