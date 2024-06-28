@@ -191,16 +191,6 @@
         <span class="pills right">
           <div class="pill control">
             <MdIcon theme="Outlined">
-              {#if capture.camera === 'on'}
-                videocam
-              {:else}
-                videocam_off
-              {/if}
-            </MdIcon>
-          </div>
-
-          <div class="pill control">
-            <MdIcon theme="Outlined">
               {#if capture.microphone === 'on'}
                 mic
               {:else}
@@ -301,7 +291,7 @@
           padding: rem(4px) rem(8px);
           border-radius: rem(13px);
           color: white;
-          background-color: rgba(0, 0, 0, 0.8);
+          background-color: rgba(0, 0, 0, 0.25);
           backdrop-filter: blur(10px);
 
           &.control {
