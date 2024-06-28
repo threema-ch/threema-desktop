@@ -276,8 +276,6 @@
           color: white;
           background-color: rgb(38, 38, 38);
 
-          transition: 0.1s ease-out;
-
           &.enabled {
             background-color: rgb(25, 209, 84);
           }
@@ -333,8 +331,6 @@
 
             color: white;
             background-color: rgb(38, 38, 38);
-
-            transition: 0.1s ease-out;
 
             &:hover {
               cursor: pointer;
