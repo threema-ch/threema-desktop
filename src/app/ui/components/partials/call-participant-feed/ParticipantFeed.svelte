@@ -132,6 +132,7 @@
   data-camera-capture={capture.camera}
   data-camera-health={cameraHealth}
   data-layout={activity.layout}
+  data-type={type}
   on:changesize={handleChangeSize}
   on:intersectionenter={handleEnterOrExit}
   on:intersectionexit={handleEnterOrExit}
@@ -299,6 +300,12 @@
             padding: rem(4px);
           }
         }
+      }
+    }
+
+    &[data-type='local'] {
+      video {
+        transform: scale(-1, 1);
       }
     }
   }
