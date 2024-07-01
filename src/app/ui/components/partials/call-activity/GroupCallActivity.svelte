@@ -81,11 +81,6 @@
       containerLayout = (width ?? 0) < FEED_MIN_WIDTH_PX ? 'pocket' : 'regular';
     });
   }
-  $: {
-    if (containerLayout === 'pocket') {
-      setCameraCaptureState('off');
-    }
-  }
 
   const handleUpdateCameraSubscription = TIMER.debounce(
     (dimensions: Dimensions | undefined, participantId: 'local' | ParticipantId) => {

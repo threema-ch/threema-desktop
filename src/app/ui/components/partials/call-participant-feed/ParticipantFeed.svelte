@@ -65,14 +65,6 @@
     }
   }
 
-  $: {
-    if (isInViewport !== undefined && dimensions !== undefined) {
-      updateCameraSubscription(
-        activity.layout === 'regular' && isInViewport ? dimensions : undefined,
-      );
-    }
-  }
-
   function handleChangeSize(event: CustomEvent<{entries: ResizeObserverEntry[]}>): void {
     const entry: ResizeObserverEntry | undefined = event.detail.entries.at(0);
     if (entry === undefined) {
@@ -117,6 +109,10 @@
       };
       cameraHealth = track.muted ? 'stalled' : 'good';
     }
+  }
+
+  $: if (isInViewport !== undefined && dimensions !== undefined) {
+    updateCameraSubscription(isInViewport ? dimensions : undefined);
   }
 
   $: sizeObserverOptions = {
@@ -164,7 +160,11 @@
       {receiver}
       {services}
       size="md"
-    />
+    >
+      <div slot="overlay" class="video-container pocket">
+        <video bind:this={cameraVideoElement} autoplay disablepictureinpicture muted playsinline />
+      </div>
+    </ProfilePicture>
   {:else if activity.layout === 'regular'}
     <div class="video-container">
       <div class="placeholder" data-color={receiver.color}>
@@ -229,34 +229,47 @@
       display: block;
       width: 100%;
       aspect-ratio: 4 / 3;
-    }
 
-    .placeholder,
-    video {
-      position: absolute;
-      display: block;
-      width: 100%;
-      aspect-ratio: 4 / 3;
-    }
+      .placeholder,
+      video {
+        position: absolute;
+        display: block;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+      }
 
-    .placeholder {
-      display: flex;
-      place-items: center;
-      place-content: center;
-      padding-bottom: rem(8px);
+      video {
+        object-fit: cover;
+        object-position: center;
+      }
 
-      @each $color in map-get-req($config, profile-picture-colors) {
-        &[data-color='#{$color}'] {
-          color: var(--c-profile-picture-initials-#{$color}, default);
-          background-color: var(--c-profile-picture-background-#{$color}, default);
+      .placeholder {
+        display: flex;
+        place-items: center;
+        place-content: center;
+        padding-bottom: rem(8px);
+
+        @each $color in map-get-req($config, profile-picture-colors) {
+          &[data-color='#{$color}'] {
+            color: var(--c-profile-picture-initials-#{$color}, default);
+            background-color: var(--c-profile-picture-background-#{$color}, default);
+          }
         }
       }
     }
 
-    video {
-      object-fit: cover;
-      object-position: center;
+    .video-container.pocket {
+      width: 100%;
+      height: 100%;
+      border-radius: rem(24px);
+      overflow: hidden;
+      aspect-ratio: 1 / 1;
+
+      video {
+        aspect-ratio: 1 / 1;
+      }
     }
+
     &[data-camera-capture='off'],
     &[data-camera-health='stalled'] {
       video {

@@ -1,6 +1,5 @@
 <!--
-  @component 
-  Renders an avatar (an image, or initials used as a fallback).
+  @component Renders an avatar (an image, or initials used as a fallback).
 -->
 <script lang="ts">
   import type {AvatarProps} from '~/app/ui/components/atoms/avatar/props';
@@ -159,6 +158,12 @@
 
   <RadialExclusionMaskProvider cutouts={getCutouts(charms)}>
     <span class="avatar" data-color={color}>
+      {#if $$slots.overlay}
+        <span class="overlay">
+          <slot name="overlay" />
+        </span>
+      {/if}
+
       <LazyImage
         {byteStore}
         constraints={{
@@ -239,6 +244,15 @@
           color: var(--c-profile-picture-initials-#{$color}, default);
           background-color: var(--c-profile-picture-background-#{$color}, default);
         }
+      }
+
+      .overlay {
+        position: absolute;
+        display: block;
+        width: var($-temp-vars, --c-t-size);
+        height: var($-temp-vars, --c-t-size);
+        top: 0;
+        left: 0;
       }
 
       .initials {

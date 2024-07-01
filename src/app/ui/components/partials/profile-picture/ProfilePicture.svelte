@@ -194,4 +194,6 @@
   {isFocusable}
   size={getAvatarSizePxForSize(size)}
   on:click
-/>
+>
+  <slot name="overlay" slot="overlay" />
+</Avatar>
