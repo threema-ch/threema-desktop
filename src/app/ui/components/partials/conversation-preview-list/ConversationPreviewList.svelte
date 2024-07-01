@@ -110,6 +110,7 @@
     list-style-type: none;
     margin: 0;
     padding: 0;
+    min-height: 100%;
     max-width: 100%;
   }
 </style>
