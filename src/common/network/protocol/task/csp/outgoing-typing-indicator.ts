@@ -44,7 +44,7 @@ export class OutgoingTypingIndicatorTask<TReceiver extends Contact>
             encoder: structbuf.bridge.encoder(structbuf.csp.e2e.TypingIndicator, {
                 isTyping,
             }),
-            cspMessageFlags: CspMessageFlags.none(),
+            cspMessageFlags: CspMessageFlags.fromPartial({dontQueue: true, dontAck: true}),
             messageId: randomMessageId(this._services.crypto),
             createdAt: new Date(),
             allowUserProfileDistribution: false,
