@@ -211,10 +211,13 @@
   @use 'component' as *;
 
   .container {
+    flex: 0 0 auto;
+
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
+
     position: relative;
     width: 100%;
     border-radius: rem(10px);

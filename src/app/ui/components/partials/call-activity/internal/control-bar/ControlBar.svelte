@@ -23,7 +23,6 @@
 
   type $$Props = ControlBarProps;
 
-  export let container: $$Props['container'];
   export let currentAudioDeviceId: $$Props['currentAudioDeviceId'];
   export let currentVideoDeviceId: $$Props['currentVideoDeviceId'];
   export let isAudioEnabled: $$Props['isAudioEnabled'];
@@ -135,15 +134,14 @@
           bind:popover={videoDeviceSelectionPopover}
           anchorPoints={{
             reference: {
-              horizontal: 'left',
+              horizontal: 'right',
               vertical: 'top',
             },
             popover: {
-              horizontal: 'left',
+              horizontal: 'right',
               vertical: 'bottom',
             },
           }}
-          {container}
           flip={false}
           items={videoDeviceContextMenuItems}
           offset={{
@@ -192,15 +190,14 @@
           bind:popover={audioDeviceSelectionPopover}
           anchorPoints={{
             reference: {
-              horizontal: 'left',
+              horizontal: 'right',
               vertical: 'top',
             },
             popover: {
-              horizontal: 'left',
+              horizontal: 'right',
               vertical: 'bottom',
             },
           }}
-          {container}
           flip={false}
           items={audioDeviceContextMenuItems}
           offset={{
@@ -238,28 +235,23 @@
     flex: 1 1 auto;
 
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: space-between;
 
-    height: rem(64px);
+    height: rem(160px);
     max-width: rem(288px);
     background-color: none;
 
     .left,
     .right {
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       align-items: center;
       gap: rem(6px);
 
       .control {
         position: relative;
-
-        &.audio,
-        &.video {
-          display: none;
-        }
 
         .toggle {
           @extend %neutral-input;
@@ -274,7 +266,7 @@
           border-radius: 50%;
 
           color: white;
-          background-color: rgb(38, 38, 38);
+          background-color: rgb(5, 5, 5);
 
           &.enabled {
             background-color: rgb(25, 209, 84);
@@ -286,7 +278,7 @@
 
           &:hover {
             cursor: pointer;
-            background-color: rgb(29, 28, 28);
+            background-color: rgb(20, 20, 20);
 
             &.enabled {
               background-color: rgb(24, 181, 73);
@@ -299,7 +291,7 @@
 
           &:active {
             cursor: pointer;
-            background-color: rgb(23, 22, 22);
+            background-color: rgb(20, 20, 20);
 
             &.enabled {
               background-color: rgb(22, 164, 67);
@@ -321,20 +313,20 @@
             @extend %neutral-input;
 
             display: flex;
-            align-items: center;
-            justify-content: center;
+            place-items: center;
+            place-content: center;
 
-            padding: rem(2px);
-            font-size: rem(14px);
-            line-height: rem(14px);
+            padding: rem(2px) rem(2px) rem(3px) rem(3px);
+            font-size: rem(15px);
+            line-height: rem(15px);
             border-radius: 50%;
 
             color: white;
-            background-color: rgb(38, 38, 38);
+            background-color: rgb(5, 5, 5);
 
             &:hover {
               cursor: pointer;
-              background-color: rgb(29, 28, 28);
+              background-color: rgb(20, 20, 20);
             }
           }
         }
@@ -352,16 +344,38 @@
 
   @container activity (min-width: 256px) {
     .container {
+      flex-direction: row;
+
+      height: rem(64px);
       padding: rem(9px);
       background-color: rgb(10, 10, 10);
       border-radius: rem(32px);
 
       .left,
       .right {
+        flex-direction: row;
+
         .control {
-          &.audio,
-          &.video {
-            display: block;
+          .toggle {
+            background-color: rgb(38, 38, 38);
+
+            &:hover {
+              background-color: rgb(29, 28, 28);
+            }
+
+            &:active {
+              background-color: rgb(23, 22, 22);
+            }
+          }
+
+          .chooser {
+            .trigger {
+              background-color: rgb(38, 38, 38);
+
+              &:hover {
+                background-color: rgb(29, 28, 28);
+              }
+            }
           }
         }
       }

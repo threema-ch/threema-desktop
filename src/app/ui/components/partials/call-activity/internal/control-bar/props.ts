@@ -8,10 +8,6 @@ import type {
  */
 export interface ControlBarProps {
     /**
-     * Reference to the container element, e.g. for positioning popovers.
-     */
-    readonly container: HTMLElement;
-    /**
      * The `deviceId` of the currently active audio device.
      */
     readonly currentAudioDeviceId: string | undefined;

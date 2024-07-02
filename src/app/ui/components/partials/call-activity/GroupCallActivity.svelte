@@ -509,7 +509,6 @@
 
     <div class="footer">
       <ControlBar
-        container={feedContainerElement}
         currentAudioDeviceId={$localDevices.microphone?.track.getSettings().deviceId}
         currentVideoDeviceId={$localDevices.camera?.track.getSettings().deviceId}
         isAudioEnabled={$localDevices.microphone?.track.enabled ?? false}
@@ -532,10 +531,9 @@
 
   .container {
     display: grid;
-    overflow: hidden;
     grid-template:
       'top-bar' rem(64px)
-      'content' 1fr
+      'content' minmax(0, 1fr)
       / 100%;
 
     .top-bar {
@@ -546,25 +544,35 @@
     }
 
     .content {
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      justify-content: space-between;
+      grid-area: content;
+
+      display: grid;
+      grid-template:
+        'feeds' minmax(0, 1fr)
+        'footer' minmax(0, auto)
+        / 100%;
 
       position: relative;
-      overflow-y: auto;
 
       .feeds {
+        grid-area: feeds / feeds / footer / footer;
+
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: start;
         gap: rem(12px);
 
-        padding: var($-temp-vars, --c-t-feed-padding) 0;
+        overflow-y: auto;
+        padding: var($-temp-vars, --c-t-feed-padding) 0
+          calc(172px + var($-temp-vars, --c-t-feed-padding)) 0;
+        scroll-padding-bottom: calc(172px + var($-temp-vars, --c-t-feed-padding));
+        scrollbar-width: none;
       }
 
       .footer {
+        grid-area: footer;
+
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -575,31 +583,25 @@
         right: 0;
         bottom: 0;
 
-        padding: 0 rem(12px) rem(12px) rem(12px);
+        padding: 0 0 rem(12px);
 
         &::after {
           content: '';
+          pointer-events: none;
 
           position: fixed;
           z-index: -1;
-          background: linear-gradient(to top, var(--t-aside-background-color), transparent);
+          background: linear-gradient(
+            to top,
+            var(--t-aside-background-color) 0%,
+            var(--t-aside-background-color) 90%,
+            transparent 100%
+          );
           left: 0;
           right: 0;
           bottom: 0;
-          height: rem(104px);
+          height: calc(rem(172px) + var($-temp-vars, --c-t-feed-padding));
         }
-      }
-    }
-
-    &.expanded {
-      background-color: rgb(38, 38, 38);
-
-      .top-bar {
-        border-bottom: 1px solid transparent;
-      }
-
-      .content .footer::after {
-        background: none;
       }
     }
   }
@@ -610,6 +612,11 @@
     }
 
     .content {
+      grid-template:
+        'feeds' minmax(0, 1fr)
+        'footer' 88px
+        / 100%;
+
       .feeds {
         display: grid;
         grid-template-columns: repeat(1, 1fr);
@@ -617,10 +624,37 @@
         gap: rem(8px);
 
         padding: var($-temp-vars, --c-t-feed-padding);
+        padding-bottom: calc(12px + 64px + var($-temp-vars, --c-t-feed-padding));
+        scroll-padding-bottom: calc(12px + 64px + var($-temp-vars, --c-t-feed-padding));
       }
 
       .footer {
         padding: rem(12px);
+
+        &::after {
+          background: linear-gradient(
+            to top,
+            var(--t-aside-background-color) 0%,
+            var(--t-aside-background-color) 25%,
+            transparent 100%
+          );
+          height: rem(90px);
+        }
+      }
+    }
+  }
+
+  .container[data-layout='pocket'],
+  .container[data-layout='regular'] {
+    &.expanded {
+      background-color: rgb(38, 38, 38);
+
+      .top-bar {
+        border-bottom: 1px solid transparent;
+      }
+
+      .content .footer::after {
+        background: none;
       }
     }
   }
