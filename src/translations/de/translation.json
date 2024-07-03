@@ -92,7 +92,7 @@
     "action--delete-locally": "Auf diesem Gerät löschen",
     "label--title": "Nachricht löschen",
     "prose--delete-message": "Wollen Sie diese Nachricht wirklich löschen?",
-    "prose--delete-not-supported-partial": "Hinweis: Falls Sie \"{buttonText}\" wählen, wird diese Nachricht bei folgenden Gruppenmitgliedern nicht gelöscht: {names}{n, plural, =0 {.} other { und {n} weitere.}} Um gelöschte Nachrichten zu unterstützen, muss Threema auf die neueste Version aktualisiert werden."
+    "prose--delete-not-supported-partial": "Hinweis: Falls Sie «{buttonText}» wählen, wird die Nachricht bei folgenden Gruppenmitgliedern nicht gelöscht: {names}{n, plural, =0 {.} other { und {n} weitere.}} Um gelöschte Nachrichten zu unterstützen, müssen diese Kontakte Threema auf die neueste Version aktualisieren."
   },
   "dialog--device-cookie": {
     "label--close": "Ohne Geräte-Cookie fortfahren",
@@ -433,8 +433,8 @@
     "markup--chat-empty-state": "Dieser Chat ist mit Ihrem Mobilgerät verknüpft. <1/>Alle künftigen Nachrichten werden hier erscheinen.",
     "prose--edit-message": "Nachricht bearbeiten",
     "prose--edit-not-supported": "Diese Nachricht kann nicht bearbeitet werden, weil die App-Version des Empfängers diese Funktion nicht unterstützt.",
-    "prose--edit-not-supported-group": "Diese Nachricht kann nicht bearbeitet werden, weil kein Gruppenmitglied diese Funktion unterstützt.",
-    "prose--edit-not-supported-partial": "Folgende Gruppenmitglieder werden Ihre Änderungen nicht sehen: {names}{n, plural, =0 {.} other { und {n} weitere.}} Um bearbeitete Nachrichten zu sehen, muss Threema auf die neueste Version aktualisiert werden.",
+    "prose--edit-not-supported-group": "Diese Nachricht kann nicht bearbeitet werden, weil kein Gruppenmitglied eine App-Version hat, die diese Funktion unterstützt.",
+    "prose--edit-not-supported-partial": "Folgende Gruppenmitglieder werden Ihre Änderungen nicht sehen: {names}{n, plural, =0 {.} other { und {n} weitere.}} Um bearbeitete Nachrichten zu sehen, müssen diese Kontakte Threema auf die neueste Version aktualisieren.",
     "prose--message-deleted": "Diese Nachricht wurde gelöscht",
     "prose--message-edited": "Bearbeitet",
     "prose--notification-deleted-message": "Diese Nachricht wurde gelöscht",
