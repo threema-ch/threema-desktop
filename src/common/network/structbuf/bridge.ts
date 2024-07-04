@@ -9,6 +9,7 @@ import type {
     u8,
     u53,
     WeakOpaque,
+    ReadonlyUint8Array,
 } from '~/common/types';
 import {bytePadPkcs7} from '~/common/utils/byte';
 
@@ -73,15 +74,16 @@ export function byteEncoder<
 export function pkcs7PaddedEncoder(
     crypto: Pick<CryptoBackend, 'randomBytes'>,
     minTotalLength: u8,
-    dataOrEncoder: Uint8Array | ByteLengthEncoder,
+    dataOrEncoder: ReadonlyUint8Array | ByteLengthEncoder,
 ): ByteLengthEncoder {
     let paddingLength: u53 | undefined;
+    const dataOrEncoder_ = dataOrEncoder as Uint8Array | ByteLengthEncoder;
     return {
         byteLength: () => {
             const byteLength =
-                dataOrEncoder instanceof Uint8Array
-                    ? dataOrEncoder.byteLength
-                    : dataOrEncoder.byteLength();
+                dataOrEncoder_ instanceof Uint8Array
+                    ? dataOrEncoder_.byteLength
+                    : dataOrEncoder_.byteLength();
             paddingLength ??= randomPkcs7PaddingLength(crypto, {
                 currentLength: byteLength,
                 minTotalLength,
@@ -90,11 +92,11 @@ export function pkcs7PaddedEncoder(
         },
         encode: (array) => {
             let offset;
-            if (dataOrEncoder instanceof Uint8Array) {
-                array.set(dataOrEncoder);
-                offset = dataOrEncoder.byteLength;
+            if (dataOrEncoder_ instanceof Uint8Array) {
+                array.set(dataOrEncoder_);
+                offset = dataOrEncoder_.byteLength;
             } else {
-                offset = dataOrEncoder.encode(array).byteLength;
+                offset = dataOrEncoder_.encode(array).byteLength;
             }
             paddingLength ??= randomPkcs7PaddingLength(crypto, {
                 currentLength: offset,

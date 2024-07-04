@@ -48,7 +48,7 @@ import {
     type GroupMessageReflectSetting,
     type MessageId,
 } from '~/common/network/types';
-import type {u53} from '~/common/types';
+import type {ReadonlyUint8Array, u53} from '~/common/types';
 import {assert, assertUnreachable, debugAssert, unreachable, unwrap} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
@@ -346,7 +346,7 @@ export class OutgoingCspMessageTask<
         handle: InternalActiveTaskCodecHandle,
         receivers: Set<Contact>,
         preparedNonces: NonceList,
-        messageBytes: Uint8Array,
+        messageBytes: ReadonlyUint8Array,
     ): Promise<u53> {
         const {device, crypto, model} = this._services;
         const {createdAt, messageId, type} = this._messageProperties;
@@ -463,26 +463,28 @@ export class OutgoingCspMessageTask<
             });
 
             // Wait for message ack
-            await handle.read((message) => {
-                // Check if the message type matches
-                if (message.type !== D2mPayloadType.PROXY) {
-                    return MessageFilterInstruction.BYPASS_OR_BACKLOG;
-                }
-                if (message.payload.type !== CspPayloadType.OUTGOING_MESSAGE_ACK) {
-                    return MessageFilterInstruction.BYPASS_OR_BACKLOG;
-                }
-                // Check if the message ID matches
-                if (message.payload.payload.messageId !== messageId) {
-                    return MessageFilterInstruction.BYPASS_OR_BACKLOG;
-                }
+            if (!this._messageProperties.cspMessageFlags.dontAck) {
+                await handle.read((message) => {
+                    // Check if the message type matches
+                    if (message.type !== D2mPayloadType.PROXY) {
+                        return MessageFilterInstruction.BYPASS_OR_BACKLOG;
+                    }
+                    if (message.payload.type !== CspPayloadType.OUTGOING_MESSAGE_ACK) {
+                        return MessageFilterInstruction.BYPASS_OR_BACKLOG;
+                    }
+                    // Check if the message ID matches
+                    if (message.payload.payload.messageId !== messageId) {
+                        return MessageFilterInstruction.BYPASS_OR_BACKLOG;
+                    }
 
-                // Check if the receiver equals our current message
-                if (!byteEquals(message.payload.payload.identity, receiverIdentity)) {
-                    return MessageFilterInstruction.BYPASS_OR_BACKLOG;
-                }
+                    // Check if the receiver equals our current message
+                    if (!byteEquals(message.payload.payload.identity, receiverIdentity)) {
+                        return MessageFilterInstruction.BYPASS_OR_BACKLOG;
+                    }
 
-                return MessageFilterInstruction.ACCEPT;
-            });
+                    return MessageFilterInstruction.ACCEPT;
+                });
+            }
             sentMessagesCount++;
         }
 
