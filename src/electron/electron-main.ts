@@ -916,6 +916,9 @@ function main(
         });
 
         window.webContents.on('context-menu', (event, params) => {
+            if (process.platform !== 'darwin') {
+                return;
+            }
             const menu = new electron.Menu();
 
             // Do nothing if we don't have a window
