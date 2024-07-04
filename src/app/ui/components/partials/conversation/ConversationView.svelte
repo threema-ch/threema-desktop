@@ -879,9 +879,11 @@
 {:else if modalState.type === 'media-compose'}
   <MediaMessage {...modalState.props} on:close={handleCloseModal} on:clicksend={handleClickSend} />
 {:else if modalState.type === 'delete-message'}
+  {@const receiver = $viewModelStore?.receiver}
   <DeleteMessageModal
     message={{...modalState.props}}
     featureSupport={receiverSupportsDeletedMessages}
+    showDeleteForEveryoneButton={!(receiver?.type === 'group' && receiver.isLeft)}
     on:close={handleCloseModal}
     on:clickdeletelocally={handleClickDeleteMessageLocally}
     on:clickdeleteforeveryone={handleClickDeleteMessageForEveryone}

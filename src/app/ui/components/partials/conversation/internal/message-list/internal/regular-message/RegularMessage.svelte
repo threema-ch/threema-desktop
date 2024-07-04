@@ -233,6 +233,8 @@
       direction === 'outbound' &&
       status.deleted === undefined &&
       status.sent !== undefined &&
+      // In left group chats, we do not show the edit button
+      !(conversation.receiver.type === 'group' && conversation.receiver.isLeft) &&
       // For audio we don't support edits yet.
       !(file !== undefined && file.type === 'audio') &&
       Date.now() - status.sent.at.getTime() < EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES * 60000,

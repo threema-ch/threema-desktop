@@ -302,7 +302,10 @@ function supportsFeature(
                 }
             }
 
-            if (notSupportedNames.length === memberIdentities.length + 1) {
+            if (
+                (creator === 'me' && notSupportedNames.length === memberIdentities.length) ||
+                (creator !== 'me' && notSupportedNames.length === memberIdentities.length + 1)
+            ) {
                 return {supported: 'none'};
             } else if (notSupportedNames.length === 0) {
                 return {supported: 'all'};

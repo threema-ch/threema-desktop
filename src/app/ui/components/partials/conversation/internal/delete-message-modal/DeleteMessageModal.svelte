@@ -24,6 +24,7 @@
 
   export let message: $$Props['message'];
   export let featureSupport: $$Props['featureSupport'];
+  export let showDeleteForEveryoneButton: $$Props['showDeleteForEveryoneButton'] = true;
 
   let modalComponent: SvelteNullableBinding<Modal> = null;
 
@@ -60,7 +61,7 @@
 
   $: buttons = getModalButtons(
     message,
-    featureSupport.supported,
+    featureSupport.supported && showDeleteForEveryoneButton,
     handleClickDeleteLocally,
     handleClickDeleteForEveryone,
     $i18n,
@@ -98,7 +99,7 @@
           )}
         />
       </p>
-      {#if deleteForEveryoneSupported(message, featureSupport.supported) && featureSupport.supported && featureSupport.notSupportedNames.length > 0}
+      {#if showDeleteForEveryoneButton && deleteForEveryoneSupported(message, featureSupport.supported) && featureSupport.supported && featureSupport.notSupportedNames.length > 0}
         <p>
           <Text
             text={$i18n.t(

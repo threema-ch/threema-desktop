@@ -4,4 +4,8 @@ import type {FeatureSupport} from '~/common/viewmodel/conversation/main/store/ty
 export interface DeleteMessageModalProps {
     readonly message: AnyMessageListMessage;
     readonly featureSupport: FeatureSupport;
+    /**
+     * If set to false, delete for everyone is explicitly turned off. Defaults to true.
+     */
+    readonly showDeleteForEveryoneButton: boolean;
 }
