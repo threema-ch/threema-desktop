@@ -1135,11 +1135,8 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
             offset: u53;
         },
     ) => {
-        message: DbGet<DbAnyMessage>;
-        lookup: {
-            groupReceiverLookup: DbGroupUid | undefined;
-            contactReceiverLookup: DbContactUid | undefined;
-        };
+        readonly message: DbGet<DbAnyMessage>;
+        readonly receiverLookup: DbReceiverLookup;
     }[];
 
     /**
@@ -1157,12 +1154,12 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     })[];
 
     /**
-     * Retrieve a limited and offset list of status messages.
+     * Retrieve a limited and offset list of status messages and their corresponding lookups.
      */
-    readonly getStatusMessages: (chunkParameters?: {
-        limit: u53;
-        offset: u53;
-    }) => DbAnyStatusMessage[];
+    readonly getStatusMessages: (chunkParameters?: {limit: u53; offset: u53}) => {
+        readonly message: DbAnyStatusMessage;
+        readonly receiverLookup: DbReceiverLookup;
+    }[];
 
     /**
      * Returns the text/caption of a message.

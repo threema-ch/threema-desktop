@@ -3359,48 +3359,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         );
     }
 
-    /** @inheritdoc */
-    public getMessagesByContactIdentities(
-        contactIdentities: IdentityString[],
-        chunkParameters?: {
-            limit: u53;
-            offset: u53;
-        },
-    ): {
-        message: DbGet<DbAnyMessage>;
-        lookup: {
-            groupReceiverLookup: DbGroupUid | undefined;
-            contactReceiverLookup: DbContactUid | undefined;
-        };
-    }[] {
-        const contactUids = sync(
-            this._db
-                .selectFrom(tContact)
-                .selectOneColumn(tContact.uid)
-                .where(tContact.identity.in(contactIdentities))
-                .executeSelectMany(),
-        );
-        const common = sync(
-            this._getCommonMessageSelectorWithConversation()
-                .where(
-                    tMessage.senderContactUid
-                        .in(contactUids)
-                        .or(tMessage.senderContactUid.isNull()),
-                )
-                .limitIfValue(chunkParameters?.limit)
-                .offsetIfValue(chunkParameters?.offset)
-                .executeSelectMany(),
-        );
-
-        return common.map((c) => ({
-            message: this._getMessage(c),
-            lookup: {
-                groupReceiverLookup: c.groupReceiverLookup,
-                contactReceiverLookup: c.contactReceiverLookup,
-            },
-        }));
-    }
-
     private _getMessageText(uid: DbMessageUid): string {
         return sync(
             this._db
@@ -3421,6 +3379,67 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     .executeSelectOne(),
             ) ?? undefined
         );
+    }
+
+    private _getReceiverLookup({
+        contactReceiverLookup,
+        groupReceiverLookup,
+    }: {
+        readonly contactReceiverLookup?: DbContactUid;
+        readonly groupReceiverLookup?: DbGroupUid;
+    }): DbReceiverLookup {
+        let receiverLookup: DbReceiverLookup | undefined = undefined;
+        if (contactReceiverLookup !== undefined) {
+            receiverLookup = {
+                type: ReceiverType.CONTACT,
+                uid: contactReceiverLookup,
+            };
+        } else if (groupReceiverLookup !== undefined) {
+            receiverLookup = {
+                type: ReceiverType.GROUP,
+                uid: groupReceiverLookup,
+            };
+        }
+        // TODO(DESK-236): Implement distribution list.
+        assert(receiverLookup !== undefined, 'Unexpected message without any associated receiver');
+
+        return receiverLookup;
+    }
+
+    /** @inheritdoc */
+    public getMessagesByContactIdentities(
+        contactIdentities: IdentityString[],
+        chunkParameters?: {
+            limit: u53;
+            offset: u53;
+        },
+    ): {
+        readonly message: DbGet<DbAnyMessage>;
+        readonly receiverLookup: DbReceiverLookup;
+    }[] {
+        const contactUids = sync(
+            this._db
+                .selectFrom(tContact)
+                .selectOneColumn(tContact.uid)
+                .where(tContact.identity.in(contactIdentities))
+                .executeSelectMany(),
+        );
+        const results = sync(
+            this._getCommonMessageSelectorWithConversation()
+                .where(
+                    tMessage.senderContactUid
+                        .in(contactUids)
+                        .or(tMessage.senderContactUid.isNull()),
+                )
+                .limitIfValue(chunkParameters?.limit)
+                .offsetIfValue(chunkParameters?.offset)
+                .executeSelectMany(),
+        );
+
+        return results.map((messageCommon) => ({
+            message: this._getMessage(messageCommon),
+            receiverLookup: this._getReceiverLookup(messageCommon),
+        }));
     }
 
     /** @inheritdoc*/
@@ -3445,10 +3464,15 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public getStatusMessages(chunkParameters?: {limit: u53; offset: u53}): DbAnyStatusMessage[] {
-        const statusMessages = sync(
+    public getStatusMessages(chunkParameters?: {limit: u53; offset: u53}): {
+        message: DbAnyStatusMessage;
+        receiverLookup: DbReceiverLookup;
+    }[] {
+        const results = sync(
             this._db
                 .selectFrom(tStatusMessage)
+                .innerJoin(tConversation)
+                .on(tStatusMessage.conversationUid.equals(tConversation.uid))
                 .select({
                     type: tStatusMessage.type,
                     conversationUid: tStatusMessage.conversationUid,
@@ -3457,15 +3481,20 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     statusBytes: tStatusMessage.statusBytes,
                     uid: tStatusMessage.uid,
                     ordinal: tStatusMessage.createdAtTimestamp,
+                    groupReceiverLookup: tConversation.groupUid,
+                    contactReceiverLookup: tConversation.contactUid,
                 })
                 .limitIfValue(chunkParameters?.limit)
                 .offsetIfValue(chunkParameters?.offset)
                 .executeSelectMany(),
         );
 
-        return statusMessages.map((statusMessage) => ({
-            ...statusMessage,
-            id: statusMessageUidToStatusMessageId(statusMessage.uid),
+        return results.map((statusMessageCommon) => ({
+            message: {
+                ...statusMessageCommon,
+                id: statusMessageUidToStatusMessageId(statusMessageCommon.uid),
+            },
+            receiverLookup: this._getReceiverLookup(statusMessageCommon),
         }));
     }
 
@@ -3512,6 +3541,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             ) ?? undefined
         );
     }
+
     /** @inheritdoc */
     public getGroupConversationUidByCreatorIdentity(
         creator: IdentityString | undefined,

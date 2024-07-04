@@ -7,6 +7,7 @@ import type {
     DbMessageHistory,
     DbMessageReaction,
     DbMessageUid,
+    DbReceiverLookup,
     RawDatabaseKey,
 } from '~/common/db';
 import type {FactoriesForBackend} from '~/common/dom/backend';
@@ -119,7 +120,6 @@ export async function transferOldMessages(
 
         for (const message of messages) {
             let uidOfContactInNewDb: DbContactUid | 'me' | undefined = undefined;
-            let uidOfConversationInNewDb: DbConversationUid | undefined = undefined;
             if (message.message?.senderContactUid !== undefined) {
                 const messageSenderIdentity = oldDbUidToIdentityMap.get(
                     message.message.senderContactUid,
@@ -134,35 +134,12 @@ export async function transferOldMessages(
                 uidOfContactInNewDb = 'me';
             }
 
-            if (message.lookup.contactReceiverLookup !== undefined) {
-                // The message was sent in a single chat
-                const identity = oldDbUidToIdentityMap.get(message.lookup.contactReceiverLookup);
-                if (identity === undefined) {
-                    continue;
-                }
-                uidOfConversationInNewDb = db.getContactConversationUidByIdentity(identity);
-            } else if (message.lookup.groupReceiverLookup !== undefined) {
-                // The message was sent in a group chat
-                const group = oldDb.getGroupByUid(message.lookup.groupReceiverLookup);
-                if (group === undefined) {
-                    continue;
-                }
-                let creatorIdentity = undefined;
-                if (group.creatorUid !== undefined) {
-                    creatorIdentity = oldDb.getContactByUid(group.creatorUid)?.identity;
-                    assert(
-                        creatorIdentity !== undefined,
-                        'Cannot have a group in old database with an unknown creator',
-                    );
-                }
-                uidOfConversationInNewDb = db.getGroupConversationUidByCreatorIdentity(
-                    creatorIdentity,
-                    group.groupId,
-                );
-            } else {
-                // TODO(DESK-236)
-                continue;
-            }
+            const uidOfConversationInNewDb = getNewConversationUid(
+                oldDb,
+                db,
+                message.receiverLookup,
+                oldDbUidToIdentityMap,
+            );
 
             // If we were not able to find the conversation or the contact in the new db, don't
             // restore the message.
@@ -185,6 +162,7 @@ export async function transferOldMessages(
                     conversationUid: uidOfConversationInNewDb,
                 };
 
+                /* eslint-disable max-depth */
                 let messageUid: DbMessageUid;
                 switch (dbMessage.type) {
                     case 'text':
@@ -238,6 +216,7 @@ export async function transferOldMessages(
                     default:
                         unreachable(dbMessage);
                 }
+                /* eslint-enable max-depth */
 
                 if (innerMessage.type !== MessageType.DELETED) {
                     restoreReactionsAndHistory(
@@ -261,14 +240,28 @@ export async function transferOldMessages(
         statusMessages = oldDb.getStatusMessages({limit: chunkSize, offset});
         offset += chunkSize;
         for (const statusMessage of statusMessages) {
-            const newConversationUid = oldToNewConversationUidMap.get(
-                statusMessage.conversationUid,
+            let newConversationUid = oldToNewConversationUidMap.get(
+                statusMessage.message.conversationUid,
             );
-            // The conversation does not exist anymore
+            // The conversation does not have a standard message.
             if (newConversationUid === undefined) {
-                continue;
+                newConversationUid = getNewConversationUid(
+                    oldDb,
+                    db,
+                    statusMessage.receiverLookup,
+                    oldDbUidToIdentityMap,
+                );
+
+                if (newConversationUid === undefined) {
+                    continue;
+                }
+
+                oldToNewConversationUidMap.set(
+                    statusMessage.message.conversationUid,
+                    newConversationUid,
+                );
             }
-            db.createStatusMessage({...statusMessage, conversationUid: newConversationUid});
+            db.createStatusMessage({...statusMessage.message, conversationUid: newConversationUid});
         }
     } while (statusMessages.length !== 0);
 
@@ -501,4 +494,57 @@ function testConsistency(newDatabase: DatabaseBackend, oldDatabase: DatabaseBack
             );
         }
     } while (messages.length !== 0);
+}
+
+/**
+ * Find the {@link DbConversationUid} in `db` that corresponds to a lookup in `oldDb`.
+ *
+ * The parameter oldDbUidToIdentityMap provides a direct lookup from {@link DbContactUid} to
+ * {@link IdentityString} in `oldDb` to simplify the lookup in single chats.
+ *
+ * Returns the corresponding {@link DbConversationUid} in `db` or undefined if the corresponding
+ * conversation could not be found.
+ */
+function getNewConversationUid(
+    oldDb: DatabaseBackend,
+    db: DatabaseBackend,
+    receiverLookup: DbReceiverLookup,
+    oldDbUidToIdentityMap: Map<DbContactUid, IdentityString>,
+): DbConversationUid | undefined {
+    switch (receiverLookup.type) {
+        case ReceiverType.CONTACT: {
+            // The message was sent in a single chat.
+            const identity = oldDbUidToIdentityMap.get(receiverLookup.uid);
+            if (identity === undefined) {
+                return undefined;
+            }
+
+            return db.getContactConversationUidByIdentity(identity);
+        }
+
+        case ReceiverType.DISTRIBUTION_LIST:
+            // TODO(DESK-236): Implement distribution list.
+            throw new Error('TODO(DESK-236): Implement distribution list');
+
+        case ReceiverType.GROUP: {
+            // The message was sent in a group chat
+            const group = oldDb.getGroupByUid(receiverLookup.uid);
+            if (group === undefined) {
+                return undefined;
+            }
+            let creatorIdentity = undefined;
+            if (group.creatorUid !== undefined) {
+                creatorIdentity = oldDb.getContactByUid(group.creatorUid)?.identity;
+                assert(
+                    creatorIdentity !== undefined,
+                    'Cannot have a group in old database with an unknown creator',
+                );
+            }
+
+            return db.getGroupConversationUidByCreatorIdentity(creatorIdentity, group.groupId);
+        }
+
+        default:
+            return unreachable(receiverLookup);
+    }
 }
