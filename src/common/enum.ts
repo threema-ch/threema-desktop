@@ -1248,6 +1248,8 @@ export namespace MessageTypeUtils {
     }
 }
 export namespace StatusMessageType {
+    export const CHAT_RESTORED = 'chat-restored';
+    export type CHAT_RESTORED = typeof CHAT_RESTORED;
     export const GROUP_MEMBER_CHANGED = 'group-member-changed';
     export type GROUP_MEMBER_CHANGED = typeof GROUP_MEMBER_CHANGED;
     export const GROUP_NAME_CHANGED = 'group-name-changed';
@@ -1268,6 +1270,7 @@ export namespace StatusMessageType {
 export type StatusMessageType = (typeof StatusMessageType)[keyof typeof StatusMessageType];
 export namespace StatusMessageTypeUtils {
     export const ALL: ReadonlySet<StatusMessageType> = new Set([
+        StatusMessageType.CHAT_RESTORED,
         StatusMessageType.GROUP_MEMBER_CHANGED,
         StatusMessageType.GROUP_NAME_CHANGED,
         StatusMessageType.GROUP_CALL_STARTED,
@@ -1289,6 +1292,7 @@ export namespace StatusMessageTypeUtils {
         return typeof value === 'string' && (ALL as ReadonlySet<string>).has(value);
     }
     export const NAME_OF = {
+        [StatusMessageType.CHAT_RESTORED]: 'CHAT_RESTORED',
         [StatusMessageType.GROUP_MEMBER_CHANGED]: 'GROUP_MEMBER_CHANGED',
         [StatusMessageType.GROUP_NAME_CHANGED]: 'GROUP_NAME_CHANGED',
         [StatusMessageType.GROUP_CALL_STARTED]: 'GROUP_CALL_STARTED',

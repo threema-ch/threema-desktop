@@ -1,6 +1,9 @@
 /* eslint-disable */
 import _m0 from "protobufjs/minimal";
 
+export interface ChatRestored {
+}
+
 export interface GroupMemberChanged {
   /** IDs that were added to the group (including the user). */
   added: string[];
@@ -40,6 +43,32 @@ export interface GroupCallEnded {
    */
   startedBy: string;
 }
+
+function createBaseChatRestored(): ChatRestored {
+  return {};
+}
+
+export const ChatRestored = {
+  encode(_: ChatRestored, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ChatRestored {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseChatRestored();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+};
 
 function createBaseGroupMemberChanged(): GroupMemberChanged {
   return { added: [], removed: [] };

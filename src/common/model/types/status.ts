@@ -10,6 +10,9 @@ import type {ProxyMarked} from '~/common/utils/endpoint';
 
 /** Values associated to status messages. */
 export interface StatusMessageValues {
+    /** Status message that indicates that a chat was restored. */
+    [StatusMessageType.CHAT_RESTORED]: object;
+
     /** Status message that indicates a change in group members. */
     [StatusMessageType.GROUP_MEMBER_CHANGED]: {
         /** IDs that were added to the group (including the user). */

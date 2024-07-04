@@ -1,5 +1,8 @@
 syntax = "proto3";
 
+message ChatRestored {
+}
+
 message GroupMemberChanged {
   // IDs that were added to the group (including the user).
   repeated string added = 1;

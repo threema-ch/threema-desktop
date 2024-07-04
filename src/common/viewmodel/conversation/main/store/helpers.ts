@@ -150,6 +150,7 @@ export function getMessageSetStore(
                         messageModelStore,
                     );
 
+                case StatusMessageType.CHAT_RESTORED:
                 case StatusMessageType.GROUP_CALL_ENDED:
                 case StatusMessageType.GROUP_CALL_STARTED:
                 case StatusMessageType.GROUP_MEMBER_CHANGED:

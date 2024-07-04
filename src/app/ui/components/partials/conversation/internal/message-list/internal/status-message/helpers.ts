@@ -38,6 +38,12 @@ export function getStatusMessageTextForStatus(
     i18n: I18nType,
 ): string {
     switch (status.type) {
+        case StatusMessageType.CHAT_RESTORED: {
+            return i18n.t(
+                'status.prose--chat-restored',
+                'This device was relinked. Future messages will appear below.',
+            );
+        }
         case StatusMessageType.GROUP_MEMBER_CHANGED: {
             return i18n.t(
                 'status.prose--group-member-changed',

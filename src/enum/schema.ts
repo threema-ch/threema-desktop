@@ -476,6 +476,7 @@ export enum MessageType {
  * @generate name convert
  */
 export enum StatusMessageType {
+    CHAT_RESTORED = 'chat-restored',
     GROUP_MEMBER_CHANGED = 'group-member-changed',
     GROUP_NAME_CHANGED = 'group-name-changed',
     GROUP_CALL_STARTED = 'group-call-started',

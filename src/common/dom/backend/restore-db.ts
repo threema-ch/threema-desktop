@@ -10,7 +10,7 @@ import type {
     RawDatabaseKey,
 } from '~/common/db';
 import type {FactoriesForBackend} from '~/common/dom/backend';
-import {MessageType, ReceiverType} from '~/common/enum';
+import {MessageType, ReceiverType, StatusMessageType} from '~/common/enum';
 import {canCopyFiles, copyFiles, type FileId} from '~/common/file-storage';
 import type {ServicesForKeyStorage} from '~/common/key-storage';
 import type {Logger} from '~/common/logging';
@@ -276,6 +276,16 @@ export async function transferOldMessages(
         log.debug('Testing database consistency');
         testConsistency(db, oldDb);
     }
+
+    // For all conversations that are non-empty, add a status message.
+    new Set(oldToNewConversationUidMap.values()).forEach((conversationUid) => {
+        const conversation = model.conversations.getByUid(conversationUid);
+        conversation?.get().controller.createStatusMessage({
+            type: StatusMessageType.CHAT_RESTORED,
+            createdAt: new Date(),
+            value: {},
+        });
+    });
 
     // Refresh the cache to directly display the conversations again.
     model.conversations.refreshCache();

@@ -45,6 +45,11 @@ export function getStatusMessageStatus(
                 type: statusMessageModel.type,
             };
 
+        case StatusMessageType.CHAT_RESTORED:
+            return {
+                type: statusMessageModel.type,
+            };
+
         default:
             return unreachable(statusMessageModel);
     }

@@ -3,6 +3,9 @@ import type {StatusMessageId} from '~/common/network/types';
 import type {u53} from '~/common/types';
 
 interface StatusMessageStatusMap {
+    /** Status message that indicates that a chat was restored. */
+    [StatusMessageType.CHAT_RESTORED]: object;
+
     /** Status message that indicates a change in group members. */
     [StatusMessageType.GROUP_MEMBER_CHANGED]: {
         /** Display names of members that were added to the group (including the user). */

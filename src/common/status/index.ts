@@ -1,5 +1,6 @@
 import {StatusMessageType} from '~/common/enum';
 import type {StatusMessageValues} from '~/common/model/types/status';
+import {CHAT_RESTORED_CODEC} from '~/common/status/chat-restored';
 import {GROUP_CALL_STARTED_CODEC, GROUP_CALL_ENDED_CODEC} from '~/common/status/group-call';
 import {GROUP_MEMBER_CHANGED_CODEC} from '~/common/status/group-member-changed';
 import {GROUP_NAME_CHANGED_CODEC} from '~/common/status/group-name-changed';
@@ -14,6 +15,7 @@ export interface StatusMessagesCodec<TType extends StatusMessageType> {
 export const STATUS_CODEC: {
     readonly [TType in StatusMessageType]: StatusMessagesCodec<TType>;
 } = {
+    [StatusMessageType.CHAT_RESTORED]: CHAT_RESTORED_CODEC,
     [StatusMessageType.GROUP_MEMBER_CHANGED]: GROUP_MEMBER_CHANGED_CODEC,
     [StatusMessageType.GROUP_NAME_CHANGED]: GROUP_NAME_CHANGED_CODEC,
     [StatusMessageType.GROUP_CALL_STARTED]: GROUP_CALL_STARTED_CODEC,

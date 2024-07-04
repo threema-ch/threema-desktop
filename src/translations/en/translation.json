@@ -556,6 +556,7 @@
     "prose--subtitle": "Password"
   },
   "status": {
+    "prose--chat-restored": "This device was relinked. Future messages will appear below.",
     "prose--group-call-ended": "Group call has ended",
     "prose--group-call-started": "{startedBy} has started a group call",
     "prose--group-created-name": "Group created with name \"{name}\"",

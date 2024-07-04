@@ -1,0 +1,1 @@
+-- Empty Migration (we only act on the down migration)
