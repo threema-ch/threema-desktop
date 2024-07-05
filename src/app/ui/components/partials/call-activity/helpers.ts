@@ -85,6 +85,7 @@ async function selectMicrophoneDeviceInternal(
 
 export async function selectMicrophoneDevice(
     guard: CaptureDevicesGuard,
+    call: AugmentedOngoingGroupCallViewModelBundle | undefined,
     target: {
         readonly device: 'default' | {readonly deviceId: string};
         readonly state: 'on' | 'off';
@@ -95,7 +96,13 @@ export async function selectMicrophoneDevice(
             store.get().microphone?.track,
             target,
         );
-        store.update((devices) => ({...devices, microphone}));
+        await attachLocalDeviceAndAnnounceCaptureState(
+            guard,
+            call,
+            store,
+            'microphone',
+            microphone,
+        );
     }, 'select-microphone');
 }
 
@@ -131,6 +138,7 @@ async function selectCameraDeviceInternal(
 
 export async function selectCameraDevice(
     guard: CaptureDevicesGuard,
+    call: AugmentedOngoingGroupCallViewModelBundle | undefined,
     target: {
         readonly device: 'default' | {readonly deviceId: string};
         readonly facing: 'user' | 'environment';
@@ -139,7 +147,7 @@ export async function selectCameraDevice(
 ): Promise<void> {
     return await guard.with(async (store) => {
         const camera = await selectCameraDeviceInternal(store.get().camera?.track, target);
-        store.update((devices) => ({...devices, camera}));
+        await attachLocalDeviceAndAnnounceCaptureState(guard, call, store, 'camera', camera);
     }, 'select-camera');
 }
 
@@ -193,8 +201,7 @@ export async function selectInitialCaptureDevices(
  * - Applies a device state change to the device track.
  * - Announces a device state change to the call.
  *
- * IMPORTANT: MUST be called with the {@link CaptureDevicesGuard} lock held with context
- * 'attach'!
+ * IMPORTANT: MUST be called with the {@link CaptureDevicesGuard} lock held!
  */
 export async function attachLocalDeviceAndAnnounceCaptureState(
     guard: CaptureDevicesGuard,
@@ -208,7 +215,7 @@ export async function attachLocalDeviceAndAnnounceCaptureState(
           }
         | undefined,
 ): Promise<void> {
-    assert(guard.context === 'attach');
+    assert(guard.context !== undefined);
     const current = store.get()[kind];
 
     // Toggle capture state, if necessary
