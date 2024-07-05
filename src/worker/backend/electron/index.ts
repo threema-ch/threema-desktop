@@ -37,7 +37,7 @@ export async function run(): Promise<void> {
             self.removeEventListener('message', appPathListener);
 
             // We make sure that the data received is of the correct type by assertions, since
-            // the types specified above could fool us here.s
+            // the types specified above could fool us here.
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             const validatedMessage = INITIAL_MESSAGE_SCHEME.parse(data);
             resolve({
@@ -49,7 +49,7 @@ export async function run(): Promise<void> {
     });
 
     // Read electron settings
-    const electronSettings = loadElectronSettings(appPath, undefined);
+    const electronSettings = loadElectronSettings(appPath, {process: 'worker', log: undefined});
 
     // Try to create a file logger
     let fileLogger: FileLogger | undefined;

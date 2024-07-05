@@ -450,7 +450,11 @@ async function init(): Promise<MainInit> {
     electron.app.setPath(ELECTRON_PATH_USER_DATA, appPath);
 
     // Load electron settings from JSON file
-    const electronSettings = loadElectronSettings(appPath, log);
+    const electronSettings = loadElectronSettings(appPath, {
+        process: 'electron',
+        log,
+        profile: parameters.profile,
+    });
 
     // Initialise logging
     let logging: LoggerFactory;

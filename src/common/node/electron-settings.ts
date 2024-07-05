@@ -8,6 +8,7 @@ import * as v from '@badrap/valita';
 
 import {extractErrorMessage} from '~/common/error';
 import type {Logger} from '~/common/logging';
+import {getLatestProfilePath} from '~/common/node/old-profiles';
 import {ensureU53} from '~/common/types';
 import {ensureError} from '~/common/utils/assert';
 import {chainAdapter} from '~/common/utils/valita-helpers';
@@ -67,7 +68,30 @@ function getSettingsFilePath(appPath: string): string {
     return path.join(appPath, ...import.meta.env.ELECTRON_SETTINGS_PATH);
 }
 
-export function loadElectronSettings(appPath: string, log: Logger | undefined): ElectronSettings {
+/**
+ * Loads the electron settings from the current profile or an old profile.
+ *
+ * When calling this function from the electron process, it is possible to fall back to the
+ * settings of an old profile when no electron settings exist yet. This is the case after having
+ * relinked the profile and can only be triggered from the electron process. When such settings
+ * cannot be found or loaded, the default settings are loaded.
+ *
+ * Note: If the profile is newly created and an old profile is found, the settings of the old
+ * profile are restored even if the messages are not restored later on.
+ */
+export function loadElectronSettings(
+    appPath: string,
+    caller:
+        | {
+              process: 'electron';
+              profile: string;
+              log: Logger;
+          }
+        | {
+              process: 'worker';
+              log: Logger | undefined;
+          },
+): ElectronSettings {
     const settingsFilePath = getSettingsFilePath(appPath);
     let electronSettings = DEFAULT_ELECTRON_SETTINGS;
     if (fs.existsSync(settingsFilePath)) {
@@ -77,11 +101,35 @@ export function loadElectronSettings(appPath: string, log: Logger | undefined): 
             );
         } catch (error) {
             const errorMessage = extractErrorMessage(ensureError(error), 'short');
-            log?.error(
+            caller.log?.error(
                 `Failed to read from electron-settings.json (${errorMessage}), defaulting to standard settings`,
             );
         }
+    } else if (caller.process === 'electron') {
+        // In the case that we do not have electron settings yet, we check if we can find the
+        // settings from and old profile.
+        const latestProfilePath = getLatestProfilePath(appPath, caller.profile, caller.log);
+        if (latestProfilePath !== undefined) {
+            const latestProfileSettingsPath = getSettingsFilePath(latestProfilePath);
+            if (fs.existsSync(latestProfileSettingsPath)) {
+                try {
+                    electronSettings = ELECTRON_SETTINGS_SCHEMA.parse(
+                        JSON.parse(fs.readFileSync(latestProfileSettingsPath, 'utf-8')),
+                    );
+                    // When loading the settings from another profile, we directly write them so
+                    // that the worker process can fetch them later on without needing any
+                    // additional information about old profiles and their names.
+                    updateElectronSettings(electronSettings, appPath, caller.log);
+                } catch (error) {
+                    const errorMessage = extractErrorMessage(ensureError(error), 'short');
+                    caller.log.error(
+                        `Failed to read from electron-settings.json of another profile (${errorMessage}), defaulting to standard settings`,
+                    );
+                }
+            }
+        }
     }
+
     return electronSettings;
 }
 
