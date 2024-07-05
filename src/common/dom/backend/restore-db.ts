@@ -15,6 +15,7 @@ import {canCopyFiles, copyFiles, type FileId} from '~/common/file-storage';
 import type {ServicesForKeyStorage} from '~/common/key-storage';
 import type {Logger} from '~/common/logging';
 import type {IdentityString} from '~/common/network/types';
+import type {LocalSettings} from '~/common/settings';
 import type {u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 
@@ -286,9 +287,27 @@ export async function transferOldMessages(
             value: {},
         });
     });
+    await restoreSettings(services, oldDb);
 
     // Refresh the cache to directly display the conversations again.
     model.conversations.refreshCache();
+}
+
+async function restoreSettings(
+    services: Pick<ServicesForBackend, 'model'>,
+    oldDb: DatabaseBackend,
+): Promise<void> {
+    const settings: LocalSettings = {
+        appearance:
+            oldDb.getSettings('appearance') ?? services.model.user.appearanceSettings.get().view,
+        devices: oldDb.getSettings('devices') ?? services.model.user.devicesSettings.get().view,
+        media: oldDb.getSettings('media') ?? services.model.user.mediaSettings.get().view,
+    };
+
+    // We can directly update the settings through the model to directly see the effects.
+    await services.model.user.appearanceSettings.get().controller.update(settings.appearance);
+    await services.model.user.devicesSettings.get().controller.update(settings.devices);
+    await services.model.user.mediaSettings.get().controller.update(settings.media);
 }
 
 function restoreReactionsAndHistory(

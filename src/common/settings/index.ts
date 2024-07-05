@@ -28,15 +28,27 @@ export const DEFAULT_CATEGORY: SettingsCategory = 'profile';
  */
 export type SettingsCategory = (typeof SETTINGS_CATEGORIES)[u53];
 
-// Whenever this is extended, the function isSettingCategory needs to be updated as well
-export interface Settings {
-    readonly profile: ProfileSettings;
-    readonly privacy: PrivacySettings;
-    readonly calls: CallsSettings;
-    readonly devices: DeviceSettings;
+/**
+ * A subset of {@link Settings}, which includes only the local settings (i.e., the ones not synced
+ * across devices).
+ */
+export interface LocalSettings {
     readonly appearance: AppearanceSettings;
+    readonly devices: DeviceSettings;
     readonly media: MediaSettings;
 }
+
+/**
+ * A subset of {@link Settings}, which includes only the synced settings.
+ */
+interface SyncedSettings {
+    readonly calls: CallsSettings;
+    readonly privacy: PrivacySettings;
+    readonly profile: ProfileSettings;
+}
+
+// Whenever this is extended, the function isSettingCategory needs to be updated as well
+export type Settings = LocalSettings & SyncedSettings;
 
 // Ensure that every key in `Settings` is a valid `SettingsCategory`
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
