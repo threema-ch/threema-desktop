@@ -777,7 +777,7 @@ package:macos-publish:
     - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
   variables:
     PUBLISH: 'true'
-    FLAVORS: consumer-live,work-sandbox,work-live,work-onprem
+    FLAVORS: consumer-sandbox,consumer-live,work-sandbox,work-live,work-onprem
     FTP_HOST: $FTP_RELEASE_HOST
     FTP_PROTO: $FTP_RELEASE_PROTO
     FTP_PATH: /
