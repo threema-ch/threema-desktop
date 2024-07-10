@@ -670,7 +670,19 @@ async function buildDmg(
             optionsForFile: (filePath: string) => {
                 log.minor(`Determine signing options for file ${filePath}`);
                 return {
-                    entitlements: ['com.apple.security.cs.allow-jit'],
+                    // For list of entitlements, see https://developer.apple.com/documentation/security/hardened_runtime
+                    entitlements: [
+                        // Allow execution of JIT-compiled code, required by Electron
+                        // https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_cs_allow-jit
+                        'com.apple.security.cs.allow-jit',
+                        // Allow access to camera (for calls)
+                        // https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_device_camera
+                        'com.apple.security.device.camera',
+                        // Allow access to microphone (for calls and for recording voice messages)
+                        // https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_device_audio-input
+                        'com.apple.security.device.audio-input',
+                    ],
+                    // Enable hardened runtime, see https://developer.apple.com/documentation/security/hardened_runtime
                     hardenedRuntime: true,
                     signatureFlags: [],
                 };

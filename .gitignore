@@ -16,3 +16,6 @@
 
 # Unused translation keys
 src/translations/**/*_old.json
+
+# MacOS garbage
+.DS_Store
