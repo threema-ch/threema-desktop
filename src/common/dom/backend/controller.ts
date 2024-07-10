@@ -22,7 +22,7 @@ import type {DisplayPacket} from '~/common/network/protocol/capture';
 import type {IdentityString} from '~/common/network/types';
 import type {NotificationCreator} from '~/common/notification';
 import type {SystemDialogService} from '~/common/system-dialog';
-import {assertError, ensureError, unreachable} from '~/common/utils/assert';
+import {assertError, assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, type RemoteProxy, type ProxyEndpoint} from '~/common/utils/endpoint';
 import {ReusablePromise, eternalPromise} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -111,6 +111,7 @@ export class BackendController {
         requestUserPassword: (previouslyAttemptedPassword?: string) => Promise<string>,
         removeOldProfiles: () => void,
         forwardPins: PinForwarder['forward'],
+        requestMissingWorkCredentialsModal: () => Promise<void>,
     ): Promise<[controller: BackendController, isNewIdentity: boolean]> {
         const {endpoint, logging} = services;
         const log = logging.logger('backend-controller');
@@ -270,6 +271,16 @@ export class BackendController {
                                 passwordForExistingKeyStorage,
                             );
                             continue;
+                        case 'missing-work-credentials':
+                            log.debug(
+                                'Backend could not be created, no WorkData present in work build',
+                            );
+
+                            await requestMissingWorkCredentialsModal();
+
+                            return assertUnreachable(
+                                'Cannot continue linking process without work data',
+                            );
                         case 'handled-linking-error':
                             throw new Error(
                                 `Unexpected error type: ${error.type} (${errorMessage})`,
@@ -349,6 +360,13 @@ export class BackendController {
                             )}`,
                         );
                     case 'key-storage-error-wrong-password':
+                        throw new Error(
+                            `Unexpected error type: ${error.type} (${extractErrorMessage(
+                                error,
+                                'short',
+                            )})`,
+                        );
+                    case 'missing-work-credentials':
                         throw new Error(
                             `Unexpected error type: ${error.type} (${extractErrorMessage(
                                 error,

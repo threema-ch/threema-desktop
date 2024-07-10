@@ -8,6 +8,7 @@ import {Router, type RouterState} from '~/app/routing/router';
 import type {AppServices} from '~/app/types';
 import App from '~/app/ui/App.svelte';
 import PasswordInput from '~/app/ui/PasswordInput.svelte';
+import MissingWorkCredentialsModal from '~/app/ui/components/partials/modals/missing-work-credentials-modal/MissingWorkCredentialsModal.svelte';
 import {GlobalHotkeyManager} from '~/app/ui/hotkey';
 import * as i18n from '~/app/ui/i18n';
 import type {LinkingParams, OppfConfig} from '~/app/ui/linking';
@@ -88,6 +89,16 @@ function attachPasswordInput(
         props: {
             previouslyAttemptedPassword,
         },
+    });
+}
+
+/**
+ * Show dialog to warn about missing Threema Work credentials.
+ */
+function attachMissingWorkCredentialsModal(elements: Elements): MissingWorkCredentialsModal {
+    elements.container.innerHTML = '';
+    return new MissingWorkCredentialsModal({
+        target: elements.container,
     });
 }
 
@@ -343,6 +354,15 @@ async function main(): Promise<() => void> {
         return password;
     }
 
+    // Define function that will request user to enter the password for the key storage
+    async function requestMissingWorkCredentialsModal(): Promise<void> {
+        await domContentLoaded;
+        log.debug('Showing page to request missing work credentials');
+        elements.splash.classList.add('hidden'); // Hide splash screen
+        const dialog = attachMissingWorkCredentialsModal(elements);
+        await dialog.foreverPromise;
+    }
+
     // Initialize early services and global dialog component
     const appServices: Delayed<AppServices> = Delayed.simple('AppServices');
     attachSystemDialogs(logging, elements.systemDialogs, appServices);
@@ -384,6 +404,7 @@ async function main(): Promise<() => void> {
         requestUserPassword,
         removeOldProfiles,
         forwardPins,
+        requestMissingWorkCredentialsModal,
     );
     const [
         profileSettings,

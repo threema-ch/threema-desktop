@@ -142,7 +142,8 @@ export type BackendCreationErrorType =
     | 'handled-linking-error'
     | 'key-storage-error'
     | 'key-storage-error-wrong-password'
-    | 'onprem-configuration-error';
+    | 'onprem-configuration-error'
+    | 'missing-work-credentials';
 
 const BACKEND_CREATION_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     BackendCreationError,
@@ -837,6 +838,16 @@ export class Backend {
                 ? phase1Services.keyStorage.workData
                 : undefined;
 
+        // Check for unrecoverable problems
+        if (import.meta.env.BUILD_VARIANT === 'work' && workData?.get() === undefined) {
+            // The work app requires work credentials. Older versions of the app did not yet sync
+            // and store these fields. Thus, enforce this requirement here.
+
+            throw new BackendCreationError(
+                'missing-work-credentials',
+                'This is a work app, but no work data was found. Profile should be relinked.',
+            );
+        }
 
         // Initialise the remaining services
         const phase2Services = {
@@ -893,21 +904,6 @@ export class Backend {
                 : undefined,
         );
         const backend = new Backend(backendServices);
-
-        // Check for unrecoverable problems
-        if (
-            import.meta.env.BUILD_VARIANT === 'work' &&
-            backend._services.device.workData === undefined
-        ) {
-            // The work app requires work credentials. Older versions of the app did not yet sync
-            // and store these fields. Thus, enforce this requirement here.
-            log.error(
-                'This is a work app, but no work data was found. Profile should be relinked.',
-            );
-            // TODO(DESK-1227): Force relinking of profile and prevent connection from starting
-            // backendServices.systemDialog.open({type: 'missing-work-credentials'}).catch(assertUnreachable);;
-            // startConnection = false;
-        }
 
         // TODO(DESK-1371) Activate this dialog
         // if (backendServices.device.csp.deviceCookie === undefined) {

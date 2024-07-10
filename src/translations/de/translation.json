@@ -164,7 +164,7 @@
     "prose--threema-id-description-p2": "Ihre Threema-ID ist nur eine Komponente Ihrer Identität bei Threema. Die zweite Komponente ist das sogenannte Schlüsselpaar (bestehend aus einem privaten und einem öffentlichen Schlüssel), welches für die sichere Verschlüsselung benötigt wird. Ihre Threema-ID ist untrennbar mit Ihrem Schlüsselpaar verbunden. Der private Schlüssel verbleibt auf Ihrem Handy, während der öffentliche Schlüssel auf die Threema-Server hochgeladen wird, welche diesen an Ihre Gesprächspartner verteilen. Auf dem Handy Ihres Gesprächspartners werden Nachrichten an Sie mit Ihrem öffentlichen Schlüssel verschlüsselt. Diese Nachrichten können ausschliesslich mit Ihrem privaten Schlüssel wieder entschlüsselt werden."
   },
   "dialog--invalid-work-credentials": {
-    "action--relink": "Lokales Profil entfernen und Gerät neu verknüpfen",
+    "action--relink": "Gerät neu verknüpfen",
     "error--invalid-credentials": "Ungültige Zugangsdaten: {message}",
     "error--unlinking-failed": "Geräte-Verknüpfung konnte nicht aufgehoben werden.",
     "error--validation-failed": "Work-Zugangsdaten konnten nicht validiert werden.",
@@ -293,6 +293,12 @@
     "label--sent-date": "Gesendet",
     "label--title": "Nachrichtendetails",
     "prose--empty-caption": "Kein Text"
+  },
+  "dialog--missing-work-credentials": {
+    "action--relink": "Gerät neu verknüpfen",
+    "label--title": "Fehlende Threema Work-Zugangsdaten",
+    "prose--description-p1": "Es wurden keine Zugangsdaten für Threema Work gefunden. Um die Desktop-App weiterhin nutzen zu können, müssen Sie dieses Gerät neu verknüpfen. Navigieren Sie dazu auf Ihrem Mobilgerät zu «Threema > Einstellungen > Desktop/Web > Verknüpftes Gerät», und wählen Sie «Alle Verknüpfungen aufheben».",
+    "prose--description-p2": "Klicken Sie danach unten auf «Neu verknüpfen», und folgen Sie den Bildschirmanweisungen. Ihr Chatverlauf kann nach der Verknüpfung wiederhergestellt werden."
   },
   "dialog--server-alert": {
     "action--confirm": "OK"

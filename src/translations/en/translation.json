@@ -164,7 +164,7 @@
     "prose--threema-id-description-p2": "Your Threema ID is just one of two components that make up your identity in Threema. The other one is the so-called key pair (consisting of a public key and a private key) which is essential for the encryption. Your Threema ID is permanently tied to your public key. While the public key is sent to Threema’s servers to be distributed to your chat partners, the private key remains on your device, where it is securely stored. All messages directed to you will be individually encrypted with your public key on the sender’s device and can only be decrypted with your personal private key."
   },
   "dialog--invalid-work-credentials": {
-    "action--relink": "Remove Local Profile and Relink Device",
+    "action--relink": "Relink Device",
     "error--invalid-credentials": "Invalid credentials: {message}",
     "error--unlinking-failed": "Could not unlink this device.",
     "error--validation-failed": "Validation of Threema Work credentials failed.",
@@ -293,6 +293,12 @@
     "label--sent-date": "Sent",
     "label--title": "Message Details",
     "prose--empty-caption": "No caption"
+  },
+  "dialog--missing-work-credentials": {
+    "action--relink": "Relink Device",
+    "label--title": "Missing Threema Work Credentials",
+    "prose--description-p1": "No Threema Work credentials could be found. To continue using the desktop app, you need to relink this device. First, unlink it by tapping “Threema > Settings > Desktop/Web > Linked Device” on your mobile device and selecting “Remove all linked devices.”",
+    "prose--description-p2": "Once completed, click on “Relink” below, and follow the on-screen instructions. Your message history can be restored after relinking."
   },
   "dialog--server-alert": {
     "action--confirm": "OK"
