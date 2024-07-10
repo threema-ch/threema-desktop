@@ -22,7 +22,12 @@ import {
     type ServicesForDatabaseFactory,
     wrapRawDatabaseKey,
 } from '~/common/db';
-import {DeviceBackend, type DeviceIds, type IdentityData} from '~/common/device';
+import {
+    DeviceBackend,
+    type DeviceIds,
+    type IdentityData,
+    type ThreemaWorkData,
+} from '~/common/device';
 import {workLicenseCheckJob} from '~/common/dom/backend/background-jobs';
 import {DeviceJoinProtocol, type DeviceJoinResult} from '~/common/dom/backend/join';
 import * as oppf from '~/common/dom/backend/onprem/oppf';
@@ -111,7 +116,15 @@ import {Identity} from '~/common/utils/identity';
 import {u64ToHexLe} from '~/common/utils/number';
 import {taggedRace, type ReusablePromise} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
-import {type LocalStore, type StoreDeactivator, WritableStore} from '~/common/utils/store';
+import {
+    type LocalStore,
+    type StoreDeactivator,
+    WritableStore,
+    type IQueryableStore,
+    type IWritableStore,
+} from '~/common/utils/store';
+import {derive} from '~/common/utils/store/derived-store';
+import {ensureStoreValue} from '~/common/utils/store/helpers';
 import {type IViewModelRepository, ViewModelRepository} from '~/common/viewmodel';
 import {ViewModelCache} from '~/common/viewmodel/cache';
 import type {WebRtcService} from '~/common/webrtc';
@@ -449,10 +462,15 @@ function initEarlyBackendServicesWithoutConfig(
 function initEarlyBackendServicesWithConfig(
     factories: FactoriesForBackend,
     {config, crypto, logging}: Pick<ServicesForBackend, 'crypto' | 'config' | 'logging'>,
-    workCredentials: ThreemaWorkCredentials | undefined,
+    workData: IQueryableStore<ThreemaWorkData | undefined> | undefined,
 ): EarlyBackendServicesThatRequireConfig {
     const file = factories.fileStorage({config, crypto}, logging.logger('storage'));
-    const directory = new FetchDirectoryBackend({config, logging}, workCredentials);
+    const directory = new FetchDirectoryBackend(
+        {config, logging},
+        workData === undefined
+            ? undefined
+            : derive([workData], ([{currentValue: data}]) => data?.workCredentials),
+    );
     const sfu = new FetchSfuHttpBackend({config, logging});
 
     return {
@@ -475,7 +493,7 @@ function initBackendServices(
     deviceCookie: DeviceCookie | undefined,
     dgk: RawDeviceGroupKey,
     nonces: NonceService,
-    workCredentials: ThreemaWorkCredentials | undefined,
+    workData: IQueryableStore<ThreemaWorkData> | undefined,
 ): ServicesForBackend {
     const {
         config,
@@ -492,8 +510,6 @@ function initBackendServices(
         volatileProtocolState,
         webrtc,
     } = earlyServices;
-
-    const workData = workCredentials === undefined ? undefined : {workCredentials};
 
     const device = new DeviceBackend(
         {crypto, db, logging, nonces},
@@ -816,20 +832,19 @@ export class Backend {
             config = createDefaultConfig();
         }
 
+        const workData =
+            import.meta.env.BUILD_VARIANT === 'work'
+                ? phase1Services.keyStorage.workData
+                : undefined;
+
+
         // Initialise the remaining services
         const phase2Services = {
-            ...initEarlyBackendServicesWithConfig(
-                factories,
-                {...phase1Services, config},
-                keyStorageContents.workCredentials,
-            ),
+            ...initEarlyBackendServicesWithConfig(factories, {...phase1Services, config}, workData),
             config,
             work:
                 import.meta.env.BUILD_VARIANT === 'work'
-                    ? new FetchWorkBackend(
-                          {config, logging, systemInfo: backendInit.systemInfo},
-                          keyStorageContents.workCredentials,
-                      )
+                    ? new FetchWorkBackend({config, logging, systemInfo: backendInit.systemInfo})
                     : new StubWorkBackend(),
         };
 
@@ -873,7 +888,9 @@ export class Backend {
                 : undefined,
             dgk,
             nonces,
-            keyStorageContents.workCredentials,
+            import.meta.env.BUILD_VARIANT === 'work'
+                ? ensureStoreValue(unwrap(workData))
+                : undefined,
         );
         const backend = new Backend(backendServices);
 
@@ -1014,13 +1031,16 @@ export class Backend {
             config = createDefaultConfig();
         }
 
+        // Set `workData` if `workCredentials` are already present (i.e., if this is an OnPrem build).
+        // Note: In regular work builds the value will be set later.
+        const workData: IWritableStore<ThreemaWorkData | undefined> | undefined =
+            import.meta.env.BUILD_VARIANT !== 'work'
+                ? undefined
+                : new WritableStore(workCredentials === undefined ? undefined : {workCredentials});
+
         // Initialise more services
         const phase2Services = {
-            ...initEarlyBackendServicesWithConfig(
-                factories,
-                {...phase1Services, config},
-                workCredentials,
-            ),
+            ...initEarlyBackendServicesWithConfig(factories, {...phase1Services, config}, workData),
             config,
         };
 
@@ -1240,15 +1260,24 @@ export class Backend {
                     );
                 }
 
+                // In `"work"` builds `workData` must be a store.
+                const unwrappedWorkData = unwrap(workData);
+                // Set `workCredentials` obtained during device join.
+                unwrappedWorkData.set({workCredentials: joinResult.workCredentials});
+
                 phase3Services = {
-                    work: new FetchWorkBackend(
-                        {config, logging, systemInfo: backendInit.systemInfo},
-                        joinResult.workCredentials,
-                    ),
+                    work: new FetchWorkBackend({
+                        config,
+                        logging,
+                        systemInfo: backendInit.systemInfo,
+                    }),
                 };
                 let licenseStatus;
                 try {
-                    licenseStatus = await phase3Services.work.checkLicense();
+                    licenseStatus = await phase3Services.work.checkLicense(
+                        // Unwrap is fine here because we check above for undefined
+                        unwrap(unwrappedWorkData.get()).workCredentials,
+                    );
                 } catch (error) {
                     return await throwLinkingError(
                         `${productName} credentials could not be validated: ${error}`,
@@ -1289,7 +1318,9 @@ export class Backend {
             joinResult.cspDeviceCookie,
             dgk,
             nonces,
-            joinResult.workCredentials,
+            import.meta.env.BUILD_VARIANT === 'work'
+                ? ensureStoreValue(unwrap(workData))
+                : undefined,
         );
         const backend = new Backend(services);
 

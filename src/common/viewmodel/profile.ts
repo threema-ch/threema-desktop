@@ -21,7 +21,6 @@ export interface ProfileViewModel extends PropertiesMarked {
 
 export function getProfileViewModelStore(services: ServicesForViewModel): ProfileViewModelStore {
     const {endpoint, device, model} = services;
-
     return derive(
         [model.user.profileSettings],
         ([{currentValue: profileSettingsModel}], getAndSubscribe) => {
@@ -33,7 +32,10 @@ export function getProfileViewModelStore(services: ServicesForViewModel): Profil
                 identity: device.identity.string,
                 displayName,
                 publicKey: device.csp.ck.public,
-                workUsername: device.workData?.workCredentials.username,
+                workUsername:
+                    device.workData === undefined
+                        ? undefined
+                        : getAndSubscribe(device.workData).workCredentials.username,
             });
         },
     );

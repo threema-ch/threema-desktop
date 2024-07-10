@@ -27,6 +27,7 @@ import {UTF8} from '~/common/utils/codec';
 import {ExpiringValue} from '~/common/utils/date';
 import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import {AsyncLock} from '~/common/utils/lock';
+import type {IQueryableStore} from '~/common/utils/store';
 import {TIMER, TimeoutError} from '~/common/utils/timer';
 
 /**
@@ -97,7 +98,7 @@ export class FetchDirectoryBackend implements DirectoryBackend {
 
     public constructor(
         private readonly _services: Pick<ServicesForBackend, 'config' | 'logging'>,
-        workCredentials: ThreemaWorkCredentials | undefined,
+        workData: IQueryableStore<ThreemaWorkCredentials | undefined> | undefined,
     ) {
         this._headers = {
             'accept': 'application/json',
@@ -107,7 +108,7 @@ export class FetchDirectoryBackend implements DirectoryBackend {
         // OnPrem directory requires authentication using Threema Work credentials
         if (import.meta.env.BUILD_ENVIRONMENT === 'onprem') {
             const credentials = unwrap(
-                workCredentials,
+                workData?.get(),
                 'Work credentials not passed to FetchDirectoryBackend in OnPrem build',
             );
             this._headers.authorization = `Basic ${u8aToBase64(UTF8.encode(`${credentials.username}:${credentials.password}`))}`;

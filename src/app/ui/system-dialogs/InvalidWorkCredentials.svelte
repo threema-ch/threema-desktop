@@ -293,10 +293,7 @@
               disabled={deletingProfile}
               on:click={deleteProfileAndRestartApp}
             >
-              {$i18n.t(
-                'dialog--invalid-work-credentials.action--relink',
-                'Remove Local Profile and Relink Device',
-              )}
+              {$i18n.t('dialog--invalid-work-credentials.action--relink', 'Relink Device')}
             </Button>
             {#if deletingProfile}
               <div class="loading">

@@ -36,14 +36,12 @@ function mockFetchResponse(
 
 export function run(): void {
     describe('FetchWorkBackend', function () {
-        const backend = new FetchWorkBackend(
-            {
-                config: TEST_CONFIG,
-                logging: new NoopLoggerFactory(),
-                systemInfo: {os: 'other', arch: 'pentium386', locale: 'de_CH.utf8'},
-            },
-            {username: 'testuser', password: 'testpass'},
-        );
+        const credentials = {username: 'testuser', password: 'testpass'};
+        const backend = new FetchWorkBackend({
+            config: TEST_CONFIG,
+            logging: new NoopLoggerFactory(),
+            systemInfo: {os: 'other', arch: 'pentium386', locale: 'de_CH.utf8'},
+        });
 
         this.beforeEach(function () {
             sinon.restore();
@@ -52,14 +50,14 @@ export function run(): void {
         it('valid license', async function () {
             mockFetchResponse('POST', 200, {success: true} as const);
 
-            const result = await backend.checkLicense();
+            const result = await backend.checkLicense(credentials);
             expect(result.valid).to.be.true;
         });
 
         it('invalid license', async function () {
             mockFetchResponse('POST', 200, {success: false, error: 'Expired license'} as const);
 
-            const result = await backend.checkLicense();
+            const result = await backend.checkLicense(credentials);
             expect(result.valid).to.be.false;
             assert(!result.valid);
             expect(result.message).to.equal('Expired license');
@@ -70,7 +68,7 @@ export function run(): void {
 
             let errorThrown;
             try {
-                await backend.checkLicense();
+                await backend.checkLicense(credentials);
                 errorThrown = false;
             } catch (error) {
                 errorThrown = true;
@@ -89,7 +87,7 @@ export function run(): void {
 
             let errorThrown;
             try {
-                await backend.checkLicense();
+                await backend.checkLicense(credentials);
                 errorThrown = false;
             } catch (error) {
                 errorThrown = true;

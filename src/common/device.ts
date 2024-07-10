@@ -10,6 +10,7 @@ import type {
 } from '~/common/network/types';
 import type {ClientKey, RawDeviceGroupKey} from '~/common/network/types/keys';
 import {Identity} from '~/common/utils/identity';
+import type {IQueryableStore} from '~/common/utils/store';
 
 /**
  * Services required by the device backend.
@@ -55,7 +56,7 @@ export interface Device {
     readonly csp: CspData;
     readonly d2m: D2mData;
     readonly d2d: D2dData;
-    readonly workData?: ThreemaWorkData;
+    readonly workData?: IQueryableStore<ThreemaWorkData>;
 }
 
 /**
@@ -89,7 +90,7 @@ export class DeviceBackend implements Device {
         deviceIds: DeviceIds,
         deviceCookie: DeviceCookie | undefined,
         dgk: RawDeviceGroupKey,
-        public readonly workData?: ThreemaWorkData,
+        public readonly workData?: IQueryableStore<ThreemaWorkData>,
     ) {
         const {crypto, nonces} = services;
 

@@ -146,12 +146,11 @@ export type WorkBackend = {
     /**
      * Check the Work license.
      *
-     * @param credentials Optional Work credentials. Will default to the ones provided upon
-     *   construction of the Work backend.
+     * @param credentials Work credentials.
      * @throws {WorkError} if something went wrong during fetching of the data. See
      *   {@link WorkErrorType} for a list of possible error types.
      */
-    checkLicense: (credentials?: ThreemaWorkCredentials) => Promise<WorkLicenseStatus>;
+    checkLicense: (credentials: ThreemaWorkCredentials) => Promise<WorkLicenseStatus>;
 } & ProxyMarked;
 
 /**

@@ -63,7 +63,7 @@ import {
     wrapRawKey,
 } from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
-import type {ThreemaWorkCredentials} from '~/common/device';
+import type {ThreemaWorkCredentials, ThreemaWorkData} from '~/common/device';
 import {TRANSFER_HANDLER} from '~/common/index';
 import {
     DecryptedKeyStorage,
@@ -86,9 +86,10 @@ import {
 import type {Logger} from '~/common/logging';
 import {fileModeInternalObjectIfPosix} from '~/common/node/fs';
 import {KiB, MiB, type ReadonlyUint8Array, type u53} from '~/common/types';
-import {assert} from '~/common/utils/assert';
+import {assert, unwrap} from '~/common/utils/assert';
 import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import {intoUnsignedLong} from '~/common/utils/number';
+import {type IQueryableStore, WritableStore} from '~/common/utils/store';
 
 import {
     DECRYPTED_KEY_STORAGE_SCHEMA_VERSION,
@@ -99,6 +100,8 @@ import {
 /** @inheritdoc */
 export class FileSystemKeyStorage implements KeyStorage {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
+
+    private readonly _workData: WritableStore<ThreemaWorkData | undefined> | undefined;
 
     /**
      * Create a key storage backed by the file system.
@@ -118,6 +121,15 @@ export class FileSystemKeyStorage implements KeyStorage {
             );
         }
         this._log.debug(`Key storage path: ${this._keyStoragePath}`);
+
+        this._workData =
+            import.meta.env.BUILD_VARIANT === 'work'
+                ? new WritableStore<ThreemaWorkData | undefined>(undefined)
+                : undefined;
+    }
+
+    public get workData(): IQueryableStore<ThreemaWorkData | undefined> {
+        return unwrap(this._workData, 'Threema Work Data must be present when calling workData');
     }
 
     /** @inheritdoc */
@@ -192,6 +204,14 @@ export class FileSystemKeyStorage implements KeyStorage {
             this._log.info(
                 `Key storage loaded from file (schema versions: encrypted=${encryptedKeyStorage.schemaVersion} decrypted=${decryptedKeyStorage.schemaVersion})`,
             );
+
+            if (this._workData !== undefined) {
+                const workData: ThreemaWorkData | undefined =
+                    keyStorageContents.workCredentials === undefined
+                        ? undefined
+                        : {workCredentials: {...keyStorageContents.workCredentials}};
+                this._workData.set(workData);
+            }
             return keyStorageContents;
         }
     }
@@ -203,6 +223,17 @@ export class FileSystemKeyStorage implements KeyStorage {
 
         // Write file
         await this._write(password, contents, kdfParams);
+
+        // If we are in a work build, we update the workCredential store with the current value.
+        // Note: Undefined can only happen when the device has not been relinked in a long time,
+        // i.e. since before the essential data contained the work credentials.
+        if (this._workData !== undefined) {
+            const workData: ThreemaWorkData | undefined =
+                contents.workCredentials === undefined
+                    ? undefined
+                    : {workCredentials: {...contents.workCredentials}};
+            this._workData.set(workData);
+        }
     }
 
     /** @inheritdoc */
@@ -219,6 +250,10 @@ export class FileSystemKeyStorage implements KeyStorage {
         const oldContent = await this.read(password);
         const newContent = {...oldContent, workCredentials: {...workCredentials}};
         await this.write(password, newContent);
+        unwrap(
+            this._workData,
+            'Threema Work Data must be present when changing Threema Work Credentials',
+        ).set({workCredentials});
     }
 
     /** @inheritdoc */

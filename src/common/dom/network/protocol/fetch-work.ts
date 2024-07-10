@@ -22,7 +22,6 @@ export class FetchWorkBackend implements WorkBackend {
 
     public constructor(
         private readonly _services: Pick<ServicesForBackend, 'config' | 'logging' | 'systemInfo'>,
-        private readonly _credentials?: ThreemaWorkCredentials,
     ) {
         this._headers = {
             'accept': 'application/json',
@@ -31,14 +30,9 @@ export class FetchWorkBackend implements WorkBackend {
     }
 
     /** @inheritdoc */
-    public async checkLicense(credentials?: ThreemaWorkCredentials): Promise<WorkLicenseStatus> {
+    public async checkLicense(credentials: ThreemaWorkCredentials): Promise<WorkLicenseStatus> {
         const browserInfo = getBrowserInfo(self.navigator.userAgent);
         const cspClientInfo = makeCspClientInfo(browserInfo, this._services.systemInfo);
-
-        const chosenCredentials = credentials ?? this._credentials;
-        if (chosenCredentials === undefined) {
-            return {valid: false, message: 'No Work Credentials present'};
-        }
 
         // Send request
         let response;
@@ -49,8 +43,8 @@ export class FetchWorkBackend implements WorkBackend {
                 {
                     method: 'POST',
                     body: JSON.stringify({
-                        licenseUsername: chosenCredentials.username,
-                        licensePassword: chosenCredentials.password,
+                        licenseUsername: credentials.username,
+                        licensePassword: credentials.password,
                         version: cspClientInfo,
                         arch: this._services.systemInfo.arch,
                     }),

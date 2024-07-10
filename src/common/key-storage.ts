@@ -3,7 +3,7 @@ import * as v from '@badrap/valita';
 import type {ServicesForBackend} from '~/common/backend';
 import {ensureEncryptedDataWithNonceAhead} from '~/common/crypto';
 import {wrapRawDatabaseKey} from '~/common/db';
-import type {ThreemaWorkCredentials} from '~/common/device';
+import type {ThreemaWorkCredentials, ThreemaWorkData} from '~/common/device';
 import {TransferTag} from '~/common/enum';
 import {BaseError, type BaseErrorOptions} from '~/common/error';
 import {TRANSFER_HANDLER} from '~/common/index';
@@ -19,6 +19,7 @@ import {wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/network/types/ke
 import {KiB, MiB, type u8, type u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {type ProxyMarked, registerErrorTransferHandler} from '~/common/utils/endpoint';
+import type {IQueryableStore} from '~/common/utils/store';
 import {instanceOf, unsignedLongAsU64} from '~/common/utils/valita-helpers';
 
 /**
@@ -285,6 +286,12 @@ export type ServicesForKeyStorage = Pick<ServicesForBackend, 'crypto'>;
  * Stores and retrieves secret keys securely.
  */
 export interface KeyStorage extends ProxyMarked {
+    /**
+     * Source of truth of the work data of this user. Is undefined if this is not a work build. The
+     * value of the store can be initially undefined. It is the responsibility of the caller to make
+     * sure the value is defined when it is needed.
+     */
+    readonly workData: IQueryableStore<ThreemaWorkData | undefined> | undefined;
     /**
      * Check if the key storage file is present in the file system. If not, there is no identity set
      * up for the app and the initial setup process should be probably triggered.
