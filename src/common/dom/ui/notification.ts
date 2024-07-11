@@ -15,6 +15,7 @@ import {PROXY_HANDLER} from '~/common/utils/endpoint';
 
 class ProxyNotification extends Notification {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
+    public aboutToBeReplaced: boolean = false;
 
     public constructor(
         title: string,
@@ -22,8 +23,17 @@ class ProxyNotification extends Notification {
         // This identifier can be used to check which message was last shown in the notification,
         // this allows updating edited message iff the message edited was the message last shown.
         public readonly lastNotificationIdentifier: string,
+        private readonly _closeHandler: (notification: ProxyNotification) => void,
     ) {
         super(title, options);
+    }
+
+    public registerOnCloseHandler(): void {
+        this.addEventListener('close', this._onCloseHandler.bind(this));
+    }
+
+    private _onCloseHandler(event: Event): void {
+        this._closeHandler(this);
     }
 }
 
@@ -61,11 +71,20 @@ export class FrontendNotificationCreator implements NotificationCreator {
             return undefined;
         }
 
+        // Explicitly close a notification with this tag so it doesn't stick around in notification
+        // centers (even after the app is opened).
+        this._notifications.get(tag)?.close();
+
         // Create notification
         let proxyNotification: ProxyNotification;
         switch (notification.type) {
             case 'generic': {
-                proxyNotification = new ProxyNotification(notification.title, options, identifier);
+                proxyNotification = new ProxyNotification(
+                    notification.title,
+                    options,
+                    identifier,
+                    this._registerOnCloseEventHandler.bind(this),
+                );
                 break;
             }
 
@@ -77,6 +96,7 @@ export class FrontendNotificationCreator implements NotificationCreator {
                         body: this._getGroupCallStartBody(notification.startedByContactName),
                     },
                     identifier,
+                    this._registerOnCloseEventHandler.bind(this),
                 );
                 break;
 
@@ -86,17 +106,20 @@ export class FrontendNotificationCreator implements NotificationCreator {
                     notification.receiverConversation,
                     notification.senderName,
                 );
-                proxyNotification = new ProxyNotification(title, options, identifier);
-
+                proxyNotification = new ProxyNotification(
+                    title,
+                    options,
+                    identifier,
+                    this._registerOnCloseEventHandler.bind(this),
+                );
                 break;
             }
 
             default:
                 return unreachable(notification);
         }
-
         this._notifications.set(tag, proxyNotification);
-        proxyNotification.addEventListener('close', () => this._notifications.delete(tag));
+        proxyNotification.registerOnCloseHandler();
         return proxyNotification;
     }
 
@@ -110,57 +133,70 @@ export class FrontendNotificationCreator implements NotificationCreator {
         if (options.creator.ignore === 'if-focused' && appVisibility.get() === 'focused') {
             return undefined;
         }
-
-        switch (notification.type) {
-            case 'generic': {
-                const proxyNotification = this._notifications.get(tag);
-                if (proxyNotification?.lastNotificationIdentifier === identifier) {
-                    this._notifications.set(
-                        tag,
-                        new ProxyNotification(notification.title, options, identifier),
+        const proxyNotification = this._notifications.get(tag);
+        if (proxyNotification?.lastNotificationIdentifier === identifier) {
+            // Since we get a new notification with the same (identifier, tag) tuple, we don't want
+            // this tag to be deleted from the map. However, we close the notification anyway so
+            // that it does not stick around.
+            proxyNotification.aboutToBeReplaced = true;
+            proxyNotification.close();
+            let updatedNotification: ProxyNotification;
+            switch (notification.type) {
+                case 'generic': {
+                    updatedNotification = new ProxyNotification(
+                        notification.title,
+                        options,
+                        identifier,
+                        this._registerOnCloseEventHandler.bind(this),
                     );
+                    break;
                 }
-                return proxyNotification;
-            }
 
-            case 'new-message': {
-                const title = this._getNewMessageTitle(
-                    notification.unreadCount,
-                    notification.receiverConversation,
-                    notification.senderName,
-                );
-                const proxyNotification = this._notifications.get(tag);
-                if (proxyNotification?.lastNotificationIdentifier === identifier) {
-                    this._notifications.set(tag, new ProxyNotification(title, options, identifier));
-                }
-                return proxyNotification;
-            }
-
-            case 'deleted-message': {
-                const title = this._getNewMessageTitle(
-                    notification.unreadCount,
-                    notification.receiverConversation,
-                    notification.senderName,
-                );
-                const body: string = i18n
-                    .get()
-                    .t(
-                        'messaging.prose--notification-deleted-message',
-                        'This message was deleted.',
+                case 'new-message': {
+                    const title = this._getNewMessageTitle(
+                        notification.unreadCount,
+                        notification.receiverConversation,
+                        notification.senderName,
                     );
-                const proxyNotification = new ProxyNotification(
-                    title,
-                    {...options, body},
-                    identifier,
-                );
-                this._notifications.set(tag, proxyNotification);
-                proxyNotification.addEventListener('close', () => this._notifications.delete(tag));
-                return proxyNotification;
-            }
+                    updatedNotification = new ProxyNotification(
+                        title,
+                        options,
+                        identifier,
+                        this._registerOnCloseEventHandler.bind(this),
+                    );
+                    break;
+                }
 
-            default:
-                return unreachable(notification);
+                case 'deleted-message': {
+                    const title = this._getNewMessageTitle(
+                        notification.unreadCount,
+                        notification.receiverConversation,
+                        notification.senderName,
+                    );
+                    const body: string = i18n
+                        .get()
+                        .t(
+                            'messaging.prose--notification-deleted-message',
+                            'This message was deleted.',
+                        );
+
+                    updatedNotification = new ProxyNotification(
+                        title,
+                        {...options, body},
+                        identifier,
+                        this._registerOnCloseEventHandler.bind(this),
+                    );
+
+                    break;
+                }
+
+                default:
+                    return unreachable(notification);
+            }
+            this._notifications.set(tag, updatedNotification);
+            updatedNotification.registerOnCloseHandler();
         }
+        return this._notifications.get(tag);
     }
 
     private _getNewMessageTitle(
@@ -213,5 +249,16 @@ export class FrontendNotificationCreator implements NotificationCreator {
                     name: startedByContactName,
                 },
             );
+    }
+
+    private _registerOnCloseEventHandler(notification: ProxyNotification): void {
+        const tag = notification.tag as NotificationTag;
+        if (
+            this._notifications.get(tag)?.lastNotificationIdentifier ===
+                notification.lastNotificationIdentifier &&
+            !notification.aboutToBeReplaced
+        ) {
+            this._notifications.delete(tag);
+        }
     }
 }
