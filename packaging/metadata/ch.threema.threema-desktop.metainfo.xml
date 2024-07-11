@@ -44,6 +44,22 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta36" date="2024-07-17">
+            <description>
+                <p>New features:</p>
+                <ul>
+                    <li>Added voice and video calls in groups</li>
+                    <li>Keep messages when relinking</li>
+                    <li>Show the typing indicator in single chats</li>
+                    <li>Added spellcheck on macOS</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>Fixed a bug in relation to the display of emojis</li>
+                </ul>
+                <p>…and various under-the-hood changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta35" date="2024-07-04">
             <description>
                 <p>Internal release only, not published</p>
