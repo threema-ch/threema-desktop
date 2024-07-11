@@ -625,15 +625,10 @@ package:linux-binary-buildonly:
     # Handle ref
     - |
       echo "\$CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME"
-      if [[ "$CI_COMMIT_REF_NAME" = "develop" ]]; then
-        export BUILD_TYPE=nightly
-      elif [[ "$CI_COMMIT_REF_NAME" = v* ]]; then
+      if [[ "$CI_COMMIT_REF_NAME" = v* ]]; then
         export BUILD_TYPE=release
-      elif [[ "$PUBLISH" = "false" ]]; then
-        export BUILD_TYPE=nightly
       else
-        echo "Error: Invalid ref"
-        exit 1
+        export BUILD_TYPE=nightly
       fi
       echo "Build type is $BUILD_TYPE"
     # Ensure the proper node version is available
@@ -653,10 +648,10 @@ package:linux-binary-buildonly:
       fi
     # Build DMGs (unsigned nightlies, signed releases)
     - |
-      case "$BUILD_TYPE" in
-        nightly) buildTarget=dmg ;;
-        release) buildTarget=dmgSigned ;;
-        *) echo "Invalid build type: $BUILD_TYPE"; exit 1
+      case "$PUBLISH" in
+        false) buildTarget=dmg ;;
+        true) buildTarget=dmgSigned ;;
+        *) echo "Invalid PUBLISH env var: $PUBLISH"; exit 1
       esac
       npm run package $buildTarget "$FLAVORS"
     # Rename and upload DMGs
