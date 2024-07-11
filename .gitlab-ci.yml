@@ -98,6 +98,7 @@ dist:
   before_script:
     - *before_script_show_versions
   script:
+    - set -euo pipefail
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
     # Note: Launcher binary is tested using a separate job, so we skip it here
     - SKIP_LAUNCHER_BINARY=true npm run "dist:consumer-sandbox"
@@ -109,6 +110,7 @@ flatpak-source-generator:
     # Base dependencies
     - apt-get update && apt-get install -y python3-aiohttp python3-toml
   script:
+    - set -euo pipefail
     # Install build script deps
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci
     # Run flatpak source generators
@@ -127,6 +129,7 @@ launcher:
   needs: []
   image: rust:${RUST_VERSION}
   script:
+    - set -euo pipefail
     - cd src/launcher/ && cargo check
   variables:
     RUSTFLAGS: '-D warnings'
@@ -139,6 +142,7 @@ lint:
   before_script:
     - *before_script_show_versions
   script:
+    - set -euo pipefail
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
     - npm run "lint:$TARGET"
   parallel:
@@ -156,6 +160,7 @@ audit:
   before_script:
     - *before_script_show_versions
   script:
+    - set -euo pipefail
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
     - npm audit --audit-level moderate
   allow_failure: true
@@ -175,6 +180,7 @@ test:karma:
   before_script:
     - *before_script_show_versions
   script:
+    - set -euo pipefail
     # Install deps
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
     # Run tests
@@ -194,6 +200,7 @@ test:mocha:linux:
   before_script:
     - *before_script_show_versions
   script:
+    - set -euo pipefail
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
     # Run tests (with increased timeout of 10s, to avoid test failures when load on CI runner is high)
     - npm run "test:mocha" -- --timeout 10000
@@ -252,6 +259,7 @@ package-lock-in-sync:
     - node --version
     - npm --version
   script:
+    - set -euo pipefail
     # Install npm dependencies
     # Note: Use "npm install", not "npm ci"!
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm install --cache .npm
@@ -274,6 +282,7 @@ i18n-translations-in-sync:
     - node --version
     - npm --version
   script:
+    - set -euo pipefail
     # Install npm dependencies
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
     # Parse i18n translations found in code into translation files
@@ -298,6 +307,7 @@ protobuf-in-sync:
     - npm --version
     - apt-get update && apt-get install -y protobuf-compiler
   script:
+    - set -euo pipefail
     # Install npm dependencies
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
     # Re-generate protobuf bindings
@@ -320,6 +330,7 @@ validate-metainfo:
   before_script:
     - apt-get update && apt-get install -y appstream-util
   script:
+    - set -euo pipefail
     - |
       G_DEBUG=fatal-criticals
       SUCCESS_VALIDATE=1
@@ -346,6 +357,7 @@ package:source:
   before_script:
     - apt-get update && apt-get install -y p7zip
   script:
+    - set -euo pipefail
     # Handle ref
     - |
       echo "\$CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME"
@@ -393,6 +405,7 @@ package:source:
   tags:
     - docker-privileged
   before_script:
+    - set -euo pipefail
     # Base dependencies
     - apt-get update
     - apt-get install -y flatpak jq lftp elfutils libyaml-dev libglib2.0-dev libcurl4-gnutls-dev libxml2-dev libxslt1-dev python3-aiohttp python3-toml
@@ -418,6 +431,7 @@ package:source:
     # Add SSH deploy key
     - chmod 400 $SSH_DEPLOY_KEY && ssh-add $SSH_DEPLOY_KEY
   script:
+    - set -euo pipefail
     # Handle ref
     - |
       echo "\$CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME"
@@ -603,9 +617,9 @@ package:linux-binary-buildonly:
   before_script:
     - *before_script_install_cargo
   script:
+    - set -euo pipefail
     # Install dependencies
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
-
     # Build EXE binary
     - npm run package binary $FLAVOR
   artifacts:
@@ -637,6 +651,7 @@ package:linux-binary-buildonly:
     # Ensure coreutils are installed
     - brew install coreutils
   script:
+    - set -euo pipefail
     # Install build script deps
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci
     # Patch version
@@ -915,6 +930,7 @@ pages:
   before_script:
     - mdbook --version
   script:
+    - set -euo pipefail
     - cd docs
     - echo 'plantuml-cmd="/sbin/plantuml"' >> book.toml
     - mdbook build
