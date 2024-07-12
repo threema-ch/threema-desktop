@@ -1,4 +1,4 @@
-import type {StatusMessageType} from '~/common/enum';
+import type {GroupUserState, StatusMessageType} from '~/common/enum';
 import type {StatusMessageId} from '~/common/network/types';
 import type {u53} from '~/common/types';
 
@@ -8,9 +8,9 @@ interface StatusMessageStatusMap {
 
     /** Status message that indicates a change in group members. */
     [StatusMessageType.GROUP_MEMBER_CHANGED]: {
-        /** Display names of members that were added to the group (including the user). */
+        /** Display names of members that were added to the group (excluding the user). */
         readonly added: string[];
-        /** Display names of members that were removed from the group (including the user). */
+        /** Display names of members that were removed from the group (excluding the user). */
         readonly removed: string[];
     };
 
@@ -33,6 +33,14 @@ interface StatusMessageStatusMap {
 
     /** Status message that indicates a group call ended. */
     [StatusMessageType.GROUP_CALL_ENDED]: object;
+
+    /** Status message that indicates a change in the state of the user in the group. */
+    [StatusMessageType.GROUP_USER_STATE_CHANGED]: {
+        /**
+         * The new state of the user in the group.
+         */
+        readonly newUserState: GroupUserState;
+    };
 }
 
 export type AnyStatusMessageStatus = {

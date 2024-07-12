@@ -1,5 +1,5 @@
 import type {DbConversationUid, DbStatusMessageUid} from '~/common/db';
-import type {StatusMessageType} from '~/common/enum';
+import type {GroupUserState, StatusMessageType} from '~/common/enum';
 import type {LocalModel} from '~/common/model/types/common';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
@@ -43,6 +43,12 @@ export interface StatusMessageValues {
         readonly callId: GroupCallId;
         /** Group member (including the creator and the user) who started the group call. */
         readonly startedBy: IdentityString;
+    };
+
+    /** Status message that indicates a change of the user state in a group. */
+    [StatusMessageType.GROUP_USER_STATE_CHANGED]: {
+        /** The new user state. */
+        readonly newUserState: GroupUserState;
     };
 }
 

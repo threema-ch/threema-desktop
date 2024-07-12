@@ -499,6 +499,7 @@ export class ReflectedOutgoingMessageTask
                         this._services,
                         messageId,
                         validatedBody.container,
+                        this._reflectedAt,
                     ),
                 };
                 return instructions;

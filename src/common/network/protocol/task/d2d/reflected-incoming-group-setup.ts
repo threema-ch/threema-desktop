@@ -41,7 +41,7 @@ export class ReflectedIncomingGroupSetupTask extends GroupSetupTaskBase<PassiveT
     /** @inheritdoc */
     // eslint-disable-next-line @typescript-eslint/require-await
     protected async _kicked(handle: PassiveTaskCodecHandle, group: Group): Promise<void> {
-        group.controller.kicked.fromSync();
+        group.controller.kicked.fromSync(this._reflectedAt);
     }
 
     /** @inheritdoc */

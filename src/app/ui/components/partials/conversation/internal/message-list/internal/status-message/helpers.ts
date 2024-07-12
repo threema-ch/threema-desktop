@@ -1,7 +1,7 @@
 import type {ContextMenuItem} from '~/app/ui/components/hocs/context-menu-provider/types';
 import type {StatusMessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/status-message/props';
 import type {I18nType} from '~/app/ui/i18n-types';
-import {StatusMessageType} from '~/common/enum';
+import {GroupUserState, StatusMessageType} from '~/common/enum';
 import {unreachable} from '~/common/utils/assert';
 
 /**
@@ -87,7 +87,22 @@ export function getStatusMessageTextForStatus(
         case StatusMessageType.GROUP_CALL_ENDED:
             return i18n.t('status.prose--group-call-ended', 'Group call has ended');
 
+        case StatusMessageType.GROUP_USER_STATE_CHANGED:
+            return getUserStateStatusMessageText(i18n, status.newUserState);
         default:
             return unreachable(status);
+    }
+}
+
+function getUserStateStatusMessageText(i18n: I18nType, userState: GroupUserState): string {
+    switch (userState) {
+        case GroupUserState.MEMBER:
+            return i18n.t('status.prose--user-added', 'You were added to the group');
+        case GroupUserState.LEFT:
+            return i18n.t('status.prose--user-left', 'You have left the group');
+        case GroupUserState.KICKED:
+            return i18n.t('status.prose--user-kicked', 'You were removed from the group');
+        default:
+            return unreachable(userState);
     }
 }

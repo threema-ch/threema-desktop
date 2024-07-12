@@ -18,6 +18,32 @@ export interface GroupNameChanged {
   newName: string;
 }
 
+export interface GroupUserStateChange {
+  /** The user's state within the group */
+  newUserState: GroupUserStateChange_GroupUserState;
+}
+
+/**
+ * The states a user can have within a group.
+ *
+ * Note: Must be compatible with the `GroupUserState` enum.
+ */
+export const enum GroupUserStateChange_GroupUserState {
+  /** MEMBER - The user is a member (or creator) of the group. */
+  MEMBER = 0,
+  /**
+   * KICKED - The user has been kicked from the group. Implies that the group has been
+   * marked as _left_.
+   */
+  KICKED = 1,
+  /**
+   * LEFT - The user left the group. Implies that the group has been marked as
+   * _left_.
+   */
+  LEFT = 2,
+  UNRECOGNIZED = -1,
+}
+
 export interface GroupCallStarted {
   /**
    * Group Call ID identifying the group call, as defined by the Group Call
@@ -151,6 +177,42 @@ export const GroupNameChanged = {
           }
 
           message.newName = reader.string();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseGroupUserStateChange(): GroupUserStateChange {
+  return { newUserState: 0 };
+}
+
+export const GroupUserStateChange = {
+  encode(message: GroupUserStateChange, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.newUserState !== 0) {
+      writer.uint32(8).int32(message.newUserState);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): GroupUserStateChange {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGroupUserStateChange();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.newUserState = reader.int32() as any;
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {

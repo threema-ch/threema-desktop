@@ -25,6 +25,7 @@ export class ReflectedOutgoingGroupLeaveTask
         private readonly _services: ServicesForTasks,
         messageId: MessageId,
         private readonly _container: GroupMemberContainer.Type,
+        private readonly _reflectedAt: Date,
     ) {
         const messageIdHex = u64ToHexLe(messageId);
         this._log = _services.logging.logger(
@@ -75,7 +76,7 @@ export class ReflectedOutgoingGroupLeaveTask
             this._log.info(`We dissolved the group ${this._groupDebugString}`);
         } else {
             // Otherwise, process the leave message and leave the group
-            group.get().controller.leave.fromSync();
+            group.get().controller.leave.fromSync(this._reflectedAt);
             this._log.info(`We left the group ${this._groupDebugString}`);
         }
     }

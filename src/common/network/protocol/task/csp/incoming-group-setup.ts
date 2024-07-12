@@ -44,7 +44,7 @@ export class IncomingGroupSetupTask extends GroupSetupTaskBase<ActiveTaskCodecHa
         handle: ActiveTaskCodecHandle<'volatile'>,
         group: Group,
     ): Promise<void> {
-        await group.controller.kicked.fromRemote(handle);
+        await group.controller.kicked.fromRemote(handle, this._createdAt);
     }
 
     /** @inheritdoc */

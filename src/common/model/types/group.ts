@@ -156,12 +156,12 @@ export type GroupController = ReceiverController & {
      * Mark group membership as {@link GroupUserState.KICKED}. This means that we were removed from
      * the group by the creator.
      */
-    readonly kicked: Omit<ControllerUpdateFromSource, 'fromLocal'>;
+    readonly kicked: Omit<ControllerUpdateFromSource<[createdAt: Date]>, 'fromLocal'>;
 
     /**
      * Mark group membership as {@link GroupUserState.LEFT}. This means that we left the group.
      */
-    readonly leave: Omit<ControllerUpdateFromSource, 'fromRemote'>;
+    readonly leave: Omit<ControllerUpdateFromSource<[createdAt: Date]>, 'fromRemote'>;
 
     /**
      * Dissolve a group that we created.

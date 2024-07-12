@@ -1254,6 +1254,8 @@ export namespace StatusMessageType {
     export type GROUP_MEMBER_CHANGED = typeof GROUP_MEMBER_CHANGED;
     export const GROUP_NAME_CHANGED = 'group-name-changed';
     export type GROUP_NAME_CHANGED = typeof GROUP_NAME_CHANGED;
+    export const GROUP_USER_STATE_CHANGED = 'group-user-state-changed';
+    export type GROUP_USER_STATE_CHANGED = typeof GROUP_USER_STATE_CHANGED;
     export const GROUP_CALL_STARTED = 'group-call-started';
     export type GROUP_CALL_STARTED = typeof GROUP_CALL_STARTED;
     export const GROUP_CALL_ENDED = 'group-call-ended';
@@ -1273,6 +1275,7 @@ export namespace StatusMessageTypeUtils {
         StatusMessageType.CHAT_RESTORED,
         StatusMessageType.GROUP_MEMBER_CHANGED,
         StatusMessageType.GROUP_NAME_CHANGED,
+        StatusMessageType.GROUP_USER_STATE_CHANGED,
         StatusMessageType.GROUP_CALL_STARTED,
         StatusMessageType.GROUP_CALL_ENDED,
     ] as const);
@@ -1295,6 +1298,7 @@ export namespace StatusMessageTypeUtils {
         [StatusMessageType.CHAT_RESTORED]: 'CHAT_RESTORED',
         [StatusMessageType.GROUP_MEMBER_CHANGED]: 'GROUP_MEMBER_CHANGED',
         [StatusMessageType.GROUP_NAME_CHANGED]: 'GROUP_NAME_CHANGED',
+        [StatusMessageType.GROUP_USER_STATE_CHANGED]: 'GROUP_USER_STATE_CHANGED',
         [StatusMessageType.GROUP_CALL_STARTED]: 'GROUP_CALL_STARTED',
         [StatusMessageType.GROUP_CALL_ENDED]: 'GROUP_CALL_ENDED',
     } as const;

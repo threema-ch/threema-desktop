@@ -12,6 +12,10 @@ export function getStatusMessageStatus(
     getAndSubscribe: GetAndSubscribeFunction,
 ): ConversationStatusMessageViewModel['status'] {
     switch (statusMessageModel.type) {
+        case StatusMessageType.CHAT_RESTORED:
+            return {
+                type: statusMessageModel.type,
+            };
         case StatusMessageType.GROUP_MEMBER_CHANGED:
             return {
                 type: statusMessageModel.type,
@@ -45,9 +49,10 @@ export function getStatusMessageStatus(
                 type: statusMessageModel.type,
             };
 
-        case StatusMessageType.CHAT_RESTORED:
+        case StatusMessageType.GROUP_USER_STATE_CHANGED:
             return {
                 type: statusMessageModel.type,
+                newUserState: statusMessageModel.view.value.newUserState,
             };
 
         default:

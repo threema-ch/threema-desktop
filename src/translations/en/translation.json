@@ -567,7 +567,10 @@
     "prose--group-call-started": "{startedBy} has started a group call",
     "prose--group-created-name": "Group created with name \"{name}\"",
     "prose--group-member-changed": "{addedCount, plural, =0 {} =1 {{addedMembers} was added to the group} other {{addedMembers} were added to the group}}{and, plural, =0 {} other {, and }}{removedCount, plural, =0 {} =1 {{removedMembers} was removed from the group} other {{removedMembers} were removed from the group}}",
-    "prose--group-name-changed": "The group name was changed from \"{old}\" to \"{new}\""
+    "prose--group-name-changed": "The group name was changed from \"{old}\" to \"{new}\"",
+    "prose--user-added": "You were added to the group",
+    "prose--user-kicked": "You were removed from the group",
+    "prose--user-left": "You left the group"
   },
   "system": {
     "error--check-internet-and-retry": "Please check your Internet connection and try again.",

@@ -617,17 +617,19 @@ export class GroupModelController implements GroupController {
     public readonly kicked: GroupController['kicked'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
-        fromRemote: async (handle) => {
+        fromRemote: async (handle, createdAt) => {
             this._log.debug('GroupModelController: Kicked from remote');
             this.meta.run((guardedHandle) => {
                 this._update(guardedHandle, {userState: GroupUserState.KICKED});
+                this._addUserStateChangedStatusMessage(GroupUserState.KICKED, createdAt);
                 this._versionSequence.next();
             });
         },
-        fromSync: () => {
+        fromSync: (createdAt) => {
             this._log.debug('GroupModelController: Kicked from sync');
             this.meta.run((handle) => {
                 this._update(handle, {userState: GroupUserState.KICKED});
+                this._addUserStateChangedStatusMessage(GroupUserState.KICKED, createdAt);
                 this._versionSequence.next();
             });
         },
@@ -637,18 +639,20 @@ export class GroupModelController implements GroupController {
     public readonly leave: GroupController['leave'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
-        fromLocal: async () => {
+        fromLocal: async (createdAt) => {
             this._log.debug('GroupModelController: Leave from local');
             // TODO(DESK-551): Properly send CSP message
             this.meta.run((handle) => {
                 this._update(handle, {userState: GroupUserState.LEFT});
+                this._addUserStateChangedStatusMessage(GroupUserState.LEFT, createdAt);
                 this._versionSequence.next();
             });
         },
-        fromSync: () => {
+        fromSync: (createdAt) => {
             this._log.debug('GroupModelController: Leave from sync');
             this.meta.run((handle) => {
                 this._update(handle, {userState: GroupUserState.LEFT});
+                this._addUserStateChangedStatusMessage(GroupUserState.LEFT, createdAt);
                 this._versionSequence.next();
             });
         },
@@ -906,6 +910,18 @@ export class GroupModelController implements GroupController {
             this._update(guardedHandle, {userState: newUserState});
             userAdded += 1;
         }
+
+        // Because the user addition happens atomically with the addition of other members, they
+        // share the same timestamp which determines the place where the frontend places the
+        // messages. To avoid indeterministic behaviour, we always make the group member change
+        // status message appear first by putting the timestamp one millisecond into the past.
+        if (userAdded === 1) {
+            this._addUserStateChangedStatusMessage(
+                GroupUserState.MEMBER,
+                new Date(createdAt.getTime() - 1),
+            );
+        }
+
         const {added, removed} = this._diffMembers(guardedHandle, new Set(contacts));
         if (added.length === 0 && removed.length === 0) {
             return {added: userAdded, removed: 0};
@@ -1122,6 +1138,16 @@ export class GroupModelController implements GroupController {
             value: {
                 added: added.map((c) => c.get().view.identity),
                 removed: removed.map((c) => c.get().view.identity),
+            },
+            createdAt,
+        });
+    }
+
+    private _addUserStateChangedStatusMessage(newUserState: GroupUserState, createdAt: Date): void {
+        this.conversation().get().controller.createStatusMessage({
+            type: StatusMessageType.GROUP_USER_STATE_CHANGED,
+            value: {
+                newUserState,
             },
             createdAt,
         });

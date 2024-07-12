@@ -174,7 +174,7 @@ async function runTask(
     const messageId = randomMessageId(services.crypto);
 
     // Run task
-    const task = new ReflectedOutgoingGroupLeaveTask(services, messageId, container);
+    const task = new ReflectedOutgoingGroupLeaveTask(services, messageId, container, new Date());
     const handle = new TestHandle(services, expectations);
     await task.run(handle);
     let message = 'Not all expectations consumed';
