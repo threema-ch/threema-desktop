@@ -192,10 +192,7 @@
           activityComponent = undefined;
           break;
         case 'call':
-          // TODO(DESK-858): Remove sandbox restriction once group calls should be released
-          if (import.meta.env.BUILD_ENVIRONMENT === 'sandbox') {
-            activityComponent = GroupCallActivity;
-          }
+          activityComponent = GroupCallActivity;
           break;
         default:
           unreachable($router.activity.id, 'Unhandled activity router state');

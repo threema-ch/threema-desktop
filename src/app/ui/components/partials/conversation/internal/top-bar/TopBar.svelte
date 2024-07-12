@@ -157,8 +157,7 @@
       </div>
     {/if}
 
-    <!-- TODO(DESK-858): Remove sandbox restriction once group calls should be released -->
-    {#if import.meta.env.BUILD_ENVIRONMENT === 'sandbox' && $callsSettings.view.groupCallPolicy === GroupCallPolicy.ALLOW_GROUP_CALL}
+    {#if $callsSettings.view.groupCallPolicy === GroupCallPolicy.ALLOW_GROUP_CALL}
       {#if receiver.type === 'group' && !receiver.isLeft}
         {#if call === undefined}
           <IconButton

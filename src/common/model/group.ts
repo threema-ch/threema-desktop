@@ -1128,10 +1128,8 @@ export class GroupModelController implements GroupController {
                     byteEquals(chosen.base.derivations.callId.bytes, call.derivations.callId.bytes)
                 ) {
                     if (
-                        // TODO(DESK-858): Remove sandbox restriction once group calls should be released
-                        import.meta.env.BUILD_ENVIRONMENT === 'sandbox' &&
                         this._services.model.user.callsSettings.get().view.groupCallPolicy ===
-                            GroupCallPolicy.ALLOW_GROUP_CALL
+                        GroupCallPolicy.ALLOW_GROUP_CALL
                     ) {
                         // TODO(DESK-1505): Implement proper call start notifications with ringtones.
                         this._services.notification

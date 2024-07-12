@@ -85,11 +85,7 @@ export function getCallData(
             return undefined;
         case ReceiverType.GROUP: {
             const callsSettings = getAndSubscribe(services.model.user.callsSettings);
-            if (
-                // TODO(DESK-858): Remove sandbox restriction once group calls should be released
-                import.meta.env.BUILD_ENVIRONMENT !== 'sandbox' ||
-                callsSettings.view.groupCallPolicy === GroupCallPolicy.DENY_GROUP_CALL
-            ) {
+            if (callsSettings.view.groupCallPolicy === GroupCallPolicy.DENY_GROUP_CALL) {
                 return undefined;
             }
             if (receiver.view.userState !== GroupUserState.MEMBER) {
