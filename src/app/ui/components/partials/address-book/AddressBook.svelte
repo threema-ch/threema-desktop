@@ -181,6 +181,11 @@
     currentAppearance: ReturnType<(typeof appearance)['get']>,
   ): typeof items {
     return currentItems.filter((item) => {
+      // Only retain contacts that were added manually by the user.
+      if (item.receiver.type === 'contact' && item.receiver.acquaintanceLevel !== 'direct') {
+        return false;
+      }
+
       // Filter inactive contacts according to the respective policy.
       if (
         currentAppearance.view.inactiveContactsPolicy === InactiveContactsPolicy.HIDE &&

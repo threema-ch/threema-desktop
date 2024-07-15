@@ -6,6 +6,7 @@ import type {
     DbReceiverLookup,
 } from '~/common/db';
 import {
+    AcquaintanceLevel,
     ActivityState,
     ContactNotificationTriggerPolicy,
     GroupNotificationTriggerPolicy,
@@ -188,6 +189,7 @@ export function getContactReceiverData(
     return {
         type: 'contact',
         ...getCommonReceiverData(contactModel),
+        acquaintanceLevel: getAcquaintanceLevelData(contactModel),
         badge: getContactBadge(contactModel.view),
         firstName: contactModel.view.firstName,
         identity: contactModel.view.identity,
@@ -238,6 +240,19 @@ function getGroupReceiverData(
         ],
         isLeft,
     };
+}
+
+function getAcquaintanceLevelData(contactModel: Contact): AcquaintanceLevelData {
+    switch (contactModel.view.acquaintanceLevel) {
+        case AcquaintanceLevel.DIRECT:
+            return 'direct';
+
+        case AcquaintanceLevel.GROUP:
+            return 'group';
+
+        default:
+            return unreachable(contactModel.view.acquaintanceLevel);
+    }
 }
 
 /**
@@ -497,6 +512,8 @@ export async function updateReceiverData<TReceiver extends AnyReceiver>(
     }
 }
 
+type AcquaintanceLevelData = 'direct' | 'group';
+
 type NotificationPolicyData =
     | DefaultNotificationPolicyData
     | MentionedNotificationPolicyData
@@ -561,6 +578,7 @@ export interface SelfReceiverData
 
 export interface ContactReceiverData extends CommonReceiverData {
     readonly type: 'contact';
+    readonly acquaintanceLevel: AcquaintanceLevelData;
     readonly badge?: Extract<ReceiverBadgeType, 'contact-consumer' | 'contact-work'>;
     readonly firstName: string;
     readonly identity: IdentityString;
