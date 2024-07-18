@@ -7,6 +7,7 @@ import type {QueryRunner} from 'ts-sql-query/queryRunners/QueryRunner';
 import type {SqliteSqlBuilder} from 'ts-sql-query/sqlBuilders/SqliteSqlBuilder';
 
 import {isNonceHash, isPublicKey, isReadonlyRawKey} from '~/common/crypto';
+import {GROUP_CALL_KEY_LENGTH, wrapRawGroupCallKey} from '~/common/crypto/group-call';
 import {
     DATABASE_KEY_LENGTH,
     type DbMessageReactionUid,
@@ -21,6 +22,7 @@ import {
     type DbNonceUid,
     type DbMessageHistoryUid,
     type DbStatusMessageUid,
+    type DbRunningGroupCallUid,
 } from '~/common/db';
 import {
     AcquaintanceLevelUtils,
@@ -58,7 +60,7 @@ import {
     isNickname,
 } from '~/common/network/types';
 import {wrapRawBlobKey} from '~/common/network/types/keys';
-import {isF64, isU8, type u8, type u53} from '~/common/types';
+import {isF64, isU8, type u8, type u53, tag} from '~/common/types';
 import {exhausted, unreachable} from '~/common/utils/assert';
 import {byteView} from '~/common/utils/byte';
 
@@ -83,6 +85,7 @@ export const CUSTOM_TYPES = {
     FILE_DATA_UID: 'DbFileDataUid',
     GLOBAL_PROPERTY_UID: 'DbGlobalPropertyUid',
     NONCE_UID: 'DbNonceUid',
+    RUNNING_GROUP_CALL_UID: 'DbRunningGroupCallUid',
 
     // Enums (value constraints)
     ACQUAINTANCE_LEVEL: 'AcquaintanceLevel',
@@ -122,6 +125,7 @@ export const CUSTOM_TYPES = {
     MESSAGE_ID: 'MessageId',
     GROUP_ID: 'GroupId',
     DISTRIBUTION_LIST_ID: 'DistributionListId',
+    GROUP_CALL_KEY: 'GroupCallKey',
 
     // Other
     UINT8ARRAY: 'Uint8Array',
@@ -247,29 +251,31 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
         switch (maybeCustomType) {
             // UIDs (tagging)
             case CUSTOM_TYPES.CONTACT_UID:
-                return typeof value === 'bigint' ? (value as DbContactUid) : fail();
+                return typeof value === 'bigint' ? tag<DbContactUid>(value) : fail();
             case CUSTOM_TYPES.CONVERSATION_UID:
-                return typeof value === 'bigint' ? (value as DbConversationUid) : fail();
+                return typeof value === 'bigint' ? tag<DbConversationUid>(value) : fail();
             case CUSTOM_TYPES.DISTRIBUTION_LIST_UID:
-                return typeof value === 'bigint' ? (value as DbDistributionListUid) : fail();
+                return typeof value === 'bigint' ? tag<DbDistributionListUid>(value) : fail();
             case CUSTOM_TYPES.GROUP_UID:
-                return typeof value === 'bigint' ? (value as DbGroupUid) : fail();
+                return typeof value === 'bigint' ? tag<DbGroupUid>(value) : fail();
             case CUSTOM_TYPES.GROUP_MEMBER_UID:
-                return typeof value === 'bigint' ? (value as DbGroupMemberUid) : fail();
+                return typeof value === 'bigint' ? tag<DbGroupMemberUid>(value) : fail();
             case CUSTOM_TYPES.FILE_DATA_UID:
-                return typeof value === 'bigint' ? (value as DbFileDataUid) : fail();
+                return typeof value === 'bigint' ? tag<DbFileDataUid>(value) : fail();
             case CUSTOM_TYPES.MESSAGE_REACTION_UID:
-                return typeof value === 'bigint' ? (value as DbMessageReactionUid) : fail();
+                return typeof value === 'bigint' ? tag<DbMessageReactionUid>(value) : fail();
             case CUSTOM_TYPES.MESSAGE_UID:
-                return typeof value === 'bigint' ? (value as DbMessageUid) : fail();
+                return typeof value === 'bigint' ? tag<DbMessageUid>(value) : fail();
             case CUSTOM_TYPES.STATUS_MESSAGE_UID:
-                return typeof value === 'bigint' ? (value as DbStatusMessageUid) : fail();
+                return typeof value === 'bigint' ? tag<DbStatusMessageUid>(value) : fail();
             case CUSTOM_TYPES.GLOBAL_PROPERTY_UID:
-                return typeof value === 'bigint' ? (value as DbGlobalPropertyUid) : fail();
+                return typeof value === 'bigint' ? tag<DbGlobalPropertyUid>(value) : fail();
             case CUSTOM_TYPES.NONCE_UID:
-                return typeof value === 'bigint' ? (value as DbNonceUid) : fail();
+                return typeof value === 'bigint' ? tag<DbNonceUid>(value) : fail();
             case CUSTOM_TYPES.MESSAGE_HISTORY_UID:
-                return typeof value === 'bigint' ? (value as DbMessageHistoryUid) : fail();
+                return typeof value === 'bigint' ? tag<DbMessageHistoryUid>(value) : fail();
+            case CUSTOM_TYPES.RUNNING_GROUP_CALL_UID:
+                return typeof value === 'bigint' ? tag<DbRunningGroupCallUid>(value) : fail();
 
             // Enums (value constraints)
             case CUSTOM_TYPES.ACQUAINTANCE_LEVEL:
@@ -356,6 +362,8 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return value instanceof Uint8Array && value.byteLength === 8
                     ? ensureDistributionListId(byteView(DataView, value).getBigUint64(0, true))
                     : fail();
+            case CUSTOM_TYPES.GROUP_CALL_KEY:
+                return value instanceof Uint8Array ? wrapRawGroupCallKey(value) : fail();
 
             // Other
             case CUSTOM_TYPES.UINT8ARRAY:
@@ -427,6 +435,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.GLOBAL_PROPERTY_UID:
             case CUSTOM_TYPES.NONCE_UID:
             case CUSTOM_TYPES.MESSAGE_HISTORY_UID:
+            case CUSTOM_TYPES.RUNNING_GROUP_CALL_UID:
                 // No transformation
                 return value;
 
@@ -479,7 +488,8 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                     return array;
                 }
                 return fail();
-
+            case CUSTOM_TYPES.GROUP_CALL_KEY:
+                return isReadonlyRawKey(value, GROUP_CALL_KEY_LENGTH) ? value.unwrap() : fail();
             // Other
             case CUSTOM_TYPES.UINT8ARRAY:
                 // No transformation

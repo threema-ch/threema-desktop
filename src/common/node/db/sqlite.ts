@@ -54,6 +54,7 @@ import type {
     DbAnyNonDeletedMessage,
     DbDeletedMessage,
     DbAnyStatusMessage,
+    DbRunningGroupCall,
 } from '~/common/db';
 import {
     type GlobalPropertyKey,
@@ -109,6 +110,7 @@ import {
     tMessageTextData,
     tMessageVideoData,
     tNonce,
+    tRunningGroupCalls,
     tSettings,
     tStatusMessage,
 } from './tables';
@@ -3585,6 +3587,53 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     )
                     .executeSelectNoneOrOne(),
             ) ?? undefined
+        );
+    }
+
+    /** @inheritdoc */
+    public storeRunningGroupCalls(
+        groupUid: DbGroupUid,
+        groupCalls: readonly DbCreate<DbRunningGroupCall>[],
+    ): boolean {
+        assert(
+            groupCalls.find((call) => call.groupUid !== groupUid) === undefined,
+            'The group uid must correspond to the groupUid of all calls',
+        );
+        return this._db.syncTransaction(() => {
+            // Delete all running group call from this group
+            sync(
+                this._db
+                    .deleteFrom(tRunningGroupCalls)
+                    .where(tRunningGroupCalls.groupUid.equals(groupUid))
+                    .executeDelete(),
+            );
+            const dbGroupCalls = groupCalls.map((call) => ({...call, groupUid}));
+
+            // Insert currently running group calls of this group into the db.
+            const inserted = sync(
+                this._db.insertInto(tRunningGroupCalls).values(dbGroupCalls).executeInsert(),
+            );
+            return inserted > 0;
+        }, this._log);
+    }
+
+    /** @inheritdoc */
+    public getRunningGroupCalls(groupUid: DbGroupUid): DbList<DbRunningGroupCall> {
+        return sync(
+            this._db
+                .selectFrom(tRunningGroupCalls)
+                .select({
+                    uid: tRunningGroupCalls.uid,
+                    groupUid: tRunningGroupCalls.groupUid,
+                    nFailed: tRunningGroupCalls.nFailed,
+                    receivedAt: tRunningGroupCalls.receivedAt,
+                    creatorIdentity: tRunningGroupCalls.creatorIdentity,
+                    protocolVersion: tRunningGroupCalls.protocolVersion,
+                    gck: tRunningGroupCalls.gck,
+                    baseUrl: tRunningGroupCalls.baseUrl,
+                })
+                .where(tRunningGroupCalls.groupUid.equals(groupUid))
+                .executeSelectMany(),
         );
     }
 

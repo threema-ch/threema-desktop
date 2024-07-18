@@ -266,14 +266,14 @@ export async function transferOldMessages(
     } while (statusMessages.length !== 0);
 
     // For all conversations that are non-empty, add a status message.
-    new Set(oldToNewConversationUidMap.values()).forEach((conversationUid) => {
+    for (const conversationUid of oldToNewConversationUidMap.values()) {
         const conversation = model.conversations.getByUid(conversationUid);
         conversation?.get().controller.createStatusMessage({
             type: StatusMessageType.CHAT_RESTORED,
             createdAt: new Date(),
             value: {},
         });
-    });
+    }
     await restoreSettings(services, oldDb);
 
     // Refresh the cache to directly display the conversations again.

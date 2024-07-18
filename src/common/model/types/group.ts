@@ -1,4 +1,4 @@
-import type {DbGroup, DbGroupUid, UidOf} from '~/common/db';
+import type {DbGroup, DbGroupUid, DbList, DbRunningGroupCall, UidOf} from '~/common/db';
 import type {
     GroupNotificationTriggerPolicy,
     GroupUserState,
@@ -177,6 +177,11 @@ export type GroupController = ReceiverController & {
      * Register a group call received from a remote or reflected `GroupCallStart` message.
      */
     readonly registerCall: Omit<ControllerUpdateFromSource<[call: GroupCallBaseData]>, 'fromLocal'>;
+
+    /**
+     * Initialize the currently running calls as provided by the database.
+     */
+    readonly initializeCalls: (runningCalls: DbList<DbRunningGroupCall>) => void;
 
     /**
      * Run the _Group Call Refresh Steps_ for this group.

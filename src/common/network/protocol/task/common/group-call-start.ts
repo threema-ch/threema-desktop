@@ -12,7 +12,7 @@ export function getGroupCallBaseData(
     groupCallStart: GroupCallStart.Type,
     group: LocalModelStore<Group>,
 ): GroupCallBaseData {
-    const base = {
+    const init = {
         startedBy: senderIdentity,
         // TODO(DESK-1466): Rather use reflected-at (outgoing), created-at (incoming)
         receivedAt: new Date(),
@@ -21,8 +21,8 @@ export function getGroupCallBaseData(
         sfuBaseUrl: groupCallStart.sfuBaseUrl,
     };
     return {
-        ...base,
+        ...init,
         group,
-        derivations: deriveGroupCallProperties(services, group.get().view, base),
+        derivations: deriveGroupCallProperties(services, group.get().view, init),
     };
 }

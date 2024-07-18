@@ -4,7 +4,9 @@ import type {
     DbCreateConversationMixin,
     DbGroup,
     DbGroupUid,
+    DbList,
     DbReceiverLookup,
+    DbRunningGroupCall,
 } from '~/common/db';
 import {
     Existence,
@@ -38,7 +40,11 @@ import type {ProfilePicture} from '~/common/model/types/profile-picture';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import type {ChosenGroupCall, GroupCallBaseData} from '~/common/network/protocol/call/group-call';
+import {
+    deserializeRunningGroupCall,
+    type ChosenGroupCall,
+    type RunningGroupCall,
+} from '~/common/network/protocol/call/group-call';
 import type {SfuToken} from '~/common/network/protocol/directory';
 import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {OutgoingGroupCallStartTask} from '~/common/network/protocol/task/csp/outgoing-group-call-start';
@@ -277,7 +283,7 @@ function create(
     // Add to cache and create store
     const groupStore = cache.add(
         uid,
-        () => new GroupModelStore(services, view, uid, profilePictureData),
+        () => new GroupModelStore(services, view, uid, [], profilePictureData),
     );
 
     // Fetching the conversation implicitly updates the conversation set store and cache.
@@ -353,8 +359,11 @@ export function getByUid(
             profilePictureAdminDefined: group.profilePictureAdminDefined,
         };
 
+        // Load currently running group calls, if any.
+        const runningGroupCalls = services.db.getRunningGroupCalls(uid);
+
         // Create a store
-        return new GroupModelStore(services, view, uid, profilePictureData);
+        return new GroupModelStore(services, view, uid, runningGroupCalls, profilePictureData);
     });
 }
 
@@ -661,13 +670,13 @@ export class GroupModelController implements GroupController {
     public readonly registerCall: GroupController['registerCall'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromRemote: async (handle, call) => {
-            await this._registerCall(call);
+            await this._registerCalls([{type: 'init', base: call}], 'new');
         },
         fromSync: (call) => {
             // TODO(DESK-1466): This is wrong. this._registerCall must be awaited or the
             // registration may get lost.
-            this._registerCall(call).catch((error: unknown) =>
-                this._log.error('Unable to register call', error),
+            this._registerCalls([{type: 'init', base: call}], 'new').catch((error: unknown) =>
+                this._log.error('Unable to register reflected call', error),
             );
         },
     };
@@ -731,6 +740,20 @@ export class GroupModelController implements GroupController {
             }
             return contact_ === view.creator || view.members.has(contact_);
         });
+    }
+
+    /**
+     * Register initial calls from the database.
+     *
+     * Must be called once directly after construction of the {@link GroupModelStore}!
+     */
+    public initializeCalls(calls: DbList<DbRunningGroupCall>): void {
+        this._registerCalls(
+            calls.map((call) => deserializeRunningGroupCall(this._services, this._store(), call)),
+            'reload',
+        ).catch((error: unknown) =>
+            this._log.error('Unable to register initial calls loaded from database', error),
+        );
     }
 
     /** @inheritdoc */
@@ -1109,35 +1132,53 @@ export class GroupModelController implements GroupController {
      *
      * Note: This automatically creates status messages.
      */
-    private async _registerCall(call: GroupCallBaseData): Promise<void> {
+    private async _registerCalls(
+        calls: readonly RunningGroupCall<'init' | 'failed'>[],
+        type: 'new' | 'reload',
+    ): Promise<void> {
+        if (calls.length === 0) {
+            return;
+        }
+
         // Register the call first
         const registered = await this._services.model.call.group.register(
             {store: this._store(), chosen: this._call},
-            [{type: 'init', base: call}],
-            'new',
+            calls,
+            type,
         );
 
-        // Notify the user if the group call has been determined as _chosen_.
+        // Notify the user if one of the **newly added** group calls has been determined as
+        // _chosen_.
         //
         // Note: Waiting for _chosen_ ensures that the user does not get notified when it is no
         // longer running.
+        if (type === 'reload') {
+            return;
+        }
         registered.chosen
             .then((chosen) => {
                 if (
-                    chosen !== undefined &&
-                    byteEquals(chosen.base.derivations.callId.bytes, call.derivations.callId.bytes)
-                ) {
-                    if (
-                        this._services.model.user.callsSettings.get().view.groupCallPolicy ===
+                    chosen === undefined ||
+                    this._services.model.user.callsSettings.get().view.groupCallPolicy !==
                         GroupCallPolicy.ALLOW_GROUP_CALL
+                ) {
+                    return;
+                }
+                for (const call of calls) {
+                    if (
+                        !byteEquals(
+                            chosen.base.derivations.callId.bytes,
+                            call.base.derivations.callId.bytes,
+                        )
                     ) {
-                        // TODO(DESK-1505): Implement proper call start notifications with ringtones.
-                        this._services.notification
-                            .notifyGroupCallStart(chosen, this._store().get())
-                            .catch((error: unknown) => {
-                                this._log.error(`Group call start notification failed: ${error}`);
-                            });
+                        continue;
                     }
+                    // TODO(DESK-1505): Implement proper call start notifications with ringtones.
+                    this._services.notification
+                        .notifyGroupCallStart(chosen, this._store().get())
+                        .catch((error: unknown) => {
+                            this._log.error(`Group call start notification failed: ${error}`);
+                        });
                 }
             })
             .catch(assertUnreachable);
@@ -1156,29 +1197,29 @@ export class GroupModelStore extends LocalModelStore<Group> {
         services: ServicesForModel,
         group: GroupView,
         uid: DbGroupUid,
+        runningCalls: DbList<DbRunningGroupCall>,
         initialProfilePictureData: GroupProfilePictureFields,
     ) {
         const {logging} = services;
         const tag = `group.${uid}`;
-        super(
-            group,
-            new GroupModelController(
-                services,
-                uid,
-                contact.getIdentityString(services.device, group.creator),
-                group.groupId,
-                initialProfilePictureData,
-                () => this,
-            ),
+        const controller = new GroupModelController(
+            services,
             uid,
-            ReceiverType.GROUP,
-            {
-                debug: {
-                    log: logging.logger(`model.${tag}`),
-                    tag,
-                },
-            },
+            contact.getIdentityString(services.device, group.creator),
+            group.groupId,
+            initialProfilePictureData,
+            () => this,
         );
+        super(group, controller, uid, ReceiverType.GROUP, {
+            debug: {
+                log: logging.logger(`model.${tag}`),
+                tag,
+            },
+        });
+
+        // Note: We need to do this delayed here as initializing calls requires access to the
+        // `GroupModelStore` instance which is not fully constructed during the `super(...)` call.
+        controller.initializeCalls(runningCalls);
     }
 }
 

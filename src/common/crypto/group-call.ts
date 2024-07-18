@@ -41,10 +41,15 @@ import {u64ToBytesLe} from '~/common/utils/number';
 type SecretBoxWithRandomNonce = CryptoBox<never, never, never, never, NonceUnguardedScope>;
 
 /**
+ * Key length of a Group Call Ley (GCK) in bytes.
+ */
+export const GROUP_CALL_KEY_LENGTH = 32;
+
+/**
  * A Group Call Key (GCK) (bytes). Must be exactly 32 bytes long.
  */
 export type RawGroupCallKey = WeakOpaque<
-    ReadonlyRawKey<32>,
+    ReadonlyRawKey<typeof GROUP_CALL_KEY_LENGTH>,
     {readonly RawGroupCallKey: unique symbol}
 >;
 
@@ -54,7 +59,7 @@ export type RawGroupCallKey = WeakOpaque<
  * @throws {CryptoError} in case the key is not 32 bytes long.
  */
 export function wrapRawGroupCallKey(key: Uint8Array): RawGroupCallKey {
-    return tag<RawGroupCallKey>(wrapRawKey(key, 32).asReadonly());
+    return tag<RawGroupCallKey>(wrapRawKey(key, GROUP_CALL_KEY_LENGTH).asReadonly());
 }
 
 /**

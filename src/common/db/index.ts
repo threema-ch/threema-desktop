@@ -1,5 +1,6 @@
 import type {ServicesForBackend} from '~/common/backend';
 import {type NonceHash, type PublicKey, type RawKey, wrapRawKey} from '~/common/crypto';
+import type {RawGroupCallKey} from '~/common/crypto/group-call';
 import type {
     AcquaintanceLevel,
     ActivityState,
@@ -638,6 +639,22 @@ export interface DbNonce {
     readonly nonce: NonceHash;
 }
 
+export type DbRunningGroupCallUid = WeakOpaque<
+    DbUid,
+    {readonly DbRunningGroupCallUid: unique symbol}
+>;
+
+export interface DbRunningGroupCall {
+    readonly uid: DbRunningGroupCallUid;
+    readonly groupUid: DbGroupUid;
+    readonly nFailed: u53;
+    readonly receivedAt: Date;
+    readonly creatorIdentity: IdentityString;
+    readonly protocolVersion: u53;
+    readonly gck: RawGroupCallKey;
+    readonly baseUrl: string;
+}
+
 /**
  * The {@link DatabaseBackend} is an interface that abstracts away all calls directed at a concrete
  * database backend implementation. This allows implementing multiple persistence layers, e.g. an
@@ -1183,6 +1200,22 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
         creator: IdentityString | undefined,
         groupId: GroupId,
     ) => DbConversationUid | undefined;
+
+    /**
+     * Remove all running calls from a given group and store the upated running group calls of a
+     * specified group to the database.
+     *
+     * @throws If the groupUid does not match all groupUids of all provided groupCalls.
+     */
+    readonly storeRunningGroupCalls: (
+        groupUid: DbGroupUid,
+        groupCalls: readonly DbCreate<DbRunningGroupCall>[],
+    ) => boolean;
+
+    /**
+     * Get all running group calls of a specified group.
+     */
+    readonly getRunningGroupCalls: (groupUid: DbGroupUid) => DbList<DbRunningGroupCall>;
 }
 
 export interface NonceDatabaseBackend {

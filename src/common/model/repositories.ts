@@ -51,10 +51,10 @@ export class ModelRepositories implements Repositories {
         this.profilePictures = new ProfilePictureModelRepository(services);
         this.user = new UserModel(services);
         this.contacts = new ContactModelRepository(services);
+        this.call = new CallManager(services);
         this.groups = new GroupModelRepository(services);
         this.conversations = new ConversationModelRepository(services);
         this.messages = new MessageModelRepository(services);
         this.globalProperties = new GlobalPropertyRepository(services);
-        this.call = new CallManager(services);
     }
 }

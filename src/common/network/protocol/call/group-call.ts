@@ -5,6 +5,7 @@ import {
     type GroupCallKeyDerivations,
     type RawGroupCallKey,
 } from '~/common/crypto/group-call';
+import type {DbCreate, DbRunningGroupCall} from '~/common/db';
 import {
     GroupCallPolicy,
     GroupUserState,
@@ -25,7 +26,7 @@ import {
     type DirectoryErrorType,
     type SfuToken,
 } from '~/common/network/protocol/directory';
-import type {BaseUrl, IdentityString} from '~/common/network/types';
+import {ensureBaseUrl, type BaseUrl, type IdentityString} from '~/common/network/types';
 import {tag, type ReadonlyUint8Array, type WeakOpaque, type u16, type u53} from '~/common/types';
 import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
 import {byteEquals, bytesToHex} from '~/common/utils/byte';
@@ -34,13 +35,13 @@ import {AsyncLock} from '~/common/utils/lock';
 import {clamp} from '~/common/utils/number';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {AbortRaiser, type AbortListener} from '~/common/utils/signal';
-import type {IQueryableStore, WritableStore} from '~/common/utils/store';
+import {type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {TIMER, type TimerCanceller} from '~/common/utils/timer';
 import {MIDS_MAX, type AnyGroupCallContextAbort, GroupCall} from '~/common/webrtc/group-call';
 
 export type ServicesForGroupCall = Pick<
     ServicesForModel,
-    'crypto' | 'device' | 'directory' | 'endpoint' | 'logging' | 'model' | 'sfu' | 'webrtc'
+    'db' | 'crypto' | 'device' | 'directory' | 'endpoint' | 'logging' | 'model' | 'sfu' | 'webrtc'
 >;
 
 /**
@@ -212,9 +213,48 @@ interface GroupCallState {
     };
 }
 
-type RunningGroupCall<TType extends keyof GroupCallState = keyof GroupCallState> = {
+export type RunningGroupCall<TType extends keyof GroupCallState = keyof GroupCallState> = {
     readonly base: GroupCallBaseData;
 } & GroupCallState[TType];
+
+function serializeRunningGroupCall(call: RunningGroupCall): DbCreate<DbRunningGroupCall> {
+    const {type} = call;
+    return {
+        gck: call.base.gck,
+        groupUid: call.base.group.get().ctx,
+        nFailed: type !== 'failed' ? 0 : call.nFailed,
+        protocolVersion: call.base.protocolVersion,
+        baseUrl: call.base.sfuBaseUrl.raw,
+        receivedAt: call.base.receivedAt,
+        creatorIdentity: call.base.startedBy,
+    };
+}
+
+export function deserializeRunningGroupCall(
+    services: Pick<ServicesForModel, 'crypto' | 'device'>,
+    group: LocalModelStore<Group>,
+    call: Omit<DbRunningGroupCall, 'uid'>,
+): RunningGroupCall<'init' | 'failed'> {
+    const init = {
+        startedBy: call.creatorIdentity,
+        receivedAt: call.receivedAt,
+        protocolVersion: call.protocolVersion,
+        gck: call.gck,
+        sfuBaseUrl: {
+            raw: call.baseUrl,
+            parsed: ensureBaseUrl(call.baseUrl, 'https:'),
+        },
+    };
+    const base: GroupCallBaseData = {
+        ...init,
+        group,
+        derivations: deriveGroupCallProperties(services, group.get().view, init),
+    };
+    if (call.nFailed === 0) {
+        return {type: 'init', base};
+    }
+    return {type: 'failed', nFailed: call.nFailed, base};
+}
 
 /** Contains all properties of a group call considered _running_ and _chosen_. */
 export type ChosenGroupCall = RunningGroupCall<'peeked' | 'ongoing'>;
@@ -235,10 +275,10 @@ type GroupCallRunningContextAbort =
 class GroupCallRunningContext {
     private readonly _log: Logger;
     private readonly _lock = new AsyncLock<'refresh' | 'group-update'>();
-    // TODO(DESK-1467): Manually adding savepoints to this._running may be too brittle. A perhaps
-    // better alternative would be to make this a store and whenever the store updates, the data is
-    // saved to the database.
-    private _running = new Map<GroupCallIdValue, RunningGroupCall>();
+
+    private readonly _running = new WritableStore<Map<GroupCallIdValue, RunningGroupCall>>(
+        new Map(),
+    );
     private _cancel: TimerCanceller | undefined = undefined;
 
     public constructor(
@@ -251,6 +291,19 @@ class GroupCallRunningContext {
         private readonly _abort: AbortRaiser<GroupCallRunningContextAbort>,
     ) {
         this._log = _services.logging.logger(`group-call-running.${_group.store.ctx}`);
+
+        // Write running group calls to database whenever there's a change
+        _abort.subscribe(
+            this._running.subscribe((running) => {
+                if (import.meta.env.VERBOSE_LOGGING.CALLS) {
+                    this._log.debug('Writing group calls to database', running);
+                }
+                this._services.db.storeRunningGroupCalls(
+                    this._group.store.ctx,
+                    [...running.values()].map((call) => serializeRunningGroupCall(call)),
+                );
+            }),
+        );
 
         // Abort the context when the user is no longer a member of the group or the group has been
         // removed entirely.
@@ -271,57 +324,57 @@ class GroupCallRunningContext {
                 //
                 // Note: This won't update _running_ calls which are also _ongoing_ as those are
                 // directly updated from the ongoing `GroupCall` instance.
+                const update = (
+                    call: RunningGroupCall,
+                ): readonly [GroupCallIdValue, RunningGroupCall] => {
+                    if (call.type !== 'peeked') {
+                        return [call.base.derivations.callId.id, call];
+                    }
+                    if (call.state.participants === undefined) {
+                        return [call.base.derivations.callId.id, call];
+                    }
+
+                    // Filter removed participants.
+                    //
+                    // Note: Newly added participants which have been filtered
+                    // beforehand (e.g. due to a race with the member joining the
+                    // call and the user receiving a `group-setup`) would be picked
+                    // up in the subsequent next refresh. A delay of 10s is deemed
+                    // acceptable.
+                    const participants = call.state.participants.filter((participant) =>
+                        controller.hasMember(participant),
+                    );
+                    const updated: RunningGroupCall<'peeked'> = {
+                        type: 'peeked',
+                        base: call.base,
+                        state: {
+                            ...call.state,
+                            participants,
+                        },
+                    };
+
+                    // Update chosen store if this _running_ call is also _chosen_.
+                    if (
+                        this._group.chosen.run((chosen) => {
+                            if (chosen === undefined) {
+                                return false;
+                            }
+                            return byteEquals(
+                                chosen.base.derivations.callId.bytes,
+                                call.base.derivations.callId.bytes,
+                            );
+                        })
+                    ) {
+                        this._group.chosen.update(() => updated);
+                    }
+                    return [updated.base.derivations.callId.id, updated];
+                };
+
                 this._lock
                     .with(() => {
-                        this._running = new Map(
-                            [...this._running.values()].map(
-                                (call): [GroupCallIdValue, RunningGroupCall] => {
-                                    if (call.type !== 'peeked') {
-                                        return [call.base.derivations.callId.id, call];
-                                    }
-                                    if (call.state.participants === undefined) {
-                                        return [call.base.derivations.callId.id, call];
-                                    }
-
-                                    // Filter removed participants.
-                                    //
-                                    // Note: Newly added participants which have been filtered
-                                    // beforehand (e.g. due to a race with the member joining the
-                                    // call and the user receiving a `group-setup`) would be picked
-                                    // up in the subsequent next refresh. A delay of 10s is deemed
-                                    // acceptable.
-                                    const participants = call.state.participants.filter(
-                                        (participant) => controller.hasMember(participant),
-                                    );
-                                    const updated: RunningGroupCall<'peeked'> = {
-                                        type: 'peeked',
-                                        base: call.base,
-                                        state: {
-                                            ...call.state,
-                                            participants,
-                                        },
-                                    };
-
-                                    // Update chosen store if this _running_ call is also _chosen_.
-                                    if (
-                                        this._group.chosen.run((chosen) => {
-                                            if (chosen === undefined) {
-                                                return false;
-                                            }
-                                            return byteEquals(
-                                                chosen.base.derivations.callId.bytes,
-                                                call.base.derivations.callId.bytes,
-                                            );
-                                        })
-                                    ) {
-                                        this._group.chosen.update(() => updated);
-                                    }
-                                    return [updated.base.derivations.callId.id, updated];
-                                },
-                            ),
+                        this._running.update(
+                            (running) => new Map([...running.values()].map(update)),
                         );
-
-                        // TODO(DESK-1467): Save this._running to the database
                     }, 'group-update')
                     .catch(assertUnreachable);
             }),
@@ -681,48 +734,50 @@ class GroupCallRunningContext {
         this._lock
             .with(async () => {
                 // Add calls
-                for (const call of calls) {
-                    // Check for duplicates
-                    const existing = this._running.get(call.base.derivations.callId.id);
-                    if (existing !== undefined) {
-                        if (existing.type !== 'ongoing' && call.type === 'ongoing') {
-                            // When joining, we'll get an _ongoing_ call, so we need to replace any
-                            // existing _running_ call.
-                            this._running.set(call.base.derivations.callId.id, call);
-                        } else {
-                            // Filter duplicate
-                            this._log.warn('Discarding group call with same GCK as another');
+                this._running.update((running) => {
+                    for (const call of calls) {
+                        // Check for duplicates
+                        const existing = running.get(call.base.derivations.callId.id);
+                        if (existing !== undefined) {
+                            if (existing.type !== 'ongoing' && call.type === 'ongoing') {
+                                // When joining, we'll get an _ongoing_ call, so we need to replace
+                                // any existing _running_ call.
+                                running.set(call.base.derivations.callId.id, call);
+                            } else {
+                                // Filter duplicate
+                                this._log.warn('Discarding group call with same GCK as another');
+                            }
+                            continue;
                         }
-                        continue;
-                    }
-                    this._running.set(call.base.derivations.callId.id, call);
+                        running.set(call.base.derivations.callId.id, call);
 
-                    // Announce _new_ calls
-                    //
-                    // Note 1: This maintains the history. In other words, a status will be created even
-                    // if a group call is no longer running. This case will be picked up by the refresh
-                    // steps and the corresponding _ended_ status message created. But because of this,
-                    // it would be a bad idea to post notifications or ring for a group call here.
-                    //
-                    // Note 2: Desktop slightly violates the protocol here and announces group calls
-                    // which later turn out to have a bad SFU base URL. Considered an edge case for now.
-                    if (type === 'new') {
-                        this._group.store
-                            .get()
-                            .controller.conversation()
-                            .get()
-                            .controller.createStatusMessage({
-                                type: StatusMessageType.GROUP_CALL_STARTED,
-                                createdAt: call.base.receivedAt,
-                                value: {
-                                    callId: call.base.derivations.callId,
-                                    startedBy: call.base.startedBy,
-                                },
-                            });
+                        // Announce _new_ calls
+                        //
+                        // Note 1: This maintains the history. In other words, a status will be created even
+                        // if a group call is no longer running. This case will be picked up by the refresh
+                        // steps and the corresponding _ended_ status message created. But because of this,
+                        // it would be a bad idea to post notifications or ring for a group call here.
+                        //
+                        // Note 2: Desktop slightly violates the protocol here and announces group calls
+                        // which later turn out to have a bad SFU base URL. Considered an edge case for now.
+                        if (type === 'new') {
+                            this._group.store
+                                .get()
+                                .controller.conversation()
+                                .get()
+                                .controller.createStatusMessage({
+                                    type: StatusMessageType.GROUP_CALL_STARTED,
+                                    createdAt: call.base.receivedAt,
+                                    value: {
+                                        callId: call.base.derivations.callId,
+                                        startedBy: call.base.startedBy,
+                                    },
+                                });
+                        }
                     }
-                }
 
-                // TODO(DESK-1467): Save this._running to the database
+                    return running;
+                });
 
                 // Run the group call refresh steps and determine the _chosen_ call
                 try {
@@ -776,7 +831,7 @@ class GroupCallRunningContext {
 
         // Because acquiring the lock for the group is async, we may run into a scenario where the
         // group no longer has any running calls in which case we can exit out early.
-        if (this._running.size === 0) {
+        if (this._running.get().size === 0) {
             this._log.debug('No group calls considered running, discarding refresh');
             return undefined;
         }
@@ -803,13 +858,12 @@ class GroupCallRunningContext {
         const refreshed = await GroupCallRunningContext._refreshGroup(
             this._services,
             {ongoing: this._ongoing, group: this._group.store, log: this._log},
-            [...this._running.values()],
+            [...this._running.get().values()],
             token,
         );
-        this._running = new Map(
-            refreshed.running.map((call) => [call.base.derivations.callId.id, call]),
+        this._running.update(
+            () => new Map(refreshed.running.map((call) => [call.base.derivations.callId.id, call])),
         );
-        // TODO(DESK-1467): Save this._running to the database
         this._group.chosen.update(() => refreshed.chosen);
 
         // Shut down the context if there are no longer any calls considered _running_.
@@ -834,7 +888,7 @@ class GroupCallRunningContext {
         // Note: The protocol allows us to increase to 30s while the group conversation is not
         // visible. This is not as relevant as on mobile apps, so we'll spare us the additional
         // complexity.
-        if (this._running.size === 0) {
+        if (this._running.get().size === 0) {
             assert(this._group.chosen.get() === undefined);
             return;
         }
@@ -870,11 +924,7 @@ export class GroupCallManager {
     public constructor(
         private readonly _services: ServicesForGroupCall,
         private readonly _ongoing: AsyncLock<CallType, WritableStore<AnyOngoingCall>>,
-    ) {
-        // TODO(DESK-1467): Load running group calls that are considered _running_ from the database
-        // and call .register() with deserialised calls of type 'init' or 'failed' respectively. Use
-        // type 'reload' in the .register call.
-    }
+    ) {}
 
     /**
      * Register a group call that was received as a `GroupCallStart` or re-register former group
