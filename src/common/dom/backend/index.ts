@@ -839,7 +839,6 @@ export class Backend {
         if (import.meta.env.BUILD_VARIANT === 'work' && workData?.get() === undefined) {
             // The work app requires work credentials. Older versions of the app did not yet sync
             // and store these fields. Thus, enforce this requirement here.
-
             throw new BackendCreationError(
                 'missing-work-credentials',
                 'This is a work app, but no work data was found. Profile should be relinked.',
@@ -902,12 +901,11 @@ export class Backend {
         );
         const backend = new Backend(backendServices);
 
-        // TODO(DESK-1371) Activate this dialog
-        // if (backendServices.device.csp.deviceCookie === undefined) {
-        //     backendServices.systemDialog
-        //         .openOnce({type: 'missing-device-cookie'})
-        //         .catch(assertUnreachable);
-        // }
+        if (backendServices.device.csp.deviceCookie === undefined) {
+            backendServices.systemDialog
+                .openOnce({type: 'missing-device-cookie'})
+                .catch(assertUnreachable);
+        }
 
         // Start connection
         backend._connectionManager.start().catch(() => {

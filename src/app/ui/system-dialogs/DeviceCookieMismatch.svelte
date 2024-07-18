@@ -8,29 +8,27 @@
   import Title from '~/app/ui/svelte-components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
   import {unlinkAndCreateBackup} from '~/app/ui/utils/profile';
-  import type {Config} from '~/common/config';
   import type {Logger} from '~/common/logging';
   import type {DeviceCookieMismatchDialog} from '~/common/system-dialog';
   import type {Delayed} from '~/common/utils/delayed';
   import {unusedProp} from '~/common/utils/svelte-helpers';
 
-  export let appServices: Delayed<AppServices> | undefined = undefined;
+  export let appServices: Delayed<AppServices>;
   export let log: Logger;
-  export let config: Config;
   export let visible: boolean;
   export let context: DeviceCookieMismatchDialog['context'];
 
   let errorMessage: string | undefined = undefined;
 
-  unusedProp(config, context);
+  unusedProp(context);
 
   /**
    * Unlink and delete the device data and restart the application.
    */
-  async function handleClickCancel(event: Event): Promise<void> {
+  async function handleClickConfirm(event: Event): Promise<void> {
     event.preventDefault();
     // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-    if (appServices === undefined || !appServices.isSet()) {
+    if (!appServices.isSet()) {
       log.warn('Cannot unlink the profile because the app services are not yet ready');
       return;
     }
@@ -46,10 +44,10 @@
 <ModalWrapper {visible}>
   <ModalDialog
     bind:visible
-    on:confirm
+    on:confirm={handleClickConfirm}
     on:clickoutside
     on:close
-    on:cancel={handleClickCancel}
+    on:cancel
     closableWithEscape={false}
   >
     <Title
@@ -63,13 +61,13 @@
       <p>
         {$i18n.t(
           'dialog--device-cookie-mismatch.prose--explanation',
-          "The server has detected a connection from a different device with the same Threema ID. If you haven't used your Threema ID on another device in the meantime, then please contact support and send the log file if possible.",
+          'The server has detected a connection from a different device with the same Threema ID. If you haven’t recently used your Threema ID on another device, please contact our support and send us the log file if possible.',
         )}
       </p>
       <p>
         {$i18n.t(
           'dialog--device-cookie-mismatch.prose--solution',
-          'If you have used your Threema ID on another device, we recommend to relink Threema Desktop to synchronize the device cookie.',
+          'If you have used your Threema ID on another device, we recommend relinking the desktop app with your mobile device. The message history can be restored after relinking.',
         )}
       </p>
 
@@ -84,11 +82,11 @@
       <!-- eslint-disable @typescript-eslint/prefer-optional-chain -->
       <CancelAndConfirm
         cancelText={$i18n.t(
-          'dialog--device-cookie.label--relink',
-          'Relink and synchronize device cookie',
+          'dialog--device-cookie-mismatch.label--continue',
+          'Continue without relinking',
         )}
-        confirmText={$i18n.t('dialog--device-cookie.label--continue', 'Continue')}
-        cancelDisabled={appServices === undefined || !appServices.isSet()}
+        confirmText={$i18n.t('dialog--device-cookie-mismatch.label--relink', 'Relink device')}
+        cancelDisabled={!appServices.isSet()}
         {modal}
       />
       <!-- eslint-enable @typescript-eslint/prefer-optional-chain -->
@@ -101,7 +99,7 @@
 
   .body {
     width: rem(480px);
-    padding: rem(16px);
+    padding: 0 rem(16px);
     border-radius: rem(8px);
     overflow: hidden;
 

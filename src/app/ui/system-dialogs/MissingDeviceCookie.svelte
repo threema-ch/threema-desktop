@@ -62,7 +62,7 @@
         <Text
           text={$i18n.t(
             'dialog--device-cookie.prose--solution',
-            'To install the device cookie, you must relink Threema Desktop. Since this is a security feature, we recommend to install the device cookie as soon as possible.',
+            'To install the device cookie, you need to relink the desktop app with your mobile device. For security reasons, we recommend installing the device cookie as soon as possible. The message history can be restored after relinking.',
           )}
         />
 
@@ -76,14 +76,8 @@
 
       <div slot="footer" let:modal>
         <CancelAndConfirm
-          cancelText={$i18n.t(
-            'dialog--device-cookie.label--close',
-            'Continue without device cookie',
-          )}
-          confirmText={$i18n.t(
-            'dialog--device-cookie.label--relink',
-            'Relink and synchronize device cookie',
-          )}
+          cancelText={$i18n.t('dialog--device-cookie.label--close', 'Continue without relinking')}
+          confirmText={$i18n.t('dialog--device-cookie.label--relink', 'Relink device')}
           {modal}
         />
       </div>
@@ -95,7 +89,8 @@
   @use 'component' as *;
 
   .body {
-    padding: rem(16px);
+    width: rem(480px);
+    padding: 0 rem(16px);
     border-radius: rem(8px);
     overflow: hidden;
     display: flex;

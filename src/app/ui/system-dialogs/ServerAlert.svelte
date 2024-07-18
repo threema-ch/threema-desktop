@@ -100,10 +100,7 @@
       </div>
       <div slot="footer" let:modal>
         <CancelAndConfirm
-          cancelText={$i18n.t(
-            'dialog--server-alert.action--continue',
-            'Continue without connection',
-          )}
+          cancelText={$i18n.t('dialog--server-alert.action--continue', 'Continue')}
           confirmText={$i18n.t('dialog--server-alert.action--confirm', 'Relink Device')}
           {modal}
         />

@@ -95,17 +95,18 @@
     "prose--delete-not-supported-partial": "Hinweis: Falls Sie «{buttonText}» wählen, wird die Nachricht bei folgenden Gruppenmitgliedern nicht gelöscht: {names}{n, plural, =0 {.} other { und {n} weitere.}} Um gelöschte Nachrichten zu unterstützen, müssen diese Kontakte Threema auf die neueste Version aktualisieren."
   },
   "dialog--device-cookie": {
-    "label--close": "Ohne Geräte-Cookie fortfahren",
-    "label--continue": "Weiter",
+    "label--close": "Schliessen",
     "label--device-cookie-mismatch-title": "Verbindung von einem anderen Gerät erkannt",
-    "label--device-cookie-title": "Geräte-Cookie-Synchronisation empfohlen",
-    "label--relink": "Erneut verbinden und Geräte-Cookie synchronisieren",
+    "label--device-cookie-title": "Erneutes Verknüpfen empfohlen",
+    "label--relink": "Gerät neu verknüpfen",
     "prose--explanation": "Die Desktop-App unterstützt nun Geräte-Cookies. Diese werden eingesetzt, um zu erkennen, ob Ihre Threema-ID auf einem anderen Gerät verwendet wird.",
-    "prose--solution": "Um das Geräte-Cookie zu installieren, müssen Sie die Desktop-App erneut mit Ihrem Mobilgerät verbinden. Aus Sicherheitsgründen empfehlen wir, das Geräte-Cookie so bald als möglich zu installieren."
+    "prose--solution": "Um das Geräte-Cookie zu installieren, müssen Sie die Desktop-App erneut mit Ihrem Mobilgerät verknüpfen. Aus Sicherheitsgründen empfehlen wir, das Geräte-Cookie so bald als möglich zu installieren. Die Chatverläufe können nach erneutem Verknüpfen wiederhergestellt werden."
   },
   "dialog--device-cookie-mismatch": {
-    "prose--explanation": "Der Server hat eine Verbindung von einem anderen Gerät mit derselben Threema-ID erkannt. Falls Sie Ihre Threema-ID nicht kürzlich auf einem anderen Gerät verwendet haben, kontaktieren Sie bitte unseren Support und senden Sie wenn möglich die Log-Datei mit.",
-    "prose--solution": "Falls Sie Ihre Threema-ID auf einem anderen Gerät verwendet haben, empfehlen wir, die Desktop-App erneut mit dem Mobilgerät zu verbinden, um das Geräte-Cookie zu synchronisieren."
+    "label--continue": "Schliessen",
+    "label--relink": "Gerät neu verknüpfen",
+    "prose--explanation": "Der Server hat eine Verbindung von einem anderen Gerät mit derselben Threema-ID erkannt. Falls Sie Ihre Threema-ID nicht kürzlich auf einem anderen Gerät verwendet haben, kontaktieren Sie bitte unseren Support und senden Sie wenn möglich die Logdatei mit.",
+    "prose--solution": "Falls Sie Ihre Threema-ID auf einem anderen Gerät verwendet haben, empfehlen wir, die Desktop-App erneut mit dem Mobilgerät zu verknüpfen. Die Chatverläufe können nach erneutem Verknüpfen wiederhergestellt werden."
   },
   "dialog--discard-media-message": {
     "action--cancel": "Abbrechen",
@@ -302,7 +303,7 @@
   },
   "dialog--server-alert": {
     "action--confirm": "Gerät neu verknüpfen",
-    "action--continue": "Ohne Verbindung fortfahren"
+    "action--continue": "Schliessen"
   },
   "dialog--startup-unlock": {
     "action--confirm": "Weiter",

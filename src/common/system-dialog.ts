@@ -103,10 +103,9 @@ export type SystemDialog =
     | ConnectionErrorDialog
     | ServerAlertDialog
     | UnrecoverableStateDialog
-    | InvalidWorkCredentialsDialog;
-// TODO(DESK-1371) Add the device cookie mismatch and missing device cookie warning to the system dialog.
-// | MissingDeviceCookieDialog;
-// | DeviceCookieMismatchDialog;
+    | InvalidWorkCredentialsDialog
+    | MissingDeviceCookieDialog
+    | DeviceCookieMismatchDialog;
 
 // TODO(DESK-1337): Result should reflect possible available actions
 export type DialogAction = 'confirmed' | 'cancelled';
