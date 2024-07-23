@@ -118,7 +118,7 @@
       device,
       state: $localDevices.microphone?.track.enabled ?? false ? 'on' : 'off',
     }).catch((error) => {
-      log.error(`Unable to select audio device ${device.label}: ${error}`);
+      log.warn(`Unable to select audio device ${device.label}: ${error}`);
     });
   }
 
@@ -128,7 +128,7 @@
       facing: 'user',
       state: $localDevices.camera?.track.enabled ?? false ? 'on' : 'off',
     }).catch((error) => {
-      log.error(`Unable to select video device ${device.label}: ${error}`);
+      log.warn(`Unable to select video device ${device.label}: ${error}`);
     });
   }
 
