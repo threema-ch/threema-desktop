@@ -354,10 +354,6 @@
     }
   }
 
-  function handleLazyListError(error: Error): void {
-    log.error(`An error occurred in LazyList: ${error.message}`);
-  }
-
   function handleItemAnchored(
     event: CustomEvent<LazyListProps<AnyMessageListMessage>['items'][u53]>,
   ): void {
@@ -477,7 +473,6 @@
     <LazyList
       bind:this={lazyListComponent}
       items={$messagesStore}
-      onError={handleLazyListError}
       visibleItemId={anchoredMessageId}
       on:itemanchored={handleItemAnchored}
       on:itementered={handleItemEntered}
