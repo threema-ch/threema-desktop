@@ -539,6 +539,10 @@ export class GroupCallContextProvider implements GroupCallContext {
     }
 
     public sendP2s(arrays: readonly Uint8Array[]): void {
+        if (this._abort.aborted) {
+            this._log.warn('Unable to send a P2S message as the call is already aborted');
+            return;
+        }
         assert(this._connection !== undefined, 'p2s() called without an existing connection');
         for (const array of arrays) {
             this._connection.p2s.dc.send(array);
@@ -553,7 +557,11 @@ export class GroupCallContextProvider implements GroupCallContext {
             readonly added: ReadonlySet<ParticipantId>;
         },
     ): Promise<void> {
-        assert(this._connection !== undefined, 'connect() called without an existing connection');
+        if (this._abort.aborted) {
+            this._log.warn('Unable to update call as the call is already aborted');
+            return;
+        }
+        assert(this._connection !== undefined, 'update() called without an existing connection');
         const {pc, mediaCryptoHandle, local, remote} = this._connection;
 
         // Remove participants to be removed
