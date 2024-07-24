@@ -924,6 +924,11 @@ function buildMsix(dirs: Directories, flavor: BuildFlavor, sign: boolean): void 
     const appId = determineAppIdentifier(flavor);
     const msixOutPath = path.join(dirs.out, `${appId}-windows-${process.arch}.msix`);
     log.minor(`Writing MSIX file to ${msixOutPath}`);
+    if (sign) {
+        for (const exe of ['ThreemaDesktop.exe', 'ThreemaDesktopLauncher.exe']) {
+            signWindowsBinaryOrPackage(path.join(binaryDirPath, exe), flavor);
+        }
+    }
     execFileSync(
         makeappxPath,
         // prettier-ignore
