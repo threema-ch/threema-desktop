@@ -126,9 +126,7 @@ export function reflectAndSendDeliveryReceipt(
         // Reflect outgoing delivery receipt
         NetworkExpectationFactory.reflectSingle((payload) => {
             expect(payload.content).to.equal('outgoingMessage');
-            expect(payload.outgoingMessage?.type).to.equal(
-                protobuf.common.CspE2eMessageType.DELIVERY_RECEIPT,
-            );
+            expect(payload.outgoingMessage?.type).to.equal(CspE2eStatusUpdateType.DELIVERY_RECEIPT);
         }),
 
         // Send outgoing delivery receipt
@@ -155,6 +153,53 @@ export function reflectAndSendDeliveryReceipt(
         }),
 
         // Expect server ack for delivery receipt
+        NetworkExpectationFactory.readIncomingMessageAck(
+            recipient.identity.string,
+            messageIdDelayed,
+        ),
+    ];
+}
+
+/**
+ * Return a list of expectations for:
+ *
+ * - Reflect outgoing group sync request
+ * - Send outgoing group sync request
+ * - Receive server ack for outgoing group sync request
+ */
+export function reflectAndSendGroupSyncRequest(
+    services: ServicesForBackend,
+    recipient: TestUser,
+): NetworkExpectation[] {
+    const {device} = services;
+    const messageIdDelayed = Delayed.simple<MessageId>('MessageId');
+    return [
+        // Reflect outgoing group sync request
+        NetworkExpectationFactory.reflectSingle((payload) => {
+            expect(payload.content).to.equal('outgoingMessage');
+            expect(payload.outgoingMessage?.type).to.equal(
+                CspE2eGroupControlType.GROUP_SYNC_REQUEST,
+            );
+        }),
+
+        // Send outgoing group sync request
+        NetworkExpectationFactory.write((m) => {
+            // Message must be an outgoing CSP message
+            assertD2mPayloadType(m.type, D2mPayloadType.PROXY);
+            assertCspPayloadType(m.payload.type, CspPayloadType.OUTGOING_MESSAGE);
+
+            // Message must be sent from me to the recipient
+            const message = decodeMessageEncodable(m.payload.payload);
+            expect(message.senderIdentity).to.eql(device.identity.bytes);
+            expect(message.receiverIdentity).to.eql(recipient.identity.bytes);
+            messageIdDelayed.set(ensureMessageId(message.messageId));
+
+            // Validate message type
+            const messageContainer = decryptContainer(message, device.csp.ck.public, recipient.ck);
+            expect(messageContainer.type).to.equal(CspE2eGroupControlType.GROUP_SYNC_REQUEST);
+        }),
+
+        // Expect server ack for group sync request
         NetworkExpectationFactory.readIncomingMessageAck(
             recipient.identity.string,
             messageIdDelayed,

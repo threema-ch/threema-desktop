@@ -45,8 +45,30 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
     handle: ActiveTaskCodecHandle<TPersistence>,
     services: ServicesForTasks,
     log: Logger,
-): Promise<{group: LocalModelStore<Group>; senderContact: LocalModelStore<Contact>} | undefined> {
+): Promise<
+    | {readonly group: LocalModelStore<Group>; readonly senderContact: LocalModelStore<Contact>}
+    | undefined
+> {
     const {model} = services;
+
+    // TODO(DESK-1566): The group creator should not be added as a contact when responding with a
+    // group-sync-request! Instead, only necessary information to send a group-sync-request must be
+    // returned but no contact should be created.
+    async function getCreatorModel(): Promise<Contact | undefined> {
+        let creatorModel = services.model.contacts.getByIdentity(creatorIdentity)?.get();
+        if (creatorModel === undefined) {
+            // Creator contact not found. Note: If group message is wrapped in
+            // `group-creator-container`, this situation should never happen. If the message is
+            // wrapped in `group-member-container`, then this could be possible.
+            const addedContacts = await addGroupContacts([creatorIdentity], handle, services, log);
+            if (addedContacts.length < 1) {
+                return undefined;
+            }
+            assert(addedContacts.length === 1, 'addedContacts contained more than one contact');
+            creatorModel = unwrap(addedContacts[0]).get();
+        }
+        return creatorModel;
+    }
 
     // 1. Look up the group
     const group = model.groups.getByGroupIdAndCreator(groupId, creatorIdentity);
@@ -64,22 +86,14 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
 
         // 2.2 Send a group-sync-request to the group creator, discard the received message and
         //     abort these steps.
-        let creatorModel = model.contacts.getByIdentity(creatorIdentity)?.get();
+        const creatorModel = await getCreatorModel();
         if (creatorModel === undefined) {
-            // Creator contact not found. Note: If group message is wrapped in
-            // `group-creator-container`, this situation should never happen. If the message is
-            // wrapped in `group-member-container`, then this could be possible.
-            const addedContacts = await addGroupContacts([creatorIdentity], handle, services, log);
-            if (addedContacts.length < 1) {
-                log.warn(
-                    `Discarding group message with unknown creator (${creatorIdentity}) that cannot be added to the address book.`,
-                );
-                return undefined;
-            }
-            assert(addedContacts.length === 1, 'addedContacts contained more than one contact');
-            creatorModel = unwrap(addedContacts[0]).get();
+            log.warn(
+                `Discarding group message with unknown creator (${creatorIdentity}) that cannot be added to the contacts`,
+            );
+        } else {
+            await sendGroupSyncRequest(groupId, creatorModel, handle, services);
         }
-        await sendGroupSyncRequest(groupId, creatorModel, handle, services);
         return undefined;
     }
 
@@ -121,13 +135,23 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
     // 4. If the sender is not a member of the group:
     const senderIsMember = group.get().controller.hasMember(senderContact);
     if (!senderIsMember) {
-        // 4.1 If the user is the creator of the group, send a [`group-setup`](ref:e2e.group-setup)
-        //     with an empty members list back to the sender.
+        // 4.1 If the user is the creator of the group, send a group-setup with an empty members
+        //     list back to the sender, discard the message and abort these steps.
         if (view.creator === 'me') {
             await sendEmptyGroupSetup(groupId, senderContact.get(), handle, services);
+            return undefined;
         }
 
-        // 4.2. Discard the received message and abort these steps.
+        // 4.2 Send a group-sync-request to the group creator, discard the message and abort these
+        //     steps.
+        const creatorModel = await getCreatorModel();
+        if (creatorModel === undefined) {
+            log.warn(
+                `Discarding group message with unknown creator (${creatorIdentity}) that cannot be added to the contacts`,
+            );
+        } else {
+            await sendGroupSyncRequest(groupId, creatorModel, handle, services);
+        }
         return undefined;
     }
 

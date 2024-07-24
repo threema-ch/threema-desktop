@@ -65,6 +65,7 @@ import {
 import {makeGroup, randomBlobKey} from '~/test/mocha/common/db-backend-tests';
 import {
     reflectAndSendDeliveryReceipt,
+    reflectAndSendGroupSyncRequest,
     reflectContactSync,
 } from '~/test/mocha/common/network/protocol/task/task-test-helpers';
 
@@ -1013,9 +1014,14 @@ export function run(): void {
                         // We expect the message to be reflected
                         NetworkExpectationFactory.reflectSingle((payload) => {
                             expect(payload.incomingMessage).not.to.be.undefined;
-                            const incomingMessage = unwrap(payload.incomingMessage);
-                            expect(incomingMessage.senderIdentity).to.equal(user1.identity.string);
+                            expect(payload.incomingMessage?.senderIdentity).to.equal(
+                                user1.identity.string,
+                            );
+                            expect(payload.incomingMessage?.type).to.equal(
+                                CspE2eGroupConversationType.GROUP_TEXT,
+                            );
                         }),
+
                         // Message is acked after processing
                         NetworkExpectationFactory.writeIncomingMessageAck(),
                     ];
@@ -1034,13 +1040,17 @@ export function run(): void {
                 {
                     const message = makeGroupMessage(user2, 'hello from user2');
                     const task = new IncomingMessageTask(services, message);
+                    console.warn('A');
                     const expectations: NetworkExpectation[] = [
-                        // Message is acked and dropped, since it's invalid
+                        // We expect a group-sync-request to be reflected and sent
+                        ...reflectAndSendGroupSyncRequest(services, user1),
+                        // Message is acked after processing
                         NetworkExpectationFactory.writeIncomingMessageAck(),
                     ];
                     const handle = new TestHandle(services, expectations);
                     await task.run(handle);
                     expect(expectations, 'Not all expectations consumed').to.be.empty;
+                    console.warn('B');
                 }
 
                 // Ensure that no additional text message was created
