@@ -70,7 +70,10 @@ export function getModalButtons(
         },
 
         {
-            label: i18n.t('dialog--delete-message.action--delete-locally', 'Delete on This Device'),
+            label: i18n.t(
+                'dialog--delete-message.action--delete-locally',
+                'Delete from This Device',
+            ),
             type: 'naked',
             onClick: handleClickDeleteLocally,
         },

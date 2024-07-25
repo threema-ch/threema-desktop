@@ -89,7 +89,7 @@
   "dialog--delete-message": {
     "action--cancel": "Cancel",
     "action--delete-for-everyone": "Delete for Everyone",
-    "action--delete-locally": "Delete on This Device",
+    "action--delete-locally": "Delete from This Device",
     "label--title": "Delete message",
     "prose--delete-message": "Do you really want to delete this message?",
     "prose--delete-not-supported-partial": "Note: If you select \"{buttonText}\", this message will not be deleted for the following group members: {names}{n, plural, =0 {.} other { and {n} others.}} To support deleted messages, they need to install the latest Threema version."
