@@ -37,8 +37,6 @@ export function deleteForEveryoneSupported(
         message.direction === 'outbound' &&
         message.status.sent !== undefined &&
         isFeatureSupported &&
-        // TODO(DESK-1451) Remove the sandbox check.
-        import.meta.env.BUILD_ENVIRONMENT === 'sandbox' &&
         Date.now() - message.status.sent.at.getTime() <
             DELETE_MESSAGE_GRACE_PERIOD_IN_MINUTES * 60000
     );

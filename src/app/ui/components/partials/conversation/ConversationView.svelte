@@ -638,9 +638,7 @@
       $viewModelStore?.lastMessage?.direction === MessageDirection.OUTBOUND &&
       modalState.type === 'none' &&
       composeBarState.quotedMessage === undefined &&
-      (composeBarComponent?.getText() === undefined || composeBarComponent.getText() === '') &&
-      // TODO(DESK-1401): Revert the commit that added this comment.
-      import.meta.env.BUILD_ENVIRONMENT === 'sandbox'
+      (composeBarComponent?.getText() === undefined || composeBarComponent.getText() === '')
     ) {
       const lastMessage = $viewModelStore.lastMessage;
 

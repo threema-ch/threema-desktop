@@ -229,7 +229,6 @@
   let showEditButton: boolean = false;
   $: showEditButton = reactive(
     () =>
-      import.meta.env.BUILD_ENVIRONMENT === 'sandbox' &&
       direction === 'outbound' &&
       status.deleted === undefined &&
       status.sent !== undefined &&

@@ -221,7 +221,7 @@
         </KeyValueList.Section>
       {/if}
 
-      {#if sortedHistory.length > 0 && import.meta.env.BUILD_ENVIRONMENT === 'sandbox'}
+      {#if sortedHistory.length > 0}
         <KeyValueList.Section
           title={$i18n.t('dialog--message-details.label--history', 'Edit History')}
           options={{
