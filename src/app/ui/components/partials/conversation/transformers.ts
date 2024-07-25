@@ -1,3 +1,4 @@
+import {getTextContent} from '~/app/ui/components/partials/conversation/internal/message-list/internal/regular-message/helpers';
 import type {AnyQuotedMessage} from '~/app/ui/components/partials/conversation/internal/message-list/internal/regular-message/props';
 import type {
     AnyMessageListMessage,
@@ -128,7 +129,7 @@ function getMessageProps(
         text: viewModel.text,
         history: viewModel.history.map((val) => ({
             at: val.editedAt,
-            text: val.text,
+            text: getTextContent(val.text, undefined, i18n.t),
         })),
     };
 }

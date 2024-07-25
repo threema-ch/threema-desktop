@@ -3,6 +3,7 @@
   Renders a modal with details about a message.
 -->
 <script lang="ts">
+  import Prose from '~/app/ui/components/atoms/prose/Prose.svelte';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
@@ -244,12 +245,14 @@
                   <KeyValueList.Item
                     key={formatDateLocalized(historyEntry.at, $i18n, 'extended', use24hTime)}
                   >
-                    <Text
-                      color={historyEntry.text !== '' ? 'inherit' : 'mono-low'}
-                      text={historyEntry.text === ''
-                        ? $i18n.t('dialog--message-details.prose--empty-caption', 'No caption')
-                        : historyEntry.text}
-                    />
+                    {#if historyEntry.text === undefined}
+                      <Text
+                        color={'mono-low'}
+                        text={$i18n.t('dialog--message-details.prose--empty-caption', 'No caption')}
+                      />
+                    {:else}
+                      <Prose content={{sanitizedHtml: historyEntry.text}} />
+                    {/if}
                   </KeyValueList.Item>
                 </div>
               </div>
