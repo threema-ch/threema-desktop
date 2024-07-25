@@ -113,7 +113,7 @@ export function getMessageText(
         case 'image':
         case 'video':
         case 'file':
-            return messageModel.view.caption === undefined
+            return messageModel.view.caption === undefined || messageModel.view.caption === ''
                 ? undefined
                 : {
                       mentions: getMentions(services, messageModel, getAndSubscribe),
