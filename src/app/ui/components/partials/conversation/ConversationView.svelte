@@ -10,9 +10,13 @@
     conversationDrafts,
     type Draft,
   } from '~/app/ui/components/partials/conversation/drafts';
-  import {prepareFilesForMediaComposeModal} from '~/app/ui/components/partials/conversation/helpers';
+  import {
+    getFilteredMentionReceiverPreviewListItems,
+    prepareFilesForMediaComposeModal,
+  } from '~/app/ui/components/partials/conversation/helpers';
   import ComposeBar from '~/app/ui/components/partials/conversation/internal/compose-bar/ComposeBar.svelte';
   import DeleteMessageModal from '~/app/ui/components/partials/conversation/internal/delete-message-modal/DeleteMessageModal.svelte';
+  import EveryoneMentionListItem from '~/app/ui/components/partials/conversation/internal/everyone-mention-list-item/EveryoneMentionListItem.svelte';
   import MessageList from '~/app/ui/components/partials/conversation/internal/message-list/MessageList.svelte';
   import {getTextContent} from '~/app/ui/components/partials/conversation/internal/message-list/internal/regular-message/helpers';
   import {transformMessageFileProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/regular-message/transformers';
@@ -32,6 +36,7 @@
     RemoteConversationViewModelStoreValue,
   } from '~/app/ui/components/partials/conversation/types';
   import {conversationListEvent} from '~/app/ui/components/partials/conversation-nav/helpers';
+  import ReceiverPreviewList from '~/app/ui/components/partials/receiver-preview-list/ReceiverPreviewList.svelte';
   import {i18n} from '~/app/ui/i18n';
   import MediaMessage from '~/app/ui/modal/MediaMessage.svelte';
   import {type MediaFile, generateThumbnail} from '~/app/ui/modal/media-message';
@@ -60,6 +65,8 @@
   import type {SendMessageEventDetail} from '~/common/viewmodel/conversation/main/controller/types';
   import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
   import type {FeatureSupport} from '~/common/viewmodel/conversation/main/store/types';
+  import {EVERYONE_IDENTITY_STRING} from '~/common/viewmodel/utils/mentions';
+  import type {ContactReceiverData} from '~/common/viewmodel/utils/receiver';
 
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.conversation-view');
@@ -95,6 +102,7 @@
     type: 'insert',
     quotedMessage: undefined,
     editedMessage: undefined,
+    mentionString: undefined,
   };
 
   let modalState: ModalState = {type: 'none'};
@@ -211,10 +219,20 @@
     }
     const quotedMessage = getComposeBarQuoteComponent(event.detail);
     if (quotedMessage === undefined) {
-      composeBarState = {type: 'insert', quotedMessage: undefined, editedMessage: undefined};
+      composeBarState = {
+        type: 'insert',
+        quotedMessage: undefined,
+        editedMessage: undefined,
+        mentionString: undefined,
+      };
       return;
     }
-    composeBarState = {type: 'insert', quotedMessage, editedMessage: undefined};
+    composeBarState = {
+      type: 'insert',
+      quotedMessage,
+      editedMessage: undefined,
+      mentionString: undefined,
+    };
   }
 
   function handleClickEditMessage(messageProperties: MessageListRegularMessage): void {
@@ -260,14 +278,24 @@
     };
     const quotedMessage = getComposeBarQuoteComponent(messageProperties);
     if (quotedMessage === undefined) {
-      composeBarState = {type: 'insert', quotedMessage: undefined, editedMessage: undefined};
+      composeBarState = {
+        type: 'insert',
+        quotedMessage: undefined,
+        editedMessage: undefined,
+        mentionString: undefined,
+      };
       return;
     }
-    composeBarState = {type: 'edit', editedMessage, quotedMessage};
+    composeBarState = {type: 'edit', editedMessage, quotedMessage, mentionString: undefined};
   }
 
   function handleClickCloseQuote(): void {
-    composeBarState = {type: 'insert', editedMessage: undefined, quotedMessage: undefined};
+    composeBarState = {
+      type: 'insert',
+      editedMessage: undefined,
+      quotedMessage: undefined,
+      mentionString: undefined,
+    };
     draftStore.set(undefined);
   }
 
@@ -327,7 +355,12 @@
     // and clear quote and save draft if necessary.
     if ($viewModelStore !== undefined) {
       saveDraftAndClearComposeBar($viewModelStore.receiver.lookup);
-      composeBarState = {type: 'insert', editedMessage: undefined, quotedMessage: undefined};
+      composeBarState = {
+        type: 'insert',
+        editedMessage: undefined,
+        quotedMessage: undefined,
+        mentionString: undefined,
+      };
     }
 
     await backend.viewModel
@@ -381,18 +414,21 @@
             type: 'insert',
             editedMessage: undefined,
             quotedMessage: undefined,
+            mentionString: undefined,
           };
         } else if (draft?.extended?.type === 'edit') {
           composeBarState = {
             type: 'edit',
             editedMessage: draft.extended.edit,
             quotedMessage: draft.extended.quote,
+            mentionString: undefined,
           };
         } else if (draft?.extended?.type === 'quote') {
           composeBarState = {
             type: 'insert',
             quotedMessage: draft.extended.quote,
             editedMessage: undefined,
+            mentionString: undefined,
           };
         }
         composeBarComponent?.insertText(forwardedMessageText ?? draft?.text ?? '');
@@ -417,7 +453,12 @@
   }
 
   function resetComposeBar(): void {
-    composeBarState = {type: 'insert', editedMessage: undefined, quotedMessage: undefined};
+    composeBarState = {
+      type: 'insert',
+      editedMessage: undefined,
+      quotedMessage: undefined,
+      mentionString: undefined,
+    };
     composeBarComponent?.clear();
   }
 
@@ -533,6 +574,44 @@
     modalState = {
       type: 'delete-message',
       props: event.detail,
+    };
+  }
+
+  function handleClickMentionEveryone(): void {
+    composeBarComponent?.insertMention({
+      type: 'everyone',
+      identity: EVERYONE_IDENTITY_STRING,
+    });
+    composeBarState = {
+      ...composeBarState,
+      mentionString: undefined,
+    };
+  }
+
+  function handleClickMentionReceiver(event: CustomEvent<DbReceiverLookup>): void {
+    if ($viewModelStore?.receiver.type !== 'group') {
+      log.error('Mentioning is only allowed in groups');
+      return;
+    }
+
+    const group = $viewModelStore.receiver;
+    const receiver = group.members
+      .concat(group.creator)
+      .find(
+        (member): member is ContactReceiverData =>
+          member.type === 'contact' &&
+          member.lookup.type === event.detail.type &&
+          member.lookup.uid === event.detail.uid,
+      );
+    if (receiver === undefined) {
+      log.error("Mentioned receiver couldn't be found in the current group");
+      return;
+    }
+
+    composeBarComponent?.insertMention(receiver);
+    composeBarState = {
+      ...composeBarState,
+      mentionString: undefined,
     };
   }
 
@@ -667,6 +746,36 @@
   function handleIsTyping(event: CustomEvent<boolean>): void {
     resetIsTypingTimer();
     dispatchIsTyping(event.detail);
+  }
+
+  function handleMatchMention(
+    update:
+      | {
+          readonly type: 'update';
+          readonly value: string;
+        }
+      | {
+          readonly type: 'end';
+        },
+  ): void {
+    switch (update.type) {
+      case 'update':
+        composeBarState = {
+          ...composeBarState,
+          mentionString: update.value,
+        };
+        break;
+
+      case 'end':
+        composeBarState = {
+          ...composeBarState,
+          mentionString: undefined,
+        };
+        break;
+
+      default:
+        unreachable(update);
+    }
   }
 
   $: reactive(handleChangeRouterState, [$router]);
@@ -849,7 +958,25 @@
                 {/key}
               </div>
             {/if}
-
+            {#if composeBarState.mentionString !== undefined && $viewModelStore.receiver.type === 'group'}
+              <div class="list">
+                <EveryoneMentionListItem
+                  receiver={$viewModelStore.receiver}
+                  {services}
+                  on:click={handleClickMentionEveryone}
+                />
+                <ReceiverPreviewList
+                  highlights={composeBarState.mentionString}
+                  items={getFilteredMentionReceiverPreviewListItems(
+                    $viewModelStore.receiver,
+                    composeBarState.mentionString,
+                  )}
+                  options={{routeOnClick: false}}
+                  {services}
+                  on:clickitem={handleClickMentionReceiver}
+                />
+              </div>
+            {/if}
             <ComposeBar
               bind:this={composeBarComponent}
               mode={composeBarState.type}
@@ -859,6 +986,17 @@
                   composeBarState.type === 'edit' &&
                   composeBarState.quotedMessage.props.file !== undefined,
               }}
+              triggerWords={[
+                {
+                  prefix: '@',
+                  onMatch(value) {
+                    handleMatchMention({type: 'update', value});
+                  },
+                  onMatchEnd() {
+                    handleMatchMention({type: 'end'});
+                  },
+                },
+              ]}
               on:attachfiles={handleAddFiles}
               on:clicksend={handleClickSend}
               on:pastefiles={handleAddFiles}
@@ -996,6 +1134,15 @@
         opacity: 0.5;
         font-style: italic;
       }
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: start;
+
+      overflow-y: auto;
     }
   }
 </style>

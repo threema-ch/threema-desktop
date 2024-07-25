@@ -20,7 +20,7 @@ export const REGEX_MATCH_MENTION = /@\[(?<identity>[A-Z0-9*]{1}[A-Z0-9]{7}|@{8})
 /**
  * Identity string that matches everyone.
  */
-const EVERYONE_IDENTITY_STRING = '@@@@@@@@';
+export const EVERYONE_IDENTITY_STRING = '@@@@@@@@';
 
 /**
  * A mention that matches the user themself.

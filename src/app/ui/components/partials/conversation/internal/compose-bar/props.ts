@@ -1,3 +1,5 @@
+import type {TextAreaProps} from '~/app/ui/components/atoms/textarea/props';
+
 /**
  * Props accepted by the `ComposeBar` component.
  */
@@ -12,4 +14,5 @@ export interface ComposeBarProps {
         /** Whether to allow empty messages */
         readonly allowEmptyMessages?: boolean;
     };
+    readonly triggerWords?: TextAreaProps['triggerWords'];
 }

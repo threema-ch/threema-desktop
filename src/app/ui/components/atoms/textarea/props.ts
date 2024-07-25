@@ -12,4 +12,30 @@ export interface TextAreaProps {
     readonly isEmpty?: Readable<boolean>;
     /** Placeholder text to display when the `TextArea` is empty. */
     readonly placeholder: string;
+    /** {@link WordMatcher}s to register in the `TextArea`. */
+    readonly triggerWords?: readonly WordMatcher[];
+}
+
+/**
+ * Defines a special character or word that triggers callbacks when it's typed as the prefix of a
+ * word.
+ */
+interface WordMatcher {
+    /**
+     * The prefix to match words with.
+     */
+    readonly prefix: string;
+    /**
+     * Callback to invoke after each keystroke as long as the word at the current caret position
+     * matches `prefix`.
+     *
+     * @param value The matched word, excluding the prefix.
+     */
+    readonly onMatch: (value: string) => void;
+    /**
+     * Callback to invoke after a keystroke when `prefix` switches from matching the word at the
+     * current caret position to not matching it. Note: This is only invoked once every time such a
+     * switch occurs.
+     */
+    readonly onMatchEnd: () => void;
 }

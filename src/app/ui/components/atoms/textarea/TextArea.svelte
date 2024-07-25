@@ -45,6 +45,7 @@
   export let initialText: $$Props['initialText'] = undefined;
   export const isEmpty: NonNullable<$$Props['isEmpty']> = isEmptyStore;
   export let placeholder: $$Props['placeholder'];
+  export let triggerWords: NonNullable<$$Props['triggerWords']> = [];
 
   const dispatch = createEventDispatcher<{
     submit: undefined;
@@ -116,6 +117,17 @@
     area.insert_text(text);
   }
 
+  /**
+   * Inserts an arbitrary, non-editable {@link Element} at the current caret position.
+   */
+  export function insertElement(element: Element): void {
+    element.setAttribute('contenteditable', 'false');
+
+    area.select_word_at_caret();
+    area.store_selection_range();
+    area.insert_node(element);
+  }
+
   function handleChangeSizeAreaElement(event: CustomEvent<{entries: ResizeObserverEntry[]}>): void {
     const height = event.detail.entries[0]?.contentRect.height;
 
@@ -154,8 +166,43 @@
       // TODO(https://github.com/threema-ch/compose-area/issues/97, https://github.com/threema-ch/compose-area/issues/98):
       // Fix this, see this discussion for details:
       // https://git.threema.ch/clients/web/threema-desktop-web/-/merge_requests/92#note_31788
-      isEmptyStore.set(area.is_empty());
-      dispatchIsTyping(!area.is_empty());
+      const currentIsEmpty = area.is_empty();
+      isEmptyStore.set(currentIsEmpty);
+      dispatchIsTyping(!currentIsEmpty);
+
+      area.store_selection_range();
+      const wordAtCaret = area.get_word_at_caret();
+      if (wordAtCaret !== undefined) {
+        const word = `${wordAtCaret.before()}${wordAtCaret.after()}`;
+        for (const matcher of triggerWordsState) {
+          if (word.startsWith(matcher.prefix)) {
+            // Get current value after the matched trigger word, and invoke the callback.
+            const wordWithoutPrefix = word.substring(matcher.prefix.length);
+            matcher.onMatch(wordWithoutPrefix);
+
+            // Set `isMatchEndHandled` to `false`, as we are now actively editing around this
+            // trigger word.
+            matcher.isMatchEndHandled = false;
+            triggerWords = triggerWords;
+          } else if (!matcher.isMatchEndHandled) {
+            // Trigger word doesn't match the current caret location any more, but `isMatchEndHandled`
+            // has not been handled yet, so we need to update the state and invoke callbacks.
+            matcher.isMatchEndHandled = true;
+            triggerWords = triggerWords;
+
+            // Invoke callback.
+            matcher.onMatchEnd();
+          }
+        }
+      } else {
+        // No word at caret, which means `onMatchEnd` should be called for every matcher which is
+        // still active.
+        for (const matcher of triggerWordsState) {
+          if (!matcher.isMatchEndHandled) {
+            matcher.onMatchEnd();
+          }
+        }
+      }
     });
   }
 
@@ -261,6 +308,16 @@
 
     dispatch('pastefiles', pastedFiles);
   }
+
+  $: triggerWordsState = triggerWords.map((matcher) => ({
+    ...matcher,
+    /**
+     * Whether the `onMatchEnd` handler has already been called. Note: At the beginning, this is
+     * `true` for every trigger word, because the user hasn't typed anything at all yet (which means
+     * there is nothing to end).
+     */
+    isMatchEndHandled: true,
+  }));
 
   onMount(() => {
     // Bind compose area to DOM.
@@ -385,8 +442,6 @@
     cursor: text;
     max-height: var($-temp-vars, --c-t-compose-area-max-height);
     overflow-y: auto;
-    display: grid;
-    align-items: end;
     word-wrap: anywhere;
     overflow-wrap: anywhere;
     white-space: break-spaces;

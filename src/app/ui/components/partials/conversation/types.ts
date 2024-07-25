@@ -59,12 +59,17 @@ interface ComposeBarMode {
     readonly type: ComposeBarProps['mode'];
     readonly editedMessage: EditedMessage | undefined;
     readonly quotedMessage: QuotedMessage | undefined;
+    readonly mentionString: string | undefined;
 }
 
 /**
  * Union of compose bar types. There are three modes: Quote, Edit and Normal
  */
-export type ComposeBarState = ComposeBarQuote | ComposeBarEdit | ComposeBarDefault;
+export type ComposeBarState =
+    | ComposeBarQuote
+    | ComposeBarEdit
+    | ComposeBarDefault
+    | ComposeBarMention;
 
 /**
  * Standard compose bar behaviour. Text can be inserted and no quote nor edit mode is activated.
@@ -88,4 +93,12 @@ export interface ComposeBarEdit extends ComposeBarMode {
     readonly type: 'edit';
     readonly editedMessage: EditedMessage;
     readonly quotedMessage: QuotedMessage;
+}
+
+/**
+ * Use the compose bar to mention a user in a group conversation.
+ */
+export interface ComposeBarMention extends ComposeBarMode {
+    readonly type: 'insert';
+    readonly mentionString: string;
 }

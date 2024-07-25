@@ -1,9 +1,12 @@
+import {isReceiverMatchingSearchTerm} from '~/app/ui/components/partials/address-book/helpers';
+import type {ReceiverPreviewListItem} from '~/app/ui/components/partials/receiver-preview-list/props';
 import type {i18n as i18nStore} from '~/app/ui/i18n';
 import {toast} from '~/app/ui/snackbar';
 import type {FileResult} from '~/app/ui/svelte-components/utils/filelist';
 import {type FileLoadResult, validateFiles} from '~/app/ui/utils/file';
 import type {Logger} from '~/common/logging';
 import {unreachable} from '~/common/utils/assert';
+import type {ContactReceiverData, GroupReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
  * Prepares files from various sources (e.g., dropping, attaching, etc.) by validating them and
@@ -96,4 +99,24 @@ export function showFileResultErrorToast(
         default:
             unreachable(status);
     }
+}
+
+/**
+ * Returns {@link ReceiverPreviewListItem}s for the group members that match the given search query.
+ */
+export function getFilteredMentionReceiverPreviewListItems(
+    group: GroupReceiverData,
+    query: string,
+): ReceiverPreviewListItem<undefined>[] {
+    return group.members
+        .concat(group.creator)
+        .filter(
+            (receiver): receiver is ContactReceiverData =>
+                receiver.type === 'contact' &&
+                (isReceiverMatchingSearchTerm(receiver, query) || query === ''),
+        )
+        .map((receiver) => ({
+            handlerProps: undefined,
+            receiver,
+        }));
 }

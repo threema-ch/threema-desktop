@@ -7,6 +7,8 @@
   import TextArea from '~/app/ui/components/atoms/textarea/TextArea.svelte';
   import EmojiPicker from '~/app/ui/components/molecules/emoji-picker/EmojiPicker.svelte';
   import type {ComposeBarProps} from '~/app/ui/components/partials/conversation/internal/compose-bar/props';
+  import Mention from '~/app/ui/components/partials/mention/Mention.svelte';
+  import type {MentionProps} from '~/app/ui/components/partials/mention/props';
   import {i18n} from '~/app/ui/i18n';
   import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
   import FileTrigger from '~/app/ui/svelte-components/blocks/FileTrigger/FileTrigger.svelte';
@@ -20,8 +22,9 @@
 
   type $$Props = ComposeBarProps;
 
-  export let options: NonNullable<$$Props['options']> = {};
   export let mode: NonNullable<$$Props>['mode'] = 'insert';
+  export let options: NonNullable<$$Props['options']> = {};
+  export let triggerWords: $$Props['triggerWords'] = undefined;
 
   const dispatch = createEventDispatcher<{
     attachfiles: FileResult;
@@ -63,6 +66,21 @@
    */
   export function focus(): void {
     textAreaComponent?.focus();
+  }
+
+  /**
+   * Insert mention label into the compose area at the current caret position.
+   */
+  export function insertMention(mention: MentionProps['mention']): void {
+    const element = document.createElement('span');
+
+    // eslint-disable-next-line no-new
+    new Mention({
+      target: element,
+      props: {mention},
+    });
+
+    textAreaComponent?.insertElement(element);
   }
 
   function handleAttachFiles(event: CustomEvent<FileResult>): void {
@@ -153,6 +171,7 @@
         bind:this={textAreaComponent}
         bind:isEmpty={isTextAreaEmpty}
         placeholder={$i18n.t('messaging.label--compose-area', 'Write a message...')}
+        {triggerWords}
         on:pastefiles
         on:submit={handleClickSendButton}
         on:textbytelengthdidchange={handleChangeTextByteLength}
