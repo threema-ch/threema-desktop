@@ -67,11 +67,6 @@ import * as utils from '../utils.js';
  * struct. A flag must be considered _mandatory_ unless it has been explicitly
  * marked _optional_.
  *
- * ### Handling
- *
- * Some messages require specific handling logic before sending or on
- * reception which will be described if necessary.
- *
  * ### Delivery Receipts
  *
  * There are two types of delivery receipts (sent using the
@@ -178,25 +173,39 @@ import * as utils from '../utils.js';
  *
  * 1. Let `message` be the message to be sent. Note: `message` must contain
  *    all information to construct a message and must be assigned a stable
- *    message ID via `message.id`.
+ *    message ID via `message.id`.¹
  * 2. Let `receivers` be the provided list of receivers for `message`.
  * 3. If `message` is part of a group conversation, run the _Common Group Send
  *    Steps_ with `receivers` and update `receivers` with the result. If the
  *    message has been discarded, abort these steps.
  * 4. If `message` is not exempted from blocking, remove all receivers from
  *    `receivers` who are blocked.
- * 5. (MD) Create a `d2d.OutgoingMessage` for `message` and reflect it. Wait
- *    for the corresponding `reflect-ack`.
- * 6. For each `receiver` in `receivers`:
- *   1. If the `receiver` supports FS or has an FS session, invoke the FS
- *      protocol and update `message` with the result. (TODO: Too condensed and
- *      underspecified.)
- *   2. Create a `payload.message-with-metadata-box` for `message` and assign
- *      the `receiver` the resulting `payload`.¹
- * 7. Wait until all `message-ack`s for each receiver's `payload` of
- *    `receivers` has been received.
- * 8. (MD) If `message` is eligible for automatic delivery receipts, reflect an
- *    `OutgoingMessageUpdate.Sent` for `message.id`.
+ * 5. (MD) If the properties associated to `message` require
+ *    reflecting outgoing messages, create a `d2d.OutgoingMessage` for
+ *    `message` and reflect it. Wait for the corresponding `reflect-ack`.²
+ * 6. Let `pending` be an ordered map with `receivers` as key and the tuple
+ *    `pending-acks` and `fs-commit-fn` as value.
+ * 7. For each `receiver` of `receivers`:
+ *    1. Let `pending-acks` be an empty list.
+ *    2. If `message` is not of type `0xa0` and both client and `receiver`
+ *       support FS, run the _FS Encapsulation Steps_ with `message` and let
+ *       `outgoing-messages` and `fs-commit-fn` be the result.³
+ *    3. If `outgoing-messages` is not defined, let `outgoing-messages` be a
+ *       list including only `message`.
+ *    4. For each `outgoing-message` of `outgoing-messages`:
+ *       1. Create a `payload.message-with-metadata-box` for `outgoing-message`
+ *          and let `payload` be the result.
+ *       2. If `payload.flags` does not contain the _no server acknowledgement_ (`0x04`)
+ *          flag, add `payload.message-id` to `pending-acks`.
+ *       3. Send `payload` to the `receiver`
+ *    5. Add an entry in `pending` for `receiver` with `pending-acks` and
+ *       `fs-commit-fn`.
+ * 8. For each value `pending-acks` and `fs-commit-fn` in `pending`:
+ *    1. Await all `pending-acks`.
+ *    2. If `fs-commit-fn` is defined, run it.
+ * 9. (MD) If `message` is eligible for reflecting
+ *    `OutgoingMessageUpdate.Sent`, reflect an `OutgoingMessageUpdate.Sent` for
+ *    `message.id`.
  *
  * The following steps are defined as the _Common Group Send Steps_:
  *
@@ -204,12 +213,20 @@ import * as utils from '../utils.js';
  *    sent.
  * 2. If the user is no longer part of the group, discard the message and abort
  *    these steps.
- * 3. Remove all group members from `receivers` who are no longer part of the
- *    group.
+ * 3. Remove all group members from `receivers` who are not part of the group.
  * 4. Return the updated `receivers`.
  *
  * ¹: Note that, in groups, this implicitly assigns the same message ID towards
  * each group member which in fact is a requirement of the protocol.
+ *
+ * ²: Reflecting with `receivers` empty is a legitimate case that occurs when
+ * sending a message in a notes group.
+ *
+ * ³: Always invoking the _FS Encapsulation Steps_ ensures that an FS session
+ * is being initiated as soon as possible, so that messages can be protected by
+ * FS. Moreover, it ensures that the announced FS session version is up to date
+ * (a newer version potentially increasing security or making more messages
+ * eligible for FS protection).
  *
  * ### Receiving
  *
@@ -231,8 +248,9 @@ import * as utils from '../utils.js';
  * 4. If the sender is not a member of the group:
  *    1. If the user is the creator of the group, send a
  *       [`group-setup`](ref:e2e.group-setup) with an empty members list back
- *       to the sender.
- *    2. Discard the message and abort these steps.
+ *       to the sender, discard the message and abort these steps.
+ *    2. Send a [`group-sync-request`](ref:e2e.group-sync-request) to the
+ *       group creator, discard the message and abort these steps.
  *
  * This rule and any exceptions will be referenced/defined explicitly for each
  * message.
@@ -242,7 +260,7 @@ import * as utils from '../utils.js';
  * control messages), or is stateful (i.e. introduces a poll, poll vote, or a
  * group call).
  *
- * ### Periodic Sync
+ * ### Periodic Group Sync
  *
  * When the creator of a group...
  *
@@ -291,8 +309,23 @@ import * as utils from '../utils.js';
  *
  * ### Images
  *
- * Images must be in JPEG format. When using the [`file`](ref:e2e.file)
- * message struct, the PNG and the GIF format is also allowed.
+ * Images must be in JPEG format for the legacy
+ * [`deprecated-image`](ref:e2e.deprecated-image) message and for profile
+ * pictures.
+ *
+ * When using the [`file`](ref:e2e.file) message struct, the following media
+ * types are explicitly supported:
+ *
+ * - image/gif
+ * - image/jpeg
+ * - image/png
+ * - image/webp
+ *
+ * The following media types are explicitly not supported:
+ *
+ * - image/svg+xml
+ *
+ * Other media types _may_ be supported.
  *
  * Keep the format when resizing images or creating thumbnails, if possible
  * (e.g. if the source is a JPEG, make the thumbnail a JPEG). When the format
@@ -452,6 +485,67 @@ import * as utils from '../utils.js';
  * - Video Support (`'video'`): Set this field to `null` or an empty object if
  *   video calls are enabled. If either side omits this field, video support
  *   is disabled for the upcoming call.
+ *
+ * ### Application Setup
+ *
+ * The following steps are defined as _Application Setup Steps_ and must be run
+ * when a new Threema ID has been created or when application state has been
+ * restored from a backup:
+ *
+ * 1. [...]
+ * 2. If application state has not been set up by the _Device Join Protocol_
+ *    (meaning that multi-device is deactivated):
+ *    1.  [...]
+ *    2.  Update the user's feature mask on the directory server.
+ *    3.  Let `contacts` be the list of all contacts, including those with an
+ *        acquaintance level different than `DIRECT`.
+ *    4.  Refresh the state, type and feature mask of all `contacts` from the
+ *        directory server and make any changes persistent.
+ *    5.  Let `solicited-contacts` be a copy of `contacts` filtered in the
+ *        following way. For each `contact`:
+ *        1. If the `contact`'s activity state is _invalid_ (i.e. it does not
+ *           exist or has been revoked), remove `contact` from the list.
+ *        2. If `contact` is part of a group that is not marked as _left_, add
+ *           `contact` to the list and abort these sub-steps.
+ *        3. Lookup the 1:1 conversation with `contact` and let `last-update`
+ *           be the associated _last update_ timestamp.
+ *        4. If `last-update` is defined, add `contact` to the list and abort
+ *           these sub-steps.
+ *        5. Remove `contact` from the list.
+ *    6.  If FS is supported by the client, run the _FS Refresh Steps_ with
+ *        `solicited-contacts`.
+ *    7.  Send a `contact-request-profile-picture` message to each
+ *        contact of `solicited-contacts`.
+ *    8.  For each group not marked as _left_:
+ *        1. If the user is the creator of the group, trigger a _group sync_
+ *           for that group.
+ *        2. If the user is not the creator of the group, send a
+ *           [`group-sync-request`](ref:e2e.group-sync-request) message to the
+ *           creator of the group.
+ *    9. [...]
+ * 3. Commit the application state and exit the setup phase.
+ *
+ * ### Application Update
+ *
+ * The following steps are defined as _Application Update Steps_ and must be
+ * run as a persistent task when the application has just been updated to a new
+ * version or downgraded to a previous version:
+ *
+ * 1. [...]
+ * 2. Update the user's feature mask on the directory server.
+ * 3. Let `contacts` be the list of all contacts (regardless of the acquaintance level).
+ * 4. Refresh the state, type and feature mask of all `contacts` from the
+ *    directory server and make any changes persistent.
+ * 5. For each `contact` of `contacts`:
+ *    1. If an associated FS session with `contact` exists and any of the FS
+ *       states is unknown or any of the stored FS versions (local or remote)
+ *       is unknown, terminate the FS session by sending a
+ *       `csp-e2e-fs.Terminate` message with cause `RESET`.
+ * 6. [...]
+ *
+ * Note: Reactivation of FS due to disabling multi-device should run the
+ * _Application Setup Steps_ step 2.2. through 2.6. TODO(SE-199): This note
+ * will be removed once multi-device supports FS.
  */
 
 /**
@@ -956,6 +1050,122 @@ export class GroupMemberContainer extends base.Struct implements GroupMemberCont
 }
 
 /**
+ * An empty message (duh).
+ *
+ * Only used when encapsulated by an `csp_e2e_fs.Envelope` to announce a new
+ * FS version without explicit renegotiation.
+ *
+ * **Properties**:
+ * - Kind: 1:1
+ * - Flags: None
+ * - User profile distribution: No
+ * - Exempt from blocking: Yes
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: No
+ *   - Outgoing: No
+ *   - _Sent_ update: No
+ * - Delivery receipts:
+ *   - Automatic: No
+ *   - Manual: No
+ * - When rejected: N/A (ignored)
+ * - Send to Threema Gateway ID group creator: N/A
+ *
+ * When receiving this message, a mechanical finger must be unlatched from
+ * the device and boop the receiving user on the nose.
+ */
+export interface EmptyLike {}
+
+/**
+ * Encodable of {@link EmptyLike}.
+ */
+interface EmptyEncodable_ {}
+
+/**
+ * New-type for EmptyEncodable.
+ */
+export type EmptyEncodable = types.WeakOpaque<
+    EmptyEncodable_,
+    {readonly EmptyEncodable: unique symbol}
+>;
+
+/** @inheritdoc */
+export class Empty extends base.Struct implements EmptyLike {
+    private readonly _array: Uint8Array;
+
+    /**
+     * Create a Empty from an array for accessing properties.
+     *
+     * Note: When accessing, attributes will be decoded on-the-fly which may be expensive.
+     */
+    private constructor(array: Uint8Array) {
+        super();
+        this._array = array;
+    }
+
+    /**
+     * Decode a empty struct from an array.
+     *
+     * @param array Array to decode from.
+     * @returns Empty instance.
+     */
+    public static decode(array: Uint8Array): Empty {
+        return new Empty(array);
+    }
+
+    /**
+     * Encode a empty struct into an array.
+     *
+     * @param struct EmptyEncodable to encode.
+     * @param array Array to encode into.
+     * @returns A subarray of array containing the encoded struct.
+     */
+    public static encode(
+        struct: types.EncoderPick<EmptyEncodable, 'encode'>,
+        array: Uint8Array,
+    ): Uint8Array {
+        return array.subarray(0, 0);
+    }
+
+    /**
+     * Get the amount of bytes that would be written when encoding a empty struct into an
+     * array.
+     *
+     * @param struct EmptyEncodable to encode.
+     * @returns The amount of bytes that would be required to encode the struct.
+     */
+    public static byteLength(struct: types.EncoderPick<EmptyEncodable, 'byteLength'>): types.u53 {
+        return 0;
+    }
+
+    /**
+     * Create a snapshot of EmptyLike.
+     *
+     * Note: This is **not** a deep-copy, so byte arrays will still be views of the underlying
+     *       buffer.
+     *
+     * @returns EmptyLike snapshot.
+     */
+    public snapshot(): EmptyLike {
+        return {};
+    }
+
+    /**
+     * Create a clone of EmptyLike.
+     *
+     * Note: This is a deep-copy that will copy the underlying buffer.
+     *
+     * @returns EmptyLike clone.
+     */
+    public clone(): Empty {
+        const array = new Uint8Array(this._array.byteLength);
+        array.set(this._array);
+        return new Empty(array);
+    }
+}
+
+/**
  * A text message.
  *
  * **Properties (1:1)**:
@@ -969,6 +1179,7 @@ export class GroupMemberContainer extends base.Struct implements GroupMemberCont
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: Yes
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
@@ -988,6 +1199,7 @@ export class GroupMemberContainer extends base.Struct implements GroupMemberCont
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: Yes
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
@@ -1143,6 +1355,7 @@ export class Text extends base.Struct implements TextLike {
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: Yes
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
@@ -1351,6 +1564,7 @@ export class DeprecatedImage extends base.Struct implements DeprecatedImageLike 
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: Yes
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
@@ -1555,6 +1769,7 @@ export class DeprecatedGroupImage extends base.Struct implements DeprecatedGroup
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: Yes
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
@@ -1574,6 +1789,7 @@ export class DeprecatedGroupImage extends base.Struct implements DeprecatedGroup
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: Yes
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
@@ -1763,6 +1979,7 @@ export class Location extends base.Struct implements LocationLike {
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: Yes
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
@@ -1782,6 +1999,7 @@ export class Location extends base.Struct implements LocationLike {
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: Yes
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
@@ -2018,6 +2236,7 @@ export class DeprecatedAudio extends base.Struct implements DeprecatedAudioLike 
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: Yes
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
@@ -2037,6 +2256,7 @@ export class DeprecatedAudio extends base.Struct implements DeprecatedAudioLike 
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: Yes
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
@@ -2321,6 +2541,7 @@ export class DeprecatedVideo extends base.Struct implements DeprecatedVideoLike 
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: Yes
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
@@ -2340,6 +2561,7 @@ export class DeprecatedVideo extends base.Struct implements DeprecatedVideoLike 
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: Yes
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
@@ -2561,6 +2783,7 @@ export class File extends base.Struct implements FileLike {
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: Yes
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
@@ -2580,6 +2803,7 @@ export class File extends base.Struct implements FileLike {
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: Yes
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
@@ -2829,6 +3053,7 @@ export class PollSetup extends base.Struct implements PollSetupLike {
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
@@ -2847,6 +3072,7 @@ export class PollSetup extends base.Struct implements PollSetupLike {
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
@@ -3068,6 +3294,7 @@ export class PollVote extends base.Struct implements PollVoteLike {
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
@@ -3226,6 +3453,7 @@ export class CallOffer extends base.Struct implements CallOfferLike {
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
@@ -3396,6 +3624,7 @@ export class CallAnswer extends base.Struct implements CallAnswerLike {
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: No
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
@@ -3561,6 +3790,7 @@ export class CallIceCandidate extends base.Struct implements CallIceCandidateLik
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
@@ -3712,6 +3942,7 @@ export class CallHangup extends base.Struct implements CallHangupLike {
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
@@ -3861,6 +4092,7 @@ export class CallRinging extends base.Struct implements CallRingingLike {
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes²
+ *   - _Sent_ update: No
  * - Delivery receipts: No, that would be silly!
  * - When rejected: N/A (ignored)
  * - Edit applies to: N/A (can just send another `delivery-receipt`)
@@ -3884,6 +4116,7 @@ export class CallRinging extends base.Struct implements CallRingingLike {
  *   - Outgoing: Yes. When the message is being _read_ and _read_ receipts
  *     are disabled, reflect an `IncomingMessageUpdate` (since no
  *     `delivery-receipt` is sent in this case).
+ *   - _Sent_ update: No
  * - Delivery receipts: No, that would be silly!
  * - When rejected: N/A (ignored)
  * - Edit applies to: N/A (can just send another `delivery-receipt`)
@@ -4089,6 +4322,7 @@ export class DeliveryReceipt extends base.Struct implements DeliveryReceiptLike 
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: No
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
@@ -4100,15 +4334,15 @@ export class DeliveryReceipt extends base.Struct implements DeliveryReceiptLike 
  * ¹: It is deemed acceptable if the _typing_ indicator in the UI is replayed
  * since there is no further consequence.
  *
- * When the user is currently typing in the compose area of an associated
- * conversation:
+ * When the user is currently _typing_ while composing a **new**¹ message in
+ * an associated conversation:
  *
  * 1. Send this message with `is-typing` set to `1`.
  * 2. Start a _user is typing_ timer in the conversation to rerun these
  *    steps in 10s.
  *
- * When the user stopped typing in the compose area of an associated
- * conversation (or left the conversation view):
+ * When the user stopped _typing_ while composing a message in an associated
+ * conversation, or when the user left the conversation view:
  *
  * 1. If no _user is typing_ timer is running for the conversation, abort
  *    these steps.
@@ -4121,6 +4355,8 @@ export class DeliveryReceipt extends base.Struct implements DeliveryReceiptLike 
  *    typing in the associated conversation for the next 15s.
  * 2. If `is-typing` is `0`, cancel any running timer displaying that the
  *    sender is typing in the associated conversation.
+ *
+ * ¹: Editing a message may not trigger _typing_.
  */
 export interface TypingIndicatorLike {
     /**
@@ -4252,6 +4488,7 @@ export class TypingIndicator extends base.Struct implements TypingIndicatorLike 
  * - Reflect:
  *   - Incoming: Yes (unused)
  *   - Outgoing: Yes
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
@@ -4270,6 +4507,7 @@ export class TypingIndicator extends base.Struct implements TypingIndicatorLike 
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
@@ -4489,6 +4727,7 @@ export class SetProfilePicture extends base.Struct implements SetProfilePictureL
  * - Reflect:
  *   - Incoming: Yes (unused)
  *   - Outgoing: Yes
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
@@ -4507,6 +4746,7 @@ export class SetProfilePicture extends base.Struct implements SetProfilePictureL
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
@@ -4641,6 +4881,7 @@ export class DeleteProfilePicture extends base.Struct implements DeleteProfilePi
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: No
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
@@ -4648,8 +4889,6 @@ export class DeleteProfilePicture extends base.Struct implements DeleteProfilePi
  * - Edit applies to: N/A
  * - Deletable by: N/A
  * - Send to Threema Gateway ID group creator: N/A
- *
- * Send this when restoring a contact from a backup.
  *
  * When receiving this message via CSP or reflection:
  *
@@ -4779,6 +5018,7 @@ export class ContactRequestProfilePicture
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
@@ -4848,10 +5088,6 @@ export class ContactRequestProfilePicture
  * 2. Look up the group.
  * 3. If the group could not be found:
  *    1. If the user is not present in `members`, abort these steps.
- *    2. If the sender is [blocked](ref:e2e#blocking), send a
- *    [`group-leave`](ref:e2e.group-leave) message to the sender and all
- *    provided `members` (including those who are
- *    [blocked](ref:e2e#blocking)) and abort these steps.
  * 4. If the group could be found and `members` is empty or does not include
  *    the user:
  *    1. If the user is currently participating in a group call of this
@@ -5015,6 +5251,7 @@ export class GroupSetup extends base.Struct implements GroupSetupLike {
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
@@ -5174,6 +5411,7 @@ export class GroupName extends base.Struct implements GroupNameLike {
  * - Reflect:
  *   - Incoming: Yes
  *   - Outgoing: Yes
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
@@ -5321,6 +5559,7 @@ export class GroupLeave extends base.Struct implements GroupLeaveLike {
  * - Reflect:
  *   - Incoming: Yes (unused)
  *   - Outgoing: Yes (unused)
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
@@ -5331,28 +5570,42 @@ export class GroupLeave extends base.Struct implements GroupLeaveLike {
  *
  * ¹: Implicitly ignored by FS `Reject` receive steps.
  *
+ * When creating this message:
+ *
+ * 1. If the last `group-sync-request` towards the receiver for this
+ *    particular group (uniquely identified by group id and creator) is less
+ *    than 1h ago, log a notice and abort these steps.¹
+ *
  * When receiving this message as a group control message (wrapped by
  * [`group-creator-container`](ref:e2e.group-creator-container)):
  *
  * 1. Look up the group. If the group could not be found, discard the message
  *    and abort these steps.
- * 2. If the group is marked as _left_ or the sender is not a member of the
+ * 2. If the last `group-sync-request` from the sender for this particular
+ *    group (uniquely identified by group id and creator) is less than 1h
+ *    ago, log a notice, discard the message and abort these steps.¹
+ * 3. If the group is marked as _left_ or the sender is not a member of the
  *    group, send a [`group-setup`](ref:e2e.group-setup) with an empty
  *    members list back to the sender and abort these steps.
- * 3. Send a [`group-setup`](ref:e2e.group-setup) message with the current
+ * 4. Send a [`group-setup`](ref:e2e.group-setup) message with the current
  *    group members, followed by a [`group-name`](ref:e2e.group-name)
  *    message to the sender.
- * 4. If the group has a profile picture, send a
+ * 5. If the group has a profile picture, send a
  *    [`set-profile-picture`](ref:e2e.set-profile-picture) group control
  *    message to the sender.
- * 5. If the group has no profile picture, send a
+ * 6. If the group has no profile picture, send a
  *    [`delete-profile-picture`](ref:e2e.delete-profile-picture) group
  *    control message to the sender.
- * 6. If a group call is currently considered running within this group,
+ * 7. If a group call is currently considered running within this group,
  *    run the _Group Call Refresh Steps_ and let `chosen-call` be the result.
  *    If `chosen-call` is defined, repeat `csp-e2e.GroupCallStart` that is
  *    associated to `chosen-call` with the _created_ timestamp set to the
  *    `started_at` value associated to `chosen-call`.
+ *
+ * ¹: This is a precaution since a `group-sync-request` is automatically
+ * triggered and creates an automatic response. This can easily lead to
+ * message loops. Limiting `group-sync-request`s to once an hour per group
+ * per sender/receiver breaks a potential infinite loop.
  */
 export interface GroupSyncRequestLike {}
 
@@ -5460,6 +5713,7 @@ export class GroupSyncRequest extends base.Struct implements GroupSyncRequestLik
  * - Reflect:
  *   - Incoming: No
  *   - Outgoing: No
+ *   - _Sent_ update: No
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No

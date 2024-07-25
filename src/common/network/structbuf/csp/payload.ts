@@ -1059,6 +1059,8 @@ export class LegacyMessage extends base.Struct implements LegacyMessageLike {
  * - Copy all other fields of `message-with-metadata-box` to their
  *   respective counterparts in `legacy-message`
  *
+ * Creating this payload is only allowed as part of the _Common Send Steps_.
+ *
  * When receiving this payload:
  *
  * 1. (MD) If the device is currently not declared _leader_, exceptionally
@@ -1103,34 +1105,39 @@ export class LegacyMessage extends base.Struct implements LegacyMessageLike {
  * 13. If `outer.type` is not `0xa0`, let `inner-metadata` be
  *     `outer-metadata`, let `inner-type` be `outer.type` and let
  *     `inner-message` be `outer-message`.
- * 14. If `outer.type` is `0xa0`, run the receive steps associated to
- *     `csp-e2e-fs.Envelope` with the decoded `outer-message`: and let
- *     `inner-metadata`, `inner-type`, `inner-message` and `xdhk-commit-fn`
- *     be the result. If this fails, exceptionally abort these steps and the
- *     connection. If the message has been discarded, _Acknowledge_ and abort
- *     these steps.
- * 15. If `inner-type` is `0xa0` (i.e. FS encapsulation within FS
- *     encapsulation), log a warning, _Acknowledge_ and discard the message
- *     and abort these steps.
- * 16. If `inner-metadata` is not defined, set `inner-metadata` to
- *     `outer-metadata`.
- * 17. If `inner-metadata` is defined and `message-id` does not equal
- *     `inner-metadata.message_id`, log a warning, _Acknowledge_ and discard
- *     the message and abort these steps.
- * 18. If `message-id` refers to a message that has been received previously
+ * 14. If `outer.type` is `0xa0`:
+ *     1. Run the receive steps associated to
+ *        `csp-e2e-fs.Envelope` with the decoded `outer-message` and let
+ *        `inner-metadata`, `inner-type`, `inner-message` and `fs-commit-fn`
+ *        be the result. If this fails, exceptionally abort these steps and
+ *        the connection. If the message has been discarded, _Acknowledge_
+ *        and abort these steps.
+ *     2. If `inner-metadata` is not defined, set `inner-metadata` to
+ *        `outer-metadata`.
+ * 15. If `message-id` does not equal `inner-metadata.message_id`, log a
+ *     warning, _Acknowledge_ and discard the message and abort these steps.
+ * 16. If `message-id` refers to a message that has been received previously
  *     from `sender-identity` (including group messages), log a warning,
  *     _Acknowledge_ and discard the message and abort these steps.
- * 19. If `sender-identity` is blocked¹ and `inner-type` is not exempted
+ * 17. If `inner-type` is not defined (i.e. handling an FS control message),
+ *     log a notice, _Acknowledge_ and discard the message and abort these
+ *     steps.
+ * 18. If `inner-type` is unknown, log a notice, _Acknowledge_ and
+ *     discard the message and abort these steps.
+ * 19. If `inner-type` is `0xa0` (i.e. FS encapsulation within FS
+ *     encapsulation), log a warning, _Acknowledge_ and discard the message
+ *     and abort these steps.
+ * 20. If `sender-identity` is blocked¹ and `inner-type` is not exempted
  *     from blocking, _Acknowledge_ and  discard the message and abort these
  *     steps.
- * 20. If `sender-identity` equals `*3MAPUSH`:
+ * 21. If `sender-identity` equals `*3MAPUSH`:
  *     1. If `inner-type` is not `0xfe`, log a warning,
- *        _Acknowledge_ and discard the message and abort these steps:
+ *        _Acknowledge_ and discard the message and abort these steps.
  *     2. Run the receive steps associated to `inner-type` with
  *        `inner-message`. If this fails, exceptionally abort these steps and
  *        the connection. If the message has been discarded, _Acknowledge_
  *        the message and abort these steps.
- * 21. If `sender-identity` is not a _Special Contact_:
+ * 22. If `sender-identity` is not a _Special Contact_:
  *     1. If `inner-metadata.nickname` is defined, let `nickname` be the
  *        value of `inner-metadata.nickname`.²
  *     2. If `inner-metadata` is not defined and _User Profile Distribution_
@@ -1164,22 +1171,22 @@ export class LegacyMessage extends base.Struct implements LegacyMessageLike {
  *        `inner-message`. If this fails, exceptionally abort these steps and
  *        the connection. If the message has been discarded, _Acknowledge_
  *        the message and abort these steps.
- * 22. (MD) If the properties associated to `inner-type` require
+ * 23. (MD) If the properties associated to `inner-type` require
  *     reflecting incoming messages, reflect `outer-type` and `outer-message`
  *     to other devices and wait for reflection acknowledgement.⁴ If this
  *     fails, exceptionally abort these steps and the connection.
- * 23. _Acknowledge_ the message.⁵
- * 24. If the properties associated to `type` do not require sending
+ * 24. _Acknowledge_ the message.⁵
+ * 25. If the properties associated to `type` do not require sending
  *     automatic delivery receipts or `flags` contains the _no
  *     automatic delivery receipts_ (`0x80`) flag, abort these steps.
- * 25. Let `delivery-receipt` be a
+ * 26. Let `delivery-receipt` be a
  *     [`delivery-receipt`](ref:e2e.delivery-receipt) message towards
  *     `sender-identity` with status _received_ (`0x01`) and the
  *     respective `message-id`.
- * 26. (MD) Reflect `delivery-receipt` to other devices and
+ * 27. (MD) Reflect `delivery-receipt` to other devices and
  *     wait for reflection acknowledgement. If this fails, exceptionally
  *     abort these sub-steps and the connection.
- * 27. Send a `delivery-receipt` to `sender-identity` with status
+ * 28. Send a `delivery-receipt` to `sender-identity` with status
  *     _received_ (`0x01`) and the respective `message-id`.
  *
  * ¹: A sender can be blocked implicitly or explicitly, see
@@ -1208,12 +1215,14 @@ export class LegacyMessage extends base.Struct implements LegacyMessageLike {
  * The following steps are defined as _Acknowledge_ steps for an incoming
  * message:
  *
- * 1. If `flags` does not contain the _no server acknowledgement_ (`0x04`)
+ * 1. If the steps for this message have already been invoked once, abort
+ *    these steps.
+ * 2. If `flags` does not contain the _no server acknowledgement_ (`0x04`)
  *    flag, send a [`message-ack`](ref:payload.message-ack) payload to the
  *    chat server with the respective `message-id`.
- * 2. If the properties associated to `inner-type` require protection against
+ * 3. If the properties associated to `inner-type` require protection against
  *    replay, mark the nonce of `message-and-metadata-nonce` as used.
- * 3. If `xdhk-commit-fn` is defined, run it.
+ * 4. If `fs-commit-fn` is defined, run it.
  *
  * [//]: # "TODO(SE-128)"
  */
@@ -1909,10 +1918,7 @@ export interface SetPushNotificationTokenLike {
      * - `0x05`: APNs Production with `mutable-content` key
      * - `0x06`: APNs Development with `mutable-content` key
      * - `0x11`: FCM with empty payload
-     * - `0x12`: FCM with encrypted payload
      * - `0x13`: HMS with empty payload
-     * - `0x21`: (obsolete) Microsoft MPNS
-     * - `0x22`: (obsolete) Microsoft WNS
      */
     readonly type: types.u8;
 
