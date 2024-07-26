@@ -1,14 +1,10 @@
 <!--
-  @component
-  Renders the given content as a child of `target`. Note: If `target` is not defined,
-  the portal will not be rendered at all.
+  @component Renders the given content as a child of `target`. Note: If `target` is not defined, the
+  portal will not be rendered at all.
 -->
 <script lang="ts">
-  import {onDestroy, onMount} from 'svelte';
-
   import type {PortalProps} from '~/app/ui/components/hocs/portal/props';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
-  import {TIMER} from '~/common/utils/timer';
 
   type $$Props = PortalProps;
 
@@ -18,30 +14,16 @@
   let invalid = false;
   let ref: SvelteNullableBinding<HTMLElement> = null;
 
-  onMount(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (target !== undefined && target !== null && ref !== null) {
-      target.appendChild(ref);
+  function handleChangeTarget(currentTarget: $$Props['target'], currentRef: typeof ref): void {
+    if (currentTarget !== undefined && currentTarget !== null && currentRef !== null) {
+      currentTarget.appendChild(currentRef);
+      invalid = false;
     } else {
       invalid = true;
     }
-  });
+  }
 
-  /**
-   * Clean up the content if the portal is destroyed.
-   */
-  onDestroy(() => {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const _ref = ref;
-
-    // TODO(DESK-1339): Is this delay really needed? If yes, maybe replace with tick.then()?
-    TIMER.timeout(() => {
-      if (_ref?.parentNode !== null && _ref?.parentNode !== undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        _ref.parentNode.removeChild(_ref);
-      }
-    }, 0);
-  });
+  $: handleChangeTarget(target, ref);
 </script>
 
 <div bind:this={ref} class="portal" class:hidden>
