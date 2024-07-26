@@ -5,6 +5,7 @@ import {ProtocolError} from '~/common/error';
 import type {CloseInfo} from '~/common/network';
 import type * as protobuf from '~/common/network/protobuf';
 import type {ConnectionManagerHandle} from '~/common/network/protocol/connection';
+import type {DropDeviceLayerController} from '~/common/network/protocol/drop-device-layer-codec';
 import type {ConnectedTaskManager} from '~/common/network/protocol/task/manager';
 import type {
     ClientCookie,
@@ -193,24 +194,18 @@ class D2dController implements Pick<DeviceGroupBoxes, 'dgrk' | 'dgtsk'> {
     }
 }
 
-export class ProtocolController {
+export class BaseProtocolController {
     public readonly csp: CspController;
     public readonly d2m: D2mController;
-    public readonly d2d: D2dController;
-
     public constructor(
         services: Pick<ServicesForBackend, 'crypto'>,
-        public readonly taskManager: ConnectedTaskManager,
-        public readonly connection: ConnectionController,
+        public readonly connection: Pick<ConnectionController, 'current'>,
         csp: CspControllerSource,
         d2m: D2mControllerSource,
-        d2d: D2dControllerSource,
     ) {
         this.csp = new CspController(services, csp);
         this.d2m = new D2mController(d2m);
-        this.d2d = new D2dController(d2d);
     }
-
     public forLayer2(): Layer2Controller {
         return {
             csp: this.csp.state,
@@ -220,6 +215,23 @@ export class ProtocolController {
     public forLayer3(): Layer3Controller {
         return this;
     }
+}
+
+export class FullProtocolController extends BaseProtocolController {
+    public readonly d2d: D2dController;
+
+    public constructor(
+        services: Pick<ServicesForBackend, 'crypto'>,
+        public readonly taskManager: ConnectedTaskManager,
+        public override readonly connection: ConnectionController,
+
+        csp: CspControllerSource,
+        d2m: D2mControllerSource,
+        d2d: D2dControllerSource,
+    ) {
+        super(services, connection, csp, d2m);
+        this.d2d = new D2dController(d2d);
+    }
 
     public forLayer4(): Layer4Controller {
         return this;
@@ -227,5 +239,17 @@ export class ProtocolController {
 
     public forLayer5(): Layer5Controller {
         return this;
+    }
+}
+
+export class D2mOnlyProtocolController extends BaseProtocolController {
+    public forDropDeviceLayer(deviceDropped: ResolvablePromise<void>): DropDeviceLayerController {
+        return {
+            d2m: {
+                deviceDroppedFromLocal: deviceDropped,
+                deviceId: this.d2m.deviceId,
+            },
+            connection: this.connection,
+        };
     }
 }

@@ -251,6 +251,15 @@ export type OutboundL4D2mTransactionMessage =
           LayerEncoder<protobuf.d2m.CommitTransactionEncodable>
       >;
 
+export type InboundDropDeviceLayerMessage = D2mMessage<
+    D2mPayloadType.DROP_DEVICE_ACK,
+    protobuf.d2m.DropDeviceAck
+>;
+
+export type OutboundDropDeviceLayerMessage = D2mMessage<
+    D2mPayloadType.DROP_DEVICE,
+    LayerEncoder<protobuf.d2m.DropDeviceEncodable>
+>;
 // Task Messages (messages that are no protocol control messages)
 export type InboundTaskMessage = InboundCspTaskMessage | InboundD2mTaskMessage;
 export type InboundCspTaskMessage = CspMessage<

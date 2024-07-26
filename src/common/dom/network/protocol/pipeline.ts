@@ -7,15 +7,22 @@ import {
     WritableStream,
 } from '~/common/dom/streams';
 import type {
+    InboundDropDeviceLayerMessage,
     InboundL1Message,
     InboundL2Message,
     InboundL3Message,
     InboundL4Message,
+    OutboundDropDeviceLayerMessage,
     OutboundL2Message,
     OutboundL3Message,
     OutboundL4Message,
 } from '~/common/network/protocol';
 import type {RawCaptureHandlerPair, RawCaptureHandlers} from '~/common/network/protocol/capture';
+import {
+    DropDeviceLayerDecoder,
+    DropDeviceLayerEncoder,
+    type DropDeviceLayerController,
+} from '~/common/network/protocol/drop-device-layer-codec';
 import {Layer1Decoder, Layer1Encoder} from '~/common/network/protocol/layer-1-codec';
 import {type Layer2Controller, Layer2Decoder} from '~/common/network/protocol/layer-2-codec';
 import {
@@ -74,13 +81,14 @@ export class Layer2Codec {
 /**
  * See `layer-3-codec.ts` for docs.
  */
-class Layer3Codec {
-    public readonly decoder: Layer3Decoder;
-    public readonly encoder: Layer3Encoder;
+class Layer3Codec<TType extends 'full' | 'partial'> {
+    public readonly decoder: Layer3Decoder<TType>;
+    public readonly encoder: Layer3Encoder<TType>;
 
     public constructor(
         services: ServicesForBackend,
         controller: Layer3Controller,
+        private readonly _type: TType,
         capture?: RawCaptureHandlerPair,
     ) {
         const log = services.logging.logger('network.pipeline.l3');
@@ -89,8 +97,21 @@ class Layer3Codec {
         const delayed = Delayed.simple<{readonly forward: (message: OutboundL2Message) => void}>(
             'L3 encoder',
         );
-        this.decoder = new Layer3Decoder(services, controller, delayed, capture?.inbound);
-        this.encoder = new Layer3Encoder(services, controller, delayed, capture?.outbound);
+
+        this.decoder = new Layer3Decoder(
+            services,
+            controller,
+            delayed,
+            this._type,
+            capture?.inbound,
+        );
+        this.encoder = new Layer3Encoder(
+            services,
+            controller,
+            delayed,
+            this._type,
+            capture?.outbound,
+        );
     }
 }
 
@@ -141,6 +162,22 @@ class Layer5Codec {
     ) {
         this.decoder = new WritableStream(new Layer5Decoder(controller, capture?.inbound));
         this.encoder = new ReadableStream(new Layer5Encoder(controller, capture?.outbound));
+    }
+}
+
+class DropDeviceLayerCodec {
+    public readonly decoder: WritableStream<InboundDropDeviceLayerMessage>;
+    public readonly encoder: ReadableStream<OutboundDropDeviceLayerMessage>;
+
+    public constructor(
+        services: ServicesForBackend,
+        controller: DropDeviceLayerController,
+        capture?: RawCaptureHandlerPair,
+    ) {
+        this.decoder = new WritableStream(new DropDeviceLayerDecoder(capture?.inbound));
+        this.encoder = new ReadableStream(
+            new DropDeviceLayerEncoder(controller, capture?.outbound),
+        );
     }
 }
 
@@ -209,6 +246,58 @@ class Layer1Through4DecoderTransformStreamAdapter
     }
 }
 
+class Layer1Through3DecoderTransformStreamAdapter
+    implements AsyncTransformerCodec<ArrayBuffer, InboundL3Message>
+{
+    private readonly _layer1: {
+        codec: SyncTransformerCodec<ArrayBuffer, InboundL1Message>;
+        forward: (message: InboundL1Message) => void;
+    };
+    private readonly _layer2: {
+        codec: SyncTransformerCodec<InboundL1Message, InboundL2Message>;
+        forward: (message: InboundL2Message) => void;
+    };
+    private readonly _layer3: {
+        codec: SyncTransformerCodec<InboundL2Message, InboundL3Message>;
+        forward: (message: InboundL3Message) => void;
+    };
+
+    private _controller: TransformerCodecController<InboundL3Message> | undefined = undefined;
+
+    public constructor(
+        layer1: SyncTransformerCodec<ArrayBuffer, InboundL1Message>,
+        layer2: SyncTransformerCodec<InboundL1Message, InboundL2Message>,
+        layer3: SyncTransformerCodec<InboundL2Message, InboundL3Message>,
+    ) {
+        this._layer1 = {
+            codec: layer1,
+            forward: (message) => layer2.transform(message, this._layer2.forward),
+        };
+        this._layer2 = {
+            codec: layer2,
+            forward: (message) => layer3.transform(message, this._layer3.forward),
+        };
+        this._layer3 = {
+            codec: layer3,
+            forward: (message) => unwrap(this._controller).enqueue(message),
+        };
+    }
+
+    public start(controller: TransformerCodecController<InboundL3Message>): void {
+        this._controller = controller;
+        this._layer1.codec.start?.(this._layer1.forward);
+        this._layer2.codec.start?.(this._layer2.forward);
+        this._layer3.codec.start?.(this._layer3.forward);
+    }
+
+    public transform(
+        buffer: ArrayBuffer,
+        controller: TransformerCodecController<InboundL3Message>,
+    ): void {
+        this._layer1.codec.transform(buffer, this._layer1.forward);
+    }
+}
+
 /**
  * A Transform stream adapter that chains the synchronous encoder transform streams L4 through L1
  * together and exposes it as a single asynchronous transform stream.
@@ -264,6 +353,98 @@ class Layer4Through1EncoderTransformStreamAdapter
     }
 }
 
+/**
+ * A Transform stream adapter that chains the synchronous encoder transform streams L4 through L1
+ * together and exposes it as a single asynchronous transform stream.
+ */
+class Layer3Through1EncoderTransformStreamAdapter
+    implements AsyncTransformerCodec<OutboundDropDeviceLayerMessage, Uint8Array>
+{
+    private readonly _layer3: {
+        codec: SyncTransformerCodec<OutboundDropDeviceLayerMessage, OutboundL2Message>;
+        forward: (message: OutboundL2Message) => void;
+    };
+    private readonly _layer1: {
+        codec: SyncTransformerCodec<OutboundL2Message, Uint8Array>;
+        forward: (message: Uint8Array) => void;
+    };
+    private _controller: TransformerCodecController<Uint8Array> | undefined = undefined;
+
+    public constructor(
+        layer3: SyncTransformerCodec<OutboundDropDeviceLayerMessage, OutboundL2Message>,
+        layer1: SyncTransformerCodec<OutboundL2Message, Uint8Array>,
+    ) {
+        this._layer3 = {
+            codec: layer3,
+            forward: (message) => layer1.transform(message, this._layer1.forward),
+        };
+        this._layer1 = {
+            codec: layer1,
+            forward: (frame) => unwrap(this._controller).enqueue(frame),
+        };
+    }
+
+    public start(controller: TransformerCodecController<Uint8Array>): void {
+        this._controller = controller;
+        this._layer3.codec.start?.(this._layer3.forward);
+        this._layer1.codec.start?.(this._layer1.forward);
+    }
+
+    public transform(
+        message: OutboundDropDeviceLayerMessage,
+        controller: TransformerCodecController<Uint8Array>,
+    ): void {
+        this._layer3.codec.transform(message, this._layer3.forward);
+    }
+}
+
+export function applyPartialMediatorStreamPipeline(
+    services: ServicesForBackend,
+    stream: BidirectionalStream<ArrayBuffer, BufferSource>,
+    controllers: {
+        layer2: Layer2Controller;
+        layer3: Layer3Controller;
+        dropDeviceLayer: DropDeviceLayerController;
+    },
+    capture?: RawCaptureHandlers,
+): MediatorPipe {
+    const layer1 = new Layer1Codec(services, capture?.layer1);
+    const layer2 = new Layer2Codec(services, controllers.layer2, capture?.layer2);
+    const layer3 = new Layer3Codec(services, controllers.layer3, 'partial', capture?.layer3);
+    const dropDeviceLayer = new DropDeviceLayerCodec(
+        services,
+        controllers.dropDeviceLayer,
+        capture?.dropDeviceLayer,
+    );
+
+    // Inbound pipeline
+    const readable = stream.readable
+        .pipeThrough(
+            new TransformStream(
+                new Layer1Through3DecoderTransformStreamAdapter(
+                    layer1.decoder,
+                    layer2.decoder,
+                    layer3.decoder,
+                ),
+            ),
+        )
+        .pipeTo(dropDeviceLayer.decoder);
+
+    // Outbound pipeline
+    const writable = dropDeviceLayer.encoder
+        .pipeThrough(
+            new TransformStream(
+                new Layer3Through1EncoderTransformStreamAdapter(layer3.encoder, layer1.encoder),
+            ),
+        )
+        .pipeTo(stream.writable);
+
+    return {
+        readable,
+        writable,
+    };
+}
+
 export function applyMediatorStreamPipeline(
     services: ServicesForBackend,
     stream: BidirectionalStream<ArrayBuffer, BufferSource>,
@@ -278,7 +459,7 @@ export function applyMediatorStreamPipeline(
     // Create codecs
     const layer1 = new Layer1Codec(services, capture?.layer1);
     const layer2 = new Layer2Codec(services, controllers.layer2, capture?.layer2);
-    const layer3 = new Layer3Codec(services, controllers.layer3, capture?.layer3);
+    const layer3 = new Layer3Codec(services, controllers.layer3, 'full', capture?.layer3);
     const layer4 = new Layer4Codec(services, controllers.layer4, capture?.layer4);
     const layer5 = new Layer5Codec(services, controllers.layer5, capture?.layer5);
 

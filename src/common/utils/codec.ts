@@ -82,6 +82,13 @@ export interface AsyncCodecSink<O> {
     readonly abort: (reason: Error) => void;
 }
 
+export interface SyncCodecSink<O> {
+    readonly start?: (controller: SinkCodecController) => void;
+    readonly write: (chunk: O, controller: SinkCodecController) => void;
+    readonly close: () => void;
+    readonly abort: (reason: Error) => void;
+}
+
 /**
  * An asynchronous source codec.
  *
@@ -91,6 +98,12 @@ export interface AsyncCodecSink<O> {
 export interface AsyncCodecSource<I> {
     start?: (controller: SourceCodecController<I>) => void | Promise<void>;
     pull: (controller: SourceCodecController<I>) => PromiseLike<void>;
+    cancel: (reason: Error) => void;
+}
+
+export interface SyncCodecSource<I> {
+    start?: (controller: SourceCodecController<I>) => void;
+    pull: (controller: SourceCodecController<I>) => void;
     cancel: (reason: Error) => void;
 }
 

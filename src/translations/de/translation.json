@@ -301,7 +301,8 @@
     "prose--description-p2": "Klicken Sie danach unten auf «Neu verknüpfen», und folgen Sie den Bildschirmanweisungen. Ihr Chatverlauf werden nach der Verknüpfung wiederhergestellt."
   },
   "dialog--server-alert": {
-    "action--confirm": "OK"
+    "action--confirm": "Gerät neu verknüpfen",
+    "action--continue": "Ohne Verbindung fortfahren"
   },
   "dialog--startup-unlock": {
     "action--confirm": "Weiter",
@@ -575,6 +576,8 @@
   "system": {
     "error--check-internet-and-retry": "Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
     "error--connection": "Keine Serververbindung. Versuchen Sie, sich erneut mit dem Wifi zu verbinden, oder prüfen Sie Ihr Modem oder Router.",
-    "error--connection-unrecoverable-state": "Aufgrund eines unvorhergesehenen Fehlers wurde dieses Gerät vom Server getrennt. Bitte starten Sie die App neu, und verknüpfen Sie es erneut."
+    "error--connection-unrecoverable-state": "Aufgrund eines unvorhergesehenen Fehlers wurde dieses Gerät vom Server getrennt. Bitte starten Sie die App neu, und verknüpfen Sie es erneut.",
+    "error--server-alert-no-connection": "Ihr Gerät konnte nicht neu verknüpft werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "error--server-alert-relink": "Wir empfehlen, dieses Gerät neu zu verknüpfen. Ihr Nachrichtenverlauf kann dabei wiederhergestellt werden."
   }
 }

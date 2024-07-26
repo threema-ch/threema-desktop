@@ -65,7 +65,14 @@ export interface RawCaptureHandlerPair {
 /**
  * String representation of each existing protocol layer.
  */
-export const LAYERS = ['Frame', 'Multiplex', 'TLE/Auth', 'Keep-Alive', 'E2E'] as const;
+export const LAYERS = [
+    'Frame',
+    'Multiplex',
+    'TLE/Auth',
+    'Keep-Alive',
+    'E2E',
+    'Drop-Device',
+] as const;
 type Layers = (typeof LAYERS)[u53];
 
 /**
@@ -274,6 +281,19 @@ export const RAW_CAPTURE_CONVERTER = Object.freeze({
             meta?: PacketMeta,
         ): [packet: DisplayPacket, transfers: readonly DomTransferable[]] =>
             convert('outbound', 'E2E', packet, meta),
+    },
+
+    dropDeviceLayer: {
+        inbound: (
+            packet: RawPacket,
+            meta?: PacketMeta,
+        ): [packet: DisplayPacket, transfers: readonly DomTransferable[]] =>
+            convert('inbound', 'Drop-Device', packet, meta),
+        outbound: (
+            packet: RawPacket,
+            meta?: PacketMeta,
+        ): [packet: DisplayPacket, transfers: readonly DomTransferable[]] =>
+            convert('outbound', 'Drop-Device', packet, meta),
     },
 });
 

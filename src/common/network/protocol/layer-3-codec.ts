@@ -253,7 +253,9 @@ type InternalInboundL3CspMessage = CspMessage<
     CspPayload<CspPayloadType.QUEUE_SEND_COMPLETE, structbuf.csp.payload.QueueSendComplete>
 >;
 
-export class Layer3Decoder implements SyncTransformerCodec<InboundL2Message, InboundL3Message> {
+export class Layer3Decoder<TType extends 'full' | 'partial'>
+    implements SyncTransformerCodec<InboundL2Message, InboundL3Message>
+{
     private readonly _services: ServicesForBackend;
     private readonly _log: Logger;
     private readonly _buffer: ByteBuffer;
@@ -265,6 +267,7 @@ export class Layer3Decoder implements SyncTransformerCodec<InboundL2Message, Inb
         private readonly _encoder: Delayed<{
             readonly forward: (message: OutboundL2Message) => void;
         }>,
+        private readonly _type: TType,
         private readonly _capture?: RawCaptureHandler,
     ) {
         this._services = services;
@@ -284,7 +287,9 @@ export class Layer3Decoder implements SyncTransformerCodec<InboundL2Message, Inb
         // Handle CSP or D2M message
         try {
             if (message.type === D2mPayloadType.PROXY) {
-                this._handleCspMessage(message, forward);
+                if (this._type === 'full') {
+                    this._handleCspMessage(message, forward);
+                }
             } else {
                 this._handleD2mMessage(message, forward);
             }
@@ -747,7 +752,10 @@ export class Layer3Decoder implements SyncTransformerCodec<InboundL2Message, Inb
                         break;
                     default:
                         // Forward
-                        forward(message);
+                        if (this._type === 'full') {
+                            forward(message);
+                        }
+                        // Drop messages
                         break;
                 }
 
@@ -892,7 +900,9 @@ type InternalOutboundL3CspMessage = CspMessage<
     >
 >;
 
-export class Layer3Encoder implements SyncTransformerCodec<OutboundL3Message, OutboundL2Message> {
+export class Layer3Encoder<TType extends 'full' | 'partial'>
+    implements SyncTransformerCodec<OutboundL3Message, OutboundL2Message>
+{
     private readonly _log: Logger;
     private readonly _buffer: ByteBuffer;
 
@@ -902,6 +912,7 @@ export class Layer3Encoder implements SyncTransformerCodec<OutboundL3Message, Ou
         private readonly _encoder: Delayed<{
             readonly forward: (message: OutboundL2Message) => void;
         }>,
+        private readonly _type: TType,
         private readonly _capture?: RawCaptureHandler,
     ) {
         this._log = services.logging.logger('network.protocol.l3.encoder');
@@ -915,6 +926,11 @@ export class Layer3Encoder implements SyncTransformerCodec<OutboundL3Message, Ou
 
         // Set encoder for forwarding messages from the decoder
         this._encoder.set({forward});
+
+        // Ignroe Csp handling in a partial pipeline.
+        if (this._type === 'partial') {
+            return;
+        }
 
         // Expect that we need to send the CSP `client-hello` when starting up
         if (csp.state.get() !== CspAuthState.CLIENT_HELLO) {
