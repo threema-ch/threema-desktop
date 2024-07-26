@@ -12,7 +12,7 @@ export type ContactDetailViewModelStore<TReceiver extends AnyReceiver> = LocalSt
 >;
 
 export function getContactDetailViewModelStore<TReceiver extends AnyReceiver>(
-    services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     receiverModelStore: ReceiverStoreFor<TReceiver>,
 ): ContactDetailViewModelStore<TReceiver> {
     const {endpoint} = services;

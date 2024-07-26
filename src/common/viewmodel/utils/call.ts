@@ -26,7 +26,7 @@ export interface GroupCallData {
 }
 
 export function getGroupCallParticipantReceiverData(
-    services: Pick<ServicesForViewModel, 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'model'>,
     participant: LocalModelStore<Contact> | 'me',
     getAndSubscribe: GetAndSubscribeFunction,
 ): GroupCallParticipantReceiverData {
@@ -37,7 +37,7 @@ export function getGroupCallParticipantReceiverData(
 
 /** Collect group call data from a _chosen_ group call. */
 function getGroupCallData(
-    services: Pick<ServicesForViewModel, 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'model'>,
     call: ChosenGroupCall,
     getAndSubscribe: GetAndSubscribeFunction,
 ): GroupCallData {
@@ -76,7 +76,7 @@ function getGroupCallData(
 
 /** Collect any call data from a receiver. */
 export function getCallData(
-    services: Pick<ServicesForViewModel, 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'model'>,
     receiver: AnyReceiver,
     getAndSubscribe: GetAndSubscribeFunction,
 ): AnyCallData | undefined {

@@ -36,12 +36,4 @@ export type User = {
 
     /** Profile picture color and image (derived from {@link User.profileSettings}). */
     readonly profilePicture: LocalStore<ProfilePictureView>;
-
-    /**
-     * Display name of the user (i.e. Nickname with fallback to the Threema ID, derived from
-     * {@link User.profileSettings} and {@link User.identity}).
-     *
-     * @deprecated TODO(DESK-1421): Move into viewmodel?
-     */
-    readonly displayName: LocalStore<string>;
 } & ProxyMarked;

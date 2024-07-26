@@ -44,7 +44,7 @@ export interface OngoingGroupCallViewModelBundle extends PropertiesMarked {
 }
 
 export function getOngoingGroupCallViewModelBundle(
-    services: Pick<ServicesForViewModel, 'endpoint' | 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'model'>,
     ongoing: OngoingGroupCall,
 ): OngoingGroupCallViewModelBundle {
     const controller = ongoing.get().controller;

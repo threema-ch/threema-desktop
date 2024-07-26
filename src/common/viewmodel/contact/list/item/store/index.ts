@@ -12,7 +12,7 @@ export type ContactListItemViewModelStore<TReceiver extends AnyReceiver> = Local
 >;
 
 export function getContactListItemViewModelStore<TReceiver extends AnyReceiver>(
-    services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     receiverModelStore: ReceiverStoreFor<TReceiver>,
 ): ContactListItemViewModelStore<TReceiver> {
     const {endpoint} = services;

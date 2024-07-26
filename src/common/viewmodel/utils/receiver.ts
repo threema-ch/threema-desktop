@@ -31,6 +31,7 @@ import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
 import type {ReceiverBadgeType} from '~/common/viewmodel/types';
 import {getContactBadge} from '~/common/viewmodel/utils/contact';
+import {getUserDisplayName} from '~/common/viewmodel/utils/user';
 
 export type AnyReceiverData =
     | ContactReceiverData
@@ -64,7 +65,7 @@ export type ReceiverUpdateDataFor<TReceiver extends AnyReceiver> = {
  * make sure that the controller is active.
  */
 export function getConversationReceiverData(
-    services: Pick<ServicesForViewModel, 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'model'>,
     conversationModel: Conversation,
     getAndSubscribe: GetAndSubscribeFunction,
 ): AnyReceiverData {
@@ -79,7 +80,7 @@ export function getConversationReceiverData(
  * Collects the respective receiver data for the given `receiverModel`.
  */
 export function getReceiverData<TReceiver extends AnyReceiver>(
-    services: Pick<ServicesForViewModel, 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'model'>,
     receiverModel: TReceiver,
     getAndSubscribe: GetAndSubscribeFunction,
 ): ReceiverDataFor<TReceiver> {
@@ -156,13 +157,16 @@ export function getCommonReceiverData(receiverModel: AnyReceiver): CommonReceive
  * Returns the collected {@link SelfReceiverData} object for the user themself.
  */
 export function getSelfReceiverData(
-    services: Pick<ServicesForViewModel, 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'model'>,
     getAndSubscribe: GetAndSubscribeFunction,
 ): SelfReceiverData {
     const {user} = services.model;
 
     const profilePicture = getAndSubscribe(user.profilePicture);
-    const displayName = getAndSubscribe(user.displayName);
+    const displayName = getUserDisplayName(
+        services,
+        getAndSubscribe(user.profileSettings).view.nickname,
+    );
     const profileSettings = getAndSubscribe(user.profileSettings);
 
     return {
@@ -214,7 +218,7 @@ export function getContactReceiverData(
  * {@link ReceiverType.GROUP}.
  */
 function getGroupReceiverData(
-    services: Pick<ServicesForViewModel, 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'model'>,
     groupModel: Group,
     getAndSubscribe: GetAndSubscribeFunction,
 ): GroupReceiverData {
@@ -422,7 +426,7 @@ function isGroupReceiverLeft(receiverModel: Group): boolean {
  * Returns the {@link ContactReceiverData} of a group's creator identity.
  */
 function getGroupCreatorData(
-    services: Pick<ServicesForViewModel, 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'model'>,
     groupModel: Group,
     getAndSubscribe: GetAndSubscribeFunction,
 ): SelfReceiverData | ContactReceiverData {

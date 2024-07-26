@@ -10,6 +10,7 @@ import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel
 import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/status-message';
 import type {ContactReceiverData} from '~/common/viewmodel/utils/receiver';
 import type {SenderDataSelf} from '~/common/viewmodel/utils/sender';
+import {getUserDisplayName} from '~/common/viewmodel/utils/user';
 
 /**
  * Union of all possible MessageViewModelBundle types.
@@ -80,7 +81,10 @@ export function getMessageSenderData(
 
         case MessageDirection.OUTBOUND: {
             const profilePicture = getAndSubscribe(services.model.user.profilePicture);
-            const displayName = getAndSubscribe(services.model.user.displayName);
+            const displayName = getUserDisplayName(
+                services,
+                getAndSubscribe(services.model.user.profileSettings).view.nickname,
+            );
 
             return {
                 type: 'self',

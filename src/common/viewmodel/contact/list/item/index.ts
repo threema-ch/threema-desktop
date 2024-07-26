@@ -18,7 +18,7 @@ export interface ContactListItemViewModelBundle<TReceiver extends AnyReceiver>
 }
 
 export function getContactListItemViewModelBundle<TReceiver extends AnyReceiver>(
-    services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     receiverModelStore: ReceiverStoreFor<TReceiver>,
 ): ContactListItemViewModelBundle<TReceiver> {
     const {endpoint} = services;

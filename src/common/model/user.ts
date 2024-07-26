@@ -44,7 +44,6 @@ export class UserModel implements User {
     public readonly mediaSettings: LocalModelStore<MediaSettings>;
 
     public readonly profilePicture: LocalStore<ProfilePictureView>;
-    public readonly displayName: LocalStore<string>;
 
     public constructor(services: ServicesForModel) {
         // TODO(DESK-1468): Redundant. Consider removing this.
@@ -66,13 +65,6 @@ export class UserModel implements User {
                 color: idColorIndexToString(colorIndex),
                 picture: profileSettingsModel.view.profilePicture,
             }),
-        );
-
-        // TODO(DESK-1421): Move into viewmodel?
-        this.displayName = derive(
-            [this.profileSettings],
-            ([{currentValue: profileSettingsModel}]) =>
-                profileSettingsModel.view.nickname ?? this.identity,
         );
     }
 }

@@ -118,7 +118,7 @@ export function getDisplayName(
     userState: GroupUserState,
     creator: LocalModelStore<Contact> | 'me',
     groupMembers: Set<LocalModelStore<Contact>>,
-    services: Pick<ServicesForModel, 'model'>,
+    services: Pick<ServicesForModel, 'device' | 'model'>,
 ): string {
     if (groupName !== '') {
         return groupName;
@@ -133,8 +133,13 @@ export function getDisplayName(
     if (creator !== 'me') {
         memberNames.unshift(creator.get().view.displayName);
     }
+
+    // TODO(DESK-1570) Move this to correctly display the user with the 'Me' string.
     if (userState === GroupUserState.MEMBER) {
-        memberNames.push(services.model.user.displayName.get());
+        memberNames.push(
+            services.model.user.profileSettings.get().view.nickname ??
+                services.device.identity.string,
+        );
     }
     return memberNames.join(', ');
 }

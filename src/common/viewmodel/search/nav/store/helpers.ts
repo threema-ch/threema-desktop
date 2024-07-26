@@ -189,7 +189,7 @@ export function getMessageSearchResults(
  * {@link searchViewModelController}.
  */
 export function getReceiverSearchResults(
-    services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
+    services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     searchParams: SearchParams,
     getAndSubscribe: GetAndSubscribeFunction,
 ): SearchViewModel['receiverSearchResults'] {

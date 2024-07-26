@@ -6,6 +6,7 @@ import type {IdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import type {ReceiverBadgeType} from '~/common/viewmodel/types';
+import {getUserDisplayName} from '~/common/viewmodel/utils/user';
 
 /** A contact that has been removed from the contact list of the user. */
 export interface RemovedContactData {
@@ -30,7 +31,10 @@ export function getContactDisplayName(
     getAndSubscribe: GetAndSubscribeFunction,
 ): string {
     if (identity === services.device.identity.string) {
-        return getAndSubscribe(services.model.user.displayName);
+        return getUserDisplayName(
+            services,
+            getAndSubscribe(services.model.user.profileSettings).view.nickname,
+        );
     }
     const contact = services.model.contacts.getByIdentity(identity);
     if (contact === undefined) {
