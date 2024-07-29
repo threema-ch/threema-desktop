@@ -7,7 +7,6 @@
 
   import {globals} from '~/app/globals';
   import type {ModalProps} from '~/app/ui/components/hocs/modal/props';
-  import type {ButtonState} from '~/app/ui/components/hocs/modal/types';
   import Portal from '~/app/ui/components/hocs/portal/Portal.svelte';
   import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
   import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
@@ -16,8 +15,6 @@
   import {unreachable} from '~/common/utils/assert';
 
   const hotkeyManager = globals.unwrap().hotkeyManager;
-
-  const log = globals.unwrap().uiLogging.logger('ui.component.modal');
 
   type $$Props = ModalProps;
 
@@ -28,7 +25,14 @@
   export let wrapper: $$Props['wrapper'];
 
   let closed = false;
-  let buttonStates: ButtonState[] | undefined = undefined;
+  /**
+   * In a `<dialog>`, exactly one element must always be focused. By default, just pick the first
+   * button, if:
+   *
+   * - None of the given buttons has `isFocused` explicitly set to `true`, or
+   * - `allowSubmittingWithEnter` is not set to `true`.
+   */
+  let initiallyFocusedButtonIndex = 0;
 
   const dispatch = createEventDispatcher<{
     open: undefined;
@@ -55,21 +59,9 @@
         closeModal(element);
       }
     }
-
-    // If a button is focused, its functionality overrides onEnterSubmit.
-    if (event.key === 'Enter' && buttonStates?.some((state) => state.isFocused) === true) {
-      return;
-    }
-
-    if (options.allowSubmittingWithEnter === true && event.key === 'Enter') {
-      // Prohibit the Enter button to trigger anything that is beneath the modal.
-      event.preventDefault();
-
-      dispatch('submit');
-    }
   }
 
-  function handleCloseEvent(): void {
+  function handleClose(): void {
     closed = true;
     dispatch('close');
   }
@@ -82,7 +74,7 @@
     dispatch('submit');
   }
 
-  function handleClosedStateChange(isClosed: boolean): void {
+  function handleChangeClosedState(isClosed: boolean): void {
     if (!(options.suspendHotkeysWhenVisible ?? true)) {
       return;
     }
@@ -96,12 +88,36 @@
     }
   }
 
-  function handleChangeButtonFocus(focused: boolean, index: u53): void {
-    if (buttonStates?.[index] !== undefined) {
-      buttonStates[index] = {isFocused: focused};
+  /**
+   * Set the initially focused button. Note: Use only once when the modal is mounted for the first
+   * time to prevent unexpected focus changes for users.
+   */
+  function setInitialButtonFocus(): void {
+    // If the wrapper is not of type "card" there are no buttons to focus.
+    if (!(wrapper.type === 'card')) {
       return;
     }
-    log.error('Cannot set focus because there is a mismatch in number of Buttons and ButtonStates');
+
+    let firstSubmitButtonIndex: u53 | undefined = undefined;
+    for (const [index, button] of (wrapper.buttons ?? []).entries()) {
+      // If the button is explicitly focused, which takes precedence over all other focus methods,
+      // update the index and return early.
+      if (button.isFocused === true) {
+        initiallyFocusedButtonIndex = index;
+        return;
+      }
+
+      // If the button is used as a submit button, remember its index to use it as a fallback in
+      // case no other explicitly focused button is found.
+      if (firstSubmitButtonIndex === undefined && button.onClick === 'submit') {
+        firstSubmitButtonIndex = index;
+      }
+    }
+
+    // No button has been focused explicitly, so we focus the "submit" button (if any exists and
+    // `allowSubmittingWithEnter` is `true`), or otherwise reset the index of the focused button to
+    // the first one (which is the default).
+    initiallyFocusedButtonIndex = firstSubmitButtonIndex ?? 0;
   }
 
   function openModal(dialog: typeof element): void {
@@ -124,11 +140,7 @@
     }
   }
 
-  $: if (wrapper.type === 'card') {
-    buttonStates = wrapper.buttons?.map((button) => ({isFocused: button.isFocused === true}));
-  }
-
-  $: handleClosedStateChange(closed);
+  $: handleChangeClosedState(closed);
 
   $: if (!closed) {
     openModal(element);
@@ -136,6 +148,7 @@
 
   onMount(() => {
     window.addEventListener('keydown', handleKeydown);
+    setInitialButtonFocus();
   });
 
   onDestroy(() => {
@@ -146,7 +159,7 @@
 
 {#if !closed}
   <Portal {target}>
-    <dialog bind:this={element} class="modal" on:close={handleCloseEvent}>
+    <dialog bind:this={element} class="modal" on:close={handleClose}>
       <div class={`wrapper type-${wrapper.type}`} class:padded={wrapper.type === 'card'}>
         {#if wrapper.type === 'none'}
           {@const {actions = []} = wrapper}
@@ -212,16 +225,10 @@
               <div class="footer">
                 {#each buttons as button, index}
                   <Button
-                    on:elementReady={(event) => {
-                      if (button.isFocused === true) {
-                        event.detail.element.focus();
-                      }
-                    }}
+                    autofocus={initiallyFocusedButtonIndex === index}
                     disabled={button.disabled === true || button.state === 'loading'}
                     flavor={button.type}
                     isLoading={button.state === 'loading'}
-                    on:focus={() => handleChangeButtonFocus(true, index)}
-                    on:blur={() => handleChangeButtonFocus(false, index)}
                     on:click={() => {
                       if (button.onClick === 'close') {
                         handleClickClose();

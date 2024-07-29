@@ -4,6 +4,12 @@
   import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
 
   /**
+   * Whether the button should be focused on mount (or the `<dialog>` that it is part of is
+   * displayed).
+   */
+  export let autofocus = false;
+
+  /**
    * Whether the button is disabled.
    */
   export let disabled = false;
@@ -50,6 +56,9 @@
 </script>
 
 <template>
+  <!-- Disable `autofocus` warning, because we only use it where needed. For example, using it with
+  `<dialog>` is a valid use case. -->
+  <!-- svelte-ignore a11y-autofocus -->
   <button
     bind:this={button}
     on:click
@@ -57,6 +66,7 @@
     on:keydown
     on:focus
     on:blur
+    {autofocus}
     data-flavor={flavor}
     data-size={size}
     {disabled}
