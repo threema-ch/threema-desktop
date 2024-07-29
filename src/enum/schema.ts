@@ -232,6 +232,15 @@ export enum D2mPayloadType {
 }
 
 /**
+ * Device to mediator message flags.
+ *
+ * @generate name
+ */
+export enum D2mMessageFlag {
+    EPHEMERAL = 0x01,
+}
+
+/**
  * Chat server protocol 'clever extension' type.
  */
 export enum CspExtensionType {

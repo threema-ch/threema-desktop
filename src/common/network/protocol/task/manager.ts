@@ -23,6 +23,7 @@ import {
     type OutboundL4D2mTransactionMessage,
     type OutboundL4Message,
 } from '~/common/network/protocol';
+import type {D2mMessageFlags} from '~/common/network/protocol/flags';
 import * as structbuf from '~/common/network/structbuf';
 import {
     isMessageId,
@@ -265,9 +266,14 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
     }
 
     /** @inheritdoc */
-    public async reflect<T extends readonly protobuf.d2d.IEnvelope[] | []>(
-        payloads: T,
-    ): Promise<{readonly [P in keyof T]: Date}> {
+    public async reflect<
+        T extends
+            | readonly {
+                  readonly envelope: protobuf.d2d.IEnvelope;
+                  readonly flags: D2mMessageFlags;
+              }[]
+            | [],
+    >(payloads: T): Promise<{readonly [P in keyof T]: Date}> {
         const {d2d} = this.controller;
         const {crypto, device} = this._services;
 
@@ -281,22 +287,23 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
         const data = payloads.map(
             (
                 payload,
-            ): readonly [id: ReflectSequenceNumberValue, envelope: protobuf.d2d.IEnvelope] => [
-                this._state.rsn.next(),
-                payload,
-            ],
+            ): readonly [
+                id: ReflectSequenceNumberValue,
+                envelope: protobuf.d2d.IEnvelope,
+                flags: D2mMessageFlags,
+            ] => [this._state.rsn.next(), payload.envelope, payload.flags],
         );
 
         // Function that writes all reflect messages batched
         const reflect = async (): Promise<void> => {
-            for (const [id, payload] of data) {
+            for (const [id, payload, flags] of data) {
                 // Send as a reflect message
                 await this._write({
                     type: D2mPayloadType.REFLECT,
                     payload: structbuf.bridge.encoder(structbuf.d2m.payload.Reflect, {
                         headerLength: REFLECT_HEADER_LENGTH,
                         reserved: 0,
-                        flags: 0, // TODO(DESK-778): Set appropriately
+                        flags: flags.toBitmask(),
                         reflectId: id as u32,
                         envelope: d2d.dgrk
                             .encryptor(
@@ -331,7 +338,10 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
         const ack = async (): Promise<{readonly [P in keyof T]: Date}> => {
             const dates = [];
             const [firstId] = unwrap(data[0]);
-            for (const [id] of data) {
+            for (const [id, , flags] of data) {
+                if (flags.ephemeral) {
+                    continue;
+                }
                 dates.push(
                     await this.read(({type, payload}) => {
                         if (type !== D2mPayloadType.REFLECT_ACK) {

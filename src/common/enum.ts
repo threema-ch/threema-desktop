@@ -540,6 +540,24 @@ export namespace D2mPayloadTypeUtils {
         return (NAME_OF as Record<u53, string | undefined>)[value];
     }
 }
+export namespace D2mMessageFlag {
+    export const EPHEMERAL = 1;
+    export type EPHEMERAL = typeof EPHEMERAL;
+}
+/**
+ * Device to mediator message flags.
+ *
+ * @generate name
+ */
+export type D2mMessageFlag = (typeof D2mMessageFlag)[keyof typeof D2mMessageFlag];
+export namespace D2mMessageFlagUtils {
+    export const NAME_OF = {
+        [D2mMessageFlag.EPHEMERAL]: 'EPHEMERAL',
+    } as const;
+    export function nameOf<T extends u53>(value: T): string | undefined {
+        return (NAME_OF as Record<u53, string | undefined>)[value];
+    }
+}
 export namespace CspExtensionType {
     export const CLIENT_INFO = 0;
     export type CLIENT_INFO = typeof CLIENT_INFO;

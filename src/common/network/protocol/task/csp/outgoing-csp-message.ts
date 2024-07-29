@@ -33,7 +33,7 @@ import {
     MESSAGE_TYPE_PROPERTIES,
 } from '~/common/network/protocol';
 import {MESSAGE_DATA_PADDING_LENGTH_MIN} from '~/common/network/protocol/constants';
-import type {CspMessageFlags} from '~/common/network/protocol/flags';
+import {D2mMessageFlags, type CspMessageFlags} from '~/common/network/protocol/flags';
 import {
     type ActiveTaskCodecHandle,
     type ComposableTask,
@@ -323,15 +323,18 @@ export class OutgoingCspMessageTask<
         const {createdAt, messageId, type} = this._messageProperties;
         await handle.reflect([
             {
-                outgoingMessage: protobuf.utils.creator(protobuf.d2d.OutgoingMessage, {
-                    conversation: this._getD2dConversationId(),
-                    messageId: intoUnsignedLong(messageId),
-                    threadMessageId: undefined, // TODO(DESK-296): Set thread message ID
-                    createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
-                    type,
-                    body: messageBytes,
-                    nonces: preparedNonces as Nonce[] as Uint8Array[],
-                }),
+                envelope: {
+                    outgoingMessage: protobuf.utils.creator(protobuf.d2d.OutgoingMessage, {
+                        conversation: this._getD2dConversationId(),
+                        messageId: intoUnsignedLong(messageId),
+                        threadMessageId: undefined, // TODO(DESK-296): Set thread message ID
+                        createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
+                        type,
+                        body: messageBytes,
+                        nonces: preparedNonces as Nonce[] as Uint8Array[],
+                    }),
+                },
+                flags: D2mMessageFlags.none(),
             },
         ]);
     }

@@ -52,7 +52,7 @@ import {
     isCspE2eType,
     MESSAGE_TYPE_PROPERTIES,
 } from '~/common/network/protocol';
-import {CspMessageFlags} from '~/common/network/protocol/flags';
+import {CspMessageFlags, D2mMessageFlags} from '~/common/network/protocol/flags';
 import {
     ACTIVE_TASK,
     type ActiveTask,
@@ -271,6 +271,11 @@ type D2dIncomingMessageFragment = Omit<
     'messageId' | 'senderIdentity'
 >;
 
+interface ReflectInstructions {
+    fragment: D2dIncomingMessageFragment;
+    d2mFlags: D2mMessageFlags;
+}
+
 function getD2dIncomingReflectFragment(
     d2dMessageType: D2dCspMessageType,
     cspMessageBody: ReadonlyUint8Array,
@@ -343,7 +348,7 @@ interface BaseProcessingInstructions {
      *
      * Set to 'not-reflected' if the message should not be reflected at all.
      */
-    readonly reflectFragment: D2dIncomingMessageFragment | 'deferred' | 'not-reflected';
+    readonly reflect: ReflectInstructions | 'deferred' | 'not-reflected';
 }
 
 interface ConversationMessageInstructions extends BaseProcessingInstructions {
@@ -351,14 +356,14 @@ interface ConversationMessageInstructions extends BaseProcessingInstructions {
     readonly conversationId: ContactConversationId | GroupConversationId;
     readonly missingContactHandling: 'create' | 'ignore';
     readonly initFragment: AnyInboundMessageInitFragment;
-    readonly reflectFragment: D2dIncomingMessageFragment;
+    readonly reflect: ReflectInstructions;
 }
 
 interface ContactControlMessageInstructions extends BaseProcessingInstructions {
     readonly messageCategory: 'contact-control';
     readonly deliveryReceipt: false;
     readonly missingContactHandling: 'discard';
-    readonly reflectFragment: D2dIncomingMessageFragment;
+    readonly reflect: ReflectInstructions;
     readonly task: ComposableTask<ActiveTaskCodecHandle<'volatile'>, unknown>;
 }
 
@@ -374,7 +379,7 @@ interface StatusUpdateInstructions extends BaseProcessingInstructions {
     readonly deliveryReceipt: false;
     readonly conversationId: ContactConversationId | GroupConversationId;
     readonly missingContactHandling: 'discard';
-    readonly reflectFragment: D2dIncomingMessageFragment;
+    readonly reflect: ReflectInstructions;
     readonly task: ComposableTask<ActiveTaskCodecHandle<'volatile'>, unknown>;
 }
 
@@ -383,7 +388,7 @@ interface TypingIndicatorInstructions extends BaseProcessingInstructions {
     readonly deliveryReceipt: false;
     readonly conversationId: ContactConversationId;
     readonly missingContactHandling: 'discard';
-    readonly reflectFragment: D2dIncomingMessageFragment;
+    readonly reflect: ReflectInstructions;
     readonly task: ComposableTask<ActiveTaskCodecHandle<'volatile'>, unknown>;
 }
 
@@ -391,7 +396,7 @@ interface ForwardSecurityMessageInstructions extends BaseProcessingInstructions 
     readonly messageCategory: 'forward-security';
     readonly deliveryReceipt: false;
     readonly missingContactHandling: 'create';
-    readonly reflectFragment: 'not-reflected';
+    readonly reflect: 'not-reflected';
     readonly task: ComposableTask<ActiveTaskCodecHandle<'volatile'>, unknown>;
 }
 
@@ -400,7 +405,7 @@ interface MessageUpdateInstructions extends BaseProcessingInstructions {
     readonly conversationId: ContactConversationId | GroupConversationId;
     readonly deliveryReceipt: false;
     readonly missingContactHandling: 'discard';
-    readonly reflectFragment: D2dIncomingMessageFragment;
+    readonly reflect: ReflectInstructions;
     readonly task: ComposableTask<ActiveTaskCodecHandle<'volatile'>, unknown>;
 }
 
@@ -409,7 +414,7 @@ interface UnhandledMessageInstructions extends BaseProcessingInstructions {
     readonly conversationId: ContactConversationId | GroupConversationId;
     readonly runCommonGroupReceiveSteps: boolean;
     readonly missingContactHandling: 'create';
-    readonly reflectFragment: D2dIncomingMessageFragment;
+    readonly reflect: ReflectInstructions;
     readonly initFragment: AnyInboundMessageInitFragment | undefined;
 }
 
@@ -724,19 +729,16 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         // Handle reflection
         if (MESSAGE_TYPE_PROPERTIES[type].reflect.incoming) {
             assert(
-                instructions.reflectFragment !== 'not-reflected',
+                instructions.reflect !== 'not-reflected',
                 `Message of type ${type} should be reflected, but reflect fragment is 'not-reflected'`,
             );
         } else {
             assert(
-                instructions.reflectFragment === 'not-reflected',
+                instructions.reflect === 'not-reflected',
                 `Message of type ${type} should not be reflected, but reflect fragment is set`,
             );
         }
-        if (
-            instructions.reflectFragment !== 'not-reflected' &&
-            instructions.reflectFragment !== 'deferred'
-        ) {
+        if (instructions.reflect !== 'not-reflected' && instructions.reflect !== 'deferred') {
             // Reflect the message and wait for D2M acknowledgement
             this._log.info(
                 `Reflecting incoming ${messageTypeDebug} message`,
@@ -746,8 +748,9 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             try {
                 incomingMessageReflectedAt = await this._reflectMessage(
                     handle,
-                    instructions.reflectFragment,
+                    instructions.reflect.fragment,
                     sender.string,
+                    instructions.reflect.d2mFlags,
                 );
             } catch (error) {
                 this._log.warn(
@@ -1194,6 +1197,16 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             );
         }
 
+        function reflectFor(
+            d2dMessageType: D2dCspMessageType,
+            d2mMessageFlags?: D2mMessageFlags,
+        ): ReflectInstructions {
+            return {
+                fragment: reflectFragmentFor(d2dMessageType),
+                d2mFlags: d2mMessageFlags ?? D2mMessageFlags.none(),
+            };
+        }
+
         function unhandled(
             d2dMessageType: D2dCspMessageType,
             deliveryReceipt: boolean,
@@ -1217,7 +1230,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 missingContactHandling: 'create',
                 deliveryReceipt,
                 runCommonGroupReceiveSteps,
-                reflectFragment: reflectFragmentFor(d2dMessageType),
+                reflect: reflectFor(d2dMessageType),
                 initFragment,
             };
         }
@@ -1275,7 +1288,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     missingContactHandling: 'create',
                     deliveryReceipt: true,
                     initFragment,
-                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    reflect: reflectFor(maybeCspE2eType),
                 };
                 return instructions;
             }
@@ -1322,7 +1335,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     missingContactHandling: 'ignore',
                     deliveryReceipt: false,
                     initFragment,
-                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    reflect: reflectFor(maybeCspE2eType),
                 };
                 return instructions;
             }
@@ -1337,11 +1350,14 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     messageCategory: 'contact-control',
                     deliveryReceipt: false,
                     missingContactHandling: 'discard',
-                    reflectFragment: getD2dIncomingMessage(
-                        this._id,
-                        senderIdentity,
-                        reflectFragmentFor(maybeCspE2eType),
-                    ),
+                    reflect: {
+                        fragment: getD2dIncomingMessage(
+                            this._id,
+                            senderIdentity,
+                            reflectFragmentFor(maybeCspE2eType),
+                        ),
+                        d2mFlags: D2mMessageFlags.none(),
+                    },
                     task: new IncomingContactProfilePictureTask(
                         this._services,
                         messageId,
@@ -1356,11 +1372,14 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     messageCategory: 'contact-control',
                     deliveryReceipt: false,
                     missingContactHandling: 'discard',
-                    reflectFragment: getD2dIncomingMessage(
-                        this._id,
-                        senderIdentity,
-                        reflectFragmentFor(maybeCspE2eType),
-                    ),
+                    reflect: {
+                        fragment: getD2dIncomingMessage(
+                            this._id,
+                            senderIdentity,
+                            reflectFragmentFor(maybeCspE2eType),
+                        ),
+                        d2mFlags: D2mMessageFlags.none(),
+                    },
                     task: new IncomingContactProfilePictureTask(
                         this._services,
                         messageId,
@@ -1411,7 +1430,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         reflectGroupSetup,
                         clampedCreatedAt,
                     ),
-                    reflectFragment: 'deferred',
+                    reflect: 'deferred',
                 };
                 return instructions;
             }
@@ -1440,7 +1459,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         validatedGroupName,
                         clampedCreatedAt,
                     ),
-                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    reflect: reflectFor(maybeCspE2eType),
                 };
                 return instructions;
             }
@@ -1469,7 +1488,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         validatedContainer,
                         validatedProfilePicture,
                     ),
-                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    reflect: reflectFor(maybeCspE2eType),
                 };
                 return instructions;
             }
@@ -1494,7 +1513,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         validatedContainer,
                         undefined,
                     ),
-                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    reflect: reflectFor(maybeCspE2eType),
                 };
                 return instructions;
             }
@@ -1515,7 +1534,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         validatedContainer,
                         clampedCreatedAt,
                     ),
-                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    reflect: reflectFor(maybeCspE2eType),
                 };
                 return instructions;
             }
@@ -1537,7 +1556,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         senderContactOrInit,
                         validatedContainer,
                     ),
-                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    reflect: reflectFor(maybeCspE2eType),
                 };
                 return instructions;
             }
@@ -1562,7 +1581,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         validatedContainer,
                         validatedGroupCallStart,
                     ),
-                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    reflect: reflectFor(maybeCspE2eType),
                 };
                 return instructions;
             }
@@ -1587,7 +1606,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         clampedCreatedAt,
                         senderIdentity,
                     ),
-                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    reflect: reflectFor(maybeCspE2eType),
                 };
                 return instructions;
             }
@@ -1630,7 +1649,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         clampedCreatedAt,
                         senderIdentity,
                     ),
-                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    reflect: reflectFor(maybeCspE2eType),
                 };
                 return instructions;
             }
@@ -1645,7 +1664,10 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     deliveryReceipt: false,
                     conversationId: senderConversationId,
                     missingContactHandling: 'discard',
-                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    reflect: reflectFor(
+                        maybeCspE2eType,
+                        D2mMessageFlags.fromPartial({ephemeral: true}),
+                    ),
                     task: new IncomingTypingIndicatorTask(
                         this._services,
                         messageId,
@@ -1667,7 +1689,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     messageCategory: 'forward-security',
                     deliveryReceipt: false,
                     missingContactHandling: 'create',
-                    reflectFragment: 'not-reflected',
+                    reflect: 'not-reflected',
                     task: new IncomingForwardSecurityEnvelopeTask(
                         this._services,
                         messageId,
@@ -1692,7 +1714,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     conversationId: senderConversationId,
                     missingContactHandling: 'discard',
                     deliveryReceipt: false,
-                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    reflect: reflectFor(maybeCspE2eType),
                     task: new IncomingMessageContentUpdateTask(
                         this._services,
                         ensureMessageId(intoU64(updatedMessage.messageId)),
@@ -1726,7 +1748,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     conversationId: groupConversationId,
                     missingContactHandling: 'discard',
                     deliveryReceipt: false,
-                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    reflect: reflectFor(maybeCspE2eType),
                     task: new IncomingMessageContentUpdateTask(
                         this._services,
                         ensureMessageId(intoU64(updatedMessage.messageId)),
@@ -1750,7 +1772,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     conversationId: senderConversationId,
                     missingContactHandling: 'discard',
                     deliveryReceipt: false,
-                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    reflect: reflectFor(maybeCspE2eType),
                     task: new IncomingMessageContentUpdateTask(
                         this._services,
                         ensureMessageId(intoU64(deletedMessage.messageId)),
@@ -1782,7 +1804,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     conversationId: senderConversationId,
                     missingContactHandling: 'discard',
                     deliveryReceipt: false,
-                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                    reflect: reflectFor(maybeCspE2eType),
                     task: new IncomingMessageContentUpdateTask(
                         this._services,
                         ensureMessageId(intoU64(deletedMessage.messageId)),
@@ -1842,10 +1864,14 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         handle: ActiveTaskCodecHandle<'volatile'>,
         reflectFragment: D2dIncomingMessageFragment,
         sender: IdentityString,
+        d2mFlags: D2mMessageFlags,
     ): Promise<Date> {
         const [reflectedAt] = await handle.reflect([
             {
-                incomingMessage: getD2dIncomingMessage(this._id, sender, reflectFragment),
+                envelope: {
+                    incomingMessage: getD2dIncomingMessage(this._id, sender, reflectFragment),
+                },
+                flags: d2mFlags,
             },
         ]);
         return reflectedAt;

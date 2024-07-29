@@ -4,6 +4,7 @@ import {groupDebugString} from '~/common/model/group';
 import type {ConversationUpdateFromToSync} from '~/common/model/types/conversation';
 import type {GroupUpdateFromToSync} from '~/common/model/types/group';
 import * as protobuf from '~/common/network/protobuf';
+import {D2mMessageFlags} from '~/common/network/protocol/flags';
 import type {
     ActiveTaskCodecHandle,
     ComposableTask,
@@ -156,6 +157,6 @@ export class ReflectGroupSyncTask
                 unreachable(variant.type);
         }
         this._log.info(`Syncing group '${variant.type}' to other devices`);
-        await handle.reflect([{groupSync}]);
+        await handle.reflect([{envelope: {groupSync}, flags: D2mMessageFlags.none()}]);
     }
 }

@@ -114,6 +114,7 @@ import {
     type IdentityPrivateData,
     type SfuToken,
 } from '~/common/network/protocol/directory';
+import type {D2mMessageFlags} from '~/common/network/protocol/flags';
 import type {PeekResponse, SfuHttpBackend} from '~/common/network/protocol/sfu';
 import type {
     ActiveTaskCodecHandle,
@@ -925,9 +926,14 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
 
     /** @inheritdoc */
     // eslint-disable-next-line @typescript-eslint/require-await
-    public async reflect<T extends readonly protobuf.d2d.IEnvelope[] | []>(
-        payloads: T,
-    ): Promise<{readonly [P in keyof T]: Date}> {
+    public async reflect<
+        T extends
+            | readonly {
+                  readonly envelope: protobuf.d2d.IEnvelope;
+                  readonly flags: D2mMessageFlags;
+              }[]
+            | [],
+    >(payloads: T): Promise<{readonly [P in keyof T]: Date}> {
         const expectation = this._expectations.shift();
         if (expectation === undefined) {
             this._failExpectation('Reflect operation without expectation');
@@ -937,7 +943,9 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
                 `Expected ${expectation.mode} operation, but encountered reflect operation`,
             );
         }
-        expectation.inspector?.(payloads.map((payload) => new protobuf.d2d.Envelope(payload)));
+        expectation.inspector?.(
+            payloads.map((payload) => new protobuf.d2d.Envelope(payload.envelope)),
+        );
         const reflectionTimestamps = payloads.map((payload) => new Date());
         return reflectionTimestamps as unknown as {readonly [P in keyof T]: Date};
     }

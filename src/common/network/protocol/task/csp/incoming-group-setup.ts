@@ -2,6 +2,7 @@ import type {GroupUserState} from '~/common/enum';
 import type {Contact, Group, GroupInit} from '~/common/model';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
+import {D2mMessageFlags} from '~/common/network/protocol/flags';
 import type {ActiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
 import {addGroupContacts} from '~/common/network/protocol/task/common/group-helpers';
 import {GroupSetupTaskBase} from '~/common/network/protocol/task/common/group-setup';
@@ -32,9 +33,12 @@ export class IncomingGroupSetupTask extends GroupSetupTaskBase<ActiveTaskCodecHa
         handle: ActiveTaskCodecHandle<'volatile'>,
     ): Promise<Date> {
         const [reflectedAt] = await handle.reflect([
-            new protobuf.d2d.Envelope({
-                incomingMessage: this._reflectGroupSetup,
-            }),
+            {
+                envelope: new protobuf.d2d.Envelope({
+                    incomingMessage: this._reflectGroupSetup,
+                }),
+                flags: D2mMessageFlags.none(),
+            },
         ]);
         return reflectedAt;
     }

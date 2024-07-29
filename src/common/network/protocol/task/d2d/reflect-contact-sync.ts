@@ -5,6 +5,7 @@ import type {ConversationUpdateFromToSync} from '~/common/model/types/conversati
 import * as protobuf from '~/common/network/protobuf';
 import {type BlobId, encryptAndUploadBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
+import {D2mMessageFlags} from '~/common/network/protocol/flags';
 import type {
     ActiveTaskCodecHandle,
     ComposableTask,
@@ -463,6 +464,6 @@ export class ReflectContactSyncTask
                 unreachable(variant);
         }
         this._log.info(`Syncing '${variant.type}' to other devices`);
-        await handle.reflect([{contactSync}]);
+        await handle.reflect([{envelope: {contactSync}, flags: D2mMessageFlags.none()}]);
     }
 }

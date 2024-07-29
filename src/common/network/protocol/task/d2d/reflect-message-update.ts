@@ -5,6 +5,7 @@ import {
     IncomingMessageUpdate,
     OutgoingMessageUpdate,
 } from '~/common/network/protobuf/validate/d2d';
+import {D2mMessageFlags} from '~/common/network/protocol/flags';
 import {
     ACTIVE_TASK,
     type ActiveTask,
@@ -51,7 +52,9 @@ export class ReflectOutgoingMessageUpdateTask
         this._log.info(
             `Reflecting message update for referenced message: ${this._uniqueMessageId.messageId}`,
         );
-        const [reflectDate] = await handle.reflect([messageUpdate]);
+        const [reflectDate] = await handle.reflect([
+            {envelope: messageUpdate, flags: D2mMessageFlags.none()},
+        ]);
         return reflectDate;
     }
 
@@ -109,7 +112,7 @@ export class ReflectIncomingMessageUpdateTask implements ActiveTask<void, 'persi
                     .map((msg) => u64ToHexLe(msg.messageId))
                     .join(',')}`,
             );
-            await handle.reflect([messageUpdate]);
+            await handle.reflect([{envelope: messageUpdate, flags: D2mMessageFlags.none()}]);
         }
     }
 

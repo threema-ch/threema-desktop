@@ -21,6 +21,7 @@ import {
     type OutboundL4Message,
     type OutboundPassiveTaskMessage,
 } from '~/common/network/protocol';
+import type {D2mMessageFlags} from '~/common/network/protocol/flags';
 import type {
     __TransactionComplete as TransactionComplete,
     __TransactionRunning as TransactionRunning,
@@ -159,13 +160,21 @@ export interface InternalActiveTaskCodecHandle extends TaskCodecHandle {
     /**
      * Reflect one or more messages.
      *
-     * The promise will resolve once the reflection of all messages is acked by the Mediator
-     * server.
+     * The promise will resolve once the reflection of all messages that ought to be acked by the
+     * Mediator server. The only exception to messages being acked at the moment are ephemeral
+     * messages.
      *
      * @returns An array of dates in the same order as the messages passed in. The dates represent
      *   when the message has been stored in the reflection queue of the Mediator server.
      */
-    readonly reflect: <T extends readonly protobuf.d2d.IEnvelope[] | []>(
+    readonly reflect: <
+        T extends
+            | readonly {
+                  readonly envelope: protobuf.d2d.IEnvelope;
+                  readonly flags: D2mMessageFlags;
+              }[]
+            | [],
+    >(
         payloads: T,
     ) => Promise<{readonly [P in keyof T]: Date}>;
 
