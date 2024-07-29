@@ -94,6 +94,12 @@
     "prose--delete-message": "Do you really want to delete this message?",
     "prose--delete-not-supported-partial": "Note: If you select \"{buttonText}\", this message will not be deleted for the following group members: {names}{n, plural, =0 {.} other { and {n} others.}} To support deleted messages, they need to install the latest Threema version."
   },
+  "dialog--delete-profile": {
+    "action--cancel": "Cancel",
+    "label--title": "Remove Threema ID and Data",
+    "prose--description": "This Threema ID and the corresponding data will be removed from this device (but not on your linked devices).",
+    "prose--failed": "Something went wrong when deleting your data on this device. Please check your connection and try again."
+  },
   "dialog--device-cookie": {
     "label--close": "Continue Without Relinking",
     "label--device-cookie-mismatch-title": "Connection from Another Device Detected",
@@ -300,6 +306,13 @@
     "label--title": "Missing Threema Work Credentials",
     "prose--description": "No Threema Work credentials could be found. To continue using the desktop app, you need to relink this device. Your message history will be restored after relinking."
   },
+  "dialog--relink-profile": {
+    "action--cancel": "Cancel",
+    "label--title": "Relink this Device",
+    "prose--description-p1": "This device will be unlinked, and the application will restart.",
+    "prose--description-p2": "Your messages will be kept if you relink with the same Threema ID as before.",
+    "prose--failed": "Something went wrong when relinking your profile. Please check your connection and try again"
+  },
   "dialog--server-alert": {
     "action--confirm": "Relink Device",
     "action--continue": "Continue"
@@ -503,6 +516,7 @@
     "label--git-revision": "Git Revision",
     "label--log-file-paths": "Log File Paths",
     "label--log-to-file": "Logging",
+    "label--relink": "Relink this device",
     "label--title": "About Threema for Desktop",
     "label--troubleshooting": "Troubleshooting",
     "label--version-title": "Version Information",
@@ -545,6 +559,7 @@
     "prose--subtitle": "Contacts, Chats, Lists"
   },
   "settings--profile": {
+    "label--delete-profile": "Remove Threema ID and Data",
     "label--profile-picture-everyone": "Everyone",
     "label--profile-picture-nobody": "Nobody",
     "label--profile-picture-selected": "Selected",

@@ -13,6 +13,7 @@
     getProfilePictureShareWithDropdown,
     getProfilePictureShareWithDropdownLabel,
   } from '~/app/ui/components/partials/settings/internal/profile-settings/helpers';
+  import DeleteProfileModal from '~/app/ui/components/partials/settings/internal/profile-settings/internal/delete-profile-modal/DeleteProfileModal.svelte';
   import ProfileInfo from '~/app/ui/components/partials/settings/internal/profile-settings/internal/profile-info/ProfileInfo.svelte';
   import PublicKeyModal from '~/app/ui/components/partials/settings/internal/profile-settings/internal/public-key-modal/PublicKeyModal.svelte';
   import type {ProfileSettingsProps} from '~/app/ui/components/partials/settings/internal/profile-settings/props';
@@ -38,7 +39,7 @@
 
   let profileViewModelStore: Remote<ProfileViewModelStore>;
 
-  let modalState: 'none' | 'profile-picture' | 'public-key' = 'none';
+  let modalState: 'none' | 'profile-picture' | 'public-key' | 'delete-profile' = 'none';
   let profilePictureShareWithItems: ContextMenuItem[];
 
   viewModel
@@ -167,6 +168,15 @@
           <Text text={$i18n.t('settings--profile.label--public-key', 'Public Key')}></Text>
         </KeyValueList.ItemWithButton>
       </KeyValueList.Section>
+      <KeyValueList.Section title="">
+        <KeyValueList.ItemWithButton
+          icon={'delete_forever'}
+          key=""
+          on:click={() => (modalState = 'delete-profile')}
+        >
+          <Text text={$i18n.t('settings--profile.label--delete-profile', 'Remove ID and Data')} />
+        </KeyValueList.ItemWithButton>
+      </KeyValueList.Section>
     </KeyValueList>
   </div>
 {/if}
@@ -183,6 +193,8 @@
   />
 {:else if modalState === 'public-key'}
   <PublicKeyModal publicKey={$profileViewModelStore.publicKey} on:close={handleCloseModal} />
+{:else if modalState === 'delete-profile'}
+  <DeleteProfileModal {services} on:close={handleCloseModal} />
 {:else}
   {unreachable(modalState)}
 {/if}

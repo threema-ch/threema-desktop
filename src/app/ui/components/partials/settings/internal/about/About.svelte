@@ -7,13 +7,14 @@
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
   import {collectLogsAndComposeMessageToSupport} from '~/app/ui/components/partials/settings/internal/about/helpers';
+  import RelinkDeviceModal from '~/app/ui/components/partials/settings/internal/about/internal/relink-device-modal/RelinkDeviceModal.svelte';
   import ToggleLoggerModal from '~/app/ui/components/partials/settings/internal/about/internal/toggle-logger-modal/ToggleLoggerModal.svelte';
   import type {AboutProps} from '~/app/ui/components/partials/settings/internal/about/props';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import {extractErrorMessage} from '~/common/error';
   import type {LogInfo} from '~/common/node/file-storage/log-info';
-  import {ensureError} from '~/common/utils/assert';
+  import {ensureError, unreachable} from '~/common/utils/assert';
   import {byteSizeToHumanReadable} from '~/common/utils/number';
   import {TIMER, type TimerCanceller} from '~/common/utils/timer';
 
@@ -22,6 +23,8 @@
   type $$Props = AboutProps;
 
   export let services: $$Props['services'];
+
+  let modalState: 'none' | 'relink-device' | 'toggle-logger' = 'none';
 
   let isDebugModeEnabled = false;
   let versionClickedCount = 0;
@@ -60,16 +63,6 @@
       );
     });
 
-  let isToggleLoggerModalVisible: boolean = false;
-  function handleClickToggleLogger(): void {
-    isToggleLoggerModalVisible = true;
-  }
-
-  function handleCloseToggleLoggerModal(): void {
-    isLoggerEnabledToggleState = isLoggerEnabled ?? false;
-    isToggleLoggerModalVisible = false;
-  }
-
   async function handleClickSendLogsToSupport(): Promise<void> {
     await collectLogsAndComposeMessageToSupport(services, log);
   }
@@ -83,6 +76,11 @@
     }
 
     window.app.setFileLoggingEnabledAndRestart(!isLoggerEnabled);
+  }
+
+  function handleCloseToggleLoggerModal(): void {
+    isLoggerEnabledToggleState = isLoggerEnabled ?? false;
+    handleCloseModal();
   }
 
   function handleClickVersion(): void {
@@ -103,6 +101,10 @@
         isDebugModeEnabled = true;
       }
     }
+  }
+
+  function handleCloseModal(): void {
+    modalState = 'none';
   }
 </script>
 
@@ -141,7 +143,7 @@
     {#if isLoggerEnabled !== undefined && logInfo !== undefined}
       <KeyValueList.ItemWithSwitch
         bind:checked={isLoggerEnabledToggleState}
-        on:switchevent={handleClickToggleLogger}
+        on:switchevent={() => (modalState = 'toggle-logger')}
         key={$i18n.t('settings--about.label--log-to-file', 'Logging')}
       >
         {#if isLoggerEnabled}
@@ -184,6 +186,14 @@
         </KeyValueList.Item>
       {/if}
     {/if}
+
+    <KeyValueList.ItemWithButton
+      icon="restart_alt"
+      key=""
+      on:click={() => (modalState = 'relink-device')}
+    >
+      <Text text={$i18n.t('settings--about.label--relink', 'Relink this device')}></Text>
+    </KeyValueList.ItemWithButton>
   </KeyValueList.Section>
 
   {#if isDebugModeEnabled}
@@ -201,7 +211,11 @@
   {/if}
 </KeyValueList>
 
-{#if isToggleLoggerModalVisible}
+{#if modalState === 'none'}
+  <!-- No modal is displayed in this state. -->
+{:else if modalState === 'relink-device'}
+  <RelinkDeviceModal {services} on:close={handleCloseModal} />
+{:else if modalState === 'toggle-logger'}
   {#if isLoggerEnabled !== undefined && logInfo !== undefined}
     <ToggleLoggerModal
       {isLoggerEnabled}
@@ -210,6 +224,8 @@
       on:close={handleCloseToggleLoggerModal}
     />
   {/if}
+{:else}
+  {unreachable(modalState)}
 {/if}
 
 <style lang="scss">

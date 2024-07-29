@@ -94,6 +94,12 @@
     "prose--delete-message": "Wollen Sie diese Nachricht wirklich löschen?",
     "prose--delete-not-supported-partial": "Hinweis: Falls Sie «{buttonText}» wählen, wird die Nachricht bei folgenden Gruppenmitgliedern nicht gelöscht: {names}{n, plural, =0 {.} other { und {n} weitere.}} Um gelöschte Nachrichten zu unterstützen, müssen diese Kontakte Threema auf die neueste Version aktualisieren."
   },
+  "dialog--delete-profile": {
+    "action--cancel": "Abbrechen",
+    "label--title": "Threema-ID und Daten löschen",
+    "prose--description": "Diese Threema-ID und alle zugehörigen Daten werden von diesem Gerät gelöscht (nicht jedoch von den verknüpften Geräten).",
+    "prose--failed": "Das Löschen Ihrer Daten von diesem Gerät ist fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut."
+  },
   "dialog--device-cookie": {
     "label--close": "Schliessen",
     "label--device-cookie-mismatch-title": "Verbindung von einem anderen Gerät erkannt",
@@ -136,7 +142,7 @@
     "label--title": "Chat leeren",
     "prose--contact-conversation-prompt": "Dadurch werden alle Nachrichten inklusive Medien und Dokumenten in diesem Chat mit \"{name}\" auf diesem Gerät gelöscht (jedoch nicht auf den verknüpften Geräten).",
     "prose--distribution-list-conversation-prompt": "Dadurch werden alle Nachrichten inklusive Medien und Dokumenten in dieser Verteilerliste \"{name}\" auf diesem Gerät gelöscht (jedoch nicht auf den verknüpften Geräten).",
-    "prose--group-conversation-prompt": "Dadurch werden alle Nachrichten inklusive Medien und Dokumenten in diesem Grouppenchat \"{name}\" auf diesem Gerät gelöscht (jedoch nicht auf den verknüpften Geräten)."
+    "prose--group-conversation-prompt": "Dadurch werden alle Nachrichten inklusive Medien und Dokumenten in diesem Gruppenchat \"{name}\" auf diesem Gerät gelöscht (jedoch nicht auf den verknüpften Geräten)."
   },
   "dialog--error-connection": {
     "action--client-was-dropped-cancel": "OK",
@@ -299,6 +305,13 @@
     "action--relink": "Gerät neu verknüpfen",
     "label--title": "Fehlende Threema Work-Zugangsdaten",
     "prose--description": "Es wurden keine Zugangsdaten für Threema Work gefunden. Um die Desktop-App weiterhin nutzen zu können, müssen Sie dieses Gerät neu verknüpfen. Ihr Nachrichtenverlauf kann dabei wiederhergestellt werden."
+  },
+  "dialog--relink-profile": {
+    "action--cancel": "Abbrechen",
+    "label--title": "Gerät neu verknüfpen",
+    "prose--description-p1": "Dabei wird die Verknüpfung dieses Geräts aufgehoben, und die App wird neu gestartet.",
+    "prose--description-p2": "Ihr Nachrichtenverlauf kann wiederhergestellt werden, sofern Sie das Gerät mit derselben Threema-ID verknüpfen wie zuvor.",
+    "prose--failed": "Das Gerät konnte nicht neu verknüpft werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut."
   },
   "dialog--server-alert": {
     "action--confirm": "Gerät neu verknüpfen",
@@ -503,6 +516,7 @@
     "label--git-revision": "Git-Revision",
     "label--log-file-paths": "Pfade der Logdateien",
     "label--log-to-file": "Logging",
+    "label--relink": "Gerät neu verknüpfen",
     "label--title": "Über Threema für Desktop",
     "label--troubleshooting": "Fehlerbehebung",
     "label--version-title": "Versionsinformationen",
@@ -545,6 +559,7 @@
     "prose--subtitle": "Kontakte, Chats und Listen"
   },
   "settings--profile": {
+    "label--delete-profile": "Threema-ID and Daten löschen",
     "label--profile-picture-everyone": "Alle",
     "label--profile-picture-nobody": "Niemand",
     "label--profile-picture-selected": "Ausgewählte Kontakte",

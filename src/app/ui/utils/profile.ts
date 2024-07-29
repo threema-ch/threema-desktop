@@ -1,9 +1,11 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 
 /**
  * Unlink and restart the application creating a snapshot of the messages.
  */
-export async function unlinkAndCreateBackup(services: AppServices): Promise<void> {
+export async function unlinkAndCreateBackup(
+    services: Pick<AppServicesForSvelte, 'backend'>,
+): Promise<void> {
     // First, unlink from mediator
     await services.backend.connectionManager.selfKickFromMediator();
 

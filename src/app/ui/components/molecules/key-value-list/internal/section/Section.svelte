@@ -15,7 +15,7 @@
 </script>
 
 <div class="section">
-  {#if title !== undefined}
+  {#if title !== undefined && title !== ''}
     <div class="title">
       <Text text={title} color="mono-low" family="secondary" size="body" />
     </div>
