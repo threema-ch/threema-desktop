@@ -31,6 +31,10 @@ export interface ModalProps {
         readonly allowSubmittingWithEnter?: boolean;
     };
     /**
+     * The target element this modal should be attached to. Defaults to `"#container"`.
+     */
+    readonly target?: SvelteNullableBinding<HTMLElement>;
+    /**
      * Options to configure the modal wrapper.
      */
     readonly wrapper: NoneWrapperOptions | CardWrapperOptions;
@@ -86,6 +90,9 @@ export interface ModalButton {
      *
      * Note: This should only be set on one button if you have multiple, as it could lead to
      * unexpected behavior otherwise, because only one element can be focused at a time.
+     *
+     * Note: This is not reactive, as it's not recommended to change focus after the modal has been
+     * opened (a11y).
      */
     readonly isFocused?: boolean;
     readonly label: string;

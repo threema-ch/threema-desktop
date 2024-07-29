@@ -24,9 +24,8 @@
   export let actionsElement: $$Props['actionsElement'] = undefined;
   export let element: $$Props['element'] = undefined;
   export let options: NonNullable<$$Props['options']> = {};
+  export let target: $$Props['target'] = document.body.querySelector<HTMLElement>('#container');
   export let wrapper: $$Props['wrapper'];
-
-  const target: HTMLElement | null = document.body.querySelector('#container');
 
   let closed = false;
   let buttonStates: ButtonState[] | undefined = undefined;
