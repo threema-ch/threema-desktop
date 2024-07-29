@@ -2,7 +2,7 @@
   import type {SvelteComponent} from 'svelte';
 
   import type {AppServices} from '~/app/types';
-  import AppUpdate from '~/app/ui/system-dialogs/AppUpdate.svelte';
+  import AppUpdateDialog from '~/app/ui/components/partials/system-dialog/internal/app-update-dialog/AppUpdateDialog.svelte';
   import ConnectionError from '~/app/ui/system-dialogs/ConnectionError.svelte';
   import DeviceCookieMismatch from '~/app/ui/system-dialogs/DeviceCookieMismatch.svelte';
   import InvalidWorkCredentials from '~/app/ui/system-dialogs/InvalidWorkCredentials.svelte';
@@ -23,14 +23,13 @@
    * Mapping from dialog type to corresponding svelte component.
    */
   const dialogComponents: {
-    readonly [Property in SystemDialog['type']]: typeof SvelteComponent<{
+    readonly [Property in Exclude<SystemDialog['type'], 'app-update'>]: typeof SvelteComponent<{
       appServices: Delayed<AppServices>;
       context: unknown;
       log: Logger;
       visible: boolean;
     }>;
   } = {
-    'app-update': AppUpdate,
     'connection-error': ConnectionError,
     'server-alert': ServerAlert,
     'unrecoverable-state': UnrecoverableState,
@@ -52,21 +51,28 @@
 
 <template>
   {#each $systemDialogStore as systemDialog}
-    <div class="wrapper">
-      <div class="app" data-display={$display} data-layout={$layout[$display]}>
-        <svelte:component
-          this={dialogComponents[systemDialog.dialog.type]}
-          on:confirm={() => closeDialog('confirmed')}
-          on:cancel={() => closeDialog('cancelled')}
-          on:close={() => closeDialog('cancelled')}
-          on:clickoutside={(ev) => ev.preventDefault()}
-          visible={true}
-          {log}
-          {appServices}
-          context={systemDialog.dialog.context}
-        />
+    {#if systemDialog.dialog.type === 'app-update'}
+      <AppUpdateDialog
+        {...systemDialog.dialog.context}
+        on:submit={() => closeDialog('confirmed')}
+      />
+    {:else}
+      <div class="wrapper">
+        <div class="app" data-display={$display} data-layout={$layout[$display]}>
+          <svelte:component
+            this={dialogComponents[systemDialog.dialog.type]}
+            on:confirm={() => closeDialog('confirmed')}
+            on:cancel={() => closeDialog('cancelled')}
+            on:close={() => closeDialog('cancelled')}
+            on:clickoutside={(ev) => ev.preventDefault()}
+            visible={true}
+            {log}
+            {appServices}
+            context={systemDialog.dialog.context}
+          />
+        </div>
       </div>
-    </div>
+    {/if}
   {/each}
 </template>
 
