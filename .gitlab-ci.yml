@@ -818,9 +818,6 @@ package:macos-publish:
     # Install dependencies
     - npm ci --cache .npm
 
-    # Build EXE binary
-    - npm run package binarySigned consumer-live,work-sandbox,work-live,work-onprem
-
     # Build MSIX package
     - npm run package msixSigned consumer-live,work-sandbox,work-live,work-onprem
 
