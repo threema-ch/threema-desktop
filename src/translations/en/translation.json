@@ -144,7 +144,7 @@
     "action--default-cancel": "OK",
     "action--default-confirm": "Relink",
     "label--title": "Connection Failed",
-    "markup--backup": "The message history can be restored after relinking.",
+    "markup--backup": "The message history will be restored after relinking.",
     "markup--client-update-required-p1": "This Threema version is no longer supported (outdated protocol version).",
     "markup--client-update-required-p2": "Please <1>update to the latest version</1> to continue using Threema.",
     "markup--client-was-dropped-p1": "This device has been unlinked, which is why you currently can’t send or receive new messages.",
@@ -179,7 +179,7 @@
     "prose--description-enter-credentials": "Please enter valid Threema Work credentials. If you don’t know the credentials, please contact your Threema Work administrator.",
     "prose--description-p1": "The credentials for Threema Work are invalid. Either they were disabled by your Threema Work admin, or your Threema Work license expired.",
     "prose--description-p2": "To continue using {appName} for desktop, you have two options:",
-    "prose--description-relink": "Remove the current link, and relink {appName} for desktop to your mobile device. The message history can be restored after relinking.",
+    "prose--description-relink": "Remove the current link, and relink {appName} for desktop to your mobile device. The message history will be restored after relinking.",
     "prose--update-success": "Threema Work credentials successfully updated"
   },
   "dialog--linking-confirm-emoji": {
@@ -298,7 +298,7 @@
     "action--relink": "Relink Device",
     "label--title": "Missing Threema Work Credentials",
     "prose--description-p1": "No Threema Work credentials could be found. To continue using the desktop app, you need to relink this device. First, unlink it by tapping “Threema > Settings > Desktop/Web > Linked Device” on your mobile device and selecting “Remove all linked devices.”",
-    "prose--description-p2": "Once completed, click on “Relink” below, and follow the on-screen instructions. Your message history can be restored after relinking."
+    "prose--description-p2": "Once completed, click on “Relink” below, and follow the on-screen instructions. Your message history will be restored after relinking."
   },
   "dialog--server-alert": {
     "action--confirm": "OK"

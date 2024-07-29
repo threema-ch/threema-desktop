@@ -45,7 +45,7 @@
       <Text
         text={$i18n.t(
           'dialog--missing-work-credentials.prose--description-p2',
-          'Once completed, click on “Relink” below, and follow the on-screen instructions. Your message history can be restored after relinking.',
+          'Once completed, click on “Relink” below, and follow the on-screen instructions. Your message history will be restored after relinking.',
         )}
       />
     </p>

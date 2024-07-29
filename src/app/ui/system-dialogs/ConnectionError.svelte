@@ -103,7 +103,7 @@
             <SubstitutableText
               text={$i18n.t(
                 'dialog--error-connection.markup--backup',
-                'The message history can be restored after relinking.',
+                'The message history will be restored after relinking.',
               )}
             />
           </p>

@@ -283,7 +283,7 @@
           <p>
             {$i18n.t(
               'dialog--invalid-work-credentials.prose--description-relink',
-              'Remove the current link, and relink {appName} for desktop to your mobile device. The message history can be restored after relinking.',
+              'Remove the current link, and relink {appName} for desktop to your mobile device. The message history will be restored after relinking.',
               {appName: import.meta.env.APP_NAME},
             )}
           </p>

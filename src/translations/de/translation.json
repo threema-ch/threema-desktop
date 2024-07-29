@@ -144,7 +144,7 @@
     "action--default-cancel": "OK",
     "action--default-confirm": "Erneut verknüpfen",
     "label--title": "Verbindung fehlgeschlagen",
-    "markup--backup": "Die Chatverläufe können nach erneutem Verknüpfen wiederhergestellt werden.",
+    "markup--backup": "Die Chatverläufe werden nach erneutem Verknüpfen wiederhergestellt.",
     "markup--client-update-required-p1": "Diese Version von Threema wird nicht mehr unterstützt (veraltete Protokollversion).",
     "markup--client-update-required-p2": "Bitte <1>installieren Sie die neueste Version</1>, um Threema weiterhin zu nutzen.",
     "markup--client-was-dropped-p1": "Die Verknüpfung mit diesem Gerät wurde aufgehoben, weshalb im Moment keine neuen Nachrichten mehr gesendet oder empfangen werden können.",
@@ -179,7 +179,7 @@
     "prose--description-enter-credentials": "Bitte geben Sie gültige Threema Work-Zugangsdaten ein. Wenn Sie die Zugangsdaten nicht kennen, kontaktieren Sie Ihren Threema Work-Administrator",
     "prose--description-p1": "Die Zugangsdaten für Threema Work sind ungültig. Entweder wurden sie durch Ihren Threema Work-Administrator deaktiviert, oder die Lizenz von Threema Work ist abgelaufen.",
     "prose--description-p2": "Um {appName} weiterhin zu verwenden, haben Sie zwei Möglichkeiten:",
-    "prose--description-relink": "Heben Sie die bestehende Verknüpfung auf und verknüpfen Sie {appName} für Desktop erneut mit Ihrem Mobilgerät. Die Chatverläufe können nach erneutem Verknüpfen wiederhergestellt werden.",
+    "prose--description-relink": "Heben Sie die bestehende Verknüpfung auf und verknüpfen Sie {appName} für Desktop erneut mit Ihrem Mobilgerät. Die Chatverläufe werden nach erneutem Verknüpfen wiederhergestellt.",
     "prose--update-success": "Threema Work-Zugangsdaten erfolgreich aktualisiert"
   },
   "dialog--linking-confirm-emoji": {
@@ -298,7 +298,7 @@
     "action--relink": "Gerät neu verknüpfen",
     "label--title": "Fehlende Threema Work-Zugangsdaten",
     "prose--description-p1": "Es wurden keine Zugangsdaten für Threema Work gefunden. Um die Desktop-App weiterhin nutzen zu können, müssen Sie dieses Gerät neu verknüpfen. Navigieren Sie dazu auf Ihrem Mobilgerät zu «Threema > Einstellungen > Desktop/Web > Verknüpftes Gerät», und wählen Sie «Alle Verknüpfungen aufheben».",
-    "prose--description-p2": "Klicken Sie danach unten auf «Neu verknüpfen», und folgen Sie den Bildschirmanweisungen. Ihr Chatverlauf kann nach der Verknüpfung wiederhergestellt werden."
+    "prose--description-p2": "Klicken Sie danach unten auf «Neu verknüpfen», und folgen Sie den Bildschirmanweisungen. Ihr Chatverlauf werden nach der Verknüpfung wiederhergestellt."
   },
   "dialog--server-alert": {
     "action--confirm": "OK"
