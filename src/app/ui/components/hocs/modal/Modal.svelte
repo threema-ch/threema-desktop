@@ -41,7 +41,7 @@
    * Close the modal.
    */
   export function close(): void {
-    closeDialog(element);
+    closeModal(element);
   }
 
   function handleKeydown(event: KeyboardEvent): void {
@@ -49,8 +49,12 @@
       return;
     }
 
-    if ((options.allowClosingWithEsc ?? true) && event.key === 'Escape') {
-      closeDialog(element);
+    if (event.key === 'Escape') {
+      event.preventDefault();
+
+      if (options.allowClosingWithEsc ?? true) {
+        closeModal(element);
+      }
     }
 
     // If a button is focused, its functionality overrides onEnterSubmit.
@@ -72,7 +76,7 @@
   }
 
   function handleClickClose(): void {
-    closeDialog(element);
+    closeModal(element);
   }
 
   function handleClickSubmit(): void {
@@ -101,19 +105,17 @@
     log.error('Cannot set focus because there is a mismatch in number of Buttons and ButtonStates');
   }
 
-  function openDialog(dialog: typeof element): void {
+  function openModal(dialog: typeof element): void {
     if (dialog instanceof HTMLDialogElement) {
       if (!dialog.open) {
-        // TODO(DESK-1215): Move to `showModal` to benefit from browser modal defaults. This is
-        // currently not used to avoid issues with the snackbar and system dialogs.
-        dialog.show();
+        dialog.showModal();
         closed = false;
         dispatch('open');
       }
     }
   }
 
-  function closeDialog(dialog: typeof element): void {
+  function closeModal(dialog: typeof element): void {
     if (dialog instanceof HTMLDialogElement) {
       if (dialog.open) {
         dialog.close();
@@ -129,12 +131,16 @@
 
   $: handleClosedStateChange(closed);
 
+  $: if (!closed) {
+    openModal(element);
+  }
+
   onMount(() => {
-    openDialog(element);
+    window.addEventListener('keydown', handleKeydown);
   });
 
   onDestroy(() => {
-    closeDialog(element);
+    closeModal(element);
     window.removeEventListener('keydown', handleKeydown);
   });
 </script>
