@@ -298,7 +298,10 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     public runMigrations(): void {
         const count = this._migrationHelper.migrate(this._rawDb);
         if (count > 0) {
-            this._log.info(`Successfully ran ${count} database migration(s)`);
+            this._log.info(
+                `Successfully ran ${count} database migration(s). Running VACUUM command.`,
+            );
+            this._rawDb.exec('VACUUM');
         }
     }
 
