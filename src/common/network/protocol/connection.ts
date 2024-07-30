@@ -32,17 +32,4 @@ export type ConnectionManagerHandle = {
      * enable/disable auto-connect. Use sparingly!
      */
     readonly toggleAutoConnect: () => void;
-
-    /**
-     * Starts a partial connection to the mediator server (without CSP-proxying) and unlinks the
-     * current device.
-     *
-     * Unlinking the current device will lead to the connections being closed. Calling this function
-     * should therefore always be proceeded by a `deleteProfileAndRestartApp`.
-     *
-     * WARNING: This should only be called after closing the standard connection and turning off
-     * auto-connect. In general, this function should only be called if the connection is closed by
-     * the chatserver to give the user the option to relink cleanly anyway.
-     */
-    readonly startPartialConnectionAndUnlink: () => Promise<CloseInfo>;
 } & ProxyMarked;

@@ -77,7 +77,6 @@ import {
 } from '~/common/network/protocol/capture';
 import {type DirectoryBackend, DirectoryError} from '~/common/network/protocol/directory';
 import type {RendezvousCloseCause} from '~/common/network/protocol/rendezvous';
-import {DropDeviceTask} from '~/common/network/protocol/task/d2m/drop-device';
 import {TaskManager} from '~/common/network/protocol/task/manager';
 import {VolatileProtocolStateBackend} from '~/common/network/protocol/volatile-protocol-state';
 import {StubWorkBackend, type WorkBackend} from '~/common/network/protocol/work';
@@ -611,7 +610,6 @@ export interface BackendHandle extends ProxyMarked {
     readonly directory: Pick<DirectoryBackend, 'identity'>;
     readonly keyStorage: Pick<KeyStorage, 'changePassword' | 'changeWorkCredentials'>;
     readonly model: Repositories;
-    readonly selfKickFromMediator: () => Promise<void>;
     readonly viewModel: IViewModelRepository;
     readonly work: WorkBackend;
 }
@@ -648,7 +646,6 @@ export class Backend {
             directory: _services.directory,
             model: _services.model,
             keyStorage: _services.keyStorage,
-            selfKickFromMediator: this.selfKickFromMediator.bind(this),
             viewModel: _services.viewModel,
             work: _services.work,
         };
@@ -1608,16 +1605,6 @@ export class Backend {
             debug: {tag: 'capture'},
         });
         return store;
-    }
-
-    /**
-     * Self-kick device from mediator server.
-     */
-    public async selfKickFromMediator(): Promise<void> {
-        this._log.warn('Self-kicking device from mediator');
-        const ownDeviceId = this._services.device.d2m.deviceId;
-        // Note: This call will fail if no connection is available, but that is acceptable for now.
-        await this._services.taskManager.schedule(new DropDeviceTask(ownDeviceId));
     }
 
     /**

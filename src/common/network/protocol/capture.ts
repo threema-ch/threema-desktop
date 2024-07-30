@@ -282,7 +282,6 @@ export const RAW_CAPTURE_CONVERTER = Object.freeze({
         ): [packet: DisplayPacket, transfers: readonly DomTransferable[]] =>
             convert('outbound', 'E2E', packet, meta),
     },
-
     dropDeviceLayer: {
         inbound: (
             packet: RawPacket,

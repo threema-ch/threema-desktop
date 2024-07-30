@@ -81,7 +81,7 @@ export class Layer2Codec {
 /**
  * See `layer-3-codec.ts` for docs.
  */
-class Layer3Codec<TType extends 'full' | 'partial'> {
+class Layer3Codec<TType extends 'full' | 'd2m-only'> {
     public readonly decoder: Layer3Decoder<TType>;
     public readonly encoder: Layer3Encoder<TType>;
 
@@ -354,7 +354,7 @@ class Layer4Through1EncoderTransformStreamAdapter
 }
 
 /**
- * A Transform stream adapter that chains the synchronous encoder transform streams L4 through L1
+ * A Transform stream adapter that chains the synchronous encoder transform streams L3 through L1
  * together and exposes it as a single asynchronous transform stream.
  */
 class Layer3Through1EncoderTransformStreamAdapter
@@ -398,7 +398,7 @@ class Layer3Through1EncoderTransformStreamAdapter
     }
 }
 
-export function applyPartialMediatorStreamPipeline(
+export function applyD2mOnlyMediatorStreamPipeline(
     services: ServicesForBackend,
     stream: BidirectionalStream<ArrayBuffer, BufferSource>,
     controllers: {
@@ -410,7 +410,7 @@ export function applyPartialMediatorStreamPipeline(
 ): MediatorPipe {
     const layer1 = new Layer1Codec(services, capture?.layer1);
     const layer2 = new Layer2Codec(services, controllers.layer2, capture?.layer2);
-    const layer3 = new Layer3Codec(services, controllers.layer3, 'partial', capture?.layer3);
+    const layer3 = new Layer3Codec(services, controllers.layer3, 'd2m-only', capture?.layer3);
     const dropDeviceLayer = new DropDeviceLayerCodec(
         services,
         controllers.dropDeviceLayer,

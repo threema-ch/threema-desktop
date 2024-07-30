@@ -253,7 +253,7 @@ type InternalInboundL3CspMessage = CspMessage<
     CspPayload<CspPayloadType.QUEUE_SEND_COMPLETE, structbuf.csp.payload.QueueSendComplete>
 >;
 
-export class Layer3Decoder<TType extends 'full' | 'partial'>
+export class Layer3Decoder<TType extends 'full' | 'd2m-only'>
     implements SyncTransformerCodec<InboundL2Message, InboundL3Message>
 {
     private readonly _services: ServicesForBackend;
@@ -900,7 +900,7 @@ type InternalOutboundL3CspMessage = CspMessage<
     >
 >;
 
-export class Layer3Encoder<TType extends 'full' | 'partial'>
+export class Layer3Encoder<TType extends 'full' | 'd2m-only'>
     implements SyncTransformerCodec<OutboundL3Message, OutboundL2Message>
 {
     private readonly _log: Logger;
@@ -927,8 +927,8 @@ export class Layer3Encoder<TType extends 'full' | 'partial'>
         // Set encoder for forwarding messages from the decoder
         this._encoder.set({forward});
 
-        // Ignroe Csp handling in a partial pipeline.
-        if (this._type === 'partial') {
+        // Ignore CSP handling in a D2M only pipeline.
+        if (this._type === 'd2m-only') {
             return;
         }
 

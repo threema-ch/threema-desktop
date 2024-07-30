@@ -577,7 +577,8 @@
     "error--check-internet-and-retry": "Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
     "error--connection": "Keine Serververbindung. Versuchen Sie, sich erneut mit dem Wifi zu verbinden, oder prüfen Sie Ihr Modem oder Router.",
     "error--connection-unrecoverable-state": "Aufgrund eines unvorhergesehenen Fehlers wurde dieses Gerät vom Server getrennt. Bitte starten Sie die App neu, und verknüpfen Sie es erneut.",
-    "error--server-alert-no-connection": "Ihr Gerät konnte nicht neu verknüpft werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "error--device-cookie-no-connection": "Die Aufhebung der Verknüpfung dieses Geräts ist fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "error--server-alert-no-connection": "Die Aufhebung der Verknüpfung dieses Geräts ist fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
     "error--server-alert-relink": "Wir empfehlen, dieses Gerät neu zu verknüpfen. Ihr Nachrichtenverlauf kann dabei wiederhergestellt werden."
   }
 }

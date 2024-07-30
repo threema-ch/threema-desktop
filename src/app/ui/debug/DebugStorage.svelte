@@ -3,7 +3,7 @@
   import {i18n} from '~/app/ui/i18n';
   import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
-  import {resetProfile} from '~/app/ui/utils/profile';
+  import {unlinkAndCreateBackup} from '~/app/ui/utils/profile';
   import {ReceiverType} from '~/common/enum';
   import type {
     AnyMessage,
@@ -31,8 +31,8 @@
   /**
    * Unlink and delete the device data and restart the application.
    */
-  async function resetAndUnlink(): Promise<void> {
-    await resetProfile(services);
+  async function handleClickUnlink(): Promise<void> {
+    await unlinkAndCreateBackup(services);
   }
 
   // Database inspection mode
@@ -150,7 +150,7 @@
 
     <h3>User Profile</h3>
 
-    <Button flavor="filled" on:click={resetAndUnlink}>
+    <Button flavor="filled" on:click={handleClickUnlink}>
       <span class="icon-and-text"
         ><MdIcon theme="Filled">restart_alt</MdIcon>
         {#if import.meta.env.DEBUG}Unlink and Exit{:else}Unlink and Relink{/if}

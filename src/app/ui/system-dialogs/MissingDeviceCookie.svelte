@@ -3,10 +3,11 @@
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import CancelAndConfirm from '~/app/ui/svelte-components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '~/app/ui/svelte-components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
-  import {resetProfile} from '~/app/ui/utils/profile';
+  import {unlinkAndCreateBackup} from '~/app/ui/utils/profile';
   import type {Logger} from '~/common/logging';
   import type {MissingDeviceCookieDialog} from '~/common/system-dialog';
   import type {Delayed} from '~/common/utils/delayed';
@@ -16,21 +17,29 @@
   export let visible: boolean;
   export let appServices: Delayed<AppServices>;
   export let context: MissingDeviceCookieDialog['context'];
+
+  let errorMessage: string | undefined = undefined;
   unusedProp(log, context);
 
-  async function resetAndUnlink(): Promise<void> {
+  async function handleClickConfirm(event: Event): Promise<void> {
+    event.preventDefault();
     if (!appServices.isSet()) {
       log.warn('Cannot unlink the profile because the app services are not yet ready');
       return;
     }
-    await resetProfile(appServices.unwrap());
+    await unlinkAndCreateBackup(appServices.unwrap()).catch((error) => {
+      errorMessage = $i18n.t(
+        'system.error--device-cookie-no-connection',
+        'Failed to unlink the device. Please check your internet connection and try again',
+      );
+    });
   }
 </script>
 
 <template>
   <ModalWrapper {visible}>
     <ModalDialog
-      on:confirm={resetAndUnlink}
+      on:confirm={handleClickConfirm}
       on:close
       on:cancel
       closableWithEscape={false}
@@ -56,6 +65,13 @@
             'To install the device cookie, you must relink Threema Desktop. Since this is a security feature, we recommend to install the device cookie as soon as possible.',
           )}
         />
+
+        {#if errorMessage !== undefined}
+          <div class="warning">
+            <MdIcon theme="Filled">warning</MdIcon>
+            <Text text={errorMessage} />
+          </div>
+        {/if}
       </div>
 
       <div slot="footer" let:modal>
@@ -85,5 +101,12 @@
     display: flex;
     flex-direction: column;
     gap: rem(16px);
+
+    .warning {
+      display: flex;
+      align-items: center;
+      justify-content: start;
+      gap: rem(8px);
+    }
   }
 </style>

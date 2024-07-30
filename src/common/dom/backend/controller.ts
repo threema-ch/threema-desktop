@@ -67,7 +67,6 @@ export class BackendController {
     public readonly directory: RemoteProxy<BackendHandle>['directory'];
     public readonly keyStorage: RemoteProxy<BackendHandle>['keyStorage'];
     public readonly model: RemoteProxy<BackendHandle>['model'];
-    public readonly selfKickFromMediator: RemoteProxy<BackendHandle>['selfKickFromMediator'];
     public readonly viewModel: RemoteProxy<BackendHandle>['viewModel'];
     public readonly work: RemoteProxy<BackendHandle>['work'];
 
@@ -92,7 +91,6 @@ export class BackendController {
         this.directory = _remote.directory;
         this.keyStorage = _remote.keyStorage;
         this.model = _remote.model;
-        this.selfKickFromMediator = _remote.selfKickFromMediator;
         this.viewModel = _remote.viewModel;
         this.work = _remote.work;
     }

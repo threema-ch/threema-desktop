@@ -243,13 +243,7 @@ export class FullProtocolController extends BaseProtocolController {
 }
 
 export class D2mOnlyProtocolController extends BaseProtocolController {
-    public forDropDeviceLayer(deviceDropped: ResolvablePromise<void>): DropDeviceLayerController {
-        return {
-            d2m: {
-                deviceDroppedFromLocal: deviceDropped,
-                deviceId: this.d2m.deviceId,
-            },
-            connection: this.connection,
-        };
+    public forDropDeviceLayer(): DropDeviceLayerController {
+        return this;
     }
 }

@@ -19,13 +19,12 @@
 
   let errorMessage: string | undefined;
 
-  async function connectToMediatorAndUnlink(event: Event): Promise<void> {
+  async function handleClickConfirm(event: Event): Promise<void> {
     const {connectionManager} = appServices.unwrap().backend;
     event.preventDefault();
     try {
-      await connectionManager.disconnectAndDisableAutoConnect();
       await connectionManager
-        .startPartialConnectionAndUnlink()
+        .selfKickFromMediator()
         .then(() => window.app.deleteProfileAndRestartApp({createBackup: true}));
     } catch (error) {
       log.error(error);
@@ -43,7 +42,7 @@
   <ModalWrapper {visible}>
     <ModalDialog
       bind:visible
-      on:confirm={connectToMediatorAndUnlink}
+      on:confirm={handleClickConfirm}
       on:clickoutside
       on:close
       on:cancel
@@ -52,7 +51,7 @@
       <Title slot="header" title={context.title} />
       <div class="body" slot="body">
         <p>
-          <Text text={context.text}></Text>
+          <Text text={context.text} />
         </p>
         <p>
           <Text
@@ -60,7 +59,7 @@
               'system.error--server-alert-relink',
               'We recommend that you relink Threema Desktop. Your message history can be kept.',
             )}
-          ></Text>
+          />
         </p>
         {#if errorMessage !== undefined}
           <div class="warning">

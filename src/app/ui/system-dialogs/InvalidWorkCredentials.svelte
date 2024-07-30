@@ -123,7 +123,7 @@
 
   function deleteProfileAndRestartApp(): void {
     deletingProfile = true;
-    backend
+    backend.connectionManager
       .selfKickFromMediator()
       .then(() => {
         window.app.deleteProfileAndRestartApp({createBackup: true});

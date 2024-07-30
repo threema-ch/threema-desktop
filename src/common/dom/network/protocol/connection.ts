@@ -3,7 +3,7 @@ import {NACL_CONSTANTS, wrapRawKey} from '~/common/crypto';
 import {SharedBoxFactory} from '~/common/crypto/box';
 import {
     applyMediatorStreamPipeline,
-    applyPartialMediatorStreamPipeline,
+    applyD2mOnlyMediatorStreamPipeline,
 } from '~/common/dom/network/protocol/pipeline';
 import {MediatorWebSocketTransport} from '~/common/dom/network/transport/mediator-websocket';
 import type {WebSocketEventWrapperStreamOptions} from '~/common/dom/network/transport/websocket';
@@ -37,6 +37,7 @@ import {
     CspAuthState,
     D2mAuthState,
 } from '~/common/network/protocol/state';
+import {DropDeviceTask} from '~/common/network/protocol/task/d2m/drop-device';
 import {ConnectedTaskManager} from '~/common/network/protocol/task/manager';
 import type {TemporaryClientKey} from '~/common/network/types/keys';
 import {assert, assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
@@ -437,7 +438,7 @@ class Connection {
         return connection;
     }
 
-    public static async createPartial(
+    public static async createD2mOnly(
         services: ServicesForBackend,
         getCaptureHandlers: () => RawCaptureHandlers | undefined,
     ): Promise<Connection> {
@@ -448,7 +449,7 @@ class Connection {
             logging,
             model: {user},
         } = services;
-        const log = logging.logger(`connection.partial`, connectionLoggerStyle);
+        const log = logging.logger(`connection.d2m-only`, connectionLoggerStyle);
         const connectionState = ConnectionStateUtils.createStore(
             MonotonicEnumStore,
             ConnectionState.CONNECTING,
@@ -521,6 +522,15 @@ class Connection {
             },
         );
 
+        const unsubsriber = controller.d2m.state.subscribe((state) => {
+            log.info(`D2M auth state: ${D2mAuthStateUtils.NAME_OF[state]}`);
+            // The transport state moves us into the "handshake" state, so we
+            // only need to listen to the "completed" state.
+            if (state === D2mAuthState.COMPLETE) {
+                connectionState.set(ConnectionState.PARTIALLY_CONNECTED);
+            }
+        });
+
         // Connect to mediator server and set up pipelines
         const options: WebSocketEventWrapperStreamOptions = {
             signal: abort.attach(new AbortController()),
@@ -532,7 +542,6 @@ class Connection {
         };
         const baseUrl = config.mediatorServerUrl(device.d2m.dgpk.public);
         log.debug(`Connecting to ${baseUrl} without proxying the chatserver`);
-        const deviceDropped = new ResolvablePromise<void>({uncaught: 'default'});
         const mediator = new MediatorWebSocketTransport(
             {
                 baseUrl,
@@ -541,13 +550,13 @@ class Connection {
             },
             options,
             (stream) =>
-                applyPartialMediatorStreamPipeline(
+                applyD2mOnlyMediatorStreamPipeline(
                     services,
                     stream,
                     {
                         layer2: controller.forLayer2(),
                         layer3: controller.forLayer3(),
-                        dropDeviceLayer: controller.forDropDeviceLayer(deviceDropped),
+                        dropDeviceLayer: controller.forDropDeviceLayer(),
                     },
                     getCaptureHandlers(),
                 ),
@@ -571,17 +580,6 @@ class Connection {
                 closing.done
                     .then(() => log.info('Closing sequence completed'))
                     .catch(assertUnreachable);
-            }
-        });
-
-        const unsubsriber = controller.d2m.state.subscribe((state) => {
-            log.info(`D2M auth state: ${D2mAuthStateUtils.NAME_OF[state]}`);
-            // The transport state moves us into the "handshake" state, so we
-            // only need to listen to the "completed" state.
-            if (state === D2mAuthState.COMPLETE) {
-                connectionState.set(ConnectionState.PARTIALLY_CONNECTED);
-                // We are connected to the mediator, send the drop device message.
-                deviceDropped.resolve();
             }
         });
 
@@ -810,36 +808,23 @@ export class ConnectionManager implements ConnectionManagerHandle {
         return result;
     }
 
-    /** @inheritdoc */
-    public async startPartialConnectionAndUnlink(): Promise<CloseInfo> {
-        assert(
-            this._connection === undefined,
-            'Connection must be torn down before connecting to the mediator server',
-        );
-
+    /**
+     * Kicks the current device from the mediator server.
+     *
+     * In case the connection was killed by the CSP, this function creates a D2M only connection to
+     * the mediator server only and kicks the device.
+     *
+     * Rejects if the D2M only connection fails (e.g. there is no connection).
+     */
+    public async selfKickFromMediator(): Promise<CloseInfo | undefined> {
         try {
-            this._connection = await Connection.createPartial(
-                this._services,
-                this._getCaptureHandlers,
+            await this._services.taskManager.schedule(
+                new DropDeviceTask(this._services.device.d2m.deviceId),
             );
-            const disconnectedPromise = this._connection.closing.promise.then(
-                async ({info, done}) => {
-                    await done;
-                    return info;
-                },
-            );
-            return await disconnectedPromise;
+            return undefined;
         } catch (error) {
-            this._log.warn(
-                'Could not create connection',
-                extractErrorTraceback(ensureError(error)),
-            );
-            this._services.taskManager.replace(this.state.set(ConnectionState.DISCONNECTED));
-            this.leaderState.reset(D2mLeaderState.NONLEADER);
-            // Turn on auto-connect again in case the device cannot be kicked because there is no
-            // connection.
-            this.enableAutoConnect();
-            throw new Error('Failed to create D2m pipeline.');
+            this._log.debug('Failed to drop device, falling back to D2M only pipeline');
+            return await this._startD2mOnlyConnectionAndUnlink();
         }
     }
 
@@ -1187,9 +1172,57 @@ export class ConnectionManager implements ConnectionManagerHandle {
         }
         unsubscribeState();
         unsubscribeLeaderState();
+        this._reset();
+        yield result;
+    }
+
+    private _reset(): void {
         this._services.taskManager.replace(this.state.set(ConnectionState.DISCONNECTED));
         this.leaderState.reset(D2mLeaderState.NONLEADER);
         this._connection = undefined;
-        yield result;
+    }
+
+    /**
+     * Starts a D2M only connection to the mediator server (without CSP-proxying) and unlinks the
+     * current device.
+     *
+     * Unlinking the current device will lead to the connections being closed. On failure,
+     * auto-reconnect is turned on.
+     *
+     * WARNING: In general, this function should only be called if the connection is closed by the
+     * chat server to give the user the option to relink cleanly anyway.
+     */
+    private async _startD2mOnlyConnectionAndUnlink(): Promise<CloseInfo> {
+        this.disconnectAndDisableAutoConnect();
+
+        assert(
+            this._connection === undefined,
+            'Connection must be torn down before connecting to the mediator server',
+        );
+
+        try {
+            this._connection = await Connection.createD2mOnly(
+                this._services,
+                this._getCaptureHandlers,
+            );
+            const disconnectedPromise = this._connection.closing.promise.then(
+                async ({info, done}) => {
+                    await done;
+                    return info;
+                },
+            );
+            return await disconnectedPromise;
+        } catch (error) {
+            this._log.warn(
+                'Could not create connection',
+                extractErrorTraceback(ensureError(error)),
+            );
+            this._reset();
+
+            // Turn on auto-connect again in case the device cannot be kicked because there is no
+            // connection.
+            this.enableAutoConnect();
+            throw new Error('Failed to create D2m pipeline.');
+        }
     }
 }
