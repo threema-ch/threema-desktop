@@ -46,8 +46,25 @@ import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import {clamp} from '~/common/utils/number';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {AbortRaiser, type AbortListener} from '~/common/utils/signal';
-import {MonotonicEnumStore, type StrictMonotonicEnumStore} from '~/common/utils/store';
+import {
+    MonotonicEnumStore,
+    type StoreUnsubscriber,
+    type StrictMonotonicEnumStore,
+} from '~/common/utils/store';
 import {TIMER} from '~/common/utils/timer';
+
+interface ClosingSignal {
+    readonly done: ResolvablePromise<void>;
+    readonly raiser: AbortRaiser<{
+        readonly info: CloseInfo;
+        readonly done: ResolvablePromise<void>;
+    }>;
+}
+
+type ClosedRaiser = AbortRaiser<{
+    readonly type: 'normal' | 'error';
+    readonly info: CloseInfo;
+}>;
 
 /**
  * Platform details, e.g. "Firefox 91"
@@ -112,56 +129,27 @@ class Connection {
         getCaptureHandlers: () => RawCaptureHandlers | undefined,
     ): Promise<Connection> {
         const {
-            config,
-            crypto,
             device,
             logging,
             model: {user},
         } = services;
         const log = logging.logger(`connection.${taskManager.id}`, connectionLoggerStyle);
-        const connectionState = ConnectionStateUtils.createStore(
-            MonotonicEnumStore,
-            ConnectionState.CONNECTING,
-        );
-        const leaderState = D2mLeaderStateUtils.createStore(
-            MonotonicEnumStore,
-            D2mLeaderState.NONLEADER,
-        );
+        const {
+            abort,
+            baseUrl,
+            closed,
+            closing,
+            connectionState,
+            cspClientInfo,
+            leaderState,
+            tck,
+            delayedConnection,
+            d2mPlatformDetails,
+            options,
+        } = Connection._setupConnectionParameters(services, log);
 
-        // Generate ephemeral TCK
-        const tck = new SharedBoxFactory(
-            crypto,
-            wrapRawKey(
-                crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
-                NACL_CONSTANTS.KEY_LENGTH,
-            ).asReadonly(),
-        ) as TemporaryClientKey;
+        log.debug(`Connecting to ${baseUrl}`);
 
-        // Create closing/closed event raisers
-        const closing = {
-            done: new ResolvablePromise<void>({uncaught: 'default'}),
-            raiser: new AbortRaiser<{
-                readonly info: CloseInfo;
-                readonly done: ResolvablePromise<void>;
-            }>(),
-        } as const;
-        const closed = new AbortRaiser<{
-            readonly type: 'normal' | 'error';
-            readonly info: CloseInfo;
-        }>();
-        let abort: AbortListener<CloseInfo>;
-        {
-            const abort_ = new AbortRaiser<CloseInfo>();
-            closed.subscribe(({info}) => abort_.raise(info));
-            abort = abort_;
-        }
-
-        // Create protocol controller
-        const delayedConnection = Delayed.simple<ConnectionHandle>('ConnectionHandle');
-        const browserInfo = getBrowserInfo(self.navigator.userAgent);
-        const cspClientInfo = makeCspClientInfo(browserInfo, services.systemInfo);
-        const d2mPlatformDetails = makeD2mPlatformDetails(browserInfo, services.systemInfo);
-        log.debug(`CSP client info string: ${cspClientInfo}`);
         const controller = new FullProtocolController(
             services,
             taskManager,
@@ -244,17 +232,6 @@ class Connection {
                 });
             });
 
-        // Connect to mediator server and set up pipelines
-        const options: WebSocketEventWrapperStreamOptions = {
-            signal: abort.attach(new AbortController()),
-            // The below configuration gives us a theoretical maximum throughput of 25 MiB/s
-            // if the browser does not throttle the polling.
-            highWaterMark: 524288, // 8 chunks of 64 KiB -> 512 KiB
-            lowWaterMark: 131072, // 2 chunks of 64 KiB -> 128 KiB
-            pollIntervalMs: 20, // Poll every 20ms until the low water mark has been reached
-        };
-        const baseUrl = config.mediatorServerUrl(device.d2m.dgpk.public);
-        log.debug(`Connecting to ${baseUrl}`);
         const mediator = new MediatorWebSocketTransport(
             {
                 baseUrl,
@@ -275,6 +252,213 @@ class Connection {
                     getCaptureHandlers(),
                 ),
         );
+
+        await this._registerCloseHandlers(
+            connectionState,
+            mediator,
+            closed,
+            closing,
+            unsubscribers,
+            log,
+        );
+
+        // Run the task manager
+        controller.taskManager
+            .run(services, controller, abort)
+            .then((v) => {
+                closed.raise({
+                    type: 'error',
+                    info: {
+                        code: CloseCode.INTERNAL_ERROR,
+                        origin: 'unknown',
+                        reason: 'Task manager stopped',
+                    },
+                });
+                unreachable(v, 'Task manager stopped');
+            })
+            .catch((error: unknown) => {
+                if (error instanceof ConnectionClosed) {
+                    if (import.meta.env.VERBOSE_LOGGING.NETWORK) {
+                        log.debug(
+                            `Task manager stopped due to connection being closed (type=${error.type})`,
+                        );
+                    }
+                } else {
+                    log.error('Task manager errored:', extractErrorTraceback(ensureError(error)));
+                }
+            });
+
+        const connection = new Connection(
+            closed,
+            closing.raiser,
+            mediator,
+            connectionState,
+            leaderState,
+        );
+        delayedConnection.set(connection);
+        return connection;
+    }
+
+    public static async createD2mOnly(
+        services: ServicesForBackend,
+        getCaptureHandlers: () => RawCaptureHandlers | undefined,
+    ): Promise<Connection> {
+        const {
+            device,
+            logging,
+            model: {user},
+        } = services;
+        const log = logging.logger(`connection.d2m-only`, connectionLoggerStyle);
+        const {
+            baseUrl,
+            closed,
+            closing,
+            connectionState,
+            cspClientInfo,
+            leaderState,
+            tck,
+            delayedConnection,
+            d2mPlatformDetails,
+            options,
+        } = Connection._setupConnectionParameters(services, log);
+        const controller = new D2mOnlyProtocolController(
+            services,
+            {current: delayedConnection},
+            // CSP
+            {
+                ck: device.csp.ck,
+                tck,
+                identity: device.identity.bytes,
+                info: cspClientInfo,
+                deviceId: device.csp.deviceId,
+                deviceCookie: device.csp.deviceCookie,
+                // TODO(DESK-775): Get from config
+                echoRequestIntervalS: 10,
+                // TODO(DESK-775): Get from config
+                serverIdleTimeoutS: 30,
+                // TODO(DESK-775): Get from config
+                clientIdleTimeoutS: 10,
+            },
+            // D2M
+            {
+                dgpk: device.d2m.dgpk,
+                dgdik: device.d2m.dgdik,
+                deviceId: device.d2m.deviceId,
+                deviceSlotExpirationPolicy: protobuf.d2m.DeviceSlotExpirationPolicy.PERSISTENT,
+                platformDetails: d2mPlatformDetails,
+                label: user.devicesSettings.get().view.deviceName,
+            },
+        );
+
+        const unsubsriber = controller.d2m.state.subscribe((state) => {
+            log.info(`D2M auth state: ${D2mAuthStateUtils.NAME_OF[state]}`);
+            // The transport state moves us into the "handshake" state, so we
+            // only need to listen to the "completed" state.
+            if (state === D2mAuthState.COMPLETE) {
+                connectionState.set(ConnectionState.PARTIALLY_CONNECTED);
+            }
+        });
+
+        log.debug(`Connecting to ${baseUrl} without proxying the chatserver`);
+        const mediator = new MediatorWebSocketTransport(
+            {
+                baseUrl,
+                deviceGroupId: device.d2m.dgpk.public,
+                serverGroup: device.serverGroup,
+            },
+            options,
+            (stream) =>
+                applyD2mOnlyMediatorStreamPipeline(
+                    services,
+                    stream,
+                    {
+                        layer2: controller.forLayer2(),
+                        layer3: controller.forLayer3(),
+                        dropDeviceLayer: controller.forDropDeviceLayer(),
+                    },
+                    getCaptureHandlers(),
+                ),
+        );
+
+        await this._registerCloseHandlers(
+            connectionState,
+            mediator,
+            closed,
+            closing,
+            [unsubsriber],
+            log,
+        );
+
+        const connection = new Connection(
+            closed,
+            closing.raiser,
+            mediator,
+            connectionState,
+            leaderState,
+        );
+
+        delayedConnection.set(connection);
+        return connection;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+    private static _setupConnectionParameters(services: ServicesForBackend, log: Logger) {
+        const {config, crypto, device} = services;
+
+        const connectionState = ConnectionStateUtils.createStore(
+            MonotonicEnumStore,
+            ConnectionState.CONNECTING,
+        );
+        const leaderState = D2mLeaderStateUtils.createStore(
+            MonotonicEnumStore,
+            D2mLeaderState.NONLEADER,
+        );
+
+        // Generate ephemeral TCK
+        const tck = new SharedBoxFactory(
+            crypto,
+            wrapRawKey(
+                crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
+                NACL_CONSTANTS.KEY_LENGTH,
+            ).asReadonly(),
+        ) as TemporaryClientKey;
+
+        // Create closing/closed event raisers
+        const closing = {
+            done: new ResolvablePromise<void>({uncaught: 'default'}),
+            raiser: new AbortRaiser<{
+                readonly info: CloseInfo;
+                readonly done: ResolvablePromise<void>;
+            }>(),
+        } as const;
+        const closed = new AbortRaiser<{
+            readonly type: 'normal' | 'error';
+            readonly info: CloseInfo;
+        }>();
+        let abort: AbortListener<CloseInfo>;
+        {
+            const abort_ = new AbortRaiser<CloseInfo>();
+            closed.subscribe(({info}) => abort_.raise(info));
+            abort = abort_;
+        }
+
+        // Create protocol controller
+        const delayedConnection = Delayed.simple<ConnectionHandle>('ConnectionHandle');
+        const browserInfo = getBrowserInfo(self.navigator.userAgent);
+        const cspClientInfo = makeCspClientInfo(browserInfo, services.systemInfo);
+        const d2mPlatformDetails = makeD2mPlatformDetails(browserInfo, services.systemInfo);
+        log.debug(`CSP client info string: ${cspClientInfo}`);
+
+        // Connect to mediator server and set up pipelines
+        const options: WebSocketEventWrapperStreamOptions = {
+            signal: abort.attach(new AbortController()),
+            // The below configuration gives us a theoretical maximum throughput of 25 MiB/s
+            // if the browser does not throttle the polling.
+            highWaterMark: 524288, // 8 chunks of 64 KiB -> 512 KiB
+            lowWaterMark: 131072, // 2 chunks of 64 KiB -> 128 KiB
+            pollIntervalMs: 20, // Poll every 20ms until the low water mark has been reached
+        };
+        const baseUrl = config.mediatorServerUrl(device.d2m.dgpk.public);
 
         // The closing sequence always starts when the abort sequence fires. The inner done promise
         // will normally resolve when all pending Mediator frames have been processed, so that all
@@ -300,6 +484,29 @@ class Connection {
             }
         });
 
+        return {
+            abort,
+            baseUrl,
+            closed,
+            closing,
+            connectionState,
+            cspClientInfo,
+            leaderState,
+            tck,
+            delayedConnection,
+            d2mPlatformDetails,
+            options,
+        };
+    }
+
+    private static async _registerCloseHandlers(
+        connectionState: MonotonicEnumStore<ConnectionState>,
+        mediator: MediatorWebSocketTransport,
+        closed: ClosedRaiser,
+        closing: ClosingSignal,
+        unsubscribers: StoreUnsubscriber[],
+        log: Logger,
+    ): Promise<void> {
         mediator.closed
             .then((info) => {
                 log.info('Mediator transport closed cleanly:', info);
@@ -400,299 +607,6 @@ class Connection {
                 });
             });
         connectionState.set(ConnectionState.HANDSHAKE);
-
-        // Run the task manager
-        controller.taskManager
-            .run(services, controller, abort)
-            .then((v) => {
-                closed.raise({
-                    type: 'error',
-                    info: {
-                        code: CloseCode.INTERNAL_ERROR,
-                        origin: 'unknown',
-                        reason: 'Task manager stopped',
-                    },
-                });
-                unreachable(v, 'Task manager stopped');
-            })
-            .catch((error: unknown) => {
-                if (error instanceof ConnectionClosed) {
-                    if (import.meta.env.VERBOSE_LOGGING.NETWORK) {
-                        log.debug(
-                            `Task manager stopped due to connection being closed (type=${error.type})`,
-                        );
-                    }
-                } else {
-                    log.error('Task manager errored:', extractErrorTraceback(ensureError(error)));
-                }
-            });
-
-        const connection = new Connection(
-            closed,
-            closing.raiser,
-            mediator,
-            connectionState,
-            leaderState,
-        );
-        delayedConnection.set(connection);
-        return connection;
-    }
-
-    public static async createD2mOnly(
-        services: ServicesForBackend,
-        getCaptureHandlers: () => RawCaptureHandlers | undefined,
-    ): Promise<Connection> {
-        const {
-            config,
-            crypto,
-            device,
-            logging,
-            model: {user},
-        } = services;
-        const log = logging.logger(`connection.d2m-only`, connectionLoggerStyle);
-        const connectionState = ConnectionStateUtils.createStore(
-            MonotonicEnumStore,
-            ConnectionState.CONNECTING,
-        );
-        const leaderState = D2mLeaderStateUtils.createStore(
-            MonotonicEnumStore,
-            D2mLeaderState.NONLEADER,
-        );
-
-        // Generate ephemeral TCK
-        const tck = new SharedBoxFactory(
-            crypto,
-            wrapRawKey(
-                crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
-                NACL_CONSTANTS.KEY_LENGTH,
-            ).asReadonly(),
-        ) as TemporaryClientKey;
-
-        // Create closing/closed event raisers
-        const closing = {
-            done: new ResolvablePromise<void>({uncaught: 'default'}),
-            raiser: new AbortRaiser<{
-                readonly info: CloseInfo;
-                readonly done: ResolvablePromise<void>;
-            }>(),
-        } as const;
-        const closed = new AbortRaiser<{
-            readonly type: 'normal' | 'error';
-            readonly info: CloseInfo;
-        }>();
-        let abort: AbortListener<CloseInfo>;
-        {
-            const abort_ = new AbortRaiser<CloseInfo>();
-            closed.subscribe(({info}) => abort_.raise(info));
-            abort = abort_;
-        }
-
-        // Create protocol controller
-        const delayedConnection = Delayed.simple<ConnectionHandle>('ConnectionHandle');
-        const browserInfo = getBrowserInfo(self.navigator.userAgent);
-        const cspClientInfo = makeCspClientInfo(browserInfo, services.systemInfo);
-        const d2mPlatformDetails = makeD2mPlatformDetails(browserInfo, services.systemInfo);
-        log.debug(`CSP client info string: ${cspClientInfo}`);
-        const controller = new D2mOnlyProtocolController(
-            services,
-            {current: delayedConnection},
-            // CSP
-            {
-                ck: device.csp.ck,
-                tck,
-                identity: device.identity.bytes,
-                info: cspClientInfo,
-                deviceId: device.csp.deviceId,
-                deviceCookie: device.csp.deviceCookie,
-                // TODO(DESK-775): Get from config
-                echoRequestIntervalS: 10,
-                // TODO(DESK-775): Get from config
-                serverIdleTimeoutS: 30,
-                // TODO(DESK-775): Get from config
-                clientIdleTimeoutS: 10,
-            },
-            // D2M
-            {
-                dgpk: device.d2m.dgpk,
-                dgdik: device.d2m.dgdik,
-                deviceId: device.d2m.deviceId,
-                deviceSlotExpirationPolicy: protobuf.d2m.DeviceSlotExpirationPolicy.PERSISTENT,
-                platformDetails: d2mPlatformDetails,
-                label: user.devicesSettings.get().view.deviceName,
-            },
-        );
-
-        const unsubsriber = controller.d2m.state.subscribe((state) => {
-            log.info(`D2M auth state: ${D2mAuthStateUtils.NAME_OF[state]}`);
-            // The transport state moves us into the "handshake" state, so we
-            // only need to listen to the "completed" state.
-            if (state === D2mAuthState.COMPLETE) {
-                connectionState.set(ConnectionState.PARTIALLY_CONNECTED);
-            }
-        });
-
-        // Connect to mediator server and set up pipelines
-        const options: WebSocketEventWrapperStreamOptions = {
-            signal: abort.attach(new AbortController()),
-            // The below configuration gives us a theoretical maximum throughput of 25 MiB/s
-            // if the browser does not throttle the polling.
-            highWaterMark: 524288, // 8 chunks of 64 KiB -> 512 KiB
-            lowWaterMark: 131072, // 2 chunks of 64 KiB -> 128 KiB
-            pollIntervalMs: 20, // Poll every 20ms until the low water mark has been reached
-        };
-        const baseUrl = config.mediatorServerUrl(device.d2m.dgpk.public);
-        log.debug(`Connecting to ${baseUrl} without proxying the chatserver`);
-        const mediator = new MediatorWebSocketTransport(
-            {
-                baseUrl,
-                deviceGroupId: device.d2m.dgpk.public,
-                serverGroup: device.serverGroup,
-            },
-            options,
-            (stream) =>
-                applyD2mOnlyMediatorStreamPipeline(
-                    services,
-                    stream,
-                    {
-                        layer2: controller.forLayer2(),
-                        layer3: controller.forLayer3(),
-                        dropDeviceLayer: controller.forDropDeviceLayer(),
-                    },
-                    getCaptureHandlers(),
-                ),
-        );
-
-        // The closing sequence always starts when the abort sequence fires. The inner done promise
-        // will normally resolve when all pending Mediator frames have been processed. It may also
-        // resolve immediately in case of an error.
-        closed.subscribe(({type, info}) => {
-            closing.raiser.raise({info, done: closing.done});
-
-            // Short-circuit the closing sequence if...
-            //
-            // - the disconnect was initiated locally (due to an unsupported protocol version).
-            // - we've encountered an error that lead to the closing of the transport.
-            if (info.origin === 'local' || type === 'error') {
-                log.debug('Short-circuiting closing sequence');
-                closing.done.resolve();
-            } else {
-                log.info('Initiating closing sequence');
-                closing.done
-                    .then(() => log.info('Closing sequence completed'))
-                    .catch(assertUnreachable);
-            }
-        });
-
-        mediator.closed
-            .then((info) => {
-                log.info('Mediator transport closed cleanly:', info);
-                closed.raise({
-                    type: 'normal',
-                    info,
-                });
-            })
-            .catch((error: unknown) => {
-                log.warn(
-                    'Mediator transport closed with error:',
-                    extractErrorTraceback(ensureError(error)),
-                );
-                closed.raise({
-                    type: 'error',
-                    info: {
-                        code: CloseCode.INTERNAL_ERROR,
-                        origin: 'unknown',
-                        reason: 'Mediator transport closed with error',
-                    },
-                });
-            })
-            .finally(() => {
-                unsubsriber();
-                connectionState.set(ConnectionState.DISCONNECTED);
-            });
-
-        log.debug('Waiting for mediator transport to be connected');
-        const pipe = await mediator.pipe;
-
-        pipe.readable
-            .then(() => {
-                // If we're not currently in the closing sequence, this is considered an error
-                if (!closing.raiser.aborted) {
-                    log.warn('Mediator transport readable pipe detached');
-                    closed.raise({
-                        type: 'error',
-                        info: {
-                            code: CloseCode.INTERNAL_ERROR,
-                            origin: 'unknown',
-                            reason: 'Mediator transport readable pipe detached',
-                        },
-                    });
-                }
-            })
-            .catch((error: unknown) => {
-                log.warn(
-                    'Mediator transport readable side errored:',
-                    extractErrorTraceback(ensureError(error)),
-                );
-                closed.raise({
-                    type: 'error',
-                    info: {
-                        code: CloseCode.INTERNAL_ERROR,
-                        origin: 'unknown',
-                        reason: 'Mediator transport readable side errored',
-                    },
-                });
-            })
-            .finally(() => {
-                // We have processed the readable queue, so we can resolve any closing sequence now
-                closing.done.resolve();
-            });
-
-        pipe.writable
-            .then(() => {
-                log.warn('Mediator transport writable side detached');
-                closed.raise({
-                    type: 'error',
-                    info: {
-                        code: CloseCode.INTERNAL_ERROR,
-                        origin: 'unknown',
-                        reason: 'Mediator transport writable side detached',
-                    },
-                });
-            })
-            .catch((error: unknown) => {
-                if (error instanceof ConnectionClosed) {
-                    if (import.meta.env.VERBOSE_LOGGING.NETWORK) {
-                        log.debug(
-                            `Mediator transport writable side stopped due to connection being closed (type=${error.type})`,
-                        );
-                    }
-                    return;
-                }
-                log.warn(
-                    'Mediator transport writable side errored:',
-                    extractErrorTraceback(ensureError(error)),
-                );
-                closed.raise({
-                    type: 'error',
-                    info: {
-                        code: CloseCode.INTERNAL_ERROR,
-                        origin: 'unknown',
-                        reason: 'Mediator transport writable side errored',
-                    },
-                });
-            });
-        connectionState.set(ConnectionState.HANDSHAKE);
-
-        const connection = new Connection(
-            closed,
-            closing.raiser,
-            mediator,
-            connectionState,
-            leaderState,
-        );
-
-        delayedConnection.set(connection);
-        return connection;
     }
 
     public get closing(): ClosingEvent {
