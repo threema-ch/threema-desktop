@@ -4,6 +4,7 @@
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import DropZoneProvider from '~/app/ui/components/hocs/drop-zone-provider/DropZoneProvider.svelte';
+  import FocusMoverProvider from '~/app/ui/components/hocs/focus-mover-provider/FocusMoverProvider.svelte';
   import Quote from '~/app/ui/components/molecules/message/internal/quote/Quote.svelte';
   import {
     type ConversationDraftStore,
@@ -98,6 +99,7 @@
 
   let messageListComponent: SvelteNullableBinding<MessageList> = null;
   let composeBarComponent: SvelteNullableBinding<ComposeBar> = null;
+  let focusMoverProviderComponent: SvelteNullableBinding<FocusMoverProvider> = null;
 
   let composeBarState: ComposeBarState = {
     type: 'insert',
@@ -726,44 +728,75 @@
     resetComposeBar();
   }
 
+  function handleEditLastMessage(event?: KeyboardEvent): void {
+    if ($viewModelStore?.lastMessage?.direction !== MessageDirection.OUTBOUND) {
+      // LastMessage cannot be edited because it's not outbound.
+      return;
+    }
+
+    const lastMessage = $viewModelStore.lastMessage;
+    // While searching for a match, also ensure that the message is a `MessageListRegularMessage`,
+    // because that's the only type of message which can be edited.
+    const messageToEdit = messagesStore
+      ?.get()
+      .find(
+        (message): message is MessageListRegularMessage =>
+          message.type === 'regular-message' && message.id === lastMessage.id,
+      );
+
+    if (
+      messageToEdit?.status.sent !== undefined &&
+      Date.now() - messageToEdit.status.sent.at.getTime() <
+        EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES * 60000 &&
+      messageToEdit.status.deleted === undefined
+    ) {
+      event?.preventDefault();
+
+      handleClickEditMessage(messageToEdit);
+      composeBarComponent?.focus();
+    }
+  }
+
   function handleKeyDown(event: KeyboardEvent): void {
+    if (modalState.type !== 'none') {
+      // Only honor key actions if no modal is open.
+      return;
+    }
+
     if (event.key === 'Escape') {
-      if (composeBarState.type === 'insert') {
+      if (composeBarState.mentionString !== undefined) {
+        composeBarState = {
+          ...composeBarState,
+          mentionString: undefined,
+        };
+      } else if (composeBarState.type === 'insert') {
         handleClickCloseQuote();
       } else {
         handleClickEditClose();
       }
+      composeBarComponent?.focus();
       return;
     }
 
-    if (
-      event.key === 'ArrowUp' &&
-      $viewModelStore?.lastMessage?.direction === MessageDirection.OUTBOUND &&
-      modalState.type === 'none' &&
-      composeBarState.quotedMessage === undefined &&
-      (composeBarComponent?.getText() === undefined || composeBarComponent.getText() === '')
-    ) {
-      const lastMessage = $viewModelStore.lastMessage;
-
-      // While searching for a match, also ensure that the message is a `MessageListRegularMessage`,
-      // because that's the only type of message which can be edited.
-      const messageToEdit = messagesStore
-        ?.get()
-        .find(
-          (message): message is MessageListRegularMessage =>
-            message.type === 'regular-message' && message.id === lastMessage.id,
-        );
-
-      if (
-        messageToEdit?.status.sent !== undefined &&
-        Date.now() - messageToEdit.status.sent.at.getTime() <
-          EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES * 60000 &&
-        messageToEdit.status.deleted === undefined
+    if (event.key === 'ArrowUp') {
+      if (composeBarState.mentionString !== undefined) {
+        // If the mention editor is currently open, `"ArrowUp"` should focus the last mention. After
+        // that, the `FocusMoverProvider` handles cycling.
+        focusMoverProviderComponent?.focusChild('last');
+      } else if (
+        composeBarState.quotedMessage === undefined &&
+        (composeBarComponent?.getText() === undefined || composeBarComponent.getText() === '')
       ) {
-        event.preventDefault();
-        handleClickEditMessage(messageToEdit);
-        composeBarComponent?.focus();
+        // Else, `"ArrowUp"` triggers edit mode for `lastMessage`.
+        handleEditLastMessage(event);
       }
+      return;
+    }
+
+    if (event.key === 'ArrowDown' && composeBarState.mentionString !== undefined) {
+      // If the mention editor is currently open, `"ArrowDown"` should focus the first mention.
+      // After that, the `FocusMoverProvider` handles cycling.
+      focusMoverProviderComponent?.focusChild('first');
     }
   }
 
@@ -983,23 +1016,25 @@
               </div>
             {/if}
             {#if composeBarState.mentionString !== undefined && $viewModelStore.receiver.type === 'group'}
-              <div class="list">
-                <EveryoneMentionListItem
-                  receiver={$viewModelStore.receiver}
-                  {services}
-                  on:click={handleClickMentionEveryone}
-                />
-                <ReceiverPreviewList
-                  highlights={composeBarState.mentionString}
-                  items={getFilteredMentionReceiverPreviewListItems(
-                    $viewModelStore.receiver,
-                    composeBarState.mentionString,
-                  )}
-                  options={{routeOnClick: false}}
-                  {services}
-                  on:clickitem={handleClickMentionReceiver}
-                />
-              </div>
+              <FocusMoverProvider bind:this={focusMoverProviderComponent}>
+                <div class="list">
+                  <EveryoneMentionListItem
+                    receiver={$viewModelStore.receiver}
+                    {services}
+                    on:click={handleClickMentionEveryone}
+                  />
+                  <ReceiverPreviewList
+                    highlights={composeBarState.mentionString}
+                    items={getFilteredMentionReceiverPreviewListItems(
+                      $viewModelStore.receiver,
+                      composeBarState.mentionString,
+                    )}
+                    options={{routeOnClick: false}}
+                    {services}
+                    on:clickitem={handleClickMentionReceiver}
+                  />
+                </div>
+              </FocusMoverProvider>
             {/if}
             <ComposeBar
               bind:this={composeBarComponent}

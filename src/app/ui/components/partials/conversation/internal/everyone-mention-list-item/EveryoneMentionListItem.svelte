@@ -36,6 +36,8 @@
   @use 'component' as *;
 
   .button {
+    @include clicktarget-button-rect;
+
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -46,15 +48,5 @@
     padding: rem(10px) rem(16px);
     text-decoration: inherit;
     color: inherit;
-
-    &:hover {
-      cursor: pointer;
-      background-color: var(--cc-conversation-preview-background-color--hover);
-    }
-
-    &:focus-visible {
-      box-shadow: inset 0em 0em 0em em(1px) var(--c-icon-button-naked-outer-border-color--focus);
-      outline: none;
-    }
   }
 </style>

@@ -235,6 +235,10 @@
       &:focus-visible {
         box-shadow: inset 0em 0em 0em em(1px) var(--c-icon-button-naked-outer-border-color--focus);
         outline: none;
+
+        &:not(.active) {
+          background-color: var(--cc-conversation-preview-background-color--hover);
+        }
       }
 
       :global(.draft) {
