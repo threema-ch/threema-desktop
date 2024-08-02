@@ -12,6 +12,7 @@
   } from '~/app/ui/components/partials/conversation/drafts';
   import {
     getFilteredMentionReceiverPreviewListItems,
+    getParsedTextChunks,
     prepareFilesForMediaComposeModal,
   } from '~/app/ui/components/partials/conversation/helpers';
   import ComposeBar from '~/app/ui/components/partials/conversation/internal/compose-bar/ComposeBar.svelte';
@@ -409,6 +410,8 @@
 
         // Load initial data. Note: If there is both a draft and a forwarded message, the forwarded
         // message text has priority.
+
+        // Compose bar state
         if (forwardedMessageText !== undefined) {
           composeBarState = {
             type: 'insert',
@@ -431,9 +434,30 @@
             mentionString: undefined,
           };
         }
-        composeBarComponent?.insertText(forwardedMessageText ?? draft?.text ?? '');
+
+        // Text
+        const chunkedText = getParsedTextChunks(
+          $viewModelStore?.receiver,
+          forwardedMessageText ?? draft?.text ?? '',
+          log,
+        );
+        for (const chunk of chunkedText) {
+          switch (chunk.type) {
+            case 'text':
+              composeBarComponent?.insertText(chunk.text);
+              break;
+
+            case 'mention':
+              composeBarComponent?.insertMention(chunk.mention);
+              break;
+
+            default:
+              unreachable(chunk);
+          }
+        }
         composeBarComponent?.focus();
 
+        // Files
         if (preloadedFiles !== undefined) {
           await openMediaComposeModal(preloadedFiles);
         }
