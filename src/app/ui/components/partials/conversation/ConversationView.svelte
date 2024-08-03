@@ -1018,8 +1018,8 @@
               </div>
             {/if}
             {#if composeBarState.mentionString !== undefined && $viewModelStore.receiver.type === 'group'}
-              <FocusMoverProvider bind:this={focusMoverProviderComponent}>
-                <div class="list">
+              <div class="mention-list">
+                <FocusMoverProvider bind:this={focusMoverProviderComponent}>
                   <EveryoneMentionListItem
                     receiver={$viewModelStore.receiver}
                     {services}
@@ -1035,8 +1035,8 @@
                     {services}
                     on:clickitem={handleClickMentionReceiver}
                   />
-                </div>
-              </FocusMoverProvider>
+                </FocusMoverProvider>
+              </div>
             {/if}
             <ComposeBar
               bind:this={composeBarComponent}
@@ -1181,12 +1181,29 @@
         padding: rem(8px) rem(8px) rem(8px) rem(16px);
         background-color: var(--cc-compose-area-quote-background-color);
 
-        overflow-y: hidden;
+        overflow-y: auto;
 
-        .body {
-          max-height: 100%;
-          overflow-y: auto;
+        & :global(> button) {
+          position: sticky;
+          top: 0;
         }
+      }
+
+      .mention-list {
+        overflow-y: auto;
+        max-height: rem(256px);
+        border-bottom: rem(1px) var(--t-panel-gap-color) solid;
+
+        :global(> *) {
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+          justify-content: start;
+        }
+      }
+
+      .quote ~ .mention-list {
+        border-top: rem(1px) var(--t-panel-gap-color) solid;
       }
 
       .disabled-compose-bar {
@@ -1195,15 +1212,6 @@
         opacity: 0.5;
         font-style: italic;
       }
-    }
-
-    .list {
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      justify-content: start;
-
-      overflow-y: auto;
     }
   }
 </style>

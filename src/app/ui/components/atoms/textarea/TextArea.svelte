@@ -411,7 +411,7 @@
   $-temp-vars: format-each($-vars, $prefix: --c-t-);
 
   .container {
-    @include def-var($-temp-vars, --c-t-compose-area-max-height, min(50vh, rem(512px)));
+    @include def-var($-temp-vars, --c-t-compose-area-max-height, min(50vh, rem(320px)));
 
     position: relative;
     display: flex;
