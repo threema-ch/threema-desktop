@@ -68,7 +68,7 @@
   import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
   import type {FeatureSupport} from '~/common/viewmodel/conversation/main/store/types';
   import {EVERYONE_IDENTITY_STRING} from '~/common/viewmodel/utils/mentions';
-  import type {ContactReceiverData} from '~/common/viewmodel/utils/receiver';
+  import type {AnyReceiverData, ContactReceiverData} from '~/common/viewmodel/utils/receiver';
 
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.conversation-view');
@@ -236,6 +236,7 @@
       editedMessage: undefined,
       mentionString: undefined,
     };
+    composeBarComponent?.focus();
   }
 
   function handleClickEditMessage(messageProperties: MessageListRegularMessage): void {
@@ -271,9 +272,10 @@
       );
     }
 
+    // Insert text to edit into the compose area.
     composeBarComponent?.clear();
-    // If we have an empty message, we simply put the empty string into the compose bar
-    composeBarComponent?.insertText(messageProperties.text?.raw ?? '');
+    insertComposeBarText($viewModelStore?.receiver, messageProperties.text?.raw ?? '');
+
     const editedMessage: EditedMessage = {
       id: messageProperties.id,
       actions: messageProperties.actions,
@@ -438,26 +440,7 @@
         }
 
         // Text
-        const chunkedText = getParsedTextChunks(
-          $viewModelStore?.receiver,
-          forwardedMessageText ?? draft?.text ?? '',
-          log,
-        );
-        for (const chunk of chunkedText) {
-          switch (chunk.type) {
-            case 'text':
-              composeBarComponent?.insertText(chunk.text);
-              break;
-
-            case 'mention':
-              composeBarComponent?.insertMention(chunk.mention);
-              break;
-
-            default:
-              unreachable(chunk);
-          }
-        }
-        composeBarComponent?.focus();
+        insertComposeBarText($viewModelStore?.receiver, forwardedMessageText ?? draft?.text ?? '');
 
         // Files
         if (preloadedFiles !== undefined) {
@@ -486,6 +469,25 @@
       mentionString: undefined,
     };
     composeBarComponent?.clear();
+  }
+
+  function insertComposeBarText(receiver: AnyReceiverData | undefined, text: string): void {
+    const chunkedText = getParsedTextChunks(receiver, text, log);
+    for (const chunk of chunkedText) {
+      switch (chunk.type) {
+        case 'text':
+          composeBarComponent?.insertText(chunk.text);
+          break;
+
+        case 'mention':
+          composeBarComponent?.insertMention(chunk.mention);
+          break;
+
+        default:
+          unreachable(chunk);
+      }
+    }
+    composeBarComponent?.focus();
   }
 
   async function handleClickApplyEdit(event: CustomEvent<string>): Promise<void> {
