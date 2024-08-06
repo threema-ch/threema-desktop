@@ -1058,6 +1058,7 @@
                   },
                 },
               ]}
+              onPaste={(text) => insertComposeBarText($viewModelStore.receiver, text)}
               on:attachfiles={handleAddFiles}
               on:clicksend={handleClickSend}
               on:pastefiles={handleAddFiles}

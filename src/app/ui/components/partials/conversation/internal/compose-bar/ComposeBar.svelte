@@ -25,6 +25,7 @@
   export let mode: NonNullable<$$Props>['mode'] = 'insert';
   export let options: NonNullable<$$Props['options']> = {};
   export let triggerWords: $$Props['triggerWords'] = undefined;
+  export let onPaste: $$Props['onPaste'] = undefined;
 
   const dispatch = createEventDispatcher<{
     attachfiles: FileResult;
@@ -172,6 +173,7 @@
         bind:isEmpty={isTextAreaEmpty}
         placeholder={$i18n.t('messaging.label--compose-area', 'Write a message...')}
         {triggerWords}
+        {onPaste}
         on:pastefiles
         on:submit={handleClickSendButton}
         on:textbytelengthdidchange={handleChangeTextByteLength}

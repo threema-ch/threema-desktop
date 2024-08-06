@@ -46,6 +46,7 @@
   export const isEmpty: NonNullable<$$Props['isEmpty']> = isEmptyStore;
   export let placeholder: $$Props['placeholder'];
   export let triggerWords: NonNullable<$$Props['triggerWords']> = [];
+  export let onPaste: $$Props['onPaste'] = undefined;
 
   const dispatch = createEventDispatcher<{
     submit: undefined;
@@ -284,7 +285,11 @@
       const text = event.clipboardData.getData('text/plain');
       // Note: If there is no data for the specified format, text will contain an empty string.
       if (text.length > 0) {
-        area.insert_text(text);
+        if (onPaste !== undefined) {
+          onPaste(text);
+        } else {
+          area.insert_text(text);
+        }
       }
       return;
     }

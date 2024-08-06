@@ -14,6 +14,14 @@ export interface TextAreaProps {
     readonly placeholder: string;
     /** {@link WordMatcher}s to register in the `TextArea`. */
     readonly triggerWords?: readonly WordMatcher[];
+    /**
+     * Callback to invoke on paste events.
+     * IMPORTANT: The TextArea will not insert the text anymore after callback is registered.
+     * This has to be implemented in the parent component.
+     *
+     * @param text The pasted plain text.
+     */
+    readonly onPaste?: (text: string) => void;
 }
 
 /**

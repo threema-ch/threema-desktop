@@ -15,4 +15,5 @@ export interface ComposeBarProps {
         readonly allowEmptyMessages?: boolean;
     };
     readonly triggerWords?: TextAreaProps['triggerWords'];
+    readonly onPaste?: TextAreaProps['onPaste'];
 }
