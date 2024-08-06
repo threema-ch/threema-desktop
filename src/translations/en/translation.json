@@ -578,7 +578,11 @@
     "error--connection": "No server connection. Try reconnecting to Wi-Fi, or check your modem and router.",
     "error--connection-unrecoverable-state": "This device was disconnected from the server due to an unexpected error. Please restart the app, and relink the device.",
     "error--device-cookie-no-connection": "Failed to unlink the device. Please check your internet connection and try again.",
-    "error--server-alert-no-connection": "Failed to unlink the device. Please check your internet connection and try again.",
-    "error--server-alert-relink": "We recommend that you relink this device. Your message history can be kept."
+    "error--server-alert-another-device": "The server has detected a connection from a different device with the same Threema ID.",
+    "error--server-alert-another-device-solution": "If you haven't used your Threema ID on another device or with an older app version in the meantime, please contact the support and send a log file if possible.",
+    "error--server-alert-no-connection": "Failed to unlink the device. Please check your Internet connection and try again.",
+    "error--server-alert-relink": "We recommend that you relink this device. Your message history can be kept.",
+    "error--server-alert-relink--conjunction": "Otherwise, we recommend that you relink Threema Desktop. Your message history will be kept.",
+    "error--server-alert-title": "Message from Server"
   }
 }

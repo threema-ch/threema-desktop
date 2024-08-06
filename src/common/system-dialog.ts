@@ -56,7 +56,6 @@ type ConnectionErrorContext =
 export interface ServerAlertDialog extends SystemDialogBase {
     readonly type: 'server-alert';
     readonly context: {
-        readonly title: string;
         readonly text: string;
     };
 }

@@ -48,19 +48,49 @@
       on:cancel
       closableWithEscape={false}
     >
-      <Title slot="header" title={context.title} />
+      <Title
+        slot="header"
+        title={$i18n.t('system.error--server-alert-title', 'Message from Server')}
+      />
       <div class="body" slot="body">
-        <p>
-          <Text text={context.text} />
-        </p>
-        <p>
-          <Text
-            text={$i18n.t(
-              'system.error--server-alert-relink',
-              'We recommend that you relink Threema Desktop. Your message history can be kept.',
-            )}
-          />
-        </p>
+        {#if context.text.localeCompare('Another connection for the same identity has been established. New messages will no longer be received on this device.') === 0}
+          <p>
+            <Text
+              text={$i18n.t(
+                'system.error--server-alert-another-device',
+                'The server has detected a connection from a different device with the same Threema ID.',
+              )}
+            />
+          </p>
+          <p>
+            <Text
+              text={$i18n.t(
+                'system.error--server-alert-another-device-solution',
+                "If you haven't used your Threema ID on another device or with an older app version in the meantime, please contact the support and send a log file if possible.",
+              )}
+            />
+          </p>
+          <p>
+            <Text
+              text={$i18n.t(
+                'system.error--server-alert-relink--conjunction',
+                'Otherwise, we recommend that you relink Threema Desktop. Your message history will be kept.',
+              )}
+            />
+          </p>
+        {:else}
+          <p>
+            <Text text={context.text} />
+          </p>
+          <p>
+            <Text
+              text={$i18n.t(
+                'system.error--server-alert-relink',
+                'We recommend that you relink Threema Desktop. Your message history can be kept.',
+              )}
+            />
+          </p>
+        {/if}
         {#if errorMessage !== undefined}
           <div class="warning">
             <MdIcon theme="Filled">warning</MdIcon>
@@ -87,7 +117,7 @@
 
   .body {
     width: rem(480px);
-    padding: rem(16px);
+    padding: 0 rem(16px);
     border-radius: rem(8px);
     overflow: hidden;
 

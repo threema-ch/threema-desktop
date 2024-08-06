@@ -46,7 +46,7 @@ type BaseTranslationTopic<TRecord extends Record<string, string>> = {
         : never;
 };
 
-type OptionalTranslationTopicModifier = 'dialog' | 'settings';
+type OptionalTranslationTopicModifier = 'dialog' | 'settings' | 'language';
 
 type TranslationKeyModifier =
     | 'error'

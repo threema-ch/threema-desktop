@@ -250,7 +250,7 @@ export class Layer4Decoder implements SyncTransformerCodec<InboundL3Message, Inb
     private async _showAlert(text: string): Promise<RemoteProxy<SystemDialogHandle>> {
         return await this._services.systemDialog.open({
             type: 'server-alert',
-            context: {text, title: 'Message from Server'},
+            context: {text},
         });
     }
 
