@@ -148,7 +148,7 @@
     "action--client-was-dropped-cancel": "OK",
     "action--client-was-dropped-confirm": "Gerät erneut verknüpfen",
     "action--default-cancel": "OK",
-    "action--default-confirm": "Erneut verknüpfen",
+    "action--default-confirm": "Erneut verbinden",
     "label--title": "Verbindung fehlgeschlagen",
     "markup--backup": "Die Chatverläufe werden nach erneutem Verknüpfen wiederhergestellt.",
     "markup--client-update-required-p1": "Diese Version von Threema wird nicht mehr unterstützt (veraltete Protokollversion).",

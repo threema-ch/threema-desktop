@@ -3,7 +3,7 @@
 
   import type {AppServices} from '~/app/types';
   import AppUpdateDialog from '~/app/ui/components/partials/system-dialog/internal/app-update-dialog/AppUpdateDialog.svelte';
-  import ConnectionError from '~/app/ui/system-dialogs/ConnectionError.svelte';
+  import ConnectionErrorDialog from '~/app/ui/components/partials/system-dialog/internal/connection-error-dialog/ConnectionErrorDialog.svelte';
   import DeviceCookieMismatch from '~/app/ui/system-dialogs/DeviceCookieMismatch.svelte';
   import InvalidWorkCredentials from '~/app/ui/system-dialogs/InvalidWorkCredentials.svelte';
   import MissingDeviceCookie from '~/app/ui/system-dialogs/MissingDeviceCookie.svelte';
@@ -23,14 +23,16 @@
    * Mapping from dialog type to corresponding svelte component.
    */
   const dialogComponents: {
-    readonly [Property in Exclude<SystemDialog['type'], 'app-update'>]: typeof SvelteComponent<{
+    readonly [Property in Exclude<
+      SystemDialog['type'],
+      'app-update' | 'connection-error'
+    >]: typeof SvelteComponent<{
       appServices: Delayed<AppServices>;
       context: unknown;
       log: Logger;
       visible: boolean;
     }>;
   } = {
-    'connection-error': ConnectionError,
     'server-alert': ServerAlert,
     'unrecoverable-state': UnrecoverableState,
     'invalid-work-credentials': InvalidWorkCredentials,
@@ -55,6 +57,12 @@
       <AppUpdateDialog
         {...systemDialog.dialog.context}
         on:submit={() => closeDialog('confirmed')}
+      />
+    {:else if systemDialog.dialog.type === 'connection-error'}
+      <ConnectionErrorDialog
+        error={systemDialog.dialog.context}
+        on:submit={() => closeDialog('confirmed')}
+        on:close={() => closeDialog('cancelled')}
       />
     {:else}
       <div class="wrapper">

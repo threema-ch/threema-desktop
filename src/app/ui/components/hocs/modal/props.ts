@@ -100,7 +100,7 @@ export interface ModalButton {
      */
     readonly isFocused?: boolean;
     readonly label: string;
-    readonly onClick?: (() => void) | 'close' | 'submit';
+    readonly onClick?: ((event: MouseEvent) => void) | 'close' | 'submit';
     readonly type: 'naked' | 'filled';
     readonly state?: 'default' | 'loading';
 }

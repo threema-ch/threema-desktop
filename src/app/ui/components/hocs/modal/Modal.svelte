@@ -240,7 +240,7 @@
                       } else if (button.onClick === 'submit') {
                         handleClickSubmit(event);
                       } else if (button.onClick !== undefined) {
-                        button.onClick();
+                        button.onClick(event);
                       }
                     }}
                   >

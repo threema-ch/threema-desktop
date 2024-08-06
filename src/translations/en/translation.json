@@ -148,7 +148,7 @@
     "action--client-was-dropped-cancel": "OK",
     "action--client-was-dropped-confirm": "Relink Device",
     "action--default-cancel": "OK",
-    "action--default-confirm": "Relink",
+    "action--default-confirm": "Reconnect",
     "label--title": "Connection Failed",
     "markup--backup": "The message history will be restored after relinking.",
     "markup--client-update-required-p1": "This Threema version is no longer supported (outdated protocol version).",
