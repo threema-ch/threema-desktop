@@ -36,16 +36,8 @@
     <p>
       <Text
         text={$i18n.t(
-          'dialog--missing-work-credentials.prose--description-p1',
-          'No Threema Work credentials could be found. To continue using the desktop app, you need to relink this device. First, unlink it by tapping “Threema > Settings > Desktop/Web > Linked Device” on your mobile device and selecting “Remove all linked devices.”',
-        )}
-      />
-    </p>
-    <p>
-      <Text
-        text={$i18n.t(
-          'dialog--missing-work-credentials.prose--description-p2',
-          'Once completed, click on “Relink” below, and follow the on-screen instructions. Your message history will be restored after relinking.',
+          'dialog--missing-work-credentials.prose--description',
+          'No Threema Work credentials could be found. To continue using the desktop app, you need to relink this device. Your message history will be restored after relinking.',
         )}
       />
     </p>

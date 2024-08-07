@@ -27,7 +27,6 @@
    */
   async function handleClickConfirm(event: Event): Promise<void> {
     event.preventDefault();
-    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     if (!appServices.isSet()) {
       log.warn('Cannot unlink the profile because the app services are not yet ready');
       return;
