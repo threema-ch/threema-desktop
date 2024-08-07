@@ -1,10 +1,10 @@
 <script lang="ts">
   import type {SvelteComponent} from 'svelte';
 
-  import type {AppServices} from '~/app/types';
+  import type {AppServicesForSvelte} from '~/app/types';
   import AppUpdateDialog from '~/app/ui/components/partials/system-dialog/internal/app-update-dialog/AppUpdateDialog.svelte';
   import ConnectionErrorDialog from '~/app/ui/components/partials/system-dialog/internal/connection-error-dialog/ConnectionErrorDialog.svelte';
-  import DeviceCookieMismatch from '~/app/ui/system-dialogs/DeviceCookieMismatch.svelte';
+  import DeviceCookieMismatchDialog from '~/app/ui/components/partials/system-dialog/internal/device-cookie-mismatch-dialog/DeviceCookieMismatchDialog.svelte';
   import InvalidWorkCredentials from '~/app/ui/system-dialogs/InvalidWorkCredentials.svelte';
   import MissingDeviceCookie from '~/app/ui/system-dialogs/MissingDeviceCookie.svelte';
   import ServerAlert from '~/app/ui/system-dialogs/ServerAlert.svelte';
@@ -17,7 +17,7 @@
 
   export let log: Logger;
 
-  export let appServices: Delayed<AppServices>;
+  export let appServices: Delayed<AppServicesForSvelte>;
 
   /**
    * Mapping from dialog type to corresponding svelte component.
@@ -25,9 +25,9 @@
   const dialogComponents: {
     readonly [Property in Exclude<
       SystemDialog['type'],
-      'app-update' | 'connection-error'
+      'app-update' | 'connection-error' | 'device-cookie-mismatch'
     >]: typeof SvelteComponent<{
-      appServices: Delayed<AppServices>;
+      appServices: Delayed<AppServicesForSvelte>;
       context: unknown;
       log: Logger;
       visible: boolean;
@@ -37,7 +37,6 @@
     'unrecoverable-state': UnrecoverableState,
     'invalid-work-credentials': InvalidWorkCredentials,
     'missing-device-cookie': MissingDeviceCookie,
-    'device-cookie-mismatch': DeviceCookieMismatch,
   };
 
   function closeDialog(action: DialogAction): void {
@@ -61,6 +60,12 @@
     {:else if systemDialog.dialog.type === 'connection-error'}
       <ConnectionErrorDialog
         error={systemDialog.dialog.context}
+        on:submit={() => closeDialog('confirmed')}
+        on:close={() => closeDialog('cancelled')}
+      />
+    {:else if systemDialog.dialog.type === 'device-cookie-mismatch'}
+      <DeviceCookieMismatchDialog
+        services={appServices}
         on:submit={() => closeDialog('confirmed')}
         on:close={() => closeDialog('cancelled')}
       />
