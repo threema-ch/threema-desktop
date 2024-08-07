@@ -173,9 +173,11 @@
   },
   "dialog--invalid-work-credentials": {
     "action--relink": "Gerät neu verknüpfen",
+    "error--incorrect-password": "Das eingegebene Passwort ist falsch. Bitte versuchen Sie es erneut.",
     "error--invalid-credentials": "Ungültige Zugangsdaten: {message}",
-    "error--unlinking-failed": "Geräte-Verknüpfung konnte nicht aufgehoben werden.",
-    "error--validation-failed": "Work-Zugangsdaten konnten nicht validiert werden.",
+    "error--unlinking-failed": "Geräte-Verknüpfung konnte nicht aufgehoben werden. Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "error--validation-failed": "Work-Zugangsdaten konnten nicht validiert werden. Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "label--app-password": "App-Passwort",
     "label--check-credentials": "Zugangsdaten prüfen",
     "label--password": "Passwort",
     "label--store-credentials": "Zugangsdaten speichern und schliessen",

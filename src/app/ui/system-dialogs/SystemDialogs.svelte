@@ -5,7 +5,7 @@
   import AppUpdateDialog from '~/app/ui/components/partials/system-dialog/internal/app-update-dialog/AppUpdateDialog.svelte';
   import ConnectionErrorDialog from '~/app/ui/components/partials/system-dialog/internal/connection-error-dialog/ConnectionErrorDialog.svelte';
   import DeviceCookieMismatchDialog from '~/app/ui/components/partials/system-dialog/internal/device-cookie-mismatch-dialog/DeviceCookieMismatchDialog.svelte';
-  import InvalidWorkCredentials from '~/app/ui/system-dialogs/InvalidWorkCredentials.svelte';
+  import InvalidWorkCredentialsDialog from '~/app/ui/components/partials/system-dialog/internal/invalid-work-credentials-dialog/InvalidWorkCredentialsDialog.svelte';
   import MissingDeviceCookie from '~/app/ui/system-dialogs/MissingDeviceCookie.svelte';
   import ServerAlert from '~/app/ui/system-dialogs/ServerAlert.svelte';
   import UnrecoverableState from '~/app/ui/system-dialogs/UnrecoverableState.svelte';
@@ -25,7 +25,7 @@
   const dialogComponents: {
     readonly [Property in Exclude<
       SystemDialog['type'],
-      'app-update' | 'connection-error' | 'device-cookie-mismatch'
+      'app-update' | 'connection-error' | 'device-cookie-mismatch' | 'invalid-work-credentials'
     >]: typeof SvelteComponent<{
       appServices: Delayed<AppServicesForSvelte>;
       context: unknown;
@@ -35,7 +35,6 @@
   } = {
     'server-alert': ServerAlert,
     'unrecoverable-state': UnrecoverableState,
-    'invalid-work-credentials': InvalidWorkCredentials,
     'missing-device-cookie': MissingDeviceCookie,
   };
 
@@ -67,6 +66,12 @@
       <DeviceCookieMismatchDialog
         services={appServices}
         on:submit={() => closeDialog('confirmed')}
+        on:close={() => closeDialog('cancelled')}
+      />
+    {:else if systemDialog.dialog.type === 'invalid-work-credentials'}
+      <InvalidWorkCredentialsDialog
+        services={appServices}
+        {...systemDialog.dialog.context}
         on:close={() => closeDialog('cancelled')}
       />
     {:else}

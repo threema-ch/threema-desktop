@@ -173,9 +173,11 @@
   },
   "dialog--invalid-work-credentials": {
     "action--relink": "Relink Device",
+    "error--incorrect-password": "The entered password is incorrect. Please try again.",
     "error--invalid-credentials": "Invalid credentials: {message}",
-    "error--unlinking-failed": "Could not unlink this device.",
-    "error--validation-failed": "Validation of Threema Work credentials failed.",
+    "error--unlinking-failed": "Could not unlink this device. Please check your Internet connection and try again.",
+    "error--validation-failed": "Validation of Threema Work credentials failed. Please check your Internet connection and try again.",
+    "label--app-password": "App Password",
     "label--check-credentials": "Re-Check Credentials",
     "label--password": "Password",
     "label--store-credentials": "Save Credentials and Close",
