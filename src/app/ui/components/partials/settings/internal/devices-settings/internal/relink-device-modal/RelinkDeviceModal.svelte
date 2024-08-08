@@ -1,7 +1,7 @@
 <script lang="ts">
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
-  import type {RelinkDeviceModalProps} from '~/app/ui/components/partials/settings/internal/about/internal/relink-device-modal/props';
+  import type {RelinkDeviceModalProps} from '~/app/ui/components/partials/settings/internal/devices-settings/internal/relink-device-modal/props';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import {unlinkAndCreateBackup} from '~/app/ui/utils/profile';

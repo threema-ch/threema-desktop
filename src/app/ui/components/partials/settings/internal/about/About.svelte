@@ -7,7 +7,6 @@
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
   import {collectLogsAndComposeMessageToSupport} from '~/app/ui/components/partials/settings/internal/about/helpers';
-  import RelinkDeviceModal from '~/app/ui/components/partials/settings/internal/about/internal/relink-device-modal/RelinkDeviceModal.svelte';
   import ToggleLoggerModal from '~/app/ui/components/partials/settings/internal/about/internal/toggle-logger-modal/ToggleLoggerModal.svelte';
   import type {AboutProps} from '~/app/ui/components/partials/settings/internal/about/props';
   import {i18n} from '~/app/ui/i18n';
@@ -24,7 +23,7 @@
 
   export let services: $$Props['services'];
 
-  let modalState: 'none' | 'relink-device' | 'toggle-logger' = 'none';
+  let modalState: 'none' | 'toggle-logger' = 'none';
 
   let isDebugModeEnabled = false;
   let versionClickedCount = 0;
@@ -80,7 +79,7 @@
 
   function handleCloseToggleLoggerModal(): void {
     isLoggerEnabledToggleState = isLoggerEnabled ?? false;
-    handleCloseModal();
+    modalState = 'none';
   }
 
   function handleClickVersion(): void {
@@ -101,10 +100,6 @@
         isDebugModeEnabled = true;
       }
     }
-  }
-
-  function handleCloseModal(): void {
-    modalState = 'none';
   }
 </script>
 
@@ -186,14 +181,6 @@
         </KeyValueList.Item>
       {/if}
     {/if}
-
-    <KeyValueList.ItemWithButton
-      icon="restart_alt"
-      key=""
-      on:click={() => (modalState = 'relink-device')}
-    >
-      <Text text={$i18n.t('settings--about.label--relink', 'Relink this device')}></Text>
-    </KeyValueList.ItemWithButton>
   </KeyValueList.Section>
 
   {#if isDebugModeEnabled}
@@ -213,8 +200,6 @@
 
 {#if modalState === 'none'}
   <!-- No modal is displayed in this state. -->
-{:else if modalState === 'relink-device'}
-  <RelinkDeviceModal {services} on:close={handleCloseModal} />
 {:else if modalState === 'toggle-logger'}
   {#if isLoggerEnabled !== undefined && logInfo !== undefined}
     <ToggleLoggerModal

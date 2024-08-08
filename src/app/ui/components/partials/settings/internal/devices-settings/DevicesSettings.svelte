@@ -3,12 +3,13 @@
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
   import EditDeviceNameModal from '~/app/ui/components/partials/settings/internal/devices-settings/internal/edit-device-name-modal/EditDeviceNameModal.svelte';
+  import RelinkDeviceModal from '~/app/ui/components/partials/settings/internal/devices-settings/internal/relink-device-modal/RelinkDeviceModal.svelte';
   import type {DevicesSettingsProps} from '~/app/ui/components/partials/settings/internal/devices-settings/props';
   import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {DevicesSettingsView} from '~/common/model/types/settings';
   import {isDeviceName} from '~/common/network/types';
-  import {assertUnreachable} from '~/common/utils/assert';
+  import {assertUnreachable, unreachable} from '~/common/utils/assert';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.settings-devices');
 
@@ -16,19 +17,19 @@
 
   export let services: $$Props['services'];
 
+  let modalState: 'none' | 'edit-device-name' | 'relink-device' = 'none';
+
   const {
     backend,
     settings: {devices},
   } = services;
 
-  let isEditDeviceNameModalVisible = false;
-
   function handleClickEditDeviceName(): void {
-    isEditDeviceNameModalVisible = true;
+    modalState = 'edit-device-name';
   }
 
-  function handleCloseEditDeviceModal(): void {
-    isEditDeviceNameModalVisible = false;
+  function handleCloseModal(): void {
+    modalState = 'none';
   }
 
   function handleNewDeviceName(event: CustomEvent<string>): void {
@@ -37,7 +38,7 @@
       updateSetting(newDeviceName, 'deviceName');
     }
     backend.connectionManager.disconnect().catch(assertUnreachable);
-    isEditDeviceNameModalVisible = false;
+    modalState = 'none';
   }
 
   function updateSetting<N extends keyof DevicesSettingsView>(
@@ -53,31 +54,43 @@
   }
 </script>
 
-<template>
-  <KeyValueList>
-    <KeyValueList.Section title={$i18n.t('settings--devices.label--this-device', 'This Device')}>
-      <KeyValueList.ItemWithButton icon="edit" key="" on:click={handleClickEditDeviceName}>
-        <div class="container">
-          <div class="icon">
-            <MdIcon theme="Outlined">computer</MdIcon>
-          </div>
-
-          <div class="content">
-            <Text text={$devices.view.deviceName}></Text>
-          </div>
+<KeyValueList>
+  <KeyValueList.Section title={$i18n.t('settings--devices.label--this-device', 'This Device')}>
+    <KeyValueList.ItemWithButton icon="edit" key="" on:click={handleClickEditDeviceName}>
+      <div class="container">
+        <div class="icon">
+          <MdIcon theme="Outlined">computer</MdIcon>
         </div>
-      </KeyValueList.ItemWithButton>
-    </KeyValueList.Section>
-  </KeyValueList>
 
-  {#if isEditDeviceNameModalVisible}
-    <EditDeviceNameModal
-      on:newDeviceName={handleNewDeviceName}
-      on:close={handleCloseEditDeviceModal}
-      value={devices.get().view.deviceName}
-    ></EditDeviceNameModal>
-  {/if}
-</template>
+        <div class="content">
+          <Text text={$devices.view.deviceName}></Text>
+        </div>
+      </div>
+    </KeyValueList.ItemWithButton>
+
+    <KeyValueList.ItemWithButton
+      icon="restart_alt"
+      key=""
+      on:click={() => (modalState = 'relink-device')}
+    >
+      <Text text={$i18n.t('settings--about.label--relink', 'Relink this device')}></Text>
+    </KeyValueList.ItemWithButton>
+  </KeyValueList.Section>
+</KeyValueList>
+
+{#if modalState === 'none'}
+  <!-- No modal is displayed in this state. -->
+{:else if modalState === 'edit-device-name'}
+  <EditDeviceNameModal
+    on:newDeviceName={handleNewDeviceName}
+    on:close={handleCloseModal}
+    value={devices.get().view.deviceName}
+  />
+{:else if modalState === 'relink-device'}
+  <RelinkDeviceModal {services} on:close={handleCloseModal} />
+{:else}
+  {unreachable(modalState)}
+{/if}
 
 <style lang="scss">
   @use 'component' as *;
