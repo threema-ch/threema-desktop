@@ -35,9 +35,9 @@
   let initiallyFocusedButtonIndex = 0;
 
   const dispatch = createEventDispatcher<{
-    open: undefined;
-    close: undefined;
-    submit: undefined;
+    open: Event | undefined;
+    close: Event | undefined;
+    submit: Event | undefined;
   }>();
 
   /**
@@ -61,17 +61,17 @@
     }
   }
 
-  function handleClose(): void {
+  function handleClose(event: Event): void {
     closed = true;
-    dispatch('close');
+    dispatch('close', event);
   }
 
-  function handleClickClose(): void {
-    closeModal(element);
+  function handleClickClose(event: MouseEvent): void {
+    closeModal(element, event);
   }
 
-  function handleClickSubmit(): void {
-    dispatch('submit');
+  function handleClickSubmit(event: MouseEvent): void {
+    dispatch('submit', event);
   }
 
   function handleChangeClosedState(isClosed: boolean): void {
@@ -120,22 +120,22 @@
     initiallyFocusedButtonIndex = firstSubmitButtonIndex ?? 0;
   }
 
-  function openModal(dialog: typeof element): void {
+  function openModal(dialog: typeof element, event?: Event): void {
     if (dialog instanceof HTMLDialogElement) {
       if (!dialog.open) {
         dialog.showModal();
         closed = false;
-        dispatch('open');
+        dispatch('open', event);
       }
     }
   }
 
-  function closeModal(dialog: typeof element): void {
+  function closeModal(dialog: typeof element, event?: Event): void {
     if (dialog instanceof HTMLDialogElement) {
       if (dialog.open) {
         dialog.close();
         closed = true;
-        dispatch('close');
+        dispatch('close', event);
       }
     }
   }
@@ -234,11 +234,11 @@
                     disabled={button.disabled === true || button.state === 'loading'}
                     flavor={button.type}
                     isLoading={button.state === 'loading'}
-                    on:click={() => {
+                    on:click={(event) => {
                       if (button.onClick === 'close') {
-                        handleClickClose();
+                        handleClickClose(event);
                       } else if (button.onClick === 'submit') {
-                        handleClickSubmit();
+                        handleClickSubmit(event);
                       } else if (button.onClick !== undefined) {
                         button.onClick();
                       }
