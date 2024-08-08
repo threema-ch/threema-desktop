@@ -6,7 +6,7 @@
   import ConnectionErrorDialog from '~/app/ui/components/partials/system-dialog/internal/connection-error-dialog/ConnectionErrorDialog.svelte';
   import DeviceCookieMismatchDialog from '~/app/ui/components/partials/system-dialog/internal/device-cookie-mismatch-dialog/DeviceCookieMismatchDialog.svelte';
   import InvalidWorkCredentialsDialog from '~/app/ui/components/partials/system-dialog/internal/invalid-work-credentials-dialog/InvalidWorkCredentialsDialog.svelte';
-  import MissingDeviceCookie from '~/app/ui/system-dialogs/MissingDeviceCookie.svelte';
+  import MissingDeviceCookieDialog from '~/app/ui/components/partials/system-dialog/internal/missing-device-cookie-dialog/MissingDeviceCookieDialog.svelte';
   import ServerAlert from '~/app/ui/system-dialogs/ServerAlert.svelte';
   import UnrecoverableState from '~/app/ui/system-dialogs/UnrecoverableState.svelte';
   import {display, layout} from '~/common/dom/ui/state';
@@ -25,7 +25,11 @@
   const dialogComponents: {
     readonly [Property in Exclude<
       SystemDialog['type'],
-      'app-update' | 'connection-error' | 'device-cookie-mismatch' | 'invalid-work-credentials'
+      | 'app-update'
+      | 'connection-error'
+      | 'device-cookie-mismatch'
+      | 'invalid-work-credentials'
+      | 'missing-device-cookie'
     >]: typeof SvelteComponent<{
       appServices: Delayed<AppServicesForSvelte>;
       context: unknown;
@@ -35,7 +39,6 @@
   } = {
     'server-alert': ServerAlert,
     'unrecoverable-state': UnrecoverableState,
-    'missing-device-cookie': MissingDeviceCookie,
   };
 
   function closeDialog(action: DialogAction): void {
@@ -72,6 +75,12 @@
       <InvalidWorkCredentialsDialog
         services={appServices}
         {...systemDialog.dialog.context}
+        on:close={() => closeDialog('cancelled')}
+      />
+    {:else if systemDialog.dialog.type === 'missing-device-cookie'}
+      <MissingDeviceCookieDialog
+        services={appServices}
+        on:submit={() => closeDialog('confirmed')}
         on:close={() => closeDialog('cancelled')}
       />
     {:else}

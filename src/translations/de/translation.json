@@ -100,13 +100,6 @@
     "prose--description": "Diese Threema-ID und alle zugehörigen Daten werden von diesem Gerät gelöscht (nicht jedoch von den verknüpften Geräten).",
     "prose--failed": "Das Löschen Ihrer Daten von diesem Gerät ist fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut."
   },
-  "dialog--device-cookie": {
-    "label--close": "Schliessen",
-    "label--device-cookie-mismatch-title": "Verbindung von einem anderen Gerät erkannt",
-    "label--device-cookie-title": "Erneutes Verknüpfen empfohlen",
-    "label--relink": "Gerät neu verknüpfen",
-    "prose--explanation": "Um die Multi-Device-Sicherheit zu verbessern, muss dieses Gerät neu verknüpft werden. Die Chatverläufe werden nach erneutem Verknüpfen wiederhergestellt."
-  },
   "dialog--device-cookie-mismatch": {
     "action--continue": "Schliessen",
     "action--relink": "Gerät neu verknüpfen",
@@ -114,6 +107,13 @@
     "label--title": "Verbindung von einem anderen Gerät erkannt",
     "prose--description-p1": "Der Server hat eine Verbindung von einem anderen Gerät mit derselben Threema-ID erkannt. Falls Sie Ihre Threema-ID nicht kürzlich auf einem anderen Gerät verwendet haben, kontaktieren Sie bitte unseren Support und senden Sie wenn möglich die Logdatei mit.",
     "prose--description-p2": "Falls Sie Ihre Threema-ID auf einem anderen Gerät verwendet haben, empfehlen wir, die Desktop-App erneut mit dem Mobilgerät zu verknüpfen. Die Chatverläufe können nach erneutem Verknüpfen wiederhergestellt werden."
+  },
+  "dialog--device-cookie-missing": {
+    "action--close": "Schliessen",
+    "action--relink": "Gerät neu verknüpfen",
+    "error--no-connection": "Die Aufhebung der Verknüpfung dieses Geräts ist fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "label--title": "Erneutes Verknüpfen empfohlen",
+    "prose--description": "Um die Multi-Device-Sicherheit zu verbessern, muss dieses Gerät neu verknüpft werden. Die Chatverläufe werden nach erneutem Verknüpfen wiederhergestellt."
   },
   "dialog--discard-media-message": {
     "action--cancel": "Abbrechen",

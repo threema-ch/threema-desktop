@@ -100,13 +100,6 @@
     "prose--description": "This Threema ID and the corresponding data will be removed from this device (but not on your linked devices).",
     "prose--failed": "Something went wrong when deleting your data on this device. Please check your connection and try again."
   },
-  "dialog--device-cookie": {
-    "label--close": "Continue Without Relinking",
-    "label--device-cookie-mismatch-title": "Connection from Another Device Detected",
-    "label--device-cookie-title": "Relinking Recommended",
-    "label--relink": "Relink Device",
-    "prose--explanation": "To improve multi-device security, it is necessary to relink this device. Your message history will be restored after relinking."
-  },
   "dialog--device-cookie-mismatch": {
     "action--continue": "Continue",
     "action--relink": "Relink Device",
@@ -114,6 +107,13 @@
     "label--title": "Connection from Another Device Detected",
     "prose--description-p1": "The server has detected a connection from a different device with the same Threema ID. If you haven’t recently used your Threema ID on another device, please contact our support and send us the log file if possible.",
     "prose--description-p2": "If you have used your Threema ID on another device, we recommend relinking the desktop app with your mobile device. The message history can be restored after relinking."
+  },
+  "dialog--device-cookie-missing": {
+    "action--close": "Continue Without Relinking",
+    "action--relink": "Relink Device",
+    "error--no-connection": "Failed to unlink the device. Please check your internet connection and try again.",
+    "label--title": "Relinking Recommended",
+    "prose--description": "To improve multi-device security, it is necessary to relink this device. Your message history will be restored after relinking."
   },
   "dialog--discard-media-message": {
     "action--cancel": "Cancel",
