@@ -95,16 +95,15 @@
     "prose--delete-not-supported-partial": "Note: If you select \"{buttonText}\", this message will not be deleted for the following group members: {names}{n, plural, =0 {.} other { and {n} others.}} To support deleted messages, they need to install the latest Threema version."
   },
   "dialog--device-cookie": {
-    "label--close": "Continue without relinking",
+    "label--close": "Continue Without Relinking",
     "label--device-cookie-mismatch-title": "Connection from Another Device Detected",
     "label--device-cookie-title": "Relinking Recommended",
-    "label--relink": "Relink device",
-    "prose--explanation": "The desktop app now supports device cookies. Device cookies are used to detect a connection from another device using your Threema ID.",
-    "prose--solution": "To install the device cookie, you need to relink the desktop app with your mobile device. For security reasons, we recommend installing the device cookie as soon as possible. The message history can be restored after relinking."
+    "label--relink": "Relink Device",
+    "prose--explanation": "To improve multi-device security, it is necessary to relink this device. Your message history will be restored after relinking."
   },
   "dialog--device-cookie-mismatch": {
     "label--continue": "Continue",
-    "label--relink": "Relink device",
+    "label--relink": "Relink Device",
     "prose--explanation": "The server has detected a connection from a different device with the same Threema ID. If you haven’t recently used your Threema ID on another device, please contact our support and send us the log file if possible.",
     "prose--solution": "If you have used your Threema ID on another device, we recommend relinking the desktop app with your mobile device. The message history can be restored after relinking."
   },
@@ -250,7 +249,8 @@
     "label--title": "Link Your iOS Device",
     "markup--intro": "This beta version can be used in connection with {threema} for iOS. Please note that some features are not yet available. <1>Learn more</1>",
     "markup--step-1": "Open the {threema} app on your mobile device",
-    "markup--step-2": "In the app, go to “<1>Settings</1> > <1>Desktop/Web</1> > <1>Linked Device</1>,” and tap “<1>Add Device</1>”",
+    "markup--step-2-consumer": "In the app, go to <1>Settings</1> > <1>Threema 2.0 for Desktop (Beta)</1> and tap <1>Add Device</1>",
+    "markup--step-2-work": "In the app, go to <1>Settings</1> > <1>Desktop/Web</1> > <1>Linked Device</1> and tap <1>Add Device</1>",
     "markup--step-3": "Scan this QR code"
   },
   "dialog--linking-set-password": {

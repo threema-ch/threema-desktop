@@ -82,11 +82,17 @@
           {$i18n.t('dialog--linking-scan.label--step-2', 'Step 2:')}
         </h2>
         <p class="content content-2">
+          <!-- TODO(DESK-1581): Remove this on the variant and unify the strings. -->
           <SubstitutableText
-            text={$i18n.t(
-              'dialog--linking-scan.markup--step-2',
-              'In the app, go to <1>Settings</1> → <1>Desktop/Web</1> → <1>Linked Device</1> and tap <1>Add Device</1>',
-            )}
+            text={import.meta.env.BUILD_VARIANT === 'work'
+              ? $i18n.t(
+                  'dialog--linking-scan.markup--step-2-work',
+                  'In the app, go to <1>Settings</1> > <1>Desktop/Web</1> > <1>Linked Device</1> and tap <1>Add Device</1>',
+                )
+              : $i18n.t(
+                  'dialog--linking-scan.markup--step-2-consumer',
+                  'In the app, go to <1>Settings</1> > <1>Threema 2.0 for Desktop (Beta)</1> and tap <1>Add Device</1>',
+                )}
           >
             <strong slot="1" class="bold" let:text>{text}</strong>
           </SubstitutableText>

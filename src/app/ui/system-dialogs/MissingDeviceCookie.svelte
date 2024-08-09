@@ -56,16 +56,9 @@
         <Text
           text={$i18n.t(
             'dialog--device-cookie.prose--explanation',
-            'Threema Desktop now supports device cookies. This is a mechanism to detect when somebody else is using your identity.',
+            'To improve multi-device security, it is necessary to relink this device. Your message history will be restored after relinking.',
           )}
         />
-        <Text
-          text={$i18n.t(
-            'dialog--device-cookie.prose--solution',
-            'To install the device cookie, you need to relink the desktop app with your mobile device. For security reasons, we recommend installing the device cookie as soon as possible. The message history can be restored after relinking.',
-          )}
-        />
-
         {#if errorMessage !== undefined}
           <div class="warning">
             <MdIcon theme="Filled">warning</MdIcon>
@@ -76,8 +69,8 @@
 
       <div slot="footer" let:modal>
         <CancelAndConfirm
-          cancelText={$i18n.t('dialog--device-cookie.label--close', 'Continue without relinking')}
-          confirmText={$i18n.t('dialog--device-cookie.label--relink', 'Relink device')}
+          cancelText={$i18n.t('dialog--device-cookie.label--close', 'Continue Without Relinking')}
+          confirmText={$i18n.t('dialog--device-cookie.label--relink', 'Relink Device')}
           {modal}
         />
       </div>

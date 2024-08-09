@@ -78,17 +78,12 @@
       {/if}
     </div>
     <div slot="footer" let:modal>
-      <!-- eslint-disable @typescript-eslint/prefer-optional-chain -->
       <CancelAndConfirm
-        cancelText={$i18n.t(
-          'dialog--device-cookie-mismatch.label--continue',
-          'Continue without relinking',
-        )}
-        confirmText={$i18n.t('dialog--device-cookie-mismatch.label--relink', 'Relink device')}
+        cancelText={$i18n.t('dialog--device-cookie-mismatch.label--continue', 'Continue')}
+        confirmText={$i18n.t('dialog--device-cookie-mismatch.label--relink', 'Relink Device')}
         cancelDisabled={!appServices.isSet()}
         {modal}
       />
-      <!-- eslint-enable @typescript-eslint/prefer-optional-chain -->
     </div>
   </ModalDialog>
 </ModalWrapper>
