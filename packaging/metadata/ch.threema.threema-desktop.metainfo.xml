@@ -44,6 +44,34 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta40" date="2024-08-14">
+            <description>
+                <p>New features:</p>
+                <ul>
+                    <li>Mention group members</li>
+                </ul>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Full implementation of device token</li>
+                    <li>Rejoin ongoing group calls after restarting the app</li>
+                    <li>Restore settings when relinking</li>
+                    <li>Display a status message after the restoration of chats</li>
+                    <li>Display a status message when you are added to or removed from a group</li>
+                    <li>Display text formatting in the edit history</li>
+                    <li>
+                        Improved the UI and the display of video streams in the small group-call
+                        view
+                    </li>
+                    <li>Improved the relinking process</li>
+                    <li>Improved the process when updating credentials (Threema Work only)</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>Fixed a bug where status messages were not restored in some cases</li>
+                </ul>
+                <p>…and various under-the-hood changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta39" date="2024-07-29">
             <description>
                 <p>New features:</p>
