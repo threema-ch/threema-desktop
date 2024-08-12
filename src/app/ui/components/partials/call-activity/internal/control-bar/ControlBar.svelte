@@ -8,12 +8,15 @@
   import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
   import type {ContextMenuItem} from '~/app/ui/components/hocs/context-menu-provider/types';
   import RadialExclusionMaskProvider from '~/app/ui/components/hocs/radial-exclusion-mask-provider/RadialExclusionMaskProvider.svelte';
+  import {getAudioDeviceContextMenuItems} from '~/app/ui/components/partials/call-activity/internal/control-bar/helpers';
   import type {ControlBarProps} from '~/app/ui/components/partials/call-activity/internal/control-bar/props';
   import type {
-    AudioDeviceInfo,
+    AudioInputDeviceInfo,
+    AudioOutputDeviceInfo,
     VideoDeviceInfo,
   } from '~/app/ui/components/partials/call-activity/internal/control-bar/types';
   import type Popover from '~/app/ui/generic/popover/Popover.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import {AsyncLock} from '~/common/utils/lock';
@@ -23,19 +26,21 @@
 
   type $$Props = ControlBarProps;
 
-  export let currentAudioDeviceId: $$Props['currentAudioDeviceId'];
+  export let currentAudioInputDeviceId: $$Props['currentAudioInputDeviceId'];
+  export let currentAudioOutputDeviceId: $$Props['currentAudioOutputDeviceId'];
   export let currentVideoDeviceId: $$Props['currentVideoDeviceId'];
   export let isAudioEnabled: $$Props['isAudioEnabled'];
   export let isVideoEnabled: $$Props['isVideoEnabled'];
-  export let onSelectAudioDevice: $$Props['onSelectAudioDevice'];
+  export let onSelectAudioInputDevice: $$Props['onSelectAudioInputDevice'];
+  export let onSelectAudioOutputDevice: $$Props['onSelectAudioOutputDevice'];
   export let onSelectVideoDevice: $$Props['onSelectVideoDevice'];
 
   const mediaDevicesAsyncLock: AsyncLock = new AsyncLock();
 
   let audioDeviceSelectionPopover: SvelteNullableBinding<Popover> = null;
   let videoDeviceSelectionPopover: SvelteNullableBinding<Popover> = null;
-
-  let audioDevices: AudioDeviceInfo[] = [];
+  let audioInputDevices: AudioInputDeviceInfo[] = [];
+  let audioOutputDevices: AudioOutputDeviceInfo[] = [];
   let videoDevices: VideoDeviceInfo[] = [];
 
   const dispatch = createEventDispatcher<{
@@ -64,8 +69,11 @@
             videoDevices = devices.filter(
               (device): device is VideoDeviceInfo => device.kind === 'videoinput',
             );
-            audioDevices = devices.filter(
-              (device): device is AudioDeviceInfo => device.kind === 'audioinput',
+            audioInputDevices = devices.filter(
+              (device): device is AudioInputDeviceInfo => device.kind === 'audioinput',
+            );
+            audioOutputDevices = devices.filter(
+              (device): device is AudioOutputDeviceInfo => device.kind === 'audiooutput',
             );
           }),
       )
@@ -74,17 +82,18 @@
       });
   }
 
-  $: audioDeviceContextMenuItems = audioDevices.map<ContextMenuItem>((device) => ({
-    handler: () => {
-      if (device.deviceId !== currentAudioDeviceId) {
-        onSelectAudioDevice(device);
-      }
-    },
-    icon: device.deviceId === currentAudioDeviceId ? {name: 'check'} : undefined,
-    label: truncate(device.label, 24, 'end'),
-  }));
+  $: audioDeviceContextMenuItems = getAudioDeviceContextMenuItems(
+    $i18n,
+    audioInputDevices,
+    audioOutputDevices,
+    currentAudioInputDeviceId,
+    currentAudioOutputDeviceId,
+    onSelectAudioInputDevice,
+    onSelectAudioOutputDevice,
+  );
 
   $: videoDeviceContextMenuItems = videoDevices.map<ContextMenuItem>((device) => ({
+    type: 'option',
     handler: () => {
       if (device.deviceId !== currentVideoDeviceId) {
         onSelectVideoDevice(device);

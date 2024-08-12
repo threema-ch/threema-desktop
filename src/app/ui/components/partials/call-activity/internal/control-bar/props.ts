@@ -1,5 +1,6 @@
 import type {
-    AudioDeviceInfo,
+    AudioInputDeviceInfo,
+    AudioOutputDeviceInfo,
     VideoDeviceInfo,
 } from '~/app/ui/components/partials/call-activity/internal/control-bar/types';
 
@@ -8,9 +9,13 @@ import type {
  */
 export interface ControlBarProps {
     /**
-     * The `deviceId` of the currently active audio device.
+     * The `deviceId` of the currently active audio input device.
      */
-    readonly currentAudioDeviceId: string | undefined;
+    readonly currentAudioInputDeviceId: string | undefined;
+    /**
+     * The `deviceId` of the currently active audio output device.
+     */
+    readonly currentAudioOutputDeviceId: string | undefined;
     /**
      * The `deviceId` of the currently active video device.
      */
@@ -24,10 +29,15 @@ export interface ControlBarProps {
      */
     readonly isVideoEnabled: boolean;
     /**
-     * Handler callback which is invoked when a different audio device is selected than that which
-     * is currently active.
+     * Handler callback which is invoked when a different audio input device is selected than that
+     * which is currently active.
      */
-    onSelectAudioDevice: (device: AudioDeviceInfo) => void;
+    onSelectAudioInputDevice: (device: AudioInputDeviceInfo) => void;
+    /**
+     * Handler callback which is invoked when a different audio output device is selected than that
+     * which is currently active.
+     */
+    onSelectAudioOutputDevice: (device: AudioOutputDeviceInfo) => void;
     /**
      * Handler callback which is invoked when a different video device is selected than that which
      * is currently active.

@@ -445,6 +445,8 @@
     "label--call-join-long": "Anruf beitreten",
     "label--call-join-short": "Beitreten",
     "label--call-participant-count": "{n, plural, =0 {Keine Teilnehmer} =1 {1 Teilnehmer} other {# Teilnehmer}}",
+    "label--call-select-audio-input": "Mikrofon",
+    "label--call-select-audio-output": "Lautsprecher",
     "label--call-start-long": "Anruf starten",
     "label--compose-area": "Neue Nachricht...",
     "label--default-audio-message-preview": "Sprachnachricht",

@@ -445,6 +445,8 @@
     "label--call-join-long": "Join call",
     "label--call-join-short": "Join",
     "label--call-participant-count": "{n, plural, =0 {No Participants} =1 {1 Participant} other {# Participants}}",
+    "label--call-select-audio-input": "Microphone",
+    "label--call-select-audio-output": "Speakers",
     "label--call-start-long": "Start call",
     "label--compose-area": "Write a message…",
     "label--default-audio-message-preview": "Voice Message",

@@ -19,7 +19,8 @@
   } from '~/app/ui/components/partials/call-activity/helpers';
   import ControlBar from '~/app/ui/components/partials/call-activity/internal/control-bar/ControlBar.svelte';
   import type {
-    AudioDeviceInfo,
+    AudioInputDeviceInfo,
+    AudioOutputDeviceInfo,
     VideoDeviceInfo,
   } from '~/app/ui/components/partials/call-activity/internal/control-bar/types';
   import TopBar from '~/app/ui/components/partials/call-activity/internal/top-bar/TopBar.svelte';
@@ -32,10 +33,12 @@
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import type {DbGroupReceiverLookup} from '~/common/db';
   import type {ParticipantId} from '~/common/network/protocol/call/group-call';
-  import type {Dimensions} from '~/common/types';
+  import type {Dimensions, u53} from '~/common/types';
   import {assert, assertUnreachable, unreachable, unwrap} from '~/common/utils/assert';
   import {byteEquals} from '~/common/utils/byte';
   import type {Remote} from '~/common/utils/endpoint';
+  import {AsyncLock} from '~/common/utils/lock';
+  import {difference} from '~/common/utils/set';
   import {AbortRaiser} from '~/common/utils/signal';
   import type {RemoteStore} from '~/common/utils/store';
   import {TIMER} from '~/common/utils/timer';
@@ -54,8 +57,14 @@
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.call-activity');
 
+  const audioElementAsyncLock = new AsyncLock();
+
   let containerLayout: ActivityLayout = 'regular';
   let feedContainerElement: SvelteNullableBinding<HTMLDivElement> = null;
+
+  let audioElement: SvelteNullableBinding<HTMLAudioElement> = null;
+  let audioMediaStream: MediaStream | undefined = undefined;
+  let audioSinkId: string | undefined = undefined;
 
   const {guard: localDevicesGuard, store: localDevices} = createCaptureDevices();
   let localFeed: Omit<ParticipantFeedProps<'local'>, 'activity' | 'services'> | undefined;
@@ -79,6 +88,72 @@
 
     requestAnimationFrame(() => {
       containerLayout = (width ?? 0) < FEED_MIN_WIDTH_PX ? 'pocket' : 'regular';
+    });
+  }
+
+  /**
+   * Handle updating audible audio streams if any of the feeds change (i.e., a feed is muted).
+   */
+  async function handleUpdateAudioFeeds(
+    currentAudioElement: SvelteNullableBinding<HTMLAudioElement>,
+    currentFeeds: typeof feeds,
+  ): Promise<void> {
+    return await audioElementAsyncLock.with(() => {
+      if (currentAudioElement === null) {
+        return;
+      }
+      if (audioMediaStream === undefined) {
+        audioMediaStream = new MediaStream();
+      }
+      currentAudioElement.srcObject = audioMediaStream;
+
+      const activeAudioTracks = new Set(audioMediaStream.getAudioTracks());
+      const currentAudioTracks = new Set(
+        currentFeeds
+          .filter((feed): feed is (typeof remoteFeeds)[u53] => feed.type === 'remote')
+          .map((feed) => feed.tracks.microphone),
+      );
+
+      // `svelte-eslint` doesn't seem to support `Set.difference` yet.
+      const newAudioTracks = difference(currentAudioTracks, activeAudioTracks);
+      const lostAudioTracks = difference(activeAudioTracks, currentAudioTracks);
+
+      for (const track of newAudioTracks) {
+        audioMediaStream.addTrack(track);
+      }
+      for (const track of lostAudioTracks) {
+        audioMediaStream.removeTrack(track);
+      }
+    });
+  }
+
+  /**
+   * Handle updating the active audio sink (speaker).
+   */
+  async function handleUpdateAudioSink(
+    currentAudioElement: SvelteNullableBinding<HTMLAudioElement>,
+    currentAudioSinkId: typeof audioSinkId,
+    // Needed to update audio sink when feeds change.
+    currentFeeds: typeof feeds,
+  ): Promise<void> {
+    return await audioElementAsyncLock.with(async () => {
+      if (currentAudioElement === null) {
+        return undefined;
+      }
+      if (currentAudioSinkId === undefined) {
+        return undefined;
+      }
+
+      // Return early, because if the `<audio>` element doesn't have any media tracks, setting the
+      // audio sink would fail.
+      if (!(currentAudioElement.srcObject instanceof MediaStream)) {
+        return undefined;
+      }
+      if (currentAudioElement.srcObject.getTracks().length === 0) {
+        return undefined;
+      }
+
+      return await currentAudioElement.setSinkId(currentAudioSinkId);
     });
   }
 
@@ -108,13 +183,17 @@
     (_, id) => `${id}`,
   );
 
-  function handleSelectAudioDevice(device: AudioDeviceInfo): void {
+  function handleSelectAudioInputDevice(device: AudioInputDeviceInfo): void {
     selectMicrophoneDevice(localDevicesGuard, call, {
       device,
       state: $localDevices.microphone?.track.enabled ?? false ? 'on' : 'off',
     }).catch((error) => {
       log.warn(`Unable to select audio device ${device.label}: ${error}`);
     });
+  }
+
+  function handleSelectAudioOutputDevice(device: AudioOutputDeviceInfo): void {
+    audioSinkId = device.deviceId;
   }
 
   function handleSelectVideoDevice(device: VideoDeviceInfo): void {
@@ -457,6 +536,14 @@
     start(conversation, 'join').catch(assertUnreachable);
   }
 
+  $: handleUpdateAudioFeeds(audioElement, feeds).catch((error) => {
+    log.error(`Error updating audio feeds: ${error}`);
+  });
+
+  $: handleUpdateAudioSink(audioElement, audioSinkId, feeds).catch((error) => {
+    log.error(`Error updating audio sink: ${error}`);
+  });
+
   onMount(() => {
     window.addEventListener('keydown', handleKeydown);
 
@@ -501,6 +588,8 @@
   </div>
 
   <div bind:this={feedContainerElement} class="content">
+    <audio bind:this={audioElement} autoplay playsinline />
+
     <div class="feeds">
       {#each feeds as feed (feed.participantId)}
         <ParticipantFeed {...feed} activity={{layout: containerLayout}} {services} />
@@ -509,11 +598,13 @@
 
     <div class="footer">
       <ControlBar
-        currentAudioDeviceId={$localDevices.microphone?.track.getSettings().deviceId}
+        currentAudioInputDeviceId={$localDevices.microphone?.track.getSettings().deviceId}
+        currentAudioOutputDeviceId={audioSinkId}
         currentVideoDeviceId={$localDevices.camera?.track.getSettings().deviceId}
         isAudioEnabled={$localDevices.microphone?.track.enabled ?? false}
         isVideoEnabled={$localDevices.camera?.track.enabled ?? false}
-        onSelectAudioDevice={handleSelectAudioDevice}
+        onSelectAudioInputDevice={handleSelectAudioInputDevice}
+        onSelectAudioOutputDevice={handleSelectAudioOutputDevice}
         onSelectVideoDevice={handleSelectVideoDevice}
         on:clickleavecall={handleClickLeaveCall}
         on:clicktoggleaudio={() => setMicrophoneCaptureState('toggle')}
@@ -553,6 +644,10 @@
         / 100%;
 
       position: relative;
+
+      audio {
+        display: none;
+      }
 
       .feeds {
         grid-area: feeds / feeds / footer / footer;

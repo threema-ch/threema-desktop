@@ -29,32 +29,18 @@
 
   unusedProp(participantId);
 
-  let microphoneAudioElement: SvelteNullableBinding<HTMLAudioElement> = null;
   let cameraVideoElement: SvelteNullableBinding<HTMLVideoElement> = null;
 
   let dimensions: Dimensions | undefined = undefined;
   let isInViewport: boolean | undefined = undefined;
 
-  // Note: Caching mitigates re-attaching tracks to <audio> and <video> elements which would result
-  // in audio cutoff and video flickering.
+  // Note: Caching mitigates re-attaching tracks to the `<video>` element, which would result in
+  // video flickering.
   const cachedTracks: {
-    microphone: MediaStreamTrack | undefined;
     camera: MediaStreamTrack | undefined;
-  } = {microphone: undefined, camera: undefined};
+  } = {camera: undefined};
 
   $: {
-    if (microphoneAudioElement !== null) {
-      if (tracks.type === 'local') {
-        microphoneAudioElement.srcObject = null;
-      } else if (
-        microphoneAudioElement.srcObject === null ||
-        cachedTracks.microphone !== tracks.microphone
-      ) {
-        microphoneAudioElement.srcObject = new MediaStream([tracks.microphone]);
-        cachedTracks.microphone = tracks.microphone;
-      }
-    }
-
     if (cameraVideoElement !== null) {
       if (tracks.camera === undefined) {
         cameraVideoElement.srcObject = null;
@@ -133,8 +119,6 @@
   on:intersectionenter={handleEnterOrExit}
   on:intersectionexit={handleEnterOrExit}
 >
-  <audio bind:this={microphoneAudioElement} autoplay playsinline />
-
   {#if activity.layout === 'pocket'}
     <ProfilePicture
       extraCharms={[
@@ -222,10 +206,6 @@
     width: 100%;
     border-radius: rem(10px);
     overflow: hidden;
-
-    audio {
-      display: none;
-    }
 
     .video-container {
       position: relative;

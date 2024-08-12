@@ -1027,9 +1027,13 @@ function main(
             // - fullscreen: For video playback
             // - media: For microphone/camera access in a call
             if (
-                ['notifications', 'clipboard-sanitized-write', 'fullscreen', 'media'].includes(
-                    permission,
-                )
+                [
+                    'notifications',
+                    'clipboard-sanitized-write',
+                    'fullscreen',
+                    'media',
+                    'speaker-selection',
+                ].includes(permission)
             ) {
                 return allow();
             }
