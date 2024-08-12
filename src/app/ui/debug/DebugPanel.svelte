@@ -3,6 +3,7 @@
 
   import type {AppServices} from '~/app/types';
   import DebugBackend from '~/app/ui/debug/DebugBackend.svelte';
+  import DebugFrontend from '~/app/ui/debug/DebugFrontend.svelte';
   import DebugNetwork from '~/app/ui/debug/DebugNetwork.svelte';
   import DebugRedis from '~/app/ui/debug/DebugRedis.svelte';
   import DebugStorage from '~/app/ui/debug/DebugStorage.svelte';
@@ -13,6 +14,7 @@
   /* eslint-disable @typescript-eslint/naming-convention */
   const TOOLS: Record<string, typeof SvelteComponent<{services: AppServices}>> = {
     Backend: DebugBackend,
+    Frontend: DebugFrontend,
     Redis: DebugRedis,
     Network: DebugNetwork,
     Storage: DebugStorage,
