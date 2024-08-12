@@ -22,7 +22,9 @@
 
   type $$Props = InvalidWorkCredentialsDialogProps;
 
+  export let onSelectAction: $$Props['onSelectAction'] = undefined;
   export let services: $$Props['services'];
+  export let target: $$Props['target'] = undefined;
   export let workCredentials: $$Props['workCredentials'];
 
   const {backend} = services.unwrap();
@@ -106,13 +108,14 @@
         password: getPassword(),
       })
       .then(() => {
-        // Success! Show a toast and close
+        // Success! Show a toast and close.
         toast.addSimpleSuccess(
           $i18n.t(
             'dialog--invalid-work-credentials.prose--update-success',
             'Threema Work credentials successfully updated',
           ),
         );
+        onSelectAction?.('confirmed');
         modal?.close();
       })
       .catch(() => {
@@ -143,6 +146,7 @@
 
 <Modal
   bind:this={modalComponent}
+  {target}
   wrapper={{
     type: 'card',
     title: $i18n.t(

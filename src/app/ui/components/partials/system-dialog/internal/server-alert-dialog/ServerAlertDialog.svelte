@@ -8,47 +8,53 @@
   import type {ServerAlertDialogProps} from '~/app/ui/components/partials/system-dialog/internal/server-alert-dialog/props';
   import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import {unlinkAndCreateBackup} from '~/app/ui/utils/profile';
+  import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
 
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.server-alert-dialog');
 
   type $$Props = ServerAlertDialogProps;
 
+  export let onSelectAction: $$Props['onSelectAction'] = undefined;
   export let services: $$Props['services'];
+  export let target: $$Props['target'] = undefined;
   export let text: $$Props['text'];
 
+  let modalComponent: SvelteNullableBinding<Modal> = null;
+
   let errorMessage: string | undefined;
-
-  async function handleSubmit(event: Event): Promise<void> {
-    event.preventDefault();
-
-    try {
-      await services
-        .unwrap()
-        .backend.connectionManager.selfKickFromMediator()
-        .then(() => window.app.deleteProfileAndRestartApp({createBackup: true}));
-    } catch (error) {
-      log.error(error);
-      errorMessage = $i18n.t(
-        'dialog--server-alert.error--no-connection',
-        'Failed to unlink the device. Please check your Internet connection and try again.',
-      );
-    }
-  }
 </script>
 
 <Modal
+  bind:this={modalComponent}
+  {target}
   wrapper={{
     type: 'card',
     buttons: [
       {
         label: $i18n.t('dialog--server-alert.action--continue', 'Continue'),
-        onClick: 'close',
+        onClick: () => {
+          onSelectAction?.('dismissed');
+          modalComponent?.close();
+        },
         type: 'naked',
       },
       {
         label: $i18n.t('dialog--server-alert.action--confirm', 'Relink Device'),
-        onClick: 'submit',
+        onClick: () => {
+          if (!services.isSet()) {
+            log.warn('Cannot unlink the profile because the app services are not yet ready');
+            return;
+          }
+          unlinkAndCreateBackup(services.unwrap()).catch((error) => {
+            log.error(error);
+            errorMessage = $i18n.t(
+              'dialog--server-alert.error--no-connection',
+              'Failed to unlink the device. Please check your Internet connection and try again.',
+            );
+          });
+        },
         type: 'filled',
       },
     ],
@@ -63,8 +69,6 @@
     suspendHotkeysWhenVisible: true,
   }}
   on:close
-  on:submit
-  on:submit={handleSubmit}
 >
   <div class="content">
     {#if text.localeCompare('Another connection for the same identity has been established. New messages will no longer be received on this device.') === 0}

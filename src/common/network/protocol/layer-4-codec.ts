@@ -191,7 +191,7 @@ export class Layer4Decoder implements SyncTransformerCodec<InboundL3Message, Inb
                     .then(async (handle) => {
                         this._log.info('Showing close error server alert');
                         try {
-                            // TODO(DESK-1337): We'll get 'confirmed' | 'cancelled' here but this
+                            // TODO(DESK-1582): We'll get 'confirmed' | 'dismissed' here but this
                             // makes no sense because the dialog only shows OK as an option. It's
                             // also unclear what's supposed to happen if the user selects 'cancel'.
                             // Should we simply remain disconnect indefinitely? That seems like a

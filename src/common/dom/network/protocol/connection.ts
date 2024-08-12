@@ -844,8 +844,7 @@ export class ConnectionManager implements ConnectionManagerHandle {
                                 const handle = await systemDialog.open({
                                     type: 'connection-error',
                                     context: {
-                                        type: 'mediator-update-required',
-                                        userCanReconnect: true,
+                                        error: 'mediator-update-required',
                                     },
                                 });
                                 this._log.info(
@@ -857,7 +856,7 @@ export class ConnectionManager implements ConnectionManagerHandle {
                                     case 'confirmed': // Reconnect
                                         skipConnectionDelay = true;
                                         break;
-                                    case 'cancelled':
+                                    case 'dismissed':
                                         this.disconnectAndDisableAutoConnect(result.info);
                                         break;
                                     default:
@@ -871,8 +870,7 @@ export class ConnectionManager implements ConnectionManagerHandle {
                                     .open({
                                         type: 'connection-error',
                                         context: {
-                                            type: 'client-update-required',
-                                            userCanReconnect: false,
+                                            error: 'client-update-required',
                                         },
                                     })
                                     .catch(assertUnreachable);
@@ -928,9 +926,7 @@ export class ConnectionManager implements ConnectionManagerHandle {
                                     .open({
                                         type: 'connection-error',
                                         context: {
-                                            type: 'device-slot-state-mismatch',
-                                            userCanReconnect: false,
-                                            clientExpectedState: 'new',
+                                            error: 'device-slot-state-mismatch',
                                         },
                                     })
                                     .catch(assertUnreachable);
@@ -939,8 +935,7 @@ export class ConnectionManager implements ConnectionManagerHandle {
                                     .open({
                                         type: 'connection-error',
                                         context: {
-                                            type: 'client-was-dropped',
-                                            userCanReconnect: false,
+                                            error: 'client-was-dropped',
                                         },
                                     })
                                     .catch(assertUnreachable);

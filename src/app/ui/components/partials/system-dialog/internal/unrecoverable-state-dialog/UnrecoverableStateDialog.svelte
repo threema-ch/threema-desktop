@@ -3,29 +3,48 @@
   unrecoverable state.
 -->
 <script lang="ts">
+  import {globals} from '~/app/globals';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
+  import type {UnrecoverableStateDialogProps} from '~/app/ui/components/partials/system-dialog/internal/unrecoverable-state-dialog/props';
   import {i18n} from '~/app/ui/i18n';
+  import {unlinkAndCreateBackup} from '~/app/ui/utils/profile';
+  import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
 
-  function handleSubmit(event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
+  const {uiLogging} = globals.unwrap();
+  const log = uiLogging.logger('ui.component.unrecoverable-state-dialog');
 
-    window.app.deleteProfileAndRestartApp({createBackup: true});
-  }
+  type $$Props = UnrecoverableStateDialogProps;
+
+  export let onSelectAction: $$Props['onSelectAction'] = undefined;
+  export let services: $$Props['services'];
+  export let target: $$Props['target'] = undefined;
+
+  let modalComponent: SvelteNullableBinding<Modal> = null;
 </script>
 
 <Modal
+  bind:this={modalComponent}
+  {target}
   wrapper={{
     type: 'card',
     buttons: [
       {
         label: $i18n.t('dialog--unrecoverable-state.action--cancel', 'Continue with invalid state'),
-        onClick: 'close',
+        onClick: () => {
+          onSelectAction?.('dismissed');
+          modalComponent?.close();
+        },
         type: 'naked',
       },
       {
         label: $i18n.t('dialog--unrecoverable-state.action--confirm', 'Reset and relink'),
-        onClick: 'submit',
+        onClick: () => {
+          if (!services.isSet()) {
+            log.warn('Cannot unlink the profile because the app services are not yet ready');
+            return;
+          }
+          unlinkAndCreateBackup(services.unwrap()).catch(log.error);
+        },
         type: 'filled',
       },
     ],
@@ -40,8 +59,6 @@
     suspendHotkeysWhenVisible: true,
   }}
   on:close
-  on:submit
-  on:submit={handleSubmit}
 >
   <div class="content">
     <p>

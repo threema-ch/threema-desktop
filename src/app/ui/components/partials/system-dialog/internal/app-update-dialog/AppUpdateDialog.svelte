@@ -6,22 +6,32 @@
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import type {AppUpdateDialogProps} from '~/app/ui/components/partials/system-dialog/internal/app-update-dialog/props';
   import {i18n} from '~/app/ui/i18n';
+  import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
 
   type $$Props = AppUpdateDialogProps;
 
   export let currentVersion: $$Props['currentVersion'];
   export let latestVersion: $$Props['latestVersion'];
+  export let onSelectAction: $$Props['onSelectAction'] = undefined;
   export let systemInfo: $$Props['systemInfo'];
+  export let target: $$Props['target'] = undefined;
+
+  let modalComponent: SvelteNullableBinding<Modal> = null;
 </script>
 
 <Modal
+  bind:this={modalComponent}
+  {target}
   wrapper={{
     type: 'card',
     buttons: [
       {
         isFocused: true,
         label: $i18n.t('dialog--app-update.action--confirm', 'OK'),
-        onClick: 'submit',
+        onClick: () => {
+          onSelectAction?.('dismissed');
+          modalComponent?.close();
+        },
         type: 'filled',
       },
     ],
@@ -38,7 +48,7 @@
     overlay: 'opaque',
     suspendHotkeysWhenVisible: true,
   }}
-  on:submit
+  on:close
 >
   <div class="content">
     <p>

@@ -2,25 +2,39 @@
   @component Renders a system dialog to inform the user about a connection error.
 -->
 <script lang="ts">
+  import {globals} from '~/app/globals';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import type {ModalButton} from '~/app/ui/components/hocs/modal/props';
   import type {ConnectionErrorDialogProps} from '~/app/ui/components/partials/system-dialog/internal/connection-error-dialog/props';
   import {i18n} from '~/app/ui/i18n';
+  import {unlinkAndCreateBackup} from '~/app/ui/utils/profile';
+  import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import {unreachable} from '~/common/utils/assert';
+
+  const {uiLogging} = globals.unwrap();
+  const log = uiLogging.logger('ui.component.connection-error-dialog');
 
   type $$Props = ConnectionErrorDialogProps;
 
   export let error: $$Props['error'];
+  export let onSelectAction: $$Props['onSelectAction'] = undefined;
+  export let services: $$Props['services'];
+  export let target: $$Props['target'] = undefined;
+
+  let modalComponent: SvelteNullableBinding<Modal> = null;
 
   function getButtons(currentError: typeof error): ModalButton[] {
-    switch (currentError.type) {
+    switch (currentError) {
       case 'client-update-required':
         return [
           {
             isFocused: true,
             label: $i18n.t('dialog--error-connection.action--default-cancel', 'OK'),
-            onClick: 'submit',
+            onClick: () => {
+              onSelectAction?.('dismissed');
+              modalComponent?.close();
+            },
             type: 'filled',
           },
         ];
@@ -30,7 +44,10 @@
         return [
           {
             label: $i18n.t('dialog--error-connection.action--client-was-dropped-cancel', 'OK'),
-            onClick: 'close',
+            onClick: () => {
+              onSelectAction?.('dismissed');
+              modalComponent?.close();
+            },
             type: 'naked',
           },
           {
@@ -39,11 +56,12 @@
               'dialog--error-connection.action--client-was-dropped-confirm',
               'Relink Device',
             ),
-            onClick: (event) => {
-              event.preventDefault();
-              event.stopPropagation();
-
-              window.app.deleteProfileAndRestartApp({createBackup: true});
+            onClick: () => {
+              if (!services.isSet()) {
+                log.warn('Cannot unlink the profile because the app services are not yet ready');
+                return;
+              }
+              unlinkAndCreateBackup(services.unwrap()).catch(log.error);
             },
             type: 'filled',
           },
@@ -53,13 +71,19 @@
         return [
           {
             label: $i18n.t('dialog--error-connection.action--default-cancel'),
-            onClick: 'close',
+            onClick: () => {
+              onSelectAction?.('dismissed');
+              modalComponent?.close();
+            },
             type: 'naked',
           },
           {
             isFocused: true,
             label: $i18n.t('dialog--error-connection.action--default-confirm', 'Reconnect'),
-            onClick: 'submit',
+            onClick: () => {
+              onSelectAction?.('confirmed');
+              modalComponent?.close();
+            },
             type: 'filled',
           },
         ];
@@ -71,6 +95,8 @@
 </script>
 
 <Modal
+  bind:this={modalComponent}
+  {target}
   wrapper={{
     type: 'card',
     buttons: getButtons(error),
@@ -85,10 +111,9 @@
     suspendHotkeysWhenVisible: true,
   }}
   on:close
-  on:submit
 >
   <div class="content">
-    {#if error.type === 'mediator-update-required'}
+    {#if error === 'mediator-update-required'}
       <p>
         {$i18n.t(
           'dialog--error-connection.prose--mediator-update-required-p1',
@@ -101,7 +126,7 @@
           'Please contact your Threema server administrator.',
         )}
       </p>
-    {:else if error.type === 'client-update-required'}
+    {:else if error === 'client-update-required'}
       <p>
         {$i18n.t(
           'dialog--error-connection.markup--client-update-required-p1',
@@ -124,7 +149,7 @@
           >
         </SubstitutableText>
       </p>
-    {:else if error.type === 'client-was-dropped'}
+    {:else if error === 'client-was-dropped'}
       <p>
         {$i18n.t(
           'dialog--error-connection.markup--client-was-dropped-p1',
@@ -160,7 +185,7 @@
           >
         </SubstitutableText>
       </p>
-    {:else if error.type === 'device-slot-state-mismatch'}
+    {:else if error === 'device-slot-state-mismatch'}
       <p>
         {$i18n.t(
           'dialog--error-connection.markup--device-slot-mismatch-p1',

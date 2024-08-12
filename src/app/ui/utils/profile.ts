@@ -6,9 +6,9 @@ import type {AppServicesForSvelte} from '~/app/types';
 export async function unlinkAndCreateBackup(
     services: Pick<AppServicesForSvelte, 'backend'>,
 ): Promise<void> {
-    // First, unlink from mediator
-    await services.backend.connectionManager.selfKickFromMediator();
-
-    // Then, request deletion of profile directory and app restart
-    window.app.deleteProfileAndRestartApp({createBackup: true});
+    // First, unlink from mediator.
+    return await services.backend.connectionManager.selfKickFromMediator().then(() => {
+        // Then, request deletion of profile directory and app restart.
+        window.app.deleteProfileAndRestartApp({createBackup: true});
+    });
 }

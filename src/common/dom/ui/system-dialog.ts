@@ -1,7 +1,7 @@
 import {TRANSFER_HANDLER} from '~/common/index';
 import type {
-    DialogAction,
     SystemDialog,
+    SystemDialogAction,
     SystemDialogHandle,
     SystemDialogService,
 } from '~/common/system-dialog';
@@ -25,9 +25,10 @@ export class FrontendSystemDialogHandle implements SystemDialogHandle {
     /**
      * Resolves once the dialog was closed.
      */
-    public readonly closed: ResolvablePromise<DialogAction> = new ResolvablePromise<DialogAction>({
-        uncaught: 'default',
-    });
+    public readonly closed: ResolvablePromise<SystemDialogAction> =
+        new ResolvablePromise<SystemDialogAction>({
+            uncaught: 'default',
+        });
 }
 
 export class FrontendSystemDialogService implements SystemDialogService {
@@ -46,7 +47,7 @@ export class FrontendSystemDialogService implements SystemDialogService {
     private _open(dialog: SystemDialog, once = false): SystemDialogHandle {
         let handle: FrontendSystemDialogHandle | undefined;
 
-        // TODO(DESK-487): Return backchannel like in notifications for user interaction
+        // TODO(DESK-487): Return backchannel like in notifications for user interaction.
         systemDialogStore.update((currentDialogs) => {
             const dialogOfSameType = currentDialogs.find(
                 ({dialog: currentDialog}) => currentDialog.type === dialog.type,
@@ -59,7 +60,7 @@ export class FrontendSystemDialogService implements SystemDialogService {
                 return currentDialogs;
             }
 
-            // Otherwise, store a new dialog instance
+            // Otherwise, store a new dialog instance.
             handle = new FrontendSystemDialogHandle();
             return [{dialog, handle}, ...currentDialogs];
         });

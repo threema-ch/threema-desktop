@@ -1,13 +1,17 @@
 import type {AppServicesForSvelte} from '~/app/types';
+import type {ModalProps} from '~/app/ui/components/hocs/modal/props';
+import type {ServerAlertDialogContext, SystemDialogAction} from '~/common/system-dialog';
 import type {Delayed} from '~/common/utils/delayed';
 
 /**
  * Props accepted by the `ServerAlertDialog` component.
  */
-export interface ServerAlertDialogProps {
-    readonly services: Delayed<Pick<AppServicesForSvelte, 'backend'>>;
+export interface ServerAlertDialogProps
+    extends Pick<ModalProps, 'target'>,
+        ServerAlertDialogContext {
     /**
-     * The message of the server alert.
+     * Optional callback to call when a choice is made, e.g. a button was clicked.
      */
-    readonly text: string;
+    readonly onSelectAction?: (action: Extract<SystemDialogAction, 'dismissed'>) => void;
+    readonly services: Delayed<Pick<AppServicesForSvelte, 'backend'>>;
 }

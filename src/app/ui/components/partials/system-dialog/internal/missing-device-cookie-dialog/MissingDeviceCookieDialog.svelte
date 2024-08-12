@@ -9,47 +9,51 @@
   import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {unlinkAndCreateBackup} from '~/app/ui/utils/profile';
+  import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
 
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.missing-device-cookie-dialog');
 
   type $$Props = MissingDeviceCookieDialogProps;
 
+  export let onSelectAction: $$Props['onSelectAction'] = undefined;
   export let services: $$Props['services'];
+  export let target: $$Props['target'] = undefined;
+
+  let modalComponent: SvelteNullableBinding<Modal> = null;
 
   let errorMessage: string | undefined = undefined;
-
-  /**
-   * Unlink, delete the device data and restart the application.
-   */
-  async function handleSubmit(event?: Event): Promise<void> {
-    event?.preventDefault();
-
-    if (!services.isSet()) {
-      log.warn('Cannot unlink the profile because the app services are not yet ready');
-      return;
-    }
-    await unlinkAndCreateBackup(services.unwrap()).catch(() => {
-      errorMessage = $i18n.t(
-        'dialog--device-cookie-missing.error--no-connection',
-        'Failed to unlink the device. Please check your internet connection and try again',
-      );
-    });
-  }
 </script>
 
 <Modal
+  bind:this={modalComponent}
+  {target}
   wrapper={{
     type: 'card',
     buttons: [
       {
         label: $i18n.t('dialog--device-cookie-missing.action--close', 'Continue Without Relinking'),
-        onClick: 'close',
+        onClick: () => {
+          onSelectAction?.('dismissed');
+          modalComponent?.close();
+        },
         type: 'naked',
       },
       {
         label: $i18n.t('dialog--device-cookie-missing.action--relink', 'Relink Device'),
-        onClick: 'submit',
+        onClick: () => {
+          if (!services.isSet()) {
+            log.warn('Cannot unlink the profile because the app services are not yet ready');
+            return;
+          }
+          unlinkAndCreateBackup(services.unwrap()).catch((error) => {
+            log.error(error);
+            errorMessage = $i18n.t(
+              'dialog--device-cookie-missing.error--no-connection',
+              'Failed to unlink the device. Please check your internet connection and try again',
+            );
+          });
+        },
         type: 'filled',
       },
     ],
@@ -64,8 +68,6 @@
     suspendHotkeysWhenVisible: true,
   }}
   on:close
-  on:submit
-  on:submit={handleSubmit}
 >
   <div class="content">
     <p>

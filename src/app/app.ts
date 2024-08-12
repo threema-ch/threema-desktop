@@ -10,11 +10,11 @@ import App from '~/app/ui/App.svelte';
 import PasswordInput from '~/app/ui/PasswordInput.svelte';
 import LoadingScreen from '~/app/ui/components/partials/loading-screen/LoadingScreen.svelte';
 import MissingWorkCredentialsModal from '~/app/ui/components/partials/modals/missing-work-credentials-modal/MissingWorkCredentialsModal.svelte';
+import {attachSystemDialogs} from '~/app/ui/components/partials/system-dialog/helpers';
 import {GlobalHotkeyManager} from '~/app/ui/hotkey';
 import * as i18n from '~/app/ui/i18n';
 import type {LinkingParams, OppfConfig} from '~/app/ui/linking';
 import LinkingWizard from '~/app/ui/linking/LinkingWizard.svelte';
-import {attachSystemDialogs} from '~/app/ui/system-dialogs';
 import {SystemTimeStore} from '~/app/ui/time';
 import type {ServicesForBackendController} from '~/common/backend';
 import type {LoadingState, LinkingState} from '~/common/dom/backend';
@@ -414,7 +414,7 @@ async function main(): Promise<() => void> {
 
     // Initialize early services and global dialog component
     const appServices: Delayed<AppServices> = Delayed.simple('AppServices');
-    attachSystemDialogs(logging, elements.systemDialogs, appServices);
+    attachSystemDialogs(elements.systemDialogs, appServices);
     const endpoint = createEndpointService({logging});
     const systemDialog = new FrontendSystemDialogService();
     const webRtc = new WebRtcServiceProvider({endpoint, logging});

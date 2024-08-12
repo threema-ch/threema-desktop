@@ -1,30 +1,17 @@
+import type {AppServicesForSvelte} from '~/app/types';
+import type {ModalProps} from '~/app/ui/components/hocs/modal/props';
+import type {ConnectionErrorDialogContext, SystemDialogAction} from '~/common/system-dialog';
+import type {Delayed} from '~/common/utils/delayed';
+
 /**
  * Props accepted by the `ConnectionErrorDialog` component.
  */
-export interface ConnectionErrorDialogProps {
+export interface ConnectionErrorDialogProps
+    extends Pick<ModalProps, 'target'>,
+        ConnectionErrorDialogContext {
     /**
-     * The error to be displayed as the dialog's content.
+     * Optional callback to call when a choice is made, e.g. a button was clicked.
      */
-    readonly error: ConnectionError;
+    readonly onSelectAction?: (action: SystemDialogAction) => void;
+    readonly services: Delayed<Pick<AppServicesForSvelte, 'backend'>>;
 }
-
-// TODO(DESK-487): Add other user interactions.
-// TODO(DESK-1337): Below properties are confusing / dead code.
-type ConnectionError =
-    | {
-          readonly type: 'mediator-update-required';
-          readonly userCanReconnect: true;
-      }
-    | {
-          readonly type: 'client-update-required';
-          readonly userCanReconnect: false;
-      }
-    | {
-          readonly type: 'client-was-dropped';
-          readonly userCanReconnect: false;
-      }
-    | {
-          readonly type: 'device-slot-state-mismatch';
-          readonly userCanReconnect: false;
-          readonly clientExpectedState: 'new';
-      };

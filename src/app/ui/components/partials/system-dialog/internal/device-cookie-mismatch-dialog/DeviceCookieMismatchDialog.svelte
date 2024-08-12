@@ -9,45 +9,51 @@
   import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {unlinkAndCreateBackup} from '~/app/ui/utils/profile';
+  import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
 
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.device-cookie-mismatch-dialog');
 
   type $$Props = DeviceCookieMismatchDialogProps;
 
+  export let onSelectAction: $$Props['onSelectAction'] = undefined;
   export let services: $$Props['services'];
+  export let target: $$Props['target'] = undefined;
+
+  let modalComponent: SvelteNullableBinding<Modal> = null;
 
   let errorMessage: string | undefined = undefined;
-
-  /**
-   * Unlink and delete the device data and restart the application.
-   */
-  async function handleClickSubmit(): Promise<void> {
-    if (!services.isSet()) {
-      log.warn('Cannot unlink the profile because the app services are not yet ready');
-      return;
-    }
-    await unlinkAndCreateBackup(services.unwrap()).catch(() => {
-      errorMessage = $i18n.t(
-        'dialog--device-cookie-mismatch.error--no-connection',
-        'Failed to unlink the device. Please check your internet connection and try again',
-      );
-    });
-  }
 </script>
 
 <Modal
+  bind:this={modalComponent}
+  {target}
   wrapper={{
     type: 'card',
     buttons: [
       {
         label: $i18n.t('dialog--device-cookie-mismatch.action--continue', 'Continue'),
-        onClick: 'close',
+        onClick: () => {
+          onSelectAction?.('dismissed');
+          modalComponent?.close();
+        },
         type: 'naked',
       },
       {
         label: $i18n.t('dialog--device-cookie-mismatch.action--relink', 'Relink Device'),
-        onClick: 'submit',
+        onClick: () => {
+          if (!services.isSet()) {
+            log.warn('Cannot unlink the profile because the app services are not yet ready');
+            return;
+          }
+          unlinkAndCreateBackup(services.unwrap()).catch((error) => {
+            log.error(error);
+            errorMessage = $i18n.t(
+              'dialog--device-cookie-mismatch.error--no-connection',
+              'Failed to unlink the device. Please check your internet connection and try again',
+            );
+          });
+        },
         type: 'filled',
       },
     ],
@@ -65,8 +71,6 @@
     suspendHotkeysWhenVisible: true,
   }}
   on:close
-  on:submit
-  on:submit={handleClickSubmit}
 >
   <div class="content">
     <p>

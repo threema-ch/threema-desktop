@@ -1,19 +1,12 @@
-import type {SystemInfo} from '~/common/electron-ipc';
+import type {ModalProps} from '~/app/ui/components/hocs/modal/props';
+import type {AppUpdateDialogContext, SystemDialogAction} from '~/common/system-dialog';
 
 /**
  * Props accepted by the `AppUpdateDialog` component.
  */
-export interface AppUpdateDialogProps {
+export interface AppUpdateDialogProps extends Pick<ModalProps, 'target'>, AppUpdateDialogContext {
     /**
-     * Name of the currently installed application version.
+     * Optional callback to call when a choice is made, e.g. a button was clicked.
      */
-    readonly currentVersion: string;
-    /**
-     * Name of the most recent available application version.
-     */
-    readonly latestVersion: string;
-    /**
-     * Details about the user's system.
-     */
-    readonly systemInfo: SystemInfo;
+    readonly onSelectAction?: (action: Extract<SystemDialogAction, 'dismissed'>) => void;
 }
