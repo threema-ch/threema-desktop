@@ -43,7 +43,7 @@
     "prose--add-contact-instructions-work-directory": "Suchen Sie alternativ einen Kontakt im Unternehmensverzeichnis, um ihn zu Ihrer Kontaktliste hinzuzufügen:"
   },
   "dialog--app-update": {
-    "action--confirm": "OK",
+    "action--dismiss": "OK",
     "label--title": "Update verfügbar: {current} → {latest}",
     "markup--linux-p1": "Bitte installieren Sie das Update über Ihren Systempaketmanager oder indem Sie <1>flatpak update</1> in Ihrem Terminal ausführen.",
     "markup--linux-p2": "Details zu diesem Update: <1 />",
@@ -101,7 +101,7 @@
     "prose--failed": "Das Löschen Ihrer Daten von diesem Gerät ist fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut."
   },
   "dialog--device-cookie-mismatch": {
-    "action--continue": "Schliessen",
+    "action--dismiss": "Ignorieren",
     "action--relink": "Gerät neu verknüpfen",
     "error--no-connection": "Die Aufhebung der Verknüpfung dieses Geräts ist fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
     "label--title": "Verbindung von einem anderen Gerät erkannt",
@@ -109,7 +109,7 @@
     "prose--description-p2": "Falls Sie Ihre Threema-ID auf einem anderen Gerät verwendet haben, empfehlen wir, die Desktop-App erneut mit dem Mobilgerät zu verknüpfen. Die Chatverläufe können nach erneutem Verknüpfen wiederhergestellt werden."
   },
   "dialog--device-cookie-missing": {
-    "action--close": "Schliessen",
+    "action--dismiss": "Ignorieren",
     "action--relink": "Gerät neu verknüpfen",
     "error--no-connection": "Die Aufhebung der Verknüpfung dieses Geräts ist fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
     "label--title": "Erneutes Verknüpfen empfohlen",
@@ -147,10 +147,9 @@
     "prose--group-conversation-prompt": "Dadurch werden alle Nachrichten inklusive Medien und Dokumenten in diesem Gruppenchat \"{name}\" auf diesem Gerät gelöscht (jedoch nicht auf den verknüpften Geräten)."
   },
   "dialog--error-connection": {
-    "action--client-was-dropped-cancel": "OK",
-    "action--client-was-dropped-confirm": "Gerät erneut verknüpfen",
-    "action--default-cancel": "OK",
-    "action--default-confirm": "Erneut verbinden",
+    "action--confirm-reconnect": "Erneut verbinden",
+    "action--confirm-relink": "Gerät erneut verknüpfen",
+    "action--dismiss": "Ignorieren",
     "label--title": "Verbindung fehlgeschlagen",
     "markup--backup": "Die Chatverläufe werden nach erneutem Verknüpfen wiederhergestellt.",
     "markup--client-update-required-p1": "Diese Version von Threema wird nicht mehr unterstützt (veraltete Protokollversion).",
@@ -173,6 +172,7 @@
   },
   "dialog--invalid-work-credentials": {
     "action--relink": "Gerät neu verknüpfen",
+    "action--store-credentials": "Zugangsdaten speichern und schliessen",
     "error--incorrect-password": "Das eingegebene Passwort ist falsch. Bitte versuchen Sie es erneut.",
     "error--invalid-credentials": "Ungültige Zugangsdaten: {message}",
     "error--unlinking-failed": "Geräte-Verknüpfung konnte nicht aufgehoben werden. Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
@@ -180,7 +180,6 @@
     "label--app-password": "App-Passwort",
     "label--check-credentials": "Zugangsdaten prüfen",
     "label--password": "Passwort",
-    "label--store-credentials": "Zugangsdaten speichern und schliessen",
     "label--subtitle-option-1": "Option 1: Gültige Zugangsdaten eingeben",
     "label--subtitle-option-2": "Option 2: Gerät neu verknüpfen",
     "label--title": "Ungültige Threema Work-Zugangsdaten",
@@ -318,8 +317,8 @@
     "prose--failed": "Das Gerät konnte nicht neu verknüpft werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut."
   },
   "dialog--server-alert": {
-    "action--confirm": "Gerät neu verknüpfen",
-    "action--continue": "Schliessen",
+    "action--dismiss": "Ignorieren",
+    "action--relink": "Gerät neu verknüpfen",
     "error--another-device-p1": "Der Server hat eine Verbindung von einem anderen Gerät mit derselben Threema-ID erkannt.",
     "error--another-device-p2": "Wenn Sie Ihre Threema-ID in der Zwischenzeit nicht auf einem anderen Gerät oder mit einer älteren App-Version genutzt haben, kontaktieren Sie bitte den Support und senden Sie falls möglich die Logdatei mit.",
     "error--another-device-p3": "Ansonsten empfehlen wir Ihnen, Threema Desktop neu zu verknüpfen. Ihr Nachrichtenverlauf kann dabei wiederhergestellt werden.",
@@ -355,8 +354,8 @@
     "prose--warning-enable": "Die Aktivierung der Rechtschreibprüfung wird einen Neustart der App erzwingen."
   },
   "dialog--unrecoverable-state": {
-    "action--cancel": "OK",
-    "action--confirm": "Zurücksetzen und erneut verknüpfen",
+    "action--dismiss": "Ignorieren",
+    "action--relink": "Gerät neu verknüpfen",
     "label--title": "Ungültiger Zustand",
     "prose--description-p1": "Die lokalen Daten befinden sich in einem ungültigen Zustand. Um Datenverlust zu vermeiden, können im Moment keine Nachrichten versendet oder empfangen werden. Wir bitten um Verständnis.",
     "prose--description-p2": "Um Threema weiterhin zu nutzen, müssen Sie Ihr lokales Profil entfernen und das Gerät neu verknüpfen.",

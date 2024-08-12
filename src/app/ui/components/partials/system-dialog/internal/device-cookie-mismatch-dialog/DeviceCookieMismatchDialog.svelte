@@ -32,7 +32,7 @@
     type: 'card',
     buttons: [
       {
-        label: $i18n.t('dialog--device-cookie-mismatch.action--continue', 'Continue'),
+        label: $i18n.t('dialog--device-cookie-mismatch.action--dismiss', 'Ignore'),
         onClick: () => {
           onSelectAction?.('dismissed');
           modalComponent?.close();

@@ -43,7 +43,7 @@
     "prose--add-contact-instructions-work-directory": "Alternatively, search a contact in the company directory, and add it to your contact list:"
   },
   "dialog--app-update": {
-    "action--confirm": "OK",
+    "action--dismiss": "OK",
     "label--title": "Update Available: {current} → {latest}",
     "markup--linux-p1": "Please install the update through your system package manager or by running <1>flatpak update</1> in your terminal.",
     "markup--linux-p2": "For more information about this update, see <1 />.",
@@ -101,7 +101,7 @@
     "prose--failed": "Something went wrong when deleting your data on this device. Please check your connection and try again."
   },
   "dialog--device-cookie-mismatch": {
-    "action--continue": "Continue",
+    "action--dismiss": "Ignore",
     "action--relink": "Relink Device",
     "error--no-connection": "Failed to unlink the device. Please check your internet connection and try again.",
     "label--title": "Connection from Another Device Detected",
@@ -109,7 +109,7 @@
     "prose--description-p2": "If you have used your Threema ID on another device, we recommend relinking the desktop app with your mobile device. The message history can be restored after relinking."
   },
   "dialog--device-cookie-missing": {
-    "action--close": "Continue Without Relinking",
+    "action--dismiss": "Ignore",
     "action--relink": "Relink Device",
     "error--no-connection": "Failed to unlink the device. Please check your internet connection and try again.",
     "label--title": "Relinking Recommended",
@@ -147,10 +147,9 @@
     "prose--group-conversation-prompt": "This will delete all messages including all media and documents in the \"{name}\" group chat on this device (but not on your linked devices)."
   },
   "dialog--error-connection": {
-    "action--client-was-dropped-cancel": "OK",
-    "action--client-was-dropped-confirm": "Relink Device",
-    "action--default-cancel": "OK",
-    "action--default-confirm": "Reconnect",
+    "action--confirm-reconnect": "Reconnect",
+    "action--confirm-relink": "Relink Device",
+    "action--dismiss": "Ignore",
     "label--title": "Connection Failed",
     "markup--backup": "The message history will be restored after relinking.",
     "markup--client-update-required-p1": "This Threema version is no longer supported (outdated protocol version).",
@@ -173,6 +172,7 @@
   },
   "dialog--invalid-work-credentials": {
     "action--relink": "Relink Device",
+    "action--store-credentials": "Save Credentials and Close",
     "error--incorrect-password": "The entered password is incorrect. Please try again.",
     "error--invalid-credentials": "Invalid credentials: {message}",
     "error--unlinking-failed": "Could not unlink this device. Please check your Internet connection and try again.",
@@ -180,7 +180,6 @@
     "label--app-password": "App Password",
     "label--check-credentials": "Re-Check Credentials",
     "label--password": "Password",
-    "label--store-credentials": "Save Credentials and Close",
     "label--subtitle-option-1": "Option 1: Enter Valid Credentials",
     "label--subtitle-option-2": "Option 2: Relink Device",
     "label--title": "Invalid Threema Work Credentials",
@@ -318,8 +317,8 @@
     "prose--failed": "Something went wrong when relinking your profile. Please check your connection and try again"
   },
   "dialog--server-alert": {
-    "action--confirm": "Relink Device",
-    "action--continue": "Continue",
+    "action--dismiss": "Ignore",
+    "action--relink": "Relink Device",
     "error--another-device-p1": "The server has detected a connection from a different device with the same Threema ID.",
     "error--another-device-p2": "If you haven't used your Threema ID on another device or with an older app version in the meantime, please contact the support and send a log file if possible.",
     "error--another-device-p3": "Otherwise, we recommend that you relink Threema Desktop. Your message history will be kept.",
@@ -355,8 +354,8 @@
     "prose--warning-enable": "Turning on the spellcheck will trigger a restart of the application."
   },
   "dialog--unrecoverable-state": {
-    "action--cancel": "OK",
-    "action--confirm": "Reset and Relink",
+    "action--dismiss": "Ignore",
+    "action--relink": "Relink Device",
     "label--title": "Unrecoverable State Detected",
     "prose--description-p1": "We have detected that your local data is in an unrecoverable state. To prevent data loss, you currently can’t send or receive new messages. We apologize for the inconvenience.",
     "prose--description-p2": "To continue using Threema, you need to remove your local profile and relink the device.",

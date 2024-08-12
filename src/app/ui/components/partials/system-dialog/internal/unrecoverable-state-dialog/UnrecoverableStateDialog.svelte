@@ -29,7 +29,7 @@
     type: 'card',
     buttons: [
       {
-        label: $i18n.t('dialog--unrecoverable-state.action--cancel', 'Continue with invalid state'),
+        label: $i18n.t('dialog--unrecoverable-state.action--dismiss', 'Ignore'),
         onClick: () => {
           onSelectAction?.('dismissed');
           modalComponent?.close();
@@ -37,7 +37,7 @@
         type: 'naked',
       },
       {
-        label: $i18n.t('dialog--unrecoverable-state.action--confirm', 'Reset and relink'),
+        label: $i18n.t('dialog--unrecoverable-state.action--relink', 'Relink Device'),
         onClick: () => {
           if (!services.isSet()) {
             log.warn('Cannot unlink the profile because the app services are not yet ready');
@@ -64,19 +64,19 @@
     <p>
       {$i18n.t(
         'dialog--unrecoverable-state.prose--description-p1',
-        'We have detected that your local data is in an unrecoverable state. To prevent data loss, you cannot currently send or receive new messages. We apologize for the inconvenience.',
+        'We have detected that your local data is in an unrecoverable state. To prevent data loss, you currently can’t send or receive new messages. We apologize for the inconvenience.',
       )}
     </p>
     <p>
       {$i18n.t(
         'dialog--unrecoverable-state.prose--description-p2',
-        'To continue using Threema, you have to remove your local profile and relink.',
+        'To continue using Threema, you need to remove your local profile and relink the device.',
       )}
     </p>
     <p>
       {$i18n.t(
         'dialog--unrecoverable-state.prose--description-p3',
-        'Please report this error to Threema Support from Threema on your mobile device (Settings > Beta Feedback). Note: Remember to save your logs before relinking, as they will be cleared.',
+        'Please report this error to Threema’s support from the app on your mobile device (“Settings > Beta Feedback”). Note: Remember to save your logs before relinking, as they will be cleared.',
       )}
     </p>
   </div>

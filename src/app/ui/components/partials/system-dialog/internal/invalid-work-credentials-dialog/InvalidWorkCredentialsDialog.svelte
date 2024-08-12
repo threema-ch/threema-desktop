@@ -272,7 +272,7 @@
             on:click={() => storeCredentials(modalComponent)}
           >
             {$i18n.t(
-              'dialog--invalid-work-credentials.label--store-credentials',
+              'dialog--invalid-work-credentials.action--store-credentials',
               'Save Credentials and Close',
             )}
           </Button>

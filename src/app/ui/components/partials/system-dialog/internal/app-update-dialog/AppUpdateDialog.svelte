@@ -27,7 +27,7 @@
     buttons: [
       {
         isFocused: true,
-        label: $i18n.t('dialog--app-update.action--confirm', 'OK'),
+        label: $i18n.t('dialog--app-update.action--dismiss', 'OK'),
         onClick: () => {
           onSelectAction?.('dismissed');
           modalComponent?.close();

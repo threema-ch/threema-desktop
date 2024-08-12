@@ -32,7 +32,7 @@
     type: 'card',
     buttons: [
       {
-        label: $i18n.t('dialog--device-cookie-missing.action--close', 'Continue Without Relinking'),
+        label: $i18n.t('dialog--device-cookie-missing.action--dismiss', 'Ignore'),
         onClick: () => {
           onSelectAction?.('dismissed');
           modalComponent?.close();
