@@ -1,4 +1,3 @@
-import type {Status} from '~/app/ui/components/molecules/message/internal/indicator/props';
 import type {Draft} from '~/app/ui/components/partials/conversation/drafts';
 import type {ConversationPreviewProps} from '~/app/ui/components/partials/conversation-preview-list/internal/conversation-preview/props';
 import type {AnyContentItemOptions} from '~/app/ui/components/partials/receiver-card/internal/content-item/types';
@@ -179,19 +178,4 @@ function getLastMessagePreviewText(
     }
 
     return text ?? ('' as SanitizedHtml);
-}
-
-/**
- * Return the corresponding date for the given message status.
- */
-export function getMessageDateByStatus(status: Status): Date {
-    if (status.read !== undefined) {
-        return status.read.at;
-    } else if (status.delivered !== undefined) {
-        return status.delivered.at;
-    } else if (status.sent !== undefined) {
-        return status.sent.at;
-    }
-
-    return status.created.at;
 }

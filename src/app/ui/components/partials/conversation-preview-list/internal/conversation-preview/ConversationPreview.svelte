@@ -13,10 +13,7 @@
     type ConversationDraftStore,
     type Draft,
   } from '~/app/ui/components/partials/conversation/drafts';
-  import {
-    getReceiverCardBottomLeftItemOptions,
-    getMessageDateByStatus,
-  } from '~/app/ui/components/partials/conversation-preview-list/helpers';
+  import {getReceiverCardBottomLeftItemOptions} from '~/app/ui/components/partials/conversation-preview-list/helpers';
   import type {ConversationPreviewProps} from '~/app/ui/components/partials/conversation-preview-list/internal/conversation-preview/props';
   import ReceiverCard from '~/app/ui/components/partials/receiver-card/ReceiverCard.svelte';
   import type {VirtualRect} from '~/app/ui/generic/popover/types';
@@ -176,7 +173,7 @@
               : [
                   {
                     type: 'relative-timestamp',
-                    date: getMessageDateByStatus(lastMessage.status),
+                    date: lastMessage.status.created.at,
                     format: 'auto',
                     services,
                   },
