@@ -60,13 +60,12 @@ export function getModalButtons(
     handleClickDeleteForEveryone: () => void,
     i18n: I18nType,
 ): ModalButton[] {
-    const buttons: ModalButton[] = [
+    return [
         {
             label: i18n.t('dialog--delete-message.action--cancel', 'Cancel'),
             type: 'naked',
             onClick: 'close',
         },
-
         {
             label: i18n.t(
                 'dialog--delete-message.action--delete-locally',
@@ -75,17 +74,17 @@ export function getModalButtons(
             type: 'naked',
             onClick: handleClickDeleteLocally,
         },
+        ...(deleteForEveryoneSupported(message, isFeatureSupported)
+            ? [
+                  {
+                      label: i18n.t(
+                          'dialog--delete-message.action--delete-for-everyone',
+                          'Delete for Everyone',
+                      ),
+                      type: 'naked',
+                      onClick: handleClickDeleteForEveryone,
+                  } as const,
+              ]
+            : []),
     ];
-    if (deleteForEveryoneSupported(message, isFeatureSupported)) {
-        buttons.push({
-            label: i18n.t(
-                'dialog--delete-message.action--delete-for-everyone',
-                'Delete for Everyone',
-            ),
-            type: 'naked',
-            onClick: handleClickDeleteForEveryone,
-        });
-    }
-
-    return buttons;
 }

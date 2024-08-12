@@ -79,9 +79,9 @@
       },
     ],
     buttons,
+    layout: 'compact',
+    minWidth: 320,
     title: $i18n.t('dialog--delete-message.label--title', 'Delete message'),
-    minWidth: 360,
-    maxWidth: 460,
   }}
   options={{
     allowClosingWithEsc: true,

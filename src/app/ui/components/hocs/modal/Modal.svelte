@@ -170,12 +170,15 @@
             minWidth = 320,
             maxWidth,
             title,
+            layout = 'expansive',
           } = wrapper}
 
           <div
             class="card"
             class:elevated
-            style={`--c-t-min-width: ${minWidth}px; ${maxWidth === undefined ? '--c-t-max-width: 100%;' : `--c-t-max-width: ${maxWidth}px;`}`}
+            style={`--c-t-min-width: ${minWidth}px; 
+              ${maxWidth === undefined ? '--c-t-max-width: 100%;' : `--c-t-max-width: ${maxWidth}px;`}
+              --c-t-width: ${layout === 'expansive' ? '100%' : 'fit-content'};`}
           >
             {#if title !== undefined || actions.length > 0}
               <div class="header">
@@ -249,7 +252,7 @@
 <style lang="scss">
   @use 'component' as *;
 
-  $-vars: (min-width, max-width);
+  $-vars: (min-width, max-width, width);
   $-temp-vars: format-each($-vars, $prefix: --c-t-);
 
   .modal {
@@ -332,7 +335,7 @@
 
           min-width: var($-temp-vars, --c-t-min-width);
           max-width: min(var($-temp-vars, --c-t-max-width), 100%);
-          width: 100%;
+          width: var($-temp-vars, --c-t-width);
 
           min-height: auto;
           max-height: 100%;
@@ -372,7 +375,7 @@
 
           .footer {
             display: flex;
-            align-items: center;
+            align-items: stretch;
             justify-content: end;
             gap: rem(8px);
             padding: rem(16px);
