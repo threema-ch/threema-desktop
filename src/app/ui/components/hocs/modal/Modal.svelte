@@ -159,7 +159,12 @@
 
 {#if !closed}
   <Portal {target}>
-    <dialog bind:this={element} class="modal" on:close={handleClose}>
+    <dialog
+      bind:this={element}
+      class="modal"
+      data-appearance={options.overlay ?? 'translucent'}
+      on:close={handleClose}
+    >
       <div class={`wrapper type-${wrapper.type}`} class:padded={wrapper.type === 'card'}>
         {#if wrapper.type === 'none'}
           {@const {actions = []} = wrapper}
@@ -386,6 +391,10 @@
           }
         }
       }
+    }
+
+    &[data-appearance='opaque'] {
+      background-color: rgb(var(--cc-modal-dialog-background-color-rgb-triplet));
     }
   }
 </style>

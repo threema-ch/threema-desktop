@@ -16,11 +16,6 @@ export interface ModalProps {
     readonly element?: SvelteNullableBinding<HTMLElement>;
     readonly options?: {
         /**
-         * Whether to suspend listening for global application hotkeys while the modal is visible.
-         * Defaults to `true`.
-         */
-        readonly suspendHotkeysWhenVisible?: boolean;
-        /**
          * Whether the modal should be closable by pressing `Esc`. Defaults to `true`.
          */
         readonly allowClosingWithEsc?: boolean;
@@ -29,6 +24,15 @@ export interface ModalProps {
          * needs to be handled from outside.
          */
         readonly allowSubmittingWithEnter?: boolean;
+        /**
+         * Appearance of the surface behind the modal. Defaults to `"translucent"`.
+         */
+        readonly overlay?: 'opaque' | 'translucent';
+        /**
+         * Whether to suspend listening for global application hotkeys while the modal is visible.
+         * Defaults to `true`.
+         */
+        readonly suspendHotkeysWhenVisible?: boolean;
     };
     /**
      * The target element this modal should be attached to. Defaults to `"#container"`.
