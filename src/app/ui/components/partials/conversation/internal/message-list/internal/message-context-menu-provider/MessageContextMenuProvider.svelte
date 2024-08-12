@@ -296,14 +296,18 @@
     }
 
     .caret {
-      @include clicktarget-button-circle;
       --c-icon-font-size: #{rem(24px)};
-      visibility: hidden;
-      color: var(--cc-conversation-message-options-caret-color);
-      width: rem(24px);
-      height: rem(24px);
-      cursor: pointer;
-      user-select: none;
+
+      @include clicktarget-button-circle;
+
+      & {
+        visibility: hidden;
+        color: var(--cc-conversation-message-options-caret-color);
+        width: rem(24px);
+        height: rem(24px);
+        cursor: pointer;
+        user-select: none;
+      }
     }
 
     &:hover .caret {

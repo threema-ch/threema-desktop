@@ -48,12 +48,14 @@
         --c-t-thickness,
         calc(#{var(--c-circular-progress-thickness, default)} / 2)
       );
+
       fill: var(--c-circular-progress-fill-color, default);
       stroke: var(--c-circular-progress-stroke-color, default);
+      stroke-width: var($-temp-vars, --c-t-thickness);
+
       &.white {
         stroke: #fff;
       }
-      stroke-width: var($-temp-vars, --c-t-thickness);
     }
 
     &.determinate {

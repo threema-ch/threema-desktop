@@ -20,13 +20,15 @@
   button {
     @include clicktarget-button-circle;
 
-    width: rem(120px);
-    height: rem(120px);
-    border-radius: 50%;
-    background-color: var(--cc-profile-picture-upload-background-color);
-    display: grid;
-    place-items: center;
-    cursor: pointer;
+    & {
+      width: rem(120px);
+      height: rem(120px);
+      border-radius: 50%;
+      background-color: var(--cc-profile-picture-upload-background-color);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
 
     span {
       display: grid;

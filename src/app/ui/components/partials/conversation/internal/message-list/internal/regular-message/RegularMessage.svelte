@@ -386,16 +386,6 @@
       overflow: hidden;
 
       .sync-button {
-        @include clicktarget-button-circle;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--mc-message-overlay-button-color);
-        background-color: var(--mc-message-overlay-button-background-color);
-        width: rem(44px);
-        height: rem(44px);
-        font-size: rem(22px);
-
         --c-icon-button-progress-bar-overlay-color: var(--mc-message-overlay-button-color);
 
         --c-icon-button-naked-outer-background-color--hover: var(
@@ -407,6 +397,19 @@
         --c-icon-button-naked-outer-background-color--active: var(
           --mc-message-overlay-button-background-color--active
         );
+
+        @include clicktarget-button-circle;
+
+        & {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--mc-message-overlay-button-color);
+          background-color: var(--mc-message-overlay-button-background-color);
+          width: rem(44px);
+          height: rem(44px);
+          font-size: rem(22px);
+        }
       }
     }
   }

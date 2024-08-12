@@ -300,17 +300,19 @@
     }
 
     .add {
-      grid-area: add;
-
-      @extend %neutral-input;
       @include def-var(--c-icon-font-size, #{rem(24px)});
+      @extend %neutral-input;
 
-      padding: 0 rem(16px) rem(4px);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: start;
-      gap: rem(8px);
+      & {
+        grid-area: add;
+
+        padding: 0 rem(16px) rem(4px);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: start;
+        gap: rem(8px);
+      }
 
       .icon {
         display: flex;

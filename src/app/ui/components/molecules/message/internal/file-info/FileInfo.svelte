@@ -92,8 +92,10 @@
     }
 
     .footer {
-      grid-area: footer;
       @extend %font-small-400;
+
+      grid-area: footer;
+
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -103,12 +105,13 @@
 
       .status {
         @include def-var(--c-icon-font-size, var(--mc-message-indicator-icon-size));
+        @extend %font-small-400;
+
         justify-self: end;
         display: flex;
         align-items: center;
         gap: var(--mc-message-indicator-column-gap);
         color: var(--mc-message-indicator-label);
-        @extend %font-small-400;
       }
     }
   }

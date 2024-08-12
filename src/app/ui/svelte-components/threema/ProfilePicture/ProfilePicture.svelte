@@ -90,13 +90,13 @@
   }
 
   .initials {
+    text-transform: uppercase;
+
     &[data-size='large'] {
       @extend %font-large-400;
     }
     &[data-size='small'] {
       @extend %font-small-400;
     }
-
-    text-transform: uppercase;
   }
 </style>

@@ -142,15 +142,17 @@
       .expand {
         @include clicktarget-button-rect;
 
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: start;
-        gap: rem(12px);
+        & {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: start;
+          gap: rem(12px);
 
-        color: var(--t-text-e2-color);
-        margin: rem(8px) 0 0 0;
-        padding: rem(12px) rem(16px);
+          color: var(--t-text-e2-color);
+          margin: rem(8px) 0 0 0;
+          padding: rem(12px) rem(16px);
+        }
 
         .icon {
           --c-icon-font-size: #{rem(24px)};

@@ -588,21 +588,6 @@
     .scroll-to-bottom {
       --c-icon-font-size: #{rem(24px)};
 
-      @include clicktarget-button-circle;
-      @extend %elevation-060;
-      z-index: $z-index-global-overlay;
-      position: absolute;
-      right: rem(8px);
-      bottom: rem(12px);
-      width: rem(40px);
-      height: rem(40px);
-      color: var(--cc-chat-scroll-to-bottom-button-color);
-      background-color: var(--cc-chat-scroll-to-bottom-button-background-color);
-
-      transition:
-        opacity 0.05s linear,
-        transform 0.1s ease-out;
-
       --c-icon-button-naked-outer-background-color--hover: var(
         --cc-chat-scroll-to-bottom-button-background-color--hover
       );
@@ -612,6 +597,25 @@
       --c-icon-button-naked-outer-background-color--active: var(
         --cc-chat-scroll-to-bottom-button-background-color--active
       );
+
+      @include clicktarget-button-circle;
+
+      & {
+        @extend %elevation-060;
+
+        z-index: $z-index-global-overlay;
+        position: absolute;
+        right: rem(8px);
+        bottom: rem(12px);
+        width: rem(40px);
+        height: rem(40px);
+        color: var(--cc-chat-scroll-to-bottom-button-color);
+        background-color: var(--cc-chat-scroll-to-bottom-button-background-color);
+
+        transition:
+          opacity 0.05s linear,
+          transform 0.1s ease-out;
+      }
 
       &:not(.visible) {
         pointer-events: none;

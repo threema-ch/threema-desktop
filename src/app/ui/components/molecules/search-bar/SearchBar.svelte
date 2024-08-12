@@ -125,12 +125,14 @@
     .action {
       @include clicktarget-button-rect;
 
-      color: var(--cc-search-input-icon-color, inherit);
-      padding: rem(8px);
-      font-size: em(24px);
-      user-select: none;
-      display: grid;
-      place-items: center;
+      & {
+        color: var(--cc-search-input-icon-color, inherit);
+        padding: rem(8px);
+        font-size: em(24px);
+        user-select: none;
+        display: grid;
+        place-items: center;
+      }
 
       &:hover:not([data-icon='search']) {
         color: var(--cc-search-input-icon-color--hover, inherit);

@@ -24,6 +24,7 @@
     place-items: center;
 
     span {
+      display: inline-block;
       width: rem(80px);
       height: rem(93px);
 
@@ -31,8 +32,6 @@
         width: rem(120px);
         height: rem(139px);
       }
-
-      display: inline-block;
 
       :global(svg .fill-opacity) {
         fill-opacity: var(--t-main-welcome-icon-fill-opacity);

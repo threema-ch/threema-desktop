@@ -278,14 +278,17 @@
 
       .expand {
         @include clicktarget-button-rect;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: rem(12px);
 
-        color: var(--t-text-e2-color);
-        margin: rem(8px) 0 0 0;
-        padding: rem(12px) 0;
+        & {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: rem(12px);
+
+          color: var(--t-text-e2-color);
+          margin: rem(8px) 0 0 0;
+          padding: rem(12px) 0;
+        }
 
         .icon {
           --c-icon-font-size: #{rem(24px)};

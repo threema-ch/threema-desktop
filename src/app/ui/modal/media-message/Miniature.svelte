@@ -51,8 +51,11 @@
 
   button {
     @include clicktarget-button-circle;
-    border-radius: rem(4px);
-    margin-top: rem(5px);
+
+    & {
+      border-radius: rem(4px);
+      margin-top: rem(5px);
+    }
 
     &:disabled {
       opacity: 1;

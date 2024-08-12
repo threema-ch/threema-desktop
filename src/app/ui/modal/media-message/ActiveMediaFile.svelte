@@ -162,12 +162,15 @@
 
   button.remove-icon {
     @include clicktarget-button-circle;
-    border-radius: rem(4px);
 
-    width: rem(40px);
-    height: rem(40px);
-    display: grid;
-    place-items: center;
-    cursor: pointer;
+    & {
+      border-radius: rem(4px);
+
+      width: rem(40px);
+      height: rem(40px);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
   }
 </style>

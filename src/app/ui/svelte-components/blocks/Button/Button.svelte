@@ -79,6 +79,7 @@
 
   button {
     @extend %neutral-input;
+
     font-size: var($-temp-vars-size, --c-t-font-size);
     padding: var($-temp-vars-size, --c-t-padding);
     border: rem(1px) solid var($-temp-vars, --c-t-border-color);
@@ -90,30 +91,33 @@
       cursor: pointer;
 
       &:hover {
-        border-color: var($-temp-vars, --c-t-border-color--hover);
         @include def-var(
           $-temp-vars,
           --c-t-background-color,
           var($-temp-vars, --c-t-background-color--hover)
         );
+
+        border-color: var($-temp-vars, --c-t-border-color--hover);
       }
 
       &:focus-visible {
-        border-color: var($-temp-vars, --c-t-border-color--focus);
         @include def-var(
           $-temp-vars,
           --c-t-background-color,
           var($-temp-vars, --c-t-background-color--hover)
         );
+
+        border-color: var($-temp-vars, --c-t-border-color--focus);
       }
 
       &:active {
-        border-color: var($-temp-vars, --c-t-border-color--active);
         @include def-var(
           $-temp-vars,
           --c-t-background-color,
           var($-temp-vars, --c-t-background-color--active)
         );
+
+        border-color: var($-temp-vars, --c-t-border-color--active);
       }
     }
 

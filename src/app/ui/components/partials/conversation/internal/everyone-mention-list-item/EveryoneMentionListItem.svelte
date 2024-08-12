@@ -38,15 +38,17 @@
   .button {
     @include clicktarget-button-rect;
 
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: start;
+    & {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: start;
 
-    background-color: transparent;
-    border: none;
-    padding: rem(10px) rem(16px);
-    text-decoration: inherit;
-    color: inherit;
+      background-color: transparent;
+      border: none;
+      padding: rem(10px) rem(16px);
+      text-decoration: inherit;
+      color: inherit;
+    }
   }
 </style>

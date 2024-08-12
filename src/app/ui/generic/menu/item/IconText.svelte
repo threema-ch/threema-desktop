@@ -15,11 +15,12 @@
   @use 'component' as *;
 
   .icon-text {
+    @include def-var(--c-icon-font-size, #{rem(24px)});
+
     display: grid;
     grid-template: 'icon text' #{rem(48px)} / #{rem(48px)} auto;
     column-gap: rem(8px);
     align-items: center;
-    @include def-var(--c-icon-font-size, #{rem(24px)});
     cursor: pointer;
     user-select: none;
 

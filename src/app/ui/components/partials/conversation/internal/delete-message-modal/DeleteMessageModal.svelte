@@ -123,11 +123,11 @@
 
   .content {
     .description {
+      padding: 0 rem(16px);
+
       p:first-child {
         margin-top: 0;
       }
-
-      padding: 0 rem(16px);
     }
   }
 </style>

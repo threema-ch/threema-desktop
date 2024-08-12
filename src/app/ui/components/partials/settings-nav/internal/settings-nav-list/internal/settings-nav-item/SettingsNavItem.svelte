@@ -31,6 +31,10 @@
   $-fade-width: rem(48px);
 
   .container {
+    @include def-var(
+      $--ic-swipe-area-right-size: 75%,
+      $--cc-profile-picture-overlay-background-color: var($-temp-vars, --cc-t-background-color)
+    );
     @extend %neutral-input;
     cursor: pointer;
 
@@ -41,6 +45,7 @@
     gap: rem(12px);
     padding: rem(10px) rem(16px);
     width: 100%;
+    background-color: var($-temp-vars, --cc-t-background-color);
 
     .icon {
       display: flex;
@@ -57,12 +62,6 @@
       align-items: start;
       justify-content: start;
     }
-
-    @include def-var(
-      $--ic-swipe-area-right-size: 75%,
-      $--cc-profile-picture-overlay-background-color: var($-temp-vars, --cc-t-background-color)
-    );
-    background-color: var($-temp-vars, --cc-t-background-color);
 
     &:hover {
       @include def-var(

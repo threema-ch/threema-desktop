@@ -333,19 +333,6 @@
       overflow: hidden;
 
       .play-button {
-        @include clicktarget-button-circle;
-        display: flex;
-        position: absolute;
-        justify-content: center;
-        align-items: center;
-        color: var(--mc-message-overlay-button-color);
-        background-color: var(--mc-message-overlay-button-background-color);
-        width: rem(44px);
-        height: rem(44px);
-        left: calc(50% - rem(22px));
-        top: calc(50% - rem(22px));
-        font-size: rem(24px);
-
         --c-icon-button-naked-outer-background-color--hover: var(
           --mc-message-overlay-button-background-color--hover
         );
@@ -355,6 +342,22 @@
         --c-icon-button-naked-outer-background-color--active: var(
           --mc-message-overlay-button-background-color--active
         );
+
+        @include clicktarget-button-circle;
+
+        & {
+          display: flex;
+          position: absolute;
+          justify-content: center;
+          align-items: center;
+          color: var(--mc-message-overlay-button-color);
+          background-color: var(--mc-message-overlay-button-background-color);
+          width: rem(44px);
+          height: rem(44px);
+          left: calc(50% - rem(22px));
+          top: calc(50% - rem(22px));
+          font-size: rem(24px);
+        }
       }
 
       .badges {
@@ -369,8 +372,9 @@
         pointer-events: none;
 
         .badge {
-          @extend %font-small-400;
           @include def-var(--c-icon-font-size, var(--mc-message-indicator-icon-size));
+          @extend %font-small-400;
+
           display: flex;
           align-items: center;
           gap: var(--mc-message-indicator-column-gap);
@@ -393,12 +397,13 @@
 
       .status {
         @include def-var(--c-icon-font-size, var(--mc-message-indicator-icon-size));
+        @extend %font-small-400;
+
         justify-self: end;
         display: flex;
         align-items: center;
         gap: var(--mc-message-indicator-column-gap);
         color: var(--mc-message-indicator-label);
-        @extend %font-small-400;
       }
     }
 

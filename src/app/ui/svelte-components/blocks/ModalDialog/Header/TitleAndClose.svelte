@@ -31,10 +31,12 @@
     }
 
     .close {
-      @include clicktarget-button-circle;
       @include def-var(--c-icon-font-size, #{rem(24px)});
+      @include clicktarget-button-circle;
 
-      padding: rem(4px);
+      & {
+        padding: rem(4px);
+      }
     }
   }
 </style>

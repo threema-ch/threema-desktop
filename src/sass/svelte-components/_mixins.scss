@@ -90,8 +90,9 @@ $-button-default-size: (
 }
 
 @mixin clicktarget-button-circle($size: $-button-default-size) {
-  @include -clicktarget-button($size);
   border-radius: 50%;
+
+  @include -clicktarget-button($size);
 }
 
 @mixin -clicktarget-link() {

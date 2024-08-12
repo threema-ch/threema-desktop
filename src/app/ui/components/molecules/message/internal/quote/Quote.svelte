@@ -165,20 +165,6 @@
       overflow: hidden;
 
       .play-icon {
-        @include clicktarget-button-circle;
-        pointer-events: none;
-        display: flex;
-        position: absolute;
-        justify-content: center;
-        align-items: center;
-        color: var(--mc-message-overlay-button-color);
-        background-color: var(--mc-message-overlay-button-background-color);
-        width: rem(22px);
-        height: rem(22px);
-        left: calc(50% - rem(11px));
-        top: calc(50% - rem(11px));
-        font-size: rem(12px);
-
         --c-icon-button-naked-outer-background-color--hover: var(
           --mc-message-overlay-button-background-color--hover
         );
@@ -188,6 +174,23 @@
         --c-icon-button-naked-outer-background-color--active: var(
           --mc-message-overlay-button-background-color--active
         );
+
+        @include clicktarget-button-circle;
+
+        & {
+          pointer-events: none;
+          display: flex;
+          position: absolute;
+          justify-content: center;
+          align-items: center;
+          color: var(--mc-message-overlay-button-color);
+          background-color: var(--mc-message-overlay-button-background-color);
+          width: rem(22px);
+          height: rem(22px);
+          left: calc(50% - rem(11px));
+          top: calc(50% - rem(11px));
+          font-size: rem(12px);
+        }
       }
     }
 

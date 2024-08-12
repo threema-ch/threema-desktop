@@ -251,20 +251,23 @@
     .toggle {
       grid-area: toggle;
 
-      @include clicktarget-button-circle;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: var(--t-color-primary);
-      background-color: transparent;
-      border: rem(2px) solid var(--t-color-primary);
-      width: rem(32px);
-      height: rem(32px);
-      font-size: rem(22px);
-
       --c-icon-button-naked-outer-background-color--hover: transparent;
       --c-icon-button-naked-outer-background-color--focus: transparent;
       --c-icon-button-naked-outer-background-color--active: transparent;
+
+      @include clicktarget-button-circle;
+
+      & {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--t-color-primary);
+        background-color: transparent;
+        border: rem(2px) solid var(--t-color-primary);
+        width: rem(32px);
+        height: rem(32px);
+        font-size: rem(22px);
+      }
     }
 
     .progress {
