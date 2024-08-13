@@ -1483,8 +1483,6 @@ export class Backend {
             } else {
                 log.info('Not restoring messages, continuing normal flow');
             }
-
-            await wrappedOldProfileRemover.remove();
         }
 
         // Now that essential data is processed, we can connect to the Mediator server and register
@@ -1525,6 +1523,9 @@ export class Backend {
                     {kind: 'connection-error', cause: 'closed'},
                 );
             }
+
+            // Delete old versions of this profile from the file system (if any).
+            await wrappedOldProfileRemover.remove();
         } else {
             // Purge data and report error
             purgeSensitiveData();
