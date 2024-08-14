@@ -2,6 +2,7 @@ import {ReceiverType} from '~/common/enum';
 import {TRANSFER_HANDLER} from '~/common/index';
 import {AppearanceSettingsModelStore} from '~/common/model/settings/appearance';
 import {CallsSettingsModelStore} from '~/common/model/settings/calls';
+import {ChatSettingsModelStore} from '~/common/model/settings/chat';
 import {DevicesSettingsModelStore} from '~/common/model/settings/devices';
 import {MediaSettingsModelStore} from '~/common/model/settings/media';
 import {PrivacySettingsModelStore} from '~/common/model/settings/privacy';
@@ -15,6 +16,7 @@ import type {
     PrivacySettings,
     ProfileSettings,
     AppearanceSettings,
+    ChatSettings,
 } from '~/common/model/types/settings';
 import type {User} from '~/common/model/types/user';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
@@ -36,24 +38,26 @@ export class UserModel implements User {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
     public readonly identity: IdentityString;
-    public readonly profileSettings: LocalModelStore<ProfileSettings>;
-    public readonly privacySettings: LocalModelStore<PrivacySettings>;
-    public readonly callsSettings: LocalModelStore<CallsSettings>;
-    public readonly devicesSettings: LocalModelStore<DevicesSettings>;
     public readonly appearanceSettings: LocalModelStore<AppearanceSettings>;
+    public readonly callsSettings: LocalModelStore<CallsSettings>;
+    public readonly chatSettings: LocalModelStore<ChatSettings>;
+    public readonly devicesSettings: LocalModelStore<DevicesSettings>;
     public readonly mediaSettings: LocalModelStore<MediaSettings>;
+    public readonly privacySettings: LocalModelStore<PrivacySettings>;
+    public readonly profileSettings: LocalModelStore<ProfileSettings>;
 
     public readonly profilePicture: LocalStore<ProfilePictureView>;
 
     public constructor(services: ServicesForModel) {
         // TODO(DESK-1468): Redundant. Consider removing this.
         this.identity = services.device.identity.string;
-        this.profileSettings = new ProfileSettingsModelStore(services);
-        this.privacySettings = new PrivacySettingsModelStore(services);
-        this.callsSettings = new CallsSettingsModelStore(services);
-        this.devicesSettings = new DevicesSettingsModelStore(services);
         this.appearanceSettings = new AppearanceSettingsModelStore(services);
+        this.callsSettings = new CallsSettingsModelStore(services);
+        this.chatSettings = new ChatSettingsModelStore(services);
+        this.devicesSettings = new DevicesSettingsModelStore(services);
         this.mediaSettings = new MediaSettingsModelStore(services);
+        this.privacySettings = new PrivacySettingsModelStore(services);
+        this.profileSettings = new ProfileSettingsModelStore(services);
 
         // Derivations of above stores
 

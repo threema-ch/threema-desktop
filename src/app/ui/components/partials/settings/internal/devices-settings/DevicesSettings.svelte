@@ -73,7 +73,7 @@
       key=""
       on:click={() => (modalState = 'relink-device')}
     >
-      <Text text={$i18n.t('settings--about.label--relink', 'Relink this device')}></Text>
+      <Text text={$i18n.t('settings--devices.label--relink', 'Relink this device')}></Text>
     </KeyValueList.ItemWithButton>
   </KeyValueList.Section>
 </KeyValueList>

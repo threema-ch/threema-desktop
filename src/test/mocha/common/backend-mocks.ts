@@ -69,6 +69,7 @@ import {
 } from '~/common/model/profile-picture';
 import {AppearanceSettingsModelStore} from '~/common/model/settings/appearance';
 import {CallsSettingsModelStore} from '~/common/model/settings/calls';
+import {ChatSettingsModelStore} from '~/common/model/settings/chat';
 import {DevicesSettingsModelStore} from '~/common/model/settings/devices';
 import {MediaSettingsModelStore} from '~/common/model/settings/media';
 import {PrivacySettingsModelStore} from '~/common/model/settings/privacy';
@@ -85,6 +86,7 @@ import type {
     AppearanceSettings,
     CallsSettings,
     MediaSettings,
+    ChatSettings,
 } from '~/common/model/types/settings';
 import type {User} from '~/common/model/types/user';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
@@ -411,6 +413,7 @@ class UserRepository implements User {
     public devicesSettings: LocalModelStore<DevicesSettings>;
     public appearanceSettings: LocalModelStore<AppearanceSettings>;
     public mediaSettings: LocalModelStore<MediaSettings>;
+    public chatSettings: LocalModelStore<ChatSettings>;
 
     public constructor(userIdentity: IdentityString, services: ServicesForModel) {
         this.identity = userIdentity;
@@ -420,6 +423,7 @@ class UserRepository implements User {
         this.devicesSettings = new DevicesSettingsModelStore(services);
         this.appearanceSettings = new AppearanceSettingsModelStore(services);
         this.mediaSettings = new MediaSettingsModelStore(services);
+        this.chatSettings = new ChatSettingsModelStore(services);
 
         this.displayName = derive(
             [this.profileSettings],

@@ -755,6 +755,12 @@ export enum InactiveContactsPolicy {
     SHOW = 0,
     HIDE = 1,
 }
+
+/** @generate convert **/
+export enum ComposeBarEnterMode {
+    SUBMIT = 0,
+    LINE_BREAK = 1,
+}
 /**
  * ELECTRON
  * ========

@@ -1272,12 +1272,12 @@ export namespace StatusMessageType {
     export type GROUP_MEMBER_CHANGED = typeof GROUP_MEMBER_CHANGED;
     export const GROUP_NAME_CHANGED = 'group-name-changed';
     export type GROUP_NAME_CHANGED = typeof GROUP_NAME_CHANGED;
-    export const GROUP_USER_STATE_CHANGED = 'group-user-state-changed';
-    export type GROUP_USER_STATE_CHANGED = typeof GROUP_USER_STATE_CHANGED;
     export const GROUP_CALL_STARTED = 'group-call-started';
     export type GROUP_CALL_STARTED = typeof GROUP_CALL_STARTED;
     export const GROUP_CALL_ENDED = 'group-call-ended';
     export type GROUP_CALL_ENDED = typeof GROUP_CALL_ENDED;
+    export const GROUP_USER_STATE_CHANGED = 'group-user-state-changed';
+    export type GROUP_USER_STATE_CHANGED = typeof GROUP_USER_STATE_CHANGED;
 }
 /**
  * All possible status message types.
@@ -1293,9 +1293,9 @@ export namespace StatusMessageTypeUtils {
         StatusMessageType.CHAT_RESTORED,
         StatusMessageType.GROUP_MEMBER_CHANGED,
         StatusMessageType.GROUP_NAME_CHANGED,
-        StatusMessageType.GROUP_USER_STATE_CHANGED,
         StatusMessageType.GROUP_CALL_STARTED,
         StatusMessageType.GROUP_CALL_ENDED,
+        StatusMessageType.GROUP_USER_STATE_CHANGED,
     ] as const);
     export function fromString(value: string, fallback?: StatusMessageType): StatusMessageType {
         if ((ALL as ReadonlySet<string>).has(value)) {
@@ -1316,9 +1316,9 @@ export namespace StatusMessageTypeUtils {
         [StatusMessageType.CHAT_RESTORED]: 'CHAT_RESTORED',
         [StatusMessageType.GROUP_MEMBER_CHANGED]: 'GROUP_MEMBER_CHANGED',
         [StatusMessageType.GROUP_NAME_CHANGED]: 'GROUP_NAME_CHANGED',
-        [StatusMessageType.GROUP_USER_STATE_CHANGED]: 'GROUP_USER_STATE_CHANGED',
         [StatusMessageType.GROUP_CALL_STARTED]: 'GROUP_CALL_STARTED',
         [StatusMessageType.GROUP_CALL_ENDED]: 'GROUP_CALL_ENDED',
+        [StatusMessageType.GROUP_USER_STATE_CHANGED]: 'GROUP_USER_STATE_CHANGED',
     } as const;
     export function nameOf<T extends u53>(value: T): string | undefined {
         return (NAME_OF as Record<u53, string | undefined>)[value];
@@ -2438,6 +2438,35 @@ export namespace InactiveContactsPolicyUtils {
         return (ALL as ReadonlySet<u53>).has(value);
     }
     export function contains(value: unknown): value is InactiveContactsPolicy {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+}
+export namespace ComposeBarEnterMode {
+    export const SUBMIT = 0;
+    export type SUBMIT = typeof SUBMIT;
+    export const LINE_BREAK = 1;
+    export type LINE_BREAK = typeof LINE_BREAK;
+}
+/** @generate convert **/
+export type ComposeBarEnterMode = (typeof ComposeBarEnterMode)[keyof typeof ComposeBarEnterMode];
+export namespace ComposeBarEnterModeUtils {
+    export const ALL: ReadonlySet<ComposeBarEnterMode> = new Set([
+        ComposeBarEnterMode.SUBMIT,
+        ComposeBarEnterMode.LINE_BREAK,
+    ] as const);
+    export function fromNumber(value: u53, fallback?: ComposeBarEnterMode): ComposeBarEnterMode {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as ComposeBarEnterMode;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid ComposeBarEnterMode`);
+    }
+    export function containsNumber(value: u53): value is ComposeBarEnterMode {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is ComposeBarEnterMode {
         return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
     }
 }

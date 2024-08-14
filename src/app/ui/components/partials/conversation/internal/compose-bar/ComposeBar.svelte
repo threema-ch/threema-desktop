@@ -26,6 +26,7 @@
   export let options: NonNullable<$$Props['options']> = {};
   export let triggerWords: $$Props['triggerWords'] = undefined;
   export let onPaste: $$Props['onPaste'] = undefined;
+  export let enterKeyMode: NonNullable<$$Props>['enterKeyMode'] = 'submit';
 
   const dispatch = createEventDispatcher<{
     attachfiles: FileResult;
@@ -174,6 +175,7 @@
         placeholder={$i18n.t('messaging.label--compose-area', 'Write a message...')}
         {triggerWords}
         {onPaste}
+        {enterKeyMode}
         on:pastefiles
         on:submit={handleClickSendButton}
         on:textbytelengthdidchange={handleChangeTextByteLength}

@@ -1,5 +1,6 @@
 import {APPEARANCE_SETTINGS_CODEC, type AppearanceSettings} from '~/common/settings/appearance';
 import {CALLS_SETTINGS_CODEC, type CallsSettings} from '~/common/settings/calls';
+import {CHAT_SETTINGS_CODEC, type ChatSettings} from '~/common/settings/chat';
 import {DEVICES_SETTINGS_CODEC, type DeviceSettings} from '~/common/settings/devices';
 import {MEDIA_SETTINGS_CODEC, type MediaSettings} from '~/common/settings/media';
 import {PRIVACY_SETTINGS_CODEC, type PrivacySettings} from '~/common/settings/privacy';
@@ -8,14 +9,15 @@ import type {u53} from '~/common/types';
 import type {AssertAssignable} from '~/common/utils/type-assertions';
 
 const SETTINGS_CATEGORIES = [
-    'profile',
-    'privacy',
-    'calls',
-    'security',
     'about',
     'appearance',
+    'calls',
+    'chat',
     'devices',
     'media',
+    'privacy',
+    'profile',
+    'security',
 ] as const;
 
 /**
@@ -34,6 +36,7 @@ export type SettingsCategory = (typeof SETTINGS_CATEGORIES)[u53];
  */
 export interface LocalSettings {
     readonly appearance: AppearanceSettings;
+    readonly chat: ChatSettings;
     readonly devices: DeviceSettings;
     readonly media: MediaSettings;
 }
@@ -81,10 +84,12 @@ export type SettingsCategoryCodecs = {
 };
 
 export const SETTINGS_CODEC: SettingsCategoryCodecs = {
+    appearance: APPEARANCE_SETTINGS_CODEC,
+    calls: CALLS_SETTINGS_CODEC,
+    chat: CHAT_SETTINGS_CODEC,
+    devices: DEVICES_SETTINGS_CODEC,
+    media: MEDIA_SETTINGS_CODEC,
+
     profile: PROFILE_SETTINGS_CODEC,
     privacy: PRIVACY_SETTINGS_CODEC,
-    calls: CALLS_SETTINGS_CODEC,
-    devices: DEVICES_SETTINGS_CODEC,
-    appearance: APPEARANCE_SETTINGS_CODEC,
-    media: MEDIA_SETTINGS_CODEC,
 } as const;

@@ -16,4 +16,5 @@ export interface ComposeBarProps {
     };
     readonly triggerWords?: TextAreaProps['triggerWords'];
     readonly onPaste?: TextAreaProps['onPaste'];
+    readonly enterKeyMode: TextAreaProps['enterKeyMode'];
 }

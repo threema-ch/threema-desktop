@@ -77,7 +77,11 @@
 
   export let services: $$Props['services'];
 
-  const {router, backend} = services;
+  const {
+    router,
+    backend,
+    settings: {chat},
+  } = services;
 
   // Unsubscriber for the view model store
   let viewModelStoreUnsubscriber: StoreUnsubscriber | undefined = undefined;
@@ -1059,6 +1063,7 @@
                 },
               ]}
               onPaste={(text) => insertComposeBarText($viewModelStore.receiver, text)}
+              enterKeyMode={$chat.view.onEnterSubmit ? 'submit' : 'newline'}
               on:attachfiles={handleAddFiles}
               on:clicksend={handleClickSend}
               on:pastefiles={handleAddFiles}

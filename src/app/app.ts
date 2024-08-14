@@ -407,28 +407,31 @@ async function main(): Promise<() => void> {
         requestMissingWorkCredentialsModal,
     );
     const [
-        profileSettings,
         appearanceSettings,
-        privacySettings,
-        devicesSettings,
         callsSettings,
+        chatSettings,
+        devicesSettings,
         mediaSettings,
+        privacySettings,
+        profileSettings,
     ] = await Promise.all([
-        backend.model.user.profileSettings,
         backend.model.user.appearanceSettings,
-        backend.model.user.privacySettings,
-        backend.model.user.devicesSettings,
         backend.model.user.callsSettings,
+        backend.model.user.chatSettings,
+        backend.model.user.devicesSettings,
         backend.model.user.mediaSettings,
+        backend.model.user.privacySettings,
+        backend.model.user.profileSettings,
     ]);
 
     const settings: SettingsService = {
-        profile: profileSettings,
         appearance: appearanceSettings,
-        privacy: privacySettings,
-        devices: devicesSettings,
         calls: callsSettings,
+        chat: chatSettings,
+        devices: devicesSettings,
         media: mediaSettings,
+        privacy: privacySettings,
+        profile: profileSettings,
     };
 
     // Create app services

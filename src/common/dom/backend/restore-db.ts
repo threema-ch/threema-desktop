@@ -287,6 +287,7 @@ async function restoreSettings(
     const settings: LocalSettings = {
         appearance:
             oldDb.getSettings('appearance') ?? services.model.user.appearanceSettings.get().view,
+        chat: oldDb.getSettings('chat') ?? services.model.user.chatSettings.get().view,
         devices: oldDb.getSettings('devices') ?? services.model.user.devicesSettings.get().view,
         media: oldDb.getSettings('media') ?? services.model.user.mediaSettings.get().view,
     };

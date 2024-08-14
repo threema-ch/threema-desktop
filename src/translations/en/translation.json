@@ -490,6 +490,7 @@
     "hint--own-profile-picture": "My profile picture",
     "label--about": "About Threema",
     "label--appearance": "Appearance",
+    "label--chat": "Chat",
     "label--devices": "Devices",
     "label--do-not-disturb": "Do Not Disturb",
     "label--media": "Media and Storage",
@@ -516,7 +517,6 @@
     "label--git-revision": "Git Revision",
     "label--log-file-paths": "Log File Paths",
     "label--log-to-file": "Logging",
-    "label--relink": "Relink this device",
     "label--title": "About Threema for Desktop",
     "label--troubleshooting": "Troubleshooting",
     "label--version-title": "Version Information",
@@ -541,7 +541,16 @@
     "prose--spellcheck-turned-on": "Spellcheck is currently turned on",
     "prose--subtitle": "Theme, language, hour format"
   },
+  "settings--chat": {
+    "label--keyboard": "Keyboard",
+    "label--on-enter-new-line": "Enter key adds a new line. Use “{keyCombination}” to send the message.",
+    "label--on-enter-send": "Enter to Send",
+    "label--on-enter-submit": "Enter key sends the message. Use “Shift + Enter” to add a new line.",
+    "label--title": "Chat Settings",
+    "prose--subtitle": "Keyboard"
+  },
   "settings--devices": {
+    "label--relink": "Relink this device",
     "label--this-device": "This Device",
     "label--title": "Device Settings",
     "prose--subtitle": "Devices linked to your Threema ID"

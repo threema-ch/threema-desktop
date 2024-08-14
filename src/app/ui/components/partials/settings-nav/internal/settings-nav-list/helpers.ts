@@ -10,7 +10,7 @@ export function getSettingsNavItems(
 ): Record<Exclude<SettingsCategory, 'calls' | 'privacy'>, SettingsNavItemProps> {
     return {
         profile: {
-            title: i18n.t(`settings.label--profile`, 'Profile'),
+            title: i18n.t('settings.label--profile', 'Profile'),
             iconName: 'account_circle',
             subtitle: i18n.t('settings--profile.prose--subtitle', 'Threema ID'),
         },
@@ -29,7 +29,7 @@ export function getSettingsNavItems(
         },
         */
         security: {
-            title: i18n.t(`settings.label--security`, 'Security'),
+            title: i18n.t('settings.label--security', 'Security'),
             iconName: 'lock',
             subtitle: i18n.t('settings--security.prose--subtitle', 'Password'),
         },
@@ -42,21 +42,25 @@ export function getSettingsNavItems(
             ),
         },
         appearance: {
-            title: i18n.t(`settings.label--appearance`, 'Appearance'),
+            title: i18n.t('settings.label--appearance', 'Appearance'),
             iconName: 'palette',
             subtitle: i18n.t(
                 'settings--appearance.prose--subtitle',
                 'Theme, language, hour format',
             ),
         },
-
+        chat: {
+            title: i18n.t('settings.label--chat', 'Chat'),
+            iconName: 'forum',
+            subtitle: i18n.t('settings--chat.prose--subtitle', 'Keyboard'),
+        },
         media: {
             title: i18n.t('settings.label--media', 'Media & Storage'),
             iconName: 'image',
             subtitle: i18n.t('settings--media.prose--subtitle', 'Automatically download media'),
         },
         about: {
-            title: i18n.t(`settings.label--about`, 'About'),
+            title: i18n.t('settings.label--about', 'About'),
             iconName: 'info',
             subtitle: '',
         },

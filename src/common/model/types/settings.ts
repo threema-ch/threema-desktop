@@ -13,6 +13,7 @@ import type {
     TypingIndicatorPolicy,
     UnknownContactPolicy,
     GroupCallPolicy,
+    ComposeBarEnterMode,
 } from '~/common/enum';
 import type {AutoDownload} from '~/common/model/settings/media';
 import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
@@ -84,6 +85,37 @@ export type CallsSettingsController = {
 } & ProxyMarked;
 export type CallsSettings = LocalModel<CallsSettingsView, CallsSettingsController>;
 
+// Chat Settings
+
+// Note: Type must be compatible with common.settings.ChatSettings
+export interface ChatSettingsView {
+    readonly composeBarEnterMode: ComposeBarEnterMode;
+
+    // Derived properties
+
+    /**
+     * Whether submit a message on enter.
+     */
+    readonly onEnterSubmit: boolean;
+}
+
+export type ChatSettingsUpdate = Partial<ChatSettingsViewNonDerivedProperties>;
+export type ChatSettingsController = {
+    readonly meta: ModelLifetimeGuard<ChatSettingsView>;
+    readonly update: (change: ChatSettingsUpdate) => Promise<void>;
+} & ProxyMarked;
+
+export type ChatSettings = LocalModel<ChatSettingsView, ChatSettingsController>;
+
+export type ChatSettingsViewDerivedProperties = StrictExtract<
+    keyof ChatSettingsView,
+    'onEnterSubmit'
+>;
+export type ChatSettingsViewNonDerivedProperties = Omit<
+    ChatSettingsView,
+    ChatSettingsViewDerivedProperties
+>;
+
 // Devices Settings
 
 // Note: Type must be compatible with common.settings.DevicesSettings
@@ -141,6 +173,7 @@ export type MediaSettings = LocalModel<MediaSettingsView, MediaSettingsControlle
 
 export interface SettingsService extends Record<keyof Settings, unknown> {
     readonly profile: RemoteModelStore<ProfileSettings>;
+    readonly chat: RemoteModelStore<ChatSettings>;
     readonly privacy: RemoteModelStore<PrivacySettings>;
     readonly devices: RemoteModelStore<DevicesSettings>;
     readonly appearance: RemoteModelStore<AppearanceSettings>;

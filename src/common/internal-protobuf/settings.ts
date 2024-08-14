@@ -235,6 +235,16 @@ export interface MediaSettings_AutoDownload_AutoDownloadOn {
   limitInMb: number;
 }
 
+export interface ChatSettings {
+  composeBarEnterMode?: ChatSettings_ComposeBarEnterMode | undefined;
+}
+
+export const enum ChatSettings_ComposeBarEnterMode {
+  SUBMIT = 0,
+  LINE_BREAK = 1,
+  UNRECOGNIZED = -1,
+}
+
 function createBaseUnit(): Unit {
   return {};
 }
@@ -787,6 +797,42 @@ export const MediaSettings_AutoDownload_AutoDownloadOn = {
           }
 
           message.limitInMb = reader.uint32();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseChatSettings(): ChatSettings {
+  return { composeBarEnterMode: undefined };
+}
+
+export const ChatSettings = {
+  encode(message: ChatSettings, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.composeBarEnterMode !== undefined) {
+      writer.uint32(8).int32(message.composeBarEnterMode);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ChatSettings {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseChatSettings();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.composeBarEnterMode = reader.int32() as any;
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {

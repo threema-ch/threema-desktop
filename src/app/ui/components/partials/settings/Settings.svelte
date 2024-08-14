@@ -10,6 +10,8 @@
   import type {AboutProps} from '~/app/ui/components/partials/settings/internal/about/props';
   import AppearanceSettings from '~/app/ui/components/partials/settings/internal/appearance-settings/AppearanceSettings.svelte';
   import type {AppearanceSettingsProps} from '~/app/ui/components/partials/settings/internal/appearance-settings/props';
+  import ChatSettings from '~/app/ui/components/partials/settings/internal/chat-settings/ChatSettings.svelte';
+  import type {ChatSettingsProps} from '~/app/ui/components/partials/settings/internal/chat-settings/props';
   import DevicesSettings from '~/app/ui/components/partials/settings/internal/devices-settings/DevicesSettings.svelte';
   import type {DevicesSettingsProps} from '~/app/ui/components/partials/settings/internal/devices-settings/props';
   import MediaSettings from '~/app/ui/components/partials/settings/internal/media-settings/MediaSettings.svelte';
@@ -33,6 +35,7 @@
     readonly component: typeof SvelteComponent<
       | AboutProps
       | AppearanceSettingsProps
+      | ChatSettingsProps
       | DevicesSettingsProps
       | MediaSettingsProps
       | ProfileSettingsProps
@@ -90,6 +93,10 @@
       media: {
         title: $i18n.t('settings--media.label--title', 'Media & Storage'),
         component: MediaSettings,
+      },
+      chat: {
+        title: $i18n.t('settings--chat.label--title', 'Chat Settings'),
+        component: ChatSettings,
       },
     };
   }

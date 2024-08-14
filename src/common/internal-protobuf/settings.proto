@@ -198,3 +198,10 @@ message MediaSettings {
   }
   optional AutoDownload auto_download = 1;
 }
+message ChatSettings {
+  enum ComposeBarEnterMode {
+    SUBMIT = 0;
+    LINE_BREAK = 1;
+  }
+  optional ComposeBarEnterMode compose_bar_enter_mode = 1;
+}

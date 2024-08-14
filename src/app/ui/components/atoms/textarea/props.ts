@@ -5,7 +5,7 @@ import type {Readable} from 'svelte/store';
  */
 export interface TextAreaProps {
     /** The behavior when pressing the enter key. Defaults to `"submit"`. */
-    readonly enterKeyMode?: 'submit' | 'newline';
+    readonly enterKeyMode: 'submit' | 'newline';
     /** Text to pre-fill when the `TextArea` is first rendered. */
     readonly initialText?: string;
     /** Readable state of whether or not the compose area is currently empty. */

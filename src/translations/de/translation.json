@@ -490,6 +490,7 @@
     "hint--own-profile-picture": "Mein Profilbild",
     "label--about": "Über Threema",
     "label--appearance": "Erscheinungsbild",
+    "label--chat": "Chat",
     "label--devices": "Geräte",
     "label--do-not-disturb": "Nicht stören",
     "label--media": "Medien und Speicher",
@@ -516,7 +517,6 @@
     "label--git-revision": "Git-Revision",
     "label--log-file-paths": "Pfade der Logdateien",
     "label--log-to-file": "Logging",
-    "label--relink": "Gerät neu verknüpfen",
     "label--title": "Über Threema für Desktop",
     "label--troubleshooting": "Fehlerbehebung",
     "label--version-title": "Versionsinformationen",
@@ -541,7 +541,16 @@
     "prose--spellcheck-turned-on": "Die Rechtschreibprüfung ist derzeit aktiviert",
     "prose--subtitle": "Designstil, Sprache, Zeitformat"
   },
+  "settings--chat": {
+    "label--keyboard": "Tastatur",
+    "label--on-enter-new-line": "Benutzen Sie die Entertaste für einen Zeilenumbruch. Mit «{keyCombination}» senden Sie die Nachricht.",
+    "label--on-enter-send": "Mit Entertaste senden",
+    "label--on-enter-submit": "Die Entertaste sendet die Nachricht. Benutzen Sie «Shift + Enter» für einen Zeilenumbruch.",
+    "label--title": "Chateinstellungen",
+    "prose--subtitle": "Tastatur"
+  },
   "settings--devices": {
+    "label--relink": "Gerät neu verknüpfen",
     "label--this-device": "Dieses Gerät",
     "label--title": "Geräteeinstellungen",
     "prose--subtitle": "Geräte, die mit Ihrer ID verknüpft sind"

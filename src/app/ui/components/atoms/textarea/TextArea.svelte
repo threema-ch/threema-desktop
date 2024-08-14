@@ -26,6 +26,7 @@
   import {size} from '~/app/ui/actions/size';
   import {DEBOUNCE_TIMEOUT_TO_RECOUNT_TEXT_BYTES_MILLIS} from '~/app/ui/components/atoms/textarea/helpers';
   import type {TextAreaProps} from '~/app/ui/components/atoms/textarea/props';
+  import type {SystemInfo} from '~/common/electron-ipc';
   import type {u32, u53} from '~/common/types';
   import {isNotUndefined, unreachable, unwrap} from '~/common/utils/assert';
   import {WritableStore} from '~/common/utils/store';
@@ -69,6 +70,15 @@
   // Whether a composition session is active, see:
   // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/isComposing.
   let isComposing = false;
+
+  let systemInfo: SystemInfo | undefined = undefined;
+
+  window.app
+    .getSystemInfo()
+    .then((systemInfo_) => (systemInfo = systemInfo_))
+    .catch((error) => {
+      log.error('Could not fetch system info', error);
+    });
 
   const dispatchIsTyping = TIMER.debounce(
     (isTyping: boolean) => {
@@ -216,7 +226,8 @@
     switch (enterKeyMode) {
       case 'newline':
         // To submit, we need to type ctrl + enter.
-        submit = event.key === 'Enter' && event.ctrlKey;
+        submit =
+          event.key === 'Enter' && (event.ctrlKey || (systemInfo?.os === 'macos' && event.metaKey));
         break;
       case 'submit':
         // To submit, the enter key must be pressed without shift.
