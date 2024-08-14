@@ -121,7 +121,7 @@
     "prose--failed": "Das Löschen Ihrer Daten von diesem Gerät ist fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut."
   },
   "dialog--device-cookie-mismatch": {
-    "action--dismiss": "Ignorieren",
+    "action--dismiss": "Ohne Verbindung fortfahren",
     "action--relink": "Gerät neu verknüpfen",
     "error--no-connection": "Die Verknüpfung dieses Geräts konnte nicht aufgehoben werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
     "label--title": "Verbindung von einem anderen Gerät erkannt",
@@ -359,7 +359,9 @@
     "prose--failed": "Das Gerät konnte nicht neu verknüpft werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut."
   },
   "dialog--server-alert": {
-    "action--dismiss": "Ignorieren",
+    "action--confirm": "Erneut verbinden",
+    "action--dismiss": "Ohne Verbindung fortfahren",
+    "action--ignore": "Ignorieren",
     "action--relink": "Gerät neu verknüpfen",
     "error--another-device-p1": "Der Server hat eine Verbindung von einem anderen Gerät mit derselben Threema-ID erkannt.",
     "error--another-device-p2": "Wenn Sie Ihre Threema-ID in der Zwischenzeit nicht auf einem anderen Gerät oder mit einer älteren App-Version genutzt haben, kontaktieren Sie bitte den Support und senden Sie falls möglich die Logdatei mit.",

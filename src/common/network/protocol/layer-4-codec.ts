@@ -181,23 +181,24 @@ export class Layer4Decoder implements SyncTransformerCodec<InboundL3Message, Inb
                     this._log.error(`Incoming server alert with invalid UTF-8`);
                     return;
                 }
-                this._controller.connection.manager.disconnectAndDisableAutoConnect({
-                    code: CloseCode.PROTOCOL_ERROR,
-                    reason: `Closing connection due to CSP close-error message`,
-                    origin: 'remote',
-                });
+                if (payload.payload.canReconnect === 0) {
+                    this._controller.connection.manager.disconnectAndDisableAutoConnect({
+                        code: CloseCode.PROTOCOL_ERROR,
+                        reason: `Closing connection due to CSP close-error message`,
+                        origin: 'remote',
+                    });
+                }
 
+                // TODO(DESK-1582): Depending on the dialog, we'll get 'confirmed' | 'dismissed'
+                // here but this makes no sense because sometimes, the server alert dialog only
+                // shows OK as an option.
                 this._showAlert(text)
                     .then(async (handle) => {
                         this._log.info('Showing close error server alert');
-                        try {
-                            // TODO(DESK-1582): We'll get 'confirmed' | 'dismissed' here but this
-                            // makes no sense because the dialog only shows OK as an option. It's
-                            // also unclear what's supposed to happen if the user selects 'cancel'.
-                            // Should we simply remain disconnect indefinitely? That seems like a
-                            // footgun to me.
-                            await handle.closed;
-                        } finally {
+                        const result = await handle.closed;
+                        // Confirmed here is a bit misleading, but it means that the user chose to
+                        // try to reconnect.
+                        if (result === 'confirmed') {
                             this._controller.connection.manager.enableAutoConnect();
                         }
                     })
@@ -212,20 +213,15 @@ export class Layer4Decoder implements SyncTransformerCodec<InboundL3Message, Inb
                 // For now, we only handle this message only when the device cookie has already been installed once.
                 if (this._controller.csp.deviceCookie !== undefined) {
                     this._log.info('Received DEVICE_COOKIE_CHANGED_INDICATION message');
+                    this._controller.connection.manager.disconnectAndDisableAutoConnect();
                     this._showDeviceCookieMismatchDialog()
-                        .then(async (handle) => {
+                        .then(() => {
                             this._log.info('Showing device cookie change dialog');
-                            this._encoder.unwrap().forward({
-                                type: D2mPayloadType.PROXY,
-                                payload: {
-                                    type: CspPayloadType.CLEAR_DEVICE_COOKIE_CHANGED_INDICATION,
-                                    payload: struct.encoder(
-                                        structbuf.csp.payload.ClearDeviceCookieChangeIndication,
-                                        {},
-                                    ),
-                                },
-                            });
-                            await handle.closed;
+                            // Do nothing here as the dialog is either closed without restarting the
+                            // connection or the user relinks the app.
+
+                            // TODO(DESK-1587): Wait for the confirmed signal here to trigger
+                            // reconnection in standalone clients.
                         })
                         .catch((error: unknown) => {
                             this._log.error(

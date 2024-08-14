@@ -33,9 +33,17 @@
       case 'other-connection-for-same-identity':
         return [
           {
-            label: $i18n.t('dialog--server-alert.action--dismiss', 'Ignore'),
+            label: $i18n.t('dialog--server-alert.action--dismiss', 'Continue Without Connection'),
             onClick: () => {
               onSelectAction?.('dismissed');
+              modalComponent?.close();
+            },
+            type: 'naked',
+          },
+          {
+            label: $i18n.t('dialog--server-alert.action--confirm', 'Retry'),
+            onClick: () => {
+              onSelectAction?.('confirmed');
               modalComponent?.close();
             },
             type: 'naked',
@@ -62,9 +70,11 @@
       case 'unknown':
         return [
           {
-            label: $i18n.t('dialog--server-alert.action--dismiss'),
+            label: $i18n.t('dialog--server-alert.action--ignore', 'Ignore'),
+            // This is a bit unintuitive but because the error is unknown, we tell the backend with
+            // `confirmed` that it should try to reconnect.
             onClick: () => {
-              onSelectAction?.('dismissed');
+              onSelectAction?.('confirmed');
               modalComponent?.close();
             },
             type: 'filled',

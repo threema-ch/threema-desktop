@@ -12,6 +12,6 @@ export interface ServerAlertDialogProps
     /**
      * Optional callback to call when a choice is made, e.g. a button was clicked.
      */
-    readonly onSelectAction?: (action: Extract<SystemDialogAction, 'dismissed'>) => void;
+    readonly onSelectAction?: (action: SystemDialogAction) => void;
     readonly services: Delayed<Pick<AppServicesForSvelte, 'backend'>>;
 }

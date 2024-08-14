@@ -121,7 +121,7 @@
     "prose--failed": "Something went wrong when deleting your data on this device. Please check your connection and try again."
   },
   "dialog--device-cookie-mismatch": {
-    "action--dismiss": "Ignore",
+    "action--dismiss": "Continue Without Connection",
     "action--relink": "Relink Device",
     "error--no-connection": "Failed to unlink the device. Please check your internet connection and try again.",
     "label--title": "Connection from Another Device Detected",
@@ -359,7 +359,9 @@
     "prose--failed": "Something went wrong when relinking your profile. Please check your connection and try again"
   },
   "dialog--server-alert": {
-    "action--dismiss": "Ignore",
+    "action--confirm": "Retry",
+    "action--dismiss": "Continue Without Connection",
+    "action--ignore": "Ignore",
     "action--relink": "Relink Device",
     "error--another-device-p1": "The server has detected a connection from a different device with the same Threema ID.",
     "error--another-device-p2": "If you haven't used your Threema ID on another device or with an older app version in the meantime, please contact the support and send a log file if possible.",

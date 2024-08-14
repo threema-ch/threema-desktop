@@ -25,6 +25,8 @@
   let errorMessage: string | undefined = undefined;
 </script>
 
+<!--TODO(DESK-1587): Add a button here for reconnect that sends a confirm button back to the backend
+in standalone clients.-->
 <Modal
   bind:this={modalComponent}
   {target}
@@ -32,7 +34,10 @@
     type: 'card',
     buttons: [
       {
-        label: $i18n.t('dialog--device-cookie-mismatch.action--dismiss', 'Ignore'),
+        label: $i18n.t(
+          'dialog--device-cookie-mismatch.action--dismiss',
+          'Continue without connection',
+        ),
         onClick: () => {
           onSelectAction?.('dismissed');
           modalComponent?.close();
