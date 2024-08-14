@@ -690,6 +690,7 @@
         }),
         mediaFiles,
         visible: true,
+        enterKeyMode: $chat.view.onEnterSubmit ? 'submit' : 'newline',
       },
     };
   }

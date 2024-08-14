@@ -1,9 +1,11 @@
 <script lang="ts">
   import TextArea from '~/app/ui/components/atoms/textarea/TextArea.svelte';
+  import type {TextAreaProps} from '~/app/ui/components/atoms/textarea/props';
   import {i18n} from '~/app/ui/i18n';
   import type {u53} from '~/common/types';
 
   export let initialText: string | undefined = undefined;
+  export let enterKeyMode: TextAreaProps['enterKeyMode'] = 'submit';
 
   let composeArea: TextArea;
 
@@ -49,6 +51,7 @@
     <TextArea
       bind:this={composeArea}
       {initialText}
+      {enterKeyMode}
       placeholder={$i18n.t(
         'dialog--compose-media-message.label--media-message-caption',
         'Add a caption to this media format',

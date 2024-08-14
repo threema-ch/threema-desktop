@@ -38,6 +38,7 @@ interface ClearConversationModalState {
         readonly title: string;
         readonly mediaFiles: MediaFile[];
         readonly visible: boolean;
+        readonly enterKeyMode: 'submit' | 'newline';
     };
 }
 

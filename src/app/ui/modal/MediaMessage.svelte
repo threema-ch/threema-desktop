@@ -6,6 +6,7 @@
   import {createEventDispatcher, onDestroy, onMount} from 'svelte';
 
   import {globals} from '~/app/globals';
+  import type {TextAreaProps} from '~/app/ui/components/atoms/textarea/props';
   import DropZoneProvider from '~/app/ui/components/hocs/drop-zone-provider/DropZoneProvider.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import EmojiPicker from '~/app/ui/components/molecules/emoji-picker/EmojiPicker.svelte';
@@ -46,6 +47,7 @@
   export let title: string;
   export let mediaFiles: MediaFile[];
   export let visible: boolean;
+  export let enterKeyMode: TextAreaProps['enterKeyMode'] = 'submit';
 
   let modalComponent: SvelteNullableBinding<Modal> = null;
 
@@ -333,6 +335,7 @@
             <Caption
               bind:this={captionComposeArea}
               initialText={activeMediaFile?.caption.get()}
+              {enterKeyMode}
               on:submit={sendMessages}
               on:textbytelengthdidchange={handleTextChange}
             />
