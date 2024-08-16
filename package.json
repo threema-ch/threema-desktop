@@ -154,7 +154,7 @@
     "eslint-plugin-svelte": "~2.39.3",
     "eslint-plugin-threema": "file:libs/eslint-plugin-threema",
     "fs-extra": "~11.2.0",
-    "i18next-parser": "9.0.0",
+    "i18next-parser": "~9.0.0",
     "karma": "~6.4.0",
     "karma-chai": "~0.1.0",
     "karma-chrome-launcher": "~3.2.0",
