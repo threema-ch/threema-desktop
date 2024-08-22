@@ -551,7 +551,7 @@ function subscribeAndGetInitialState<TStoreValue>(
             if (
                 !(
                     value as Model<unknown, ModelController<unknown>, unknown, unknown>
-                ).controller.meta.active.get()
+                ).controller.lifetimeGuard.active.get()
             ) {
                 return;
             }

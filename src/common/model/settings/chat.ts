@@ -14,13 +14,13 @@ import {PROXY_HANDLER} from '~/common/utils/endpoint';
 
 export class ChatSettingsModelController implements ChatSettingsController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public readonly meta = new ModelLifetimeGuard<ChatSettingsView>();
+    public readonly lifetimeGuard = new ModelLifetimeGuard<ChatSettingsView>();
 
     public constructor(private readonly _services: ServicesForModel) {}
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public async update(change: ChatSettingsUpdate): Promise<void> {
-        this.meta.update((view) => {
+        this.lifetimeGuard.update((view) => {
             const updatedView: ChatSettingsViewNonDerivedProperties = {...view, ...change};
             this._services.db.setSettings('chat', updatedView);
             return addDerivedData(updatedView);

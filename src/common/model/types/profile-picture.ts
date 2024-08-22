@@ -20,7 +20,7 @@ export type ProfilePictureSource =
     | 'user-defined'
     | 'admin-defined';
 export type ProfilePictureController = {
-    readonly meta: ModelLifetimeGuard<ProfilePictureView>;
+    readonly lifetimeGuard: ModelLifetimeGuard<ProfilePictureView>;
 
     /**
      * Update the profile picture from a certain picture `source`.

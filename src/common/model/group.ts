@@ -415,7 +415,7 @@ function all(services: ServicesForModel): LocalSetStore<ModelStore<Group>> {
 /** @inheritdoc */
 export class GroupModelController implements GroupController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public readonly meta = new ModelLifetimeGuard<GroupView>();
+    public readonly lifetimeGuard = new ModelLifetimeGuard<GroupView>();
     public readonly notificationTag: NotificationTag;
 
     /** @inheritdoc */
@@ -427,7 +427,7 @@ export class GroupModelController implements GroupController {
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (contacts: ModelStore<Contact>[], createdAt: Date) => {
             this._log.debug('GroupModelController: Add members from local');
-            return this.meta.run((handle) => {
+            return this.lifetimeGuard.run((handle) => {
                 const numAdded = this._addMembers(handle, contacts, createdAt);
                 if (numAdded > 0) {
                     this._versionSequence.next();
@@ -445,7 +445,7 @@ export class GroupModelController implements GroupController {
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (contacts: ModelStore<Contact>[], createdAt: Date) => {
             this._log.debug('GroupModelController: Remove members from local');
-            return this.meta.run((handle) => {
+            return this.lifetimeGuard.run((handle) => {
                 const numRemoved = this._removeMembers(
                     handle,
                     TriggerSource.LOCAL,
@@ -465,7 +465,7 @@ export class GroupModelController implements GroupController {
             createdAt: Date,
         ) => {
             this._log.debug('GroupModelController: Remove members from remote');
-            return this.meta.run((guardedHandle) => {
+            return this.lifetimeGuard.run((guardedHandle) => {
                 const numRemoved = this._removeMembers(
                     guardedHandle,
                     TriggerSource.REMOTE,
@@ -480,7 +480,7 @@ export class GroupModelController implements GroupController {
         },
         fromSync: (contacts: ModelStore<Contact>[], createdAt: Date) => {
             this._log.debug('GroupModelController: Remove members from sync');
-            return this.meta.run((handle) => {
+            return this.lifetimeGuard.run((handle) => {
                 const numRemoved = this._removeMembers(
                     handle,
                     TriggerSource.SYNC,
@@ -504,7 +504,7 @@ export class GroupModelController implements GroupController {
             newUserState?: GroupUserState.MEMBER,
         ) => {
             this._log.debug('GroupModelController: Set members from sync');
-            return this.meta.run((handle) => {
+            return this.lifetimeGuard.run((handle) => {
                 const {added, removed} = this._diffAndSetMembers(
                     handle,
                     contacts,
@@ -525,7 +525,7 @@ export class GroupModelController implements GroupController {
             newUserState?: GroupUserState.MEMBER,
         ) => {
             this._log.debug('GroupModelController: Set members from remote');
-            return this.meta.run((guardedHandle) => {
+            return this.lifetimeGuard.run((guardedHandle) => {
                 const {added, removed} = this._diffAndSetMembers(
                     guardedHandle,
                     contacts,
@@ -553,7 +553,7 @@ export class GroupModelController implements GroupController {
                 conversationUpdate,
                 {source: TriggerSource.LOCAL},
                 () =>
-                    this.meta.run((handle) => {
+                    this.lifetimeGuard.run((handle) => {
                         this._update(handle, validatedChange);
                         this._versionSequence.next();
                     }),
@@ -561,7 +561,7 @@ export class GroupModelController implements GroupController {
         },
         fromSync: (change: GroupUpdateFromToSync) => {
             this._log.debug('GroupModelController: Update from sync');
-            this.meta.run((handle) => {
+            this.lifetimeGuard.run((handle) => {
                 this._update(handle, ensureExactGroupUpdateFromToSync(change));
                 this._versionSequence.next();
             });
@@ -574,7 +574,7 @@ export class GroupModelController implements GroupController {
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (name, createdAt) => {
             this._log.debug('GroupModelController: Change name from local');
-            this.meta.run((handle) => {
+            this.lifetimeGuard.run((handle) => {
                 const changed = this._updateName(handle, name, createdAt);
                 if (changed) {
                     this._versionSequence.next();
@@ -584,7 +584,7 @@ export class GroupModelController implements GroupController {
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle, name, createdAt) => {
             this._log.debug('GroupModelController: Change name from remote');
-            this.meta.run((guardedHandle) => {
+            this.lifetimeGuard.run((guardedHandle) => {
                 const changed = this._updateName(guardedHandle, name, createdAt);
                 if (changed) {
                     this._versionSequence.next();
@@ -593,7 +593,7 @@ export class GroupModelController implements GroupController {
         },
         fromSync: (name, createdAt) => {
             this._log.debug('GroupModelController: Change name from sync');
-            this.meta.run((handle) => {
+            this.lifetimeGuard.run((handle) => {
                 const changed = this._updateName(handle, name, createdAt);
                 if (changed) {
                     this._versionSequence.next();
@@ -622,7 +622,7 @@ export class GroupModelController implements GroupController {
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle, createdAt) => {
             this._log.debug('GroupModelController: Kicked from remote');
-            this.meta.run((guardedHandle) => {
+            this.lifetimeGuard.run((guardedHandle) => {
                 this._update(guardedHandle, {userState: GroupUserState.KICKED});
                 this._addUserStateChangedStatusMessage(GroupUserState.KICKED, createdAt);
                 this._versionSequence.next();
@@ -630,7 +630,7 @@ export class GroupModelController implements GroupController {
         },
         fromSync: (createdAt) => {
             this._log.debug('GroupModelController: Kicked from sync');
-            this.meta.run((handle) => {
+            this.lifetimeGuard.run((handle) => {
                 this._update(handle, {userState: GroupUserState.KICKED});
                 this._addUserStateChangedStatusMessage(GroupUserState.KICKED, createdAt);
                 this._versionSequence.next();
@@ -645,7 +645,7 @@ export class GroupModelController implements GroupController {
         fromLocal: async (createdAt) => {
             this._log.debug('GroupModelController: Leave from local');
             // TODO(DESK-551): Properly send CSP message
-            this.meta.run((handle) => {
+            this.lifetimeGuard.run((handle) => {
                 this._update(handle, {userState: GroupUserState.LEFT});
                 this._addUserStateChangedStatusMessage(GroupUserState.LEFT, createdAt);
                 this._versionSequence.next();
@@ -653,7 +653,7 @@ export class GroupModelController implements GroupController {
         },
         fromSync: (createdAt) => {
             this._log.debug('GroupModelController: Leave from sync');
-            this.meta.run((handle) => {
+            this.lifetimeGuard.run((handle) => {
                 this._update(handle, {userState: GroupUserState.LEFT});
                 this._addUserStateChangedStatusMessage(GroupUserState.LEFT, createdAt);
                 this._versionSequence.next();
@@ -666,7 +666,7 @@ export class GroupModelController implements GroupController {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromSync: () => {
             this._log.debug('GroupModelController: Dissolve from sync');
-            this.meta.run((handle) => {
+            this.lifetimeGuard.run((handle) => {
                 this._update(handle, {userState: GroupUserState.LEFT});
                 this._versionSequence.next();
             });
@@ -740,7 +740,7 @@ export class GroupModelController implements GroupController {
 
     /** @inheritdoc */
     public hasMember(contact_: ModelStore<Contact> | 'me'): boolean {
-        return this.meta.run((handle) => {
+        return this.lifetimeGuard.run((handle) => {
             const view = handle.view();
             if (contact_ === 'me') {
                 return view.userState === GroupUserState.MEMBER;
@@ -1098,7 +1098,7 @@ export class GroupModelController implements GroupController {
      */
     // TODO(DESK-551)
     private _remove(): void {
-        this.meta.deactivate(() => {
+        this.lifetimeGuard.deactivate(() => {
             // Deactivate and purge the conversation and all of its messages
             // from their respective caches
             conversation.deactivateAndPurgeCacheCascade(this._lookup, this.conversation());
@@ -1110,7 +1110,7 @@ export class GroupModelController implements GroupController {
     }
 
     private _conversation(): ConversationModelStore {
-        return this.meta.run(() =>
+        return this.lifetimeGuard.run(() =>
             conversation.getByReceiver(
                 this._services,
                 this._lookup,

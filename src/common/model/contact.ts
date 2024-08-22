@@ -289,7 +289,7 @@ function all(services: ServicesForModel): LocalSetStore<ModelStore<Contact>> {
 export class ContactModelController implements ContactController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly notificationTag: NotificationTag;
-    public readonly meta = new ModelLifetimeGuard<ContactView>();
+    public readonly lifetimeGuard = new ModelLifetimeGuard<ContactView>();
 
     public readonly profilePicture: ModelStore<ProfilePicture>;
 
@@ -300,7 +300,7 @@ export class ContactModelController implements ContactController {
 
             // When editing a contact with acquaintance level GROUP, we want the contact to be
             // visible in the contact list, so we change the acquaintance level to DIRECT.
-            const currentAcquaintanceLevel = this.meta.run(
+            const currentAcquaintanceLevel = this.lifetimeGuard.run(
                 (contactStoreHandle) => contactStoreHandle.view().acquaintanceLevel,
             );
             if (currentAcquaintanceLevel === AcquaintanceLevel.GROUP) {
@@ -329,7 +329,8 @@ export class ContactModelController implements ContactController {
                 // Precondition: Abort if the contact has already been removed (and consequently
                 // disabled the contact's controller) or if the contact is still member of any
                 // group.
-                const precondition = (): boolean => this.meta.active.get() && this._isRemovable();
+                const precondition = (): boolean =>
+                    this.lifetimeGuard.active.get() && this._isRemovable();
 
                 // Reflect contact removal to other devices inside a transaction
                 const result = await taskManager.schedule(
@@ -407,7 +408,7 @@ export class ContactModelController implements ContactController {
      * Locally update the contact and increment the version counter.
      */
     private _update(change: ContactUpdate): void {
-        this.meta.update((contact) => {
+        this.lifetimeGuard.update((contact) => {
             update(this._services, ensureExactContactUpdate(change), this.uid);
             this._versionSequence.next();
             return addDerivedData({...contact, ...change});
@@ -426,7 +427,7 @@ export class ContactModelController implements ContactController {
             // Precondition: The contact was not updated in the meantime
             const currentVersion = this._versionSequence.current;
             const precondition = (): boolean =>
-                this.meta.active.get() && this._versionSequence.current === currentVersion;
+                this.lifetimeGuard.active.get() && this._versionSequence.current === currentVersion;
 
             // Reflect contact to other devices inside a transaction
             const syncTask = new ReflectContactSyncTransactionTask(this._services, precondition, {
@@ -477,7 +478,7 @@ export class ContactModelController implements ContactController {
     private _remove(): void {
         assert(this._isRemovable(), 'The contact may not be part of any groups at this point.');
 
-        this.meta.deactivate(() => {
+        this.lifetimeGuard.deactivate(() => {
             // Deactivate and purge the conversation and all of its messages
             // from their respective caches
             conversation.deactivateAndPurgeCacheCascade(this._lookup, this.conversation());
@@ -489,7 +490,7 @@ export class ContactModelController implements ContactController {
     }
 
     private _conversation(): ConversationModelStore {
-        return this.meta.run(() =>
+        return this.lifetimeGuard.run(() =>
             conversation.getByReceiver(
                 this._services,
                 this._lookup,

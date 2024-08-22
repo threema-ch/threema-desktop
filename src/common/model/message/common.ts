@@ -667,7 +667,7 @@ export async function regenerateThumbnail(
 ): Promise<void> {
     const {media} = services;
 
-    const {messageId, mediaType} = messageModelController.meta.run((handle) => ({
+    const {messageId, mediaType} = messageModelController.lifetimeGuard.run((handle) => ({
         mediaType: handle.view().mediaType,
         messageId: handle.view().id,
     }));
@@ -684,7 +684,7 @@ export async function regenerateThumbnail(
             messageModelController.uid,
             conversationModel.ctx,
             services,
-            messageModelController.meta,
+            messageModelController.lifetimeGuard,
             log,
         );
 

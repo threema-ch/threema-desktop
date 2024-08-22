@@ -108,7 +108,7 @@ function updateGroupProfilePicture(
 
 export class ProfilePictureModelController implements ProfilePictureController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public readonly meta = new ModelLifetimeGuard<ProfilePictureView>();
+    public readonly lifetimeGuard = new ModelLifetimeGuard<ProfilePictureView>();
 
     /** @inheritdoc */
     public readonly setPicture: ProfilePictureController['setPicture'] = {
@@ -308,7 +308,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
         bytes: ReadonlyUint8Array | undefined,
         source: ProfilePictureSource,
     ): void {
-        this.meta.update((view) => {
+        this.lifetimeGuard.update((view) => {
             // Update database
             switch (this._receiver.type) {
                 case ReceiverType.CONTACT: {
@@ -389,7 +389,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
             // Precondition: The profile picture was not updated in the meantime
             const currentVersion = this._versionSequence.current;
             const precondition = (): boolean =>
-                this.meta.active.get() && this._versionSequence.current === currentVersion;
+                this.lifetimeGuard.active.get() && this._versionSequence.current === currentVersion;
 
             // Reflect contact update to other devices inside a transaction
             let profilePicture: ProfilePictureUpdate;

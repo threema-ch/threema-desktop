@@ -33,7 +33,7 @@ export interface ProfileSettingsView {
 }
 export type ProfileSettingsUpdate = Partial<ProfileSettingsView>;
 export type ProfileSettingsController = {
-    readonly meta: ModelLifetimeGuard<ProfileSettingsView>;
+    readonly lifetimeGuard: ModelLifetimeGuard<ProfileSettingsView>;
     readonly update: (change: ProfileSettingsUpdate) => Promise<void>;
 } & ProxyMarked;
 export type ProfileSettings = Model<ProfileSettingsView, ProfileSettingsController>;
@@ -53,7 +53,7 @@ export interface PrivacySettingsView {
 }
 export type PrivacySettingsUpdate = Partial<PrivacySettingsView>;
 export type PrivacySettingsController = {
-    readonly meta: ModelLifetimeGuard<PrivacySettingsView>;
+    readonly lifetimeGuard: ModelLifetimeGuard<PrivacySettingsView>;
     readonly update: (change: PrivacySettingsUpdate) => Promise<void>;
 
     /**
@@ -80,7 +80,7 @@ export interface CallsSettingsView {
 }
 export type CallsSettingsUpdate = Partial<CallsSettingsView>;
 export type CallsSettingsController = {
-    readonly meta: ModelLifetimeGuard<CallsSettingsView>;
+    readonly lifetimeGuard: ModelLifetimeGuard<CallsSettingsView>;
     readonly update: (change: CallsSettingsUpdate) => Promise<void>;
 } & ProxyMarked;
 export type CallsSettings = Model<CallsSettingsView, CallsSettingsController>;
@@ -101,7 +101,7 @@ export interface ChatSettingsView {
 
 export type ChatSettingsUpdate = Partial<ChatSettingsViewNonDerivedProperties>;
 export type ChatSettingsController = {
-    readonly meta: ModelLifetimeGuard<ChatSettingsView>;
+    readonly lifetimeGuard: ModelLifetimeGuard<ChatSettingsView>;
     readonly update: (change: ChatSettingsUpdate) => Promise<void>;
 } & ProxyMarked;
 
@@ -124,7 +124,7 @@ export interface DevicesSettingsView {
 }
 export type DevicesSettingsUpdate = Partial<DevicesSettingsView>;
 export type DevicesSettingsController = {
-    readonly meta: ModelLifetimeGuard<DevicesSettingsView>;
+    readonly lifetimeGuard: ModelLifetimeGuard<DevicesSettingsView>;
     readonly update: (change: DevicesSettingsUpdate) => Promise<void>;
 } & ProxyMarked;
 export type DevicesSettings = Model<DevicesSettingsView, DevicesSettingsController>;
@@ -153,7 +153,7 @@ export type AppearanceSettingsViewNonDerivedProperties = Omit<
 >;
 export type AppearanceSettingsUpdate = Omit<Partial<AppearanceSettingsView>, 'use24hTime'>;
 export type AppearanceSettingsController = {
-    readonly meta: ModelLifetimeGuard<AppearanceSettingsView>;
+    readonly lifetimeGuard: ModelLifetimeGuard<AppearanceSettingsView>;
     readonly update: (change: AppearanceSettingsUpdate) => Promise<void>;
 } & ProxyMarked;
 export type AppearanceSettings = Model<AppearanceSettingsView, AppearanceSettingsController>;
@@ -164,7 +164,7 @@ export interface MediaSettingsView {
 }
 export type MediaSettingsUpdate = Partial<MediaSettingsView>;
 export type MediaSettingsController = {
-    readonly meta: ModelLifetimeGuard<MediaSettingsView>;
+    readonly lifetimeGuard: ModelLifetimeGuard<MediaSettingsView>;
     readonly update: (change: MediaSettingsUpdate) => Promise<void>;
 } & ProxyMarked;
 export type MediaSettings = Model<MediaSettingsView, MediaSettingsController>;
@@ -242,7 +242,7 @@ export interface GlobalPropertyView<K extends GlobalPropertyKey> {
 export type GlobalPropertyInit<K extends GlobalPropertyKey> = GlobalPropertyView<K>;
 export type GlobalPropertyUpdate<K extends GlobalPropertyKey> = Omit<GlobalPropertyView<K>, 'key'>;
 export type IGlobalPropertyController<K extends GlobalPropertyKey> = {
-    readonly meta: ModelLifetimeGuard<GlobalPropertyView<K>>;
+    readonly lifetimeGuard: ModelLifetimeGuard<GlobalPropertyView<K>>;
     readonly update: (change: GlobalPropertyUpdate<K>) => void;
 } & ProxyMarked;
 export type IGlobalPropertyModel<K extends GlobalPropertyKey> = Model<

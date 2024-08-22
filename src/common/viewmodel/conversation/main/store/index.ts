@@ -55,7 +55,7 @@ export function getConversationViewModelStore(
         conversationModelStore,
     );
 
-    const controllerActiveStore = conversationModelStore.get().controller.meta.active;
+    const controllerActiveStore = conversationModelStore.get().controller.lifetimeGuard.active;
     return derive(
         [conversationModelStore, controllerActiveStore],
         ([{currentValue: conversationModel}, {currentValue: active}], getAndSubscribe) => {

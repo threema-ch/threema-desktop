@@ -14,13 +14,13 @@ import {PROXY_HANDLER} from '~/common/utils/endpoint';
 
 export class PrivacySettingsModelController implements PrivacySettingsController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public readonly meta = new ModelLifetimeGuard<PrivacySettingsView>();
+    public readonly lifetimeGuard = new ModelLifetimeGuard<PrivacySettingsView>();
 
     public constructor(private readonly _services: ServicesForModel) {}
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public async update(change: PrivacySettingsUpdate): Promise<void> {
-        this.meta.update((view) =>
+        this.lifetimeGuard.update((view) =>
             this._services.db.setSettings('privacy', {
                 ...view,
                 ...change,
@@ -29,7 +29,7 @@ export class PrivacySettingsModelController implements PrivacySettingsController
     }
 
     public isIdentityExplicitlyBlocked(identity: IdentityString): boolean {
-        return this.meta.run(
+        return this.lifetimeGuard.run(
             (handle) => handle.view().blockedIdentities?.identities.includes(identity) ?? false,
         );
     }
@@ -47,7 +47,7 @@ export class PrivacySettingsModelController implements PrivacySettingsController
             return false;
         }
 
-        const isBlockUnknownPolicySet = this.meta.run(
+        const isBlockUnknownPolicySet = this.lifetimeGuard.run(
             (handle) => handle.view().unknownContactPolicy === UnknownContactPolicy.BLOCK_UNKNOWN,
         );
 

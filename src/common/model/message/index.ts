@@ -120,7 +120,7 @@ export function deactivateAndPurgeCache(conversationUid: UidOf<DbConversation>):
  */
 function deactivateMessages(messages: AnyMessageModelStore[]): void {
     for (const message of messages) {
-        message.get().controller.meta.deactivate();
+        message.get().controller.lifetimeGuard.deactivate();
     }
 }
 
@@ -475,7 +475,7 @@ export function markMessageAsDeleted(
 ): AnyDeletedMessageModelStore {
     const {db, file} = services;
     const messageUid = messageModel.get().controller.uid;
-    return messageModel.get().controller.meta.deactivate(() => {
+    return messageModel.get().controller.lifetimeGuard.deactivate(() => {
         // Delete from database
         const {deletedMessage, deletedFileIds} = db.markMessageAsDeleted(
             conversation.uid,
@@ -580,7 +580,7 @@ export function updateFileBasedMessageCaption<TFileMessageView extends CommonBas
 
 export abstract class CommonBaseMessageController<TView extends CommonBaseMessageView> {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public readonly meta = new ModelLifetimeGuard<TView>();
+    public readonly lifetimeGuard = new ModelLifetimeGuard<TView>();
 
     protected readonly _log: Logger;
 
@@ -611,7 +611,7 @@ export abstract class CommonBaseMessageController<TView extends CommonBaseMessag
      * Remove the message.
      */
     public remove(): void {
-        this.meta.deactivate(() =>
+        this.lifetimeGuard.deactivate(() =>
             removeFromDatabase(this._services, this._log, this._conversation.uid, this.uid),
         );
     }
@@ -700,7 +700,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
     implements InboundBaseMessageController<TView>
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public override readonly meta = new ModelLifetimeGuard<TView>();
+    public override readonly lifetimeGuard = new ModelLifetimeGuard<TView>();
 
     public readonly read: InboundBaseMessageController<TView>['read'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
@@ -742,7 +742,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
                 return;
             }
 
-            this.meta.run((handle) => {
+            this.lifetimeGuard.run((handle) => {
                 // Validate message
                 const conversation = this.conversation().get();
                 const message = conversation.controller.getMessage(handle.view().id);
@@ -774,7 +774,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
             }
 
             // Update database
-            this.meta.run((handle) => this._editMessage(handle, editedMessage));
+            this.lifetimeGuard.run((handle) => this._editMessage(handle, editedMessage));
         },
     };
 
@@ -795,7 +795,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
 
     /** @inheritdoc */
     private _handleRead(source: TriggerSource.SYNC, readAt: Date): void {
-        this.meta.run((handle) => {
+        this.lifetimeGuard.run((handle) => {
             const view = handle.view();
 
             // Ignore if already marked as read
@@ -815,7 +815,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
         reactedAt: Date,
         reactionSender: IdentityString,
     ): void {
-        this.meta.run((handle) => {
+        this.lifetimeGuard.run((handle) => {
             const view = handle.view();
 
             // Ignore if this reaction of this person already exists
@@ -892,7 +892,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
     implements OutboundBaseMessageController<TView>
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public override readonly meta = new ModelLifetimeGuard<TView>();
+    public override readonly lifetimeGuard = new ModelLifetimeGuard<TView>();
 
     public readonly delivered: OutboundBaseMessageController<TView>['delivered'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
@@ -944,7 +944,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
             }
 
             // Run task
-            const messageId = this.meta.run((handle) => handle.view().id);
+            const messageId = this.lifetimeGuard.run((handle) => handle.view().id);
             const task = new OutgoingEditMessageTask(
                 this._services,
                 this._conversation.getReceiver().get(),
@@ -955,12 +955,12 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
             await this._services.taskManager.schedule(task);
 
             // Update database
-            this.meta.run((handle) => this._editMessage(handle, editedMessage));
+            this.lifetimeGuard.run((handle) => this._editMessage(handle, editedMessage));
         },
 
         fromSync: (editedMessage: UnifiedEditMessage) => {
             // Update database
-            this.meta.run((handle) => this._editMessage(handle, editedMessage));
+            this.lifetimeGuard.run((handle) => this._editMessage(handle, editedMessage));
         },
     };
 
@@ -975,7 +975,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
 
     /** @inheritdoc */
     public sent(sentAt: Date): void {
-        this.meta.run((handle) => {
+        this.lifetimeGuard.run((handle) => {
             const view = handle.view();
 
             // Ignore if already marked as sent
@@ -998,7 +998,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
     }
 
     private _handleDelivered(deliveredAt: Date): void {
-        this.meta.run((handle) => {
+        this.lifetimeGuard.run((handle) => {
             const view = handle.view();
 
             // Ignore if already marked as delivered
@@ -1023,7 +1023,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
     }
 
     private _handleRead(readAt: Date): void {
-        this.meta.run((handle) => {
+        this.lifetimeGuard.run((handle) => {
             const view = handle.view();
 
             // Ignore if already marked as read
@@ -1042,7 +1042,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
         reactedAt: Date,
         reactionSender: IdentityString,
     ): void {
-        this.meta.run((handle) => {
+        this.lifetimeGuard.run((handle) => {
             const view = handle.view();
 
             // Ignore if the specific reaction of the sender already exists. We also filter messages

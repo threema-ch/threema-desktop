@@ -95,7 +95,7 @@ class InboundDeletedMessageModelController
     implements InboundDeletedMessageController
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public override readonly meta = new ModelLifetimeGuard<InboundDeletedMessageView>();
+    public override readonly lifetimeGuard = new ModelLifetimeGuard<InboundDeletedMessageView>();
 
     public readonly read: OutboundDeletedMessageController['read'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
@@ -121,7 +121,7 @@ class InboundDeletedMessageModelController
     }
 
     private _handleRead(readAt: Date): void {
-        this.meta.run((handle) => {
+        this.lifetimeGuard.run((handle) => {
             // Ignore if already marked as read
             if (handle.view().readAt !== undefined) {
                 return;
@@ -150,7 +150,7 @@ class OutboundDeletedMessageModelController
     implements OutboundDeletedMessageController
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public override readonly meta = new ModelLifetimeGuard<OutboundDeletedMessageView>();
+    public override readonly lifetimeGuard = new ModelLifetimeGuard<OutboundDeletedMessageView>();
 
     public readonly delivered: OutboundDeletedMessageController['delivered'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
@@ -169,7 +169,7 @@ class OutboundDeletedMessageModelController
     };
 
     private _handleRead(readAt: Date): void {
-        this.meta.run((handle) => {
+        this.lifetimeGuard.run((handle) => {
             // Ignore if already marked as read
             if (handle.view().readAt !== undefined) {
                 return;
@@ -184,7 +184,7 @@ class OutboundDeletedMessageModelController
     }
 
     private _handleDelivered(deliveredAt: Date): void {
-        this.meta.run((handle) => {
+        this.lifetimeGuard.run((handle) => {
             // Ignore if already marked as delivered
             if (handle.view().deliveredAt !== undefined) {
                 return;

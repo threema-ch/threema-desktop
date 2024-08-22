@@ -39,7 +39,7 @@ export function getConversationSearchResults(
 
         for (const conversationModelStore of sortedConversations) {
             const conversationController = conversationModelStore.get().controller;
-            if (!conversationController.meta.active.get()) {
+            if (!conversationController.lifetimeGuard.active.get()) {
                 continue;
             }
             const commonData = getCommonReceiverData(conversationController.receiver().get());
@@ -144,12 +144,12 @@ export function getMessageSearchResults(
                 const messageModel = getAndSubscribe(messageModelStore);
                 const conversationModelStore = messageModel.controller.conversation();
                 const conversationModel = getAndSubscribe(conversationModelStore);
-                if (!conversationModel.controller.meta.active.get()) {
+                if (!conversationModel.controller.lifetimeGuard.active.get()) {
                     return undefined;
                 }
 
                 const isMessageActive = getAndSubscribe(
-                    messageModelStore.get().controller.meta.active,
+                    messageModelStore.get().controller.lifetimeGuard.active,
                 );
 
                 if (!isMessageActive) {
@@ -207,7 +207,7 @@ export function getReceiverSearchResults(
 
             if (commonData.name.toLowerCase().includes(searchParams.term.toLowerCase())) {
                 const model = getAndSubscribe(contactOrGroupModelStore);
-                if (model.controller.meta.active.get()) {
+                if (model.controller.lifetimeGuard.active.get()) {
                     continue;
                 }
                 receiverResults.push(

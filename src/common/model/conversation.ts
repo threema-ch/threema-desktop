@@ -131,7 +131,7 @@ export function deactivateAndPurgeCacheCascade(
     const {controller} = conversation.get();
 
     // Deactivate the conversation...
-    controller.meta.deactivate(() => {
+    controller.lifetimeGuard.deactivate(() => {
         // Deactivate and purge all currently cached messages of this conversation
         message.deactivateAndPurgeCache(controller.uid);
 
@@ -223,7 +223,7 @@ function update(
 
 export class ConversationModelController implements ConversationController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public readonly meta = new ModelLifetimeGuard<ConversationView>();
+    public readonly lifetimeGuard = new ModelLifetimeGuard<ConversationView>();
 
     public readonly read = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
@@ -283,7 +283,7 @@ export class ConversationModelController implements ConversationController {
             const store = this._addMessage(init);
 
             // Trigger a notification
-            this.meta.run((handle) => {
+            this.lifetimeGuard.run((handle) => {
                 // TODO(DESK-255): This must be delayed to prevent notifications for messages that have
                 // already been acknowledged or which are going to be acknowledged by another device within
                 // a small time period.
@@ -332,7 +332,7 @@ export class ConversationModelController implements ConversationController {
                     this._log.warn('Trying to delete a message that was already deleted.');
                     return;
                 }
-                if (!messageToDelete.get().controller.meta.active.get()) {
+                if (!messageToDelete.get().controller.lifetimeGuard.active.get()) {
                     this._log.warn('Trying to delete a message with an inactive model.');
                     return;
                 }
@@ -368,7 +368,7 @@ export class ConversationModelController implements ConversationController {
                 this._log.warn('Trying to delete a message that was already deleted.');
                 return;
             }
-            if (!messageToDelete.get().controller.meta.active.get()) {
+            if (!messageToDelete.get().controller.lifetimeGuard.active.get()) {
                 this._log.warn('Trying to delete a message with an inactive model.');
                 return;
             }
@@ -392,7 +392,7 @@ export class ConversationModelController implements ConversationController {
                     this._log.warn('Trying to delete a message that was already deleted.');
                     return;
                 }
-                if (!messageToDelete.get().controller.meta.active.get()) {
+                if (!messageToDelete.get().controller.lifetimeGuard.active.get()) {
                     this._log.warn('Trying to delete a message with an inactive model.');
                     return;
                 }
@@ -406,7 +406,7 @@ export class ConversationModelController implements ConversationController {
                     deletedMessageStore.ctx === MessageDirection.INBOUND,
                     'Cannot create a delete notification for an outbound message',
                 );
-                this.meta.run((storeHandle): void => {
+                this.lifetimeGuard.run((storeHandle): void => {
                     this._services.notification
                         .notifyMessageDelete(deletedMessageStore, {
                             receiver: this.receiver(),
@@ -423,7 +423,7 @@ export class ConversationModelController implements ConversationController {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async () => {
-            this.meta.update(() => {
+            this.lifetimeGuard.update(() => {
                 message.removeAll(this._services, this._log, this.uid);
                 this._updateStoresOnConversationUpdate();
                 return {};
@@ -436,7 +436,7 @@ export class ConversationModelController implements ConversationController {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (statusMessageId: StatusMessageId) => {
-            this.meta.update(() => {
+            this.lifetimeGuard.update(() => {
                 status.remove(
                     this._services,
                     this._log,
@@ -454,7 +454,7 @@ export class ConversationModelController implements ConversationController {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async () => {
-            this.meta.update(() => {
+            this.lifetimeGuard.update(() => {
                 status.removeAllOfConversation(this._services, this._log, this.uid);
                 this._updateStatusStoresOnConversationUpdate();
                 return {};
@@ -469,7 +469,9 @@ export class ConversationModelController implements ConversationController {
             change: Mutable<ConversationUpdate, 'lastUpdate'>,
             unreadMessageCountDelta?: i53,
         ): void => {
-            this.meta.update((view) => this._update(view, change, unreadMessageCountDelta));
+            this.lifetimeGuard.update((view) =>
+                this._update(view, change, unreadMessageCountDelta),
+            );
         },
     };
 
@@ -482,7 +484,7 @@ export class ConversationModelController implements ConversationController {
             const conversationChange: ConversationUpdateFromToSync = {visibility};
 
             // No need for a precondition to archive or pin
-            const precondition = (): boolean => this.meta.active.get();
+            const precondition = (): boolean => this.lifetimeGuard.active.get();
 
             let syncTask: ReflectContactSyncTransactionTask | ReflectGroupSyncTransactionTask;
 
@@ -517,7 +519,7 @@ export class ConversationModelController implements ConversationController {
                 switch (result) {
                     case 'success':
                         // Update locally
-                        this.meta.update((view) => this._update(view, {visibility}));
+                        this.lifetimeGuard.update((view) => this._update(view, {visibility}));
                         break;
                     case 'aborted':
                         // Synchronization conflict
@@ -646,7 +648,7 @@ export class ConversationModelController implements ConversationController {
     }
 
     public receiver(): AnyReceiverStore {
-        return this.meta.run(() => {
+        return this.lifetimeGuard.run(() => {
             const receiver = this.receiverLookup;
             switch (receiver.type) {
                 case ReceiverType.CONTACT:
@@ -678,7 +680,7 @@ export class ConversationModelController implements ConversationController {
     }
 
     public decrementUnreadMessageCount(): void {
-        this.meta.update((view) =>
+        this.lifetimeGuard.update((view) =>
             // Note: The unread message count is not persisted in the database, so only the view
             //       must be updated!
             ({unreadMessageCount: Math.max(view.unreadMessageCount - 1, 0)}),
@@ -687,21 +689,23 @@ export class ConversationModelController implements ConversationController {
 
     /** @inheritdoc */
     public hasMessage(id: MessageId): boolean {
-        return this.meta.run(() =>
+        return this.lifetimeGuard.run(() =>
             message.isMessagePresentInConversation(this._services, this._handle, id),
         );
     }
 
     /** @inheritdoc */
     public getMessage(id: MessageId): AnyMessageModelStore | undefined {
-        return this.meta.run(() =>
+        return this.lifetimeGuard.run(() =>
             message.getByMessageId(this._services, this._handle, MESSAGE_FACTORY, id),
         );
     }
 
     /** @inheritdoc */
     public getAllMessages(): SetOfAnyLocalMessageModelStore {
-        return this.meta.run(() => message.all(this._services, this._handle, MESSAGE_FACTORY));
+        return this.lifetimeGuard.run(() =>
+            message.all(this._services, this._handle, MESSAGE_FACTORY),
+        );
     }
 
     /** @inheritdoc */
@@ -711,7 +715,7 @@ export class ConversationModelController implements ConversationController {
     ): Set<AnyMessageModelStore | AnyStatusMessageModelStore> {
         const {db} = this._services;
 
-        return this.meta.run(() => {
+        return this.lifetimeGuard.run(() => {
             // If the viewport is empty, do nothing
             if (anyMessageIds.size === 0) {
                 return new Set();
@@ -826,7 +830,7 @@ export class ConversationModelController implements ConversationController {
 
     /** @inheritdoc */
     public getAllStatusMessages(): IDerivableSetStore<AnyStatusMessageModelStore> {
-        return this.meta.run(() =>
+        return this.lifetimeGuard.run(() =>
             status.allStatusMessagesOfConversation(this._services, this._handle),
         );
     }
@@ -866,14 +870,14 @@ export class ConversationModelController implements ConversationController {
         if (isTyping) {
             this._isTypingIncomingTimerCanceller?.();
             this._isTypingIncomingTimerCanceller = TIMER.timeout(() => {
-                this.meta.update((view) => this._update(view, {isTyping: false}));
+                this.lifetimeGuard.update((view) => this._update(view, {isTyping: false}));
                 this._isTypingIncomingTimerCanceller = undefined;
             }, this._isTypingIncomingTimeout);
         } else {
             this._isTypingIncomingTimerCanceller?.();
         }
 
-        this.meta.update((view) => this._update(view, {isTyping}));
+        this.lifetimeGuard.update((view) => this._update(view, {isTyping}));
     }
 
     /**
@@ -927,7 +931,7 @@ export class ConversationModelController implements ConversationController {
     }
 
     private _handleRead(source: TriggerSource.LOCAL, readAt: Date): void {
-        this.meta.run((handle) => {
+        this.lifetimeGuard.run((handle) => {
             if (handle.view().unreadMessageCount < 1) {
                 return;
             }
@@ -954,7 +958,7 @@ export class ConversationModelController implements ConversationController {
         for (const readMessageId of readMessageIds) {
             const messageModelStore = this.getMessage(readMessageId);
             assert(messageModelStore?.ctx === MessageDirection.INBOUND);
-            messageModelStore.get().controller.meta.update(() => ({readAt}));
+            messageModelStore.get().controller.lifetimeGuard.update(() => ({readAt}));
         }
     }
 
@@ -1096,7 +1100,7 @@ export class ConversationModelController implements ConversationController {
             | {source: TriggerSource.LOCAL}
             | {source: TriggerSource.REMOTE; handle: InternalActiveTaskCodecHandle},
     ): Promise<void> {
-        await this.meta.run(async (conversation) => {
+        await this.lifetimeGuard.run(async (conversation) => {
             if (conversation.view().visibility !== ConversationVisibility.ARCHIVED) {
                 return;
             }
@@ -1109,7 +1113,7 @@ export class ConversationModelController implements ConversationController {
 
             // Precondition: The conversation is archived
             const precondition = (): boolean =>
-                this.meta.active.get() &&
+                this.lifetimeGuard.active.get() &&
                 conversation.view().visibility === ConversationVisibility.ARCHIVED;
 
             let syncTask: ReflectContactSyncTransactionTask | ReflectGroupSyncTransactionTask;
@@ -1156,7 +1160,7 @@ export class ConversationModelController implements ConversationController {
                 switch (result) {
                     case 'success':
                         // Update locally
-                        this.meta.update((view) => this._update(view, conversationChange));
+                        this.lifetimeGuard.update((view) => this._update(view, conversationChange));
                         break;
                     case 'aborted':
                         // Synchronization conflict

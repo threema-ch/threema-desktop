@@ -310,7 +310,7 @@ class GroupCallRunningContext {
         _abort.subscribe(
             _group.store.subscribe(({view, controller}) => {
                 // Check if the group has been removed
-                if (!controller.meta.active.get()) {
+                if (!controller.lifetimeGuard.active.get()) {
                     _abort.raise('group-left-kicked-or-removed');
                 }
 
@@ -1045,7 +1045,7 @@ export class GroupCallManager {
             abort.subscribe(
                 group.store.subscribe(({view, controller}) => {
                     // Check if the group has been removed
-                    if (!controller.meta.active.get()) {
+                    if (!controller.lifetimeGuard.active.get()) {
                         log.info(`Group call ended because the associated group has been removed`);
                         abort.raise({
                             origin: 'backend-worker',

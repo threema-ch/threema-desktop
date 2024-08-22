@@ -87,7 +87,7 @@ export interface StatusMessageView<TType extends StatusMessageType> {
  * {@link ModelStore}s of {@link StatusMessages}.
  */
 export type StatusMessageController<TType extends StatusMessageType> = {
-    readonly meta: ModelLifetimeGuard<StatusMessageView<TType>>;
+    readonly lifetimeGuard: ModelLifetimeGuard<StatusMessageView<TType>>;
     readonly uid: DbStatusMessageUid;
 } & ProxyMarked;
 

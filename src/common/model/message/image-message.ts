@@ -137,7 +137,7 @@ export class InboundImageMessageModelController
             this._conversation,
             this._services,
             this._blobLock,
-            this.meta,
+            this.lifetimeGuard,
             this._log,
         );
 
@@ -165,7 +165,7 @@ export class InboundImageMessageModelController
             this._conversation,
             this._services,
             this._thumbnailBlobLock,
-            this.meta,
+            this.lifetimeGuard,
             this._log,
         );
         return blob?.data;
@@ -208,7 +208,7 @@ export class OutboundImageMessageModelController
             this._conversation,
             this._services,
             this._blobLock,
-            this.meta,
+            this.lifetimeGuard,
             this._log,
         );
         return blob.data;
@@ -224,7 +224,7 @@ export class OutboundImageMessageModelController
             this._conversation,
             this._services,
             this._thumbnailBlobLock,
-            this.meta,
+            this.lifetimeGuard,
             this._log,
         );
         return blob?.data;
@@ -237,7 +237,7 @@ export class OutboundImageMessageModelController
             this.uid,
             this._conversation.uid,
             this._services,
-            this.meta,
+            this.lifetimeGuard,
         );
     }
 

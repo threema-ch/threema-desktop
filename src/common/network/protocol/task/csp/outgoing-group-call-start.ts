@@ -68,7 +68,7 @@ export class OutgoingGroupCallStartTask implements ActiveTask<void, 'persistent'
         const group = this._group.get();
 
         // Ensure we're an active member of the group
-        if (!group.controller.meta.active.get()) {
+        if (!group.controller.lifetimeGuard.active.get()) {
             this._log.info('Discarding because group has been removed');
             return;
         }

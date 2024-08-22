@@ -13,13 +13,13 @@ import {PROXY_HANDLER} from '~/common/utils/endpoint';
 
 export class DevicesSettingsModelController implements DevicesSettingsController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public readonly meta = new ModelLifetimeGuard<DevicesSettingsView>();
+    public readonly lifetimeGuard = new ModelLifetimeGuard<DevicesSettingsView>();
 
     public constructor(private readonly _services: ServicesForModel) {}
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public async update(change: DevicesSettingsUpdate): Promise<void> {
-        this.meta.update((view) =>
+        this.lifetimeGuard.update((view) =>
             this._services.db.setSettings('devices', {
                 ...view,
                 ...change,

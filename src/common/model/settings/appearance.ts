@@ -14,13 +14,13 @@ import {PROXY_HANDLER} from '~/common/utils/endpoint';
 
 export class AppearanceSettingsModelController implements AppearanceSettingsController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public readonly meta = new ModelLifetimeGuard<AppearanceSettingsView>();
+    public readonly lifetimeGuard = new ModelLifetimeGuard<AppearanceSettingsView>();
 
     public constructor(private readonly _services: ServicesForModel) {}
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public async update(change: AppearanceSettingsUpdate): Promise<void> {
-        this.meta.update((view) => {
+        this.lifetimeGuard.update((view) => {
             const updatedView: AppearanceSettingsViewNonDerivedProperties = {...view, ...change};
             this._services.db.setSettings('appearance', updatedView);
             return addDerivedData(updatedView);

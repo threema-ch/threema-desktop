@@ -53,7 +53,7 @@ export type ConversationUpdateFromToSync = Pick<ConversationUpdate, 'category' |
 export type ConversationController = {
     readonly uid: UidOf<DbConversation>;
     readonly receiverLookup: DbReceiverLookup;
-    readonly meta: ModelLifetimeGuard<ConversationView>;
+    readonly lifetimeGuard: ModelLifetimeGuard<ConversationView>;
     readonly receiver: () => AnyReceiverStore;
     /**
      * A store that contains the last message sent or received in this conversation (or none, if there has never been a conversation message).
@@ -258,7 +258,7 @@ export interface ConversationControllerHandle {
 }
 export type Conversation = Model<ConversationView, ConversationController, UidOf<DbConversation>>;
 export type ConversationListController = {
-    readonly meta: ModelLifetimeGuard<readonly ModelStore<Conversation>[]>;
+    readonly lifetimeGuard: ModelLifetimeGuard<readonly ModelStore<Conversation>[]>;
 } & ProxyMarked;
 
 export type ConversationRepository = {

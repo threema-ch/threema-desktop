@@ -106,7 +106,7 @@ export class ModelStore<
         };
 
         // Activate the controller
-        controller.meta.activate({
+        controller.lifetimeGuard.activate({
             getView: () => this.get().view,
             updateView: (fn) => this._updateView(fn),
         });

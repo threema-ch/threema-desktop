@@ -70,7 +70,7 @@ export type ContactController = ReceiverController & {
     /**
      * View accessor.
      */
-    readonly meta: ModelLifetimeGuard<ContactView>;
+    readonly lifetimeGuard: ModelLifetimeGuard<ContactView>;
 
     /**
      * Update the contact.

@@ -21,13 +21,13 @@ export type ProfilePictureShareWith =
 
 export class ProfileSettingsModelController implements ProfileSettingsController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public readonly meta = new ModelLifetimeGuard<ProfileSettingsView>();
+    public readonly lifetimeGuard = new ModelLifetimeGuard<ProfileSettingsView>();
 
     public constructor(private readonly _services: ServicesForModel) {}
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public async update(change: ProfileSettingsUpdate): Promise<void> {
-        this.meta.update((view) =>
+        this.lifetimeGuard.update((view) =>
             this._services.db.setSettings('profile', {
                 ...view,
                 ...change,

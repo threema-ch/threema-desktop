@@ -54,7 +54,7 @@ export function recreateCaches(): void {
  */
 function deactivateStatusMessages(statusMessages: AnyStatusMessageModelStore[]): void {
     for (const statusMessage of statusMessages) {
-        statusMessage.get().controller.meta.deactivate();
+        statusMessage.get().controller.lifetimeGuard.deactivate();
     }
 }
 
@@ -73,7 +73,7 @@ export class StatusModelController<TType extends StatusMessageType>
     implements StatusMessageController<TType>
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public readonly meta = new ModelLifetimeGuard<StatusMessageView<TType>>();
+    public readonly lifetimeGuard = new ModelLifetimeGuard<StatusMessageView<TType>>();
 
     public constructor(public readonly uid: DbStatusMessageUid) {}
 }

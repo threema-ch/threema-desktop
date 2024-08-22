@@ -132,7 +132,7 @@ export class InboundFileMessageModelController
             this._conversation,
             this._services,
             this._blobLock,
-            this.meta,
+            this.lifetimeGuard,
             this._log,
         );
         return blob.data;
@@ -148,7 +148,7 @@ export class InboundFileMessageModelController
             this._conversation,
             this._services,
             this._thumbnailBlobLock,
-            this.meta,
+            this.lifetimeGuard,
             this._log,
         );
         return blob?.data;
@@ -191,7 +191,7 @@ export class OutboundFileMessageModelController
             this._conversation,
             this._services,
             this._blobLock,
-            this.meta,
+            this.lifetimeGuard,
             this._log,
         );
         return blob.data;
@@ -207,7 +207,7 @@ export class OutboundFileMessageModelController
             this._conversation,
             this._services,
             this._thumbnailBlobLock,
-            this.meta,
+            this.lifetimeGuard,
             this._log,
         );
         return blob?.data;
@@ -220,7 +220,7 @@ export class OutboundFileMessageModelController
             this.uid,
             this._conversation.uid,
             this._services,
-            this.meta,
+            this.lifetimeGuard,
         );
     }
 

@@ -147,7 +147,7 @@ export type OutboundBaseMessageInit<TType extends MessageType> = CommonBaseMessa
  * Common parts of the controller for all message types and directions.
  */
 export type CommonBaseMessageController<TView extends CommonBaseMessageView> = {
-    readonly meta: ModelLifetimeGuard<TView>;
+    readonly lifetimeGuard: ModelLifetimeGuard<TView>;
     readonly uid: DbMessageUid;
 
     /**

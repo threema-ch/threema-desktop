@@ -28,13 +28,13 @@ export type AutoDownload =
 
 export class MediaSettingsModelController implements MediaSettingsController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public readonly meta = new ModelLifetimeGuard<MediaSettingsView>();
+    public readonly lifetimeGuard = new ModelLifetimeGuard<MediaSettingsView>();
 
     public constructor(private readonly _services: ServicesForModel) {}
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public async update(change: MediaSettingsUpdate): Promise<void> {
-        this.meta.update((view) =>
+        this.lifetimeGuard.update((view) =>
             this._services.db.setSettings('media', {
                 ...view,
                 ...change,

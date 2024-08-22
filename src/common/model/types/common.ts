@@ -54,7 +54,7 @@ export interface GuardedStoreHandle<in out TView> {
  * A local model controller.
  */
 export type ModelController<TView> = {
-    readonly meta: ModelLifetimeGuard<TView>;
+    readonly lifetimeGuard: ModelLifetimeGuard<TView>;
 } & ProxyMarked;
 
 /**
@@ -62,7 +62,7 @@ export type ModelController<TView> = {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type RemoteModelController<TModelController extends ModelController<any>> = RemoteProxy<
-    Omit<Readonly<TModelController>, 'meta'>
+    Omit<Readonly<TModelController>, 'lifetimeGuard'>
 >;
 
 /**

@@ -20,7 +20,7 @@ import type {
 } from '~/common/webrtc/group-call';
 
 export type OngoingGroupCallController = {
-    readonly meta: ModelLifetimeGuard<OngoingGroupCallState>;
+    readonly lifetimeGuard: ModelLifetimeGuard<OngoingGroupCallState>;
     readonly abort: AbortListener<AnyGroupCallContextAbort>;
     readonly base: GroupCallBaseData;
 
@@ -76,12 +76,12 @@ export class OngoingGroupCall
         context: OngoingGroupCallContext,
     ) {
         const tag_ = `group-call.${group}.${context.callId.shortened}`;
-        const meta = new ModelLifetimeGuard<OngoingGroupCallState>();
+        const lifetimeGuard = new ModelLifetimeGuard<OngoingGroupCallState>();
         super(
             call.state.get(),
             {
                 [TRANSFER_HANDLER]: PROXY_HANDLER,
-                meta,
+                lifetimeGuard,
                 abort,
                 base,
                 localCaptureState: call.localCaptureState.bind(call),
@@ -104,10 +104,10 @@ export class OngoingGroupCall
         // `GroupCall` protocol bits have already been kicked off at this point which means the
         // state may have changed betwen all the `await`s. Therefore, it is easier and safer to
         // fetch and derive the state from the `GroupCall` continuously instead of sharing a store.
-        abort.subscribe(() => meta.deactivate());
+        abort.subscribe(() => lifetimeGuard.deactivate());
         abort.subscribe(
             call.state.subscribe((state) => {
-                meta.update(() => state);
+                lifetimeGuard.update(() => state);
             }),
         );
     }

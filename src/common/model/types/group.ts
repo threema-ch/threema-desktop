@@ -77,7 +77,7 @@ export type GroupUpdateFromToSync = Pick<
 export type GroupController = ReceiverController & {
     readonly uid: UidOf<DbGroup>;
 
-    readonly meta: ModelLifetimeGuard<GroupView>;
+    readonly lifetimeGuard: ModelLifetimeGuard<GroupView>;
 
     /**
      * Current _chosen_ group call (if any).

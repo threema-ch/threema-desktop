@@ -20,13 +20,13 @@ export const DEFAULT_CALLS_SETTINGS: CallsSettingsView = {
 
 export class CallsSettingsModelController implements CallsSettingsController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public readonly meta = new ModelLifetimeGuard<CallsSettingsView>();
+    public readonly lifetimeGuard = new ModelLifetimeGuard<CallsSettingsView>();
 
     public constructor(private readonly _services: ServicesForModel) {}
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public async update(change: CallsSettingsUpdate): Promise<void> {
-        this.meta.update((view) =>
+        this.lifetimeGuard.update((view) =>
             this._services.db.setSettings('calls', {
                 ...view,
                 ...filterUndefinedProperties(change),

@@ -102,12 +102,12 @@ export class GlobalPropertyController<K extends keyof GlobalPropertyValues>
     implements IGlobalPropertyController<K>
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public readonly meta = new ModelLifetimeGuard<GlobalPropertyView<K>>();
+    public readonly lifetimeGuard = new ModelLifetimeGuard<GlobalPropertyView<K>>();
 
     public constructor(private readonly _services: ServicesForModel) {}
 
     public update(change: GlobalPropertyUpdate<K>): void {
-        this.meta.update((view) => {
+        this.lifetimeGuard.update((view) => {
             const {value} = change;
             const serializedValue = GLOBAL_PROPERTY_CODECS[view.key].serialize(value);
             this._services.db.updateGlobalProperty(view.key, serializedValue);

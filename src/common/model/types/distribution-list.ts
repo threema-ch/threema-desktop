@@ -9,7 +9,7 @@ export interface DistributionListView {
     readonly stub: 'TODO(DESK-236)';
 }
 type DistributionListController = ReceiverController & {
-    readonly meta: ModelLifetimeGuard<DistributionListView>;
+    readonly lifetimeGuard: ModelLifetimeGuard<DistributionListView>;
 } & ProxyMarked;
 export type DistributionList = Model<
     DistributionListView,

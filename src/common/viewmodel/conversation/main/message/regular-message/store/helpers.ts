@@ -55,7 +55,7 @@ export function getMessageQuote(
     // necessary so that the stale reference of the old message can be cleared. Hence, the UI can be
     // completely reactive even when quoted messages are deleted.
     const isQuotedMessageActive = getAndSubscribe(
-        quotedMessageModelStore.get().controller.meta.active,
+        quotedMessageModelStore.get().controller.lifetimeGuard.active,
     );
 
     if (!isQuotedMessageActive) {
