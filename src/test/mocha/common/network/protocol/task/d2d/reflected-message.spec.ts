@@ -9,7 +9,7 @@ import {
     ReceiverType,
 } from '~/common/enum';
 import type {Contact, Conversation} from '~/common/model';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {d2d} from '~/common/network/protobuf';
 import * as proto from '~/common/network/protobuf';
 import {ReflectedIncomingMessageTask} from '~/common/network/protocol/task/d2d/reflected-incoming-message';
@@ -57,10 +57,10 @@ export function run(): void {
 
         // Set up services, log printing and a conversation
         let services: TestServices;
-        let user: LocalModelStore<Contact>;
-        let userConversation: LocalModelStore<Conversation>;
+        let user: ModelStore<Contact>;
+        let userConversation: ModelStore<Conversation>;
         let groupId: GroupId;
-        let groupConversation: LocalModelStore<Conversation>;
+        let groupConversation: ModelStore<Conversation>;
         this.beforeEach(function () {
             // Create test services
             services = makeTestServices(me);

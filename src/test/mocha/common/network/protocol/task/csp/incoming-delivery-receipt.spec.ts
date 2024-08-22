@@ -15,7 +15,7 @@ import type {
     ContactView,
     Conversation,
 } from '~/common/model';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import {IncomingDeliveryReceiptTask} from '~/common/network/protocol/task/csp/incoming-delivery-receipt';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import {
@@ -70,10 +70,10 @@ export function run(): void {
         let services: TestServices;
         let user1: TestUser;
 
-        let singleConversation: LocalModelStore<Conversation>;
+        let singleConversation: ModelStore<Conversation>;
         let singleConversationId: ContactConversationId;
 
-        let groupConversation: LocalModelStore<Conversation>;
+        let groupConversation: ModelStore<Conversation>;
         let groupConversationId: GroupConversationId;
         let singleConversationReceiverIdentity: IdentityString;
         this.beforeEach(function () {
@@ -107,7 +107,7 @@ export function run(): void {
             singleConversationReceiverIdentity = receiverView.identity;
 
             // Set up a group for testing of group reactions
-            const groupMembers: LocalModelStore<Contact>[] = [];
+            const groupMembers: ModelStore<Contact>[] = [];
             for (const testUser of testUsers.slice(1)) {
                 const userUid = addTestUserAsContact(services.model, testUser);
                 groupMembers.push(userUid);

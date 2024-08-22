@@ -35,7 +35,7 @@ import type {
     OutboundVideoMessage,
     OutboundVideoMessageController,
 } from '~/common/model/types/message/video';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import {assert, unreachable} from '~/common/utils/assert';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 import {AsyncLock} from '~/common/utils/lock';
@@ -68,7 +68,7 @@ export function getVideoMessageModelStore<TModelStore extends AnyVideoMessageMod
     conversation: ConversationControllerHandle,
     message: DbMessageFor<TModelStore['type']>,
     common: BaseMessageView<TModelStore['ctx']>,
-    sender: LocalModelStore<Contact> | typeof NO_SENDER,
+    sender: ModelStore<Contact> | typeof NO_SENDER,
 ): TModelStore {
     const video: Omit<CommonVideoMessageView, keyof CommonBaseMessageView> = {
         fileName: message.fileName,
@@ -255,13 +255,13 @@ export class OutboundVideoMessageModelController
     }
 }
 
-export class InboundVideoMessageModelStore extends LocalModelStore<InboundVideoMessage['model']> {
+export class InboundVideoMessageModelStore extends ModelStore<InboundVideoMessage['model']> {
     public constructor(
         services: ServicesForModel,
         view: InboundVideoMessage['view'],
         uid: UidOf<DbVideoMessage>,
         conversation: ConversationControllerHandle,
-        sender: LocalModelStore<Contact>,
+        sender: ModelStore<Contact>,
     ) {
         const {logging} = services;
         const tag = `message.inbound.video.${uid}`;
@@ -286,7 +286,7 @@ export class InboundVideoMessageModelStore extends LocalModelStore<InboundVideoM
     }
 }
 
-export class OutboundVideoMessageModelStore extends LocalModelStore<OutboundVideoMessage['model']> {
+export class OutboundVideoMessageModelStore extends ModelStore<OutboundVideoMessage['model']> {
     public constructor(
         services: ServicesForModel,
         view: OutboundVideoMessage['view'],

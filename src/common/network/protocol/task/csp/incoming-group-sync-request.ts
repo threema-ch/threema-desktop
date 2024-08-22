@@ -2,7 +2,7 @@ import {AcquaintanceLevel, GroupUserState} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact, ContactInit} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import type {
     ActiveTaskCodecHandle,
     ComposableTask,
@@ -33,14 +33,14 @@ export class IncomingGroupSyncRequestTask
     public constructor(
         private readonly _services: ServicesForTasks,
         messageId: MessageId,
-        private readonly _senderContactOrInit: LocalModelStore<Contact> | ContactInit,
+        private readonly _senderContactOrInit: ModelStore<Contact> | ContactInit,
         private readonly _container: GroupCreatorContainer.Type,
     ) {
         const messageIdHex = u64ToHexLe(messageId);
         this._log = _services.logging.logger(
             `network.protocol.task.in-group-sync-request.${messageIdHex}`,
         );
-        if (_senderContactOrInit instanceof LocalModelStore) {
+        if (_senderContactOrInit instanceof ModelStore) {
             this._senderIdentity = _senderContactOrInit.get().view.identity;
         } else {
             this._senderIdentity = _senderContactOrInit.identity;
@@ -73,7 +73,7 @@ export class IncomingGroupSyncRequestTask
 
         // Check the sender contact. If it wasn't stored in the database yet, do that now.
         let senderContact;
-        if (this._senderContactOrInit instanceof LocalModelStore) {
+        if (this._senderContactOrInit instanceof ModelStore) {
             senderContact = this._senderContactOrInit;
         } else {
             this._log.debug('Received group sync request from unknown user. Adding user.');

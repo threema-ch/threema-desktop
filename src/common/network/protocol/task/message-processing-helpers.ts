@@ -13,7 +13,7 @@ import type {InboundFileMessage, OutboundFileMessage} from '~/common/model/types
 import type {InboundImageMessage, OutboundImageMessage} from '~/common/model/types/message/image';
 import type {InboundTextMessage, OutboundTextMessage} from '~/common/model/types/message/text';
 import type {InboundVideoMessage, OutboundVideoMessage} from '~/common/model/types/message/video';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {CspE2eType} from '~/common/network/protocol';
 import type {ServicesForTasks} from '~/common/network/protocol/task';
 import * as structbuf from '~/common/network/structbuf';
@@ -82,7 +82,7 @@ export type AnyOutboundMessageInitFragment =
 export function getConversationById(
     services: Pick<ServicesForTasks, 'device' | 'model'>,
     conversationId: ConversationId,
-): LocalModelStore<Conversation> | undefined {
+): ModelStore<Conversation> | undefined {
     const {model} = services;
     switch (conversationId.type) {
         case ReceiverType.CONTACT: {

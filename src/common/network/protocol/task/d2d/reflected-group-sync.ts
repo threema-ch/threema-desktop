@@ -1,6 +1,6 @@
 import type {Logger} from '~/common/logging';
 import type {Group} from '~/common/model';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {
     PASSIVE_TASK,
@@ -93,7 +93,7 @@ export class ReflectedGroupSyncTask implements PassiveTask<void> {
      * - conversationVisibility
      */
     private _updateGroupFromD2dSync(
-        group: LocalModelStore<Group>,
+        group: ModelStore<Group>,
         update: protobuf.validate.sync.Group.TypeUpdate,
     ): void {
         const controller = group.get().controller;

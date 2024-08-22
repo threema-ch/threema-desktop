@@ -18,7 +18,7 @@ import {
 import type {Conversation} from '~/common/model';
 import {getIdentityString} from '~/common/model/contact';
 import type {AnyTextMessageModelStore} from '~/common/model/types/message';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import type {BlobId} from '~/common/network/protocol/blob';
 import {
@@ -598,7 +598,7 @@ export function run(): void {
                 fileBlobId: BlobId;
                 thumbnailBlobId: BlobId;
                 encryptionKey: RawBlobKey;
-                conversation: LocalModelStore<Conversation>;
+                conversation: ModelStore<Conversation>;
             }> {
                 const {blob, crypto, model} = services;
 

@@ -12,7 +12,7 @@ import type {
     AnyOutboundNonDeletedMessageModelStore,
     Conversation,
 } from '~/common/model';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/reflected-delivery-receipt';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import {
@@ -52,7 +52,7 @@ export function run(): void {
 
         // Set up services, log printing and a conversation
         let services: TestServices;
-        let conversation: LocalModelStore<Conversation>;
+        let conversation: ModelStore<Conversation>;
         this.beforeEach(function () {
             // Create test services
             services = makeTestServices(me);

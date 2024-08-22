@@ -9,7 +9,7 @@ import {ProtocolError} from '~/common/error';
 import type {Logger} from '~/common/logging';
 import type {Contact} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {
     ComposableTask,
     PassiveTaskCodecHandle,
@@ -69,7 +69,7 @@ export class ReflectedOutgoingGroupSetupTask
             ?.get();
 
         // Look up group member contacts
-        const memberContacts: LocalModelStore<Contact>[] = [];
+        const memberContacts: ModelStore<Contact>[] = [];
         for (const identity of memberIdentities) {
             const contact = model.contacts.getByIdentity(identity);
             if (contact === undefined) {

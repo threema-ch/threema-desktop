@@ -7,7 +7,7 @@ import type {
     DevicesSettingsView,
 } from '~/common/model/types/settings';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import {ensureDeviceName} from '~/common/network/types';
 import {PROXY_HANDLER} from '~/common/utils/endpoint';
 
@@ -30,7 +30,7 @@ export class DevicesSettingsModelController implements DevicesSettingsController
 
 const DEFAULT_DEVICE_NAME = ensureDeviceName(`${import.meta.env.APP_NAME} for Desktop`);
 
-export class DevicesSettingsModelStore extends LocalModelStore<DevicesSettings> {
+export class DevicesSettingsModelStore extends ModelStore<DevicesSettings> {
     public constructor(services: ServicesForModel) {
         const {logging} = services;
         const tag = 'settings.devices';

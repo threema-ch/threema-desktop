@@ -136,7 +136,7 @@ title Model Store Lifecycle
 hide footbox
 
 database Database order 90
-database LocalModelStoreCache as Cache order 100
+database ModelStoreCache as Cache order 100
 actor "API Consumer" as User order 0
 
 == Create ==
@@ -148,7 +148,7 @@ return (view, uid)
 deactivate Database
 
 ' Instantiate model store
-create LocalModelStore as Store order 10
+create ModelStore as Store order 10
 User -> Store : new(view, uid)
 activate Store
 

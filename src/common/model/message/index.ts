@@ -48,9 +48,9 @@ import type {
     AnyNonDeletedMessageModelStore,
     AnyDeletedMessageModelStore,
 } from '~/common/model/types/message';
-import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
+import {ModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {OutgoingDeliveryReceiptTask} from '~/common/network/protocol/task/csp/outgoing-delivery-receipt';
 import {OutgoingEditMessageTask} from '~/common/network/protocol/task/csp/outgoing-edit-message';
@@ -67,14 +67,14 @@ import {LocalSetStore} from '~/common/utils/store/set-store';
  * Note: This avoids a circular` dependency.
  */
 export interface MessageFactory {
-    readonly createStore: <TLocalModelStore extends AnyMessageModelStore>(
+    readonly createStore: <TModelStore extends AnyMessageModelStore>(
         services: ServicesForModel,
-        direction: TLocalModelStore['ctx'],
+        direction: TModelStore['ctx'],
         conversation: ConversationControllerHandle,
-        message: DbMessageFor<TLocalModelStore['type']>,
-        common: BaseMessageView<TLocalModelStore['ctx']>,
-        sender: LocalModelStore<Contact> | typeof NO_SENDER,
-    ) => TLocalModelStore;
+        message: DbMessageFor<TModelStore['type']>,
+        common: BaseMessageView<TModelStore['ctx']>,
+        sender: ModelStore<Contact> | typeof NO_SENDER,
+    ) => TModelStore;
 
     readonly createDbMessage: <
         TDirection extends MessageDirection,
@@ -91,8 +91,8 @@ export interface MessageFactory {
 function createCaches() {
     return new LazyMap<
         UidOf<DbConversation>,
-        LocalModelStoreCache<UidOf<DbMessageCommon<MessageType>>, AnyMessageModelStore>
-    >(() => new LocalModelStoreCache<UidOf<DbMessageCommon<MessageType>>, AnyMessageModelStore>());
+        ModelStoreCache<UidOf<DbMessageCommon<MessageType>>, AnyMessageModelStore>
+    >(() => new ModelStoreCache<UidOf<DbMessageCommon<MessageType>>, AnyMessageModelStore>());
 }
 
 let caches = createCaches();
@@ -190,14 +190,14 @@ function createStore<TModelStore extends AnyMessageModelStore>(
     conversation: ConversationControllerHandle,
     factory: MessageFactory,
     message: DbMessageFor<TModelStore['type']>,
-    senderHint: LocalModelStore<Contact> | undefined,
+    senderHint: ModelStore<Contact> | undefined,
 ): TModelStore {
     // Determine direction and lookup the sender (if inbound)
     //
     // Note: Technically, the determined direction might not be TDirection.
     //       The caller needs to ensure that a mismatch is not possible.
     let direction: MessageDirection;
-    let sender: LocalModelStore<Contact> | typeof NO_SENDER;
+    let sender: ModelStore<Contact> | typeof NO_SENDER;
     if (message.senderContactUid !== undefined) {
         direction = MessageDirection.INBOUND;
 
@@ -224,7 +224,7 @@ function getCommonDbMessageData<TDirection extends MessageDirection, TType exten
     init: DirectedMessageFor<TDirection, TType, 'init'>,
 ): [
     common: Omit<DbMessageCommon<TType>, 'uid' | 'type' | 'ordinal' | 'lastEditedAt'>,
-    store: LocalModelStore<Contact> | undefined,
+    store: ModelStore<Contact> | undefined,
 ] {
     // Gather common message data
     const common: Omit<
@@ -596,7 +596,7 @@ export abstract class CommonBaseMessageController<TView extends CommonBaseMessag
     /**
      * Get the store of the {@link Conversation}, which this message is part of.
      */
-    public conversation(): LocalModelStore<Conversation> {
+    public conversation(): ModelStore<Conversation> {
         const conversationModelStore = this._services.model.conversations.getForReceiver(
             this._conversation.receiverLookup,
         );
@@ -783,13 +783,13 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
         uid: UidOf<DbMessageCommon<MessageType>>,
         type: AnyNonDeletedMessageType,
         conversation: ConversationControllerHandle,
-        protected readonly _sender: LocalModelStore<Contact>,
+        protected readonly _sender: ModelStore<Contact>,
     ) {
         super(uid, type, conversation, services);
     }
 
     /** @inheritdoc */
-    public sender(): LocalModelStore<Contact> {
+    public sender(): ModelStore<Contact> {
         return this._sender;
     }
 

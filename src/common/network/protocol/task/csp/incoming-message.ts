@@ -41,7 +41,7 @@ import type {
 } from '~/common/model';
 import {isPredefinedContact} from '~/common/model/types/contact';
 import type {AnyNonDeletedMessageType} from '~/common/model/types/message';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {
     type CspE2eType,
@@ -303,10 +303,10 @@ function getD2dIncomingMessage(
 }
 
 /** An existing contact or almost everything we need to create a contact. */
-type ContactOrInitFragment = LocalModelStore<Contact> | Omit<ContactInit, 'nickname'>;
+type ContactOrInitFragment = ModelStore<Contact> | Omit<ContactInit, 'nickname'>;
 
 /** An existing contact or everything we need to create a contact. */
-export type ContactOrInit = LocalModelStore<Contact> | ContactInit;
+export type ContactOrInit = ModelStore<Contact> | ContactInit;
 
 /**
  * The message processing instructions determine how an incoming message should be processed.
@@ -523,7 +523,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         // Discard messages from revoked/invalid contacts
         if (
             senderContactOrInitFragment === undefined ||
-            (senderContactOrInitFragment instanceof LocalModelStore &&
+            (senderContactOrInitFragment instanceof ModelStore &&
                 senderContactOrInitFragment.get().view.activityState === ActivityState.INVALID)
         ) {
             this._log.warn('Discarding message from a revoked or invalid sender');
@@ -532,7 +532,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
 
         // Determine the sender's public key
         const senderPublicKey =
-            senderContactOrInitFragment instanceof LocalModelStore
+            senderContactOrInitFragment instanceof ModelStore
                 ? senderContactOrInitFragment.get().view.publicKey
                 : senderContactOrInitFragment.publicKey;
 
@@ -640,7 +640,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         if (!isPredefinedContact(sender.string)) {
             // Sync the contact within a transaction and store it permanently,
             // if necessary.
-            if (senderContactOrInit instanceof LocalModelStore) {
+            if (senderContactOrInit instanceof ModelStore) {
                 // Contact exists. Update the nickname if necessary.
                 const nicknameFromMessage = this._getSenderNickname(type, this._message, metadata);
                 if (nicknameFromMessage !== undefined) {
@@ -697,7 +697,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         }
 
         // For group conversation messages, run the common group receive steps
-        let group: LocalModelStore<Group> | undefined = undefined;
+        let group: ModelStore<Group> | undefined = undefined;
         if (
             ((instructions.messageCategory === 'conversation-message' ||
                 instructions.messageCategory === 'status-update' ||
@@ -777,7 +777,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     unreachable(instructions);
             }
         }
-        let conversation: LocalModelStore<Conversation>;
+        let conversation: ModelStore<Conversation>;
         // Process / save the message
         switch (instructions.messageCategory) {
             case 'conversation-message':
@@ -788,7 +788,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 // - For group conversation messages, it should have been created by the common
                 //   group receive steps.
                 assert(
-                    senderContactOrInit instanceof LocalModelStore,
+                    senderContactOrInit instanceof ModelStore,
                     'Contact should have been created by IncomingMessageTask, but was not',
                 );
 
@@ -895,7 +895,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         if (
             instructions.deliveryReceipt &&
             !flags.dontSendDeliveryReceipts &&
-            senderContactOrInit instanceof LocalModelStore
+            senderContactOrInit instanceof ModelStore
         ) {
             // Note: Not using the `OutgoingDeliveryReceiptTask` here because sending the "received"
             //       delivery receipt should not be persistent. If the processing of an incoming
@@ -1087,7 +1087,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         senderContactOrInitFragment: ContactOrInitFragment,
         metadata: protobuf.validate.csp_e2e.MessageMetadata.Type | undefined,
     ): ContactOrInit {
-        if (senderContactOrInitFragment instanceof LocalModelStore) {
+        if (senderContactOrInitFragment instanceof ModelStore) {
             return senderContactOrInitFragment;
         }
 
@@ -1157,7 +1157,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
 
         // Determine sender identity and conversation ID
         let senderIdentity;
-        if (senderContactOrInit instanceof LocalModelStore) {
+        if (senderContactOrInit instanceof ModelStore) {
             senderIdentity = senderContactOrInit.get().view.identity;
         } else {
             senderIdentity = senderContactOrInit.identity;
@@ -1892,7 +1892,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
 
     private _getDirectedMessageInit(
         initFragment: Readonly<AnyInboundMessageInitFragment>,
-        contact: LocalModelStore<Contact>,
+        contact: ModelStore<Contact>,
     ): DirectedMessageFor<MessageDirection.INBOUND, AnyNonDeletedMessageType, 'init'> {
         switch (initFragment.type) {
             case MessageType.TEXT:

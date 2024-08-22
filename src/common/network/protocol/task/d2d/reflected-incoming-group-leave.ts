@@ -2,7 +2,7 @@
  * Incoming group leave task.
  */
 import type {Contact, Group} from '~/common/model';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import type {PassiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
 import {GroupLeaveTaskBase} from '~/common/network/protocol/task/common/group-leave';
 import type {GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
@@ -18,7 +18,7 @@ export class ReflectedIncomingGroupLeaveTask extends GroupLeaveTaskBase<PassiveT
     public constructor(
         services: ServicesForTasks,
         messageId: MessageId,
-        senderContact: LocalModelStore<Contact>,
+        senderContact: ModelStore<Contact>,
         container: GroupMemberContainer.Type,
         private readonly _createdAt: Date,
     ) {
@@ -43,9 +43,9 @@ export class ReflectedIncomingGroupLeaveTask extends GroupLeaveTaskBase<PassiveT
     // eslint-disable-next-line @typescript-eslint/require-await
     protected async _handleMissingSenderContact(
         handle: PassiveTaskCodecHandle,
-    ): Promise<LocalModelStore<Contact>> {
-        // This class was instantiated with a LocalModelStore, so the assertion below is safe
-        assert(this._senderContactOrInit instanceof LocalModelStore);
+    ): Promise<ModelStore<Contact>> {
+        // This class was instantiated with a ModelStore, so the assertion below is safe.
+        assert(this._senderContactOrInit instanceof ModelStore);
         return this._senderContactOrInit;
     }
 
@@ -53,8 +53,8 @@ export class ReflectedIncomingGroupLeaveTask extends GroupLeaveTaskBase<PassiveT
     // eslint-disable-next-line @typescript-eslint/require-await
     protected async _removeMemberFromGroup(
         handle: PassiveTaskCodecHandle,
-        member: LocalModelStore<Contact>,
-        group: LocalModelStore<Group>,
+        member: ModelStore<Contact>,
+        group: ModelStore<Group>,
     ): Promise<boolean> {
         const removedCount = group
             .get()

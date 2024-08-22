@@ -8,7 +8,7 @@ import type {
     PrivacySettings,
     ProfileSettings,
 } from '~/common/model/types/settings';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {IdentityString} from '~/common/network/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
 import type {LocalStore} from '~/common/utils/store';
@@ -17,25 +17,25 @@ export type User = {
     /** Permanent Threema ID of the user. */
     readonly identity: IdentityString;
     /** UI appearance settings. */
-    readonly appearanceSettings: LocalModelStore<AppearanceSettings>;
+    readonly appearanceSettings: ModelStore<AppearanceSettings>;
 
     /** Applied call settings. */
-    readonly callsSettings: LocalModelStore<CallsSettings>;
+    readonly callsSettings: ModelStore<CallsSettings>;
 
     /** User chat settings. */
-    readonly chatSettings: LocalModelStore<ChatSettings>;
+    readonly chatSettings: ModelStore<ChatSettings>;
 
     /** Settings for this specific device of the user. */
-    readonly devicesSettings: LocalModelStore<DevicesSettings>;
+    readonly devicesSettings: ModelStore<DevicesSettings>;
 
     /** Settings applied for media. */
-    readonly mediaSettings: LocalModelStore<MediaSettings>;
+    readonly mediaSettings: ModelStore<MediaSettings>;
 
     /** Applied privacy settings. */
-    readonly privacySettings: LocalModelStore<PrivacySettings>;
+    readonly privacySettings: ModelStore<PrivacySettings>;
 
     /** User profile settings. */
-    readonly profileSettings: LocalModelStore<ProfileSettings>;
+    readonly profileSettings: ModelStore<ProfileSettings>;
 
     /** Profile picture color and image (derived from {@link User.profileSettings}). */
     readonly profilePicture: LocalStore<ProfilePictureView>;

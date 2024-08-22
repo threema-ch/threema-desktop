@@ -11,7 +11,7 @@ import type {
     OutboundBaseMessageInit,
     OutboundBaseMessageView,
 } from '~/common/model/types/message/common';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {MessageId} from '~/common/network/types';
 
 // View
@@ -55,7 +55,7 @@ export type InboundTextMessageModel = LocalModel<
     MessageDirection.INBOUND,
     MessageType.TEXT
 >;
-export type IInboundTextMessageModelStore = LocalModelStore<InboundTextMessageModel>;
+export type IInboundTextMessageModelStore = ModelStore<InboundTextMessageModel>;
 
 /**
  * Outbound text message model.
@@ -66,7 +66,7 @@ export type OutboundTextMessageModel = LocalModel<
     MessageDirection.OUTBOUND,
     MessageType.TEXT
 >;
-export type IOutboundTextMessageModelStore = LocalModelStore<OutboundTextMessageModel>;
+export type IOutboundTextMessageModelStore = ModelStore<OutboundTextMessageModel>;
 
 // Bundle
 

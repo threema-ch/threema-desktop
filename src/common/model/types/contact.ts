@@ -17,7 +17,7 @@ import type {ControllerUpdateFromSource, LocalModel} from '~/common/model/types/
 import type {ConversationInitMixin} from '~/common/model/types/conversation';
 import type {ReceiverController} from '~/common/model/types/receiver';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {FeatureMask, IdentityString, Nickname} from '~/common/network/types';
 import type {StrictExtract, StrictOmit, u8} from '~/common/types';
 import {hexToBytes} from '~/common/utils/byte';
@@ -101,13 +101,13 @@ export type ContactRepository = {
      *
      * @param init The contact data
      */
-    readonly add: ControllerUpdateFromSource<[init: ContactInit], LocalModelStore<Contact>>;
-    readonly getByUid: (uid: DbContactUid) => LocalModelStore<Contact> | undefined;
-    readonly getByIdentity: (identity: IdentityString) => LocalModelStore<Contact> | undefined;
-    readonly getAll: () => LocalSetStore<LocalModelStore<Contact>>;
+    readonly add: ControllerUpdateFromSource<[init: ContactInit], ModelStore<Contact>>;
+    readonly getByUid: (uid: DbContactUid) => ModelStore<Contact> | undefined;
+    readonly getByIdentity: (identity: IdentityString) => ModelStore<Contact> | undefined;
+    readonly getAll: () => LocalSetStore<ModelStore<Contact>>;
     readonly getOrCreatePredefinedContact: (
         identity: PredefinedContactIdentity,
-    ) => Promise<LocalModelStore<Contact>>;
+    ) => Promise<ModelStore<Contact>>;
 } & ProxyMarked;
 
 /**

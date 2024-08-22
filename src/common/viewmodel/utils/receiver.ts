@@ -23,7 +23,7 @@ import {getGroupInitials} from '~/common/model/group';
 import type {Conversation} from '~/common/model/types/conversation';
 import type {AnyReceiver} from '~/common/model/types/receiver';
 import {getUserInitials} from '~/common/model/user';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {IdentityString} from '~/common/network/types';
 import {assert, isNotUndefined, unreachable} from '~/common/utils/assert';
 import type {IdColor} from '~/common/utils/id-color';
@@ -449,7 +449,7 @@ function getGroupCreatorData(
  */
 function getGroupMemberData(
     services: Pick<ServicesForViewModel, 'model'>,
-    receiverModelStore: LocalModelStore<Contact>,
+    receiverModelStore: ModelStore<Contact>,
     getAndSubscribe: GetAndSubscribeFunction,
 ): ContactReceiverData | undefined {
     const receiverModel = getAndSubscribe(receiverModelStore);

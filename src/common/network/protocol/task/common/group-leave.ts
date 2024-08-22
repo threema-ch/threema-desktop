@@ -5,7 +5,7 @@ import {GroupUserState} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact, ContactInit, Group} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import type {
     ActiveTaskCodecHandle,
     ComposableTask,
@@ -30,13 +30,13 @@ export abstract class GroupLeaveTaskBase<
     public constructor(
         protected readonly _services: ServicesForTasks,
         messageId: MessageId,
-        protected readonly _senderContactOrInit: LocalModelStore<Contact> | ContactInit,
+        protected readonly _senderContactOrInit: ModelStore<Contact> | ContactInit,
         protected readonly _container: GroupMemberContainer.Type,
         taskName: string,
     ) {
         const messageIdHex = u64ToHexLe(messageId);
         this._log = _services.logging.logger(`network.protocol.task.${taskName}.${messageIdHex}`);
-        if (_senderContactOrInit instanceof LocalModelStore) {
+        if (_senderContactOrInit instanceof ModelStore) {
             this._senderIdentity = _senderContactOrInit.get().view.identity;
         } else {
             this._senderIdentity = _senderContactOrInit.identity;
@@ -105,7 +105,7 @@ export abstract class GroupLeaveTaskBase<
      */
     protected abstract _handleMissingSenderContact(
         handle: TTaskCodecHandleType,
-    ): Promise<LocalModelStore<Contact>>;
+    ): Promise<ModelStore<Contact>>;
 
     /**
      * Remove {@link memberUid} from {@link group}.
@@ -115,7 +115,7 @@ export abstract class GroupLeaveTaskBase<
      */
     protected abstract _removeMemberFromGroup(
         handle: TTaskCodecHandleType,
-        member: LocalModelStore<Contact>,
-        group: LocalModelStore<Group>,
+        member: ModelStore<Contact>,
+        group: ModelStore<Group>,
     ): Promise<boolean>;
 }

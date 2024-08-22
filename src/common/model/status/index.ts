@@ -20,9 +20,9 @@ import type {
     StatusMessageModels,
     StatusMessageView,
 } from '~/common/model/types/status';
-import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
+import {ModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import {STATUS_CODEC} from '~/common/status';
 import type {u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
@@ -36,8 +36,8 @@ import {LocalSetStore, type IDerivableSetStore} from '~/common/utils/store/set-s
 function createCaches() {
     return new LazyMap<
         UidOf<DbConversation>,
-        LocalModelStoreCache<UidOf<DbAnyStatusMessage>, AnyStatusMessageModelStore>
-    >(() => new LocalModelStoreCache<UidOf<DbAnyStatusMessage>, AnyStatusMessageModelStore>());
+        ModelStoreCache<UidOf<DbAnyStatusMessage>, AnyStatusMessageModelStore>
+    >(() => new ModelStoreCache<UidOf<DbAnyStatusMessage>, AnyStatusMessageModelStore>());
 }
 
 let caches = createCaches();
@@ -78,7 +78,7 @@ export class StatusModelController<TType extends StatusMessageType>
     public constructor(public readonly uid: DbStatusMessageUid) {}
 }
 
-export class StatusModelStore<TType extends StatusMessageType> extends LocalModelStore<
+export class StatusModelStore<TType extends StatusMessageType> extends ModelStore<
     StatusMessageModels[TType]
 > {
     public constructor(

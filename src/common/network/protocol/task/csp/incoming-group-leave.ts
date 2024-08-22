@@ -3,7 +3,7 @@
  */
 import {AcquaintanceLevel} from '~/common/enum';
 import type {Contact, ContactInit, Group} from '~/common/model';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import type {ActiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
 import {
     addGroupContacts,
@@ -21,7 +21,7 @@ export class IncomingGroupLeaveTask extends GroupLeaveTaskBase<ActiveTaskCodecHa
     public constructor(
         services: ServicesForTasks,
         messageId: MessageId,
-        senderContactOrInit: LocalModelStore<Contact> | ContactInit,
+        senderContactOrInit: ModelStore<Contact> | ContactInit,
         container: GroupMemberContainer.Type,
         private readonly _createdAt: Date,
     ) {
@@ -71,10 +71,10 @@ export class IncomingGroupLeaveTask extends GroupLeaveTaskBase<ActiveTaskCodecHa
     /** @inheritdoc */
     protected async _handleMissingSenderContact(
         handle: ActiveTaskCodecHandle<'volatile'>,
-    ): Promise<LocalModelStore<Contact>> {
+    ): Promise<ModelStore<Contact>> {
         const {model} = this._services;
 
-        if (this._senderContactOrInit instanceof LocalModelStore) {
+        if (this._senderContactOrInit instanceof ModelStore) {
             return this._senderContactOrInit;
         }
 
@@ -88,8 +88,8 @@ export class IncomingGroupLeaveTask extends GroupLeaveTaskBase<ActiveTaskCodecHa
     /** @inheritdoc */
     protected async _removeMemberFromGroup(
         handle: ActiveTaskCodecHandle<'volatile'>,
-        member: LocalModelStore<Contact>,
-        group: LocalModelStore<Group>,
+        member: ModelStore<Contact>,
+        group: ModelStore<Group>,
     ): Promise<boolean> {
         const removedCount = await group
             .get()

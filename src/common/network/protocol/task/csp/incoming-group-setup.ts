@@ -1,6 +1,6 @@
 import type {GroupUserState} from '~/common/enum';
 import type {Contact, Group, GroupInit} from '~/common/model';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {D2mMessageFlags} from '~/common/network/protocol/flags';
 import type {ActiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
@@ -55,7 +55,7 @@ export class IncomingGroupSetupTask extends GroupSetupTaskBase<ActiveTaskCodecHa
     protected async _setMembers(
         handle: ActiveTaskCodecHandle<'volatile'>,
         group: Group,
-        members: LocalModelStore<Contact>[],
+        members: ModelStore<Contact>[],
         newUserState?: GroupUserState.MEMBER,
     ): Promise<void> {
         await group.controller.setMembers.fromRemote(
@@ -70,7 +70,7 @@ export class IncomingGroupSetupTask extends GroupSetupTaskBase<ActiveTaskCodecHa
     protected async _addGroup(
         handle: ActiveTaskCodecHandle<'volatile'>,
         init: Omit<GroupInit, 'createdAt'>,
-        members: LocalModelStore<Contact>[],
+        members: ModelStore<Contact>[],
         reflectedAt: Date | undefined,
     ): Promise<void> {
         if (reflectedAt === undefined) {
@@ -90,7 +90,7 @@ export class IncomingGroupSetupTask extends GroupSetupTaskBase<ActiveTaskCodecHa
     protected async _handleMissingGroupMembers(
         handle: ActiveTaskCodecHandle<'volatile'>,
         identitiesToAdd: IdentityString[],
-    ): Promise<LocalModelStore<Contact>[]> {
+    ): Promise<ModelStore<Contact>[]> {
         return await addGroupContacts(identitiesToAdd, handle, this._services, this._log);
     }
 }

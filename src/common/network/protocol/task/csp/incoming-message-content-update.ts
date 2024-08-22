@@ -2,7 +2,7 @@ import {MessageDirection, MessageType, ReceiverType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Conversation} from '~/common/model/types/conversation';
 import type {AnyInboundNonDeletedMessageModelStore} from '~/common/model/types/message';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import type {
     ActiveTaskCodecHandle,
     ComposableTask,
@@ -39,11 +39,11 @@ export class IncomingMessageContentUpdateTask
         // 1. Lookup the message with message_id originally sent by the sender within the
         //    associated conversation and let message be the result.
         assert(
-            this._contactOrInit instanceof LocalModelStore,
+            this._contactOrInit instanceof ModelStore,
             'Contact should have been created by IncomingMessageTask, but was not',
         );
         const senderContactModel = this._contactOrInit.get();
-        let conversation: LocalModelStore<Conversation>;
+        let conversation: ModelStore<Conversation>;
         switch (this._conversationId.type) {
             case ReceiverType.CONTACT:
                 conversation = senderContactModel.controller.conversation();
@@ -123,7 +123,7 @@ export class IncomingMessageContentUpdateTask
 
     private async _deleteMessage(
         handle: ActiveTaskCodecHandle<'volatile'>,
-        conversation: LocalModelStore<Conversation>,
+        conversation: ModelStore<Conversation>,
     ): Promise<void> {
         await conversation
             .get()

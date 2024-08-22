@@ -39,9 +39,9 @@ import {
 } from '~/common/model/types/contact';
 import type {Conversation} from '~/common/model/types/conversation';
 import type {ProfilePicture} from '~/common/model/types/profile-picture';
-import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
+import {ModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import type {IdentityData} from '~/common/network/protocol/directory';
 import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {ReflectContactSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-contact-sync-transaction';
@@ -64,11 +64,11 @@ import {LocalSetStore} from '~/common/utils/store/set-store';
 import {getGraphemeClusters} from '~/common/utils/string';
 
 /**
- * Retrieve the {@link IdentityString} for a {@link LocalModelStore<Contact> | 'me'}.
+ * Retrieve the {@link IdentityString} for a {@link ModelStore<Contact> | 'me'}.
  */
 export function getIdentityString(
     device: Device,
-    contact: LocalModelStore<Contact> | 'me',
+    contact: ModelStore<Contact> | 'me',
 ): IdentityString {
     if (contact === 'me') {
         return device.identity.string;
@@ -76,7 +76,7 @@ export function getIdentityString(
     return contact.get().view.identity;
 }
 
-let cache = new LocalModelStoreCache<DbContactUid, LocalModelStore<Contact>>();
+let cache = new ModelStoreCache<DbContactUid, ModelStore<Contact>>();
 
 const ensureExactContactInit = createExactPropertyValidator<ContactInit>('ContactInit', {
     identity: REQUIRED,
@@ -131,7 +131,7 @@ function addDerivedData(
     };
 }
 
-function create(services: ServicesForModel, init: Exact<ContactInit>): LocalModelStore<Contact> {
+function create(services: ServicesForModel, init: Exact<ContactInit>): ModelStore<Contact> {
     const {config, db} = services;
 
     // Ensure the contact does not use the server's public key.
@@ -176,9 +176,7 @@ export function getByUid<TExistence extends Existence>(
     services: ServicesForModel,
     uid: DbContactUid,
     existence: TExistence,
-): TExistence extends Existence.ENSURED
-    ? LocalModelStore<Contact>
-    : LocalModelStore<Contact> | undefined;
+): TExistence extends Existence.ENSURED ? ModelStore<Contact> : ModelStore<Contact> | undefined;
 
 /**
  * Fetch a contact model by its database UID.
@@ -189,7 +187,7 @@ export function getByUid(
     services: ServicesForModel,
     uid: DbContactUid,
     existence: Existence,
-): LocalModelStore<Contact> | undefined {
+): ModelStore<Contact> | undefined {
     return cache.getOrAdd(uid, () => {
         const {db} = services;
 
@@ -225,7 +223,7 @@ export function getByUid(
 function getByIdentity(
     services: ServicesForModel,
     identity: IdentityString,
-): LocalModelStore<Contact> | undefined {
+): ModelStore<Contact> | undefined {
     const {db} = services;
 
     // Check if the contact exists, then return the store
@@ -268,7 +266,7 @@ function remove(services: ServicesForModel, uid: DbContactUid): void {
     cache.remove(uid);
 }
 
-function all(services: ServicesForModel): LocalSetStore<LocalModelStore<Contact>> {
+function all(services: ServicesForModel): LocalSetStore<ModelStore<Contact>> {
     return cache.setRef.derefOrCreate(() => {
         const {db, logging} = services;
         // Note: This may be inefficient. It would be more efficient to get all UIDs, then filter
@@ -293,7 +291,7 @@ export class ContactModelController implements ContactController {
     public readonly notificationTag: NotificationTag;
     public readonly meta = new ModelLifetimeGuard<ContactView>();
 
-    public readonly profilePicture: LocalModelStore<ProfilePicture>;
+    public readonly profilePicture: ModelStore<ProfilePicture>;
 
     public readonly update: ContactController['update'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
@@ -396,7 +394,7 @@ export class ContactModelController implements ContactController {
     }
 
     /** @inheritdoc */
-    public conversation(): LocalModelStore<Conversation> {
+    public conversation(): ModelStore<Conversation> {
         return this._conversation();
     }
 
@@ -505,7 +503,7 @@ export class ContactModelController implements ContactController {
 }
 
 /** @inheritdoc */
-export class ContactModelStore extends LocalModelStore<Contact> {
+export class ContactModelStore extends ModelStore<Contact> {
     /**
      * Instantiate the ContactModelStore.
      *
@@ -589,23 +587,23 @@ export class ContactModelRepository implements ContactRepository {
         // but should be probably a private class attribute (not a trivial change as of now), or maybe be
         // moved down to DB level. This case was the origin of DESK-697.
         this._log.debug('Creating new cache');
-        cache = new LocalModelStoreCache<DbContactUid, LocalModelStore<Contact>>();
+        cache = new ModelStoreCache<DbContactUid, ModelStore<Contact>>();
     }
 
     /** @inheritdoc */
-    public getByUid(uid: DbContactUid): LocalModelStore<Contact> | undefined {
+    public getByUid(uid: DbContactUid): ModelStore<Contact> | undefined {
         return getByUid(this._services, uid, Existence.UNKNOWN);
     }
 
     /** @inheritdoc */
-    public getByIdentity(identity: IdentityString): LocalModelStore<Contact> | undefined {
+    public getByIdentity(identity: IdentityString): ModelStore<Contact> | undefined {
         return getByIdentity(this._services, identity);
     }
 
     // Should we only allow programatic default add for a specific subset of IDs (e.g *SUPPORT)?
     public async getOrCreatePredefinedContact(
         identity: PredefinedContactIdentity,
-    ): Promise<LocalModelStore<Contact>> {
+    ): Promise<ModelStore<Contact>> {
         const contact = this.getByIdentity(identity as IdentityString);
         if (contact !== undefined) {
             return contact;
@@ -618,7 +616,7 @@ export class ContactModelRepository implements ContactRepository {
     }
 
     /** @inheritdoc */
-    public getAll(): LocalSetStore<LocalModelStore<Contact>> {
+    public getAll(): LocalSetStore<ModelStore<Contact>> {
         return all(this._services);
     }
 
@@ -678,7 +676,7 @@ export class ContactModelRepository implements ContactRepository {
             | {source: TriggerSource.LOCAL}
             | {source: TriggerSource.REMOTE; handle: ActiveTaskCodecHandle<'volatile'>},
         init: ContactInit,
-    ): Promise<LocalModelStore<Contact>> {
+    ): Promise<ModelStore<Contact>> {
         const {taskManager} = this._services;
         this._assertNotOwnIdentity(init);
 

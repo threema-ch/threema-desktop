@@ -46,9 +46,9 @@ import type {
     StatusMessageView,
 } from '~/common/model/types/status';
 import {getDebugTagForReceiver} from '~/common/model/utils/debug-tags';
-import {LazyWeakRef, LocalModelStoreCache} from '~/common/model/utils/model-cache';
+import {LazyWeakRef, ModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import type {InternalActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {OutgoingConversationMessageTask} from '~/common/network/protocol/task/csp/outgoing-conversation-message';
 import {OutgoingDeleteMessageTask} from '~/common/network/protocol/task/csp/outgoing-delete-message';
@@ -88,21 +88,21 @@ import * as status from './status';
 // TODO(DESK-697)
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function createCache() {
-    const set = new LazyWeakRef<LocalSetStore<LocalModelStore<Conversation>>>();
+    const set = new LazyWeakRef<LocalSetStore<ModelStore<Conversation>>>();
     return {
         set,
         store: {
-            [ReceiverType.CONTACT]: new LocalModelStoreCache<
+            [ReceiverType.CONTACT]: new ModelStoreCache<
                 UidOf<DbReceiverLookup>,
-                LocalModelStore<Conversation>
+                ModelStore<Conversation>
             >(set),
-            [ReceiverType.DISTRIBUTION_LIST]: new LocalModelStoreCache<
+            [ReceiverType.DISTRIBUTION_LIST]: new ModelStoreCache<
                 UidOf<DbReceiverLookup>,
-                LocalModelStore<Conversation>
+                ModelStore<Conversation>
             >(set),
-            [ReceiverType.GROUP]: new LocalModelStoreCache<
+            [ReceiverType.GROUP]: new ModelStoreCache<
                 UidOf<DbReceiverLookup>,
-                LocalModelStore<Conversation>
+                ModelStore<Conversation>
             >(set),
         } as const,
     } as const;
@@ -126,7 +126,7 @@ const ensureExactConversationUpdate = createExactPropertyValidator<ConversationU
 
 export function deactivateAndPurgeCacheCascade(
     receiver: DbReceiverLookup,
-    conversation: LocalModelStore<Conversation>,
+    conversation: ModelStore<Conversation>,
 ): void {
     const {controller} = conversation.get();
 
@@ -150,8 +150,8 @@ export function getByReceiver<TExistence extends Existence>(
     existence: TExistence,
     tag?: string,
 ): TExistence extends Existence.ENSURED
-    ? LocalModelStore<Conversation>
-    : LocalModelStore<Conversation> | undefined;
+    ? ModelStore<Conversation>
+    : ModelStore<Conversation> | undefined;
 
 /**
  * Fetch a conversation model by its receiver.
@@ -164,7 +164,7 @@ export function getByReceiver(
     receiver: DbReceiverLookup,
     existence: Existence,
     tag?: string,
-): LocalModelStore<Conversation> | undefined {
+): ModelStore<Conversation> | undefined {
     return cache.store[receiver.type].getOrAdd(receiver.uid, () => {
         const {db} = services;
         // Lookup the associated conversation
@@ -197,7 +197,7 @@ export function getByUid(
     uid: DbConversationUid,
     existence: Existence,
     tag?: string,
-): LocalModelStore<Conversation> | undefined {
+): ModelStore<Conversation> | undefined {
     const {db} = services;
 
     const conversation = db.getConversationByUid(uid);
@@ -1244,7 +1244,7 @@ export class ConversationModelController implements ConversationController {
     }
 }
 
-function all(services: ServicesForModel): LocalSetStore<LocalModelStore<Conversation>> {
+function all(services: ServicesForModel): LocalSetStore<ModelStore<Conversation>> {
     // Note: This may be inefficient. It would be more efficient to get all UIDs, then filter
     // out all UIDs we have cached stores for and then make an aggregated request for the
     // remaining ones.
@@ -1264,7 +1264,7 @@ function all(services: ServicesForModel): LocalSetStore<LocalModelStore<Conversa
     });
 }
 
-export class ConversationModelStore extends LocalModelStore<Conversation> {
+export class ConversationModelStore extends ModelStore<Conversation> {
     public constructor(
         services: ServicesForModel,
         receiverLookup: DbReceiverLookup,
@@ -1320,17 +1320,17 @@ export class ConversationModelRepository implements ConversationRepository {
     }
 
     /** @inheritdoc */
-    public getAll(): LocalSetStore<LocalModelStore<Conversation>> {
+    public getAll(): LocalSetStore<ModelStore<Conversation>> {
         return all(this._services);
     }
 
     /** @inheritdoc */
-    public getByUid(uid: DbConversationUid): LocalModelStore<Conversation> | undefined {
+    public getByUid(uid: DbConversationUid): ModelStore<Conversation> | undefined {
         return getByUid(this._services, uid, Existence.UNKNOWN);
     }
 
     /** @inheritdoc */
-    public getForReceiver(receiver: DbReceiverLookup): LocalModelStore<Conversation> | undefined {
+    public getForReceiver(receiver: DbReceiverLookup): ModelStore<Conversation> | undefined {
         const tag = getDebugTagForReceiver(receiver);
         return getByReceiver(this._services, receiver, Existence.UNKNOWN, tag);
     }

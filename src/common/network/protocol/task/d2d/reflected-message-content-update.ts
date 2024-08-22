@@ -2,7 +2,7 @@ import {type MessageDirection, MessageType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Conversation} from '~/common/model/types/conversation';
 import type {AnyNonDeletedMessageModelStore} from '~/common/model/types/message';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {
     ComposableTask,
     PassiveTaskCodecHandle,
@@ -71,7 +71,7 @@ export class ReflectedMessageContentUpdateTask
     }
 
     private _deleteMessage(
-        conversation: LocalModelStore<Conversation>,
+        conversation: ModelStore<Conversation>,
         direction: MessageDirection,
     ): void {
         assert(

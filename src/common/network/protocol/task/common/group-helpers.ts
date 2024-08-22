@@ -12,7 +12,7 @@ import {
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact, ContactInit, Group} from '~/common/model';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import {encryptAndUploadBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
@@ -41,13 +41,12 @@ import {idColorIndex} from '~/common/utils/id-color';
 export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPersistence>(
     groupId: GroupId,
     creatorIdentity: IdentityString,
-    senderContactOrInit: LocalModelStore<Contact> | ContactInit,
+    senderContactOrInit: ModelStore<Contact> | ContactInit,
     handle: ActiveTaskCodecHandle<TPersistence>,
     services: ServicesForTasks,
     log: Logger,
 ): Promise<
-    | {readonly group: LocalModelStore<Group>; readonly senderContact: LocalModelStore<Contact>}
-    | undefined
+    {readonly group: ModelStore<Group>; readonly senderContact: ModelStore<Contact>} | undefined
 > {
     const {model} = services;
 
@@ -99,7 +98,7 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
 
     // The group exists. Ensure that the sender contact exists as well.
     let senderContact;
-    if (senderContactOrInit instanceof LocalModelStore) {
+    if (senderContactOrInit instanceof ModelStore) {
         senderContact = senderContactOrInit;
     } else {
         log.debug('Received group message from unknown user. Adding user.');
@@ -172,14 +171,14 @@ export async function addGroupContacts(
     handle: ActiveTaskCodecHandle<'volatile'>,
     services: ServicesForTasks,
     log: Logger,
-): Promise<LocalModelStore<Contact>[]> {
+): Promise<ModelStore<Contact>[]> {
     const {directory, model} = services;
 
     // Look up all public keys in one go
     const identityDataMap = await directory.identities(identities);
 
     // Add contacts
-    const contactStores: LocalModelStore<Contact>[] = [];
+    const contactStores: ModelStore<Contact>[] = [];
     for (const identity of identities) {
         const fetched = identityDataMap.get(identity);
         assert(

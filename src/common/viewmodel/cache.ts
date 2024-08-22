@@ -6,7 +6,7 @@ import type {
 } from '~/common/model/types/message';
 import type {AnyStatusMessageModelStore} from '~/common/model/types/status';
 import {LazyWeakRef} from '~/common/model/utils/model-cache';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import {WeakValueMap} from '~/common/utils/map';
 import type {LocalStore} from '~/common/utils/store';
 import type {ContactDetailViewModelBundle} from '~/common/viewmodel/contact/detail';
@@ -43,7 +43,7 @@ export class ViewModelCache {
         WeakValueMap<AnyNonDeletedMessageModelStore, ConversationRegularMessageViewModelBundle>
     >();
     public readonly conversationStatusMessage = new WeakValueMap<
-        LocalModelStore<Conversation>,
+        ModelStore<Conversation>,
         WeakValueMap<AnyStatusMessageModelStore, ConversationStatusMessageViewModelBundle>
     >();
     public readonly contactList = new LazyWeakRef<ContactListViewModelBundle>();

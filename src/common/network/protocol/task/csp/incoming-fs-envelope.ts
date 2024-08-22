@@ -1,7 +1,7 @@
 import {CspE2eForwardSecurityType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact, ContactInit} from '~/common/model';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import type {
@@ -29,14 +29,14 @@ export class IncomingForwardSecurityEnvelopeTask
     public constructor(
         private readonly _services: ServicesForTasks,
         private readonly _messageId: MessageId,
-        private readonly _senderContactOrInit: LocalModelStore<Contact> | ContactInit,
+        private readonly _senderContactOrInit: ModelStore<Contact> | ContactInit,
         private readonly _fsEnvelope: protobuf.csp_e2e_fs.Envelope,
     ) {
         const messageIdHex = u64ToHexLe(_messageId);
         this._log = _services.logging.logger(
             `network.protocol.task.in-fs-envelope.${messageIdHex}`,
         );
-        if (_senderContactOrInit instanceof LocalModelStore) {
+        if (_senderContactOrInit instanceof ModelStore) {
             this._senderIdentity = _senderContactOrInit.get().view.identity;
         } else {
             this._senderIdentity = _senderContactOrInit.identity;
@@ -96,10 +96,10 @@ export class IncomingForwardSecurityEnvelopeTask
         this._log.info('Rejected incoming forward security message');
     }
 
-    private _getSenderModelStore(): LocalModelStore<Contact> | undefined {
+    private _getSenderModelStore(): ModelStore<Contact> | undefined {
         const {model} = this._services;
 
-        if (this._senderContactOrInit instanceof LocalModelStore) {
+        if (this._senderContactOrInit instanceof ModelStore) {
             return this._senderContactOrInit;
         }
 

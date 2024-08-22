@@ -9,7 +9,7 @@ import type {
     OutboundBaseFileMessageView,
     OutboundBaseMessageInit,
 } from '~/common/model/types/message/common';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 
 // View
 
@@ -55,7 +55,7 @@ type InboundFileMessageModel = LocalModel<
     MessageDirection.INBOUND,
     MessageType.FILE
 >;
-export type IInboundFileMessageModelStore = LocalModelStore<InboundFileMessageModel>;
+export type IInboundFileMessageModelStore = ModelStore<InboundFileMessageModel>;
 
 /**
  * Outbound file message model.
@@ -66,7 +66,7 @@ type OutboundFileMessageModel = LocalModel<
     MessageDirection.OUTBOUND,
     MessageType.FILE
 >;
-export type IOutboundFileMessageModelStore = LocalModelStore<OutboundFileMessageModel>;
+export type IOutboundFileMessageModelStore = ModelStore<OutboundFileMessageModel>;
 
 // Bundle
 
@@ -78,7 +78,7 @@ export interface InboundFileMessage {
     readonly init: InboundFileMessageInit;
     readonly controller: InboundFileMessageController;
     readonly model: InboundFileMessageModel;
-    readonly store: LocalModelStore<InboundFileMessageModel>;
+    readonly store: ModelStore<InboundFileMessageModel>;
 }
 
 /**
@@ -89,5 +89,5 @@ export interface OutboundFileMessage {
     readonly init: OutboundFileMessageInit;
     readonly controller: OutboundFileMessageController;
     readonly model: OutboundFileMessageModel;
-    readonly store: LocalModelStore<OutboundFileMessageModel>;
+    readonly store: ModelStore<OutboundFileMessageModel>;
 }

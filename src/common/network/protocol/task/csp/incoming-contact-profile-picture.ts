@@ -1,7 +1,7 @@
 import {extractErrorMessage} from '~/common/error';
 import type {Logger} from '~/common/logging';
 import type {Contact, ContactInit} from '~/common/model';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import {downloadAndDecryptBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
 import type {
@@ -25,7 +25,7 @@ export class IncomingContactProfilePictureTask
     public constructor(
         private readonly _services: ServicesForTasks,
         messageId: MessageId,
-        private readonly _senderContactOrInit: LocalModelStore<Contact> | ContactInit,
+        private readonly _senderContactOrInit: ModelStore<Contact> | ContactInit,
         private readonly _profilePicture: SetProfilePicture.Type | undefined,
     ) {
         const messageIdHex = u64ToHexLe(messageId);
@@ -38,7 +38,7 @@ export class IncomingContactProfilePictureTask
         // This task will be called with "missingContactHandling: 'ignore'", so we can be sure that
         // the task will only be called if the sender contact already existed.
         assert(
-            this._senderContactOrInit instanceof LocalModelStore,
+            this._senderContactOrInit instanceof ModelStore,
             'Expected senderContactOrInit to be a model store',
         );
         const senderContact = this._senderContactOrInit;

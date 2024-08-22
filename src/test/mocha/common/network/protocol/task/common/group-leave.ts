@@ -8,7 +8,7 @@ import {
     GroupUserState,
 } from '~/common/enum';
 import type {Contact, ContactInit} from '~/common/model';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import {IncomingGroupLeaveTask} from '~/common/network/protocol/task/csp/incoming-group-leave';
 import {ReflectedIncomingGroupLeaveTask} from '~/common/network/protocol/task/d2d/reflected-incoming-group-leave';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
@@ -264,7 +264,7 @@ async function runTask(
     services: ServicesForBackend,
     groupId: GroupId,
     creatorIdentity: IdentityString,
-    senderContactOrInit: LocalModelStore<Contact> | ContactInit,
+    senderContactOrInit: ModelStore<Contact> | ContactInit,
     expectations: NetworkExpectation[],
     mode: 'csp' | 'd2d',
     description?: string,
@@ -287,7 +287,7 @@ async function runTask(
             new Date(),
         );
     } else {
-        assert(senderContactOrInit instanceof LocalModelStore, 'Sender must be a contact');
+        assert(senderContactOrInit instanceof ModelStore, 'Sender must be a contact');
         task = new ReflectedIncomingGroupLeaveTask(
             services,
             messageId,

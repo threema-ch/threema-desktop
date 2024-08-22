@@ -1,7 +1,7 @@
 import {ReceiverType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact, ProfilePicture, ProfilePictureSource} from '~/common/model';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {common} from '~/common/network/protobuf/js';
 import type {DeltaImage} from '~/common/network/protobuf/validate/common';
@@ -128,7 +128,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
     }
 
     private async _processProfilePicture(
-        profilePicture: LocalModelStore<ProfilePicture>,
+        profilePicture: ModelStore<ProfilePicture>,
         deltaImage: DeltaImage.Type,
         source: ProfilePictureSource,
     ): Promise<void> {
@@ -163,7 +163,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
     private async _processProfilePictures(
         identity: IdentityString,
         createOrUpdate: ProfilePictures,
-        profilePicture: LocalModelStore<ProfilePicture>,
+        profilePicture: ModelStore<ProfilePicture>,
     ): Promise<void> {
         // Handle profile picture(s)
         const promises = [];
@@ -227,7 +227,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
     }
 
     private async _updateContactFromD2dSync(
-        contact: LocalModelStore<Contact>,
+        contact: ModelStore<Contact>,
         update: protobuf.validate.sync.Contact.TypeUpdate,
     ): Promise<void> {
         const controller = contact.get().controller;

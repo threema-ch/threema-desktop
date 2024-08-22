@@ -15,7 +15,7 @@ import type {ServicesForBackend} from '~/common/backend';
 import {TransferTag} from '~/common/enum';
 import {RELEASE_PROXY, TRANSFERRED_MARKER, TRANSFER_HANDLER} from '~/common/index';
 import type {Logger, LoggerFactory} from '~/common/logging';
-import type {LocalModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
 import type {i53, Primitive, u53, WeakOpaque} from '~/common/types';
 import {assert, assertUnreachable, unreachable, unwrap} from '~/common/utils/assert';
 import {WeakValueMap} from '~/common/utils/map';
@@ -307,7 +307,7 @@ export type CustomTransferableLocal<T extends CustomTransferredRemoteMarker<unkn
         infer TCtx,
         infer TType
     >
-        ? LocalModelStore<TModel, TView, TController, TCtx, TType>
+        ? ModelStore<TModel, TView, TController, TCtx, TType>
         : T extends RemoteSetStore<infer TValue>
           ? ISetStore<TValue>
           : T extends RemoteStore<infer TValue>
@@ -394,7 +394,7 @@ export type PropertiesMarkedRemote<T> = {
  *            used here, otherwise false positives are possible.
  */
 type CustomTransferableRemote<T extends CustomTransferable> =
-    T extends LocalModelStore<infer TModel, infer TView, infer TController, infer TCtx, infer TType>
+    T extends ModelStore<infer TModel, infer TView, infer TController, infer TCtx, infer TType>
         ? RemoteModelStore<TModel, TView, TController, TCtx, TType>
         : T extends IDerivableSetStore<infer TValue>
           ? // TValue must extends CustomTransferrable. We cannot enforce this since the remote mapping

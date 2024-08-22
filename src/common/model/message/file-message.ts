@@ -35,7 +35,7 @@ import type {
     OutboundFileMessage,
     OutboundFileMessageController,
 } from '~/common/model/types/message/file';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import {assert, unreachable} from '~/common/utils/assert';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 import {AsyncLock} from '~/common/utils/lock';
@@ -68,7 +68,7 @@ export function getFileMessageModelStore<TModelStore extends AnyFileMessageModel
     conversation: ConversationControllerHandle,
     message: DbMessageFor<TModelStore['type']>,
     common: BaseMessageView<TModelStore['ctx']>,
-    sender: LocalModelStore<Contact> | typeof NO_SENDER,
+    sender: ModelStore<Contact> | typeof NO_SENDER,
 ): TModelStore {
     const file: Omit<CommonBaseFileMessageView, keyof CommonBaseMessageView> = {
         fileName: message.fileName,
@@ -241,13 +241,13 @@ export class OutboundFileMessageModelController
     }
 }
 
-export class InboundFileMessageModelStore extends LocalModelStore<InboundFileMessage['model']> {
+export class InboundFileMessageModelStore extends ModelStore<InboundFileMessage['model']> {
     public constructor(
         services: ServicesForModel,
         view: InboundFileMessage['view'],
         uid: UidOf<DbFileMessage>,
         conversation: ConversationControllerHandle,
-        sender: LocalModelStore<Contact>,
+        sender: ModelStore<Contact>,
     ) {
         const {logging} = services;
         const tag = `message.inbound.file.${uid}`;
@@ -272,7 +272,7 @@ export class InboundFileMessageModelStore extends LocalModelStore<InboundFileMes
     }
 }
 
-export class OutboundFileMessageModelStore extends LocalModelStore<OutboundFileMessage['model']> {
+export class OutboundFileMessageModelStore extends ModelStore<OutboundFileMessage['model']> {
     public constructor(
         services: ServicesForModel,
         view: OutboundFileMessage['view'],

@@ -28,9 +28,9 @@ store's value updates over the RPC API.
 The value of the store is either transferred according to the value's `TRANSFER_HANDLER` or with the
 structured clone algorithm if no such handler is defined.
 
-### `LocalModelStore<TView, TController, ...>` / `RemoteModelStore<StructuredClone<TView>, RemoteProxy<TController>, ...>`
+### `ModelStore<TView, TController, ...>` / `RemoteModelStore<StructuredClone<TView>, RemoteProxy<TController>, ...>`
 
-The `LocalModelStore` transfer handler is a special case of the `LocalStore` transfer handler. It
+The `ModelStore` transfer handler is a special case of the `LocalStore` transfer handler. It
 structurally clones store updates of the `view` properties, and exposes the `controller` property as
 `ProxyMarked`.
 

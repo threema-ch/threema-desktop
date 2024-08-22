@@ -4,7 +4,7 @@ import type {Contact, ConversationView, Group} from '~/common/model';
 import type {InboundDeletedMessageModelStore} from '~/common/model/message/deleted-message';
 import type {AnyInboundNonDeletedMessageModelStore} from '~/common/model/types/message';
 import type {AnyReceiverStore} from '~/common/model/types/receiver';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {ChosenGroupCall} from '~/common/network/protocol/call/group-call';
 import type {GroupId, IdentityString} from '~/common/network/types';
 import type {u53, WeakOpaque} from '~/common/types';
@@ -299,11 +299,11 @@ export class NotificationService {
         startedByContactName?: string;
         tag: NotificationTag;
     } {
-        const callStartedBy: LocalModelStore<Contact> | undefined = [
+        const callStartedBy: ModelStore<Contact> | undefined = [
             groupModel.view.creator,
             ...groupModel.view.members,
         ].find(
-            (memberOrCreatorModel): memberOrCreatorModel is LocalModelStore<Contact> =>
+            (memberOrCreatorModel): memberOrCreatorModel is ModelStore<Contact> =>
                 memberOrCreatorModel !== 'me' &&
                 memberOrCreatorModel.get().view.identity === chosenGroupCall.base.startedBy,
         );

@@ -28,7 +28,7 @@ import type {
     OutboundTextMessageController,
     OutboundTextMessageModel,
 } from '~/common/model/types/message/text';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import {assert, unreachable} from '~/common/utils/assert';
 
 export function createTextMessage<TDirection extends MessageDirection>(
@@ -55,7 +55,7 @@ export function getTextMessageModelStore<TModelStore extends AnyTextMessageModel
     conversation: ConversationControllerHandle,
     message: DbTextMessage,
     common: BaseMessageView<TModelStore['ctx']>,
-    sender: LocalModelStore<Contact> | typeof NO_SENDER,
+    sender: ModelStore<Contact> | typeof NO_SENDER,
 ): TModelStore {
     const text: Omit<CommonTextMessageView, keyof CommonBaseMessageView> = {
         text: message.text,
@@ -146,7 +146,7 @@ export class OutboundTextMessageModelController
 }
 
 export class InboundTextMessageModelStore
-    extends LocalModelStore<InboundTextMessageModel>
+    extends ModelStore<InboundTextMessageModel>
     implements IInboundTextMessageModelStore
 {
     public constructor(
@@ -154,7 +154,7 @@ export class InboundTextMessageModelStore
         view: InboundTextMessage['view'],
         uid: UidOf<DbTextMessage>,
         conversation: ConversationControllerHandle,
-        sender: LocalModelStore<Contact>,
+        sender: ModelStore<Contact>,
     ) {
         const {logging} = services;
         const tag = `message.inbound.text.${uid}`;
@@ -180,7 +180,7 @@ export class InboundTextMessageModelStore
 }
 
 export class OutboundTextMessageModelStore
-    extends LocalModelStore<OutboundTextMessageModel>
+    extends ModelStore<OutboundTextMessageModel>
     implements IOutboundTextMessageModelStore
 {
     public constructor(

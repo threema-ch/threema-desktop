@@ -17,9 +17,9 @@ import type {
     ProfilePictureView,
 } from '~/common/model/types/profile-picture';
 import {getDebugTagForReceiver} from '~/common/model/utils/debug-tags';
-import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
+import {ModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import type {BlobId} from '~/common/network/protocol/blob';
 import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import type {ProfilePictureUpdate} from '~/common/network/protocol/task/d2d/reflect-contact-sync';
@@ -478,7 +478,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
     }
 }
 
-export class ProfilePictureModelStore extends LocalModelStore<ProfilePicture> {
+export class ProfilePictureModelStore extends ModelStore<ProfilePicture> {
     public constructor(
         services: ServicesForModel,
         receiver: DbReceiverLookup & ConversationId,
@@ -507,13 +507,13 @@ export class ProfilePictureModelRepository implements ProfilePictureRepository {
 
     public constructor(
         private readonly _services: ServicesForModel,
-        private readonly _contactCache = new LocalModelStoreCache<
+        private readonly _contactCache = new ModelStoreCache<
             DbContactUid,
-            LocalModelStore<ProfilePicture>
+            ModelStore<ProfilePicture>
         >(),
-        private readonly _groupCache = new LocalModelStoreCache<
+        private readonly _groupCache = new ModelStoreCache<
             DbGroupUid,
-            LocalModelStore<ProfilePicture>
+            ModelStore<ProfilePicture>
         >(),
     ) {}
 
@@ -522,7 +522,7 @@ export class ProfilePictureModelRepository implements ProfilePictureRepository {
         uid: DbContactUid,
         identity: IdentityString,
         profilePictureData: ContactProfilePictureFields,
-    ): LocalModelStore<ProfilePicture> {
+    ): ModelStore<ProfilePicture> {
         return this._contactCache.getOrAdd(uid, () => {
             const profilePicture = {
                 color: idColorIndexToString(profilePictureData.colorIndex),
@@ -546,7 +546,7 @@ export class ProfilePictureModelRepository implements ProfilePictureRepository {
         creatorIdentity: IdentityString,
         groupId: GroupId,
         profilePictureData: GroupProfilePictureFields,
-    ): LocalModelStore<ProfilePicture> {
+    ): ModelStore<ProfilePicture> {
         return this._groupCache.getOrAdd(uid, () => {
             const profilePicture = {
                 color: idColorIndexToString(profilePictureData.colorIndex),
@@ -584,7 +584,7 @@ export type ProfilePictureRepository = {
         uid: DbContactUid,
         identity: IdentityString,
         profilePictureData: ContactProfilePictureFields,
-    ) => LocalModelStore<ProfilePicture>;
+    ) => ModelStore<ProfilePicture>;
 
     /**
      * Return the profile picture model store for the specified group.
@@ -594,5 +594,5 @@ export type ProfilePictureRepository = {
         creatorIdentity: IdentityString,
         groupId: GroupId,
         profilePictureData: GroupProfilePictureFields,
-    ) => LocalModelStore<ProfilePicture>;
+    ) => ModelStore<ProfilePicture>;
 } & ProxyMarked;

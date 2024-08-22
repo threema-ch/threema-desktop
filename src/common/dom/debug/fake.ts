@@ -33,7 +33,7 @@ import type {Logger} from '~/common/logging';
 import type {Contact} from '~/common/model';
 import type {ContactModelStore} from '~/common/model/contact';
 import type {GroupModelStore} from '~/common/model/group';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import {BLOB_ID_LENGTH, ensureBlobId} from '~/common/network/protocol/blob';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {randomMessageId} from '~/common/network/protocol/utils';
@@ -262,7 +262,7 @@ export async function generateFakeGroupConversation({
         throw new Error('To generate a group, please add some contacts');
     }
 
-    const contactObjects: LocalModelStore<Contact>[] = [];
+    const contactObjects: ModelStore<Contact>[] = [];
 
     contacts.get().forEach((contact) => {
         contactObjects.push(contact);

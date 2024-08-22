@@ -8,7 +8,7 @@ import type {
     PrivacySettingsView,
 } from '~/common/model/types/settings';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import type {IdentityString} from '~/common/network/types';
 import {PROXY_HANDLER} from '~/common/utils/endpoint';
 
@@ -62,7 +62,7 @@ export class PrivacySettingsModelController implements PrivacySettingsController
     }
 }
 
-export class PrivacySettingsModelStore extends LocalModelStore<PrivacySettings> {
+export class PrivacySettingsModelStore extends ModelStore<PrivacySettings> {
     public constructor(services: ServicesForModel) {
         const {logging} = services;
         const tag = 'privacy-settings';

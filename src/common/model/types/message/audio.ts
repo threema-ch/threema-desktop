@@ -10,7 +10,7 @@ import type {
     OutboundBaseFileMessageView,
     OutboundBaseMessageInit,
 } from '~/common/model/types/message/common';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {f64} from '~/common/types';
 
 // View
@@ -59,7 +59,7 @@ type InboundAudioMessageModel = LocalModel<
     MessageDirection.INBOUND,
     MessageType.AUDIO
 >;
-export type IInboundAudioMessageModelStore = LocalModelStore<InboundAudioMessageModel>;
+export type IInboundAudioMessageModelStore = ModelStore<InboundAudioMessageModel>;
 
 /**
  * Outbound audio message model.
@@ -70,7 +70,7 @@ type OutboundAudioMessageModel = LocalModel<
     MessageDirection.OUTBOUND,
     MessageType.AUDIO
 >;
-export type IOutboundAudioMessageModelStore = LocalModelStore<OutboundAudioMessageModel>;
+export type IOutboundAudioMessageModelStore = ModelStore<OutboundAudioMessageModel>;
 
 // Bundle
 
@@ -82,7 +82,7 @@ export interface InboundAudioMessage {
     readonly init: InboundAudioMessageInit;
     readonly controller: InboundAudioMessageController;
     readonly model: InboundAudioMessageModel;
-    readonly store: LocalModelStore<InboundAudioMessageModel>;
+    readonly store: ModelStore<InboundAudioMessageModel>;
 }
 
 /**
@@ -93,5 +93,5 @@ export interface OutboundAudioMessage {
     readonly init: OutboundAudioMessageInit;
     readonly controller: OutboundAudioMessageController;
     readonly model: OutboundAudioMessageModel;
-    readonly store: LocalModelStore<OutboundAudioMessageModel>;
+    readonly store: ModelStore<OutboundAudioMessageModel>;
 }

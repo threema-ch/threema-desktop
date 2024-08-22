@@ -9,7 +9,7 @@ import type {
     AppearanceSettingsController,
 } from '~/common/model/types/settings';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import {PROXY_HANDLER} from '~/common/utils/endpoint';
 
 export class AppearanceSettingsModelController implements AppearanceSettingsController {
@@ -42,7 +42,7 @@ function addDerivedData(view: AppearanceSettingsViewNonDerivedProperties): Appea
 const DEFAULT_TIME_FORMAT = TimeFormat.TIME_24H;
 const DEFAULT_INACTIVE_CONTACT_POLICY = InactiveContactsPolicy.SHOW;
 
-export class AppearanceSettingsModelStore extends LocalModelStore<AppearanceSettings> {
+export class AppearanceSettingsModelStore extends ModelStore<AppearanceSettings> {
     public constructor(services: ServicesForModel) {
         const {logging} = services;
         const tag = 'settings.appearance';

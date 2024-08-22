@@ -2,7 +2,7 @@ import {expect} from 'chai';
 
 import {MessageDirection, ReceiverType} from '~/common/enum';
 import type {Contact} from '~/common/model';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import {ensureIdentityString, ensureNickname} from '~/common/network/types';
 import {derive} from '~/common/utils/store/derived-store';
@@ -36,7 +36,7 @@ export function run(): void {
             async function testMessageMentions(
                 services: TestServices,
                 message: string,
-                recipient: LocalModelStore<Contact>,
+                recipient: ModelStore<Contact>,
                 expectedMentions: AnyMention[],
             ): Promise<void> {
                 const messageStore = await recipient

@@ -2,7 +2,7 @@ import {CspE2eGroupControlType, GroupUserState} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Group} from '~/common/model';
 import {getIdentityString} from '~/common/model/contact';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import type {GroupCallBaseData} from '~/common/network/protocol/call/group-call';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
@@ -58,7 +58,7 @@ export class OutgoingGroupCallStartTask implements ActiveTask<void, 'persistent'
 
     public constructor(
         private readonly _services: ServicesForTasks,
-        private readonly _group: LocalModelStore<Group>,
+        private readonly _group: ModelStore<Group>,
         private readonly _call: GroupCallBaseData,
     ) {
         this._log = _services.logging.logger('network.protocol.task.out-group-call-start');

@@ -18,7 +18,7 @@ import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import type {Contact, Group, ServicesForModel} from '~/common/model';
 import {OngoingGroupCall} from '~/common/model/group-call';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {JoinResponse} from '~/common/network/protobuf/validate/group-call';
 import type {AnyOngoingCall, CallType} from '~/common/network/protocol/call';
 import {
@@ -121,7 +121,7 @@ export function ensureParticipantId(value: u53): ParticipantId {
 }
 
 /**
- * Return the {@link LocalModelStore<Contact> | 'me'} and the associated {@link PublicKey} if the
+ * Return the {@link ModelStore<Contact> | 'me'} and the associated {@link PublicKey} if the
  * provided identity is the user or any other member of the group.
  *
  * Note: Because the user does not have a {@link Contact} model but can participate (multiple times)
@@ -132,8 +132,8 @@ export function getGroupMember(
     services: Pick<ServicesForGroupCall, 'device' | 'model'>,
     group: Group,
     identity: IdentityString,
-): {readonly contact: LocalModelStore<Contact> | 'me'; readonly publicKey: PublicKey} | undefined {
-    let contact: LocalModelStore<Contact> | 'me' | undefined;
+): {readonly contact: ModelStore<Contact> | 'me'; readonly publicKey: PublicKey} | undefined {
+    let contact: ModelStore<Contact> | 'me' | undefined;
     let publicKey;
     if (identity === services.device.identity.string) {
         contact = 'me';
@@ -153,7 +153,7 @@ export function getGroupMember(
 
 export interface GroupCallBaseData {
     /** The associated group model store. */
-    readonly group: LocalModelStore<Group>;
+    readonly group: ModelStore<Group>;
     /** Identity of the group member that started the group call. */
     readonly startedBy: IdentityString;
     // TODO(DESK-1466): At risk, rather use reflected-at (outgoing), created-at (incoming)
@@ -176,7 +176,7 @@ export interface GroupCallStateSnapshot {
     readonly startedAt: Date;
     readonly maxParticipants: u53;
     /** IMPORTANT: This may include contacts more than once, including the user itself! */
-    readonly participants: readonly (LocalModelStore<Contact> | 'me')[] | undefined;
+    readonly participants: readonly (ModelStore<Contact> | 'me')[] | undefined;
 }
 
 interface GroupCallState {
@@ -232,7 +232,7 @@ function serializeRunningGroupCall(call: RunningGroupCall): DbCreate<DbRunningGr
 
 export function deserializeRunningGroupCall(
     services: Pick<ServicesForModel, 'crypto' | 'device'>,
-    group: LocalModelStore<Group>,
+    group: ModelStore<Group>,
     call: Omit<DbRunningGroupCall, 'uid'>,
 ): RunningGroupCall<'init' | 'failed'> {
     const init = {
@@ -285,7 +285,7 @@ class GroupCallRunningContext {
         private readonly _services: ServicesForGroupCall,
         private readonly _ongoing: IQueryableStore<AnyOngoingCall>,
         private readonly _group: {
-            readonly store: LocalModelStore<Group>;
+            readonly store: ModelStore<Group>;
             readonly chosen: WritableStore<ChosenGroupCall | undefined>;
         },
         private readonly _abort: AbortRaiser<GroupCallRunningContextAbort>,
@@ -405,7 +405,7 @@ class GroupCallRunningContext {
         services: ServicesForGroupCall,
         context: {
             readonly ongoing: IQueryableStore<AnyOngoingCall>;
-            readonly group: LocalModelStore<Group>;
+            readonly group: ModelStore<Group>;
         },
         call: RunningGroupCall,
         token: SfuToken,
@@ -539,7 +539,7 @@ class GroupCallRunningContext {
         services: ServicesForGroupCall,
         context: {
             readonly ongoing: IQueryableStore<AnyOngoingCall>;
-            readonly group: LocalModelStore<Group>;
+            readonly group: ModelStore<Group>;
             readonly log: Logger;
         },
         running: readonly RunningGroupCall[],
@@ -914,12 +914,12 @@ export class GroupCallManager {
     /**
      * A persistent set of group calls that are currently considered _running_.
      *
-     * Note: Because we maintain a reference to the {@link LocalModelStore} of the group here, it is
+     * Note: Because we maintain a reference to the {@link ModelStore} of the group here, it is
      * not possible that the group model can be garbage collected while a group call is considered
      * _running_. This way, the store for the {@link ChosenGroupCall} can safely live on the
      * `GroupModelController`.
      */
-    private readonly _running = new Map<LocalModelStore<Group>, GroupCallRunningContext>();
+    private readonly _running = new Map<ModelStore<Group>, GroupCallRunningContext>();
 
     public constructor(
         private readonly _services: ServicesForGroupCall,
@@ -936,7 +936,7 @@ export class GroupCallManager {
      */
     public async register(
         group: {
-            readonly store: LocalModelStore<Group>;
+            readonly store: ModelStore<Group>;
             readonly chosen: WritableStore<ChosenGroupCall | undefined>;
         },
         calls: readonly RunningGroupCall<'init' | 'failed'>[],
@@ -955,7 +955,7 @@ export class GroupCallManager {
      * @returns the chosen call of the group, if any.
      */
     public async refresh(
-        group: LocalModelStore<Group>,
+        group: ModelStore<Group>,
         token: SfuToken | undefined,
     ): Promise<ChosenGroupCall | undefined> {
         return await this._running.get(group)?.refresh(token);
@@ -976,7 +976,7 @@ export class GroupCallManager {
      */
     public async join<TIntent = 'join' | 'join-or-create'>(
         group: {
-            readonly store: LocalModelStore<Group>;
+            readonly store: ModelStore<Group>;
             readonly chosen: WritableStore<ChosenGroupCall | undefined>;
         },
         intent: TIntent,
@@ -1267,7 +1267,7 @@ export class GroupCallManager {
     // IMPORTANT: `calls` must not be empty!
     private async _register(
         group: {
-            readonly store: LocalModelStore<Group>;
+            readonly store: ModelStore<Group>;
             readonly chosen: WritableStore<ChosenGroupCall | undefined>;
         },
         calls: readonly RunningGroupCall<'init' | 'failed' | 'ongoing'>[],

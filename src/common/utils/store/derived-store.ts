@@ -1,7 +1,7 @@
 import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import type {LocalModel, LocalModelController} from '~/common/model';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import type {u53} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
 import {
@@ -547,7 +547,7 @@ function subscribeAndGetInitialState<TStoreValue>(
         //
         // TODO(DESK-1450): This might not be needed anymore, once all ViewModel stores check for
         // store deactivation by making the value `undefined`.
-        if (store instanceof LocalModelStore) {
+        if (store instanceof ModelStore) {
             if (
                 !(
                     value as LocalModel<unknown, LocalModelController<unknown>, unknown, unknown>

@@ -35,7 +35,7 @@ import type {
     OutboundAudioMessage,
     OutboundAudioMessageController,
 } from '~/common/model/types/message/audio';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import {assert, unreachable} from '~/common/utils/assert';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 import {AsyncLock} from '~/common/utils/lock';
@@ -68,7 +68,7 @@ export function getAudioMessageModelStore<TModelStore extends AnyAudioMessageMod
     conversation: ConversationControllerHandle,
     message: DbMessageFor<TModelStore['type']>,
     common: BaseMessageView<TModelStore['ctx']>,
-    sender: LocalModelStore<Contact> | typeof NO_SENDER,
+    sender: ModelStore<Contact> | typeof NO_SENDER,
 ): TModelStore {
     const audio: Omit<CommonAudioMessageView, keyof CommonBaseMessageView> = {
         fileName: message.fileName,
@@ -242,13 +242,13 @@ export class OutboundAudioMessageModelController
     }
 }
 
-export class InboundAudioMessageModelStore extends LocalModelStore<InboundAudioMessage['model']> {
+export class InboundAudioMessageModelStore extends ModelStore<InboundAudioMessage['model']> {
     public constructor(
         services: ServicesForModel,
         view: InboundAudioMessage['view'],
         uid: UidOf<DbAudioMessage>,
         conversation: ConversationControllerHandle,
-        sender: LocalModelStore<Contact>,
+        sender: ModelStore<Contact>,
     ) {
         const {logging} = services;
         const tag = `message.inbound.audio.${uid}`;
@@ -273,7 +273,7 @@ export class InboundAudioMessageModelStore extends LocalModelStore<InboundAudioM
     }
 }
 
-export class OutboundAudioMessageModelStore extends LocalModelStore<OutboundAudioMessage['model']> {
+export class OutboundAudioMessageModelStore extends ModelStore<OutboundAudioMessage['model']> {
     public constructor(
         services: ServicesForModel,
         view: OutboundAudioMessage['view'],

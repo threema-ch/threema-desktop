@@ -3,7 +3,7 @@ import {expect} from 'chai';
 import type {DbReceiverLookup} from '~/common/db';
 import {MessageDirection, ReceiverType, StatusMessageType} from '~/common/enum';
 import type {Conversation} from '~/common/model';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import {
     ensureIdentityString,
@@ -28,7 +28,7 @@ export function run(): void {
         let services: TestServices;
         let user1: TestUser;
 
-        let singleConversation: LocalModelStore<Conversation>;
+        let singleConversation: ModelStore<Conversation>;
 
         let viewModel: ConversationViewModelBundle | undefined;
 

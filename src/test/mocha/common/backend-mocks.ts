@@ -89,7 +89,7 @@ import type {
     ChatSettings,
 } from '~/common/model/types/settings';
 import type {User} from '~/common/model/types/user';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {CloseInfo} from '~/common/network';
 import * as protobuf from '~/common/network/protobuf';
 import type {JoinResponse} from '~/common/network/protobuf/validate/group-call';
@@ -407,13 +407,13 @@ class UserRepository implements User {
 
     public identity: IdentityString;
     public profilePicture: LocalStore<ProfilePictureView>;
-    public profileSettings: LocalModelStore<ProfileSettings>;
-    public privacySettings: LocalModelStore<PrivacySettings>;
-    public callsSettings: LocalModelStore<CallsSettings>;
-    public devicesSettings: LocalModelStore<DevicesSettings>;
-    public appearanceSettings: LocalModelStore<AppearanceSettings>;
-    public mediaSettings: LocalModelStore<MediaSettings>;
-    public chatSettings: LocalModelStore<ChatSettings>;
+    public profileSettings: ModelStore<ProfileSettings>;
+    public privacySettings: ModelStore<PrivacySettings>;
+    public callsSettings: ModelStore<CallsSettings>;
+    public devicesSettings: ModelStore<DevicesSettings>;
+    public appearanceSettings: ModelStore<AppearanceSettings>;
+    public mediaSettings: ModelStore<MediaSettings>;
+    public chatSettings: ModelStore<ChatSettings>;
 
     public constructor(userIdentity: IdentityString, services: ServicesForModel) {
         this.identity = userIdentity;
@@ -1132,7 +1132,7 @@ export function registerTestUser(directory: TestDirectoryBackend, user: TestUser
 export function addTestUserAsContact(
     repositories: TestModelRepositories,
     user: TestUser,
-): LocalModelStore<Contact> {
+): ModelStore<Contact> {
     return repositories.contacts.add.fromSync(makeContactInit(user));
 }
 
@@ -1150,8 +1150,8 @@ export function addTestUserToFakeDirectory(directory: TestDirectoryBackend, user
  * A test group. Simplified version of a full group view.
  */
 export interface TestGroup {
-    creator: LocalModelStore<Contact> | 'me';
-    members: LocalModelStore<Contact>[];
+    creator: ModelStore<Contact> | 'me';
+    members: ModelStore<Contact>[];
     // Default: Random
     groupId?: GroupId;
     // Default: ""
@@ -1168,7 +1168,7 @@ export interface TestGroup {
 export function addTestGroup(
     repositories: TestModelRepositories,
     group: TestGroup,
-): LocalModelStore<Group> {
+): ModelStore<Group> {
     const crypto = new TestTweetNaClBackend();
     return repositories.groups.add.fromSync(
         {

@@ -11,9 +11,9 @@ import type {
     IGlobalPropertyModel,
     IGlobalPropertyRepository,
 } from '~/common/model/types/settings';
-import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
+import {ModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import type {ReadonlyUint8Array} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
 import {PROXY_HANDLER} from '~/common/utils/endpoint';
@@ -23,7 +23,7 @@ export class GlobalPropertyRepository implements IGlobalPropertyRepository {
 
     public constructor(
         private readonly _services: ServicesForModel,
-        private readonly _cache = new LocalModelStoreCache<
+        private readonly _cache = new ModelStoreCache<
             GlobalPropertyKey,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             GlobalPropertyModelStore<any>
@@ -57,7 +57,7 @@ export class GlobalPropertyRepository implements IGlobalPropertyRepository {
     /** @inheritdoc */
     public get<K extends keyof GlobalPropertyValues>(
         key: K,
-    ): LocalModelStore<IGlobalPropertyModel<K>> | undefined {
+    ): ModelStore<IGlobalPropertyModel<K>> | undefined {
         const store = this._cache.getOrAdd(key, () =>
             GlobalPropertyModelStore.get(this._services, key),
         );
@@ -68,7 +68,7 @@ export class GlobalPropertyRepository implements IGlobalPropertyRepository {
     public getOrCreate<K extends GlobalPropertyKey>(
         key: K,
         defaultValue: GlobalPropertyValues[K],
-    ): LocalModelStore<IGlobalPropertyModel<K>> {
+    ): ModelStore<IGlobalPropertyModel<K>> {
         const existingProperty = this.get(key);
         if (existingProperty !== undefined) {
             return existingProperty;
@@ -116,7 +116,7 @@ export class GlobalPropertyController<K extends keyof GlobalPropertyValues>
     }
 }
 
-export class GlobalPropertyModelStore<K extends keyof GlobalPropertyValues> extends LocalModelStore<
+export class GlobalPropertyModelStore<K extends keyof GlobalPropertyValues> extends ModelStore<
     IGlobalPropertyModel<K>
 > {
     private constructor(services: ServicesForModel, key: K, view: GlobalPropertyView<K>) {

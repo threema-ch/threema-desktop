@@ -13,7 +13,7 @@ import type {
     OutboundBaseMessageInit,
     OutboundBaseMessageView,
 } from '~/common/model/types/message/common';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {ReadonlyUint8Array} from '~/common/types';
 
 /**
@@ -65,7 +65,7 @@ export type InboundDeletedMessageController =
         /**
          * Return the sender of this message.
          */
-        readonly sender: () => LocalModelStore<Contact>;
+        readonly sender: () => ModelStore<Contact>;
     };
 /**
  * Controller for outbound deleted messages.
@@ -96,7 +96,7 @@ export type InboundDeletedMessageModel = LocalModel<
     MessageDirection.INBOUND,
     MessageType.DELETED
 >;
-export type InboundDeletedMessageModelStore = LocalModelStore<InboundDeletedMessageModel>;
+export type InboundDeletedMessageModelStore = ModelStore<InboundDeletedMessageModel>;
 
 /**
  * Outbound deleted message model.
@@ -107,7 +107,7 @@ export type OutboundDeletedMessageModel = LocalModel<
     MessageDirection.OUTBOUND,
     MessageType.DELETED
 >;
-export type OutboundDeletedMessageModelStore = LocalModelStore<OutboundDeletedMessageModel>;
+export type OutboundDeletedMessageModelStore = ModelStore<OutboundDeletedMessageModel>;
 
 // Bundle
 

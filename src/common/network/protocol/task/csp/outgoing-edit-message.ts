@@ -10,7 +10,7 @@ import type {Contact, Conversation, Group} from '~/common/model';
 import {getIdentityString} from '~/common/model/contact';
 import type {UnifiedEditMessage} from '~/common/model/types/message';
 import type {AnyReceiver} from '~/common/model/types/receiver';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
@@ -40,7 +40,7 @@ export class OutgoingEditMessageTask<TReceiver extends AnyReceiver>
     public constructor(
         private readonly _services: ServicesForTasks,
         private readonly _receiverModel: TReceiver,
-        private readonly _conversation: LocalModelStore<Conversation>,
+        private readonly _conversation: ModelStore<Conversation>,
         private readonly _messageId: MessageId,
         private readonly _editedMessage: UnifiedEditMessage,
     ) {

@@ -1,6 +1,6 @@
 import type {Logger} from '~/common/logging';
 import type {Contact, ContactInit} from '~/common/model';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import type {GroupCallStart} from '~/common/network/protobuf/validate/csp-e2e';
 import type {
     ActiveTaskCodecHandle,
@@ -25,7 +25,7 @@ export class IncomingGroupCallStartTask
     public constructor(
         private readonly _services: ServicesForTasks,
         messageId: MessageId,
-        private readonly _senderContactOrInit: LocalModelStore<Contact> | ContactInit,
+        private readonly _senderContactOrInit: ModelStore<Contact> | ContactInit,
         private readonly _container: GroupMemberContainer.Type,
         private readonly _groupCallStart: GroupCallStart.Type,
     ) {
@@ -33,7 +33,7 @@ export class IncomingGroupCallStartTask
         this._log = _services.logging.logger(
             `network.protocol.task.in-group-call-start.${messageIdHex}`,
         );
-        if (_senderContactOrInit instanceof LocalModelStore) {
+        if (_senderContactOrInit instanceof ModelStore) {
             this._senderIdentity = _senderContactOrInit.get().view.identity;
         } else {
             this._senderIdentity = _senderContactOrInit.identity;

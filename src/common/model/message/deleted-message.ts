@@ -16,7 +16,7 @@ import type {
     OutboundDeletedMessageView,
 } from '~/common/model/types/message/deleted';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {ensureEmptyArray} from '~/common/utils/array';
 import {assert, ensureUndefined, unreachable, unwrap} from '~/common/utils/assert';
@@ -27,7 +27,7 @@ export function getDeletedMessageModelStore<TMessageDirection extends MessageDir
     conversation: ConversationControllerHandle,
     common: BaseMessageView<TMessageDirection>,
     uid: DbMessageUid,
-    sender: LocalModelStore<Contact> | typeof NO_SENDER,
+    sender: ModelStore<Contact> | typeof NO_SENDER,
 ): AnyDeletedMessageModelStore {
     switch (common.direction) {
         case MessageDirection.OUTBOUND: {
@@ -110,13 +110,13 @@ class InboundDeletedMessageModelController
         type: MessageType,
         conversation: ConversationControllerHandle,
         services: ServicesForModel,
-        private readonly _sender: LocalModelStore<Contact>,
+        private readonly _sender: ModelStore<Contact>,
     ) {
         super(uid, type, conversation, services);
     }
 
     /** @inheritdoc */
-    public sender(): LocalModelStore<Contact> {
+    public sender(): ModelStore<Contact> {
         return this._sender;
     }
 
@@ -199,15 +199,13 @@ class OutboundDeletedMessageModelController
     }
 }
 
-export class InboundDeletedMessageModelStore extends LocalModelStore<
-    InboundDeletedMessage['model']
-> {
+export class InboundDeletedMessageModelStore extends ModelStore<InboundDeletedMessage['model']> {
     public constructor(
         services: ServicesForModel,
         view: InboundDeletedMessage['view'],
         uid: UidOf<DbDeletedMessage>,
         conversation: ConversationControllerHandle,
-        sender: LocalModelStore<Contact>,
+        sender: ModelStore<Contact>,
     ) {
         const {logging} = services;
         const tag = `message.inbound.deleted.${uid}`;
@@ -232,9 +230,7 @@ export class InboundDeletedMessageModelStore extends LocalModelStore<
     }
 }
 
-export class OutboundDeletedMessageModelStore extends LocalModelStore<
-    OutboundDeletedMessage['model']
-> {
+export class OutboundDeletedMessageModelStore extends ModelStore<OutboundDeletedMessage['model']> {
     public constructor(
         services: ServicesForModel,
         view: OutboundDeletedMessage['view'],

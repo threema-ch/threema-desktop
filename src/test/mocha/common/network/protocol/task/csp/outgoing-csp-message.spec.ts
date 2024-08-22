@@ -13,7 +13,7 @@ import {
     GroupUserState,
 } from '~/common/enum';
 import type {Contact, Group, GroupController, GroupView} from '~/common/model';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import type {CspE2eType} from '~/common/network/protocol';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
@@ -557,13 +557,7 @@ export function run(): void {
                 'messageId'
             >;
             readonly testExpectations?: (
-                groupStore: LocalModelStore<
-                    Group,
-                    Readonly<GroupView>,
-                    GroupController,
-                    DbGroupUid,
-                    2
-                >,
+                groupStore: ModelStore<Group, Readonly<GroupView>, GroupController, DbGroupUid, 2>,
                 messageProperties: MessageProperties<
                     unknown,
                     ValidCspMessageTypeForReceiver<Group>
@@ -588,7 +582,7 @@ export function run(): void {
             const testExpectations = params.testExpectations ?? (() => []);
 
             // Add creator to contacts if necessary
-            let creatorContact: LocalModelStore<Contact> | 'me' = 'me';
+            let creatorContact: ModelStore<Contact> | 'me' = 'me';
             if (creator !== 'self') {
                 creatorContact = addTestUserAsContact(model, creator);
             }

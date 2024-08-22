@@ -19,7 +19,7 @@ import type {AutoDownload} from '~/common/model/settings/media';
 import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
 import type {LocalModel} from '~/common/model/types/common';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import type {LocalModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
 import type {DeviceName, IdentityString, Nickname} from '~/common/network/types';
 import type {Settings} from '~/common/settings';
 import type {ReadonlyUint8Array, StrictExtract} from '~/common/types';
@@ -202,7 +202,7 @@ export type IGlobalPropertyRepository = {
     readonly create: <K extends GlobalPropertyKey>(
         key: K,
         value: GlobalPropertyValues[K],
-    ) => LocalModelStore<IGlobalPropertyModel<K>>;
+    ) => ModelStore<IGlobalPropertyModel<K>>;
 
     /**
      * Create a system property with a certain value corresponding to the key-value type mapping in
@@ -214,7 +214,7 @@ export type IGlobalPropertyRepository = {
     readonly createOrUpdate: <K extends GlobalPropertyKey>(
         key: K,
         value: GlobalPropertyValues[K],
-    ) => LocalModelStore<IGlobalPropertyModel<K>>;
+    ) => ModelStore<IGlobalPropertyModel<K>>;
 
     /**
      * Get a system property, if it exists.
@@ -223,7 +223,7 @@ export type IGlobalPropertyRepository = {
      */
     readonly get: <K extends GlobalPropertyKey>(
         key: K,
-    ) => LocalModelStore<IGlobalPropertyModel<K>> | undefined;
+    ) => ModelStore<IGlobalPropertyModel<K>> | undefined;
 
     /**
      * Get a system property or create one with the default value if it does not yet exist.
@@ -233,7 +233,7 @@ export type IGlobalPropertyRepository = {
     readonly getOrCreate: <K extends GlobalPropertyKey>(
         key: K,
         defaultValue: GlobalPropertyValues[K],
-    ) => LocalModelStore<IGlobalPropertyModel<K>>;
+    ) => ModelStore<IGlobalPropertyModel<K>>;
 } & ProxyMarked;
 export interface GlobalPropertyView<K extends GlobalPropertyKey> {
     readonly key: K;

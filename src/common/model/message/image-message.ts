@@ -36,7 +36,7 @@ import type {
     OutboundImageMessage,
     OutboundImageMessageController,
 } from '~/common/model/types/message/image';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import type {ReadonlyUint8Array} from '~/common/types';
 import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
@@ -70,7 +70,7 @@ export function getImageMessageModelStore<TModelStore extends AnyImageMessageMod
     conversation: ConversationControllerHandle,
     message: DbMessageFor<TModelStore['type']>,
     common: BaseMessageView<TModelStore['ctx']>,
-    sender: LocalModelStore<Contact> | typeof NO_SENDER,
+    sender: ModelStore<Contact> | typeof NO_SENDER,
 ): TModelStore {
     const image: Omit<CommonImageMessageView, keyof CommonBaseMessageView> = {
         fileName: message.fileName,
@@ -263,13 +263,13 @@ export class OutboundImageMessageModelController
     }
 }
 
-export class InboundImageMessageModelStore extends LocalModelStore<InboundImageMessage['model']> {
+export class InboundImageMessageModelStore extends ModelStore<InboundImageMessage['model']> {
     public constructor(
         services: ServicesForModel,
         view: InboundImageMessage['view'],
         uid: UidOf<DbImageMessage>,
         conversation: ConversationControllerHandle,
-        sender: LocalModelStore<Contact>,
+        sender: ModelStore<Contact>,
     ) {
         const {logging} = services;
         const tag = `message.inbound.image.${uid}`;
@@ -294,7 +294,7 @@ export class InboundImageMessageModelStore extends LocalModelStore<InboundImageM
     }
 }
 
-export class OutboundImageMessageModelStore extends LocalModelStore<OutboundImageMessage['model']> {
+export class OutboundImageMessageModelStore extends ModelStore<OutboundImageMessage['model']> {
     public constructor(
         services: ServicesForModel,
         view: OutboundImageMessage['view'],

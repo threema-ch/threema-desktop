@@ -2,7 +2,7 @@ import type {DbConversationUid, DbStatusMessageUid} from '~/common/db';
 import type {GroupUserState, StatusMessageType} from '~/common/enum';
 import type {LocalModel} from '~/common/model/types/common';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {GroupCallId} from '~/common/network/protocol/call/group-call';
 import type {IdentityString, StatusMessageId} from '~/common/network/types';
 import type {u53} from '~/common/types';
@@ -84,7 +84,7 @@ export interface StatusMessageView<TType extends StatusMessageType> {
 
 /**
  * Status message controller with no functionality, whatsoever. It is mainly used for creation of
- * {@link LocalModelStores} of {@link StatusMessages}.
+ * {@link ModelStore}s of {@link StatusMessages}.
  */
 export type StatusMessageController<TType extends StatusMessageType> = {
     readonly meta: ModelLifetimeGuard<StatusMessageView<TType>>;
@@ -101,7 +101,7 @@ export type StatusMessageModels = {
     >;
 };
 export type StatusMessageModelStores = {
-    [TType in StatusMessageType]: LocalModelStore<StatusMessageModels[TType]>;
+    [TType in StatusMessageType]: ModelStore<StatusMessageModels[TType]>;
 };
 
 // Union Types

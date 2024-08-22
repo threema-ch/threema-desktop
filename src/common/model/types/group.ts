@@ -18,7 +18,7 @@ import type {ConversationInitMixin} from '~/common/model/types/conversation';
 import type {ProfilePicture} from '~/common/model/types/profile-picture';
 import type {ReceiverController} from '~/common/model/types/receiver';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {ChosenGroupCall, GroupCallBaseData} from '~/common/network/protocol/call/group-call';
 import type {SfuToken} from '~/common/network/protocol/directory';
 import type {GroupId, IdentityString} from '~/common/network/types';
@@ -32,7 +32,7 @@ import type {LocalSetStore} from '~/common/utils/store/set-store';
 
 export interface GroupView {
     readonly groupId: GroupId;
-    readonly creator: LocalModelStore<Contact> | 'me';
+    readonly creator: ModelStore<Contact> | 'me';
     readonly createdAt: Date;
     readonly name: string;
     readonly displayName: string;
@@ -51,7 +51,7 @@ export interface GroupView {
      * - the creator, and
      * - the user itself (the user's membership must be checked via `userState`).
      */
-    readonly members: Set<LocalModelStore<Contact>>;
+    readonly members: Set<ModelStore<Contact>>;
 }
 
 export type GroupInit = Omit<GroupView, 'displayName' | 'members' | 'color'> &
@@ -92,7 +92,7 @@ export type GroupController = ReceiverController & {
      * Note: If the creator is in the list, it will be ignored.
      */
     readonly addMembers: ControllerUpdateFromLocal<
-        [contacts: LocalModelStore<Contact>[], createdAt: Date],
+        [contacts: ModelStore<Contact>[], createdAt: Date],
         u53
     >;
 
@@ -104,7 +104,7 @@ export type GroupController = ReceiverController & {
      * Note: If the creator is in the list, it will be ignored.
      */
     readonly removeMembers: ControllerUpdateFromSource<
-        [contacts: LocalModelStore<Contact>[], createdAt: Date],
+        [contacts: ModelStore<Contact>[], createdAt: Date],
         u53
     >;
 
@@ -125,7 +125,7 @@ export type GroupController = ReceiverController & {
     readonly setMembers: Omit<
         ControllerUpdateFromSource<
             [
-                contacts: LocalModelStore<Contact>[],
+                contacts: ModelStore<Contact>[],
                 createdAt: Date,
                 newUserState?: GroupUserState.MEMBER,
             ],
@@ -171,7 +171,7 @@ export type GroupController = ReceiverController & {
     /**
      * Returns true if the given contact is a member (or the creator) of this group.
      */
-    readonly hasMember: (contact: LocalModelStore<Contact> | 'me') => boolean;
+    readonly hasMember: (contact: ModelStore<Contact> | 'me') => boolean;
 
     /**
      * Register a group call received from a remote or reflected `GroupCallStart` message.
@@ -236,24 +236,24 @@ export type GroupRepository = {
      * @param members The members list (including the creator)
      */
     readonly add: ControllerUpdateFromSource<
-        [init: GroupInit, members: LocalModelStore<Contact>[]],
-        LocalModelStore<Group>
+        [init: GroupInit, members: ModelStore<Contact>[]],
+        ModelStore<Group>
     >;
 
     /**
-     * Return the `LocalModelStore` of a group.
+     * Return the `ModelStore` of a group.
      *
      * Note: The group view is not transferrable, therefore, this function cannot be called from the
      * frontend.
      */
-    readonly getByUid: (uid: DbGroupUid) => LocalModelStore<Group> | undefined;
+    readonly getByUid: (uid: DbGroupUid) => ModelStore<Group> | undefined;
 
     /**
      * Return the profile picture of a group.
      *
      * Returns undefined if the group was not found.
      */
-    readonly getProfilePicture: (uid: DbGroupUid) => LocalModelStore<ProfilePicture> | undefined;
+    readonly getProfilePicture: (uid: DbGroupUid) => ModelStore<ProfilePicture> | undefined;
 
     /**
      * Fetches the group determined by the group creator and the `groupId`. Returns undefined if
@@ -265,6 +265,6 @@ export type GroupRepository = {
     readonly getByGroupIdAndCreator: (
         groupId: GroupId,
         creatorIdentity: IdentityString,
-    ) => LocalModelStore<Group> | undefined;
-    readonly getAll: () => LocalSetStore<LocalModelStore<Group>>;
+    ) => ModelStore<Group> | undefined;
+    readonly getAll: () => LocalSetStore<ModelStore<Group>>;
 } & ProxyMarked;

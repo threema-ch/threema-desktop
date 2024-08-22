@@ -10,7 +10,7 @@ import type {
     OutboundBaseFileMessageView,
     OutboundBaseMessageInit,
 } from '~/common/model/types/message/common';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {Dimensions, ReadonlyUint8Array} from '~/common/types';
 
 // View
@@ -63,7 +63,7 @@ type InboundImageMessageModel = LocalModel<
     MessageDirection.INBOUND,
     MessageType.IMAGE
 >;
-export type IInboundImageMessageModelStore = LocalModelStore<InboundImageMessageModel>;
+export type IInboundImageMessageModelStore = ModelStore<InboundImageMessageModel>;
 
 /**
  * Outbound image message model.
@@ -74,7 +74,7 @@ type OutboundImageMessageModel = LocalModel<
     MessageDirection.OUTBOUND,
     MessageType.IMAGE
 >;
-export type IOutboundImageMessageModelStore = LocalModelStore<OutboundImageMessageModel>;
+export type IOutboundImageMessageModelStore = ModelStore<OutboundImageMessageModel>;
 
 // Bundle
 
@@ -86,7 +86,7 @@ export interface InboundImageMessage {
     readonly init: InboundImageMessageInit;
     readonly controller: InboundImageMessageController;
     readonly model: InboundImageMessageModel;
-    readonly store: LocalModelStore<InboundImageMessageModel>;
+    readonly store: ModelStore<InboundImageMessageModel>;
 }
 
 /**
@@ -97,5 +97,5 @@ export interface OutboundImageMessage {
     readonly init: OutboundImageMessageInit;
     readonly controller: OutboundImageMessageController;
     readonly model: OutboundImageMessageModel;
-    readonly store: LocalModelStore<OutboundImageMessageModel>;
+    readonly store: ModelStore<OutboundImageMessageModel>;
 }

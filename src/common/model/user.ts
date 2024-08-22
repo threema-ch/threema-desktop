@@ -19,7 +19,7 @@ import type {
     ChatSettings,
 } from '~/common/model/types/settings';
 import type {User} from '~/common/model/types/user';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {IdentityString} from '~/common/network/types';
 import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import {idColorIndex, idColorIndexToString} from '~/common/utils/id-color';
@@ -38,13 +38,13 @@ export class UserModel implements User {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
     public readonly identity: IdentityString;
-    public readonly appearanceSettings: LocalModelStore<AppearanceSettings>;
-    public readonly callsSettings: LocalModelStore<CallsSettings>;
-    public readonly chatSettings: LocalModelStore<ChatSettings>;
-    public readonly devicesSettings: LocalModelStore<DevicesSettings>;
-    public readonly mediaSettings: LocalModelStore<MediaSettings>;
-    public readonly privacySettings: LocalModelStore<PrivacySettings>;
-    public readonly profileSettings: LocalModelStore<ProfileSettings>;
+    public readonly appearanceSettings: ModelStore<AppearanceSettings>;
+    public readonly callsSettings: ModelStore<CallsSettings>;
+    public readonly chatSettings: ModelStore<ChatSettings>;
+    public readonly devicesSettings: ModelStore<DevicesSettings>;
+    public readonly mediaSettings: ModelStore<MediaSettings>;
+    public readonly privacySettings: ModelStore<PrivacySettings>;
+    public readonly profileSettings: ModelStore<ProfileSettings>;
 
     public readonly profilePicture: LocalStore<ProfilePictureView>;
 

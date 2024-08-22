@@ -2,7 +2,7 @@ import type {DbGroupUid} from '~/common/db';
 import {TRANSFER_HANDLER} from '~/common/index';
 import type {LocalModel} from '~/common/model/types/common';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import type {Call} from '~/common/network/protocol/call';
 import type {
     ServicesForGroupCall,
@@ -64,7 +64,7 @@ export type OngoingGroupCallModel = LocalModel<
 >;
 
 export class OngoingGroupCall
-    extends LocalModelStore<OngoingGroupCallModel>
+    extends ModelStore<OngoingGroupCallModel>
     implements Call<'group-call'>
 {
     public constructor(

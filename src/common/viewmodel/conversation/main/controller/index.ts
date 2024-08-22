@@ -11,7 +11,7 @@ import {
 import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import type {Conversation} from '~/common/model';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import type {MessageId, StatusMessageId} from '~/common/network/types';
 import {wrapRawBlobKey} from '~/common/network/types/keys';
@@ -105,7 +105,7 @@ export class ConversationViewModelController implements IConversationViewModelCo
 
     public constructor(
         private readonly _services: ServicesForViewModel,
-        private readonly _conversation: LocalModelStore<Conversation>,
+        private readonly _conversation: ModelStore<Conversation>,
         private readonly _viewModelRepository: IViewModelRepository,
     ) {
         this._log = _services.logging.logger('viewmodel.conversation.main.controller');

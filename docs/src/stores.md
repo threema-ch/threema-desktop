@@ -101,14 +101,14 @@ const messageIdsSetStore = new DerivedSetStore(messagesSetStore, (message) => {
 The `SetBasedSetStore` maps a plain, old, dumb `Store<Set<TValue>>` to an optimized
 `SetStore<TValue>` with delta updates.
 
-### `LocalModelStore<TModel, TView, TController, ...>`
+### `ModelStore<TModel, TView, TController, ...>`
 
-Store that represents a data model. `LocalModelStore<TModel, TController>` exposes an object that
+Store that represents a data model. `ModelStore<TModel, TController>` exposes an object that
 contains the model's `view` (i.e. the actual model data values) and a `controller`, which is used to
-modify the data or get a reference to related `LocalModelStore`s.
+modify the data or get a reference to related `ModelStore`s.
 
-#### `LocalModelStore`'s RPC Transfer Logic
+#### `ModelStore`'s RPC Transfer Logic
 
-`LocalModelStore`s have a special transfer logic that structurally clones the `view` data on every
+`ModelStore`s have a special transfer logic that structurally clones the `view` data on every
 update. The `controller` is exposed as a `Proxy` and has a `ModelLifetimeGuard` to prevent access to
 deactivated models.

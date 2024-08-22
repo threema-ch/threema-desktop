@@ -15,7 +15,7 @@ import {
 import type {Logger} from '~/common/logging';
 import type {Contact} from '~/common/model';
 import type {MessageFor} from '~/common/model/types/message';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {
     type ComposableTask,
@@ -306,7 +306,7 @@ export class ReflectedIncomingMessageTask
         validatedBody:
             | structbuf.validate.csp.e2e.ValidatedCspE2eTypesStructbuf
             | protobuf.validate.csp_e2e.ValidatedCspE2eTypesProtobuf,
-        senderContact: LocalModelStore<Contact>,
+        senderContact: ModelStore<Contact>,
         messageId: MessageId,
         createdAt: Date,
         reflectedAt: Date,

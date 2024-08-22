@@ -1,4 +1,4 @@
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import {assert} from '~/common/utils/assert';
 import {WeakValueMap} from '~/common/utils/map';
 import type {LocalSetStore} from '~/common/utils/store/set-store';
@@ -31,10 +31,10 @@ export class LazyWeakRef<T extends object> {
  * Caches model stores for their lifetime. It ensures that model stores are unique per (primary)
  * key. Therefore, there should only ever be one instance of this class per model.
  */
-export class LocalModelStoreCache<
+export class ModelStoreCache<
     TKey,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    TModelStore extends LocalModelStore<any>,
+    TModelStore extends ModelStore<any>,
 > {
     protected readonly _stores = new WeakValueMap<TKey, TModelStore>();
 

@@ -2,7 +2,7 @@ import {expect} from 'chai';
 
 import {GroupUserState} from '~/common/enum';
 import type {Contact, Group} from '~/common/model';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import {assert} from '~/common/utils/assert';
 import {
     addTestGroup,
@@ -18,8 +18,8 @@ export function run(): void {
         const anotherUser = makeTestUser('USER0001');
 
         let services: TestServices;
-        let contact: LocalModelStore<Contact>;
-        let group: LocalModelStore<Group>;
+        let contact: ModelStore<Contact>;
+        let group: ModelStore<Group>;
 
         this.beforeEach(function () {
             services = makeTestServices(me.identity.string);

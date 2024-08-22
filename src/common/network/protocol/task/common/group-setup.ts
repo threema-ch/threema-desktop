@@ -7,7 +7,7 @@ import {
 import type {Logger} from '~/common/logging';
 import type {Contact, Group, GroupInit} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {
     ActiveTaskCodecHandle,
     ComposableTask,
@@ -97,7 +97,7 @@ export abstract class GroupSetupTaskBase<
         //    contact.)
 
         // Look up group member contacts
-        const memberContacts: LocalModelStore<Contact>[] = [];
+        const memberContacts: ModelStore<Contact>[] = [];
         const identitiesToAdd: IdentityString[] = [];
         for (const identity of memberIdentities) {
             if (identity === device.identity.string) {
@@ -194,7 +194,7 @@ export abstract class GroupSetupTaskBase<
     protected abstract _setMembers(
         handle: TTaskCodecHandleType,
         group: Group,
-        memberUids: LocalModelStore<Contact>[],
+        memberUids: ModelStore<Contact>[],
         newUserState?: GroupUserState.MEMBER,
     ): Promise<void>;
 
@@ -210,7 +210,7 @@ export abstract class GroupSetupTaskBase<
     protected abstract _addGroup(
         handle: TTaskCodecHandleType,
         init: Omit<GroupInit, 'createdAt'>,
-        members: LocalModelStore<Contact>[],
+        members: ModelStore<Contact>[],
         reflectedAt: Date | undefined,
     ): Promise<void>;
 
@@ -220,5 +220,5 @@ export abstract class GroupSetupTaskBase<
     protected abstract _handleMissingGroupMembers(
         handle: TTaskCodecHandleType,
         identitiesToAdd: IdentityString[],
-    ): Promise<LocalModelStore<Contact>[]>;
+    ): Promise<ModelStore<Contact>[]>;
 }

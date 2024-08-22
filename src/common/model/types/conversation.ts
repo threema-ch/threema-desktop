@@ -22,7 +22,7 @@ import type {
 import type {AnyReceiverStore} from '~/common/model/types/receiver';
 import type {AnyStatusMessageModelStore, StatusMessageView} from '~/common/model/types/status';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {ConversationId, MessageId, StatusMessageId} from '~/common/network/types';
 import type {i53, u53} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
@@ -176,17 +176,17 @@ export type ConversationController = {
     readonly hasMessage: (id: MessageId) => boolean;
 
     /**
-     * Return a {@link LocalModelStore} of the message with the specified id.
+     * Return a {@link ModelStore} of the message with the specified id.
      */
     readonly getMessage: (id: MessageId) => AnyMessageModelStore | undefined;
 
     /**
-     * Return a {@link LocalModelStore} of every message in the current conversation.
+     * Return a {@link ModelStore} of every message in the current conversation.
      */
     readonly getAllMessages: () => SetOfAnyLocalMessageModelStore;
 
     /**
-     * Return a {@link LocalModelStore} for every (status) message in {@link anyMessageIds}, plus a
+     * Return a {@link ModelStore} for every (status) message in {@link anyMessageIds}, plus a
      * number of additional older and newer (status) messages (the "context").
      *
      * @param anyMessageIds The reference (status) message IDs.
@@ -205,7 +205,8 @@ export type ConversationController = {
     ) => Set<AnyMessageModelStore | AnyStatusMessageModelStore>;
 
     /**
-     * Retrieves all status messages of this conversation from the DB and creates the corresponding {@link LocalModelStores}
+     * Retrieves all status messages of this conversation from the DB and creates the corresponding
+     * {@link ModelStore}s.
      */
     readonly getAllStatusMessages: () => IDerivableSetStore<AnyStatusMessageModelStore>;
 
@@ -261,14 +262,14 @@ export type Conversation = LocalModel<
     UidOf<DbConversation>
 >;
 export type ConversationListController = {
-    readonly meta: ModelLifetimeGuard<readonly LocalModelStore<Conversation>[]>;
+    readonly meta: ModelLifetimeGuard<readonly ModelStore<Conversation>[]>;
 } & ProxyMarked;
 
 export type ConversationRepository = {
     readonly totalUnreadMessageCount: LocalStore<u53>;
-    getAll: () => LocalSetStore<LocalModelStore<Conversation>>;
-    getByUid: (uid: DbConversationUid) => LocalModelStore<Conversation> | undefined;
-    getForReceiver: (receiver: DbReceiverLookup) => LocalModelStore<Conversation> | undefined;
+    getAll: () => LocalSetStore<ModelStore<Conversation>>;
+    getByUid: (uid: DbConversationUid) => ModelStore<Conversation> | undefined;
+    getForReceiver: (receiver: DbReceiverLookup) => ModelStore<Conversation> | undefined;
     /**
      * Clears the conversation cache and reloads all conversations, triggering a full refresh of the
      * frontend main view.

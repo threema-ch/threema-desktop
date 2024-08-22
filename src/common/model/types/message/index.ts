@@ -40,7 +40,7 @@ import type {
 } from '~/common/model/types/message/video';
 import type {AnyStatusMessageModelStore} from '~/common/model/types/status';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import type {LocalModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
 import type {u53} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
 import type {
@@ -209,18 +209,18 @@ export type SetOfAnyRemoteMessageModel =
     | ReadonlySet<RemoteModelStore<InboundAudioMessage['model']>>
     | ReadonlySet<RemoteModelStore<OutboundAudioMessage['model']>>;
 export type SetOfAnyLocalMessageModelStore = IDerivableSetStore<
-    | LocalModelStore<InboundTextMessage['model']>
-    | LocalModelStore<OutboundTextMessage['model']>
-    | LocalModelStore<InboundFileMessage['model']>
-    | LocalModelStore<OutboundFileMessage['model']>
-    | LocalModelStore<InboundImageMessage['model']>
-    | LocalModelStore<OutboundImageMessage['model']>
-    | LocalModelStore<InboundVideoMessage['model']>
-    | LocalModelStore<OutboundVideoMessage['model']>
-    | LocalModelStore<InboundAudioMessage['model']>
-    | LocalModelStore<OutboundAudioMessage['model']>
-    | LocalModelStore<InboundDeletedMessage['model']>
-    | LocalModelStore<OutboundDeletedMessage['model']>
+    | ModelStore<InboundTextMessage['model']>
+    | ModelStore<OutboundTextMessage['model']>
+    | ModelStore<InboundFileMessage['model']>
+    | ModelStore<OutboundFileMessage['model']>
+    | ModelStore<InboundImageMessage['model']>
+    | ModelStore<OutboundImageMessage['model']>
+    | ModelStore<InboundVideoMessage['model']>
+    | ModelStore<OutboundVideoMessage['model']>
+    | ModelStore<InboundAudioMessage['model']>
+    | ModelStore<OutboundAudioMessage['model']>
+    | ModelStore<InboundDeletedMessage['model']>
+    | ModelStore<OutboundDeletedMessage['model']>
 >;
 export type SetOfAnyLocalMessageOrStatusMessageModelStore = IDerivableSetStore<
     AnyMessageModelStore | AnyStatusMessageModelStore

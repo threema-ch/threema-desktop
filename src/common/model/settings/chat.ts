@@ -9,7 +9,7 @@ import type {
     ChatSettingsViewNonDerivedProperties,
 } from '~/common/model/types/settings';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import {PROXY_HANDLER} from '~/common/utils/endpoint';
 
 export class ChatSettingsModelController implements ChatSettingsController {
@@ -41,7 +41,7 @@ function addDerivedData(view: ChatSettingsViewNonDerivedProperties): ChatSetting
 
 const DEFAULT_COMPOSEBAR_ENTER_MODE = ComposeBarEnterMode.SUBMIT;
 
-export class ChatSettingsModelStore extends LocalModelStore<ChatSettings> {
+export class ChatSettingsModelStore extends ModelStore<ChatSettings> {
     public constructor(services: ServicesForModel) {
         const {logging} = services;
         const tag = 'settings.chat';

@@ -8,7 +8,7 @@ import type {
     CallsSettingsView,
 } from '~/common/model/types/settings';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import {filterUndefinedProperties} from '~/common/utils/object';
 
@@ -35,7 +35,7 @@ export class CallsSettingsModelController implements CallsSettingsController {
     }
 }
 
-export class CallsSettingsModelStore extends LocalModelStore<CallsSettings> {
+export class CallsSettingsModelStore extends ModelStore<CallsSettings> {
     public constructor(services: ServicesForModel) {
         const {logging} = services;
         const tag = 'settings.calls';

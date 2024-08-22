@@ -19,7 +19,7 @@
   import {DisplayModeObserver, manageLayout} from '~/common/dom/ui/layout';
   import {display, layout} from '~/common/dom/ui/state';
   import type {IGlobalPropertyModel} from '~/common/model/types/settings';
-  import type {LocalModelStore} from '~/common/model/utils/model-store';
+  import type {ModelStore} from '~/common/model/utils/model-store';
   import {ConnectionState} from '~/common/network/protocol/state';
   import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
@@ -37,7 +37,7 @@
   const applicationState = services.backend.model.globalProperties.getOrCreate(
     'applicationState',
     {},
-  ) as Promise<Remote<LocalModelStore<IGlobalPropertyModel<'applicationState'>>>>;
+  ) as Promise<Remote<ModelStore<IGlobalPropertyModel<'applicationState'>>>>;
 
   // Create display mode observer
   const displayModeObserver = new DisplayModeObserver(display);

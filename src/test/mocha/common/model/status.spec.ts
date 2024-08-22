@@ -2,7 +2,7 @@ import {expect} from 'chai';
 
 import {StatusMessageType} from '~/common/enum';
 import type {Contact, Conversation} from '~/common/model';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import {statusMessageUidToStatusMessageId} from '~/common/network/types';
 import {
     addTestGroup,
@@ -18,8 +18,8 @@ export function run(): void {
         const anotherUser = makeTestUser('USER0001');
 
         let services: TestServices;
-        let contact: LocalModelStore<Contact>;
-        let conversation: LocalModelStore<Conversation>;
+        let contact: ModelStore<Contact>;
+        let conversation: ModelStore<Conversation>;
 
         this.beforeEach(function () {
             services = makeTestServices(me.identity.string);

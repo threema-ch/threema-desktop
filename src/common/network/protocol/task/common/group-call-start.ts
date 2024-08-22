@@ -1,6 +1,6 @@
 import {deriveGroupCallProperties} from '~/common/crypto/group-call';
 import type {Group} from '~/common/model';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {GroupCallStart} from '~/common/network/protobuf/validate/csp-e2e';
 import type {GroupCallBaseData} from '~/common/network/protocol/call/group-call';
 import type {ServicesForTasks} from '~/common/network/protocol/task';
@@ -10,7 +10,7 @@ export function getGroupCallBaseData(
     services: Pick<ServicesForTasks, 'crypto' | 'device'>,
     senderIdentity: IdentityString,
     groupCallStart: GroupCallStart.Type,
-    group: LocalModelStore<Group>,
+    group: ModelStore<Group>,
 ): GroupCallBaseData {
     const init = {
         startedBy: senderIdentity,

@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 
 import type {Contact, Conversation} from '~/common/model';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import {assert} from '~/common/utils/assert';
 import {
@@ -21,8 +21,8 @@ export function run(): void {
         const crypto = new TestTweetNaClBackend();
 
         let services: TestServices;
-        let contact: LocalModelStore<Contact>;
-        let conversation: LocalModelStore<Conversation>;
+        let contact: ModelStore<Contact>;
+        let conversation: ModelStore<Conversation>;
 
         const messageId = randomMessageId(crypto);
 

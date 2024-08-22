@@ -55,11 +55,11 @@ export type UpdatedView<TView> = WeakOpaque<TView, {readonly UpdatedView: unique
 export type ViewUpdateFn<TView> = (view: Readonly<TView>) => UpdatedView<Readonly<TView>>;
 
 /**
- * An updateable local model store.
+ * An updateable model store.
  *
  * Note: Svelte compatibility is limited to a readable store.
  */
-export class LocalModelStore<
+export class ModelStore<
         TModel extends LocalModel<TView, TController, TCtx, TType>,
         TView = TModel['view'],
         TController extends LocalModelController<TView> = TModel['controller'],
@@ -320,10 +320,10 @@ export class RemoteModelStore<
 }
 
 const MODEL_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
-    LocalModelStore<never>,
+    ModelStore<never>,
     RemoteModelStore<never>,
     [
-        id: ObjectId<LocalModelStore<never>>,
+        id: ObjectId<ModelStore<never>>,
         ctx: unknown,
         type: unknown,
         tag: string | undefined,
@@ -347,11 +347,11 @@ const MODEL_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
     tag: TransferTag.MODEL_STORE,
 
     serialize: (
-        store: LocalModelStore<never>,
+        store: ModelStore<never>,
         service: EndpointService,
     ): [
         value: [
-            id: ObjectId<LocalModelStore<never>>,
+            id: ObjectId<ModelStore<never>>,
             ctx: unknown,
             type: unknown,
             tag: string | undefined,

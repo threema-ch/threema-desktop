@@ -10,7 +10,7 @@ import type {
     OutboundBaseFileMessageView,
     OutboundBaseMessageInit,
 } from '~/common/model/types/message/common';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {Dimensions, f64} from '~/common/types';
 
 // View
@@ -60,7 +60,7 @@ type InboundVideoMessageModel = LocalModel<
     MessageDirection.INBOUND,
     MessageType.VIDEO
 >;
-export type IInboundVideoMessageModelStore = LocalModelStore<InboundVideoMessageModel>;
+export type IInboundVideoMessageModelStore = ModelStore<InboundVideoMessageModel>;
 
 /**
  * Outbound video message model.
@@ -71,7 +71,7 @@ type OutboundVideoMessageModel = LocalModel<
     MessageDirection.OUTBOUND,
     MessageType.VIDEO
 >;
-export type IOutboundVideoMessageModelStore = LocalModelStore<OutboundVideoMessageModel>;
+export type IOutboundVideoMessageModelStore = ModelStore<OutboundVideoMessageModel>;
 
 // Bundle
 
@@ -83,7 +83,7 @@ export interface InboundVideoMessage {
     readonly init: InboundVideoMessageInit;
     readonly controller: InboundVideoMessageController;
     readonly model: InboundVideoMessageModel;
-    readonly store: LocalModelStore<InboundVideoMessageModel>;
+    readonly store: ModelStore<InboundVideoMessageModel>;
 }
 
 /**
@@ -94,5 +94,5 @@ export interface OutboundVideoMessage {
     readonly init: OutboundVideoMessageInit;
     readonly controller: OutboundVideoMessageController;
     readonly model: OutboundVideoMessageModel;
-    readonly store: LocalModelStore<OutboundVideoMessageModel>;
+    readonly store: ModelStore<OutboundVideoMessageModel>;
 }

@@ -2,7 +2,7 @@ import {extractErrorMessage} from '~/common/error';
 import type {Logger} from '~/common/logging';
 import type {Contact, ContactInit} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import {downloadAndDecryptBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
 import type {
@@ -32,7 +32,7 @@ export class IncomingGroupProfilePictureTask
     public constructor(
         private readonly _services: ServicesForTasks,
         messageId: MessageId,
-        private readonly _senderContactOrInit: LocalModelStore<Contact> | ContactInit,
+        private readonly _senderContactOrInit: ModelStore<Contact> | ContactInit,
         private readonly _container: GroupCreatorContainer.Type,
         private readonly _profilePicture: SetProfilePicture.Type | undefined,
     ) {
@@ -40,7 +40,7 @@ export class IncomingGroupProfilePictureTask
         this._log = _services.logging.logger(
             `network.protocol.task.in-group-profile-picture.${messageIdHex}`,
         );
-        if (_senderContactOrInit instanceof LocalModelStore) {
+        if (_senderContactOrInit instanceof ModelStore) {
             this._senderIdentity = _senderContactOrInit.get().view.identity;
         } else {
             this._senderIdentity = _senderContactOrInit.identity;

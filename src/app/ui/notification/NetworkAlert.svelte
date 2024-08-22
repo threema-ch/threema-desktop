@@ -3,11 +3,11 @@
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {GlobalPropertyKey} from '~/common/enum';
   import type {IGlobalPropertyModel} from '~/common/model/types/settings';
-  import type {LocalModelStore} from '~/common/model/utils/model-store';
+  import type {ModelStore} from '~/common/model/utils/model-store';
   import type {Remote} from '~/common/utils/endpoint';
 
   export let applicationState: Remote<
-    LocalModelStore<IGlobalPropertyModel<GlobalPropertyKey.APPLICATION_STATE>>
+    ModelStore<IGlobalPropertyModel<GlobalPropertyKey.APPLICATION_STATE>>
   >;
 </script>
 

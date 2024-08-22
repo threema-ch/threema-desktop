@@ -31,7 +31,7 @@ import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import type {Contact} from '~/common/model';
 import {getIdentityString} from '~/common/model/contact';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import type {ProtobufInstanceOf} from '~/common/network/protobuf/utils';
 import {
@@ -594,7 +594,7 @@ interface RemoteParticipantCryptoContext {
 }
 
 interface AuthenticatedRemoteParticipantInit {
-    readonly contact: LocalModelStore<Contact> | 'me';
+    readonly contact: ModelStore<Contact> | 'me';
 
     /**
      * Local PCMKs that have been created while the handshake has been ongoing that we still need to
@@ -727,7 +727,7 @@ class UnauthenticatedRemoteParticipant
 {
     private readonly _log: Logger;
     private readonly _queuedLocalPcmks: ParticipantCallMediaKeyState[] = [];
-    private readonly _contact = Delayed.simple<LocalModelStore<Contact> | 'me'>('ContactOrSelf');
+    private readonly _contact = Delayed.simple<ModelStore<Contact> | 'me'>('ContactOrSelf');
     private readonly _crypto: {
         readonly gcnhak: Delayed<GroupCallNormalHandshakeAuthBox>;
         readonly pck: Delayed<ParticipantCallBox>;
@@ -1156,7 +1156,7 @@ export interface RemoteParticipantState {
     readonly id: ParticipantId;
 
     /** IMPORTANT: A contact may be present more than once, including the user itself! */
-    readonly contact: LocalModelStore<Contact> | 'me';
+    readonly contact: ModelStore<Contact> | 'me';
 
     /** Current capture state of the remote participant's capturing devices. */
     readonly capture: CaptureState;

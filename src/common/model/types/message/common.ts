@@ -16,7 +16,7 @@ import type {Contact} from '~/common/model/types/contact';
 import type {Conversation} from '~/common/model/types/conversation';
 import type {UnifiedEditMessage} from '~/common/model/types/message';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {BlobId} from '~/common/network/protocol/blob';
 import type {IdentityString, MessageId} from '~/common/network/types';
 import type {RawBlobKey} from '~/common/network/types/keys';
@@ -153,7 +153,7 @@ export type CommonBaseMessageController<TView extends CommonBaseMessageView> = {
     /**
      * Get the store of the {@link Conversation}, which this message is part of.
      */
-    readonly conversation: () => LocalModelStore<Conversation>;
+    readonly conversation: () => ModelStore<Conversation>;
 
     /**
      * Remove the message.
@@ -169,7 +169,7 @@ export type InboundBaseMessageController<TView extends InboundBaseMessageView> =
         /**
          * Contact that sent this message.
          */
-        readonly sender: () => LocalModelStore<Contact>;
+        readonly sender: () => ModelStore<Contact>;
 
         /**
          * The user read the message on a linked device.

@@ -16,21 +16,21 @@ import {createTextMessage, getTextMessageModelStore} from '~/common/model/messag
 import {createVideoMessage, getVideoMessageModelStore} from '~/common/model/message/video-message';
 import type {ConversationControllerHandle} from '~/common/model/types/conversation';
 import type {AnyNonDeletedMessageType, BaseMessageView} from '~/common/model/types/message';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import {assert, unreachable} from '~/common/utils/assert';
 
 /**
  * Default message factory for creating stores and database entries for all existing message types.
  */
 export const MESSAGE_FACTORY: MessageFactory = {
-    createStore: <TLocalModelStore extends AnyMessageModelStore>(
+    createStore: <TModelStore extends AnyMessageModelStore>(
         services: ServicesForModel,
-        direction: TLocalModelStore['ctx'],
+        direction: TModelStore['ctx'],
         conversation: ConversationControllerHandle,
-        message: DbMessageFor<TLocalModelStore['type']>,
-        common: BaseMessageView<TLocalModelStore['ctx']>,
-        sender: LocalModelStore<Contact> | typeof NO_SENDER,
-    ): TLocalModelStore => {
+        message: DbMessageFor<TModelStore['type']>,
+        common: BaseMessageView<TModelStore['ctx']>,
+        sender: ModelStore<Contact> | typeof NO_SENDER,
+    ): TModelStore => {
         switch (message.type) {
             case 'text': {
                 return getTextMessageModelStore(
@@ -39,7 +39,7 @@ export const MESSAGE_FACTORY: MessageFactory = {
                     message,
                     common,
                     sender,
-                ) as TLocalModelStore; // Trivially true as message.type === TLocalModelStore['type']
+                ) as TModelStore; // Trivially true as message.type === TModelStore['type']
             }
             case 'file':
                 return getFileMessageModelStore(
@@ -48,7 +48,7 @@ export const MESSAGE_FACTORY: MessageFactory = {
                     message,
                     common,
                     sender,
-                ) as TLocalModelStore; // Trivially true as message.type === TLocalModelStore['type']
+                ) as TModelStore; // Trivially true as message.type === TModelStore['type']
             case 'image':
                 return getImageMessageModelStore(
                     services,
@@ -56,7 +56,7 @@ export const MESSAGE_FACTORY: MessageFactory = {
                     message,
                     common,
                     sender,
-                ) as TLocalModelStore; // Trivially true as message.type === TLocalModelStore['type']
+                ) as TModelStore; // Trivially true as message.type === TModelStore['type']
             case 'video':
                 return getVideoMessageModelStore(
                     services,
@@ -64,7 +64,7 @@ export const MESSAGE_FACTORY: MessageFactory = {
                     message,
                     common,
                     sender,
-                ) as TLocalModelStore; // Trivially true as message.type === TLocalModelStore['type']
+                ) as TModelStore; // Trivially true as message.type === TModelStore['type']
             case 'audio':
                 return getAudioMessageModelStore(
                     services,
@@ -72,7 +72,7 @@ export const MESSAGE_FACTORY: MessageFactory = {
                     message,
                     common,
                     sender,
-                ) as TLocalModelStore; // Trivially true as message.type === TLocalModelStore['type']
+                ) as TModelStore; // Trivially true as message.type === TModelStore['type']
             case 'deleted':
                 assert(
                     common.deletedAt !== undefined,
@@ -84,7 +84,7 @@ export const MESSAGE_FACTORY: MessageFactory = {
                     common,
                     message.uid,
                     sender,
-                ) as TLocalModelStore;
+                ) as TModelStore;
             default:
                 return unreachable(message);
         }

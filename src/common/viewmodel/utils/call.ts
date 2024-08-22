@@ -1,6 +1,6 @@
 import {GroupCallPolicy, GroupUserState, ReceiverType} from '~/common/enum';
 import type {AnyReceiver, Contact} from '~/common/model';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {ChosenGroupCall, GroupCallId} from '~/common/network/protocol/call/group-call';
 import {unreachable} from '~/common/utils/assert';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
@@ -27,7 +27,7 @@ export interface GroupCallData {
 
 export function getGroupCallParticipantReceiverData(
     services: Pick<ServicesForViewModel, 'device' | 'model'>,
-    participant: LocalModelStore<Contact> | 'me',
+    participant: ModelStore<Contact> | 'me',
     getAndSubscribe: GetAndSubscribeFunction,
 ): GroupCallParticipantReceiverData {
     return participant === 'me'

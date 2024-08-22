@@ -37,9 +37,9 @@ import type {
     GroupView,
 } from '~/common/model/types/group';
 import type {ProfilePicture} from '~/common/model/types/profile-picture';
-import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
+import {ModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ModelStore} from '~/common/model/utils/model-store';
 import {
     deserializeRunningGroupCall,
     type ChosenGroupCall,
@@ -71,7 +71,7 @@ import {WritableStore, type ReadableStore} from '~/common/utils/store';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 import {getGraphemeClusters} from '~/common/utils/string';
 
-let cache = new LocalModelStoreCache<DbGroupUid, LocalModelStore<Group>>();
+let cache = new ModelStoreCache<DbGroupUid, ModelStore<Group>>();
 
 const ensureExactGroupInit = createExactPropertyValidator<GroupInit>('GroupInit', {
     groupId: REQUIRED,
@@ -116,8 +116,8 @@ const ensureExactGroupUpdateFromToSync = createExactPropertyValidator<GroupUpdat
 export function getDisplayName(
     groupName: string,
     userState: GroupUserState,
-    creator: LocalModelStore<Contact> | 'me',
-    groupMembers: Set<LocalModelStore<Contact>>,
+    creator: ModelStore<Contact> | 'me',
+    groupMembers: Set<ModelStore<Contact>>,
     services: Pick<ServicesForModel, 'device' | 'model'>,
 ): string {
     if (groupName !== '') {
@@ -163,7 +163,7 @@ export function getGroupInitials(group: Pick<GroupView, 'name' | 'groupId'>): st
 function addGroupMember(
     services: ServicesForModel,
     groupUid: DbGroupUid,
-    contactToAdd: LocalModelStore<Contact>,
+    contactToAdd: ModelStore<Contact>,
 ): u53 {
     const {db} = services;
     // Add membership - if the contact is not a member in the db already
@@ -180,7 +180,7 @@ function addGroupMember(
 function addGroupMembers(
     services: ServicesForModel,
     groupUid: DbGroupUid,
-    contactsToAdd: LocalModelStore<Contact>[],
+    contactsToAdd: ModelStore<Contact>[],
 ): u53 {
     return contactsToAdd.reduce(
         (count, contactToAdd) => count + addGroupMember(services, groupUid, contactToAdd),
@@ -194,7 +194,7 @@ function addGroupMembers(
 function getGroupMembers(
     services: ServicesForModel,
     groupUid: DbGroupUid,
-): Set<LocalModelStore<Contact>> {
+): Set<ModelStore<Contact>> {
     const memberUids = services.db.getAllGroupMemberContactUids(groupUid);
     return new Set(
         memberUids.map((member) => contact.getByUid(services, member.uid, Existence.ENSURED)),
@@ -209,7 +209,7 @@ function getGroupMembers(
 function removeGroupMember(
     services: ServicesForModel,
     groupUid: DbGroupUid,
-    contactToRemove: LocalModelStore<Contact>,
+    contactToRemove: ModelStore<Contact>,
 ): u53 {
     return services.db.removeGroupMember(groupUid, contactToRemove.ctx);
 }
@@ -224,7 +224,7 @@ function removeGroupMember(
 function removeGroupMembers(
     services: ServicesForModel,
     groupUid: DbGroupUid,
-    contactsToRemove: LocalModelStore<Contact>[],
+    contactsToRemove: ModelStore<Contact>[],
 ): u53 {
     return contactsToRemove.reduce(
         (count, contactToRemove) => count + removeGroupMember(services, groupUid, contactToRemove),
@@ -235,8 +235,8 @@ function removeGroupMembers(
 function create(
     services: ServicesForModel,
     init: Exact<GroupInit>,
-    members: LocalModelStore<Contact>[],
-): LocalModelStore<Group> {
+    members: ModelStore<Contact>[],
+): ModelStore<Group> {
     const {db} = services;
 
     let creatorUid: DbContactUid | undefined = undefined;
@@ -320,9 +320,7 @@ export function getByUid<TExistence extends Existence>(
     services: ServicesForModel,
     uid: DbGroupUid,
     existence: TExistence,
-): TExistence extends Existence.ENSURED
-    ? LocalModelStore<Group>
-    : LocalModelStore<Group> | undefined;
+): TExistence extends Existence.ENSURED ? ModelStore<Group> : ModelStore<Group> | undefined;
 
 /**
  * Fetch a group model by its database UID.
@@ -331,7 +329,7 @@ export function getByUid(
     services: ServicesForModel,
     uid: DbGroupUid,
     existence: Existence,
-): LocalModelStore<Group> | undefined {
+): ModelStore<Group> | undefined {
     return cache.getOrAdd(uid, () => {
         const {db} = services;
 
@@ -376,7 +374,7 @@ function getByGroupIdAndCreator(
     services: ServicesForModel,
     id: GroupId,
     creatorIdentity: IdentityString,
-): LocalModelStore<Group> | undefined {
+): ModelStore<Group> | undefined {
     const {db} = services;
 
     let contactUid: DbContactUid | undefined = undefined;
@@ -395,7 +393,7 @@ function getByGroupIdAndCreator(
     return getByUid(services, uid, Existence.ENSURED);
 }
 
-function all(services: ServicesForModel): LocalSetStore<LocalModelStore<Group>> {
+function all(services: ServicesForModel): LocalSetStore<ModelStore<Group>> {
     return cache.setRef.derefOrCreate(() => {
         const {db, logging} = services;
         // Note: This may be inefficient. It would be more efficient to get all UIDs, then filter
@@ -421,13 +419,13 @@ export class GroupModelController implements GroupController {
     public readonly notificationTag: NotificationTag;
 
     /** @inheritdoc */
-    public readonly profilePicture: LocalModelStore<ProfilePicture>;
+    public readonly profilePicture: ModelStore<ProfilePicture>;
 
     public readonly addMembers: GroupController['addMembers'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // TODO(DESK-165): Reflect changes here.
         // eslint-disable-next-line @typescript-eslint/require-await
-        fromLocal: async (contacts: LocalModelStore<Contact>[], createdAt: Date) => {
+        fromLocal: async (contacts: ModelStore<Contact>[], createdAt: Date) => {
             this._log.debug('GroupModelController: Add members from local');
             return this.meta.run((handle) => {
                 const numAdded = this._addMembers(handle, contacts, createdAt);
@@ -445,7 +443,7 @@ export class GroupModelController implements GroupController {
 
         // TODO(DESK-517): Reflect changes here.
         // eslint-disable-next-line @typescript-eslint/require-await
-        fromLocal: async (contacts: LocalModelStore<Contact>[], createdAt: Date) => {
+        fromLocal: async (contacts: ModelStore<Contact>[], createdAt: Date) => {
             this._log.debug('GroupModelController: Remove members from local');
             return this.meta.run((handle) => {
                 const numRemoved = this._removeMembers(
@@ -463,7 +461,7 @@ export class GroupModelController implements GroupController {
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (
             handle: ActiveTaskCodecHandle<'volatile'>,
-            contacts: LocalModelStore<Contact>[],
+            contacts: ModelStore<Contact>[],
             createdAt: Date,
         ) => {
             this._log.debug('GroupModelController: Remove members from remote');
@@ -480,7 +478,7 @@ export class GroupModelController implements GroupController {
                 return numRemoved;
             });
         },
-        fromSync: (contacts: LocalModelStore<Contact>[], createdAt: Date) => {
+        fromSync: (contacts: ModelStore<Contact>[], createdAt: Date) => {
             this._log.debug('GroupModelController: Remove members from sync');
             return this.meta.run((handle) => {
                 const numRemoved = this._removeMembers(
@@ -501,7 +499,7 @@ export class GroupModelController implements GroupController {
     public readonly setMembers: GroupController['setMembers'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromSync: (
-            contacts: LocalModelStore<Contact>[],
+            contacts: ModelStore<Contact>[],
             createdAt: Date,
             newUserState?: GroupUserState.MEMBER,
         ) => {
@@ -522,7 +520,7 @@ export class GroupModelController implements GroupController {
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (
             handle: ActiveTaskCodecHandle<'volatile'>,
-            contacts: LocalModelStore<Contact>[],
+            contacts: ModelStore<Contact>[],
             createdAt: Date,
             newUserState?: GroupUserState.MEMBER,
         ) => {
@@ -736,12 +734,12 @@ export class GroupModelController implements GroupController {
     }
 
     /** @inheritdoc */
-    public conversation(): LocalModelStore<Conversation> {
+    public conversation(): ModelStore<Conversation> {
         return this._conversation();
     }
 
     /** @inheritdoc */
-    public hasMember(contact_: LocalModelStore<Contact> | 'me'): boolean {
+    public hasMember(contact_: ModelStore<Contact> | 'me'): boolean {
         return this.meta.run((handle) => {
             const view = handle.view();
             if (contact_ === 'me') {
@@ -811,7 +809,7 @@ export class GroupModelController implements GroupController {
      */
     private _addMembers(
         handle: GuardedStoreHandle<GroupView>,
-        contacts: LocalModelStore<Contact>[],
+        contacts: ModelStore<Contact>[],
         createdAt: Date,
     ): u53 {
         if (contacts.length === 0) {
@@ -847,15 +845,15 @@ export class GroupModelController implements GroupController {
      */
     private _diffMembers(
         guardedHandle: GuardedStoreHandle<GroupView>,
-        contacts: Set<LocalModelStore<Contact>>,
+        contacts: Set<ModelStore<Contact>>,
     ): {
-        added: LocalModelStore<Contact>[];
-        removed: LocalModelStore<Contact>[];
+        added: ModelStore<Contact>[];
+        removed: ModelStore<Contact>[];
     } {
         const currentMembers = guardedHandle.view().members;
         const creator = guardedHandle.view().creator;
-        const added = new Set<LocalModelStore<Contact>>();
-        const removed = new Set<LocalModelStore<Contact>>();
+        const added = new Set<ModelStore<Contact>>();
+        const removed = new Set<ModelStore<Contact>>();
         for (const c of contacts) {
             // If the contact's reference is the creator, do nothing.
             if (c === creator) {
@@ -882,8 +880,8 @@ export class GroupModelController implements GroupController {
 
     private _setMembers(
         handle: GuardedStoreHandle<GroupView>,
-        added: LocalModelStore<Contact>[],
-        removed: LocalModelStore<Contact>[],
+        added: ModelStore<Contact>[],
+        removed: ModelStore<Contact>[],
     ): void {
         // Update database and model view
         handle.update(() => {
@@ -906,7 +904,7 @@ export class GroupModelController implements GroupController {
      */
     private _diffAndSetMembers(
         guardedHandle: GuardedStoreHandle<GroupView>,
-        contacts: LocalModelStore<Contact>[],
+        contacts: ModelStore<Contact>[],
         createdAt: Date,
         newUserState?: GroupUserState.MEMBER,
     ): {added: u53; removed: u53} {
@@ -946,7 +944,7 @@ export class GroupModelController implements GroupController {
     private _removeMembers(
         handle: GuardedStoreHandle<GroupView>,
         triggerSource: TriggerSource,
-        contacts: LocalModelStore<Contact>[],
+        contacts: ModelStore<Contact>[],
         createdAt: Date,
     ): u53 {
         if (contacts.length === 0) {
@@ -1125,8 +1123,8 @@ export class GroupModelController implements GroupController {
     }
 
     private _addGroupMemberChangeStatusMessage(
-        added: LocalModelStore<Contact>[],
-        removed: LocalModelStore<Contact>[],
+        added: ModelStore<Contact>[],
+        removed: ModelStore<Contact>[],
         createdAt: Date,
     ): void {
         const groupConversation = this.conversation().get();
@@ -1217,7 +1215,7 @@ export class GroupModelController implements GroupController {
 }
 
 /** @inheritdoc */
-export class GroupModelStore extends LocalModelStore<Group> {
+export class GroupModelStore extends ModelStore<Group> {
     /**
      * Instantiate the GroupModelStore.
      *
@@ -1262,18 +1260,18 @@ export class GroupModelRepository implements GroupRepository {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
 
         // eslint-disable-next-line @typescript-eslint/require-await
-        fromLocal: async (init: GroupInit, members: LocalModelStore<Contact>[]) => {
+        fromLocal: async (init: GroupInit, members: ModelStore<Contact>[]) => {
             this._log.debug('Add group from local');
             return create(this._services, ensureExactGroupInit(init), members);
         },
 
         // eslint-disable-next-line @typescript-eslint/require-await
-        fromRemote: async (handle, init: GroupInit, members: LocalModelStore<Contact>[]) => {
+        fromRemote: async (handle, init: GroupInit, members: ModelStore<Contact>[]) => {
             this._log.debug('Add group from remote');
             return create(this._services, ensureExactGroupInit(init), members);
         },
 
-        fromSync: (init: GroupInit, members: LocalModelStore<Contact>[]) => {
+        fromSync: (init: GroupInit, members: ModelStore<Contact>[]) => {
             this._log.debug('Add group from sync');
             return create(this._services, ensureExactGroupInit(init), members);
         },
@@ -1288,11 +1286,11 @@ export class GroupModelRepository implements GroupRepository {
         // but should be probably a private class attribute (not a trivial change as of now), or maybe be
         // moved down to DB level. This case was the origin of DESK-697.
         this._log.debug('Creating new cache');
-        cache = new LocalModelStoreCache<DbGroupUid, LocalModelStore<Group>>();
+        cache = new ModelStoreCache<DbGroupUid, ModelStore<Group>>();
     }
 
     /** @inheritdoc */
-    public getByUid(uid: DbGroupUid): LocalModelStore<Group> | undefined {
+    public getByUid(uid: DbGroupUid): ModelStore<Group> | undefined {
         return getByUid(this._services, uid, Existence.UNKNOWN);
     }
 
@@ -1300,16 +1298,16 @@ export class GroupModelRepository implements GroupRepository {
     public getByGroupIdAndCreator(
         id: GroupId,
         creatorIdentity: IdentityString,
-    ): LocalModelStore<Group> | undefined {
+    ): ModelStore<Group> | undefined {
         return getByGroupIdAndCreator(this._services, id, creatorIdentity);
     }
 
     /** @inheritdoc */
-    public getAll(): LocalSetStore<LocalModelStore<Group>> {
+    public getAll(): LocalSetStore<ModelStore<Group>> {
         return all(this._services);
     }
 
-    public getProfilePicture(uid: DbGroupUid): LocalModelStore<ProfilePicture> | undefined {
+    public getProfilePicture(uid: DbGroupUid): ModelStore<ProfilePicture> | undefined {
         return this.getByUid(uid)?.get().controller.profilePicture;
     }
 }

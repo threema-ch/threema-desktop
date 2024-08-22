@@ -5,7 +5,7 @@ import {BlobDownloadState, MessageDirection, MessageDirectionUtils} from '~/comm
 import {randomFileEncryptionKey, randomFileId} from '~/common/file-storage';
 import type {Contact, Conversation} from '~/common/model';
 import type {FileMessageDataState} from '~/common/model/types/message';
-import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import {FILE_STORAGE_FORMAT} from '~/common/node/file-storage/system-file-storage';
 import {assert} from '~/common/utils/assert';
@@ -30,8 +30,8 @@ export function run(): void {
         const anotherUser = makeTestUser('USER0001');
 
         let services: TestServices;
-        let contact: LocalModelStore<Contact>;
-        let conversation: LocalModelStore<Conversation>;
+        let contact: ModelStore<Contact>;
+        let conversation: ModelStore<Conversation>;
 
         this.beforeEach(function () {
             services = makeTestServices(me.identity.string);

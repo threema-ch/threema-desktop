@@ -1,7 +1,7 @@
 import type {ServicesForBackend} from '~/common/backend';
 import type {DatabaseBackend} from '~/common/db';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import type {LocalModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
 import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import type {TaskManager} from '~/common/network/protocol/task/manager';
 import type {ProxyMarked, RemoteProxy} from '~/common/utils/endpoint';
@@ -69,7 +69,7 @@ export type RemoteModelController<TLocalController extends LocalModelController<
  * A model where the controller lives on the local side.
  *
  * IMPORTANT: Because the {@link view} property is replaced on each update, this object should not
- *            be forward to other functions. Either forward the associated {@link LocalModelStore}
+ *            be forward to other functions. Either forward the associated {@link ModelStore}
  *            **or** the current {@link view} snapshot.
  */
 export interface LocalModel<
@@ -135,13 +135,7 @@ export type RemoteModelFor<T> =
  * Map a local model store type to its remote model store type.
  */
 export type RemoteModelStoreFor<T> =
-    T extends LocalModelStore<
-        infer TModel,
-        infer TView,
-        infer TLocalController,
-        infer TCtx,
-        infer TType
-    >
+    T extends ModelStore<infer TModel, infer TView, infer TLocalController, infer TCtx, infer TType>
         ? RemoteModelStore<TModel, TView, TLocalController, TCtx, TType>
         : never;
 
