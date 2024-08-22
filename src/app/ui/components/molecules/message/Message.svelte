@@ -378,6 +378,8 @@
           display: flex;
           align-items: center;
           gap: var(--mc-message-indicator-column-gap);
+
+          pointer-events: initial;
           margin: rem(8px);
           padding: rem(1px) rem(6px);
           border-radius: rem(10px);
