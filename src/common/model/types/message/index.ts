@@ -5,7 +5,11 @@ import type {
     IOutboundAudioMessageModelStore,
     OutboundAudioMessageBundle,
 } from '~/common/model/types/message/audio';
-import type {CommonBaseMessageView} from '~/common/model/types/message/common';
+import type {
+    CommonBaseMessageView,
+    CommonInboundMessageBundle,
+    CommonOutboundMessageBundle,
+} from '~/common/model/types/message/common';
 import type {
     InboundDeletedMessageBundle,
     InboundDeletedMessageModelStore,
@@ -85,7 +89,9 @@ export type OutboundMessageFor<TType extends MessageType> = TType extends Messag
               ? OutboundDeletedMessageBundle
               : never;
 
-type BundleProperty = 'view' | 'init' | 'controller' | 'model';
+type BundleProperty =
+    | keyof CommonInboundMessageBundle<MessageType>
+    | keyof CommonOutboundMessageBundle<MessageType>;
 
 /**
  * Helper to return the appropriate bundle property for the specified direction and message type.

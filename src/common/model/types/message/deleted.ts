@@ -8,6 +8,8 @@ import type {Contact} from '~/common/model/types/contact';
 import type {
     CommonBaseMessageController,
     CommonBaseMessageView,
+    CommonInboundMessageBundle,
+    CommonOutboundMessageBundle,
     InboundBaseMessageInit,
     InboundBaseMessageView,
     OutboundBaseMessageInit,
@@ -114,7 +116,7 @@ export type OutboundDeletedMessageModelStore = ModelStore<OutboundDeletedMessage
 /**
  * Combined types related to an inbound deleted message.
  */
-export interface InboundDeletedMessageBundle {
+export interface InboundDeletedMessageBundle extends CommonInboundMessageBundle<'deleted'> {
     readonly view: InboundDeletedMessageView;
     readonly init: InboundDeletedMessageInit;
     readonly controller: InboundDeletedMessageController;
@@ -125,7 +127,7 @@ export interface InboundDeletedMessageBundle {
 /**
  * Combined types related to an outbound deleted message.
  */
-export interface OutboundDeletedMessageBundle {
+export interface OutboundDeletedMessageBundle extends CommonOutboundMessageBundle<'deleted'> {
     readonly view: OutboundDeletedMessageView;
     readonly init: OutboundDeletedMessageInit;
     readonly controller: OutboundDeletedMessageController;

@@ -3,6 +3,8 @@ import type {Model} from '~/common/model';
 import type {
     CommonBaseFileMessageInit,
     CommonBaseFileMessageView,
+    CommonInboundMessageBundle,
+    CommonOutboundMessageBundle,
     InboundBaseFileMessageController,
     InboundBaseFileMessageView,
     InboundBaseMessageInit,
@@ -77,7 +79,7 @@ export type IOutboundAudioMessageModelStore = ModelStore<OutboundAudioMessageMod
 /**
  * Combined types related to an inbound audio message.
  */
-export interface InboundAudioMessageBundle {
+export interface InboundAudioMessageBundle extends CommonInboundMessageBundle<'audio'> {
     readonly view: InboundAudioMessageView;
     readonly init: InboundAudioMessageInit;
     readonly controller: InboundAudioMessageController;
@@ -88,7 +90,7 @@ export interface InboundAudioMessageBundle {
 /**
  * Combined types related to an outbound audio message.
  */
-export interface OutboundAudioMessageBundle {
+export interface OutboundAudioMessageBundle extends CommonOutboundMessageBundle<'audio'> {
     readonly view: OutboundAudioMessageView;
     readonly init: OutboundAudioMessageInit;
     readonly controller: OutboundAudioMessageController;

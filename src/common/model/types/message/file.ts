@@ -2,6 +2,8 @@ import type {MessageDirection, MessageType} from '~/common/enum';
 import type {Model} from '~/common/model';
 import type {
     CommonBaseFileMessageInit,
+    CommonInboundMessageBundle,
+    CommonOutboundMessageBundle,
     InboundBaseFileMessageController,
     InboundBaseFileMessageView,
     InboundBaseMessageInit,
@@ -73,7 +75,7 @@ export type IOutboundFileMessageModelStore = ModelStore<OutboundFileMessageModel
 /**
  * Combined types related to an inbound file message.
  */
-export interface InboundFileMessageBundle {
+export interface InboundFileMessageBundle extends CommonInboundMessageBundle<'file'> {
     readonly view: InboundFileMessageView;
     readonly init: InboundFileMessageInit;
     readonly controller: InboundFileMessageController;
@@ -84,7 +86,7 @@ export interface InboundFileMessageBundle {
 /**
  * Combined types related to an outbound file message.
  */
-export interface OutboundFileMessageBundle {
+export interface OutboundFileMessageBundle extends CommonOutboundMessageBundle<'file'> {
     readonly view: OutboundFileMessageView;
     readonly init: OutboundFileMessageInit;
     readonly controller: OutboundFileMessageController;

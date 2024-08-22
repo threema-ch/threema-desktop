@@ -4,6 +4,8 @@ import type {
     CommonBaseMessageController,
     CommonBaseMessageInit,
     CommonBaseMessageView,
+    CommonInboundMessageBundle,
+    CommonOutboundMessageBundle,
     InboundBaseMessageController,
     InboundBaseMessageInit,
     InboundBaseMessageView,
@@ -73,7 +75,7 @@ export type IOutboundTextMessageModelStore = ModelStore<OutboundTextMessageModel
 /**
  * Combined types related to an inbound text message.
  */
-export interface InboundTextMessageBundle {
+export interface InboundTextMessageBundle extends CommonInboundMessageBundle<'text'> {
     readonly view: InboundTextMessageView;
     readonly init: InboundTextMessageInit;
     readonly controller: InboundTextMessageController;
@@ -83,7 +85,7 @@ export interface InboundTextMessageBundle {
 /**
  * Combined types related to an outbound text message.
  */
-export interface OutboundTextMessageBundle {
+export interface OutboundTextMessageBundle extends CommonOutboundMessageBundle<'text'> {
     readonly view: OutboundTextMessageView;
     readonly init: OutboundTextMessageInit;
     readonly controller: OutboundTextMessageController;

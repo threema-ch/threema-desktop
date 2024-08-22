@@ -3,6 +3,8 @@ import type {Model} from '~/common/model';
 import type {
     CommonBaseFileMessageInit,
     CommonBaseFileMessageView,
+    CommonInboundMessageBundle,
+    CommonOutboundMessageBundle,
     InboundBaseFileMessageController,
     InboundBaseFileMessageView,
     InboundBaseMessageInit,
@@ -78,7 +80,7 @@ export type IOutboundVideoMessageModelStore = ModelStore<OutboundVideoMessageMod
 /**
  * Combined types related to an inbound video message.
  */
-export interface InboundVideoMessageBundle {
+export interface InboundVideoMessageBundle extends CommonInboundMessageBundle<'video'> {
     readonly view: InboundVideoMessageView;
     readonly init: InboundVideoMessageInit;
     readonly controller: InboundVideoMessageController;
@@ -89,7 +91,7 @@ export interface InboundVideoMessageBundle {
 /**
  * Combined types related to an outbound video message.
  */
-export interface OutboundVideoMessageBundle {
+export interface OutboundVideoMessageBundle extends CommonOutboundMessageBundle<'video'> {
     readonly view: OutboundVideoMessageView;
     readonly init: OutboundVideoMessageInit;
     readonly controller: OutboundVideoMessageController;

@@ -3,6 +3,8 @@ import type {Model} from '~/common/model';
 import type {
     CommonBaseFileMessageInit,
     CommonBaseFileMessageView,
+    CommonInboundMessageBundle,
+    CommonOutboundMessageBundle,
     InboundBaseFileMessageController,
     InboundBaseFileMessageView,
     InboundBaseMessageInit,
@@ -81,7 +83,7 @@ export type IOutboundImageMessageModelStore = ModelStore<OutboundImageMessageMod
 /**
  * Combined types related to an inbound image message.
  */
-export interface InboundImageMessageBundle {
+export interface InboundImageMessageBundle extends CommonInboundMessageBundle<'image'> {
     readonly view: InboundImageMessageView;
     readonly init: InboundImageMessageInit;
     readonly controller: InboundImageMessageController;
@@ -92,7 +94,7 @@ export interface InboundImageMessageBundle {
 /**
  * Combined types related to an outbound image message.
  */
-export interface OutboundImageMessageBundle {
+export interface OutboundImageMessageBundle extends CommonOutboundMessageBundle<'image'> {
     readonly view: OutboundImageMessageView;
     readonly init: OutboundImageMessageInit;
     readonly controller: OutboundImageMessageController;

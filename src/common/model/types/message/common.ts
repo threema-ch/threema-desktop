@@ -14,7 +14,11 @@ import type {
 } from '~/common/model/types/common';
 import type {Contact} from '~/common/model/types/contact';
 import type {Conversation} from '~/common/model/types/conversation';
-import type {UnifiedEditMessage} from '~/common/model/types/message';
+import type {
+    InboundMessageFor,
+    OutboundMessageFor,
+    UnifiedEditMessage,
+} from '~/common/model/types/message';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {ModelStore} from '~/common/model/utils/model-store';
 import type {BlobId} from '~/common/network/protocol/blob';
@@ -356,3 +360,27 @@ export type OutboundBaseFileMessageController<TView extends OutboundBaseFileMess
              */
             readonly uploadBlobs: () => Promise<UploadedBlobBytes>;
         };
+
+// Bundle
+
+/**
+ * Common parts for message bundles of inbound messages.
+ */
+export interface CommonInboundMessageBundle<TType extends MessageType> {
+    readonly view: InboundMessageFor<TType>['view'];
+    readonly init: InboundMessageFor<TType>['init'];
+    readonly controller: InboundMessageFor<TType>['controller'];
+    readonly model: InboundMessageFor<TType>['model'];
+    readonly store: ModelStore<InboundMessageFor<TType>['model']>;
+}
+
+/**
+ * Common parts for message bundles of outbound messages.
+ */
+export interface CommonOutboundMessageBundle<TType extends MessageType> {
+    readonly view: OutboundMessageFor<TType>['view'];
+    readonly init: OutboundMessageFor<TType>['init'];
+    readonly controller: OutboundMessageFor<TType>['controller'];
+    readonly model: OutboundMessageFor<TType>['model'];
+    readonly store: ModelStore<OutboundMessageFor<TType>['model']>;
+}
