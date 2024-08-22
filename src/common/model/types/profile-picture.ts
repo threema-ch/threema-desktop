@@ -1,7 +1,7 @@
 import type {
     ControllerCustomUpdateFromSource,
     ControllerUpdateFromSource,
-    LocalModel,
+    Model,
 } from '~/common/model/types/common';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {BlobId} from '~/common/network/protocol/blob';
@@ -44,4 +44,4 @@ export type ProfilePictureController = {
      */
     readonly removePicture: ControllerUpdateFromSource<[source: ProfilePictureSource]>;
 } & ProxyMarked;
-export type ProfilePicture = LocalModel<ProfilePictureView, ProfilePictureController>;
+export type ProfilePicture = Model<ProfilePictureView, ProfilePictureController>;

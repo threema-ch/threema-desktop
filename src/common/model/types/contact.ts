@@ -13,7 +13,7 @@ import type {
     VerificationLevel,
     WorkVerificationLevel,
 } from '~/common/enum';
-import type {ControllerUpdateFromSource, LocalModel} from '~/common/model/types/common';
+import type {ControllerUpdateFromSource, Model} from '~/common/model/types/common';
 import type {ConversationInitMixin} from '~/common/model/types/conversation';
 import type {ReceiverController} from '~/common/model/types/receiver';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
@@ -88,12 +88,7 @@ export type ContactController = ReceiverController & {
      */
     readonly isRemovable: () => boolean;
 } & ProxyMarked;
-export type Contact = LocalModel<
-    ContactView,
-    ContactController,
-    UidOf<DbContact>,
-    ReceiverType.CONTACT
->;
+export type Contact = Model<ContactView, ContactController, UidOf<DbContact>, ReceiverType.CONTACT>;
 
 export type ContactRepository = {
     /**

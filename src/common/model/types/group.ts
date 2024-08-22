@@ -11,7 +11,7 @@ import type {
     ControllerUpdateFromLocal,
     ControllerUpdateFromSource,
     ControllerUpdateFromSync,
-    LocalModel,
+    Model,
 } from '~/common/model/types/common';
 import type {Contact} from '~/common/model/types/contact';
 import type {ConversationInitMixin} from '~/common/model/types/conversation';
@@ -223,7 +223,7 @@ export interface GroupControllerHandle {
     readonly version: SequenceNumberU53<u53>;
 }
 
-export type Group = LocalModel<GroupView, GroupController, UidOf<DbGroup>, ReceiverType.GROUP>;
+export type Group = Model<GroupView, GroupController, UidOf<DbGroup>, ReceiverType.GROUP>;
 
 /**
  * Groups storage

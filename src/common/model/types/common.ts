@@ -53,7 +53,7 @@ export interface GuardedStoreHandle<in out TView> {
 /**
  * A local model controller.
  */
-export type LocalModelController<TView> = {
+export type ModelController<TView> = {
     readonly meta: ModelLifetimeGuard<TView>;
 } & ProxyMarked;
 
@@ -61,8 +61,8 @@ export type LocalModelController<TView> = {
  * A remote controller of a model.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type RemoteModelController<TLocalController extends LocalModelController<any>> = RemoteProxy<
-    Omit<Readonly<TLocalController>, 'meta'>
+export type RemoteModelController<TModelController extends ModelController<any>> = RemoteProxy<
+    Omit<Readonly<TModelController>, 'meta'>
 >;
 
 /**
@@ -72,9 +72,9 @@ export type RemoteModelController<TLocalController extends LocalModelController<
  *            be forward to other functions. Either forward the associated {@link ModelStore}
  *            **or** the current {@link view} snapshot.
  */
-export interface LocalModel<
+export interface Model<
     TView,
-    TController extends LocalModelController<TView>,
+    TController extends ModelController<TView>,
     TCtx = undefined,
     TType = undefined,
 > {
@@ -105,7 +105,7 @@ export interface LocalModel<
  */
 export interface RemoteModel<
     TView,
-    TRemoteController extends RemoteModelController<LocalModelController<TView>>,
+    TRemoteController extends RemoteModelController<ModelController<TView>>,
     TCtx = undefined,
     TType = undefined,
 > {
@@ -118,25 +118,25 @@ export interface RemoteModel<
 /**
  * Helper type to infer type parameters for a local model.
  */
-export type LocalModelFor<T> =
-    T extends LocalModel<infer TView, infer TController, infer TCtx, infer TType>
-        ? LocalModel<TView, TController, TCtx, TType>
+export type ModelFor<T> =
+    T extends Model<infer TView, infer TController, infer TCtx, infer TType>
+        ? Model<TView, TController, TCtx, TType>
         : never;
 
 /**
  * Map a local model type to its remote model type.
  */
 export type RemoteModelFor<T> =
-    T extends LocalModel<infer TView, infer TLocalController, infer TCtx, infer TType>
-        ? RemoteModel<TView, RemoteModelController<TLocalController>, TCtx, TType>
+    T extends Model<infer TView, infer TModelController, infer TCtx, infer TType>
+        ? RemoteModel<TView, RemoteModelController<TModelController>, TCtx, TType>
         : never;
 
 /**
  * Map a local model store type to its remote model store type.
  */
 export type RemoteModelStoreFor<T> =
-    T extends ModelStore<infer TModel, infer TView, infer TLocalController, infer TCtx, infer TType>
-        ? RemoteModelStore<TModel, TView, TLocalController, TCtx, TType>
+    T extends ModelStore<infer TModel, infer TView, infer TModelController, infer TCtx, infer TType>
+        ? RemoteModelStore<TModel, TView, TModelController, TCtx, TType>
         : never;
 
 /* eslint-disable @typescript-eslint/no-invalid-void-type */

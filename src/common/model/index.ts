@@ -5,7 +5,7 @@
  *
  * - The `ContactView` interface contains the "actual model fields"
  * - The `ContactController` defines methods to work with a contact's data, e.g. to get a related conversation
- * - The `Contact` type ties the view to a controller and makes it a `LocalModel`
+ * - The `Contact` type ties the view to a controller and makes it a `Model`
  * - The `ContactInit` type contains all fields of `ContactView` that are not generated
  *   automatically by the storage backend (e.g. `createdAt` timestamps or auto-incrementing values),
  *   it is used to create a new contact
@@ -17,8 +17,8 @@
 // Export common types
 export {
     type ServicesForModel,
-    type LocalModel,
-    type LocalModelController,
+    type Model,
+    type ModelController,
     type RemoteModel,
     type RemoteModelController,
     type RemoteModelFor,

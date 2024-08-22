@@ -1,12 +1,7 @@
 import {TransferTag} from '~/common/enum';
 import {RELEASE_PROXY, TRANSFERRED_MARKER, TRANSFER_HANDLER} from '~/common/index';
 import type {Logger, LogPrefix} from '~/common/logging';
-import type {
-    LocalModel,
-    LocalModelController,
-    RemoteModel,
-    RemoteModelController,
-} from '~/common/model';
+import type {Model, ModelController, RemoteModel, RemoteModelController} from '~/common/model';
 import type {WeakOpaque} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {
@@ -60,16 +55,16 @@ export type ViewUpdateFn<TView> = (view: Readonly<TView>) => UpdatedView<Readonl
  * Note: Svelte compatibility is limited to a readable store.
  */
 export class ModelStore<
-        TModel extends LocalModel<TView, TController, TCtx, TType>,
+        TModel extends Model<TView, TController, TCtx, TType>,
         TView = TModel['view'],
-        TController extends LocalModelController<TView> = TModel['controller'],
+        TController extends ModelController<TView> = TModel['controller'],
         TCtx = TModel['ctx'],
         TType = TModel['type'],
     >
     extends ReadableStore<
         // Make the underlying view property mutable within this class but dispatch it as-is (readonly)
-        LocalModel<TView, TController, TCtx, TType> & {view: Readonly<TView>},
-        LocalModel<TView, TController, TCtx, TType>
+        Model<TView, TController, TCtx, TType> & {view: Readonly<TView>},
+        Model<TView, TController, TCtx, TType>
     >
     implements CustomTransferable<typeof MODEL_STORE_TRANSFER_HANDLER>
 {
@@ -90,7 +85,7 @@ export class ModelStore<
         controller: TController,
         public readonly ctx: TCtx,
         public readonly type: TType,
-        options?: StoreOptions<LocalModel<TView, TController, TCtx, TType>>,
+        options?: StoreOptions<Model<TView, TController, TCtx, TType>>,
     ) {
         const model = {
             view,
@@ -150,17 +145,17 @@ function releaseRemoteModelStore({
 }
 
 /**
- * A remote model store reader receives updates from a local model store on
- * another thread via a {@link Endpoint}.
+ * A remote model store reader receives updates from a local model store on another thread via a
+ * {@link Endpoint}.
  */
 export class RemoteModelStore<
-        TModel extends LocalModel<TView, TLocalController, TCtx, TType>,
+        TModel extends Model<TView, TModelController, TCtx, TType>,
         TView = TModel['view'],
-        TLocalController extends LocalModelController<TView> = TModel['controller'],
+        TModelController extends ModelController<TView> = TModel['controller'],
         TCtx = TModel['ctx'],
         TType = TModel['type'],
     >
-    extends ReadableStore<RemoteModel<TView, RemoteModelController<TLocalController>, TCtx, TType>>
+    extends ReadableStore<RemoteModel<TView, RemoteModelController<TModelController>, TCtx, TType>>
     implements CustomTransferredRemoteMarker<typeof MODEL_STORE_REMOTE_MARKER>
 {
     private static readonly _REGISTRY = new FinalizationRegistry(releaseRemoteModelStore);
@@ -173,11 +168,11 @@ export class RemoteModelStore<
             readonly value: TView;
             readonly endpoint: EndpointFor<'view', undefined, TView>;
         },
-        controller: RemoteModelController<TLocalController>,
+        controller: RemoteModelController<TModelController>,
         public readonly ctx: TCtx,
         public readonly type: TType,
         options: StoreOptions<
-            RemoteModel<TView, RemoteModelController<TLocalController>, TCtx, TType>
+            RemoteModel<TView, RemoteModelController<TModelController>, TCtx, TType>
         >,
     ) {
         super(
@@ -224,9 +219,9 @@ export class RemoteModelStore<
      * @param options Additional store options.
      */
     public static wrap<
-        TModel extends LocalModel<TView, TLocalController, TCtx, TType>,
+        TModel extends Model<TView, TModelController, TCtx, TType>,
         TView = TModel['view'],
-        TLocalController extends LocalModelController<TView> = TModel['controller'],
+        TModelController extends ModelController<TView> = TModel['controller'],
         TCtx = TModel['ctx'],
         TType = TModel['type'],
     >(
@@ -238,20 +233,20 @@ export class RemoteModelStore<
             readonly releaser?: AbortRaiser;
         },
         controller: {
-            readonly endpoint: ProxyEndpoint<TLocalController>;
+            readonly endpoint: ProxyEndpoint<TModelController>;
             readonly log?: Logger;
         },
         ctx: TCtx,
         type: TType,
         options: StoreOptions<
-            RemoteModel<TView, RemoteModelController<TLocalController>, TCtx, TType>
+            RemoteModel<TView, RemoteModelController<TModelController>, TCtx, TType>
         >,
     ): RemoteModelStore<TModel> {
         // Create the store
         const proxy = service.wrap(
             controller.endpoint,
             controller.log,
-        ) as RemoteModelController<TLocalController> & ProxyEndpointMethods; // Terrible cast!
+        ) as RemoteModelController<TModelController> & ProxyEndpointMethods; // Terrible cast!
         const store = new RemoteModelStore(id, view, proxy, ctx, type, options);
 
         // Tell the local side to unsubscribe and release its endpoint when
@@ -275,9 +270,9 @@ export class RemoteModelStore<
      * @returns The initial view, as well as ctx and type of the store.
      */
     public static expose<
-        TModel extends LocalModel<TView, TLocalController, TCtx, TType>,
+        TModel extends Model<TView, TModelController, TCtx, TType>,
         TView = TModel['view'],
-        TLocalController extends LocalModelController<TModel['view']> = TModel['controller'],
+        TModelController extends ModelController<TModel['view']> = TModel['controller'],
         TCtx = TModel['ctx'],
         TType = TModel['type'],
     >(
@@ -287,7 +282,7 @@ export class RemoteModelStore<
             readonly endpoint: EndpointFor<'view', unknown, undefined>;
         },
         controller: {
-            readonly endpoint: ProxyEndpoint<TLocalController>;
+            readonly endpoint: ProxyEndpoint<TModelController>;
             readonly log?: Logger;
         },
     ): [view: TView, ctx: TCtx, type: TType] {

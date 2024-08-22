@@ -17,7 +17,7 @@ import type {
 } from '~/common/enum';
 import type {AutoDownload} from '~/common/model/settings/media';
 import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
-import type {LocalModel} from '~/common/model/types/common';
+import type {Model} from '~/common/model/types/common';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {ModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
 import type {DeviceName, IdentityString, Nickname} from '~/common/network/types';
@@ -36,7 +36,7 @@ export type ProfileSettingsController = {
     readonly meta: ModelLifetimeGuard<ProfileSettingsView>;
     readonly update: (change: ProfileSettingsUpdate) => Promise<void>;
 } & ProxyMarked;
-export type ProfileSettings = LocalModel<ProfileSettingsView, ProfileSettingsController>;
+export type ProfileSettings = Model<ProfileSettingsView, ProfileSettingsController>;
 
 // Privacy Settings
 
@@ -68,7 +68,7 @@ export type PrivacySettingsController = {
      */
     readonly isContactBlocked: (identityString: IdentityString) => boolean;
 } & ProxyMarked;
-export type PrivacySettings = LocalModel<PrivacySettingsView, PrivacySettingsController>;
+export type PrivacySettings = Model<PrivacySettingsView, PrivacySettingsController>;
 
 // Calls Settings
 
@@ -83,7 +83,7 @@ export type CallsSettingsController = {
     readonly meta: ModelLifetimeGuard<CallsSettingsView>;
     readonly update: (change: CallsSettingsUpdate) => Promise<void>;
 } & ProxyMarked;
-export type CallsSettings = LocalModel<CallsSettingsView, CallsSettingsController>;
+export type CallsSettings = Model<CallsSettingsView, CallsSettingsController>;
 
 // Chat Settings
 
@@ -105,7 +105,7 @@ export type ChatSettingsController = {
     readonly update: (change: ChatSettingsUpdate) => Promise<void>;
 } & ProxyMarked;
 
-export type ChatSettings = LocalModel<ChatSettingsView, ChatSettingsController>;
+export type ChatSettings = Model<ChatSettingsView, ChatSettingsController>;
 
 export type ChatSettingsViewDerivedProperties = StrictExtract<
     keyof ChatSettingsView,
@@ -127,7 +127,7 @@ export type DevicesSettingsController = {
     readonly meta: ModelLifetimeGuard<DevicesSettingsView>;
     readonly update: (change: DevicesSettingsUpdate) => Promise<void>;
 } & ProxyMarked;
-export type DevicesSettings = LocalModel<DevicesSettingsView, DevicesSettingsController>;
+export type DevicesSettings = Model<DevicesSettingsView, DevicesSettingsController>;
 
 // Appearance Settings
 
@@ -156,7 +156,7 @@ export type AppearanceSettingsController = {
     readonly meta: ModelLifetimeGuard<AppearanceSettingsView>;
     readonly update: (change: AppearanceSettingsUpdate) => Promise<void>;
 } & ProxyMarked;
-export type AppearanceSettings = LocalModel<AppearanceSettingsView, AppearanceSettingsController>;
+export type AppearanceSettings = Model<AppearanceSettingsView, AppearanceSettingsController>;
 
 // Media settings
 export interface MediaSettingsView {
@@ -167,7 +167,7 @@ export type MediaSettingsController = {
     readonly meta: ModelLifetimeGuard<MediaSettingsView>;
     readonly update: (change: MediaSettingsUpdate) => Promise<void>;
 } & ProxyMarked;
-export type MediaSettings = LocalModel<MediaSettingsView, MediaSettingsController>;
+export type MediaSettings = Model<MediaSettingsView, MediaSettingsController>;
 
 // Settings service interface, bundling all available settings stores
 
@@ -245,7 +245,7 @@ export type IGlobalPropertyController<K extends GlobalPropertyKey> = {
     readonly meta: ModelLifetimeGuard<GlobalPropertyView<K>>;
     readonly update: (change: GlobalPropertyUpdate<K>) => void;
 } & ProxyMarked;
-export type IGlobalPropertyModel<K extends GlobalPropertyKey> = LocalModel<
+export type IGlobalPropertyModel<K extends GlobalPropertyKey> = Model<
     GlobalPropertyView<K>,
     IGlobalPropertyController<K>,
     K

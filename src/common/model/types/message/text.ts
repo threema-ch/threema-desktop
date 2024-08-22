@@ -1,5 +1,5 @@
 import type {MessageDirection, MessageType} from '~/common/enum';
-import type {LocalModel} from '~/common/model';
+import type {Model} from '~/common/model';
 import type {
     CommonBaseMessageController,
     CommonBaseMessageInit,
@@ -49,7 +49,7 @@ export type OutboundTextMessageController = OutboundBaseMessageController<Outbou
 /**
  * Inbound text message model.
  */
-export type InboundTextMessageModel = LocalModel<
+export type InboundTextMessageModel = Model<
     InboundTextMessageView,
     InboundTextMessageController,
     MessageDirection.INBOUND,
@@ -60,7 +60,7 @@ export type IInboundTextMessageModelStore = ModelStore<InboundTextMessageModel>;
 /**
  * Outbound text message model.
  */
-export type OutboundTextMessageModel = LocalModel<
+export type OutboundTextMessageModel = Model<
     OutboundTextMessageView,
     OutboundTextMessageController,
     MessageDirection.OUTBOUND,

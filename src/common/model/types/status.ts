@@ -1,6 +1,6 @@
 import type {DbConversationUid, DbStatusMessageUid} from '~/common/db';
 import type {GroupUserState, StatusMessageType} from '~/common/enum';
-import type {LocalModel} from '~/common/model/types/common';
+import type {Model} from '~/common/model/types/common';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {ModelStore} from '~/common/model/utils/model-store';
 import type {GroupCallId} from '~/common/network/protocol/call/group-call';
@@ -93,7 +93,7 @@ export type StatusMessageController<TType extends StatusMessageType> = {
 
 /** Models associated to status messages. */
 export type StatusMessageModels = {
-    readonly [TType in StatusMessageType]: LocalModel<
+    readonly [TType in StatusMessageType]: Model<
         StatusMessageView<TType>,
         StatusMessageController<TType>,
         DbConversationUid,

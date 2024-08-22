@@ -1,5 +1,5 @@
 import type {MessageDirection, MessageType} from '~/common/enum';
-import type {LocalModel} from '~/common/model';
+import type {Model} from '~/common/model';
 import type {
     CommonBaseFileMessageInit,
     CommonBaseFileMessageView,
@@ -53,7 +53,7 @@ export type OutboundAudioMessageController =
 /**
  * Inbound audio message model.
  */
-type InboundAudioMessageModel = LocalModel<
+type InboundAudioMessageModel = Model<
     InboundAudioMessageView,
     InboundAudioMessageController,
     MessageDirection.INBOUND,
@@ -64,7 +64,7 @@ export type IInboundAudioMessageModelStore = ModelStore<InboundAudioMessageModel
 /**
  * Outbound audio message model.
  */
-type OutboundAudioMessageModel = LocalModel<
+type OutboundAudioMessageModel = Model<
     OutboundAudioMessageView,
     OutboundAudioMessageController,
     MessageDirection.OUTBOUND,

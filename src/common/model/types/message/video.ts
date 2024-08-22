@@ -1,5 +1,5 @@
 import type {MessageDirection, MessageType} from '~/common/enum';
-import type {LocalModel} from '~/common/model';
+import type {Model} from '~/common/model';
 import type {
     CommonBaseFileMessageInit,
     CommonBaseFileMessageView,
@@ -54,7 +54,7 @@ export type OutboundVideoMessageController =
 /**
  * Inbound video message model.
  */
-type InboundVideoMessageModel = LocalModel<
+type InboundVideoMessageModel = Model<
     InboundVideoMessageView,
     InboundVideoMessageController,
     MessageDirection.INBOUND,
@@ -65,7 +65,7 @@ export type IInboundVideoMessageModelStore = ModelStore<InboundVideoMessageModel
 /**
  * Outbound video message model.
  */
-type OutboundVideoMessageModel = LocalModel<
+type OutboundVideoMessageModel = Model<
     OutboundVideoMessageView,
     OutboundVideoMessageController,
     MessageDirection.OUTBOUND,

@@ -1,6 +1,6 @@
 import type {DbGroupUid} from '~/common/db';
 import {TRANSFER_HANDLER} from '~/common/index';
-import type {LocalModel} from '~/common/model/types/common';
+import type {Model} from '~/common/model/types/common';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {ModelStore} from '~/common/model/utils/model-store';
 import type {Call} from '~/common/network/protocol/call';
@@ -56,7 +56,7 @@ export interface OngoingGroupCallContext {
 /**
  * Represents a group call that is considered _ongoing_, i.e. a group call the user participates in.
  */
-export type OngoingGroupCallModel = LocalModel<
+export type OngoingGroupCallModel = Model<
     OngoingGroupCallState,
     OngoingGroupCallController,
     OngoingGroupCallContext,

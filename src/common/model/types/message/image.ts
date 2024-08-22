@@ -1,5 +1,5 @@
 import type {ImageRenderingType, MessageDirection, MessageType} from '~/common/enum';
-import type {LocalModel} from '~/common/model';
+import type {Model} from '~/common/model';
 import type {
     CommonBaseFileMessageInit,
     CommonBaseFileMessageView,
@@ -57,7 +57,7 @@ export type OutboundImageMessageController =
 /**
  * Inbound image message model.
  */
-type InboundImageMessageModel = LocalModel<
+type InboundImageMessageModel = Model<
     InboundImageMessageView,
     InboundImageMessageController,
     MessageDirection.INBOUND,
@@ -68,7 +68,7 @@ export type IInboundImageMessageModelStore = ModelStore<InboundImageMessageModel
 /**
  * Outbound image message model.
  */
-type OutboundImageMessageModel = LocalModel<
+type OutboundImageMessageModel = Model<
     OutboundImageMessageView,
     OutboundImageMessageController,
     MessageDirection.OUTBOUND,

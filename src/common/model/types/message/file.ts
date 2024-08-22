@@ -1,5 +1,5 @@
 import type {MessageDirection, MessageType} from '~/common/enum';
-import type {LocalModel} from '~/common/model';
+import type {Model} from '~/common/model';
 import type {
     CommonBaseFileMessageInit,
     InboundBaseFileMessageController,
@@ -49,7 +49,7 @@ export type OutboundFileMessageController =
 /**
  * Inbound file message model.
  */
-type InboundFileMessageModel = LocalModel<
+type InboundFileMessageModel = Model<
     InboundFileMessageView,
     InboundFileMessageController,
     MessageDirection.INBOUND,
@@ -60,7 +60,7 @@ export type IInboundFileMessageModelStore = ModelStore<InboundFileMessageModel>;
 /**
  * Outbound file message model.
  */
-type OutboundFileMessageModel = LocalModel<
+type OutboundFileMessageModel = Model<
     OutboundFileMessageView,
     OutboundFileMessageController,
     MessageDirection.OUTBOUND,

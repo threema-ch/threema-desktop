@@ -10,7 +10,7 @@ import type {
     ControllerCustomUpdateFromSource,
     ControllerUpdateFromLocal,
     ControllerUpdateFromSource,
-    LocalModel,
+    Model,
 } from '~/common/model/types/common';
 import type {
     AnyMessageModelStore,
@@ -256,11 +256,7 @@ export interface ConversationControllerHandle {
      */
     readonly getReceiver: () => AnyReceiverStore;
 }
-export type Conversation = LocalModel<
-    ConversationView,
-    ConversationController,
-    UidOf<DbConversation>
->;
+export type Conversation = Model<ConversationView, ConversationController, UidOf<DbConversation>>;
 export type ConversationListController = {
     readonly meta: ModelLifetimeGuard<readonly ModelStore<Conversation>[]>;
 } & ProxyMarked;

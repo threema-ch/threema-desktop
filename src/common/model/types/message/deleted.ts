@@ -2,7 +2,7 @@ import type {MessageDirection, MessageType} from '~/common/enum';
 import type {
     ControllerUpdateFromSource,
     ControllerUpdateFromSync,
-    LocalModel,
+    Model,
 } from '~/common/model/types/common';
 import type {Contact} from '~/common/model/types/contact';
 import type {
@@ -90,7 +90,7 @@ export type OutboundDeletedMessageController =
 /**
  * Inbound deleted message model.
  */
-export type InboundDeletedMessageModel = LocalModel<
+export type InboundDeletedMessageModel = Model<
     InboundDeletedMessageView,
     InboundDeletedMessageController,
     MessageDirection.INBOUND,
@@ -101,7 +101,7 @@ export type InboundDeletedMessageModelStore = ModelStore<InboundDeletedMessageMo
 /**
  * Outbound deleted message model.
  */
-export type OutboundDeletedMessageModel = LocalModel<
+export type OutboundDeletedMessageModel = Model<
     OutboundDeletedMessageView,
     OutboundDeletedMessageController,
     MessageDirection.OUTBOUND,
