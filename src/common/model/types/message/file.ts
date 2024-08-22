@@ -73,7 +73,7 @@ export type IOutboundFileMessageModelStore = ModelStore<OutboundFileMessageModel
 /**
  * Combined types related to an inbound file message.
  */
-export interface InboundFileMessage {
+export interface InboundFileMessageBundle {
     readonly view: InboundFileMessageView;
     readonly init: InboundFileMessageInit;
     readonly controller: InboundFileMessageController;
@@ -84,7 +84,7 @@ export interface InboundFileMessage {
 /**
  * Combined types related to an outbound file message.
  */
-export interface OutboundFileMessage {
+export interface OutboundFileMessageBundle {
     readonly view: OutboundFileMessageView;
     readonly init: OutboundFileMessageInit;
     readonly controller: OutboundFileMessageController;

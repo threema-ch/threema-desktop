@@ -30,9 +30,9 @@ import type {
     UnifiedEditMessage,
 } from '~/common/model/types/message';
 import type {
-    InboundFileMessage,
+    InboundFileMessageBundle,
     InboundFileMessageController,
-    OutboundFileMessage,
+    OutboundFileMessageBundle,
     OutboundFileMessageController,
 } from '~/common/model/types/message/file';
 import {ModelStore} from '~/common/model/utils/model-store';
@@ -116,7 +116,7 @@ export function getFileMessageModelStore<TModelStore extends AnyFileMessageModel
  * Controller for inbound file messages.
  */
 export class InboundFileMessageModelController
-    extends InboundBaseMessageModelController<InboundFileMessage['view']>
+    extends InboundBaseMessageModelController<InboundFileMessageBundle['view']>
     implements InboundFileMessageController
 {
     protected readonly _blobLock = new AsyncLock();
@@ -156,7 +156,7 @@ export class InboundFileMessageModelController
 
     /** @inheritdoc */
     protected override _editMessage(
-        message: GuardedStoreHandle<InboundFileMessage['view']>,
+        message: GuardedStoreHandle<InboundFileMessageBundle['view']>,
         editedMessage: UnifiedEditMessage,
     ): void {
         message.update((view) =>
@@ -175,7 +175,7 @@ export class InboundFileMessageModelController
  * Controller for outbound file messages.
  */
 export class OutboundFileMessageModelController
-    extends OutboundBaseMessageModelController<OutboundFileMessage['view']>
+    extends OutboundBaseMessageModelController<OutboundFileMessageBundle['view']>
     implements OutboundFileMessageController
 {
     protected readonly _blobLock = new AsyncLock();
@@ -226,7 +226,7 @@ export class OutboundFileMessageModelController
 
     /** @inheritdoc */
     protected override _editMessage(
-        message: GuardedStoreHandle<OutboundFileMessage['view']>,
+        message: GuardedStoreHandle<OutboundFileMessageBundle['view']>,
         editedMessage: UnifiedEditMessage,
     ): void {
         message.update((view) =>
@@ -241,10 +241,10 @@ export class OutboundFileMessageModelController
     }
 }
 
-export class InboundFileMessageModelStore extends ModelStore<InboundFileMessage['model']> {
+export class InboundFileMessageModelStore extends ModelStore<InboundFileMessageBundle['model']> {
     public constructor(
         services: ServicesForModel,
-        view: InboundFileMessage['view'],
+        view: InboundFileMessageBundle['view'],
         uid: UidOf<DbFileMessage>,
         conversation: ConversationControllerHandle,
         sender: ModelStore<Contact>,
@@ -272,10 +272,10 @@ export class InboundFileMessageModelStore extends ModelStore<InboundFileMessage[
     }
 }
 
-export class OutboundFileMessageModelStore extends ModelStore<OutboundFileMessage['model']> {
+export class OutboundFileMessageModelStore extends ModelStore<OutboundFileMessageBundle['model']> {
     public constructor(
         services: ServicesForModel,
-        view: OutboundFileMessage['view'],
+        view: OutboundFileMessageBundle['view'],
         uid: UidOf<DbFileMessage>,
         conversation: ConversationControllerHandle,
     ) {

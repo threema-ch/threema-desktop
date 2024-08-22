@@ -20,11 +20,11 @@ import type {
 import type {
     CommonTextMessageView,
     IInboundTextMessageModelStore,
-    InboundTextMessage,
+    InboundTextMessageBundle,
     InboundTextMessageController,
     InboundTextMessageModel,
     IOutboundTextMessageModelStore,
-    OutboundTextMessage,
+    OutboundTextMessageBundle,
     OutboundTextMessageController,
     OutboundTextMessageModel,
 } from '~/common/model/types/message/text';
@@ -90,12 +90,12 @@ export function getTextMessageModelStore<TModelStore extends AnyTextMessageModel
 }
 
 export class InboundTextMessageModelController
-    extends InboundBaseMessageModelController<InboundTextMessage['view']>
+    extends InboundBaseMessageModelController<InboundTextMessageBundle['view']>
     implements InboundTextMessageController
 {
     /** @inheritdoc */
     protected override _editMessage(
-        message: GuardedStoreHandle<InboundTextMessage['view']>,
+        message: GuardedStoreHandle<InboundTextMessageBundle['view']>,
         editedMessage: UnifiedEditMessage,
     ): void {
         const change = {
@@ -118,12 +118,12 @@ export class InboundTextMessageModelController
 }
 
 export class OutboundTextMessageModelController
-    extends OutboundBaseMessageModelController<OutboundTextMessage['view']>
+    extends OutboundBaseMessageModelController<OutboundTextMessageBundle['view']>
     implements OutboundTextMessageController
 {
     /** @inheritdoc */
     protected override _editMessage(
-        message: GuardedStoreHandle<OutboundTextMessage['view']>,
+        message: GuardedStoreHandle<OutboundTextMessageBundle['view']>,
         editedMessage: UnifiedEditMessage,
     ): void {
         const change = {
@@ -151,7 +151,7 @@ export class InboundTextMessageModelStore
 {
     public constructor(
         services: ServicesForModel,
-        view: InboundTextMessage['view'],
+        view: InboundTextMessageBundle['view'],
         uid: UidOf<DbTextMessage>,
         conversation: ConversationControllerHandle,
         sender: ModelStore<Contact>,
@@ -185,7 +185,7 @@ export class OutboundTextMessageModelStore
 {
     public constructor(
         services: ServicesForModel,
-        view: OutboundTextMessage['view'],
+        view: OutboundTextMessageBundle['view'],
         uid: UidOf<DbTextMessage>,
         conversation: ConversationControllerHandle,
     ) {

@@ -78,7 +78,7 @@ export type IOutboundVideoMessageModelStore = ModelStore<OutboundVideoMessageMod
 /**
  * Combined types related to an inbound video message.
  */
-export interface InboundVideoMessage {
+export interface InboundVideoMessageBundle {
     readonly view: InboundVideoMessageView;
     readonly init: InboundVideoMessageInit;
     readonly controller: InboundVideoMessageController;
@@ -89,7 +89,7 @@ export interface InboundVideoMessage {
 /**
  * Combined types related to an outbound video message.
  */
-export interface OutboundVideoMessage {
+export interface OutboundVideoMessageBundle {
     readonly view: OutboundVideoMessageView;
     readonly init: OutboundVideoMessageInit;
     readonly controller: OutboundVideoMessageController;

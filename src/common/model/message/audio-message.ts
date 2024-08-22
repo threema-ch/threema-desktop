@@ -30,9 +30,9 @@ import type {
 } from '~/common/model/types/message';
 import type {
     CommonAudioMessageView,
-    InboundAudioMessage,
+    InboundAudioMessageBundle,
     InboundAudioMessageController,
-    OutboundAudioMessage,
+    OutboundAudioMessageBundle,
     OutboundAudioMessageController,
 } from '~/common/model/types/message/audio';
 import {ModelStore} from '~/common/model/utils/model-store';
@@ -117,7 +117,7 @@ export function getAudioMessageModelStore<TModelStore extends AnyAudioMessageMod
  * Controller for inbound file messages.
  */
 export class InboundAudioMessageModelController
-    extends InboundBaseMessageModelController<InboundAudioMessage['view']>
+    extends InboundBaseMessageModelController<InboundAudioMessageBundle['view']>
     implements InboundAudioMessageController
 {
     protected readonly _blobLock = new AsyncLock();
@@ -157,7 +157,7 @@ export class InboundAudioMessageModelController
 
     /** @inheritdoc */
     protected override _editMessage(
-        message: GuardedStoreHandle<InboundAudioMessage['view']>,
+        message: GuardedStoreHandle<InboundAudioMessageBundle['view']>,
         editedMessage: UnifiedEditMessage,
     ): void {
         message.update((view) =>
@@ -176,7 +176,7 @@ export class InboundAudioMessageModelController
  * Controller for outbound audio messages.
  */
 export class OutboundAudioMessageModelController
-    extends OutboundBaseMessageModelController<OutboundAudioMessage['view']>
+    extends OutboundBaseMessageModelController<OutboundAudioMessageBundle['view']>
     implements OutboundAudioMessageController
 {
     protected readonly _blobLock = new AsyncLock();
@@ -227,7 +227,7 @@ export class OutboundAudioMessageModelController
 
     /** @inheritdoc */
     protected override _editMessage(
-        message: GuardedStoreHandle<OutboundAudioMessage['view']>,
+        message: GuardedStoreHandle<OutboundAudioMessageBundle['view']>,
         editedMessage: UnifiedEditMessage,
     ): void {
         message.update((view) =>
@@ -242,10 +242,10 @@ export class OutboundAudioMessageModelController
     }
 }
 
-export class InboundAudioMessageModelStore extends ModelStore<InboundAudioMessage['model']> {
+export class InboundAudioMessageModelStore extends ModelStore<InboundAudioMessageBundle['model']> {
     public constructor(
         services: ServicesForModel,
-        view: InboundAudioMessage['view'],
+        view: InboundAudioMessageBundle['view'],
         uid: UidOf<DbAudioMessage>,
         conversation: ConversationControllerHandle,
         sender: ModelStore<Contact>,
@@ -273,10 +273,12 @@ export class InboundAudioMessageModelStore extends ModelStore<InboundAudioMessag
     }
 }
 
-export class OutboundAudioMessageModelStore extends ModelStore<OutboundAudioMessage['model']> {
+export class OutboundAudioMessageModelStore extends ModelStore<
+    OutboundAudioMessageBundle['model']
+> {
     public constructor(
         services: ServicesForModel,
-        view: OutboundAudioMessage['view'],
+        view: OutboundAudioMessageBundle['view'],
         uid: UidOf<DbAudioMessage>,
         conversation: ConversationControllerHandle,
     ) {

@@ -81,7 +81,7 @@ export type IOutboundImageMessageModelStore = ModelStore<OutboundImageMessageMod
 /**
  * Combined types related to an inbound image message.
  */
-export interface InboundImageMessage {
+export interface InboundImageMessageBundle {
     readonly view: InboundImageMessageView;
     readonly init: InboundImageMessageInit;
     readonly controller: InboundImageMessageController;
@@ -92,7 +92,7 @@ export interface InboundImageMessage {
 /**
  * Combined types related to an outbound image message.
  */
-export interface OutboundImageMessage {
+export interface OutboundImageMessageBundle {
     readonly view: OutboundImageMessageView;
     readonly init: OutboundImageMessageInit;
     readonly controller: OutboundImageMessageController;

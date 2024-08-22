@@ -1,42 +1,42 @@
 import type {MessageDirection, MessageType} from '~/common/enum';
 import type {
     IInboundAudioMessageModelStore,
-    InboundAudioMessage,
+    InboundAudioMessageBundle,
     IOutboundAudioMessageModelStore,
-    OutboundAudioMessage,
+    OutboundAudioMessageBundle,
 } from '~/common/model/types/message/audio';
 import type {CommonBaseMessageView} from '~/common/model/types/message/common';
 import type {
-    InboundDeletedMessage,
+    InboundDeletedMessageBundle,
     InboundDeletedMessageModelStore,
     OutboundDeletedMessageModelStore,
-    OutboundDeletedMessage,
+    OutboundDeletedMessageBundle,
     InboundDeletedMessageModel,
     OutboundDeletedMessageModel,
 } from '~/common/model/types/message/deleted';
 import type {
     IInboundFileMessageModelStore,
-    InboundFileMessage,
+    InboundFileMessageBundle,
     IOutboundFileMessageModelStore,
-    OutboundFileMessage,
+    OutboundFileMessageBundle,
 } from '~/common/model/types/message/file';
 import type {
     IInboundImageMessageModelStore,
-    InboundImageMessage,
+    InboundImageMessageBundle,
     IOutboundImageMessageModelStore,
-    OutboundImageMessage,
+    OutboundImageMessageBundle,
 } from '~/common/model/types/message/image';
 import type {
     IInboundTextMessageModelStore,
-    InboundTextMessage,
+    InboundTextMessageBundle,
     IOutboundTextMessageModelStore,
-    OutboundTextMessage,
+    OutboundTextMessageBundle,
 } from '~/common/model/types/message/text';
 import type {
     IInboundVideoMessageModelStore,
-    InboundVideoMessage,
+    InboundVideoMessageBundle,
     IOutboundVideoMessageModelStore,
-    OutboundVideoMessage,
+    OutboundVideoMessageBundle,
 } from '~/common/model/types/message/video';
 import type {AnyStatusMessageModelStore} from '~/common/model/types/status';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
@@ -55,34 +55,34 @@ export * from './common';
  * Helper to return the appropriate bundle for the specified inbound message type.
  */
 export type InboundMessageFor<TType extends MessageType> = TType extends MessageType.TEXT
-    ? InboundTextMessage
+    ? InboundTextMessageBundle
     : TType extends MessageType.FILE
-      ? InboundFileMessage
+      ? InboundFileMessageBundle
       : TType extends MessageType.IMAGE
-        ? InboundImageMessage
+        ? InboundImageMessageBundle
         : TType extends MessageType.VIDEO
-          ? InboundVideoMessage
+          ? InboundVideoMessageBundle
           : TType extends MessageType.AUDIO
-            ? InboundAudioMessage
+            ? InboundAudioMessageBundle
             : TType extends MessageType.DELETED
-              ? InboundDeletedMessage
+              ? InboundDeletedMessageBundle
               : never;
 
 /**
  * Helper to return the appropriate bundle for the specified outbound message type.
  */
 export type OutboundMessageFor<TType extends MessageType> = TType extends MessageType.TEXT
-    ? OutboundTextMessage
+    ? OutboundTextMessageBundle
     : TType extends MessageType.FILE
-      ? OutboundFileMessage
+      ? OutboundFileMessageBundle
       : TType extends MessageType.IMAGE
-        ? OutboundImageMessage
+        ? OutboundImageMessageBundle
         : TType extends MessageType.VIDEO
-          ? OutboundVideoMessage
+          ? OutboundVideoMessageBundle
           : TType extends MessageType.AUDIO
-            ? OutboundAudioMessage
+            ? OutboundAudioMessageBundle
             : TType extends MessageType.DELETED
-              ? OutboundDeletedMessage
+              ? OutboundDeletedMessageBundle
               : never;
 
 type BundleProperty = 'view' | 'init' | 'controller' | 'model';
@@ -130,7 +130,7 @@ export type UnifiedEditMessage = Required<Pick<CommonBaseMessageView, 'lastEdite
 export type AnyMessageModel = AnyInboundMessageModel | AnyOutboundMessageModel;
 export type AnyNonDeletedMessageModel = Exclude<
     AnyMessageModel,
-    OutboundDeletedMessage['model'] | InboundDeletedMessage['model']
+    OutboundDeletedMessageBundle['model'] | InboundDeletedMessageBundle['model']
 >;
 export type AnyNonDeletedMessageModelStore = Exclude<
     AnyMessageModelStore,
@@ -142,28 +142,28 @@ export type AnyDeletedMessageModelStore =
     | OutboundDeletedMessageModelStore;
 
 export type AnyFileBasedMessageModel =
-    | InboundAudioMessage['model']
-    | InboundFileMessage['model']
-    | InboundImageMessage['model']
-    | InboundVideoMessage['model']
-    | OutboundAudioMessage['model']
-    | OutboundFileMessage['model']
-    | OutboundImageMessage['model']
-    | OutboundVideoMessage['model'];
+    | InboundAudioMessageBundle['model']
+    | InboundFileMessageBundle['model']
+    | InboundImageMessageBundle['model']
+    | InboundVideoMessageBundle['model']
+    | OutboundAudioMessageBundle['model']
+    | OutboundFileMessageBundle['model']
+    | OutboundImageMessageBundle['model']
+    | OutboundVideoMessageBundle['model'];
 export type AnyInboundMessageModel =
-    | InboundTextMessage['model']
-    | InboundFileMessage['model']
-    | InboundImageMessage['model']
-    | InboundVideoMessage['model']
-    | InboundAudioMessage['model']
-    | InboundDeletedMessage['model'];
+    | InboundTextMessageBundle['model']
+    | InboundFileMessageBundle['model']
+    | InboundImageMessageBundle['model']
+    | InboundVideoMessageBundle['model']
+    | InboundAudioMessageBundle['model']
+    | InboundDeletedMessageBundle['model'];
 export type AnyOutboundMessageModel =
-    | OutboundTextMessage['model']
-    | OutboundFileMessage['model']
-    | OutboundImageMessage['model']
-    | OutboundVideoMessage['model']
-    | OutboundAudioMessage['model']
-    | OutboundDeletedMessage['model'];
+    | OutboundTextMessageBundle['model']
+    | OutboundFileMessageBundle['model']
+    | OutboundImageMessageBundle['model']
+    | OutboundVideoMessageBundle['model']
+    | OutboundAudioMessageBundle['model']
+    | OutboundDeletedMessageBundle['model'];
 export type AnyMessageModelStore =
     | AnyInboundNonDeletedMessageModelStore
     | AnyOutboundNonDeletedMessageModelStore
@@ -198,56 +198,56 @@ export type AnyAudioMessageModelStore =
     | IOutboundAudioMessageModelStore;
 
 export type SetOfAnyRemoteMessageModel =
-    | ReadonlySet<RemoteModelStore<InboundTextMessage['model']>>
-    | ReadonlySet<RemoteModelStore<OutboundTextMessage['model']>>
-    | ReadonlySet<RemoteModelStore<InboundFileMessage['model']>>
-    | ReadonlySet<RemoteModelStore<OutboundFileMessage['model']>>
-    | ReadonlySet<RemoteModelStore<InboundImageMessage['model']>>
-    | ReadonlySet<RemoteModelStore<OutboundImageMessage['model']>>
-    | ReadonlySet<RemoteModelStore<InboundVideoMessage['model']>>
-    | ReadonlySet<RemoteModelStore<OutboundVideoMessage['model']>>
-    | ReadonlySet<RemoteModelStore<InboundAudioMessage['model']>>
-    | ReadonlySet<RemoteModelStore<OutboundAudioMessage['model']>>;
+    | ReadonlySet<RemoteModelStore<InboundTextMessageBundle['model']>>
+    | ReadonlySet<RemoteModelStore<OutboundTextMessageBundle['model']>>
+    | ReadonlySet<RemoteModelStore<InboundFileMessageBundle['model']>>
+    | ReadonlySet<RemoteModelStore<OutboundFileMessageBundle['model']>>
+    | ReadonlySet<RemoteModelStore<InboundImageMessageBundle['model']>>
+    | ReadonlySet<RemoteModelStore<OutboundImageMessageBundle['model']>>
+    | ReadonlySet<RemoteModelStore<InboundVideoMessageBundle['model']>>
+    | ReadonlySet<RemoteModelStore<OutboundVideoMessageBundle['model']>>
+    | ReadonlySet<RemoteModelStore<InboundAudioMessageBundle['model']>>
+    | ReadonlySet<RemoteModelStore<OutboundAudioMessageBundle['model']>>;
 export type SetOfAnyLocalMessageModelStore = IDerivableSetStore<
-    | ModelStore<InboundTextMessage['model']>
-    | ModelStore<OutboundTextMessage['model']>
-    | ModelStore<InboundFileMessage['model']>
-    | ModelStore<OutboundFileMessage['model']>
-    | ModelStore<InboundImageMessage['model']>
-    | ModelStore<OutboundImageMessage['model']>
-    | ModelStore<InboundVideoMessage['model']>
-    | ModelStore<OutboundVideoMessage['model']>
-    | ModelStore<InboundAudioMessage['model']>
-    | ModelStore<OutboundAudioMessage['model']>
-    | ModelStore<InboundDeletedMessage['model']>
-    | ModelStore<OutboundDeletedMessage['model']>
+    | ModelStore<InboundTextMessageBundle['model']>
+    | ModelStore<OutboundTextMessageBundle['model']>
+    | ModelStore<InboundFileMessageBundle['model']>
+    | ModelStore<OutboundFileMessageBundle['model']>
+    | ModelStore<InboundImageMessageBundle['model']>
+    | ModelStore<OutboundImageMessageBundle['model']>
+    | ModelStore<InboundVideoMessageBundle['model']>
+    | ModelStore<OutboundVideoMessageBundle['model']>
+    | ModelStore<InboundAudioMessageBundle['model']>
+    | ModelStore<OutboundAudioMessageBundle['model']>
+    | ModelStore<InboundDeletedMessageBundle['model']>
+    | ModelStore<OutboundDeletedMessageBundle['model']>
 >;
 export type SetOfAnyLocalMessageOrStatusMessageModelStore = IDerivableSetStore<
     AnyMessageModelStore | AnyStatusMessageModelStore
 >;
 export type SetOfAnyRemoteMessageModelStore = RemoteSetStore<
-    | RemoteModelStore<InboundTextMessage['model']>
-    | RemoteModelStore<OutboundTextMessage['model']>
-    | RemoteModelStore<InboundFileMessage['model']>
-    | RemoteModelStore<OutboundFileMessage['model']>
-    | RemoteModelStore<InboundImageMessage['model']>
-    | RemoteModelStore<OutboundImageMessage['model']>
-    | RemoteModelStore<InboundVideoMessage['model']>
-    | RemoteModelStore<OutboundVideoMessage['model']>
-    | RemoteModelStore<InboundAudioMessage['model']>
-    | RemoteModelStore<OutboundAudioMessage['model']>
+    | RemoteModelStore<InboundTextMessageBundle['model']>
+    | RemoteModelStore<OutboundTextMessageBundle['model']>
+    | RemoteModelStore<InboundFileMessageBundle['model']>
+    | RemoteModelStore<OutboundFileMessageBundle['model']>
+    | RemoteModelStore<InboundImageMessageBundle['model']>
+    | RemoteModelStore<OutboundImageMessageBundle['model']>
+    | RemoteModelStore<InboundVideoMessageBundle['model']>
+    | RemoteModelStore<OutboundVideoMessageBundle['model']>
+    | RemoteModelStore<InboundAudioMessageBundle['model']>
+    | RemoteModelStore<OutboundAudioMessageBundle['model']>
 >;
 
 export type AnyFileBasedInboundMessageModelLifetimeGuard =
-    | ModelLifetimeGuard<InboundFileMessage['view']>
-    | ModelLifetimeGuard<InboundImageMessage['view']>
-    | ModelLifetimeGuard<InboundVideoMessage['view']>
-    | ModelLifetimeGuard<InboundAudioMessage['view']>;
+    | ModelLifetimeGuard<InboundFileMessageBundle['view']>
+    | ModelLifetimeGuard<InboundImageMessageBundle['view']>
+    | ModelLifetimeGuard<InboundVideoMessageBundle['view']>
+    | ModelLifetimeGuard<InboundAudioMessageBundle['view']>;
 export type AnyFileBasedOutboundMessageModelLifetimeGuard =
-    | ModelLifetimeGuard<OutboundFileMessage['view']>
-    | ModelLifetimeGuard<OutboundImageMessage['view']>
-    | ModelLifetimeGuard<OutboundVideoMessage['view']>
-    | ModelLifetimeGuard<OutboundAudioMessage['view']>;
+    | ModelLifetimeGuard<OutboundFileMessageBundle['view']>
+    | ModelLifetimeGuard<OutboundImageMessageBundle['view']>
+    | ModelLifetimeGuard<OutboundVideoMessageBundle['view']>
+    | ModelLifetimeGuard<OutboundAudioMessageBundle['view']>;
 export type AnyFileBasedMessageModelLifetimeGuard =
     | AnyFileBasedInboundMessageModelLifetimeGuard
     | AnyFileBasedOutboundMessageModelLifetimeGuard;

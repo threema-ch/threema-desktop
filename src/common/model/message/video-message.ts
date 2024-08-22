@@ -30,9 +30,9 @@ import type {
 } from '~/common/model/types/message';
 import type {
     CommonVideoMessageView,
-    InboundVideoMessage,
+    InboundVideoMessageBundle,
     InboundVideoMessageController,
-    OutboundVideoMessage,
+    OutboundVideoMessageBundle,
     OutboundVideoMessageController,
 } from '~/common/model/types/message/video';
 import {ModelStore} from '~/common/model/utils/model-store';
@@ -118,7 +118,7 @@ export function getVideoMessageModelStore<TModelStore extends AnyVideoMessageMod
  * Controller for inbound file messages.
  */
 export class InboundVideoMessageModelController
-    extends InboundBaseMessageModelController<InboundVideoMessage['view']>
+    extends InboundBaseMessageModelController<InboundVideoMessageBundle['view']>
     implements InboundVideoMessageController
 {
     protected readonly _blobLock = new AsyncLock();
@@ -170,7 +170,7 @@ export class InboundVideoMessageModelController
 
     /** @inheritdoc */
     protected override _editMessage(
-        message: GuardedStoreHandle<InboundVideoMessage['view']>,
+        message: GuardedStoreHandle<InboundVideoMessageBundle['view']>,
         editedMessage: UnifiedEditMessage,
     ): void {
         message.update((view) =>
@@ -189,7 +189,7 @@ export class InboundVideoMessageModelController
  * Controller for outbound video messages.
  */
 export class OutboundVideoMessageModelController
-    extends OutboundBaseMessageModelController<OutboundVideoMessage['view']>
+    extends OutboundBaseMessageModelController<OutboundVideoMessageBundle['view']>
     implements OutboundVideoMessageController
 {
     protected readonly _blobLock = new AsyncLock();
@@ -240,7 +240,7 @@ export class OutboundVideoMessageModelController
 
     /** @inheritdoc */
     protected override _editMessage(
-        message: GuardedStoreHandle<OutboundVideoMessage['view']>,
+        message: GuardedStoreHandle<OutboundVideoMessageBundle['view']>,
         editedMessage: UnifiedEditMessage,
     ): void {
         message.update((view) =>
@@ -255,10 +255,10 @@ export class OutboundVideoMessageModelController
     }
 }
 
-export class InboundVideoMessageModelStore extends ModelStore<InboundVideoMessage['model']> {
+export class InboundVideoMessageModelStore extends ModelStore<InboundVideoMessageBundle['model']> {
     public constructor(
         services: ServicesForModel,
-        view: InboundVideoMessage['view'],
+        view: InboundVideoMessageBundle['view'],
         uid: UidOf<DbVideoMessage>,
         conversation: ConversationControllerHandle,
         sender: ModelStore<Contact>,
@@ -286,10 +286,12 @@ export class InboundVideoMessageModelStore extends ModelStore<InboundVideoMessag
     }
 }
 
-export class OutboundVideoMessageModelStore extends ModelStore<OutboundVideoMessage['model']> {
+export class OutboundVideoMessageModelStore extends ModelStore<
+    OutboundVideoMessageBundle['model']
+> {
     public constructor(
         services: ServicesForModel,
-        view: OutboundVideoMessage['view'],
+        view: OutboundVideoMessageBundle['view'],
         uid: UidOf<DbVideoMessage>,
         conversation: ConversationControllerHandle,
     ) {

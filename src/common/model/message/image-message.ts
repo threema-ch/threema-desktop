@@ -31,9 +31,9 @@ import type {
 } from '~/common/model/types/message';
 import type {
     CommonImageMessageView,
-    InboundImageMessage,
+    InboundImageMessageBundle,
     InboundImageMessageController,
-    OutboundImageMessage,
+    OutboundImageMessageBundle,
     OutboundImageMessageController,
 } from '~/common/model/types/message/image';
 import {ModelStore} from '~/common/model/utils/model-store';
@@ -121,7 +121,7 @@ export function getImageMessageModelStore<TModelStore extends AnyImageMessageMod
  * Controller for inbound file messages.
  */
 export class InboundImageMessageModelController
-    extends InboundBaseMessageModelController<InboundImageMessage['view']>
+    extends InboundBaseMessageModelController<InboundImageMessageBundle['view']>
     implements InboundImageMessageController
 {
     protected readonly _blobLock = new AsyncLock();
@@ -173,7 +173,7 @@ export class InboundImageMessageModelController
 
     /** @inheritdoc */
     protected override _editMessage(
-        message: GuardedStoreHandle<InboundImageMessage['view']>,
+        message: GuardedStoreHandle<InboundImageMessageBundle['view']>,
         editedMessage: UnifiedEditMessage,
     ): void {
         message.update((view) =>
@@ -192,7 +192,7 @@ export class InboundImageMessageModelController
  * Controller for outbound image messages.
  */
 export class OutboundImageMessageModelController
-    extends OutboundBaseMessageModelController<OutboundImageMessage['view']>
+    extends OutboundBaseMessageModelController<OutboundImageMessageBundle['view']>
     implements OutboundImageMessageController
 {
     protected readonly _blobLock = new AsyncLock();
@@ -248,7 +248,7 @@ export class OutboundImageMessageModelController
 
     /** @inheritdoc */
     protected override _editMessage(
-        message: GuardedStoreHandle<OutboundImageMessage['view']>,
+        message: GuardedStoreHandle<OutboundImageMessageBundle['view']>,
         editedMessage: UnifiedEditMessage,
     ): void {
         message.update((view) =>
@@ -263,10 +263,10 @@ export class OutboundImageMessageModelController
     }
 }
 
-export class InboundImageMessageModelStore extends ModelStore<InboundImageMessage['model']> {
+export class InboundImageMessageModelStore extends ModelStore<InboundImageMessageBundle['model']> {
     public constructor(
         services: ServicesForModel,
-        view: InboundImageMessage['view'],
+        view: InboundImageMessageBundle['view'],
         uid: UidOf<DbImageMessage>,
         conversation: ConversationControllerHandle,
         sender: ModelStore<Contact>,
@@ -294,10 +294,12 @@ export class InboundImageMessageModelStore extends ModelStore<InboundImageMessag
     }
 }
 
-export class OutboundImageMessageModelStore extends ModelStore<OutboundImageMessage['model']> {
+export class OutboundImageMessageModelStore extends ModelStore<
+    OutboundImageMessageBundle['model']
+> {
     public constructor(
         services: ServicesForModel,
-        view: OutboundImageMessage['view'],
+        view: OutboundImageMessageBundle['view'],
         uid: UidOf<DbImageMessage>,
         conversation: ConversationControllerHandle,
     ) {

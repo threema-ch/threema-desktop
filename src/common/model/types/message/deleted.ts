@@ -114,7 +114,7 @@ export type OutboundDeletedMessageModelStore = ModelStore<OutboundDeletedMessage
 /**
  * Combined types related to an inbound deleted message.
  */
-export interface InboundDeletedMessage {
+export interface InboundDeletedMessageBundle {
     readonly view: InboundDeletedMessageView;
     readonly init: InboundDeletedMessageInit;
     readonly controller: InboundDeletedMessageController;
@@ -125,7 +125,7 @@ export interface InboundDeletedMessage {
 /**
  * Combined types related to an outbound deleted message.
  */
-export interface OutboundDeletedMessage {
+export interface OutboundDeletedMessageBundle {
     readonly view: OutboundDeletedMessageView;
     readonly init: OutboundDeletedMessageInit;
     readonly controller: OutboundDeletedMessageController;

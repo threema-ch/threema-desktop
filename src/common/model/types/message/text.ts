@@ -73,7 +73,7 @@ export type IOutboundTextMessageModelStore = ModelStore<OutboundTextMessageModel
 /**
  * Combined types related to an inbound text message.
  */
-export interface InboundTextMessage {
+export interface InboundTextMessageBundle {
     readonly view: InboundTextMessageView;
     readonly init: InboundTextMessageInit;
     readonly controller: InboundTextMessageController;
@@ -83,7 +83,7 @@ export interface InboundTextMessage {
 /**
  * Combined types related to an outbound text message.
  */
-export interface OutboundTextMessage {
+export interface OutboundTextMessageBundle {
     readonly view: OutboundTextMessageView;
     readonly init: OutboundTextMessageInit;
     readonly controller: OutboundTextMessageController;

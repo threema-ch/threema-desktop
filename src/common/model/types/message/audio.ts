@@ -77,7 +77,7 @@ export type IOutboundAudioMessageModelStore = ModelStore<OutboundAudioMessageMod
 /**
  * Combined types related to an inbound audio message.
  */
-export interface InboundAudioMessage {
+export interface InboundAudioMessageBundle {
     readonly view: InboundAudioMessageView;
     readonly init: InboundAudioMessageInit;
     readonly controller: InboundAudioMessageController;
@@ -88,7 +88,7 @@ export interface InboundAudioMessage {
 /**
  * Combined types related to an outbound audio message.
  */
-export interface OutboundAudioMessage {
+export interface OutboundAudioMessageBundle {
     readonly view: OutboundAudioMessageView;
     readonly init: OutboundAudioMessageInit;
     readonly controller: OutboundAudioMessageController;

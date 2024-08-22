@@ -1,7 +1,7 @@
-import type {OutboundAudioMessage} from '~/common/model/types/message/audio';
-import type {OutboundFileMessage} from '~/common/model/types/message/file';
-import type {OutboundImageMessage} from '~/common/model/types/message/image';
-import type {OutboundVideoMessage} from '~/common/model/types/message/video';
+import type {OutboundAudioMessageBundle} from '~/common/model/types/message/audio';
+import type {OutboundFileMessageBundle} from '~/common/model/types/message/file';
+import type {OutboundImageMessageBundle} from '~/common/model/types/message/image';
+import type {OutboundVideoMessageBundle} from '~/common/model/types/message/video';
 import type {u53} from '~/common/types';
 import {unreachable, unwrap} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
@@ -13,10 +13,10 @@ import {filterUndefinedProperties} from '~/common/utils/object';
  */
 export function getFileJsonData<
     TMessageModel extends
-        | Pick<OutboundFileMessage['model'], 'type' | 'view'>
-        | Pick<OutboundImageMessage['model'], 'type' | 'view'>
-        | Pick<OutboundVideoMessage['model'], 'type' | 'view'>
-        | Pick<OutboundAudioMessage['model'], 'type' | 'view'>,
+        | Pick<OutboundFileMessageBundle['model'], 'type' | 'view'>
+        | Pick<OutboundImageMessageBundle['model'], 'type' | 'view'>
+        | Pick<OutboundVideoMessageBundle['model'], 'type' | 'view'>
+        | Pick<OutboundAudioMessageBundle['model'], 'type' | 'view'>,
 >(message: TMessageModel): Record<string, unknown> {
     const {type, view} = message;
 

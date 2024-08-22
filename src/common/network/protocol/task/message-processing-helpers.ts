@@ -4,15 +4,30 @@
 
 import {CspE2eStatusUpdateType, ReceiverType} from '~/common/enum';
 import type {Conversation} from '~/common/model';
-import type {InboundAudioMessage, OutboundAudioMessage} from '~/common/model/types/message/audio';
 import type {
-    InboundDeletedMessage,
-    OutboundDeletedMessage,
+    InboundAudioMessageBundle,
+    OutboundAudioMessageBundle,
+} from '~/common/model/types/message/audio';
+import type {
+    InboundDeletedMessageBundle,
+    OutboundDeletedMessageBundle,
 } from '~/common/model/types/message/deleted';
-import type {InboundFileMessage, OutboundFileMessage} from '~/common/model/types/message/file';
-import type {InboundImageMessage, OutboundImageMessage} from '~/common/model/types/message/image';
-import type {InboundTextMessage, OutboundTextMessage} from '~/common/model/types/message/text';
-import type {InboundVideoMessage, OutboundVideoMessage} from '~/common/model/types/message/video';
+import type {
+    InboundFileMessageBundle,
+    OutboundFileMessageBundle,
+} from '~/common/model/types/message/file';
+import type {
+    InboundImageMessageBundle,
+    OutboundImageMessageBundle,
+} from '~/common/model/types/message/image';
+import type {
+    InboundTextMessageBundle,
+    OutboundTextMessageBundle,
+} from '~/common/model/types/message/text';
+import type {
+    InboundVideoMessageBundle,
+    OutboundVideoMessageBundle,
+} from '~/common/model/types/message/video';
 import type {ModelStore} from '~/common/model/utils/model-store';
 import type {CspE2eType} from '~/common/network/protocol';
 import type {ServicesForTasks} from '~/common/network/protocol/task';
@@ -29,36 +44,51 @@ type OmittedInitKeys = 'id' | 'sender';
 
 // Note: The `receivedAt` field is mutable, because it may need to be overwritten while processing.
 export type InboundTextMessageInitFragment = Mutable<
-    Omit<InboundTextMessage['init'], OmittedInitKeys>,
+    Omit<InboundTextMessageBundle['init'], OmittedInitKeys>,
     'receivedAt'
 >;
 export type InboundFileMessageInitFragment = Mutable<
-    Omit<InboundFileMessage['init'], OmittedInitKeys>,
+    Omit<InboundFileMessageBundle['init'], OmittedInitKeys>,
     'receivedAt'
 >;
 export type InboundImageMessageInitFragment = Mutable<
-    Omit<InboundImageMessage['init'], OmittedInitKeys>,
+    Omit<InboundImageMessageBundle['init'], OmittedInitKeys>,
     'receivedAt'
 >;
 export type InboundVideoMessageInitFragment = Mutable<
-    Omit<InboundVideoMessage['init'], OmittedInitKeys>,
+    Omit<InboundVideoMessageBundle['init'], OmittedInitKeys>,
     'receivedAt'
 >;
 export type InboundAudioMessageInitFragment = Mutable<
-    Omit<InboundAudioMessage['init'], OmittedInitKeys>,
+    Omit<InboundAudioMessageBundle['init'], OmittedInitKeys>,
     'receivedAt'
 >;
 export type InboundDeletedMessageInitFragment = Mutable<
-    Omit<InboundDeletedMessage['init'], OmittedInitKeys>,
+    Omit<InboundDeletedMessageBundle['init'], OmittedInitKeys>,
     'receivedAt'
 >;
-export type OutboundTextMessageInitFragment = Omit<OutboundTextMessage['init'], OmittedInitKeys>;
-export type OutboundFileMessageInitFragment = Omit<OutboundFileMessage['init'], OmittedInitKeys>;
-export type OutboundImageMessageInitFragment = Omit<OutboundImageMessage['init'], OmittedInitKeys>;
-export type OutboundVideoMessageInitFragment = Omit<OutboundVideoMessage['init'], OmittedInitKeys>;
-export type OutboundAudioMessageInitFragment = Omit<OutboundAudioMessage['init'], OmittedInitKeys>;
+export type OutboundTextMessageInitFragment = Omit<
+    OutboundTextMessageBundle['init'],
+    OmittedInitKeys
+>;
+export type OutboundFileMessageInitFragment = Omit<
+    OutboundFileMessageBundle['init'],
+    OmittedInitKeys
+>;
+export type OutboundImageMessageInitFragment = Omit<
+    OutboundImageMessageBundle['init'],
+    OmittedInitKeys
+>;
+export type OutboundVideoMessageInitFragment = Omit<
+    OutboundVideoMessageBundle['init'],
+    OmittedInitKeys
+>;
+export type OutboundAudioMessageInitFragment = Omit<
+    OutboundAudioMessageBundle['init'],
+    OmittedInitKeys
+>;
 export type OutboundDeletedMessageInitFragment = Omit<
-    OutboundDeletedMessage['init'],
+    OutboundDeletedMessageBundle['init'],
     OmittedInitKeys
 >;
 export type AnyInboundMessageInitFragment =

@@ -8,10 +8,10 @@ import type {Contact} from '~/common/model/types/contact';
 import type {ConversationControllerHandle} from '~/common/model/types/conversation';
 import type {AnyDeletedMessageModelStore, BaseMessageView} from '~/common/model/types/message';
 import type {
-    InboundDeletedMessage,
+    InboundDeletedMessageBundle,
     InboundDeletedMessageController,
     InboundDeletedMessageView,
-    OutboundDeletedMessage,
+    OutboundDeletedMessageBundle,
     OutboundDeletedMessageController,
     OutboundDeletedMessageView,
 } from '~/common/model/types/message/deleted';
@@ -199,10 +199,12 @@ class OutboundDeletedMessageModelController
     }
 }
 
-export class InboundDeletedMessageModelStore extends ModelStore<InboundDeletedMessage['model']> {
+export class InboundDeletedMessageModelStore extends ModelStore<
+    InboundDeletedMessageBundle['model']
+> {
     public constructor(
         services: ServicesForModel,
-        view: InboundDeletedMessage['view'],
+        view: InboundDeletedMessageBundle['view'],
         uid: UidOf<DbDeletedMessage>,
         conversation: ConversationControllerHandle,
         sender: ModelStore<Contact>,
@@ -230,10 +232,12 @@ export class InboundDeletedMessageModelStore extends ModelStore<InboundDeletedMe
     }
 }
 
-export class OutboundDeletedMessageModelStore extends ModelStore<OutboundDeletedMessage['model']> {
+export class OutboundDeletedMessageModelStore extends ModelStore<
+    OutboundDeletedMessageBundle['model']
+> {
     public constructor(
         services: ServicesForModel,
-        view: OutboundDeletedMessage['view'],
+        view: OutboundDeletedMessageBundle['view'],
         uid: UidOf<DbDeletedMessage>,
         conversation: ConversationControllerHandle,
     ) {
