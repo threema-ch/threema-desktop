@@ -174,9 +174,9 @@
           <div
             class="card"
             class:elevated
-            style={`--c-t-min-width: ${minWidth}px; 
-              ${maxWidth === undefined ? '--c-t-max-width: 100%;' : `--c-t-max-width: ${maxWidth}px;`}
-              --c-t-width: ${layout === 'expansive' ? '100%' : 'fit-content'};`}
+            style={`--c-t-min-width: ${minWidth}px;
+                    ${maxWidth === undefined ? '--c-t-max-width: 100%;' : `--c-t-max-width: ${maxWidth}px;`}
+                    --c-t-width: ${layout === 'expansive' ? '100%' : 'fit-content'};`}
           >
             {#if title !== undefined || actions.length > 0}
               <div class="header">
@@ -212,9 +212,9 @@
                         event.detail.element.focus();
                       }
                     }}
-                    disabled={button.disabled === true || button.buttonState === 'loading'}
+                    disabled={button.disabled === true || button.state === 'loading'}
                     flavor={button.type}
-                    isLoading={button.buttonState === 'loading'}
+                    isLoading={button.state === 'loading'}
                     on:focus={() => handleChangeButtonFocus(true, index)}
                     on:blur={() => handleChangeButtonFocus(false, index)}
                     on:click={() => {

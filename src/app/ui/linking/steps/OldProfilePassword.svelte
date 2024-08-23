@@ -11,13 +11,9 @@
 
   export let oldPassword: $$Props['oldPassword'];
   export let previouslyEnteredPassword: $$Props['previouslyEnteredPassword'] = undefined;
-  export let buttonState: $$Props['buttonState'];
+  export let state: $$Props['state'] = 'default';
 
   let password = '';
-
-  let showWrongPasswordMessage: boolean = false;
-  $: showWrongPasswordMessage =
-    previouslyEnteredPassword !== undefined && buttonState !== 'loading';
 
   function handleSubmit(): void {
     oldPassword.resolve(password);
@@ -27,6 +23,14 @@
   function handleReject(): void {
     oldPassword.resolve(undefined);
   }
+
+  $: error =
+    previouslyEnteredPassword === undefined
+      ? undefined
+      : $i18n.t(
+          'dialog--linking-old-profile-password.error--incorrect-password',
+          'The entered password is incorrect. Please try again.',
+        );
 
   onMount(() => {
     // Sanity check. This component should not be mounted from the backend when no old profile is
@@ -43,15 +47,18 @@
     type: 'card',
     buttons: [
       {
+        disabled: state === 'restoring',
         label: $i18n.t('dialog--linking-old-profile-password.label--skip-restoration', 'Skip'),
-        type: 'naked',
         onClick: handleReject,
+        state: state === 'skipped' ? 'loading' : 'default',
+        type: 'naked',
       },
       {
+        disabled: state === 'skipped',
         label: $i18n.t('dialog--linking-old-profile-password.action--confirm', 'Restore Messages'),
-        type: 'filled',
         onClick: handleSubmit,
-        buttonState,
+        state: state === 'restoring' ? 'loading' : 'default',
+        type: 'filled',
       },
     ],
     title: $i18n.t('dialog--linking-old-profile-password.label--title', 'Restore Messages'),
@@ -77,15 +84,10 @@
       <Password
         bind:value={password}
         label={$i18n.t('dialog--linking-old-profile-password.label--old-password', 'Password')}
-        disabled={buttonState === 'loading'}
-        error={showWrongPasswordMessage
-          ? $i18n.t(
-              'dialog--linking-old-profile-password.error--incorrect-password',
-              'The entered password is incorrect. Please try again.',
-            )
-          : undefined}
+        disabled={state !== 'default'}
+        {error}
         on:input={() => {
-          showWrongPasswordMessage = false;
+          error = undefined;
         }}
       />
     </div>

@@ -134,7 +134,7 @@
             props: {
               oldPassword: params.oldProfilePassword,
               previouslyEnteredPassword: state.previouslyEnteredPassword,
-              buttonState: state.isLoading ? 'loading' : 'default',
+              state: state.type,
             },
           };
           break;

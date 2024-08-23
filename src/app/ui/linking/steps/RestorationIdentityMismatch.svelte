@@ -8,10 +8,10 @@
 
   export let accept: $$Props['accept'];
 
-  let buttonState: 'default' | 'loading' = 'default';
+  let state: 'default' | 'loading' = 'default';
 
   function handleContinue(): void {
-    buttonState = 'loading';
+    state = 'loading';
     accept.resolve();
   }
 </script>
@@ -31,7 +31,7 @@
           'Link Without Chat History',
         ),
         type: 'filled',
-        buttonState,
+        state,
         onClick: handleContinue,
       },
     ],

@@ -344,7 +344,12 @@ export type LinkingState =
     | {
           readonly state: 'waiting-for-old-profile-password';
           readonly previouslyEnteredPassword?: string;
-          readonly isLoading: boolean;
+          readonly type:
+              | 'default'
+              // Old profile restore was already skipped.
+              | 'skipped'
+              // Old password is currently being tried and the profile is being restored.
+              | 'restoring';
       }
     /**
      * If the user tried to restore messages from another ID, let them restart or continue without
@@ -1506,18 +1511,23 @@ export class Backend {
                 await wrappedDeviceLinkingSetup.linkingState.updateState({
                     state: 'waiting-for-old-profile-password',
                     previouslyEnteredPassword,
-                    isLoading: false,
+                    type: 'default',
                 });
+
                 const oldProfilePassword =
                     await wrappedDeviceLinkingSetup.oldProfilePassword.value();
                 if (oldProfilePassword === undefined) {
+                    await wrappedDeviceLinkingSetup.linkingState.updateState({
+                        state: 'waiting-for-old-profile-password',
+                        type: 'skipped',
+                    });
                     break;
                 }
 
                 await wrappedDeviceLinkingSetup.linkingState.updateState({
                     state: 'waiting-for-old-profile-password',
                     previouslyEnteredPassword,
-                    isLoading: true,
+                    type: 'restoring',
                 });
                 previouslyEnteredPassword = oldProfilePassword;
 

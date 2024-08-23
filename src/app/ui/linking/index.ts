@@ -62,7 +62,7 @@ export interface LinkingWizardConfirmEmojiProps {
 export interface LinkingWizardOldProfilePasswordProps {
     readonly oldPassword: ReusablePromise<string | undefined>;
     readonly previouslyEnteredPassword?: string;
-    readonly buttonState: 'default' | 'loading';
+    readonly state: 'default' | 'skipped' | 'restoring';
 }
 
 export interface RestorationIdentityMismatchProps {
