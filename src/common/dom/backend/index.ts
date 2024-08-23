@@ -33,6 +33,7 @@ import {DeviceJoinProtocol, type DeviceJoinResult} from '~/common/dom/backend/jo
 import * as oppf from '~/common/dom/backend/onprem/oppf';
 import {OPPF_FILE_SCHEMA} from '~/common/dom/backend/onprem/oppf';
 import {unlockDatabaseKey, transferOldMessages} from '~/common/dom/backend/restore-db';
+import {updateCheck} from '~/common/dom/backend/update-check';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {DebugBackend} from '~/common/dom/debug';
 import {ConnectionManager} from '~/common/dom/network/protocol/connection';
@@ -827,6 +828,9 @@ export class Backend {
         // In OnPrem builds, the config needs to be initialized based on the OPPF (On-Prem Provisioning File).
         // In other builds, the config is static.
         let config: Config;
+        // Whether or not to check if updates are available on the Threema Servers. Will be false if
+        // this is an OnPrem build and the .oppf file specifies not to check for updates.
+        let checkForUpdates: boolean = true;
         if (
             import.meta.env.BUILD_ENVIRONMENT === 'onprem' &&
             keyStorageContents.onPremConfig !== undefined
@@ -876,6 +880,7 @@ export class Backend {
 
                 await wrappedPinForwarder.forward(oppfFile.parsed.publicKeyPinning);
                 config = createConfigFromOppf(oppfFile.parsed);
+                checkForUpdates = oppfFile.parsed.updates?.desktop?.autoUpdate === true;
             } catch (error) {
                 throw new BackendCreationError(
                     'onprem-configuration-error',
@@ -885,6 +890,10 @@ export class Backend {
             }
         } else {
             config = createDefaultConfig();
+        }
+
+        if (!import.meta.env.DEBUG && checkForUpdates) {
+            updateCheck(phase1Services, phase1Services.systemInfo).catch(assertUnreachable);
         }
 
         const workData =

@@ -122,14 +122,13 @@ export const OPPF_FILE_SCHEMA = v
             .object({
                 desktop: v
                     .object({
-                        check: v.string().map((url) => {
-                            ensureBaseUrl(url, 'https:');
-                            return url;
-                        }),
+                        autoUpdate: v.boolean(),
                     })
-                    .rest(v.unknown()),
+                    .rest(v.unknown())
+                    .optional(),
             })
-            .rest(v.unknown()),
+            .rest(v.unknown())
+            .optional(),
         publicKeyPinning: v
             .array(
                 v

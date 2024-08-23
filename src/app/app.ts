@@ -29,11 +29,10 @@ import {ProfilePictureService} from '~/common/dom/ui/profile-picture';
 import {appVisibility, getAppVisibility} from '~/common/dom/ui/state';
 import {FrontendSystemDialogService} from '~/common/dom/ui/system-dialog';
 import {applyThemeBranding} from '~/common/dom/ui/theme';
-import {checkForUpdate} from '~/common/dom/update-check';
 import {initCrashReportingInSandboxBuilds} from '~/common/dom/utils/crash-reporting';
 import {createEndpointService, ensureEndpoint} from '~/common/dom/utils/endpoint';
 import {WebRtcServiceProvider} from '~/common/dom/webrtc';
-import type {ElectronIpc, SystemInfo} from '~/common/electron-ipc';
+import type {ElectronIpc} from '~/common/electron-ipc';
 import {extractErrorTraceback} from '~/common/error';
 import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import type {SettingsService} from '~/common/model/types/settings';
@@ -141,35 +140,6 @@ function attachApp(services: AppServices, elements: Elements): App {
     });
     log.info('App started');
     return app;
-}
-
-/**
- * Check for updates. If an update is available, show a dialog to the user.
- */
-async function updateCheck(
-    services: Pick<AppServices, 'logging' | 'systemDialog'>,
-    systemInfo: SystemInfo,
-): Promise<void> {
-    const {logging} = services;
-    const log = logging.logger('update-check');
-    log.info('Checking for updates...');
-
-    // Check for updates. If update is found, notify user after a short delay.
-    const updateInfo = await checkForUpdate(log, systemInfo);
-    if (updateInfo !== undefined) {
-        await TIMER.sleep(3000);
-        log.info(`Update available: ${updateInfo.version}`);
-        services.systemDialog.open({
-            type: 'app-update',
-            context: {
-                currentVersion: import.meta.env.BUILD_VERSION,
-                latestVersion: updateInfo.version,
-                systemInfo,
-            },
-        });
-    } else {
-        log.info('No update found');
-    }
 }
 
 // Creates the application state and returns a destroy function to purge the app and its associated
@@ -427,12 +397,6 @@ async function main(): Promise<() => void> {
         systemInfo,
         webRtc,
     };
-
-    // Check for updates in the background, if this is an Electron release build.
-    // Note: For now, we don't support custom update links provisioned by .oppf files.
-    if (!import.meta.env.DEBUG && import.meta.env.BUILD_ENVIRONMENT !== 'onprem') {
-        updateCheck({logging, systemDialog}, systemInfo).catch(assertUnreachable);
-    }
 
     // Function to send new public key pins to the electron process
     function forwardPins(newPins: DomainCertificatePin[] | undefined): void {
