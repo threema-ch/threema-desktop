@@ -19,8 +19,10 @@
       <h1>
         {#if phase === 'receiving'}
           {$i18n.t('dialog--linking-sync.label--title-receiving', 'Receiving Data')}
+        {:else if phase === 'loading'}
+          {$i18n.t('dialog--linking-sync.label--title-loading', 'Loading Data')}
         {:else if phase === 'restoring'}
-          {$i18n.t('dialog--linking-sync.label--title-restoring', 'Restoring Data')}
+          {$i18n.t('dialog--linking-sync.label--title-restoring', 'Restoring Messages')}
         {:else if phase === 'encrypting'}
           {$i18n.t(
             'dialog--linking-sync.label--title-encrypting',

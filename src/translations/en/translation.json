@@ -276,8 +276,9 @@
   "dialog--linking-sync": {
     "action--need-help": "Need help?",
     "label--title-encrypting": "Encrypting Data with Your Password",
+    "label--title-loading": "Loading Data",
     "label--title-receiving": "Receiving Data",
-    "label--title-restoring": "Restoring Data"
+    "label--title-restoring": "Restoring Messages"
   },
   "dialog--media-message-viewer": {
     "error--media-not-loaded": "Media could not be loaded.",

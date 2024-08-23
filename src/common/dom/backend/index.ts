@@ -278,7 +278,7 @@ export type LinkingStateErrorType =
     | {readonly kind: 'onprem-configuration-error'}
     | {readonly kind: 'old-messages-restoration-error'};
 
-export type SyncingPhase = 'receiving' | 'restoring' | 'encrypting';
+export type SyncingPhase = 'receiving' | 'loading' | 'encrypting' | 'restoring';
 
 /**
  * Matches the interface in `ui/linking/index.ts`
@@ -1250,7 +1250,7 @@ export class Backend {
             );
         }
 
-        await updateSyncingPhase('restoring');
+        await updateSyncingPhase('loading');
 
         // Generate new random database key
         const databaseKey = wrapRawDatabaseKey(
@@ -1431,7 +1431,6 @@ export class Backend {
 
         // Wait for user password (or connection aborting)
         log.debug('Waiting for user password');
-        await updateSyncingPhase('encrypting');
         const userPasswordResult = await taggedRace(
             {tag: 'password', promise: userPasswordPromise},
             {tag: 'join-aborted', promise: joinProtocol.abort.promise},
@@ -1570,6 +1569,7 @@ export class Backend {
             }
 
             if (oldDatabaseKey !== undefined && oldDatabaseKey !== 'no-restoration') {
+                await updateSyncingPhase('restoring');
                 try {
                     await transferOldMessages(
                         services,
@@ -1606,6 +1606,7 @@ export class Backend {
         }
 
         if (initialConnectionResult.connected) {
+            await updateSyncingPhase('encrypting');
             // Write key storage
             await writeKeyStorage(
                 phase1Services,

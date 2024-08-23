@@ -276,8 +276,9 @@
   "dialog--linking-sync": {
     "action--need-help": "Brauchen Sie Hilfe?",
     "label--title-encrypting": "Daten werden mit Ihrem Passwort verschlüsselt",
+    "label--title-loading": "Daten werden geladen",
     "label--title-receiving": "Daten werden empfangen",
-    "label--title-restoring": "Daten werden geladen"
+    "label--title-restoring": "Nachrichten werden wiederhergstellt"
   },
   "dialog--media-message-viewer": {
     "error--media-not-loaded": "Medium konnte nicht geladen werden.",
