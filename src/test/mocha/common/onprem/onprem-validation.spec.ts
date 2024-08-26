@@ -14,7 +14,7 @@ import {
 
 export function run(): void {
     describe('Check oppf parsing and validation', function () {
-        const pk = 'VR4nTeVFeao9TcIJn5KxMsuW6Lc4gMC+j8z//zngvNs=';
+        const pk = 'F1VoT2qqUP/eV4JHDgmCHMISd82AgMnV/CfnvtCBu5M=';
         const oppf = MOCK_OPPF;
         const crypto = new TestTweetNaClBackend();
         it('parse a valid oppf file', function () {
@@ -50,7 +50,7 @@ export function run(): void {
             }).to.throw('Ed25519 signature is not valid');
         });
 
-        it('Do not allow the oppf file verification to succeed when public key is not trusted', function () {
+        it('Do not allow the oppf file verification to succeed when the license is expired', function () {
             expect(() => {
                 verifyOppfFile(
                     {crypto},

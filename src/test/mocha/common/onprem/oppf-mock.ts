@@ -24,7 +24,7 @@ export const MOCK_OPPF = {
     ],
     work: {url: MOCK_URL},
     chat: {publicKey: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='},
-    signatureKey: 'VR4nTeVFeao9TcIJn5KxMsuW6Lc4gMC+j8z//zngvNs=',
+    signatureKey: 'F1VoT2qqUP/eV4JHDgmCHMISd82AgMnV/CfnvtCBu5M=',
     safe: {
         rendezvous: {url: MOCK_WSS_URL},
         mediator: {
@@ -39,7 +39,7 @@ export const MOCK_OPPF = {
     },
     refresh: 86400,
     avatar: {url: MOCK_URL},
-    updates: {desktop: {check: MOCK_URL}},
+    updates: {desktop: {autoUpdate: true}},
     version: '1',
     directory: {url: MOCK_URL},
     mediator: {
@@ -57,7 +57,7 @@ export const CORRECT_OPPF_STRING = `{
     "work": {"url": "https://127.0.0.1:9999/"},
     "refresh": 86400,
     "avatar": {"url": "https://127.0.0.1:9999/"},
-    "updates": {"desktop": {"check": "https://127.0.0.1:9999/"}},
+    "updates": {"desktop": {"autoUpdate": true}},
     "version": "1",
     "directory": {"url": "https://127.0.0.1:9999/"},
     "license": {
@@ -78,7 +78,7 @@ export const CORRECT_OPPF_STRING = `{
         "domain": "*test.ch"
     }],
     "chat": {"publicKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="},
-    "signatureKey": "VR4nTeVFeao9TcIJn5KxMsuW6Lc4gMC+j8z//zngvNs=",
+    "signatureKey": "F1VoT2qqUP/eV4JHDgmCHMISd82AgMnV/CfnvtCBu5M=",
     "safe": {
         "rendezvous": {"url": "wss://127.0.0.1"},
         "mediator": {
@@ -101,13 +101,13 @@ export const CORRECT_OPPF_STRING = `{
         "url": "wss://127.0.0.1"
     }
 }
-nK5pc1kHwwH4xWqo4LquaZfuDMOzhgPzjRMgK6B3ype9W3xI2DK+eyHUbaxfQcgGlSFbFxQj++3mFFjnymvJBA==`;
+Ii5iIW6lJU3OLj/ojTiB9KdDjohzo/wiFwdGdwloyAFFqx2SwEAQ3K8g4JEXnI+SU2plgA7khY8VkExNa7y5BQ==`;
 
 export const WRONG_OPPF_SIGNATURE_STRING = `{
     "work": {"url": "https://127.0.0.1:9999/"},
     "refresh": 86400,
     "avatar": {"url": "https://127.0.0.1:9999/"},
-    "updates": {"desktop": {"check": "https://127.0.0.1:9999/"}},
+    "updates": {"desktop": {"autoUpdate": true}},
     "version": "1",
     "directory": {"url": "https://127.0.0.1:9999/"},
     "license": {
@@ -157,7 +157,7 @@ export const LICENSE_EXPIRED_STRING = `{
     "work": {"url": "https://127.0.0.1:9999/"},
     "refresh": 86400,
     "avatar": {"url": "https://127.0.0.1:9999/"},
-    "updates": {"desktop": {"check": "https://127.0.0.1:9999/"}},
+    "updates": {"desktop": {"autoUpdate": true}},
     "version": "1",
     "directory": {"url": "https://127.0.0.1:9999/"},
     "license": {
@@ -178,7 +178,7 @@ export const LICENSE_EXPIRED_STRING = `{
         "domain": "*test.ch"
     }],
     "chat": {"publicKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="},
-    "signatureKey": "VR4nTeVFeao9TcIJn5KxMsuW6Lc4gMC+j8z//zngvNs=",
+    "signatureKey": "F1VoT2qqUP/eV4JHDgmCHMISd82AgMnV/CfnvtCBu5M=",
     "safe": {
         "rendezvous": {"url": "wss://127.0.0.1"},
         "mediator": {
@@ -201,4 +201,4 @@ export const LICENSE_EXPIRED_STRING = `{
         "url": "wss://127.0.0.1"
     }
 }
-xO6QtohQlcnuzrTMBlnK3R2zP0dnoYKcP7qb5IkC2GDQrQ6A/u9uluJDf+ylRwQ+p7UKp/wnRS5tM3xeqQoBDg==`;
+pXTn/i1nIjaaY4sN3MdtdF9qMIPYtHW384YYEmBXakUpfMHSAxPe47dk0wyKVzYWqpCT4cA9M3MMMeWJfTk/AA==`;
