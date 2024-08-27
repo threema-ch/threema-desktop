@@ -18,6 +18,7 @@ export type ServicesForModel = Pick<
     | 'directory'
     | 'endpoint'
     | 'file'
+    | 'loadingInfo'
     | 'logging'
     | 'media'
     | 'model'

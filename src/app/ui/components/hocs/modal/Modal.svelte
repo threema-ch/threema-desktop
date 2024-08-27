@@ -1,6 +1,5 @@
 <!--
-  @component 
-  Renders the given content in a full-screen modal overlay. Note: Uses a `Portal` to be
+  @component Renders the given content in a full-screen modal overlay. Note: Uses a `Portal` to be
   rendered outside of its current tree as a child of the main `#container`.
 -->
 <script lang="ts">
@@ -12,7 +11,6 @@
   import Portal from '~/app/ui/components/hocs/portal/Portal.svelte';
   import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
   import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
-  import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
@@ -214,8 +212,9 @@
                         event.detail.element.focus();
                       }
                     }}
+                    disabled={button.disabled === true || button.buttonState === 'loading'}
                     flavor={button.type}
-                    disabled={button.disabled}
+                    isLoading={button.buttonState === 'loading'}
                     on:focus={() => handleChangeButtonFocus(true, index)}
                     on:blur={() => handleChangeButtonFocus(false, index)}
                     on:click={() => {
@@ -228,14 +227,7 @@
                       }
                     }}
                   >
-                    <div class="confirm-button-content" data-button-state={button.buttonState}>
-                      <div class="progress">
-                        <CircularProgress variant="indeterminate" color="white" />
-                      </div>
-                      <div class="label">
-                        {button.label}
-                      </div>
-                    </div>
+                    {button.label}
                   </Button>
                 {/each}
               </div>
@@ -379,31 +371,6 @@
             justify-content: end;
             gap: rem(8px);
             padding: rem(16px);
-
-            .confirm-button-content {
-              display: grid;
-
-              .progress,
-              .label {
-                grid-row: 1;
-                grid-column: 1;
-              }
-
-              .progress {
-                display: none;
-                height: rem(20px);
-              }
-
-              &[data-button-state='loading'] {
-                .progress {
-                  display: block;
-                }
-
-                .label {
-                  opacity: 0.4;
-                }
-              }
-            }
           }
         }
       }

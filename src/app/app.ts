@@ -8,6 +8,7 @@ import {Router, type RouterState} from '~/app/routing/router';
 import type {AppServices} from '~/app/types';
 import App from '~/app/ui/App.svelte';
 import PasswordInput from '~/app/ui/PasswordInput.svelte';
+import LoadingScreen from '~/app/ui/components/partials/loading-screen/LoadingScreen.svelte';
 import MissingWorkCredentialsModal from '~/app/ui/components/partials/modals/missing-work-credentials-modal/MissingWorkCredentialsModal.svelte';
 import {GlobalHotkeyManager} from '~/app/ui/hotkey';
 import * as i18n from '~/app/ui/i18n';
@@ -16,7 +17,7 @@ import LinkingWizard from '~/app/ui/linking/LinkingWizard.svelte';
 import {attachSystemDialogs} from '~/app/ui/system-dialogs';
 import {SystemTimeStore} from '~/app/ui/time';
 import type {ServicesForBackendController} from '~/common/backend';
-import type {LinkingState} from '~/common/dom/backend';
+import type {LoadingState, LinkingState} from '~/common/dom/backend';
 import {BackendController} from '~/common/dom/backend/controller';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {DOM_CONSOLE_LOGGER} from '~/common/dom/logging';
@@ -41,7 +42,7 @@ import {assertUnreachable, setAssertFailLogger, unwrap} from '~/common/utils/ass
 import {Delayed} from '~/common/utils/delayed';
 import type {ReusablePromise} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
-import type {ReadableStore} from '~/common/utils/store';
+import type {IQueryableStore, ReadableStore} from '~/common/utils/store';
 import {TIMER} from '~/common/utils/timer';
 
 // Extend global APIs
@@ -61,6 +62,22 @@ export interface Elements {
     readonly splash: HTMLElement;
     readonly container: HTMLElement;
     readonly systemDialogs: HTMLElement;
+}
+
+/**
+ * Attach loading screen.
+ */
+function attachLoadingScreen(
+    elements: Elements,
+    loadingState: IQueryableStore<LoadingState>,
+): LoadingScreen {
+    elements.container.innerHTML = '';
+    return new LoadingScreen({
+        target: elements.container,
+        props: {
+            loadingState,
+        },
+    });
 }
 
 /**
@@ -346,12 +363,19 @@ async function main(): Promise<() => void> {
     // Define function that will request user to enter the password for the key storage
     async function requestUserPassword(previouslyAttemptedPassword?: string): Promise<string> {
         await domContentLoaded;
-        log.debug('Showing page to request password');
+        log.debug('Showing password request dialog');
         elements.splash.classList.add('hidden'); // Hide splash screen
         const passwordInput = attachPasswordInput(elements, previouslyAttemptedPassword);
-        const password = await passwordInput.passwordPromise;
-        elements.splash.classList.remove('hidden'); // Show splash screen
-        return password;
+
+        return await passwordInput.passwordPromise;
+    }
+
+    async function showLoadingScreen(loadingState: IQueryableStore<LoadingState>): Promise<void> {
+        await domContentLoaded;
+        elements.splash.classList.add('hidden'); // Hide splash screen
+        const loadingScreen = attachLoadingScreen(elements, loadingState);
+
+        await Promise.race([loadingScreen.finishedLoading, loadingScreen.cancelledLoading]);
     }
 
     // Define function that will request user to enter the password for the key storage
@@ -402,6 +426,7 @@ async function main(): Promise<() => void> {
         endpoint.wrap(ensureEndpoint(worker), logging.logger('com.backend-creator')),
         showLinkingWizard,
         requestUserPassword,
+        showLoadingScreen,
         removeOldProfiles,
         forwardPins,
         requestMissingWorkCredentialsModal,

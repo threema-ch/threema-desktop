@@ -593,6 +593,7 @@
     "prose--group-created-name": "Group created with name \"{name}\"",
     "prose--group-member-changed": "{addedCount, plural, =0 {} =1 {{addedMembers} was added to the group} other {{addedMembers} were added to the group}}{and, plural, =0 {} other {, and }}{removedCount, plural, =0 {} =1 {{removedMembers} was removed from the group} other {{removedMembers} were removed from the group}}",
     "prose--group-name-changed": "The group name was changed from \"{old}\" to \"{new}\"",
+    "prose--startup-processing-reflection-queue": "Syncing messages…",
     "prose--user-added": "You were added to the group",
     "prose--user-kicked": "You were removed from the group",
     "prose--user-left": "You left the group"

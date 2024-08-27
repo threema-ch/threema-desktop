@@ -45,7 +45,7 @@ import {
     type RendezvousProtocolSetup,
 } from '~/common/dom/network/protocol/rendezvous';
 import type {SystemInfo} from '~/common/electron-ipc';
-import {CloseCodeUtils, NonceScope, TransferTag} from '~/common/enum';
+import {CloseCodeUtils, ConnectionState, NonceScope, TransferTag} from '~/common/enum';
 import {
     BaseError,
     type BaseErrorOptions,
@@ -64,6 +64,7 @@ import {
     type ServicesForKeyStorageFactory,
     type KeyStorageOppfConfig,
 } from '~/common/key-storage';
+import {LoadingInfo} from '~/common/loading';
 import type {Logger, LoggerFactory} from '~/common/logging';
 import {BackendMediaService, type IFrontendMediaService} from '~/common/media';
 import type {Repositories} from '~/common/model';
@@ -92,7 +93,7 @@ import {
 import type {DbMigrationSupplements} from '~/common/node/db/migrations';
 import {type NotificationCreator, NotificationService} from '~/common/notification';
 import type {SystemDialogService} from '~/common/system-dialog';
-import type {DomainCertificatePin, ReadonlyUint8Array} from '~/common/types';
+import type {DomainCertificatePin, ReadonlyUint8Array, u53} from '~/common/types';
 import {
     assertError,
     assertUnreachable,
@@ -127,6 +128,11 @@ import {ensureStoreValue} from '~/common/utils/store/helpers';
 import {type IViewModelRepository, ViewModelRepository} from '~/common/viewmodel';
 import {ViewModelCache} from '~/common/viewmodel/cache';
 import type {WebRtcService} from '~/common/webrtc';
+
+/**
+ * Max number of allowed disconnects at startup before skipping the loading screen entirely.
+ */
+const MAX_DISCONNECTS_THRESHOLD = 1;
 
 /**
  * Type of the {@link BackendCreationError}.
@@ -193,6 +199,7 @@ export interface BackendCreator extends ProxyMarked {
         init: Remote<BackendInit>,
         userPassword: string,
         pinForwarder: ProxyEndpoint<PinForwarder>,
+        loadingStateSetup: ProxyEndpoint<LoadingScreenSetup>,
     ) => Promise<ProxyEndpoint<BackendHandle>>;
 
     /** Instantiate backend through the device join protocol. */
@@ -282,6 +289,26 @@ export interface OppfFetchConfig {
     readonly oppfUrl: string;
 }
 
+export type LoadingState =
+    | {
+          state: // Not ready to initialize yet (e.g., because we don't know whether the key storage is
+          // unlocked).
+          | 'pending'
+              // Loading screen is about to be displayed, but reflection queue processing has not
+              // started yet.
+              | 'initializing'
+              // Reflection queue processing has been cancelled (probably due to a missing internet
+              // connection).
+              | 'cancelled'
+              // Reflection queue processing has successfully finished.
+              | 'ready';
+      }
+    | {
+          readonly state: 'processing-reflection-queue';
+          readonly reflectionQueueLength: u53;
+          readonly reflectionQueueProcessed: u53;
+      };
+
 /**
  * The backend's linking state.
  */
@@ -338,6 +365,16 @@ export type LinkingState =
           readonly type: LinkingStateErrorType;
           readonly message: string;
       };
+
+export interface LoadingScreenSetup extends ProxyMarked {
+    /**
+     * State updates sent from the backend to the frontend.
+     */
+    readonly loadingState: {
+        readonly store: WritableStore<LoadingState>;
+        readonly updateState: (state: LoadingState) => void;
+    } & ProxyMarked;
+}
 
 export interface DeviceLinkingSetup extends ProxyMarked {
     /**
@@ -520,6 +557,7 @@ function initBackendServices(
         workData,
     );
     const blob = new FetchBlobBackend({config, device, directory});
+    const loadingInfo = new LoadingInfo(logging.logger('loading-info'));
     const model = new ModelRepositories({
         blob,
         config,
@@ -529,6 +567,7 @@ function initBackendServices(
         directory,
         endpoint,
         file,
+        loadingInfo,
         logging,
         media,
         nonces,
@@ -547,6 +586,7 @@ function initBackendServices(
         ...earlyServices,
         blob,
         device,
+        loadingInfo,
         model,
         nonces,
         viewModel,
@@ -697,6 +737,7 @@ export class Backend {
         {endpoint, logging}: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
         keyStoragePassword: string,
         pinForwarder: ProxyEndpoint<PinForwarder>,
+        loadingScreenSetup: ProxyEndpoint<LoadingScreenSetup>,
     ): Promise<ProxyEndpoint<BackendHandle>> {
         const log = logging.logger('backend.create.from-keystorage');
         log.info('Creating backend from existing key storage');
@@ -706,6 +747,11 @@ export class Backend {
             factories,
             {endpoint, logging},
             backendInit,
+        );
+
+        const {loadingState} = endpoint.wrap<LoadingScreenSetup>(
+            loadingScreenSetup,
+            logging.logger('com.loading-screen'),
         );
 
         const wrappedPinForwarder = endpoint.wrap<PinForwarder>(
@@ -766,6 +812,10 @@ export class Backend {
                     unreachable(error.type);
             }
         }
+
+        await loadingState.updateState({
+            state: 'initializing',
+        });
 
         // In OnPrem builds, the config needs to be initialized based on the OPPF (On-Prem Provisioning File).
         // In other builds, the config is static.
@@ -907,9 +957,55 @@ export class Backend {
                 .catch(assertUnreachable);
         }
 
+        // Subscribe reflection queue to update loading screen.
+        backendServices.loadingInfo.loadedStore.subscribe((value) => {
+            if (value !== 0) {
+                backend._connectionManager
+                    .reflectionQueueLength()
+                    .then(async (reflectionQueueLength) => {
+                        await loadingState.updateState({
+                            state: 'processing-reflection-queue',
+                            reflectionQueueLength,
+                            reflectionQueueProcessed: value,
+                        });
+                    })
+                    .catch(assertUnreachable);
+            }
+        });
+
         // Start connection
         backend._connectionManager.start().catch(() => {
             // This fires when the first connection exits with an error. We can totally ignore it.
+        });
+
+        let disconnects = 0;
+        backend._connectionManager.state.subscribe((state) => {
+            switch (state) {
+                case ConnectionState.DISCONNECTED:
+                    if (++disconnects > MAX_DISCONNECTS_THRESHOLD) {
+                        log.warn('Disconnect threshold reached, skipping loading screen');
+                        loadingState
+                            .updateState({
+                                state: 'cancelled',
+                            })
+                            .catch(assertUnreachable);
+                    }
+                    break;
+
+                case ConnectionState.CONNECTED:
+                    backend._connectionManager
+                        .reflectionQueueDry()
+                        .then(async () => {
+                            await loadingState.updateState({
+                                state: 'ready',
+                            });
+                        })
+                        .catch(assertUnreachable);
+                    break;
+
+                default:
+                    break;
+            }
         });
 
         // Schedule background jobs

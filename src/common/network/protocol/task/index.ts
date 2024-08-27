@@ -52,6 +52,7 @@ export type ServicesForTasks = Pick<
     | 'device'
     | 'directory'
     | 'file'
+    | 'loadingInfo'
     | 'logging'
     | 'media'
     | 'model'

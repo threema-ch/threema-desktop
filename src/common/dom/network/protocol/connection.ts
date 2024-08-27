@@ -40,6 +40,7 @@ import {
 import {DropDeviceTask} from '~/common/network/protocol/task/d2m/drop-device';
 import {ConnectedTaskManager} from '~/common/network/protocol/task/manager';
 import type {TemporaryClientKey} from '~/common/network/types/keys';
+import type {u53} from '~/common/types';
 import {assert, assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
 import {Delayed} from '~/common/utils/delayed';
 import {PROXY_HANDLER} from '~/common/utils/endpoint';
@@ -120,6 +121,8 @@ class Connection {
         private readonly _mediator: MediatorWebSocketTransport,
         public readonly state: StrictMonotonicEnumStore<ConnectionState>,
         public readonly leaderState: StrictMonotonicEnumStore<D2mLeaderState>,
+        public readonly reflectionQueueDry: ResolvablePromise<void>,
+        public readonly serverInfo: ResolvablePromise<protobuf.validate.d2m.ServerInfo.Type>,
     ) {}
 
     public static async create(
@@ -294,6 +297,8 @@ class Connection {
             mediator,
             connectionState,
             leaderState,
+            controller.d2m.reflectionQueueDry,
+            controller.d2m.serverInfo,
         );
         delayedConnection.set(connection);
         return connection;
@@ -395,6 +400,8 @@ class Connection {
             mediator,
             connectionState,
             leaderState,
+            controller.d2m.reflectionQueueDry,
+            controller.d2m.serverInfo,
         );
 
         delayedConnection.set(connection);
@@ -688,6 +695,29 @@ export class ConnectionManager implements ConnectionManagerHandle {
                 tag: 'state',
             },
         );
+    }
+
+    /**
+     * Must not be called before the connection is initialized.
+     */
+    public async reflectionQueueDry(): Promise<void> {
+        assert(
+            this._connection !== undefined,
+            'Must not be called before the connection is initialized.',
+        );
+        return await this._connection.reflectionQueueDry;
+    }
+
+    /**
+     * Must not be called before the connection is initialized.
+     */
+    public async reflectionQueueLength(): Promise<u53> {
+        assert(
+            this._connection !== undefined,
+            'Must not be called before the connection is initialized.',
+        );
+        const serverInfo = await this._connection.serverInfo;
+        return serverInfo.reflectionQueueLength;
     }
 
     /**

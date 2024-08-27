@@ -17,6 +17,7 @@ export function getTaskForIncomingL5D2mMessage(
                 `Handle inbound D2M ${D2mPayloadTypeUtils.NAME_OF[message.type]}`,
             );
         case D2mPayloadType.REFLECTED:
+            services.loadingInfo.add(message.payload.reflectedId);
             return new ReflectedTask(services, message.payload);
         default:
             return unreachable(message);

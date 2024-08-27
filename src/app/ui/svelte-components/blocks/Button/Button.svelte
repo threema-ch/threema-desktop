@@ -1,6 +1,8 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
+  import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
+
   /**
    * Whether the button is disabled.
    */
@@ -10,6 +12,13 @@
    * The desired button flavor.
    */
   export let flavor: 'filled' | 'naked';
+
+  /**
+   * Whether to display a loading spinner next to the label. Note: This won't have any effect on
+   * whether the button is disabled, so it's recommended to set the button manually to `disabled`
+   * while loading is active in most cases.
+   */
+  export let isLoading: boolean = false;
 
   /**
    * The desired button size.
@@ -54,6 +63,15 @@
     {...$$restProps}
     type="button"
   >
+    {#if isLoading}
+      <div class="progress">
+        <CircularProgress
+          variant="indeterminate"
+          color={flavor === 'filled' ? 'white' : 'default'}
+        />
+      </div>
+    {/if}
+
     <slot />
   </button>
 </template>
@@ -80,12 +98,23 @@
   button {
     @extend %neutral-input;
 
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: rem(8px);
+
     font-size: var($-temp-vars-size, --c-t-font-size);
     padding: var($-temp-vars-size, --c-t-padding);
     border: rem(1px) solid var($-temp-vars, --c-t-border-color);
     border-radius: rem(8px);
     background-color: var($-temp-vars, --c-t-background-color);
     color: var($-temp-vars, --c-t-text-color);
+
+    .progress {
+      height: rem(20px);
+      width: rem(20px);
+    }
 
     &:not(:disabled) {
       cursor: pointer;
@@ -122,7 +151,21 @@
     }
 
     &:disabled {
-      opacity: var($-temp-vars, --c-t-opacity--disabled);
+      background-color: color-mix(
+        in srgb,
+        var($-temp-vars, --c-t-background-color) var($-temp-vars, --c-t-opacity--disabled),
+        transparent
+      );
+      border-color: transparent;
+      color: color-mix(
+        in srgb,
+        var($-temp-vars, --c-t-text-color) var($-temp-vars, --c-t-opacity--disabled),
+        transparent
+      );
+
+      &:hover {
+        cursor: not-allowed;
+      }
     }
   }
 

@@ -37,8 +37,9 @@ export class ReflectedTask implements PassiveTask<void> {
         this._message = message;
     }
     public async run(handle: PassiveTaskCodecHandle): Promise<void> {
+        let result;
         try {
-            return await this._processMessage(handle);
+            result = await this._processMessage(handle);
         } catch (error) {
             if (this._nonceGuard?.processed.value === false) {
                 this._nonceGuard.discard();
@@ -46,6 +47,9 @@ export class ReflectedTask implements PassiveTask<void> {
             this._nonceGuard = undefined;
             throw ensureError(error);
         }
+
+        this._services.loadingInfo.remove(this._message.reflectedId);
+        return result;
     }
 
     private async _processMessage(handle: PassiveTaskCodecHandle): Promise<void> {

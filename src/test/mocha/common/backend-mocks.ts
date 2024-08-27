@@ -48,6 +48,7 @@ import {
 import {ConnectionClosed} from '~/common/error';
 import {InMemoryFileStorage} from '~/common/file-storage';
 import {TRANSFER_HANDLER} from '~/common/index';
+import {LoadingInfo} from '~/common/loading';
 import {type Logger, type LoggerFactory, NOOP_LOGGER, TagLogger} from '~/common/logging';
 import {BackendMediaService, type IFrontendMediaService} from '~/common/media';
 import type {
@@ -675,6 +676,7 @@ export function makeTestServices(identity: IdentityString): TestServices {
         } satisfies WebRtcService as unknown as RemoteProxy<WebRtcService>,
         work: new TestWorkBackend(),
         volatileProtocolState: new VolatileProtocolStateBackend(),
+        loadingInfo: new LoadingInfo(logging.logger('loading-info')),
     };
     const model = new TestModelRepositories(identity, services);
     const viewModel = new ViewModelRepository({...services, model}, new ViewModelCache());

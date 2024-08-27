@@ -6,6 +6,7 @@ import type {Device} from '~/common/device';
 import type {SystemInfo} from '~/common/electron-ipc';
 import type {FileStorage} from '~/common/file-storage';
 import type {KeyStorage} from '~/common/key-storage';
+import type {LoadingInfo} from '~/common/loading';
 import type {LoggerFactory} from '~/common/logging';
 import type {BackendMediaService, IFrontendMediaService} from '~/common/media';
 import type {Repositories} from '~/common/model';
@@ -47,6 +48,7 @@ export interface ServicesForBackend {
     readonly volatileProtocolState: VolatileProtocolState;
     readonly work: WorkBackend;
     readonly webrtc: Remote<WebRtcService>;
+    readonly loadingInfo: LoadingInfo;
 }
 
 /**
@@ -54,7 +56,7 @@ export interface ServicesForBackend {
  */
 export type EarlyBackendServices = Omit<
     ServicesForBackend,
-    'device' | 'blob' | 'model' | 'nonces' | 'viewModel'
+    'device' | 'blob' | 'model' | 'nonces' | 'viewModel' | 'loadingInfo'
 >;
 
 /**

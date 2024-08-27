@@ -10,37 +10,38 @@
   import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 
   /**
-   * A promise that can be awaited. It will resolve once the password been entered by the user.
-   */
-  export const passwordPromise = new ResolvablePromise<string>({uncaught: 'default'});
-
-  /**
    * The previously attempted password. If provided, a 'wrong password' error message will be
    * shown.
    */
   export let previouslyAttemptedPassword: string | undefined;
 
-  let password: string = previouslyAttemptedPassword ?? '';
-
-  let showErrorMessage: boolean = previouslyAttemptedPassword !== undefined;
+  /**
+   * A promise that can be awaited. It will resolve once the password been entered by the user.
+   */
+  export const passwordPromise = new ResolvablePromise<string>({uncaught: 'default'});
 
   const minPasswordLength = 1;
+
+  let hasError: boolean = previouslyAttemptedPassword !== undefined;
+  let isSubmitted: boolean = false;
+  let password: string = previouslyAttemptedPassword ?? '';
 
   let passwordInput: Password;
 
   function handleOnSubmit(): void {
     if (password.length >= minPasswordLength) {
+      isSubmitted = true;
       passwordPromise.resolve(password);
     }
+  }
+
+  function clearError(): void {
+    hasError = false;
   }
 
   onMount(() => {
     passwordInput.focusAndSelect();
   });
-
-  function clearError(): void {
-    showErrorMessage = false;
-  }
 </script>
 
 <template>
@@ -50,11 +51,11 @@
         slot="header"
         title={$i18n.t('dialog--startup-unlock.label--title', 'Enter App Password')}
       />
-      <div class="body" slot="body" data-has-error={showErrorMessage}>
+      <div class="body" slot="body" data-has-error={hasError}>
         <Password
           bind:this={passwordInput}
           bind:value={password}
-          error={showErrorMessage
+          error={hasError
             ? $i18n.t(
                 'dialog--startup-unlock.error--incorrect-password',
                 'The entered password is incorrect. Please try again.',
@@ -87,8 +88,9 @@
       </div>
       <div class="footer" slot="footer">
         <Button
+          disabled={password.length < minPasswordLength || isSubmitted || hasError}
           flavor="filled"
-          disabled={password.length < minPasswordLength || showErrorMessage}
+          isLoading={isSubmitted}
           on:click={handleOnSubmit}
         >
           {$i18n.t('dialog--startup-unlock.action--confirm', 'Continue')}

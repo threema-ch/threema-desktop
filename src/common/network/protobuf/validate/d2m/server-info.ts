@@ -14,7 +14,7 @@ export const SCHEMA = validator(
             maxDeviceSlots: v.number(),
             deviceSlotState: v.number().map((value) => DeviceSlotStateUtils.fromNumber(value)),
             encryptedSharedDeviceData: instanceOf(Uint8Array),
-            reflectionQueueLength: v.number().optional(),
+            reflectionQueueLength: v.number(),
         })
         .rest(v.unknown()),
 );
