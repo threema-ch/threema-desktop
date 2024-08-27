@@ -33,7 +33,7 @@
       main-background: theme.$light-background,
       aside-background: theme.$light-background,
       pairing-background: #ffffff,
-      main-welcome-icon-fill-opacity: 6%,
+      main-welcome-icon-color: rgb(240, 240, 240)
     ),
     individual-components: (
       // List Elements
@@ -183,6 +183,8 @@
       call-sidebar--expanded-subtitle-color: theme.$dark-text-e2,
       call-sidebar-action-icon-color: theme.$light-text-e1,
       call-sidebar--expanded-action-icon-color: theme.$dark-text-e1,
+      // Logo
+      logo-progress-bar-fill-color: -g($branding, primary-color-600),
     ),
     debug-components: (
       // Top bar

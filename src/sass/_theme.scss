@@ -61,7 +61,7 @@ $brandings: (
     --t-pairing-background-color: color-conforms(-g($t, pairing-background), $alpha: false),
 
     // Main Welcome
-    --t-main-welcome-icon-fill-opacity: -g($t, main-welcome-icon-fill-opacity),
+    --t-main-welcome-icon-color: -g($t, main-welcome-icon-color),
   );
 }
 
@@ -318,6 +318,9 @@ $brandings: (
     --cc-call-sidebar--expanded-subtitle-color: -g($cc, call-sidebar--expanded-subtitle-color),
     --cc-call-sidebar-action-icon-color: -g($cc, call-sidebar-action-icon-color),
     --cc-call-sidebar--expanded-action-icon-color: -g($cc, call-sidebar--expanded-action-icon-color),
+
+    // Logo
+    --cc-logo-progress-bar-fill-color: -g($cc, logo-progress-bar-fill-color),
   );
 }
 

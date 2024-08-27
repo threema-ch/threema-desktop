@@ -41,7 +41,7 @@ $config: config-merge(components.$config, (
       --t-pairing-background-color,
 
       // Main Welcome
-      --t-main-welcome-icon-fill-opacity,
+      --t-main-welcome-icon-color,
     ),
 
     individual-components: (
@@ -260,6 +260,9 @@ $config: config-merge(components.$config, (
       --cc-call-sidebar--expanded-subtitle-color,
       --cc-call-sidebar-action-icon-color,
       --cc-call-sidebar--expanded-action-icon-color,
+
+      // Logo
+      --cc-logo-progress-bar-fill-color,
     ),
 
     debug-components: (

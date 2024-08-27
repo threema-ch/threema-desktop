@@ -1,6 +1,6 @@
 <script lang="ts">
-  import SVGThreemaIcon from '~/app/res/icon/icon-welcome.svg?raw';
   import type {AppServicesForSvelte} from '~/app/types';
+  import Logo from '~/app/ui/components/partials/logo/Logo.svelte';
   import {display} from '~/common/dom/ui/state';
   import {unusedProp} from '~/common/utils/svelte-helpers';
 
@@ -10,9 +10,7 @@
 
 <div class="welcome">
   <span data-display={$display}>
-    <!-- Note: Safe because icon SVG is static. -->
-    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-    {@html SVGThreemaIcon}
+    <Logo />
   </span>
 </div>
 
@@ -25,16 +23,13 @@
 
     span {
       display: inline-block;
-      width: rem(80px);
-      height: rem(93px);
+      width: rem(96px);
+      height: rem(193px);
+      color: var(--t-main-welcome-icon-color);
 
       &[data-display='large'] {
         width: rem(120px);
         height: rem(139px);
-      }
-
-      :global(svg .fill-opacity) {
-        fill-opacity: var(--t-main-welcome-icon-fill-opacity);
       }
     }
   }
