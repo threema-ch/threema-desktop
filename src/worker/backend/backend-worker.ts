@@ -4,7 +4,7 @@ import {
     type BackendInit,
     type DeviceLinkingSetup,
     type FactoriesForBackend,
-    type LoadingScreenSetup,
+    type LoadingStateSetup,
     type OldProfileRemover,
     type PinForwarder,
 } from '~/common/dom/backend';
@@ -47,7 +47,7 @@ export function main(factories: FactoriesForBackend): void {
             init: BackendInit,
             keyStoragePassword: string,
             pinForwarder: ProxyEndpoint<PinForwarder>,
-            loadingScreenSetup: ProxyEndpoint<LoadingScreenSetup>,
+            loadingStateSetup: ProxyEndpoint<LoadingStateSetup>,
         ) => {
             log.info('Creating backend from key storage');
             return await Backend.createFromKeyStorage(
@@ -56,7 +56,7 @@ export function main(factories: FactoriesForBackend): void {
                 services,
                 keyStoragePassword,
                 pinForwarder,
-                loadingScreenSetup,
+                loadingStateSetup,
             );
         },
         fromDeviceJoin: async (

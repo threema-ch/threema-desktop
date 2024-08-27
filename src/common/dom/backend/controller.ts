@@ -12,7 +12,7 @@ import {
     type OldProfileRemover,
     type BackendInit,
     type LoadingState,
-    type LoadingScreenSetup,
+    type LoadingStateSetup,
 } from '~/common/dom/backend';
 import type {ConnectionState, D2mLeaderState} from '~/common/enum';
 import {extractErrorMessage} from '~/common/error';
@@ -101,15 +101,15 @@ export class BackendController {
         oldProfilePath: string | undefined,
         services: ServicesForBackendController,
         creator: RemoteProxy<BackendCreator>,
+        loadingStateStore: WritableStore<LoadingState, LoadingState>,
         showLinkingWizard: (
-            linkingState: ReadableStore<LinkingState>,
+            linkingStateStore: ReadableStore<LinkingState>,
             userPassword: ResolvablePromise<string>,
             oldProfilePassword: ReusablePromise<string | undefined>,
             continueWithoutRestoring: ResolvablePromise<void>,
             oppfConfig: ResolvablePromise<OppfFetchConfig>,
         ) => Promise<void>,
         requestUserPassword: (previouslyAttemptedPassword?: string) => Promise<string>,
-        showLoadingScreen: (loadingState: IQueryableStore<LoadingState>) => Promise<void>,
         removeOldProfiles: () => void,
         forwardPins: PinForwarder['forward'],
         requestMissingWorkCredentialsModal: () => Promise<void>,
@@ -166,17 +166,17 @@ export class BackendController {
             );
         }
 
-        function assembleLoadingScreen(
-            loadingStateStore: WritableStore<LoadingState>,
-        ): ProxyEndpoint<LoadingScreenSetup> {
-            const {local, remote} = endpoint.createEndpointPair<LoadingScreenSetup>();
+        function assembleLoadingStateSetup(
+            loadingStateStore_: WritableStore<LoadingState>,
+        ): ProxyEndpoint<LoadingStateSetup> {
+            const {local, remote} = endpoint.createEndpointPair<LoadingStateSetup>();
 
             // Add transfer markers
-            const loadingScreenSetup: LoadingScreenSetup = {
+            const loadingStateSetup: LoadingStateSetup = {
                 loadingState: {
-                    store: loadingStateStore,
+                    store: loadingStateStore_,
                     updateState: (state: LoadingState) => {
-                        loadingStateStore.set(state);
+                        loadingStateStore_.set(state);
                     },
                     [TRANSFER_HANDLER]: PROXY_HANDLER,
                 },
@@ -184,14 +184,14 @@ export class BackendController {
             };
 
             // Expose
-            endpoint.exposeProxy(loadingScreenSetup, local, logging.logger('com.loading-screen'));
+            endpoint.exposeProxy(loadingStateSetup, local, logging.logger('com.loading-screen'));
 
             // Transfer
             return endpoint.transfer(remote, [remote]);
         }
 
         function assembleDeviceLinkingSetup(
-            linkingStateStore: WritableStore<LinkingState>,
+            linkingStateStore_: WritableStore<LinkingState>,
             userPassword: Promise<string>,
             oldProfilePassword: ReusablePromise<string | undefined>,
             continueWithoutRestoring: Promise<void>,
@@ -202,9 +202,9 @@ export class BackendController {
             // Add transfer markers
             const deviceLinkingSetup: DeviceLinkingSetup = {
                 linkingState: {
-                    store: linkingStateStore,
+                    store: linkingStateStore_,
                     updateState: (state: LinkingState) => {
-                        linkingStateStore.set(state);
+                        linkingStateStore_.set(state);
                     },
                     [TRANSFER_HANDLER]: PROXY_HANDLER,
                 },
@@ -252,24 +252,6 @@ export class BackendController {
             return endpoint.transfer(remote, [remote]);
         }
 
-        const loadingStateStore = new WritableStore<LoadingState>({
-            state: 'pending',
-        });
-        // Needs to be resolved as soon as the backend is initialized, the message sync is
-        // completed, and the loading screen has finished animating.
-        const loadingCompleted = new ResolvablePromise<void, never>({uncaught: 'default'});
-        const loadingStateStoreUnsubscriber = loadingStateStore.subscribe((value) => {
-            // If state switches to `"initializing"`, we can be sure that the password was correct,
-            // so we need to show the loading screen.
-            if (value.state === 'initializing') {
-                loadingStateStoreUnsubscriber();
-
-                showLoadingScreen(loadingStateStore)
-                    .then(() => loadingCompleted.resolve())
-                    .catch(assertUnreachable);
-            }
-        });
-
         // Create backend from existing key storage (if present).
         log.debug('Waiting for remote backend to be created');
         const isNewIdentity = !(await creator.hasIdentity());
@@ -285,9 +267,8 @@ export class BackendController {
                         assembleBackendInit(),
                         passwordForExistingKeyStorage,
                         assembleForwardPinCommunication(forwardPins),
-                        assembleLoadingScreen(loadingStateStore),
+                        assembleLoadingStateSetup(loadingStateStore),
                     );
-                    await loadingCompleted;
                 } catch (error) {
                     assertError(
                         error,

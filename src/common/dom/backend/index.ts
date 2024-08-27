@@ -199,7 +199,7 @@ export interface BackendCreator extends ProxyMarked {
         init: Remote<BackendInit>,
         userPassword: string,
         pinForwarder: ProxyEndpoint<PinForwarder>,
-        loadingStateSetup: ProxyEndpoint<LoadingScreenSetup>,
+        loadingStateSetup: ProxyEndpoint<LoadingStateSetup>,
     ) => Promise<ProxyEndpoint<BackendHandle>>;
 
     /** Instantiate backend through the device join protocol. */
@@ -366,7 +366,7 @@ export type LinkingState =
           readonly message: string;
       };
 
-export interface LoadingScreenSetup extends ProxyMarked {
+export interface LoadingStateSetup extends ProxyMarked {
     /**
      * State updates sent from the backend to the frontend.
      */
@@ -737,7 +737,7 @@ export class Backend {
         {endpoint, logging}: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
         keyStoragePassword: string,
         pinForwarder: ProxyEndpoint<PinForwarder>,
-        loadingScreenSetup: ProxyEndpoint<LoadingScreenSetup>,
+        loadingStateSetup: ProxyEndpoint<LoadingStateSetup>,
     ): Promise<ProxyEndpoint<BackendHandle>> {
         const log = logging.logger('backend.create.from-keystorage');
         log.info('Creating backend from existing key storage');
@@ -749,8 +749,8 @@ export class Backend {
             backendInit,
         );
 
-        const {loadingState} = endpoint.wrap<LoadingScreenSetup>(
-            loadingScreenSetup,
+        const {loadingState} = endpoint.wrap<LoadingStateSetup>(
+            loadingStateSetup,
             logging.logger('com.loading-screen'),
         );
 
@@ -813,6 +813,8 @@ export class Backend {
             }
         }
 
+        // Now that we know that the key storage is readable and the password is correct, we're able
+        // to initialize the loading screen.
         await loadingState.updateState({
             state: 'initializing',
         });

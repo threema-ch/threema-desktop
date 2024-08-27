@@ -42,7 +42,7 @@ import {assertUnreachable, setAssertFailLogger, unwrap} from '~/common/utils/ass
 import {Delayed} from '~/common/utils/delayed';
 import type {ReusablePromise} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
-import type {IQueryableStore, ReadableStore} from '~/common/utils/store';
+import {WritableStore, type IQueryableStore, type ReadableStore} from '~/common/utils/store';
 import {TIMER} from '~/common/utils/timer';
 
 // Extend global APIs
@@ -238,9 +238,42 @@ async function main(): Promise<() => void> {
         systemInfo.locale,
     );
 
+    // Initialize localization
     await i18n.initialize({
         localeStore: localStorageController.locale,
         logging,
+    });
+
+    // Initialize loading screen state
+    const loadingStateStore = new WritableStore<LoadingState>({
+        state: 'pending',
+    });
+    // Needs to be resolved as soon as the backend is initialized, the message sync is completed,
+    // and the loading screen has finished animating.
+    const loadingCompleted = new ResolvablePromise<void, never>({uncaught: 'default'});
+    const loadingStateStoreUnsubscriber = loadingStateStore.subscribe((value) => {
+        if (value.state !== 'pending') {
+            // If state switches to anything other than `"pending"`, the loading screen needs to be
+            // displayed. Unsubscribe immediately, so this is only triggered once.
+            loadingStateStoreUnsubscriber();
+
+            domContentLoaded
+                .then(async () => {
+                    elements.splash.classList.add('hidden'); // Hide splash screen.
+                    const loadingScreen = attachLoadingScreen(elements, loadingStateStore);
+
+                    // Wait for the loading screen to finish.
+                    return await Promise.race([
+                        loadingScreen.finishedLoading,
+                        loadingScreen.cancelledLoading,
+                    ]);
+                })
+                .then(() => {
+                    // Loading is finished, so the `ResolveablePromise` can be resolved.
+                    loadingCompleted.resolve();
+                })
+                .catch(assertUnreachable);
+        }
     });
 
     // Global error handlers
@@ -370,14 +403,6 @@ async function main(): Promise<() => void> {
         return await passwordInput.passwordPromise;
     }
 
-    async function showLoadingScreen(loadingState: IQueryableStore<LoadingState>): Promise<void> {
-        await domContentLoaded;
-        elements.splash.classList.add('hidden'); // Hide splash screen
-        const loadingScreen = attachLoadingScreen(elements, loadingState);
-
-        await Promise.race([loadingScreen.finishedLoading, loadingScreen.cancelledLoading]);
-    }
-
     // Define function that will request user to enter the password for the key storage
     async function requestMissingWorkCredentialsModal(): Promise<void> {
         await domContentLoaded;
@@ -408,29 +433,33 @@ async function main(): Promise<() => void> {
     if (!import.meta.env.DEBUG && import.meta.env.BUILD_ENVIRONMENT !== 'onprem') {
         updateCheck({logging, systemDialog}, systemInfo).catch(assertUnreachable);
     }
+
     // Function to send new public key pins to the electron process
     function forwardPins(newPins: DomainCertificatePin[] | undefined): void {
         if (newPins !== undefined) {
             window.app.updatePublicKeyPins(newPins);
         }
     }
+
     // Function to delete all old profiles
     function removeOldProfiles(): void {
         window.app.removeOldProfiles();
     }
+
     log.info('Instantiating Backend');
     // Instantiate backend
     const [backend, isNewIdentity] = await BackendController.create(
         oldProfilePath,
         backendControllerServices,
         endpoint.wrap(ensureEndpoint(worker), logging.logger('com.backend-creator')),
+        loadingStateStore,
         showLinkingWizard,
         requestUserPassword,
-        showLoadingScreen,
         removeOldProfiles,
         forwardPins,
         requestMissingWorkCredentialsModal,
     );
+
     const [
         appearanceSettings,
         callsSettings,
@@ -502,6 +531,13 @@ async function main(): Promise<() => void> {
     await identityReady;
     log.debug('Waiting for DOM');
     await domContentLoaded;
+    log.debug('Awaiting loading screen finish');
+    if (loadingStateStore.get().state === 'pending') {
+        // Loading screen is still `"pending"` (i.e., it was not used), so we just set it to
+        // `"ready"` to close it.
+        loadingStateStore.set({state: 'ready'});
+    }
+    await loadingCompleted;
     log.debug('Attaching app');
     const app = attachApp(services, elements);
 
