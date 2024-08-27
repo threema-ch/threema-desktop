@@ -255,8 +255,7 @@
     "label--title": "Link Your iOS Device",
     "markup--intro": "This beta version can be used in connection with {threema} for iOS. Please note that some features are not yet available. <1>Learn more</1>",
     "markup--step-1": "Open the {threema} app on your mobile device",
-    "markup--step-2-consumer": "In the app, go to <1>Settings</1> > <1>Threema 2.0 for Desktop (Beta)</1> and tap <1>Add Device</1>",
-    "markup--step-2-work": "In the app, go to <1>Settings</1> > <1>Desktop/Web</1> > <1>Linked Device</1> and tap <1>Add Device</1>",
+    "markup--step-2": "In the app, go to “<1>Settings</1> > <1>Threema 2.0 for Desktop (Beta)</1>” and tap “<1>Add Device</1>”",
     "markup--step-3": "Scan this QR code"
   },
   "dialog--linking-set-password": {

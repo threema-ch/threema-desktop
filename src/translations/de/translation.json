@@ -255,8 +255,7 @@
     "label--title": "Verknüpfen Sie Ihr iOS-Gerät",
     "markup--intro": "Diese Beta-Version kann zusammen mit {threema} für iOS verwendet werden. Bitte beachten Sie, dass noch nicht alle Funktionen verfügbar sind. <1>Mehr erfahren</1>",
     "markup--step-1": "Öffnen Sie die {threema}-App auf Ihrem Mobilgerät",
-    "markup--step-2-consumer": "Navigieren Sie in der App zu «<1>Einstellungen</1> > <1>Threema 2.0 für Desktop (Beta)</1>», und tippen Sie auf «<1>Gerät hinzufügen</1>»",
-    "markup--step-2-work": "Navigieren Sie in der App zu «<1>Einstellungen</1> > <1>Desktop/Web</1> > <1>Verknüpftes Gerät</1>», und tippen Sie auf «<1>Gerät hinzufügen</1>»",
+    "markup--step-2": "Navigieren Sie in der App zu «<1>Einstellungen</1> > <1>Threema 2.0 für Desktop (Beta)</1>», und tippen Sie auf «<1>Gerät hinzufügen</1>»",
     "markup--step-3": "Scannen Sie diesen QR-Code"
   },
   "dialog--linking-set-password": {
