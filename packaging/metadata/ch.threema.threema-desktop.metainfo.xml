@@ -44,6 +44,36 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta41" date="2024-08-29">
+            <description>
+                <p>New features:</p>
+                <ul>
+                    <li>New loading screen when starting the app</li>
+                    <li>
+                        Added a setting to control the behavior of the “Enter” key when sending
+                        messages
+                    </li>
+                    <li>Added the option to delete the app data</li>
+                </ul>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Improved the appearance of dialog buttons</li>
+                    <li>
+                        Show who has reacted to an image message when hovering over the
+                        agree/disagree icons
+                    </li>
+                    <li>Improved the UI when restoring messages</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>
+                        Fixed a bug that caused the timestamp in the message preview not to be
+                        correct
+                    </li>
+                </ul>
+                <p>…and various under-the-hood changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta40" date="2024-08-14">
             <description>
                 <p>New features:</p>
