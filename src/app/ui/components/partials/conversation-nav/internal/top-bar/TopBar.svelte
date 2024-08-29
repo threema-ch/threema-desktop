@@ -79,6 +79,7 @@
       }}
       items={[
         {
+          type: 'option',
           icon: {
             name: 'settings',
             color: 'default',

@@ -24,6 +24,7 @@ export function getContextMenuItems(
 ): ContextMenuItemWithHandlerProps<ContextMenuItemHandlerProps>[] {
     return [
         {
+            type: 'option',
             disabled: item.totalMessageCount === 0,
             handler: (props) => handleClear(item, props),
             label: i18n.t('messaging.action--empty-conversation', 'Empty Chat'),
@@ -32,6 +33,7 @@ export function getContextMenuItems(
             },
         },
         {
+            type: 'option',
             handler: (props) => {
                 void props.viewModelBundle.viewModelController
                     .togglePinned()
@@ -49,6 +51,7 @@ export function getContextMenuItems(
             },
         },
         {
+            type: 'option',
             handler: (props) => {
                 void props.viewModelBundle.viewModelController
                     .toggleArchived()
@@ -66,6 +69,7 @@ export function getContextMenuItems(
             },
         },
         {
+            type: 'option',
             handler: (props) => handleDelete(item, props),
             label: i18n.t('messaging.action--conversation-option-delete', 'Delete'),
             icon: {

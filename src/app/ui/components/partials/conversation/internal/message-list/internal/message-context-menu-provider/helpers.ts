@@ -1,4 +1,7 @@
-import type {ContextMenuItem} from '~/app/ui/components/hocs/context-menu-provider/types';
+import type {
+    ContextMenuItem,
+    ContextMenuOption,
+} from '~/app/ui/components/hocs/context-menu-provider/types';
 import type {I18nType} from '~/app/ui/i18n-types';
 import {nodeContainsTarget, nodeIsTarget} from '~/app/ui/utils/node';
 
@@ -42,7 +45,7 @@ export function extractSelectedTextFromEventTarget(event: MouseEvent): string | 
     return undefined;
 }
 
-type ContextMenuItemHandler = Exclude<ContextMenuItem, 'divider'>['handler'];
+type ContextMenuItemHandler = ContextMenuOption['handler'];
 
 /**
  * Get the appropriate context menu options for a specific message configuration.
@@ -89,46 +92,51 @@ export function getContextMenuItems({
         ...(copySelection !== undefined
             ? [
                   {
+                      type: 'option',
                       handler: copySelection,
                       icon: {name: 'subject'},
                       label: t('messaging.action--message-option-copy-selection', 'Copy Selection'),
-                  },
+                  } as const,
               ]
             : []),
         ...(copyLink !== undefined
             ? [
                   {
+                      type: 'option',
                       handler: copyLink,
                       icon: {name: 'link'},
                       label: t('messaging.action--message-option-copy-link', 'Copy Link'),
-                  },
+                  } as const,
               ]
             : []),
         ...(copyImage !== undefined
             ? [
                   {
+                      type: 'option',
                       handler: copyImage,
                       icon: {name: 'photo_library'},
                       label: t('messaging.action--message-option-copy-image', 'Copy Image'),
-                  },
+                  } as const,
               ]
             : []),
         ...(copy !== undefined
             ? [
                   {
+                      type: 'option',
                       handler: copy,
                       icon: {name: 'content_copy'},
                       label: t('messaging.action--message-option-copy', 'Copy Message'),
-                  },
+                  } as const,
               ]
             : []),
         ...(saveAsFile !== undefined
             ? [
                   {
+                      type: 'option',
                       handler: saveAsFile,
                       icon: {name: 'download'},
                       label: t('messaging.action--message-option-save-as-file', 'Save as File'),
-                  },
+                  } as const,
               ]
             : []),
         ...(copyLink !== undefined ||
@@ -136,73 +144,88 @@ export function getContextMenuItems({
         copySelection !== undefined ||
         copy !== undefined ||
         saveAsFile !== undefined
-            ? (['divider'] as const)
+            ? ([
+                  {
+                      type: 'divider',
+                  },
+              ] as const)
             : []),
         ...(acknowledge?.handler !== undefined
             ? ([
                   {
+                      type: 'option',
                       handler: acknowledge.handler,
                       icon: {name: 'thumb_up', color: 'acknowledged', filled: acknowledge.filled},
                       label: t('messaging.action--message-option-agree', 'Agree'),
-                  },
+                  } as const,
               ] as const)
             : []),
         ...(decline?.handler !== undefined
             ? ([
                   {
+                      type: 'option',
                       handler: decline.handler,
                       icon: {name: 'thumb_down', color: 'declined', filled: decline.filled},
                       label: t('messaging.action--message-option-disagree', 'Disagree'),
-                  },
+                  } as const,
               ] as const)
             : []),
         ...(acknowledge?.handler !== undefined || decline?.handler !== undefined
-            ? (['divider'] as const)
+            ? ([
+                  {
+                      type: 'divider',
+                  },
+              ] as const)
             : []),
         ...(quote !== undefined
             ? [
                   {
+                      type: 'option',
                       handler: quote,
                       icon: {name: 'format_quote'},
                       label: t('messaging.action--message-option-quote', 'Quote'),
-                  },
+                  } as const,
               ]
             : []),
         ...(forward !== undefined
             ? [
                   {
+                      type: 'option',
                       handler: forward,
                       icon: {name: 'forward'},
                       label: t('messaging.action--message-option-forward', 'Forward'),
-                  },
+                  } as const,
               ]
             : []),
         ...(edit !== undefined
             ? [
                   {
+                      type: 'option',
                       disabled: edit.disabled,
                       handler: edit.handler,
                       icon: {name: 'edit'},
                       label: t('messaging.action--message-option-edit', 'Edit'),
-                  },
+                  } as const,
               ]
             : []),
         ...(deleteMessage !== undefined
             ? [
                   {
+                      type: 'option',
                       handler: deleteMessage,
                       icon: {name: 'delete'},
                       label: t('messaging.action--message-option-delete', 'Delete'),
-                  },
+                  } as const,
               ]
             : []),
         ...(openDetails !== undefined
             ? [
                   {
+                      type: 'option',
                       handler: openDetails,
                       icon: {name: 'info'},
                       label: t('messaging.action--message-option-details', 'Message Details'),
-                  },
+                  } as const,
               ]
             : []),
     ];

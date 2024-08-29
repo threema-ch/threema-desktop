@@ -155,6 +155,7 @@
       case 'contact':
         return [
           {
+            type: 'option',
             disabled: false,
             handler: (props) => dispatch('clickedititem', props),
             label: t('contacts.action--edit', 'Edit'),

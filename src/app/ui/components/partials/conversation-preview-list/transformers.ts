@@ -27,7 +27,7 @@ export function transformContextMenuItemsToContextMenuOptions<THandlerProps>(
 
     return {
         items: contextMenuItems.map((item) => {
-            if (item === 'divider') {
+            if (item.type === 'divider') {
                 return item;
             }
 

@@ -48,7 +48,7 @@
   // See comment for `$$Props`.
   // eslint-disable-next-line no-undef
   function handleClickItem(item: ContextMenuItem<THandlerProps>): void {
-    if (item === 'divider') {
+    if (item.type === 'divider' || item.type === 'heading') {
       return;
     }
 
@@ -89,11 +89,24 @@
 
     <div class="menu" slot="popover">
       <MenuContainer mode="small">
-        {@const hasAnyIcon = items.some((item) => item !== 'divider' && item.icon !== undefined)}
+        {@const hasAnyIcon = items.some(
+          (item) => item.type !== 'divider' && item.icon !== undefined,
+        )}
 
         {#each items as item}
-          {#if item === 'divider'}
+          {#if item.type === 'divider'}
             <MenuItemDivider />
+          {:else if item.type === 'heading'}
+            <span class="heading">
+              {#if item.icon !== undefined}
+                <span class="icon">
+                  <MdIcon theme={item.icon.filled === true ? 'Filled' : 'Outlined'}
+                    >{item.icon.name}</MdIcon
+                  >
+                </span>
+              {/if}
+              <span class="label">{item.text}</span>
+            </span>
           {:else if item.icon !== undefined}
             <MenuItem on:click={() => handleClickItem(item)} disabled={item.disabled}>
               <span class={`icon ${item.icon.color}`} slot="icon">
@@ -123,6 +136,24 @@
     @extend %elevation-060;
 
     --c-menu-container-min-width: #{rem(180px)};
+
+    .heading {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: start;
+      gap: var(--c-menu-item-gap, default);
+
+      padding: var(--c-menu-item-padding, default);
+
+      .icon {
+        flex: 0 0 auto;
+      }
+
+      .label {
+        flex-grow: 1 1 auto;
+      }
+    }
 
     .icon {
       display: flex;

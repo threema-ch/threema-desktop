@@ -14,11 +14,13 @@ export function getContextMenuItems(
 ): readonly ContextMenuItem[] {
     return [
         {
+            type: 'option',
             handler: onClickMessageDetails,
             icon: {name: 'info'},
             label: i18n.t('messaging.action--message-option-details', 'Message Details'),
         },
         {
+            type: 'option',
             handler: onClickDelete,
             icon: {
                 name: 'delete',

@@ -1,5 +1,8 @@
 import type {AppServicesForSvelte} from '~/app/types';
-import type {ContextMenuOption} from '~/app/ui/components/hocs/context-menu-provider/types';
+import type {
+    ContextMenuDivider,
+    ContextMenuOption,
+} from '~/app/ui/components/hocs/context-menu-provider/types';
 import type {ConversationPreviewProps} from '~/app/ui/components/partials/conversation-preview-list/internal/conversation-preview/props';
 
 /**
@@ -30,7 +33,7 @@ export interface ConversationPreviewListItem<THandlerProps>
 
 export type ContextMenuItemWithHandlerProps<THandlerProps> =
     | ContextMenuOptionWithHandlerProps<THandlerProps>
-    | 'divider';
+    | ContextMenuDivider;
 
 interface ContextMenuOptionWithHandlerProps<THandlerProps>
     extends Omit<ContextMenuOption, 'handler'> {

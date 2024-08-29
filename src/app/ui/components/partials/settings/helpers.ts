@@ -21,6 +21,7 @@ export function createDropdownItems<
     type DropdownItem = (typeof dropdown.items)[u53];
 
     return Object.values<DropdownItem>({...dropdown.items}).map((item) => ({
+        type: 'option',
         handler: () => handler(item.value, dropdown.updateKey),
         icon: item.options?.icon ?? undefined,
         label: item.text,

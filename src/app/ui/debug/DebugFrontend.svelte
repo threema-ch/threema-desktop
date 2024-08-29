@@ -24,6 +24,7 @@
     switch (type) {
       case 'app-update':
         return {
+          type: 'option',
           handler: () => {
             systemDialog.open({
               type,
@@ -43,6 +44,7 @@
 
       case 'device-cookie-mismatch':
         return {
+          type: 'option',
           handler: () => {
             systemDialog.open({
               type,
@@ -53,6 +55,7 @@
 
       case 'invalid-work-credentials':
         return {
+          type: 'option',
           handler: () => {
             systemDialog.open({
               type,
@@ -69,6 +72,7 @@
 
       case 'missing-device-cookie':
         return {
+          type: 'option',
           handler: () => {
             systemDialog.open({
               type,
@@ -79,6 +83,7 @@
 
       case 'server-alert':
         return {
+          type: 'option',
           handler: () => {
             systemDialog.open({
               type,
@@ -92,6 +97,7 @@
 
       case 'unrecoverable-state':
         return {
+          type: 'option',
           handler: () => {
             systemDialog.open({
               type,
@@ -113,6 +119,7 @@
       'mediator-update-required',
     ] as const
   ).map((error: ConnectionErrorDialog['context']['error']) => ({
+    type: 'option',
     handler: () => {
       systemDialog.open({
         type: 'connection-error',

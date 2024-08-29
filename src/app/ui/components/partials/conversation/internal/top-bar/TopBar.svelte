@@ -185,6 +185,7 @@
       {anchorPoints}
       items={[
         {
+          type: 'option',
           disabled: conversation.totalMessagesCount === 0,
           handler: handleClickEmptyChatOption,
           label: $i18n.t('messaging.action--empty-conversation', 'Empty Chat'),
@@ -193,6 +194,7 @@
           },
         },
         {
+          type: 'option',
           handler: handleClickPinUnpinConversation,
           label: conversation.isPinned
             ? $i18n.t('messaging.action--conversation-option-unpin', 'Unpin')
@@ -202,6 +204,7 @@
           },
         },
         {
+          type: 'option',
           handler: handleClickArchiveUnarchiveConversation,
           label: conversation.isArchived
             ? $i18n.t('messaging.action--conversation-option-unarchive', 'Unarchive')
@@ -211,6 +214,7 @@
           },
         },
         {
+          type: 'option',
           handler: handleClickDeleteConversation,
           label: $i18n.t('messaging.action--conversation-option-delete'),
           icon: {
