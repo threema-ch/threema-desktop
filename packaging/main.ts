@@ -8,7 +8,7 @@ import * as path from 'node:path';
 import * as process from 'node:process';
 
 import * as v from '@badrap/valita';
-import type createDMG from 'electron-installer-dmg';
+import type {ElectronInstallerDMGOptions} from 'electron-installer-dmg';
 import fsExtra from 'fs-extra';
 
 import {type BuildFlavor, isValidBuildFlavor, determineAppName} from '../config/build.js';
@@ -715,7 +715,7 @@ async function buildDmg(
     }
 
     // Export DMG
-    const options = {
+    const options: ElectronInstallerDMGOptions = {
         appPath,
         out: outPath,
         name: dmgName,
@@ -733,14 +733,10 @@ async function buildDmg(
             {x: 458, y: 211, type: 'link', path: '/Applications'},
             {x: 218, y: 211, type: 'file', path: opts.appPath},
         ],
-    } satisfies Omit<createDMG.CreateOptions, 'contents'> & {
-        // TODO(DESK-910): Fix the `opts` parameter upstream
-        readonly contents: (opts: {readonly appPath: string}) => createDMG.Content[];
     };
     log.minor('Exporting DMG');
-    const {default: createDmg} = await import('electron-installer-dmg');
-    // TODO(DESK-910): Remove the cast
-    await createDmg(options as createDMG.CreateOptions);
+    const createDmg = (await import('electron-installer-dmg')).createDMG;
+    await createDmg(options);
     const dmgPath = path.join(outPath, `${dmgName}.dmg`);
 
     if (hasChecksumBinaries) {
