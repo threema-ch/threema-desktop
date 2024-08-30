@@ -167,7 +167,7 @@
             disabled={isAttemptingToChangePassword}
             label={$i18n.t('dialog--change-password.label--current-password', 'Current Password')}
             error={showErrors
-              ? errors.currentPasswordIsIncorrect ?? errors.currentPasswordPresent
+              ? (errors.currentPasswordIsIncorrect ?? errors.currentPasswordPresent)
               : undefined}
             on:input={handleInput}
             on:keydown={async (event) => {
@@ -181,7 +181,7 @@
             disabled={isAttemptingToChangePassword}
             label={$i18n.t('dialog--change-password.label--new-password', 'New Password')}
             error={showErrors
-              ? errors.minPasswordLength ?? errors.newPasswordMustBeDifferent
+              ? (errors.minPasswordLength ?? errors.newPasswordMustBeDifferent)
               : undefined}
             on:input={handleInput}
             on:keydown={async (event) => {

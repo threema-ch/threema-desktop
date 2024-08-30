@@ -186,7 +186,7 @@
   function handleSelectAudioInputDevice(device: AudioInputDeviceInfo): void {
     selectMicrophoneDevice(localDevicesGuard, call, {
       device,
-      state: $localDevices.microphone?.track.enabled ?? false ? 'on' : 'off',
+      state: ($localDevices.microphone?.track.enabled ?? false) ? 'on' : 'off',
     }).catch((error) => {
       log.warn(`Unable to select audio device ${device.label}: ${error}`);
     });
@@ -200,7 +200,7 @@
     selectCameraDevice(localDevicesGuard, call, {
       device,
       facing: 'user',
-      state: $localDevices.camera?.track.enabled ?? false ? 'on' : 'off',
+      state: ($localDevices.camera?.track.enabled ?? false) ? 'on' : 'off',
     }).catch((error) => {
       log.warn(`Unable to select video device ${device.label}: ${error}`);
     });

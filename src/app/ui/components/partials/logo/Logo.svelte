@@ -119,7 +119,7 @@
           class="progress-bar"
           x="10"
           y="91"
-          width={clamp(76 * (progress === 'unknown' ? 0 : progress ?? 1), {min: 24})}
+          width={clamp(76 * (progress === 'unknown' ? 0 : (progress ?? 1)), {min: 24})}
           height="16"
           rx="0"
         />

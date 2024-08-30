@@ -517,7 +517,7 @@ export class DerivedStore<
                 this._disable();
             },
             this._options?.subscriptionMode === 'lazy'
-                ? this._options.disablingDebounceMs ?? DEFAULT_DERIVED_STORE_DISABLE_COOLDOWN_MS
+                ? (this._options.disablingDebounceMs ?? DEFAULT_DERIVED_STORE_DISABLE_COOLDOWN_MS)
                 : // The following case should never happen, because persistent stores should never be
                   // disabled in the first place.
                   0,

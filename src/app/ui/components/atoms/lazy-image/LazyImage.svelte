@@ -81,7 +81,7 @@
   }
 
   $: preferredDisplay = constrain({
-    dimensions: image.state === 'loaded' ? image.dimensions : dimensions ?? {width: 0, height: 0},
+    dimensions: image.state === 'loaded' ? image.dimensions : (dimensions ?? {width: 0, height: 0}),
     constraints,
   });
   $: preferredAspectRatio = `${preferredDisplay.values.width} / ${preferredDisplay.values.height}`;
