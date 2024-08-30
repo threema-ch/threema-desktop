@@ -29,7 +29,7 @@ export function isReceiverMatchingSearchTerm(
                 receiver.nickname,
                 receiver.identity,
             ]
-                .filter((value): value is string => value !== undefined)
+                .filter((value) => value !== undefined)
                 .join(' ')
                 .toLowerCase()
                 .includes(trimmedSearchTerm);

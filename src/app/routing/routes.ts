@@ -1,6 +1,6 @@
 import * as v from '@badrap/valita';
 
-import type {DbGroupReceiverLookup, DbReceiverLookup} from '~/common/db';
+import type {DbReceiverLookup} from '~/common/db';
 import {ReceiverType, ReceiverTypeUtils} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import {VALID_IDENTITY_DATA_SCHEMA} from '~/common/network/protocol/directory';
@@ -35,7 +35,7 @@ const PARAM_RECEIVER_LOOKUP_SCHEMA = v
  */
 const PARAM_GROUP_LOOKUP_SCHEMA = PARAM_RECEIVER_LOOKUP_SCHEMA.assert(
     (lookup) => lookup.type === ReceiverType.GROUP,
-).map((lookup) => lookup as DbGroupReceiverLookup);
+);
 
 /**
  * Information needed to look up a conversation, together with additional data that will be used by

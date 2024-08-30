@@ -215,7 +215,7 @@ function buildElectronMenu(): electron.Menu {
     function removeUndefined(
         entries: (MenuItemConstructorOptions | undefined)[],
     ): MenuItemConstructorOptions[] {
-        return entries.filter((entry) => entry !== undefined) as MenuItemConstructorOptions[];
+        return entries.filter((entry) => entry !== undefined);
     }
 
     // Menu: macOS-only app menu
