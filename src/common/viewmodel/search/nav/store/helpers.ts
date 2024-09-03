@@ -80,7 +80,7 @@ export function getConversationSearchResult(
     const {endpoint} = services;
 
     const conversationModel = getAndSubscribe(conversationModelStore);
-    const lastMessageModelStore = conversationModel.controller.lastMessageStore().get();
+    const lastMessageModelStore = getAndSubscribe(conversationModel.controller.lastMessageStore());
 
     let lastMessageViewModelBundle: AnyConversationMessageViewModelBundle | undefined = undefined;
     if (lastMessageModelStore !== undefined) {
