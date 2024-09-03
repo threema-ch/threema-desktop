@@ -138,7 +138,7 @@
 
     .navbar {
       grid-area: navbar;
-      padding: rem(12px) rem(16px);
+      padding: rem(12px) rem(8px);
       display: grid;
       grid-template:
         'left center right' minmax(rem(40px), min-content)
