@@ -174,7 +174,10 @@
       'input' auto
       'text' auto
       / auto;
-    grid-row-gap: em(4px);
+
+    &:has(.text) {
+      grid-row-gap: em(4px);
+    }
 
     .input {
       grid-area: input;

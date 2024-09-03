@@ -176,11 +176,19 @@
   }
 
   .body {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: start;
+    gap: rem(8px);
+
     color: var(--t-text-e2-color);
-    gap: rem(8px) a {
+
+    a {
       text-decoration: underline;
       color: inherit;
     }
+
     .info {
       margin-top: rem(12px);
     }
