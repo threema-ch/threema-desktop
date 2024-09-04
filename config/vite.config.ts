@@ -29,6 +29,7 @@ import {
     isValidBuildFlavor,
 } from './build';
 import cjsExternals from './vite-plugins/cjs-externals';
+import {subresourceIntegrityPlugin} from './vite-plugins/subresource-integrity';
 import {tsWorkerPlugin} from './vite-plugins/ts-worker';
 
 /**
@@ -374,6 +375,7 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
     // Determine plugins
     const plugins = {
         tsWorkerPlugin: env.entry === 'app' ? tsWorkerPlugin() : undefined,
+        subresourceIntegrityPlugin: env.entry === 'app' ? subresourceIntegrityPlugin() : undefined,
         commonjsExternals: cjsExternals({
             externals: [
                 ...external,
