@@ -172,19 +172,17 @@
         </span>
       </span>
 
-      {#if type === 'remote'}
-        <span class="pills right">
-          <div class="pill control">
-            <MdIcon theme="Outlined">
-              {#if capture.microphone === 'on'}
-                mic
-              {:else}
-                mic_off
-              {/if}
-            </MdIcon>
-          </div>
-        </span>
-      {/if}
+      <span class="pills right">
+        <div class="pill control">
+          <MdIcon theme="Outlined">
+            {#if capture.microphone === 'on'}
+              mic
+            {:else}
+              mic_off
+            {/if}
+          </MdIcon>
+        </div>
+      </span>
     </div>
   {:else}
     {unreachable(activity.layout)}
