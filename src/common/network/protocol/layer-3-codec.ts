@@ -259,7 +259,6 @@ export class Layer3Decoder<TType extends 'full' | 'd2m-only'>
     private readonly _services: ServicesForBackend;
     private readonly _log: Logger;
     private readonly _buffer: ByteBuffer;
-    private readonly _reserved = new Uint8Array(16);
 
     public constructor(
         services: ServicesForBackend,
@@ -369,8 +368,8 @@ export class Layer3Decoder<TType extends 'full' | 'd2m-only'>
                 const loginAck = message.payload;
                 const reserved = this._handleCspLoginAck(loginAck);
 
-                // Verify that the reserved bytes are all zero
-                if (!byteEquals(reserved, this._reserved)) {
+                // Verify that the reserved bytes are present
+                if (reserved.byteLength !== 16) {
                     throw new ProtocolError('csp', 'Invalid reserved bytes in login-ack');
                 }
 
