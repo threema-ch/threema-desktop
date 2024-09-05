@@ -161,6 +161,18 @@
     "prose--mediator-update-required-p1": "This Threema version is not compatible with your mediator server. The server uses an outdated protocol version and must be updated first.",
     "prose--mediator-update-required-p2": "Please contact your Threema server administrator."
   },
+  "dialog--forgot-password": {
+    "action--back": "Back",
+    "action--cancel": "Cancel",
+    "action--next": "Next",
+    "action--relink": "Relink Device",
+    "label--title": "Forgot Password",
+    "prose--step-1-description-p1": "For security reasons, there is no way to recover a lost password for the desktop app. To keep using Threema for desktop, you need to relink it with your mobile device. Click “Next” for the relink instructions.",
+    "prose--step-2-description-p1": "To relink your device, follow these steps:",
+    "prose--step-2-description-p2": "Please note: The messages on this device will be lost when relinking (but not on your linked devices).",
+    "prose--step-2-list-step-1": "On your phone, remove this device in “Settings > Threema 2.0 for Desktop (Beta)”",
+    "prose--step-2-list-step-2": "Select the “Relink Device” button below to start the linking process"
+  },
   "dialog--forward-message": {
     "label--title": "Select Recipient"
   },
@@ -331,7 +343,7 @@
     "error--incorrect-password": "The entered password is incorrect. Please try again.",
     "label--password": "App Password",
     "label--title": "Enter App Password",
-    "markup--password-hint": "Forgot password? Please consult <1>this FAQ entry</1>."
+    "markup--password-hint": "Forgot password?"
   },
   "dialog--toggle-logger": {
     "action--cancel": "Cancel",
