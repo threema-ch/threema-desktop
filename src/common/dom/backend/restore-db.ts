@@ -276,6 +276,8 @@ export async function transferOldMessages(
     }
     await restoreSettings(services, oldDb);
 
+    oldDb.close();
+
     // Refresh the cache to directly display the conversations again.
     model.conversations.refreshCache();
 }

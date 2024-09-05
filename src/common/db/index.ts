@@ -666,6 +666,13 @@ export interface DbRunningGroupCall {
  */
 export interface DatabaseBackend extends NonceDatabaseBackend {
     /**
+     * Explicitly closes the database.
+     *
+     * Use with caution and only if you know what you are doing. This can be used e.g. for closing
+     * the old database after restoring the messages.
+     */
+    readonly close: () => void;
+    /**
      * Create a new contact and an associated conversation.
      */
     readonly createContact: (

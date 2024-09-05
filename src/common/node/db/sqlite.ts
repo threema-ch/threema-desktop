@@ -316,6 +316,11 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         }
     }
 
+    /** @inheritdoc */
+    public close(): void {
+        this._rawDb.close();
+    }
+
     /* eslint-disable @typescript-eslint/member-ordering */
 
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
