@@ -1,11 +1,12 @@
 <script lang="ts">
-  import {onMount} from 'svelte';
+  import {onMount, tick} from 'svelte';
 
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import {i18n} from '~/app/ui/i18n';
   import type {LinkingWizardOldProfilePasswordProps} from '~/app/ui/linking';
   import Password from '~/app/ui/svelte-components/blocks/Input/Password.svelte';
+  import {assertUnreachable} from '~/common/utils/assert';
 
   type $$Props = LinkingWizardOldProfilePasswordProps;
 
@@ -14,6 +15,8 @@
   export let state: $$Props['state'] = 'default';
 
   let password = '';
+
+  let passwordInput: Password;
 
   function handleSubmit(): void {
     oldPassword.resolve(password);
@@ -39,6 +42,10 @@
     if (oldProfile === undefined) {
       oldPassword.resolve(undefined);
     }
+
+    tick()
+      .then(() => passwordInput.focusAndSelect())
+      .catch(assertUnreachable);
   });
 </script>
 
@@ -83,6 +90,7 @@
     <div class="input">
       <Password
         bind:value={password}
+        bind:this={passwordInput}
         label={$i18n.t('dialog--linking-old-profile-password.label--old-password', 'Password')}
         disabled={state !== 'default'}
         {error}
