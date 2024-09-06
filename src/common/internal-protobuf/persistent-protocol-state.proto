@@ -1,0 +1,11 @@
+// ## Persistent Protocol State
+//
+// The persistent protocol state which is persisted over restarts.
+syntax = "proto3";
+
+message UserProfileState {
+    // Identity of the receiver
+    string receiverIdentity = 1;
+    // BlobId of the profile picture
+    optional bytes blobId = 2;
+}

@@ -23,6 +23,7 @@ import {
     type DbMessageHistoryUid,
     type DbStatusMessageUid,
     type DbRunningGroupCallUid,
+    type DbPersistentProtocolStateUid,
 } from '~/common/db';
 import {
     AcquaintanceLevelUtils,
@@ -40,6 +41,7 @@ import {
     MessageTypeUtils,
     NonceScopeUtils,
     NotificationSoundPolicyUtils,
+    PersistentProtocolStateTypeUtils,
     ReadReceiptPolicyUtils,
     StatusMessageTypeUtils,
     SyncStateUtils,
@@ -81,6 +83,7 @@ export const CUSTOM_TYPES = {
     MESSAGE_UID: 'DbMessageUid',
     MESSAGE_HISTORY_UID: 'DbMessageHistoryUid',
     STATUS_MESSAGE_UID: 'DbStatusMessageUid',
+    PERSISTENT_PROTOCOL_STATE_UID: 'DbPersistentProtocolStateUid',
     GROUP_MEMBER_UID: 'DbGroupMemberUid',
     FILE_DATA_UID: 'DbFileDataUid',
     GLOBAL_PROPERTY_UID: 'DbGlobalPropertyUid',
@@ -104,6 +107,8 @@ export const CUSTOM_TYPES = {
     NOTIFICATION_SOUND_POLICY: 'NotificationSoundPolicy',
     READ_RECEIPT_POLICY: 'ReadReceiptPolicy',
     STATUS_MESSAGE_TYPE: 'StatusMessageType',
+    PERSISTENT_PROTOCOL_STATE_TYPE: 'PersistentProtocolStateType',
+
     SYNC_STATE: 'SyncState',
     TYPING_INDICATOR_POLICY: 'TypingIndicatorPolicy',
     VERIFICATION_LEVEL: 'VerificationLevel',
@@ -268,6 +273,10 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return typeof value === 'bigint' ? tag<DbMessageUid>(value) : fail();
             case CUSTOM_TYPES.STATUS_MESSAGE_UID:
                 return typeof value === 'bigint' ? tag<DbStatusMessageUid>(value) : fail();
+            case CUSTOM_TYPES.PERSISTENT_PROTOCOL_STATE_UID:
+                return typeof value === 'bigint'
+                    ? tag<DbPersistentProtocolStateUid>(value)
+                    : fail();
             case CUSTOM_TYPES.GLOBAL_PROPERTY_UID:
                 return typeof value === 'bigint' ? tag<DbGlobalPropertyUid>(value) : fail();
             case CUSTOM_TYPES.NONCE_UID:
@@ -318,6 +327,8 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return typeof value === 'string'
                     ? StatusMessageTypeUtils.fromString(value)
                     : fail();
+            case CUSTOM_TYPES.PERSISTENT_PROTOCOL_STATE_TYPE:
+                return u64ToU53(value, PersistentProtocolStateTypeUtils.contains);
             case CUSTOM_TYPES.SYNC_STATE:
                 return u64ToU53(value, SyncStateUtils.contains);
             case CUSTOM_TYPES.TYPING_INDICATOR_POLICY:
@@ -432,6 +443,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.MESSAGE_REACTION_UID:
             case CUSTOM_TYPES.MESSAGE_UID:
             case CUSTOM_TYPES.STATUS_MESSAGE_UID:
+            case CUSTOM_TYPES.PERSISTENT_PROTOCOL_STATE_UID:
             case CUSTOM_TYPES.GLOBAL_PROPERTY_UID:
             case CUSTOM_TYPES.NONCE_UID:
             case CUSTOM_TYPES.MESSAGE_HISTORY_UID:
@@ -456,6 +468,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.NOTIFICATION_SOUND_POLICY:
             case CUSTOM_TYPES.READ_RECEIPT_POLICY:
             case CUSTOM_TYPES.STATUS_MESSAGE_TYPE:
+            case CUSTOM_TYPES.PERSISTENT_PROTOCOL_STATE_TYPE:
             case CUSTOM_TYPES.SYNC_STATE:
             case CUSTOM_TYPES.TYPING_INDICATOR_POLICY:
             case CUSTOM_TYPES.VERIFICATION_LEVEL:

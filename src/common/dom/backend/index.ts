@@ -78,6 +78,7 @@ import {
     type RawPacket,
 } from '~/common/network/protocol/capture';
 import {type DirectoryBackend, DirectoryError} from '~/common/network/protocol/directory';
+import {PersistentProtocolStateBackend} from '~/common/network/protocol/persistent-protocol-state';
 import type {RendezvousCloseCause} from '~/common/network/protocol/rendezvous';
 import {TaskManager} from '~/common/network/protocol/task/manager';
 import {VolatileProtocolStateBackend} from '~/common/network/protocol/volatile-protocol-state';
@@ -571,6 +572,7 @@ function initBackendServices(
         dgk,
         workData,
     );
+    const persistentProtocolState = new PersistentProtocolStateBackend({db, logging});
     const blob = new FetchBlobBackend({config, device, directory});
     const loadingInfo = new LoadingInfo(logging.logger('loading-info'));
     const model = new ModelRepositories({
@@ -590,6 +592,7 @@ function initBackendServices(
         sfu,
         taskManager,
         systemDialog,
+        persistentProtocolState,
         volatileProtocolState,
         webrtc,
     });
@@ -604,6 +607,7 @@ function initBackendServices(
         loadingInfo,
         model,
         nonces,
+        persistentProtocolState,
         viewModel,
         volatileProtocolState,
     };

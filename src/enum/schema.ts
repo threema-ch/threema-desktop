@@ -494,6 +494,18 @@ export enum StatusMessageType {
 }
 
 /**
+ * All possible persistent protocol state types.
+ *
+ * WARNING: Do not change the internal representation of this enum, since those values are stored
+ *          directly in the database!
+ *
+ * @generate name convert
+ */
+export enum PersistentProtocolStateType {
+    LAST_USER_PROFILE_DISTRIBUTION_STATE = 0,
+}
+
+/**
  * Source that triggered some kind of update.
  */
 export enum TriggerSource {

@@ -55,6 +55,8 @@ import type {
     DbDeletedMessage,
     DbAnyStatusMessage,
     DbRunningGroupCall,
+    DbPersistentProtocolStateUid,
+    DbPersistentProtocolState,
 } from '~/common/db';
 import {
     type GlobalPropertyKey,
@@ -62,6 +64,7 @@ import {
     MessageQueryDirection,
     MessageType,
     type NonceScope,
+    type PersistentProtocolStateType,
     ReceiverType,
 } from '~/common/enum';
 import type {FileId} from '~/common/file-storage';
@@ -110,6 +113,7 @@ import {
     tMessageTextData,
     tMessageVideoData,
     tNonce,
+    tPersistentProtocolState,
     tRunningGroupCalls,
     tSettings,
     tStatusMessage,
@@ -3258,6 +3262,45 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     statusBytes: tStatusMessage.statusBytes,
                 })
                 .executeSelectMany(),
+        );
+    }
+
+    /** @inheritdoc */
+    public getPersistentProtocolState(): DbList<
+        DbPersistentProtocolState<PersistentProtocolStateType>
+    > {
+        return sync(
+            this._db
+                .selectFrom(tPersistentProtocolState)
+                .select({
+                    type: tPersistentProtocolState.type,
+                    stateBytes: tPersistentProtocolState.stateBytes,
+                    createdAt: tPersistentProtocolState.createdAt,
+                    uid: tPersistentProtocolState.uid,
+                })
+                .executeSelectMany(),
+        );
+    }
+
+    /** @inheritdoc */
+    public deletePersistentProtocolStateEntriesByUids(uids: DbPersistentProtocolStateUid[]): void {
+        sync(
+            this._db
+                .deleteFrom(tPersistentProtocolState)
+                .where(tPersistentProtocolState.uid.in(uids))
+                .executeDelete(),
+        );
+    }
+    /** @inheritdoc */
+    public updatePersistentProtocolState(
+        protocolState: DbCreate<DbPersistentProtocolState<PersistentProtocolStateType>>,
+    ): DbPersistentProtocolStateUid {
+        return sync(
+            this._db
+                .insertInto(tPersistentProtocolState)
+                .set({...protocolState})
+                .returningLastInsertedId()
+                .executeInsert(),
         );
     }
 

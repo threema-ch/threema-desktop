@@ -1324,6 +1324,50 @@ export namespace StatusMessageTypeUtils {
         return (NAME_OF as Record<u53, string | undefined>)[value];
     }
 }
+export namespace PersistentProtocolStateType {
+    export const LAST_USER_PROFILE_DISTRIBUTION_STATE = 0;
+    export type LAST_USER_PROFILE_DISTRIBUTION_STATE = typeof LAST_USER_PROFILE_DISTRIBUTION_STATE;
+}
+/**
+ * All possible persistent protocol state types.
+ *
+ * WARNING: Do not change the internal representation of this enum, since those values are stored
+ *          directly in the database!
+ *
+ * @generate name convert
+ */
+export type PersistentProtocolStateType =
+    (typeof PersistentProtocolStateType)[keyof typeof PersistentProtocolStateType];
+export namespace PersistentProtocolStateTypeUtils {
+    export const ALL: ReadonlySet<PersistentProtocolStateType> = new Set([
+        PersistentProtocolStateType.LAST_USER_PROFILE_DISTRIBUTION_STATE,
+    ] as const);
+    export function fromNumber(
+        value: u53,
+        fallback?: PersistentProtocolStateType,
+    ): PersistentProtocolStateType {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as PersistentProtocolStateType;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid PersistentProtocolStateType`);
+    }
+    export function containsNumber(value: u53): value is PersistentProtocolStateType {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is PersistentProtocolStateType {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+    export const NAME_OF = {
+        [PersistentProtocolStateType.LAST_USER_PROFILE_DISTRIBUTION_STATE]:
+            'LAST_USER_PROFILE_DISTRIBUTION_STATE',
+    } as const;
+    export function nameOf<T extends u53>(value: T): string | undefined {
+        return (NAME_OF as Record<u53, string | undefined>)[value];
+    }
+}
 export namespace TriggerSource {
     export const SYNC = 0;
     /**

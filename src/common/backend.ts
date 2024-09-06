@@ -12,6 +12,7 @@ import type {BackendMediaService, IFrontendMediaService} from '~/common/media';
 import type {Repositories} from '~/common/model';
 import type {BlobBackend} from '~/common/network/protocol/blob';
 import type {DirectoryBackend} from '~/common/network/protocol/directory';
+import type {PersistentProtocolState} from '~/common/network/protocol/persistent-protocol-state';
 import type {SfuHttpBackend} from '~/common/network/protocol/sfu';
 import type {TaskManager} from '~/common/network/protocol/task/manager';
 import type {VolatileProtocolState} from '~/common/network/protocol/volatile-protocol-state';
@@ -40,6 +41,7 @@ export interface ServicesForBackend {
     readonly model: Repositories;
     readonly nonces: INonceService;
     readonly notification: NotificationService;
+    readonly persistentProtocolState: PersistentProtocolState;
     readonly sfu: SfuHttpBackend;
     readonly systemDialog: Remote<SystemDialogService>;
     readonly systemInfo: SystemInfo;
@@ -56,7 +58,7 @@ export interface ServicesForBackend {
  */
 export type EarlyBackendServices = Omit<
     ServicesForBackend,
-    'device' | 'blob' | 'model' | 'nonces' | 'viewModel' | 'loadingInfo'
+    'device' | 'blob' | 'loadingInfo' | 'model' | 'nonces' | 'persistentProtocolState' | 'viewModel'
 >;
 
 /**

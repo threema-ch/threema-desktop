@@ -18,6 +18,7 @@ import type {
     MessageType,
     NonceScope,
     NotificationSoundPolicy,
+    PersistentProtocolStateType,
     ReadReceiptPolicy,
     ReceiverType,
     StatusMessageType,
@@ -596,6 +597,11 @@ export interface DbMessageLastEdit {
  */
 export type DbStatusMessageUid = WeakOpaque<DbUid, {readonly DbStatusMessageUid: unique symbol}>;
 
+export type DbPersistentProtocolStateUid = WeakOpaque<
+    DbUid,
+    {readonly DbPersistentProtocolStateUid: unique symbol}
+>;
+
 export interface DbStatusMessage<TType extends StatusMessageType> {
     readonly createdAt: Date;
     readonly conversationUid: DbConversationUid;
@@ -607,6 +613,13 @@ export interface DbStatusMessage<TType extends StatusMessageType> {
     readonly statusBytes: ReadonlyUint8Array;
     readonly type: TType;
     readonly uid: DbStatusMessageUid;
+}
+
+export interface DbPersistentProtocolState<TType extends PersistentProtocolStateType> {
+    readonly createdAt: Date;
+    readonly stateBytes: ReadonlyUint8Array;
+    readonly type: TType;
+    readonly uid: DbPersistentProtocolStateUid;
 }
 
 /** Any status message. */
@@ -921,6 +934,18 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     readonly getStatusMessagesOfConversation: (
         conversationUid: DbConversationUid,
     ) => Omit<DbAnyStatusMessage, 'conversationUid' | 'id' | 'ordinal'>[];
+
+    readonly getPersistentProtocolState: () => DbList<
+        DbPersistentProtocolState<PersistentProtocolStateType>
+    >;
+
+    readonly deletePersistentProtocolStateEntriesByUids: (
+        uids: DbPersistentProtocolStateUid[],
+    ) => void;
+
+    readonly updatePersistentProtocolState: (
+        protocolState: DbCreate<DbPersistentProtocolState<PersistentProtocolStateType>>,
+    ) => DbPersistentProtocolStateUid;
 
     /**
      * Update the specified message. Fields that are missing will be ignored.

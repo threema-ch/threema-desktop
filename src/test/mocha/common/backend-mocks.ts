@@ -118,6 +118,7 @@ import {
     type SfuToken,
 } from '~/common/network/protocol/directory';
 import type {D2mMessageFlags} from '~/common/network/protocol/flags';
+import {PersistentProtocolStateBackend} from '~/common/network/protocol/persistent-protocol-state';
 import type {PeekResponse, SfuHttpBackend} from '~/common/network/protocol/sfu';
 import type {
     ActiveTaskCodecHandle,
@@ -460,8 +461,9 @@ class TestModelRepositories implements Repositories {
     public constructor(
         userIdentity: IdentityString,
         services_: Omit<ServicesForBackend, 'model' | 'viewModel'>,
+        db: SqliteDatabaseBackend,
     ) {
-        this.db = initSqliteBackend(services_.logging.logger('db'));
+        this.db = db;
         const services = {...services_, db: this.db, model: this};
 
         this.user = new UserRepository(userIdentity, services);
@@ -472,6 +474,31 @@ class TestModelRepositories implements Repositories {
         this.profilePictures = new ProfilePictureModelRepository(services);
         this.globalProperties = new GlobalPropertyRepository(services);
         this.call = new CallManager(services);
+    }
+
+    public static create(
+        userIdentity: IdentityString,
+        services: Omit<ServicesForBackend, 'model' | 'viewModel' | 'persistentProtocolState'>,
+    ): {
+        readonly model: TestModelRepositories;
+        readonly persistentProtocolState: PersistentProtocolStateBackend;
+    } {
+        const db = initSqliteBackend(services.logging.logger('db'));
+        const persistentProtocolState = new PersistentProtocolStateBackend({
+            db,
+            logging: services.logging,
+        });
+        return {
+            model: new TestModelRepositories(
+                userIdentity,
+                {
+                    ...services,
+                    persistentProtocolState,
+                },
+                db,
+            ),
+            persistentProtocolState,
+        };
     }
 }
 
@@ -651,8 +678,10 @@ export function makeTestServices(identity: IdentityString): TestServices {
         counter: undefined,
     };
     const systemInfo: SystemInfo = {os: 'other', arch: 'pentium386', locale: 'de_CH.utf8'};
-
-    const services: Omit<TestServices, 'rawClientKeyBytes' | 'model' | 'viewModel'> = {
+    const services: Omit<
+        TestServices,
+        'rawClientKeyBytes' | 'model' | 'persistentProtocolState' | 'viewModel'
+    > = {
         blob: new TestBlobBackend(),
         compressor: new ZlibCompressor(),
         config: TEST_CONFIG,
@@ -683,9 +712,9 @@ export function makeTestServices(identity: IdentityString): TestServices {
         volatileProtocolState: new VolatileProtocolStateBackend(),
         loadingInfo: new LoadingInfo(logging.logger('loading-info')),
     };
-    const model = new TestModelRepositories(identity, services);
+    const {model, persistentProtocolState} = TestModelRepositories.create(identity, services);
     const viewModel = new ViewModelRepository({...services, model}, new ViewModelCache());
-    return {...services, rawClientKeyBytes, model, viewModel};
+    return {...services, rawClientKeyBytes, model, persistentProtocolState, viewModel};
 }
 
 type OutboundNonTransactionalL4Message = Exclude<

@@ -59,6 +59,7 @@ export type ServicesForTasks = Pick<
     | 'nonces'
     | 'notification'
     | 'systemDialog'
+    | 'persistentProtocolState'
     | 'volatileProtocolState'
 >;
 
@@ -162,7 +163,7 @@ export interface InternalActiveTaskCodecHandle extends TaskCodecHandle {
      * Reflect one or more messages.
      *
      * The promise will resolve once the reflection of all messages that ought to be acked by the
-     * Mediator server. The only exception to messages being acked at the moment are ephemeral
+     * Mediator server are acked. The only exception to messages being acked at the moment are ephemeral
      * messages.
      *
      * @returns An array of dates in the same order as the messages passed in. The dates represent

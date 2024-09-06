@@ -89,7 +89,6 @@ export const SETTINGS_CODEC: SettingsCategoryCodecs = {
     chat: CHAT_SETTINGS_CODEC,
     devices: DEVICES_SETTINGS_CODEC,
     media: MEDIA_SETTINGS_CODEC,
-
     profile: PROFILE_SETTINGS_CODEC,
     privacy: PRIVACY_SETTINGS_CODEC,
 } as const;
