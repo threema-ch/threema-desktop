@@ -20,7 +20,9 @@ import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
 import type {Model} from '~/common/model/types/common';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {ModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
+import type {BlobId} from '~/common/network/protocol/blob';
 import type {DeviceName, IdentityString, Nickname} from '~/common/network/types';
+import type {RawBlobKey} from '~/common/network/types/keys';
 import type {Settings} from '~/common/settings';
 import type {ReadonlyUint8Array, StrictExtract} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
@@ -28,7 +30,13 @@ import type {ProxyMarked} from '~/common/utils/endpoint';
 // Note: Type must be compatible with common.settings.ProfileSettings
 export interface ProfileSettingsView {
     readonly nickname?: Nickname | undefined;
-    readonly profilePicture?: ReadonlyUint8Array;
+    readonly profilePicture?: {
+        readonly blob: ReadonlyUint8Array;
+        // TODO(DESK-1612) Make these fields mandatory.
+        readonly blobId?: BlobId;
+        readonly lastUploadedAt?: Date;
+        readonly key?: RawBlobKey;
+    };
     readonly profilePictureShareWith: ProfilePictureShareWith;
 }
 export type ProfileSettingsUpdate = Partial<ProfileSettingsView>;

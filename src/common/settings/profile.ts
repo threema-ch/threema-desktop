@@ -3,11 +3,14 @@ import * as v from '@badrap/valita';
 import * as proto from '~/common/internal-protobuf/settings';
 import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
 import {IDENTITY_STRING_LIST_SCHEMA} from '~/common/network/protobuf/validate/helpers';
+import {ensureBlobId} from '~/common/network/protocol/blob';
 import {ensureNickname} from '~/common/network/types';
+import {wrapRawBlobKey} from '~/common/network/types/keys';
 import type {SettingsCategoryCodec} from '~/common/settings';
 import type {ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
-import {instanceOf} from '~/common/utils/valita-helpers';
+import {intoUnsignedLong, unixTimestampToDateMs} from '~/common/utils/number';
+import {instanceOf, unsignedLongAsU64} from '~/common/utils/valita-helpers';
 
 /**
  * Convert a protobuf {@link proto.ProfileSettings_ProfilePictureShareWith} into our own
@@ -48,7 +51,18 @@ const PROFILE_SETTINGS_SCHEMA = v
         nickname: v.string().map(ensureNickname).optional(),
 
         // The user's profile picture
-        profilePicture: instanceOf<ReadonlyUint8Array>(Uint8Array).optional(),
+        profilePicture: v
+            .object({
+                blob: instanceOf<ReadonlyUint8Array>(Uint8Array),
+                // TODO(DESK-1612) Make these fields mandatory.
+                blobId: instanceOf(Uint8Array)
+                    .map((val) => ensureBlobId(val))
+                    .optional(),
+                lastUploadedAt: unsignedLongAsU64().map(unixTimestampToDateMs).optional(),
+                key: instanceOf<Uint8Array>(Uint8Array).map(wrapRawBlobKey).optional(),
+            })
+            .rest(v.unknown())
+            .optional(),
         profilePictureShareWith: v
             .record()
             .map(simplifyProfilePictureShareWith)
@@ -61,6 +75,11 @@ const PROFILE_SETTINGS_SCHEMA = v
  */
 export type ProfileSettings = v.Infer<typeof PROFILE_SETTINGS_SCHEMA>;
 
+/**
+ * Unfortunately, protobuf will lose backwards compatibility if new nested messages are created
+ * within existing messages. Therefore, the profile picture properties in protobuf need to be flat
+ * while in the models, we want them nested. This leads to the restructuring dance below.
+ */
 export const PROFILE_SETTINGS_CODEC: SettingsCategoryCodec<'profile'> = {
     encode: (settings) => {
         // Convert `settings.profilePictureShareWith` to its protobuf representation
@@ -85,13 +104,51 @@ export const PROFILE_SETTINGS_CODEC: SettingsCategoryCodec<'profile'> = {
             default:
                 unreachable(settings.profilePictureShareWith);
         }
-
+        let profilePicture: {
+            blob: Uint8Array | undefined;
+            blobId: Uint8Array | undefined;
+            key: Uint8Array | undefined;
+        } = {
+            blob: undefined,
+            blobId: undefined,
+            key: undefined,
+        };
+        if (settings.profilePicture?.blob !== undefined) {
+            // If the profile is not undefined, we also need to deliver a blob Id
+            profilePicture = {
+                blob: settings.profilePicture.blob as Uint8Array,
+                blobId: settings.profilePicture.blobId as ReadonlyUint8Array as Uint8Array,
+                key: settings.profilePicture.key?.unwrap(),
+            };
+        }
         // Encode protobuf
         return proto.ProfileSettings.encode({
             nickname: settings.nickname,
-            profilePicture: settings.profilePicture as Uint8Array | undefined,
+            blob: profilePicture.blob,
+            blobId: profilePicture.blobId,
+            key: profilePicture.key,
+            lastUploadedAt:
+                settings.profilePicture?.lastUploadedAt !== undefined
+                    ? intoUnsignedLong(BigInt(settings.profilePicture.lastUploadedAt.getTime()))
+                    : undefined,
             profilePictureShareWith,
         }).finish();
     },
-    decode: (encoded) => PROFILE_SETTINGS_SCHEMA.parse(proto.ProfileSettings.decode(encoded)),
+    decode: (encoded) => {
+        const decoded = proto.ProfileSettings.decode(encoded);
+
+        return PROFILE_SETTINGS_SCHEMA.parse({
+            nickname: decoded.nickname,
+            profilePictureShareWith: decoded.profilePictureShareWith,
+            profilePicture:
+                decoded.blob === undefined
+                    ? undefined
+                    : {
+                          blob: decoded.blob,
+                          blobId: decoded.blobId,
+                          lastUploadedAt: decoded.lastUploadedAt,
+                          key: decoded.key,
+                      },
+        });
+    },
 } as const;

@@ -70,10 +70,8 @@ export interface MessageProperties<TMessageEncoder, MessageType extends CspE2eTy
     readonly createdAt: Date;
     /**
      * Whether the profile (nickname and profile picture) may be shared with the recipient of this
-     * outgoing message.
-     *
-     * Note(DESK-234): There are additional things to take into account when implementing profile
-     * picture distribution, e.g. whether the recipient is a gateway ID.
+     * outgoing message. There are other criteria to whether or not and how the profile picture is
+     * shared, which are outlined by the `profile picture distribution steps`.
      */
     readonly allowUserProfileDistribution: boolean;
 }

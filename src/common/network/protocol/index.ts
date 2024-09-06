@@ -490,7 +490,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.CALL_ANSWER]: {
-        userProfileDistribution: 'it-depends', // TODO(DESK-234): This should be true when accepting
+        userProfileDistribution: 'it-depends', // This should be true when accepting
         exemptFromBlocking: false,
         reflect: {
             incoming: true,

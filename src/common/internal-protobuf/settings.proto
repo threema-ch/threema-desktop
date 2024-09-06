@@ -33,9 +33,15 @@ enum TypingIndicatorPolicy {
 message ProfileSettings {
   // Nickname
   optional string nickname = 1;
+  // Profile picture blob
+  optional bytes blob = 2;
+  // Profile picture blobID
+  optional bytes blobId = 4;
+  // The date the profile picture was last uploaded to the server
+  optional uint64 last_uploaded_at = 5;
+  // The symmetric key of the current profile picture
+  optional bytes key = 6;
 
-  // Profile picture
-  optional bytes profile_picture = 2;
   message ProfilePictureShareWith {
     oneof policy {
       // Don't share

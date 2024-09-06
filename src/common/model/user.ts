@@ -47,7 +47,6 @@ export class UserModel implements User {
     public readonly profileSettings: ModelStore<ProfileSettings>;
 
     public readonly profilePicture: LocalStore<ProfilePictureView>;
-
     public constructor(services: ServicesForModel) {
         // TODO(DESK-1468): Redundant. Consider removing this.
         this.identity = services.device.identity.string;
@@ -67,7 +66,7 @@ export class UserModel implements User {
             [this.profileSettings],
             ([{currentValue: profileSettingsModel}]) => ({
                 color: idColorIndexToString(colorIndex),
-                picture: profileSettingsModel.view.profilePicture,
+                picture: profileSettingsModel.view.profilePicture?.blob,
             }),
         );
     }

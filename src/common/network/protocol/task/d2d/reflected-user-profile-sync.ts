@@ -128,16 +128,23 @@ export class ReflectedUserProfileSyncTask implements PassiveTask<void> {
                 const {blob} = validatedMessage.update.userProfile.profilePicture.updated;
                 // Download and decrypt public blob
                 try {
-                    profileUpdate.profilePicture = await downloadAndDecryptBlob(
-                        this._services,
-                        this._log,
-                        blob.id,
-                        blob.key,
-                        // TODO(SE-286): Should we use blob.nonce or not?
-                        ensureNonce(blob.nonce ?? BLOB_FILE_NONCE),
-                        'local',
-                        'local',
-                    );
+                    profileUpdate.profilePicture = {
+                        blob: await downloadAndDecryptBlob(
+                            this._services,
+                            this._log,
+                            blob.id,
+                            blob.key,
+                            // TODO(SE-286): Should we use blob.nonce or not?
+                            ensureNonce(blob.nonce ?? BLOB_FILE_NONCE),
+                            'local',
+                            'local',
+                        ),
+                        blobId: blob.id,
+                        lastUploadedAt:
+                            validatedMessage.update.userProfile.profilePicture.updated.blob
+                                .uploadedAt,
+                        key: blob.key,
+                    };
                 } catch (error) {
                     this._log.warn(
                         `Could not download and decrypt user profile picture: ${extractErrorMessage(

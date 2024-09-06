@@ -271,8 +271,4 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
             }
         }
     }
-
-    private _markMessageAsSent(date: Date): void {
-        this._messageModelStore.get().controller.sent(date);
-    }
 }

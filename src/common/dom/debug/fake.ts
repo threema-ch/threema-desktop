@@ -436,7 +436,9 @@ export async function importScreenshotData(
     if (data.profile !== undefined) {
         await model.user.profileSettings.get().controller.update({
             nickname: data.profile.nickname,
-            profilePicture: data.profile.profilePicture,
+            profilePicture: {
+                blob: data.profile.profilePicture,
+            },
             profilePictureShareWith: {group: 'everyone'},
         });
     }

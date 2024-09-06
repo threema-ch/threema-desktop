@@ -219,10 +219,11 @@ export class DeviceJoinProtocol {
         const essentialData = this._essentialData.unwrap();
 
         // Load profile picture bytes from temporary file
-        let profilePicture: ReadonlyUint8Array | undefined;
+        let profilePictureData: ReadonlyUint8Array | undefined = undefined;
         const profilePictureBlobId = essentialData.userProfile.profilePicture?.updated.blob.id;
+        const key = essentialData.userProfile.profilePicture?.updated.blob.key;
         if (profilePictureBlobId !== undefined) {
-            profilePicture = await this._loadFileContents(
+            profilePictureData = await this._loadFileContents(
                 profilePictureBlobId,
                 'user profile picture',
             );
@@ -233,7 +234,20 @@ export class DeviceJoinProtocol {
             nickname: isNickname(essentialData.userProfile.nickname)
                 ? essentialData.userProfile.nickname
                 : undefined,
-            profilePicture,
+            profilePicture:
+                profilePictureData === undefined
+                    ? undefined
+                    : // These should all be defined. However, when they are undefined for some
+                      // reason, gracefully set them as undefined. Whenever the `profile picture
+                      // distribtuion steps` are run and these are detected undefined, the blob is
+                      // uploaded and the corresponding fields are set.
+                      {
+                          blob: profilePictureData,
+                          blobId: profilePictureBlobId,
+                          lastUploadedAt:
+                              essentialData.userProfile.profilePicture?.updated.blob.uploadedAt,
+                          key,
+                      },
             profilePictureShareWith: essentialData.userProfile.profilePictureShareWith,
         };
         await repositories.user.profileSettings.get().controller.update(profile);

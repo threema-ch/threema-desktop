@@ -1,4 +1,5 @@
 /* eslint-disable */
+import Long from "long";
 import _m0 from "protobufjs/minimal";
 
 /** _Read_ receipt policy (when an unread message has been read) */
@@ -34,8 +35,20 @@ export interface ProfileSettings {
   nickname?:
     | string
     | undefined;
-  /** Profile picture */
-  profilePicture?: Uint8Array | undefined;
+  /** Profile picture blob */
+  blob?:
+    | Uint8Array
+    | undefined;
+  /** Profile picture blobID */
+  blobId?:
+    | Uint8Array
+    | undefined;
+  /** The date the profile picture was last uploaded to the server */
+  lastUploadedAt?:
+    | Long
+    | undefined;
+  /** The symmetric key of the current profile picture */
+  key?: Uint8Array | undefined;
   profilePictureShareWith?: ProfileSettings_ProfilePictureShareWith | undefined;
 }
 
@@ -308,7 +321,14 @@ export const Identities = {
 };
 
 function createBaseProfileSettings(): ProfileSettings {
-  return { nickname: undefined, profilePicture: undefined, profilePictureShareWith: undefined };
+  return {
+    nickname: undefined,
+    blob: undefined,
+    blobId: undefined,
+    lastUploadedAt: undefined,
+    key: undefined,
+    profilePictureShareWith: undefined,
+  };
 }
 
 export const ProfileSettings = {
@@ -316,8 +336,17 @@ export const ProfileSettings = {
     if (message.nickname !== undefined) {
       writer.uint32(10).string(message.nickname);
     }
-    if (message.profilePicture !== undefined) {
-      writer.uint32(18).bytes(message.profilePicture);
+    if (message.blob !== undefined) {
+      writer.uint32(18).bytes(message.blob);
+    }
+    if (message.blobId !== undefined) {
+      writer.uint32(34).bytes(message.blobId);
+    }
+    if (message.lastUploadedAt !== undefined) {
+      writer.uint32(40).uint64(message.lastUploadedAt);
+    }
+    if (message.key !== undefined) {
+      writer.uint32(50).bytes(message.key);
     }
     if (message.profilePictureShareWith !== undefined) {
       ProfileSettings_ProfilePictureShareWith.encode(message.profilePictureShareWith, writer.uint32(26).fork())
@@ -345,7 +374,28 @@ export const ProfileSettings = {
             break;
           }
 
-          message.profilePicture = reader.bytes();
+          message.blob = reader.bytes();
+          continue;
+        case 4:
+          if (tag !== 34) {
+            break;
+          }
+
+          message.blobId = reader.bytes();
+          continue;
+        case 5:
+          if (tag !== 40) {
+            break;
+          }
+
+          message.lastUploadedAt = reader.uint64() as Long;
+          continue;
+        case 6:
+          if (tag !== 50) {
+            break;
+          }
+
+          message.key = reader.bytes();
           continue;
         case 3:
           if (tag !== 26) {
@@ -843,3 +893,8 @@ export const ChatSettings = {
     return message;
   },
 };
+
+if (_m0.util.Long !== Long) {
+  _m0.util.Long = Long as any;
+  _m0.configure();
+}
