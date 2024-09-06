@@ -6,7 +6,7 @@ import {
     ReceiverType,
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import type {Contact, Conversation, Group} from '~/common/model';
+import type {Conversation} from '~/common/model';
 import {getIdentityString} from '~/common/model/contact';
 import type {UnifiedEditMessage} from '~/common/model/types/message';
 import type {AnyReceiver} from '~/common/model/types/receiver';
@@ -20,7 +20,7 @@ import {
     type ActiveTaskSymbol,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {OutgoingCspMessageTask} from '~/common/network/protocol/task/csp/outgoing-csp-message';
+import {OutgoingCspMessagesTask} from '~/common/network/protocol/task/csp/outgoing-csp-messages';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import type {MessageId} from '~/common/network/types';
@@ -90,11 +90,9 @@ export class OutgoingEditMessageTask<TReceiver extends AnyReceiver>
                     ...commonMessageProperties,
                 } as const;
 
-                task = new OutgoingCspMessageTask<
-                    protobuf.csp_e2e.EditMessageEncodable,
-                    Contact,
-                    CspE2eMessageUpdateType.EDIT_MESSAGE
-                >(this._services, this._receiverModel, messageProperties);
+                task = new OutgoingCspMessagesTask(this._services, [
+                    {receiver: this._receiverModel, messageProperties},
+                ]);
 
                 break;
             }
@@ -118,11 +116,9 @@ export class OutgoingEditMessageTask<TReceiver extends AnyReceiver>
                     ...commonMessageProperties,
                 } as const;
 
-                task = new OutgoingCspMessageTask<
-                    structbuf.csp.e2e.GroupMemberContainerEncodable,
-                    Group,
-                    CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE
-                >(this._services, this._receiverModel, messageProperties);
+                task = new OutgoingCspMessagesTask(this._services, [
+                    {receiver: this._receiverModel, messageProperties},
+                ]);
 
                 break;
             }

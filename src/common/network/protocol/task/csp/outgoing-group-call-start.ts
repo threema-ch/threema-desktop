@@ -13,7 +13,7 @@ import {
     type ActiveTaskSymbol,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {OutgoingCspMessageTask} from '~/common/network/protocol/task/csp/outgoing-csp-message';
+import {OutgoingCspMessagesTask} from '~/common/network/protocol/task/csp/outgoing-csp-messages';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {byteEquals} from '~/common/utils/byte';
@@ -23,27 +23,30 @@ export function createOutgoingCspGroupCallStartTask(
     services: ServicesForTasks,
     group: Group,
     call: GroupCallBaseData,
-): OutgoingCspMessageTask<
-    structbuf.csp.e2e.GroupMemberContainerEncodable,
-    Group,
-    CspE2eGroupControlType.GROUP_CALL_START
-> {
-    return new OutgoingCspMessageTask(services, group, {
-        type: CspE2eGroupControlType.GROUP_CALL_START,
-        encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
-            groupId: group.view.groupId,
-            creatorIdentity: UTF8.encode(getIdentityString(services.device, group.view.creator)),
-            innerData: protobuf.utils.encoder(protobuf.csp_e2e.GroupCallStart, {
-                protocolVersion: call.protocolVersion,
-                gck: call.gck.unwrap(),
-                sfuBaseUrl: call.sfuBaseUrl.raw,
-            }),
-        }),
-        cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
-        messageId: randomMessageId(services.crypto),
-        createdAt: call.receivedAt,
-        allowUserProfileDistribution: true,
-    });
+): OutgoingCspMessagesTask {
+    return new OutgoingCspMessagesTask(services, [
+        {
+            receiver: group,
+            messageProperties: {
+                type: CspE2eGroupControlType.GROUP_CALL_START,
+                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
+                    groupId: group.view.groupId,
+                    creatorIdentity: UTF8.encode(
+                        getIdentityString(services.device, group.view.creator),
+                    ),
+                    innerData: protobuf.utils.encoder(protobuf.csp_e2e.GroupCallStart, {
+                        protocolVersion: call.protocolVersion,
+                        gck: call.gck.unwrap(),
+                        sfuBaseUrl: call.sfuBaseUrl.raw,
+                    }),
+                }),
+                cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
+                messageId: randomMessageId(services.crypto),
+                createdAt: call.receivedAt,
+                allowUserProfileDistribution: true,
+            },
+        },
+    ]);
 }
 
 /**

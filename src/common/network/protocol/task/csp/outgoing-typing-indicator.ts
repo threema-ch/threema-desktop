@@ -9,10 +9,8 @@ import {
     type ActiveTaskSymbol,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {
-    type MessageProperties,
-    OutgoingCspMessageTask,
-} from '~/common/network/protocol/task/csp/outgoing-csp-message';
+import type {MessageProperties} from '~/common/network/protocol/task/csp/outgoing-csp-message';
+import {OutgoingCspMessagesTask} from '~/common/network/protocol/task/csp/outgoing-csp-messages';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import type {TypingIndicatorEncodable} from '~/common/network/structbuf/csp/e2e';
@@ -35,7 +33,7 @@ export class OutgoingTypingIndicatorTask<TReceiver extends Contact>
 
     public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
         const isTyping = this._isTyping ? 1 : 0;
-        this._log.info(`Sending typing indicator with value '${isTyping}'`);
+        this._log.debug(`Sending typing indicator with value '${isTyping}'`);
         const messageProperties: MessageProperties<
             TypingIndicatorEncodable,
             CspE2eStatusUpdateType
@@ -50,11 +48,9 @@ export class OutgoingTypingIndicatorTask<TReceiver extends Contact>
             allowUserProfileDistribution: false,
         } as const;
 
-        const messageTask = new OutgoingCspMessageTask<
-            TypingIndicatorEncodable,
-            Contact,
-            CspE2eStatusUpdateType
-        >(this._services, this._receiver, messageProperties);
+        const messageTask = new OutgoingCspMessagesTask(this._services, [
+            {receiver: this._receiver, messageProperties},
+        ]);
 
         await messageTask.run(handle);
     }

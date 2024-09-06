@@ -1,11 +1,6 @@
 import {CspE2eGroupMessageUpdateType, CspE2eMessageUpdateType, ReceiverType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import type {
-    Group,
-    AnyReceiver,
-    Contact,
-    AnyOutboundNonDeletedMessageModelStore,
-} from '~/common/model';
+import type {AnyReceiver, AnyOutboundNonDeletedMessageModelStore} from '~/common/model';
 import {getIdentityString} from '~/common/model/contact';
 import * as protobuf from '~/common/network/protobuf';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
@@ -16,7 +11,7 @@ import {
     type ActiveTaskSymbol,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {OutgoingCspMessageTask} from '~/common/network/protocol/task/csp/outgoing-csp-message';
+import {OutgoingCspMessagesTask} from '~/common/network/protocol/task/csp/outgoing-csp-messages';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {assert, unreachable} from '~/common/utils/assert';
@@ -73,11 +68,9 @@ export class OutgoingDeleteMessageTask<TReceiver extends AnyReceiver>
                     ...commonMessageProperties,
                 } as const;
 
-                task = new OutgoingCspMessageTask<
-                    protobuf.csp_e2e.DeleteMessageEncodable,
-                    Contact,
-                    CspE2eMessageUpdateType.DELETE_MESSAGE
-                >(this._services, this._receiverModel, messageProperties);
+                task = new OutgoingCspMessagesTask(this._services, [
+                    {receiver: this._receiverModel, messageProperties},
+                ]);
 
                 break;
             }
@@ -101,11 +94,9 @@ export class OutgoingDeleteMessageTask<TReceiver extends AnyReceiver>
                     ...commonMessageProperties,
                 } as const;
 
-                task = new OutgoingCspMessageTask<
-                    structbuf.csp.e2e.GroupMemberContainerEncodable,
-                    Group,
-                    CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE
-                >(this._services, this._receiverModel, messageProperties);
+                task = new OutgoingCspMessagesTask(this._services, [
+                    {receiver: this._receiverModel, messageProperties},
+                ]);
 
                 break;
             }

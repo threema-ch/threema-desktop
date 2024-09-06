@@ -21,7 +21,7 @@ import type {
     ActiveTaskPersistence,
     ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {OutgoingCspMessageTask} from '~/common/network/protocol/task/csp/outgoing-csp-message';
+import {OutgoingCspMessagesTask} from '~/common/network/protocol/task/csp/outgoing-csp-messages';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import type {GroupId, GroupMessageReflectSetting, IdentityString} from '~/common/network/types';
@@ -227,17 +227,22 @@ export async function sendGroupSyncRequest<TPersistence extends ActiveTaskPersis
     handle: ActiveTaskCodecHandle<TPersistence>,
     services: ServicesForTasks,
 ): Promise<void> {
-    await new OutgoingCspMessageTask(services, receiver, {
-        type: CspE2eGroupControlType.GROUP_SYNC_REQUEST,
-        encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
-            groupId,
-            innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupSyncRequest, {}),
-        }),
-        cspMessageFlags: CspMessageFlags.none(),
-        messageId: randomMessageId(services.crypto),
-        createdAt: new Date(),
-        allowUserProfileDistribution: false,
-    }).run(handle);
+    await new OutgoingCspMessagesTask(services, [
+        {
+            receiver,
+            messageProperties: {
+                type: CspE2eGroupControlType.GROUP_SYNC_REQUEST,
+                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
+                    groupId,
+                    innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupSyncRequest, {}),
+                }),
+                cspMessageFlags: CspMessageFlags.none(),
+                messageId: randomMessageId(services.crypto),
+                createdAt: new Date(),
+                allowUserProfileDistribution: false,
+            },
+        },
+    ]).run(handle);
 }
 
 /**
@@ -251,24 +256,25 @@ export async function sendGroupSetup<TPersistence extends ActiveTaskPersistence>
     services: ServicesForTasks,
     reflect: GroupMessageReflectSetting = 'default',
 ): Promise<void> {
-    await new OutgoingCspMessageTask(
-        services,
-        receiver,
+    await new OutgoingCspMessagesTask(services, [
         {
-            type: CspE2eGroupControlType.GROUP_SETUP,
-            encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
-                groupId,
-                innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupSetup, {
-                    members: members.map((identity) => UTF8.encode(identity)),
+            receiver,
+            messageProperties: {
+                type: CspE2eGroupControlType.GROUP_SETUP,
+                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
+                    groupId,
+                    innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupSetup, {
+                        members: members.map((identity) => UTF8.encode(identity)),
+                    }),
                 }),
-            }),
-            cspMessageFlags: CspMessageFlags.none(),
-            messageId: randomMessageId(services.crypto),
-            createdAt: new Date(),
-            allowUserProfileDistribution: true,
+                cspMessageFlags: CspMessageFlags.none(),
+                messageId: randomMessageId(services.crypto),
+                createdAt: new Date(),
+                allowUserProfileDistribution: true,
+                overrideReflectedProperty: reflect === 'never',
+            },
         },
-        reflect,
-    ).run(handle);
+    ]).run(handle);
 }
 
 /**
@@ -293,19 +299,24 @@ export async function sendGroupName<TPersistence extends ActiveTaskPersistence>(
     handle: ActiveTaskCodecHandle<TPersistence>,
     services: ServicesForTasks,
 ): Promise<void> {
-    await new OutgoingCspMessageTask(services, receiver, {
-        type: CspE2eGroupControlType.GROUP_NAME,
-        encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
-            groupId,
-            innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupName, {
-                name: UTF8.encode(name),
-            }),
-        }),
-        cspMessageFlags: CspMessageFlags.none(),
-        messageId: randomMessageId(services.crypto),
-        createdAt: new Date(),
-        allowUserProfileDistribution: true,
-    }).run(handle);
+    await new OutgoingCspMessagesTask(services, [
+        {
+            receiver,
+            messageProperties: {
+                type: CspE2eGroupControlType.GROUP_NAME,
+                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
+                    groupId,
+                    innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupName, {
+                        name: UTF8.encode(name),
+                    }),
+                }),
+                cspMessageFlags: CspMessageFlags.none(),
+                messageId: randomMessageId(services.crypto),
+                createdAt: new Date(),
+                allowUserProfileDistribution: true,
+            },
+        },
+    ]).run(handle);
 }
 
 /**
@@ -324,21 +335,26 @@ export async function sendGroupSetProfilePicture<TPersistence extends ActiveTask
         BLOB_FILE_NONCE,
         'public',
     );
-    await new OutgoingCspMessageTask(services, receiver, {
-        type: CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE,
-        encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
-            groupId,
-            innerData: structbuf.bridge.encoder(structbuf.csp.e2e.SetProfilePicture, {
-                pictureBlobId: blobInfo.id as ReadonlyUint8Array as Uint8Array,
-                pictureSize: profilePicture.byteLength,
-                key: blobInfo.key.unwrap() as ReadonlyUint8Array as Uint8Array,
-            }),
-        }),
-        cspMessageFlags: CspMessageFlags.none(),
-        messageId: randomMessageId(services.crypto),
-        createdAt: new Date(),
-        allowUserProfileDistribution: false,
-    }).run(handle);
+    await new OutgoingCspMessagesTask(services, [
+        {
+            receiver,
+            messageProperties: {
+                type: CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE,
+                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
+                    groupId,
+                    innerData: structbuf.bridge.encoder(structbuf.csp.e2e.SetProfilePicture, {
+                        pictureBlobId: blobInfo.id as ReadonlyUint8Array as Uint8Array,
+                        pictureSize: profilePicture.byteLength,
+                        key: blobInfo.key.unwrap() as ReadonlyUint8Array as Uint8Array,
+                    }),
+                }),
+                cspMessageFlags: CspMessageFlags.none(),
+                messageId: randomMessageId(services.crypto),
+                createdAt: new Date(),
+                allowUserProfileDistribution: false,
+            },
+        },
+    ]).run(handle);
 }
 
 /**
@@ -350,17 +366,22 @@ export async function sendGroupDeleteProfilePicture<TPersistence extends ActiveT
     handle: ActiveTaskCodecHandle<TPersistence>,
     services: ServicesForTasks,
 ): Promise<void> {
-    await new OutgoingCspMessageTask(services, receiver, {
-        type: CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE,
-        encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
-            groupId,
-            innerData: structbuf.bridge.encoder(structbuf.csp.e2e.DeleteProfilePicture, {}),
-        }),
-        cspMessageFlags: CspMessageFlags.none(),
-        messageId: randomMessageId(services.crypto),
-        createdAt: new Date(),
-        allowUserProfileDistribution: false,
-    }).run(handle);
+    await new OutgoingCspMessagesTask(services, [
+        {
+            receiver,
+            messageProperties: {
+                type: CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE,
+                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
+                    groupId,
+                    innerData: structbuf.bridge.encoder(structbuf.csp.e2e.DeleteProfilePicture, {}),
+                }),
+                cspMessageFlags: CspMessageFlags.none(),
+                messageId: randomMessageId(services.crypto),
+                createdAt: new Date(),
+                allowUserProfileDistribution: false,
+            },
+        },
+    ]).run(handle);
 }
 
 /**
@@ -373,16 +394,21 @@ async function sendGroupLeave<TPersistence extends ActiveTaskPersistence>(
     handle: ActiveTaskCodecHandle<TPersistence>,
     services: ServicesForTasks,
 ): Promise<void> {
-    await new OutgoingCspMessageTask(services, receiver, {
-        type: CspE2eGroupControlType.GROUP_LEAVE,
-        encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
-            groupId,
-            creatorIdentity: UTF8.encode(creatorIdentity),
-            innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupLeave, {}),
-        }),
-        cspMessageFlags: CspMessageFlags.none(),
-        messageId: randomMessageId(services.crypto),
-        createdAt: new Date(),
-        allowUserProfileDistribution: false,
-    }).run(handle);
+    await new OutgoingCspMessagesTask(services, [
+        {
+            receiver,
+            messageProperties: {
+                type: CspE2eGroupControlType.GROUP_LEAVE,
+                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
+                    groupId,
+                    creatorIdentity: UTF8.encode(creatorIdentity),
+                    innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupLeave, {}),
+                }),
+                cspMessageFlags: CspMessageFlags.none(),
+                messageId: randomMessageId(services.crypto),
+                createdAt: new Date(),
+                allowUserProfileDistribution: false,
+            },
+        },
+    ]).run(handle);
 }

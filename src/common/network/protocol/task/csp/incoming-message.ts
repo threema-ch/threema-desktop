@@ -80,7 +80,7 @@ import {IncomingGroupSetupTask} from '~/common/network/protocol/task/csp/incomin
 import {IncomingGroupSyncRequestTask} from '~/common/network/protocol/task/csp/incoming-group-sync-request';
 import {IncomingMessageContentUpdateTask} from '~/common/network/protocol/task/csp/incoming-message-content-update';
 import {IncomingTypingIndicatorTask} from '~/common/network/protocol/task/csp/incoming-typing-indicator';
-import {OutgoingCspMessageTask} from '~/common/network/protocol/task/csp/outgoing-csp-message';
+import {OutgoingCspMessagesTask} from '~/common/network/protocol/task/csp/outgoing-csp-messages';
 import {
     messageReferenceDebugFor,
     type AnyInboundMessageInitFragment,
@@ -902,17 +902,22 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             //       message does not complete successfully, the message will not be acked and will
             //       be re-processed later, that's why we don't need persistence for the delivery
             //       receipt.
-            await new OutgoingCspMessageTask(this._services, senderContactOrInit.get(), {
-                type: CspE2eStatusUpdateType.DELIVERY_RECEIPT,
-                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.DeliveryReceipt, {
-                    messageIds: [this._id],
-                    status: CspE2eDeliveryReceiptStatus.RECEIVED,
-                }),
-                cspMessageFlags: CspMessageFlags.none(),
-                messageId: randomMessageId(this._services.crypto),
-                createdAt: instructions.initFragment?.receivedAt ?? new Date(),
-                allowUserProfileDistribution: false,
-            }).run(handle);
+            await new OutgoingCspMessagesTask(this._services, [
+                {
+                    receiver: senderContactOrInit.get(),
+                    messageProperties: {
+                        type: CspE2eStatusUpdateType.DELIVERY_RECEIPT,
+                        encoder: structbuf.bridge.encoder(structbuf.csp.e2e.DeliveryReceipt, {
+                            messageIds: [this._id],
+                            status: CspE2eDeliveryReceiptStatus.RECEIVED,
+                        }),
+                        cspMessageFlags: CspMessageFlags.none(),
+                        messageId: randomMessageId(this._services.crypto),
+                        createdAt: instructions.initFragment?.receivedAt ?? new Date(),
+                        allowUserProfileDistribution: false,
+                    },
+                },
+            ]).run(handle);
         }
 
         this._commitNonce();

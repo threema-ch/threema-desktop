@@ -16,10 +16,8 @@ import {
     type ActiveTaskSymbol,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {
-    type MessageProperties,
-    OutgoingCspMessageTask,
-} from '~/common/network/protocol/task/csp/outgoing-csp-message';
+import type {MessageProperties} from '~/common/network/protocol/task/csp/outgoing-csp-message';
+import {OutgoingCspMessagesTask} from '~/common/network/protocol/task/csp/outgoing-csp-messages';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import type {
@@ -128,11 +126,9 @@ export class OutgoingDeliveryReceiptTask<TReceiver extends AnyReceiver>
             allowUserProfileDistribution: isReaction(this._status),
         } as const;
 
-        const messageTask = new OutgoingCspMessageTask<
-            DeliveryReceiptEncodable,
-            Contact,
-            CspE2eStatusUpdateType
-        >(this._services, contact, messageProperties);
+        const messageTask = new OutgoingCspMessagesTask(this._services, [
+            {receiver: contact, messageProperties},
+        ]);
         await messageTask.run(handle);
     }
 
@@ -162,11 +158,9 @@ export class OutgoingDeliveryReceiptTask<TReceiver extends AnyReceiver>
             allowUserProfileDistribution: isReaction(this._status),
         };
 
-        const messageTask = new OutgoingCspMessageTask<
-            GroupMemberContainerEncodable,
-            Group,
-            CspE2eGroupStatusUpdateType
-        >(this._services, group, messageProperties);
+        const messageTask = new OutgoingCspMessagesTask(this._services, [
+            {receiver: group, messageProperties},
+        ]);
         await messageTask.run(handle);
     }
 }

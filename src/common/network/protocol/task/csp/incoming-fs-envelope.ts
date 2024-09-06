@@ -13,7 +13,7 @@ import {randomMessageId} from '~/common/network/protocol/utils';
 import type {IdentityString, MessageId} from '~/common/network/types';
 import {intoUnsignedLong, u64ToHexLe} from '~/common/utils/number';
 
-import {OutgoingCspMessageTask} from './outgoing-csp-message';
+import {OutgoingCspMessagesTask} from './outgoing-csp-messages';
 
 /**
  * Process incoming forward security envelopes.
@@ -85,14 +85,19 @@ export class IncomingForwardSecurityEnvelopeTask
         });
 
         // Send message
-        await new OutgoingCspMessageTask(this._services, receiver.get(), {
-            type: CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE,
-            encoder,
-            cspMessageFlags: CspMessageFlags.none(),
-            messageId: randomMessageId(crypto),
-            createdAt: new Date(),
-            allowUserProfileDistribution: false,
-        }).run(handle);
+        await new OutgoingCspMessagesTask(this._services, [
+            {
+                receiver: receiver.get(),
+                messageProperties: {
+                    type: CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE,
+                    encoder,
+                    cspMessageFlags: CspMessageFlags.none(),
+                    messageId: randomMessageId(crypto),
+                    createdAt: new Date(),
+                    allowUserProfileDistribution: false,
+                },
+            },
+        ]).run(handle);
         this._log.info('Rejected incoming forward security message');
     }
 

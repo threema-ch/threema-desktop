@@ -1,9 +1,6 @@
-import type {DbReceiverLookup} from '~/common/db';
 import {
     CspE2eConversationType,
     CspE2eGroupConversationType,
-    MessageDirection,
-    MessageType,
     ReceiverType,
     ReceiverTypeUtils,
 } from '~/common/enum';
@@ -22,19 +19,15 @@ import {
 } from '~/common/network/protocol/task';
 import {serializeQuoteText} from '~/common/network/protocol/task/common/quotes';
 import {getFileJsonData} from '~/common/network/protocol/task/csp/common';
-import {
-    type IOutgoingCspMessageTaskConstructor,
-    OutgoingCspMessageTask,
-    type ValidCspMessageTypeForReceiver,
-} from '~/common/network/protocol/task/csp/outgoing-csp-message';
+import type {ValidCspMessageTypeForReceiver} from '~/common/network/protocol/task/csp/outgoing-csp-message';
+import {OutgoingCspMessagesTask} from '~/common/network/protocol/task/csp/outgoing-csp-messages';
 import * as structbuf from '~/common/network/structbuf';
 import type {
     FileEncodable,
     GroupMemberContainerEncodable,
     TextEncodable,
 } from '~/common/network/structbuf/csp/e2e';
-import type {MessageId} from '~/common/network/types';
-import {assert, ensureError, unreachable} from '~/common/utils/assert';
+import {ensureError, unreachable} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {u64ToHexLe} from '~/common/utils/number';
 
@@ -64,55 +57,10 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
         private readonly _services: ServicesForTasks,
         private readonly _receiverModel: TReceiver,
         private readonly _messageModelStore: AnyOutboundNonDeletedMessageModelStore,
-        private readonly _outgoingCspMessageTaskConstructor: IOutgoingCspMessageTaskConstructor = OutgoingCspMessageTask,
     ) {
         // Instantiate logger
         const messageIdHex = u64ToHexLe(_messageModelStore.get().view.id);
         this._log = _services.logging.logger(`network.protocol.task.out-message.${messageIdHex}`);
-    }
-
-    /**
-     * Construct a  {@link OutgoingConversationMessageTask} from lookup params.
-     *
-     * @throws Error if the conversation for the receiver cannot be found
-     * @throws Error if the message does not exist in the conversation.
-     * @throws Error if the message is not an outbound message.
-     * @throws Error if the message was deleted.
-     */
-    public static fromLookup<TReceiver extends AnyReceiver>(
-        services: ServicesForTasks,
-        receiver: DbReceiverLookup,
-        messageId: MessageId,
-    ): OutgoingConversationMessageTask<TReceiver> {
-        const {model} = services;
-        const messageIdHex = u64ToHexLe(messageId);
-
-        // Conversation
-        const conversationStore = model.conversations.getForReceiver(receiver);
-        if (conversationStore === undefined) {
-            throw new Error(`Conversation for receiver ${JSON.stringify(receiver)} not found`);
-        }
-
-        // Message
-        const messageStore = conversationStore.get().controller.getMessage(messageId);
-        if (messageStore === undefined) {
-            throw new Error(`Message with ID ${messageIdHex} not found`);
-        }
-        assert(
-            messageStore.ctx === MessageDirection.OUTBOUND,
-            'Outgoing message task requires outbound messages',
-        );
-
-        assert(
-            messageStore.type !== MessageType.DELETED,
-            'Cannot send a deleted conversation message',
-        );
-
-        // Receiver
-        const receiverStore = conversationStore.get().controller.receiver();
-        const receiverModel = receiverStore.get() as TReceiver;
-
-        return new OutgoingConversationMessageTask(services, receiverModel, messageStore);
     }
 
     public async run(handle: ActiveTaskCodecHandle<'persistent'>): Promise<void> {
@@ -163,25 +111,16 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
             createdAt,
             allowUserProfileDistribution: true,
         } as const;
-        const outCspMessageTask = new this._outgoingCspMessageTaskConstructor(
-            this._services,
-            this._receiverModel,
-            messageProperties,
-        );
+        const outCspMessageTask = new OutgoingCspMessagesTask(this._services, [
+            {messageProperties, receiver: this._receiverModel},
+        ]);
 
         // Run task
-        const reflectDate = await outCspMessageTask.run(handle);
-
-        // Mark message as sent, using the reflection date as timestamp
-        if (reflectDate !== undefined) {
-            this._markMessageAsSent(reflectDate);
-        } else {
-            this._log.warn(`Message of type ${messageProperties.type} was not sent.`);
-        }
+        await outCspMessageTask.run(handle);
 
         // Done
         this._log.info(
-            `Reflected ${reflectDate !== undefined ? 'and sent ' : ''}${ReceiverTypeUtils.nameOf(
+            `Sent ${ReceiverTypeUtils.nameOf(
                 this._receiverModel.type,
             )?.toLowerCase()} ${messageType} message`,
         );
