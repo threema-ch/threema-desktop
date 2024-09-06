@@ -50,7 +50,7 @@ import {
     InMemoryFileStorage,
     wrapFileEncryptionKey,
 } from '~/common/file-storage';
-import {BLOB_ID_LENGTH, type BlobId} from '~/common/network/protocol/blob';
+import {BLOB_ID_LENGTH, ensureBlobId, type BlobId} from '~/common/network/protocol/blob';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import {
     ensureIdentityString,
@@ -1921,7 +1921,12 @@ export function backendTests(
         };
         const settingsWithBarNickname = {
             nickname: ensureNickname('bar'),
-            profilePicture: new Uint8Array([1, 2, 3, 4]),
+            profilePicture: {
+                blob: new Uint8Array([1, 2, 3, 4]),
+                blobId: ensureBlobId(new Uint8Array(BLOB_ID_LENGTH)),
+                key: wrapRawBlobKey(crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH))),
+                lastUploadedAt: new Date(),
+            },
             profilePictureShareWith: {group: 'everyone'} as const,
         };
 
@@ -1939,7 +1944,7 @@ export function backendTests(
             db.setSettings('profile', settingsWithFooNickname);
             expect(db.getSettings('profile')).to.be.eql(settingsWithFooNickname);
             db.setSettings('profile', settingsWithBarNickname);
-            expect(db.getSettings('profile')).to.be.eql(settingsWithBarNickname);
+            expect(db.getSettings('profile')).to.deep.eq(settingsWithBarNickname);
         });
     });
 

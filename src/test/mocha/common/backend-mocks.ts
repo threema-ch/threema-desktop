@@ -129,7 +129,7 @@ import type {
     TransactionRunning,
 } from '~/common/network/protocol/task';
 import {_only_for_testing, TaskManager} from '~/common/network/protocol/task/manager';
-import {randomGroupId} from '~/common/network/protocol/utils';
+import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import {VolatileProtocolStateBackend} from '~/common/network/protocol/volatile-protocol-state';
 import type {WorkBackend, WorkContacts, WorkLicenseStatus} from '~/common/network/protocol/work';
 import * as structbuf from '~/common/network/structbuf';
@@ -791,6 +791,37 @@ export class NetworkExpectationFactory {
             return message;
         }
         return NetworkExpectationFactory.read(generator, MessageFilterInstruction.ACCEPT);
+    }
+
+    /**
+     * Expect an incoming message ack to be accepted without knowing the messageId.
+     */
+    public static readIncomingMessageAckWithoutMessageId(
+        services: Pick<ServicesForTasks, 'crypto'>,
+        identity: IdentityString,
+    ): NetworkExpectation {
+        function generator(): InboundL4Message {
+            const encoder = structbuf.bridge.encoder(structbuf.csp.payload.MessageAck, {
+                identity: UTF8.encode(identity),
+                messageId: randomMessageId(services.crypto),
+            });
+            const encodedAck = encoder.encode(new Uint8Array(encoder.byteLength()));
+            const ack = structbuf.csp.payload.MessageAck.decode(encodedAck);
+            const message: InboundL4Message = {
+                type: D2mPayloadType.PROXY,
+                payload: {
+                    type: CspPayloadType.OUTGOING_MESSAGE_ACK,
+                    payload: ack,
+                },
+            };
+            return message;
+        }
+
+        // Because we don't know the message ID, the message cannot be accepted.
+        return NetworkExpectationFactory.read(
+            generator,
+            MessageFilterInstruction.BYPASS_OR_BACKLOG,
+        );
     }
 
     /**

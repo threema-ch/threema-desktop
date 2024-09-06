@@ -16,7 +16,6 @@ export function run(): void {
             it('correctly serialize blob data', function () {
                 const blobId = ensureBlobId(crypto.randomBytes(new Uint8Array(16)));
                 const data = crypto.randomBytes(new Uint8Array(32)) as ReadonlyUint8Array;
-
                 const serialized = BlobData.serialize({id: blobId, data});
 
                 expect(serialized.id).to.deep.equal(blobId);

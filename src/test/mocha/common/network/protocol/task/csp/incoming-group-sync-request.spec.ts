@@ -52,6 +52,22 @@ export function run(): void {
         let services: TestServices;
         this.beforeEach(function () {
             services = makeTestServices(me);
+            // Make sure the tasks have no side effects
+            services.persistentProtocolState.setLastDistributionUserProfileState(
+                user1.identity.string,
+                {
+                    type: 'removed',
+                },
+                new Date(),
+            );
+
+            services.persistentProtocolState.setLastDistributionUserProfileState(
+                user2.identity.string,
+                {
+                    type: 'removed',
+                },
+                new Date(),
+            );
         });
         this.afterEach(function () {
             if (this.currentTest?.state === 'failed') {
