@@ -6,7 +6,7 @@ const path = require('node:path');
 const process = require('node:process');
 
 const TARGET = 'electron';
-const ENTRIES = ['cli', 'electron-main', 'electron-preload', 'app'];
+const ENTRIES = ['app', 'electron-preload', 'electron-main', 'cli'];
 
 // Parse arguments
 const [node, script, ...argv] = process.argv;
