@@ -375,7 +375,6 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
     // Determine plugins
     const plugins = {
         tsWorkerPlugin: env.entry === 'app' ? tsWorkerPlugin() : undefined,
-        subresourceIntegrityPlugin: env.entry === 'app' ? subresourceIntegrityPlugin() : undefined,
         commonjsExternals: cjsExternals({
             externals: [
                 ...external,
@@ -413,6 +412,10 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
                       configFile: '../svelte.config.js',
                   })
                 : undefined,
+        // Calculates integrity hashes (when `app` entry point is built) and adds them to
+        // `electron-main.cjs` (when `electron-main`) entry point is built. Plugin is added to all
+        // builds / entry points, because it defines which files to transform (and when) itself.
+        subresourceIntegrityPlugin: subresourceIntegrityPlugin(),
     } as const;
 
     // Determine rollup options
