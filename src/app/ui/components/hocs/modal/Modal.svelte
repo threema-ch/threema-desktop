@@ -197,9 +197,9 @@
           <div
             class="card"
             class:elevated
-            style={`--c-t-min-width: ${minWidth}px;
-                    ${maxWidth === undefined ? '--c-t-max-width: 100%;' : `--c-t-max-width: ${maxWidth}px;`}
-                    --c-t-width: ${layout === 'expansive' ? '100%' : 'fit-content'};`}
+            style:--c-t-min-width={`${minWidth}px`}
+            style:--c-t-max-width={maxWidth === undefined ? '100%' : `${maxWidth}px`}
+            style:--c-t-width={layout === 'expansive' ? '100%' : 'fit-content'}
           >
             {#if title !== undefined || actions.length > 0}
               <div class="header">

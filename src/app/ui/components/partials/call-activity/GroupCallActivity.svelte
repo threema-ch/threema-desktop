@@ -568,7 +568,7 @@
   use:size
   class="container"
   class:expanded={isExpanded}
-  style={`--c-t-feed-padding: ${FEED_PADDING_PX}px;`}
+  style:--c-t-feed-padding={`${FEED_PADDING_PX}px`}
   data-layout={containerLayout}
   on:changesize={handleChangeSizeContainerElement}
 >

@@ -19,9 +19,9 @@
 </script>
 
 <template>
-  <div class={variant} style="--c-t-value: {value};">
+  <div class={variant} style:--c-t-value={value}>
     <svg viewBox="20 20 40 40">
-      <circle class={color} cx="40" cy="40" style="r: calc((40px - var(--c-t-thickness)) / 2);" />
+      <circle class={color} cx="40" cy="40" style:r="calc((40px - var(--c-t-thickness)) / 2)" />
     </svg>
   </div>
 </template>

@@ -27,27 +27,43 @@
    * Get the CSS style of an exclusion mask consiting of multiple cutouts, expressed as a
    * `mask-image` and `mask-composite`. Returns `undefined` if the given array of cutouts is empty.
    */
-  function getExclusionMaskStyle(
-    currentCutouts: typeof cutouts,
-  ): `mask-image: ${string}; mask-composite: exclude;` | undefined {
+  function getExclusionMaskStyle(currentCutouts: typeof cutouts): {
+    maskComposite?: string;
+    maskImage?: string;
+  } {
     if (currentCutouts.length === 0) {
-      return undefined;
+      return {
+        maskComposite: undefined,
+        maskImage: undefined,
+      };
     }
 
     const gradientStyles = currentCutouts.map((cutout) => getRadialGradientStyle(cutout));
 
-    if (currentCutouts.length === 1) {
+    if (currentCutouts.length === 1 && gradientStyles[0] !== undefined) {
       // Return mask style with a single cutout.
-      return `mask-image: ${gradientStyles[0]}; mask-composite: exclude;`;
+      return {
+        maskComposite: 'exclude',
+        maskImage: gradientStyles[0],
+      };
     }
 
     const fillStyles = currentCutouts.map(() => 'black');
 
     // Return mask style with multiple cutouts.
-    return `mask-image: ${gradientStyles.join(', ')}, linear-gradient(${fillStyles.join(', ')}); mask-composite: exclude;`;
+    return {
+      maskComposite: 'exclude',
+      maskImage: `${gradientStyles.join(', ')}, linear-gradient(${fillStyles.join(', ')})`,
+    };
   }
+
+  $: exclusionMaskStyle = getExclusionMaskStyle(cutouts);
 </script>
 
-<div class="container" style={getExclusionMaskStyle(cutouts)}>
+<div
+  class="container"
+  style:mask-image={exclusionMaskStyle.maskImage}
+  style:mask-composite={exclusionMaskStyle.maskComposite}
+>
   <slot />
 </div>

@@ -118,7 +118,7 @@
   }
 </script>
 
-<div class="container" style={`--c-t-size: ${size}px; --c-t-font-size: 45cqw`}>
+<div class="container" style:--c-t-size={`${size}px`} style:--c-t-font-size="45cqw">
   {#each charms as charm}
     {@const diameter = charm.size ?? DEFAULT_SIZE_PX}
     {@const {x, y} = getRelativePosition({
@@ -131,12 +131,12 @@
     <div
       class="charm"
       data-content-type={charm.content.type}
-      style={`--c-t-background-color: ${charm.style?.backgroundColor ?? 'transparent'}; 
-              --c-t-content-color: ${charm.style?.contentColor ?? 'currentColor'}; 
-              width: ${diameter}px; 
-              height: ${diameter}px; 
-              left: ${x}%; 
-              top: ${y}%`}
+      style:--c-t-background-color={charm.style?.backgroundColor ?? 'transparent'}
+      style:--c-t-content-color={charm.style?.contentColor ?? 'currentColor'}
+      style:width={`${diameter}px`}
+      style:height={`${diameter}px`}
+      style:left={`${x}%`}
+      style:top={`${y}%`}
     >
       {#if charm.content.type === 'text'}
         <div class="text">{charm.content.text}</div>

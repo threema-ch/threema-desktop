@@ -64,6 +64,31 @@ export function subresourceIntegrityPlugin(): Plugin {
                     scripts.push(fingerprint);
                 });
 
+                const stylesheets: string[] = [];
+                forAllTagsOfType('link', indexHtml, ({attributes}) => {
+                    // Skip non-stylesheet tags.
+                    if (
+                        !attributes.some(({key, value}) => key === 'rel' && value === 'stylesheet')
+                    ) {
+                        return;
+                    }
+
+                    const fingerprint = attributes.find(({key}) => key === 'integrity')?.value;
+                    if (fingerprint === undefined) {
+                        throw new Error('Stylesheet link tag without integrity fingerprint found');
+                    }
+
+                    stylesheets.push(fingerprint);
+                });
+                forAllTagsOfType('style', indexHtml, ({attributes}) => {
+                    const fingerprint = attributes.find(({key}) => key === 'integrity')?.value;
+                    if (fingerprint === undefined) {
+                        throw new Error('Inline style tag without integrity fingerprint found');
+                    }
+
+                    stylesheets.push(fingerprint);
+                });
+
                 // External assets that are not referenced in `index.html`. These haven't been
                 // fingerprinted yet, so we need to find the source files in the output
                 // directory of the `app` build and generate the digests manually, so we can add
@@ -96,6 +121,10 @@ export function subresourceIntegrityPlugin(): Plugin {
                     .replace(
                         /("script-src 'self')(.*)/u,
                         `$1 ${scripts.map((digest) => `'${digest}'`).join(' ')}$2`,
+                    )
+                    .replace(
+                        /("style-src 'self')(.*)/u,
+                        `$1 ${stylesheets.map((digest) => `'${digest}'`).join(' ')}$2`,
                     )
                     .replace(
                         /("worker-src 'self')(.*)/u,

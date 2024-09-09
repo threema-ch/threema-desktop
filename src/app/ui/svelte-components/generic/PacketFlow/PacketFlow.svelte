@@ -39,7 +39,7 @@
 </script>
 
 <template>
-  <article style="--c-t-layers: {layers.length}">
+  <article style:--c-t-layers={layers.length}>
     <header>
       <span title="Direction (inbound or outbound)">IO</span>
       <span title="Time (in seconds)">Time</span>

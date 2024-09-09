@@ -14,7 +14,7 @@
 </script>
 
 <template>
-  <div class="progress {variant}" style="--c-t-value: {value}%;">
+  <div class="progress {variant}" style:--c-t-value={`${value}%`}>
     {#if variant === 'determinate'}
       <div />
     {:else}

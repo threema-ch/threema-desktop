@@ -97,13 +97,13 @@
   class={`image ${image.state}`}
   class:clickable={isClickable}
   class:responsive
-  style={`--c-t-image-aspect-ratio: ${preferredAspectRatio};
-          --c-t-image-min-width: ${constraints.min.width}px;
-          --c-t-image-min-height: ${constraints.min.height}px;
-          --c-t-image-width: ${preferredDisplay.values.width}px;
-          --c-t-image-height: ${preferredDisplay.values.height}px;
-          --c-t-image-max-width: ${constraints.max.width}px;
-          --c-t-image-max-height: ${constraints.max.height}px`}
+  style:--c-t-image-aspect-ratio={preferredAspectRatio}
+  style:--c-t-image-min-width={`${constraints.min.width}px`}
+  style:--c-t-image-min-height={`${constraints.min.height}px`}
+  style:--c-t-image-width={`${preferredDisplay.values.width}px`}
+  style:--c-t-image-height={`${preferredDisplay.values.height}px`}
+  style:--c-t-image-max-width={`${constraints.max.width}px`}
+  style:--c-t-image-max-height={`${constraints.max.height}px`}
   disabled={!isClickable}
   tabindex={isFocusable ? 0 : -1}
   on:click

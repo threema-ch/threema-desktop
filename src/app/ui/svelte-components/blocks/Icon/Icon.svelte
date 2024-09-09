@@ -16,7 +16,7 @@
 </script>
 
 <template>
-  <span class="icon" {title} class:disabled style="--c-t-font-family: '{font}'">
+  <span class="icon" {title} class:disabled style:--c-t-font-family="'{font}'">
     <slot>info</slot>
   </span>
 </template>

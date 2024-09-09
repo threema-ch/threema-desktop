@@ -61,7 +61,7 @@
             slot="default"
             let:current
             class="timer"
-            style={`--c-t-number-count: ${getNumberCountOf(current)}ch;`}
+            style:--c-t-number-count={`${getNumberCountOf(current)}ch`}
           >
             {current}
           </span>

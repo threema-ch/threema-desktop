@@ -1,10 +1,11 @@
 <script lang="ts">
-  import {fly} from 'svelte/transition';
+  import {cubicInOut} from 'svelte/easing';
 
   import {snackbarStore, toast} from '~/app/ui/snackbar';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import ThreemaIcon from '~/app/ui/svelte-components/blocks/Icon/ThreemaIcon.svelte';
   import ToastComponent from '~/app/ui/svelte-components/generic/Snackbar/Toast.svelte';
+  import {fly} from '~/app/ui/transitions/fly';
   import {reactive, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import {TIMER, type TimerCanceller} from '~/common/utils/timer';
 
@@ -36,8 +37,8 @@
   {#each $snackbarStore as toastItem (toastItem)}
     <div
       class="toast-wrapper"
-      in:fly={{y: -100, duration: TRANSITION_TIMEOUT_MS, opacity: 1}}
-      out:fly={{x: 336, duration: TRANSITION_TIMEOUT_MS, opacity: 1}}
+      in:fly={{y: -100, duration: TRANSITION_TIMEOUT_MS, opacity: 1, easing: cubicInOut}}
+      out:fly={{x: 336, duration: TRANSITION_TIMEOUT_MS, opacity: 1, easing: cubicInOut}}
     >
       <ToastComponent
         action={toastItem.action}

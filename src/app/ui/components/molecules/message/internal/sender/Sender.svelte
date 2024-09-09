@@ -12,7 +12,7 @@
   export let name: $$Props['name'];
 </script>
 
-<span class="sender" style="--c-t-text-color: var(--c-profile-picture-initials-{color});">
+<span class="sender" style:--c-t-text-color={`var(--c-profile-picture-initials-${color})`}>
   <Text text={name} wrap={false} selectable={true} />
 </span>
 

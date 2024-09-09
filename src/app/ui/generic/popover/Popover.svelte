@@ -10,12 +10,12 @@
 -->
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
-  import {fade} from 'svelte/transition';
 
   import {clickoutside} from '~/app/ui/actions/clickoutside';
   import {getPopoverOffset, popoverStore} from '~/app/ui/generic/popover/helpers';
   import type {PopoverProps} from '~/app/ui/generic/popover/props';
   import type {Offset} from '~/app/ui/generic/popover/types';
+  import {fade} from '~/app/ui/transitions/fade';
   import {reactive, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import {unreachable} from '~/common/utils/assert';
 
@@ -206,10 +206,10 @@
 
   {#if isOpen}
     <div
-      class="popover"
       bind:this={popover}
       transition:fade={{duration: 100}}
       use:clickoutside={{enabled: isOpen}}
+      class="popover"
       on:clickoutside={({detail: {event}}) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         handleClickOutside(event);
@@ -222,9 +222,9 @@
         dispatch('hasclosed');
         afterClose?.();
       }}
-      style={position !== undefined
-        ? `transform: translate(${position.left}px, ${position.top}px);`
-        : ''}
+      style:transform={position === undefined
+        ? undefined
+        : `translate(${position.left}px, ${position.top}px)`}
     >
       <slot name="popover" />
     </div>

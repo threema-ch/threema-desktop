@@ -1094,7 +1094,7 @@ function main(
                               // inserted here!
                               [
                                   "script-src 'self' 'wasm-unsafe-eval'",
-                                  "style-src 'self' 'unsafe-inline'",
+                                  "style-src 'self'",
                                   "worker-src 'self'",
                               ]
                             : [
