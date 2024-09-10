@@ -1,6 +1,7 @@
-import {UnknownContactPolicy} from '~/common/enum';
+import {AcquaintanceLevel, UnknownContactPolicy} from '~/common/enum';
 import {TRANSFER_HANDLER} from '~/common/index';
 import type {ServicesForModel} from '~/common/model';
+import {isPredefinedContact} from '~/common/model/types/contact';
 import type {
     PrivacySettings,
     PrivacySettingsController,
@@ -40,25 +41,39 @@ export class PrivacySettingsModelController implements PrivacySettingsController
             return true;
         }
 
-        const contact = this._services.model.contacts.getByIdentity(identity);
-
-        if (contact !== undefined) {
-            // The contact is known and not explicitly blocked in the privacy settings.
-            return false;
-        }
-
         const isBlockUnknownPolicySet = this.lifetimeGuard.run(
             (handle) => handle.view().unknownContactPolicy === UnknownContactPolicy.BLOCK_UNKNOWN,
         );
 
-        if (isBlockUnknownPolicySet) {
-            // The contact is unknown and implicitly blocked by the privacy settings because
-            // UnknownContactPolicy is set to BLOCK_UNKNOWN.
+        if (!isBlockUnknownPolicySet) {
+            // Implicit blocking is not activated.
+            return false;
+        }
+
+        if (isPredefinedContact(identity)) {
+            // Predefined contacts cannot be blocked.
+            return false;
+        }
+
+        const contact = this._services.model.contacts.getByIdentity(identity);
+
+        if (contact === undefined) {
+            // The contact is unknown and blocked by the privacy settings.
             return true;
         }
 
-        // The contact is unknown and not implicitly blocked by the privacy settings.
-        return false;
+        if (contact.get().view.acquaintanceLevel === AcquaintanceLevel.DIRECT) {
+            // The contact is a "standard contact" and not blocked.
+            return false;
+        }
+
+        if (this._services.db.getAllCommonGroupsByContact(contact.ctx).length > 0) {
+            // If we share at least one group where we are a member, the contact is not blocked.
+            return false;
+        }
+
+        // The contact is blocked.
+        return true;
     }
 }
 

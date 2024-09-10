@@ -65,6 +65,8 @@ export type PrivacySettingsController = {
     /**
      * Returns whether a contact is explicitly or implicitly blocked as per the the privacy
      * settings.
+     *
+     * This function implements the `Identity Blocked Steps`.
      */
     readonly isContactBlocked: (identityString: IdentityString) => boolean;
 } & ProxyMarked;
