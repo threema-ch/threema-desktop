@@ -854,6 +854,12 @@ export class GroupModelController implements GroupController {
         const creator = guardedHandle.view().creator;
         const added = new Set<ModelStore<Contact>>();
         const removed = new Set<ModelStore<Contact>>();
+        this._log.debug(
+            `Current member list: ${[...currentMembers].map((member) => `(${[member.get().ctx, member.get().view.displayName]})`)}`,
+        );
+        this._log.debug(
+            `New member list: ${[...currentMembers].map((member) => `(${[member.get().ctx, member.get().view.displayName]})`)}`,
+        );
         for (const c of contacts) {
             // If the contact's reference is the creator, do nothing.
             if (c === creator) {
@@ -861,6 +867,7 @@ export class GroupModelController implements GroupController {
                 continue;
             }
             if (!currentMembers.has(c)) {
+                this._log.debug(`Adding member ${c.get().view.displayName} to to be added list`);
                 added.add(c);
             }
         }
@@ -871,6 +878,7 @@ export class GroupModelController implements GroupController {
                 continue;
             }
             if (!contacts.has(m)) {
+                this._log.debug(`Adding member ${m.get().view.displayName} to to be removed list`);
                 removed.add(m);
             }
         }
