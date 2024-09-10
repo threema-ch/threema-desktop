@@ -59,7 +59,7 @@
       <Text
         text={$i18n.t(
           'dialog--delete-profile.prose--description',
-          'This Threema ID and the corresponding data will be removed from this device (but not on your linked devices).',
+          'This Threema ID and the corresponding data will be removed from this device (but not on your other devices).',
         )}
       />
     </div>

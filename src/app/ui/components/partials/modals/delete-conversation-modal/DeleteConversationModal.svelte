@@ -104,13 +104,13 @@
     {#if receiver.type === 'contact'}
       {$i18n.t(
         'dialog--delete-conversation.prose--contact-conversation-prompt',
-        'This will delete the chat with {name} and its messages on this device (but not on your linked devices).',
+        'This will delete the chat with {name} and its messages on this device (but not on your other devices).',
         {name: receiver.name},
       )}
     {:else if receiver.type === 'group'}
       {`${$i18n.t(
         'dialog--delete-conversation.prose--group-conversation-prompt',
-        'This will delete the group chat "{name}" and its messages on this device (but not on your linked devices).',
+        'This will delete the group chat "{name}" and its messages on this device (but not on your other devices).',
         {name: receiver.name},
       )} ${
         !receiver.isLeft
@@ -123,7 +123,7 @@
     {:else if receiver.type === 'distribution-list'}
       {$i18n.t(
         'dialog--delete-conversation.prose--distribution-list-conversation-prompt',
-        'This will delete this distribution list and its messages on this device (but not on your linked devices).',
+        'This will delete this distribution list and its messages on this device (but not on your other devices).',
       )}
     {:else}
       {unreachable(receiver)}

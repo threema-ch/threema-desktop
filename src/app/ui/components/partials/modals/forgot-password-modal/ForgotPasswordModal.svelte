@@ -100,7 +100,7 @@
         <Text
           text={$i18n.t(
             'dialog--forgot-password.prose--step-2-description-p2',
-            'Please note: The messages on this device will be lost when relinking (but not on your linked devices).',
+            'Please note: The messages on this device will be lost when relinking (but not on your other devices).',
           )}
         />
       </div>

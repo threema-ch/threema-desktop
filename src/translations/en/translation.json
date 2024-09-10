@@ -80,10 +80,10 @@
     "action--group-conversation-confirm": "Delete Group Chat",
     "error--delete-conversation": "Failed to delete chat",
     "label--title": "Delete Chat",
-    "prose--contact-conversation-prompt": "This will delete the chat with {name} and its messages on this device (but not on your linked devices).",
-    "prose--distribution-list-conversation-prompt": "This will delete this distribution list and its messages on this device (but not on your linked devices).",
+    "prose--contact-conversation-prompt": "This will delete the chat with {name} and its messages on this device (but not on your other devices).",
+    "prose--distribution-list-conversation-prompt": "This will delete this distribution list and its messages on this device (but not on your other devices).",
     "prose--group-conversation-member": "However, you will stay a member of this group.",
-    "prose--group-conversation-prompt": "This will delete the group chat \"{name}\" and its messages on this device (but not on your linked devices).",
+    "prose--group-conversation-prompt": "This will delete the group chat \"{name}\" and its messages on this device (but not on your other devices).",
     "success--delete-conversation": "Chat successfully deleted"
   },
   "dialog--delete-message": {
@@ -97,7 +97,7 @@
   "dialog--delete-profile": {
     "action--cancel": "Cancel",
     "label--title": "Remove Threema ID and Data",
-    "prose--description": "This Threema ID and the corresponding data will be removed from this device (but not on your linked devices).",
+    "prose--description": "This Threema ID and the corresponding data will be removed from this device (but not on your other devices).",
     "prose--failed": "Something went wrong when deleting your data on this device. Please check your connection and try again."
   },
   "dialog--device-cookie-mismatch": {
@@ -142,9 +142,9 @@
     "action--distribution-list-conversation-confirm": "Empty Chat",
     "action--group-conversation-confirm": "Empty Group Chat",
     "label--title": "Empty Chat",
-    "prose--contact-conversation-prompt": "This will delete all messages including all media and documents in this chat with \"{name}\" on this device (but not on your linked devices).",
-    "prose--distribution-list-conversation-prompt": "This will delete all messages including all media and documents in the \"{name}\" distribution list on this device (but not on your linked devices).",
-    "prose--group-conversation-prompt": "This will delete all messages including all media and documents in the \"{name}\" group chat on this device (but not on your linked devices)."
+    "prose--contact-conversation-prompt": "This will delete all messages including all media and documents in this chat with \"{name}\" on this device (but not on your other devices).",
+    "prose--distribution-list-conversation-prompt": "This will delete all messages including all media and documents in the \"{name}\" distribution list on this device (but not on your other devices).",
+    "prose--group-conversation-prompt": "This will delete all messages including all media and documents in the \"{name}\" group chat on this device (but not on your other devices)."
   },
   "dialog--error-connection": {
     "action--confirm-reconnect": "Reconnect",
@@ -169,7 +169,7 @@
     "label--title": "Forgot Password",
     "prose--step-1-description-p1": "For security reasons, there is no way to recover a lost password for the desktop app. To keep using Threema for desktop, you need to relink it with your mobile device. Click “Next” for the relink instructions.",
     "prose--step-2-description-p1": "To relink your device, follow these steps:",
-    "prose--step-2-description-p2": "Please note: The messages on this device will be lost when relinking (but not on your linked devices).",
+    "prose--step-2-description-p2": "Please note: The messages on this device will be lost when relinking (but not on your other devices).",
     "prose--step-2-list-step-1": "On your phone, remove this device in “Settings > Threema 2.0 for Desktop (Beta)”",
     "prose--step-2-list-step-2": "Select the “Relink Device” button below to start the linking process"
   },

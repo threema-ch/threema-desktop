@@ -80,10 +80,10 @@
     "action--group-conversation-confirm": "Gruppenchat löschen",
     "error--delete-conversation": "Löschen des Chats fehlgeschlagen",
     "label--title": "Chat löschen",
-    "prose--contact-conversation-prompt": "Dadurch wird der Chat mit {name} und die darin enthaltenen Nachrichten auf diesem Gerät gelöscht (aber nicht auf Ihren verknüpften Geräten).",
-    "prose--distribution-list-conversation-prompt": "Dadurch wird diese Verteilerliste und die darin enthaltenen Nachrichten auf diesem Gerät gelöscht (aber nicht auf Ihren verknüpften Geräten).",
+    "prose--contact-conversation-prompt": "Dadurch wird der Chat mit {name} und die darin enthaltenen Nachrichten auf diesem Gerät gelöscht (aber nicht auf Ihren anderen Geräten).",
+    "prose--distribution-list-conversation-prompt": "Dadurch wird diese Verteilerliste und die darin enthaltenen Nachrichten auf diesem Gerät gelöscht (aber nicht auf Ihren anderen Geräten).",
     "prose--group-conversation-member": "Sie werden jedoch ein Mitglied dieser Gruppe bleiben.",
-    "prose--group-conversation-prompt": "Dadurch wird der Gruppenchat \"{name}\" und die darin enthaltenen Nachrichten auf diesem Gerät gelöscht (aber nicht auf Ihren verknüpften Geräten).",
+    "prose--group-conversation-prompt": "Dadurch wird der Gruppenchat \"{name}\" und die darin enthaltenen Nachrichten auf diesem Gerät gelöscht (aber nicht auf Ihren anderen Geräten).",
     "success--delete-conversation": "Chat wurde erfolgreich gelöscht"
   },
   "dialog--delete-message": {
@@ -142,9 +142,9 @@
     "action--distribution-list-conversation-confirm": "Chat leeren",
     "action--group-conversation-confirm": "Gruppenchat leeren",
     "label--title": "Chat leeren",
-    "prose--contact-conversation-prompt": "Dadurch werden alle Nachrichten inklusive Medien und Dokumenten in diesem Chat mit \"{name}\" auf diesem Gerät gelöscht (jedoch nicht auf den verknüpften Geräten).",
-    "prose--distribution-list-conversation-prompt": "Dadurch werden alle Nachrichten inklusive Medien und Dokumenten in dieser Verteilerliste \"{name}\" auf diesem Gerät gelöscht (jedoch nicht auf den verknüpften Geräten).",
-    "prose--group-conversation-prompt": "Dadurch werden alle Nachrichten inklusive Medien und Dokumenten in diesem Gruppenchat \"{name}\" auf diesem Gerät gelöscht (jedoch nicht auf den verknüpften Geräten)."
+    "prose--contact-conversation-prompt": "Dadurch werden alle Nachrichten inklusive Medien und Dokumenten in diesem Chat mit \"{name}\" auf diesem Gerät gelöscht (aber nicht auf Ihren anderen Geräten).",
+    "prose--distribution-list-conversation-prompt": "Dadurch werden alle Nachrichten inklusive Medien und Dokumenten in dieser Verteilerliste \"{name}\" auf diesem Gerät gelöscht (aber nicht auf Ihren anderen Geräten).",
+    "prose--group-conversation-prompt": "Dadurch werden alle Nachrichten inklusive Medien und Dokumenten in diesem Gruppenchat \"{name}\" auf diesem Gerät gelöscht (aber nicht auf Ihren anderen Geräten)."
   },
   "dialog--error-connection": {
     "action--confirm-reconnect": "Erneut verbinden",
@@ -169,7 +169,7 @@
     "label--title": "Passwort vergessen",
     "prose--step-1-description-p1": "Aus Sicherheitsgründen lässt sich das Passwort von Threema für Desktop nicht wiederherstellen. Um die Desktop-App weiter nutzen zu können, müssen Sie sie erneut mit Ihrem Mobilgerät verknüpfen. Klicken Sie «Weiter» für die genauen Anweisungen.",
     "prose--step-2-description-p1": "Bitte führen Sie folgende Schritte aus, um Ihr Gerät neu zu verknüpfen:",
-    "prose--step-2-description-p2": "Hinweis: Bei erneutem Verknüpfen gehen die Nachrichten auf diesem Gerät verloren (nicht aber auf Ihren verknüpften Geräten).",
+    "prose--step-2-description-p2": "Hinweis: Bei erneutem Verknüpfen gehen die Nachrichten auf diesem Gerät verloren (aber nicht auf Ihren anderen Geräten).",
     "prose--step-2-list-step-1": "Entfernen Sie dieses Gerät auf Ihrem Mobiltelefon unter «Einstellungen > Threema 2.0 für Desktop (Beta)»",
     "prose--step-2-list-step-2": "Klicken Sie hier auf «Neu verknüpfen», um die Desktop-App erneut zu verknüpfen"
   },
