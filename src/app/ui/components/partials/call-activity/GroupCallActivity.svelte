@@ -157,7 +157,7 @@
     });
   }
 
-  const handleUpdateCameraSubscription = TIMER.debounce(
+  const handleUpdateCameraSubscription = TIMER.debounceWithDistinctArgs(
     (dimensions: Dimensions | undefined, participantId: 'local' | ParticipantId) => {
       if (call === undefined || stop === undefined || participantId === 'local') {
         // If call is `undefined` (i.e., not running) or not started, there's no need to un- or
@@ -176,11 +176,10 @@
       });
     },
     500,
-    true,
     // Debounce using `distinctArgs` and use the participant id as the key, so the debounced
     // function is called once for each participant.
-    true,
     (_, id) => `${id}`,
+    true,
   );
 
   function handleSelectAudioInputDevice(device: AudioInputDeviceInfo): void {

@@ -139,33 +139,75 @@ class GlobalTimer {
      * @param resetOnUpdate Whether the timer is reset on updates or not. If set to `true`, the
      *   function is only executed if there is no call within {@link waitForMs}. If set to `false`,
      *   the function is executed {@link waitForMs} after the first call.
-     * @param distinctArgs Whether to call the function multiple times with all sets of distinct
-     *   args as soon as the debounce timer has elapsed.
-     * @param distinctArgsKeySelector Supply a function that calculates the key for a set of args.
-     *   Only if a subsequent call of the debounced function resolves to the same key as an already
-     *   remembered set of args, the existing set of args will be replaced. If not given and
-     *   `distinctArgs` is enabled, the JSON-stringified args will be used as the key. Note: Has no
-     *   effect if `distinctArgs` is `false`.
      * @returns A debounced version of `func`.
      */
     public debounce<
         F extends (...args: Parameters<F>) => Exclude<ReturnType<F>, PromiseLike<unknown>>,
+    >(func: F, waitForMs: u53, resetOnUpdate: boolean = true): (...args: Parameters<F>) => void {
+        let cancel: TimerCanceller | undefined;
+        let lastArgs: Parameters<F>;
+
+        return (...args: Parameters<F>): void => {
+            lastArgs = args;
+
+            // (Re-)schedule, if necessary.
+            if (cancel === undefined || resetOnUpdate) {
+                cancel?.();
+                cancel = this.timeout(() => {
+                    cancel = undefined;
+                    func(...lastArgs);
+                }, waitForMs);
+            }
+        };
+    }
+
+    /**
+     * Create a version of `func` with the same signature but that is executed only once per set of
+     * arguments if it is called multiple times with less than `waitForMillis` milliseconds between
+     * calls.
+     *
+     * @example
+     * ```ts
+     * const f = (value: u53) => {
+     *   console.log(value);
+     * };
+     * const debouncedF = debounceWithDistinctArgs(f, 100, (value) => `${value}`, false);
+     *
+     * debouncedF(1);
+     * debouncedF(1);
+     * debouncedF(2);
+     *
+     * // 1 and 2 are each logged exactly once after 100ms.
+     * ```
+     * @param func The function to debounce. After the timeout, the function is always called for
+     *   each set of latest argument values.
+     * @param waitForMs The number of milliseconds to wait after the last call to `func` (if
+     *   {@link resetOnUpdate} is true) or after the first call to `func` (if {@link resetOnUpdate}
+     *   is false) before effectively calling it.
+     * @param distinctArgsKeySelector Supply a function that calculates the key for a set of args.
+     *   Only if a subsequent call of the debounced function resolves to the same key as an already
+     *   remembered set of args, the existing set of args will be replaced.
+     * @param resetOnUpdate Whether the timer is reset on updates or not. If set to `true`, the
+     *   function is only executed if there is no call within {@link waitForMs} for the given set of
+     *   arguments. If set to `false`, the function is executed {@link waitForMs} after the first
+     *   calls.
+     * @returns A debounced version of `func` with the given arguments.
+     */
+    public debounceWithDistinctArgs<
+        F extends (...args: Parameters<F>) => Exclude<ReturnType<F>, PromiseLike<unknown>>,
     >(
         func: F,
         waitForMs: u53,
+        distinctArgsKeySelector: (...args: Parameters<F>) => string,
         resetOnUpdate: boolean = true,
-        distinctArgs: boolean = false,
-        distinctArgsKeySelector?: (...args: Parameters<F>) => string,
     ): (...args: Parameters<F>) => void {
         let cancel: TimerCanceller | undefined;
         // Store each distinct set of args to call the function with later.
         const argsMap = new Map<string, Parameters<F>>();
 
         return (...args: Parameters<F>): void => {
-            // Generate the key using the supplied key selector or default to JSON.stringify.
-            const key = distinctArgsKeySelector
-                ? distinctArgsKeySelector(...args)
-                : JSON.stringify(args);
+            // Generate the key using the supplied key selector.
+            const key = distinctArgsKeySelector(...args);
             argsMap.set(key, args);
 
             // (Re-)schedule, if necessary
@@ -173,18 +215,12 @@ class GlobalTimer {
                 cancel?.();
                 cancel = this.timeout(() => {
                     cancel = undefined;
-                    if (distinctArgs) {
-                        // Call the function for each distinct set of arguments.
-                        argsMap.forEach((value) => {
-                            func(...value);
-                        });
-                    } else {
-                        // Get the last set of arguments from the `Map`.
-                        const lastArgs = Array.from(argsMap.values()).pop();
-                        if (lastArgs !== undefined) {
-                            func(...(lastArgs as Parameters<F>));
-                        }
-                    }
+
+                    // Call the function for each distinct set of arguments.
+                    argsMap.forEach((value) => {
+                        func(...value);
+                    });
+
                     argsMap.clear();
                 }, waitForMs);
             }
