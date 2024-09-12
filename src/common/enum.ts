@@ -2487,6 +2487,8 @@ export namespace ElectronIpcCommand {
     export type GET_GZIPPED_LOG_FILE = typeof GET_GZIPPED_LOG_FILE;
     export const SET_FILE_LOGGING_ENABLED_AND_RESTART = 'setFileLoggingEnabledAndRestart';
     export type SET_FILE_LOGGING_ENABLED_AND_RESTART = typeof SET_FILE_LOGGING_ENABLED_AND_RESTART;
+    export const CLEAR_LOG_FILES = 'clearLogFiles';
+    export type CLEAR_LOG_FILES = typeof CLEAR_LOG_FILES;
     export const RESTART_APP = 'restartApp';
     export type RESTART_APP = typeof RESTART_APP;
     export const DELETE_PROFILE_AND_RESTART = 'deleteProfileAndRestart';

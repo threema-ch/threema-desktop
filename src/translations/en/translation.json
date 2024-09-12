@@ -67,6 +67,14 @@
     "prose--intro": "The password protects your messages, Threema ID, and other data on this computer. You have to enter it when opening Threema for desktop. Please note that there is no way to recover this password. If you forget it, you will have to link this device again.",
     "success--password-changed": "Successfully changed password"
   },
+  "dialog--clear-logs": {
+    "action--cancel": "Cancel",
+    "action--confirm": "Clear logs",
+    "label--application-log-path": "Application Log",
+    "label--backend-worker-log-path": "Backend Worker Log",
+    "label--title": "Clear Logs",
+    "prose--description-disable": "The following files will be cleared irrevocably:"
+  },
   "dialog--compose-media-message": {
     "hint--drop-files-to-add": "Drop files to send",
     "label--media-message-caption": "Add a Caption",
@@ -532,6 +540,7 @@
     "prose--do-not-disturb-mentioned-on": "You will only receive notifications when you are mentioned"
   },
   "settings--about": {
+    "action--clear-logs": "Clear Logs",
     "action--send-logs-to-support": "Send Logs to Support",
     "label--application-name": "Application Name",
     "label--application-version": "Application Version",

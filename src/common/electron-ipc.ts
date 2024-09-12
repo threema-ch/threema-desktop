@@ -75,6 +75,11 @@ export interface ElectronIpc {
     readonly setFileLoggingEnabledAndRestart: (enabled: boolean) => void;
 
     /**
+     * Clear the log files (but do not restart).
+     */
+    readonly clearLogFiles: () => Promise<void>;
+
+    /**
      * Restart the application.
      *
      * Restarting is done using `app.exit(...)`, which means that the application will be

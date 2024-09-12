@@ -3,8 +3,6 @@
   Renders a modal to toggle logging on or off.
 -->
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte';
-
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
@@ -17,14 +15,6 @@
 
   export let isLoggerEnabled: $$Props['isLoggerEnabled'];
   export let logInfo: $$Props['logInfo'];
-
-  const dispatch = createEventDispatcher<{
-    clickconfirmandrestart: undefined;
-  }>();
-
-  function handleClickConfirmAndRestart(): void {
-    dispatch('clickconfirmandrestart');
-  }
 </script>
 
 <Modal
@@ -45,7 +35,7 @@
       {
         label: $i18n.t('dialog--toggle-logger.action--confirm', 'Confirm and Restart'),
         type: 'filled',
-        onClick: handleClickConfirmAndRestart,
+        onClick: 'submit',
       },
     ],
     title: isLoggerEnabled
@@ -54,6 +44,7 @@
     maxWidth: 520,
   }}
   on:close
+  on:submit
 >
   <div class="content">
     {#if isLoggerEnabled}

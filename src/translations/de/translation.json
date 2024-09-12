@@ -67,6 +67,14 @@
     "prose--intro": "Das Passwort schützt Ihre Nachrichten, Threema-ID und weitere Daten auf diesem Computer. Es wird jedes Mal abgefragt, wenn Sie Threema für Desktop öffnen. Bitte beachten Sie, dass das Passwort nicht wiederhergestellt werden kann. Bei Verlust des Passworts muss dieses Gerät neu verknüpft werden.",
     "success--password-changed": "Passwort wurde geändert"
   },
+  "dialog--clear-logs": {
+    "action--cancel": "Abbrechen",
+    "action--confirm": "Logdateien leeren",
+    "label--application-log-path": "Applikations-Log",
+    "label--backend-worker-log-path": "Backend-Worker-Log",
+    "label--title": "Logdateien leeren",
+    "prose--description-disable": "Der Inhalt folgender Dateien wird unwiderruflich gelöscht:"
+  },
   "dialog--compose-media-message": {
     "hint--drop-files-to-add": "Dateien zum Senden ablegen",
     "label--media-message-caption": "Text hinzufügen",
@@ -532,6 +540,7 @@
     "prose--do-not-disturb-mentioned-on": "Sie werden nur Benachrichtigungen erhalten, falls Sie erwähnt werden"
   },
   "settings--about": {
+    "action--clear-logs": "Logdateien leeren",
     "action--send-logs-to-support": "Logs an den Support senden",
     "label--application-name": "Applikationsname",
     "label--application-version": "Applikationsversion",

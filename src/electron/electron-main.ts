@@ -301,6 +301,25 @@ function getBackendWorkerLogPath(appPath: string): string {
     return path.join(appPath, ...import.meta.env.LOG_PATH.BACKEND_WORKER);
 }
 
+function clearLogs(appPath: string): void {
+    const mainAppLogPath = getMainAppLogPath(appPath);
+    if (fs.existsSync(mainAppLogPath)) {
+        try {
+            fs.truncateSync(mainAppLogPath, 0);
+        } catch (error) {
+            log.error(`Failed to truncate file ${mainAppLogPath}: ${ensureError(error).message}`);
+        }
+    }
+    const logBackendPath = getBackendWorkerLogPath(appPath);
+    if (fs.existsSync(logBackendPath)) {
+        try {
+            fs.truncateSync(logBackendPath, 0);
+        } catch (error) {
+            log.error(`Failed to truncate file ${logBackendPath}: ${ensureError(error).message}`);
+        }
+    }
+}
+
 function generateLogFileInfo(type: 'app' | 'bw', appPath: string): LogFileInfo {
     let sizeInBytes = 0;
     let logPath: string;
@@ -741,28 +760,7 @@ function main(
             (event, enabled: boolean) => {
                 validateSenderFrame(event.senderFrame);
                 if (!enabled) {
-                    const mainAppLogPath = getMainAppLogPath(appPath);
-                    if (fs.existsSync(mainAppLogPath)) {
-                        try {
-                            fs.truncateSync(mainAppLogPath, 0);
-                        } catch (error) {
-                            log.error(
-                                `Failed to truncate file ${mainAppLogPath}:
-                                ${ensureError(error).message}`,
-                            );
-                        }
-                    }
-                    const logBackendPath = getBackendWorkerLogPath(appPath);
-                    if (fs.existsSync(logBackendPath)) {
-                        try {
-                            fs.truncateSync(logBackendPath, 0);
-                        } catch (error) {
-                            log.error(
-                                `Failed to truncate file ${logBackendPath}:
-                                ${ensureError(error).message}`,
-                            );
-                        }
-                    }
+                    clearLogs(appPath);
                 }
                 // In the rare (if not impossible) case that window is undefined, we just default to the standard window size
                 updateElectronSettings(
@@ -781,6 +779,11 @@ function main(
                 restartApplication('restart');
             },
         );
+
+        electron.ipcMain.handle(ElectronIpcCommand.CLEAR_LOG_FILES, (event) => {
+            validateSenderFrame(event.senderFrame);
+            clearLogs(appPath);
+        });
 
         electron.ipcMain.handle(ElectronIpcCommand.GET_SPELLCHECK, (_) => {
             if (process.platform === 'darwin') {

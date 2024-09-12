@@ -7,6 +7,7 @@
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
   import {collectLogsAndComposeMessageToSupport} from '~/app/ui/components/partials/settings/internal/about/helpers';
+  import ClearLogsModal from '~/app/ui/components/partials/settings/internal/about/internal/clear-logs-modal/ClearLogsModal.svelte';
   import ToggleLoggerModal from '~/app/ui/components/partials/settings/internal/about/internal/toggle-logger-modal/ToggleLoggerModal.svelte';
   import type {AboutProps} from '~/app/ui/components/partials/settings/internal/about/props';
   import {i18n} from '~/app/ui/i18n';
@@ -23,7 +24,7 @@
 
   export let services: $$Props['services'];
 
-  let modalState: 'none' | 'toggle-logger' = 'none';
+  let modalState: 'none' | 'toggle-logger' | 'clear-logs' = 'none';
 
   let isDebugModeEnabled = false;
   let versionClickedCount = 0;
@@ -66,7 +67,7 @@
     await collectLogsAndComposeMessageToSupport(services, log);
   }
 
-  function handleClickConfirmAndRestartToggleLoggerModal(): void {
+  function handleSubmitToggleLoggerModal(): void {
     if (isLoggerEnabled === undefined) {
       // It should not be possible to reach this point, because for the modal to be shown,
       // `isLoggerEnabled` must be defined.
@@ -79,6 +80,26 @@
 
   function handleCloseToggleLoggerModal(): void {
     isLoggerEnabledToggleState = isLoggerEnabled ?? false;
+    modalState = 'none';
+  }
+
+  async function handleSubmitClearLogsModal(): Promise<void> {
+    handleCloseClearLogsModal();
+    if (isLoggerEnabled !== true) {
+      // The button should only be available when logging is turned on.
+      log.error('Logs cannot be cleared because logging is turned off');
+    }
+    await window.app.clearLogFiles();
+    try {
+      logInfo = await window.app.getLogInformation();
+    } catch (error: unknown) {
+      log.error(
+        `Couldn't read logInformation: ${extractErrorMessage(ensureError(error), 'short')}`,
+      );
+    }
+  }
+
+  function handleCloseClearLogsModal(): void {
     modalState = 'none';
   }
 
@@ -142,15 +163,16 @@
         key={$i18n.t('settings--about.label--log-to-file', 'Logging')}
       >
         {#if isLoggerEnabled}
-          <Text text={$i18n.t('settings--about.prose--logging-turned-on', 'Logging is turned on')}
-          ></Text>
+          <Text
+            text={$i18n.t('settings--about.prose--logging-turned-on', 'Logging is turned on')}
+          />
         {:else}
           <Text
             text={$i18n.t(
               'settings--about.prose--logging-turned-off',
               'Logging is currently turned off',
             )}
-          ></Text>
+          />
         {/if}
       </KeyValueList.ItemWithSwitch>
 
@@ -158,24 +180,30 @@
         <KeyValueList.ItemWithButton icon="send" key="" on:click={handleClickSendLogsToSupport}>
           <Text
             text={$i18n.t('settings--about.action--send-logs-to-support', 'Send Logs to Support')}
-          ></Text>
+          />
+        </KeyValueList.ItemWithButton>
+        <KeyValueList.ItemWithButton
+          on:click={() => (modalState = 'clear-logs')}
+          icon="delete_forever"
+          key=""
+        >
+          <Text text={$i18n.t('settings--about.action--clear-logs', 'Clear Logs')} />
         </KeyValueList.ItemWithButton>
         <KeyValueList.Item key={$i18n.t('settings--about.label--log-file-paths', 'Log File Paths')}>
           <div class="list">
             <span class="list-row">
-              <Text text={logInfo.logFiles.mainApplication.path} selectable size="body-small"
-              ></Text>
+              <Text text={logInfo.logFiles.mainApplication.path} selectable size="body-small" />
               <Text
                 text={` (${byteSizeToHumanReadable(logInfo.logFiles.mainApplication.sizeInBytes)})`}
                 size="body-small"
-              ></Text>
+              />
             </span>
             <span class="list-row">
-              <Text text={logInfo.logFiles.backendWorker.path} size="body-small" selectable></Text>
+              <Text text={logInfo.logFiles.backendWorker.path} size="body-small" selectable />
               <Text
                 text={` (${byteSizeToHumanReadable(logInfo.logFiles.backendWorker.sizeInBytes)})`}
                 size="body-small"
-              ></Text>
+              />
             </span>
           </div>
         </KeyValueList.Item>
@@ -205,8 +233,16 @@
     <ToggleLoggerModal
       {isLoggerEnabled}
       {logInfo}
-      on:clickconfirmandrestart={handleClickConfirmAndRestartToggleLoggerModal}
       on:close={handleCloseToggleLoggerModal}
+      on:submit={handleSubmitToggleLoggerModal}
+    />
+  {/if}
+{:else if modalState === 'clear-logs'}
+  {#if logInfo !== undefined}
+    <ClearLogsModal
+      {logInfo}
+      on:close={handleCloseClearLogsModal}
+      on:submit={handleSubmitClearLogsModal}
     />
   {/if}
 {:else}

@@ -29,6 +29,7 @@ const appApi: ElectronIpc = {
     getSystemInfo: () => ipcRenderer.invoke(ElectronIpcCommand.GET_SYSTEM_INFO),
     logToFile: (level, data) => ipcRenderer.invoke(ElectronIpcCommand.LOG_TO_FILE, level, data),
     isFileLoggingEnabled: () => ipcRenderer.invoke(ElectronIpcCommand.IS_FILE_LOGGING_ENABLED),
+    clearLogFiles: () => ipcRenderer.invoke(ElectronIpcCommand.CLEAR_LOG_FILES),
     getLogInformation: () => ipcRenderer.invoke(ElectronIpcCommand.GET_LOG_INFORMATION),
     getGzippedLogFiles: () => ipcRenderer.invoke(ElectronIpcCommand.GET_GZIPPED_LOG_FILE),
     setFileLoggingEnabledAndRestart: (enabled) =>
