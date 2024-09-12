@@ -3,12 +3,14 @@ import type {ThreemaWorkCredentials} from '~/common/device';
 import {getBrowserInfo, makeCspClientInfo} from '~/common/dom/utils/browser';
 import {TRANSFER_HANDLER} from '~/common/index';
 import {
+    WORK_CONTACTS_RESPONSE_SCHEMA,
     WORK_LICENSE_CHECK_RESPONSE_SCHEMA,
     WorkError,
     type WorkBackend,
+    type WorkContacts,
     type WorkLicenseStatus,
 } from '~/common/network/protocol/work';
-import type {BaseUrl} from '~/common/network/types';
+import type {BaseUrl, IdentityString} from '~/common/network/types';
 import {PROXY_HANDLER} from '~/common/utils/endpoint';
 
 /**
@@ -27,6 +29,55 @@ export class FetchWorkBackend implements WorkBackend {
             'accept': 'application/json',
             'user-agent': _services.config.USER_AGENT,
         };
+    }
+
+    public async contacts(
+        {username, password}: ThreemaWorkCredentials,
+        contacts: readonly IdentityString[],
+    ): Promise<WorkContacts> {
+        let response;
+        try {
+            response = await this._fetch('identities', this._services.config.WORK_SERVER_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    username,
+                    password,
+                    contacts,
+                }),
+            });
+        } catch (error) {
+            throw new WorkError('fetch', 'Fetch request to work contacts endpoint failed', {
+                from: error,
+            });
+        }
+
+        if (response.status !== 200) {
+            throw new WorkError(
+                'invalid-response',
+                `Work contacts endpoint request returned status ${response.status}`,
+            );
+        }
+
+        // Validate response JSON
+        let body: unknown;
+        try {
+            body = await response.json();
+        } catch (error) {
+            throw new WorkError(
+                'invalid-response',
+                `Work contacts endpoint did not return a valid response body: ${error}`,
+                {from: error},
+            );
+        }
+        try {
+            return WORK_CONTACTS_RESPONSE_SCHEMA.parse(body);
+        } catch (error) {
+            throw new WorkError(
+                'invalid-response',
+                `Work contacts endpoint response against schema failed`,
+                {from: error},
+            );
+        }
     }
 
     /** @inheritdoc */
@@ -117,7 +168,7 @@ export class FetchWorkBackend implements WorkBackend {
     // }
 
     private async _fetch(path: string, base: BaseUrl, init: RequestInit): Promise<Response> {
-        return await fetch(new URL(path, this._services.config.DIRECTORY_SERVER_URL), {
+        return await fetch(new URL(path, base), {
             ...init,
             cache: 'no-store',
             credentials: 'omit',

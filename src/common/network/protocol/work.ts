@@ -1,11 +1,11 @@
 import * as v from '@badrap/valita';
 
-import {ensurePublicKey} from '~/common/crypto';
+import {ensurePublicKey, type PublicKey} from '~/common/crypto';
 import type {ThreemaWorkCredentials} from '~/common/device';
 import {TransferTag} from '~/common/enum';
 import {BaseError, type BaseErrorOptions} from '~/common/error';
 import {TRANSFER_HANDLER} from '~/common/index';
-import {ensureIdentityString} from '~/common/network/types';
+import {ensureIdentityString, type IdentityString} from '~/common/network/types';
 import {ensureU53} from '~/common/types';
 import {base64ToU8a} from '~/common/utils/base64';
 import {
@@ -13,7 +13,7 @@ import {
     type ProxyMarked,
     PROXY_HANDLER,
 } from '~/common/utils/endpoint';
-import {nullOptional} from '~/common/utils/valita-helpers';
+import {nullEmptyStringOptional, nullOptional} from '~/common/utils/valita-helpers';
 
 /**
  * Type of the {@link WorkError}.
@@ -53,6 +53,33 @@ export class WorkError extends BaseError {
 export type WorkLicenseStatus =
     | {readonly valid: true}
     | {readonly valid: false; readonly message: string};
+
+export interface WorkContacts {
+    readonly contacts: {
+        readonly id: IdentityString;
+        readonly pk: PublicKey;
+        readonly first?: string;
+        readonly last?: string;
+    }[];
+}
+
+export const WORK_CONTACTS_RESPONSE_SCHEMA = v.object({
+    contacts: v.array(
+        v
+            .object({
+                id: v.string().map(ensureIdentityString),
+                pk: v
+                    .string()
+                    .map((value) => base64ToU8a(value))
+                    .map((value) => ensurePublicKey(value)),
+
+                first: nullEmptyStringOptional(v.string()),
+                last: nullEmptyStringOptional(v.string()),
+            })
+            .rest(v.unknown()),
+    ),
+});
+
 export const WORK_LICENSE_CHECK_RESPONSE_SCHEMA = v
     .union(
         v
@@ -80,14 +107,8 @@ export const WORK_SYNC_RESPONSE_SCHEMA = v
             v
                 .object({
                     id: v.string().map(ensureIdentityString),
-                    first: v
-                        .string()
-                        .map((value) => (value === '' ? undefined : value))
-                        .optional(),
-                    last: v
-                        .string()
-                        .map((value) => (value === '' ? undefined : value))
-                        .optional(),
+                    first: nullEmptyStringOptional(v.string()),
+                    last: nullEmptyStringOptional(v.string()),
                     pk: v
                         .string()
                         .map((value) => base64ToU8a(value))
@@ -144,6 +165,20 @@ export type WorkBackend = {
     // sync: () => Promise<void>;
 
     /**
+     * Request properties associated to a contact of the same Work subscription.
+     *
+     * @param credentials Work credentials.
+     * @param contacts A list of contacts (Threema IDs) to get additional Work properties for.
+     * @returns Matching Work contacts in the same Work subscription.
+     * @throws {WorkError} if something went wrong during fetching of the data. See
+     *   {@link WorkErrorType} for a list of possible error types.
+     */
+    contacts: (
+        credentials: ThreemaWorkCredentials,
+        contacts: IdentityString[],
+    ) => Promise<WorkContacts>;
+
+    /**
      * Check the Work license.
      *
      * @param credentials Work credentials.
@@ -158,6 +193,14 @@ export type WorkBackend = {
  */
 export class StubWorkBackend implements WorkBackend {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public async contacts(): Promise<WorkContacts> {
+        throw new WorkError(
+            'non-work-build',
+            `Cannot fetch work contacts in build variant '${import.meta.env.BUILD_VARIANT}'`,
+        );
+    }
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public async checkLicense(): Promise<WorkLicenseStatus> {
