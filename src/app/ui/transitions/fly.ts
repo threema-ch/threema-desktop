@@ -8,14 +8,12 @@ import type {f64} from '~/common/types';
 // eslint-disable-next-line func-style, func-names
 export const fly = function (
     node: HTMLElement,
-    {
-        x = 0,
-        y = 0,
-        ...opts
-    }: Omit<TransitionConfig, 'css' | 'tick'> & {x?: f64; y?: f64; opacity?: f64},
+    config?: Omit<TransitionConfig, 'css' | 'tick'> & {x?: f64; y?: f64; opacity?: f64},
 ): TransitionConfig {
+    const {x = 0, y = 0, ...rest} = config ?? {};
+
     return {
-        ...opts,
+        ...rest,
         tick: (t, u) => {
             node.style.setProperty('transform', `translate(${x * u}px, ${y * u}px)`);
         },

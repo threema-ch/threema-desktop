@@ -3,8 +3,6 @@
 -->
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
-  import type {AnimationConfig} from 'svelte/animate';
-  import {expoOut} from 'svelte/easing';
 
   import {globals} from '~/app/globals';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
@@ -30,11 +28,12 @@
   } from '~/app/ui/components/partials/conversation/internal/message-list/types';
   import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import {scale} from '~/app/ui/transitions/scale';
   import {reactive, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import {appVisibility} from '~/common/dom/ui/state';
   import {MessageDirection} from '~/common/enum';
   import type {MessageId, StatusMessageId} from '~/common/network/types';
-  import type {f64, u53} from '~/common/types';
+  import type {u53} from '~/common/types';
   import {assertUnreachable, unreachable} from '~/common/utils/assert';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.message-list');
@@ -427,18 +426,6 @@
     conversation.markAllMessagesAsRead();
   }
 
-  function scaleInOut(node: Element): AnimationConfig {
-    return {
-      css: (progress: f64) => `
-        overflow: hidden;
-        transform: scale3d(${progress}, ${progress}, ${progress});
-        transform-origin: bottom left;
-      `,
-      duration: 200,
-      easing: expoOut,
-    };
-  }
-
   $: reactive(handleChangeConversation, [currentConversationId]);
   $: reactive(handleChangeApplicationFocus, [$appVisibility]);
   $: reactive(handleChangeConversationOrLastMessage, [currentConversationId, currentLastMessage]);
@@ -553,7 +540,7 @@
 
       <div slot="after">
         {#if conversation.isTyping}
-          <div class="typing-indicator" in:scaleInOut out:scaleInOut>
+          <div class="typing-indicator" in:scale out:scale>
             <TypingIndicator />
           </div>
         {/if}
@@ -661,6 +648,8 @@
 
     .typing-indicator {
       padding: 0 rem(8px) rem(8px);
+
+      transform-origin: bottom left;
     }
   }
 
