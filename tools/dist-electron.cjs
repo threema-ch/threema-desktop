@@ -67,7 +67,7 @@ function allow(directory, pattern) {
  * Set electron fuses to disable certain features in production builds, see
  * https://www.electronjs.org/docs/latest/tutorial/fuses
  */
-async function setElectronFuses(binaryPath) {
+async function setElectronFuses(binaryPath, isPlaywrightTestBuild = false) {
     console.log(`Setting electron fuses for ${binaryPath}`);
     await flipFuses(binaryPath, {
         version: FuseVersion.V1,
@@ -83,7 +83,7 @@ async function setElectronFuses(binaryPath) {
         // Disable the NODE_OPTIONS environment variable
         [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
         // Disable the --inspect and --inspect-brk family of CLI options
-        [FuseV1Options.EnableNodeCliInspectArguments]: false,
+        [FuseV1Options.EnableNodeCliInspectArguments]: isPlaywrightTestBuild,
         // Enable validation of the app.asar archive on macOS
         [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
         // Enforce that Electron will only load your app from "app.asar" instead of its normal search paths
@@ -218,7 +218,7 @@ function buildAndCopyLauncherBinary(flavor, outputPath) {
     }
 }
 
-async function packageApp(variant, environment) {
+async function packageApp(variant, environment, isPlaywrightTestBuild) {
     const options = {};
     populateIgnoredPaths(options);
 
@@ -425,7 +425,7 @@ async function packageApp(variant, environment) {
 
     // Set electron fuses
     const binaryPath = join(outputPath, determineBinaryName(flavor));
-    await setElectronFuses(binaryPath);
+    await setElectronFuses(binaryPath, isPlaywrightTestBuild);
 
     // Build launcher binary (unless the $SKIP_LAUNCHER_BINARY env var is set to "true")
     if (process.env.SKIP_LAUNCHER_BINARY !== 'true') {
@@ -438,13 +438,22 @@ async function packageApp(variant, environment) {
 if (require.main === module) {
     // Parse arguments
     const [node, script, ...argv] = process.argv;
-    if (argv.length !== 2) {
-        fail(`Usage: ${node} ${script} (consumer|work) (sandbox|live)`);
+    if (argv.length < 2) {
+        fail(`Usage: ${node} ${script} [--testing] (consumer|work) (sandbox|live)`);
     }
+
+    // Handle optional flags
+    let isPlaywrightTestBuild = false;
+    if (argv[0] === '--testing') {
+        isPlaywrightTestBuild = true;
+        argv.shift(); // Remove flag
+    }
+
+    // Handle positional args
     const variant = argv[0];
     const environment = argv[1];
 
-    packageApp(variant, environment).catch((error) => {
+    packageApp(variant, environment, isPlaywrightTestBuild).catch((error) => {
         fail(error);
     });
 }

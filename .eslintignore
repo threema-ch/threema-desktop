@@ -7,6 +7,3 @@ node_modules/
 packaging/main.cjs
 libs/
 threema-protocols/
-
-# TODO(DESK-35)
-src/test/cypress/

@@ -20,7 +20,7 @@
 - [Testing](./testing.md)
   - [Mocha: Node Unit Tests](./testing-mocha.md)
   - [Karma: DOM Unit Tests](./testing-karma.md)
-  - [Cypress: End-to-End Tests](./testing-cypress.md)
+  - [Playwright: End-to-End Tests](./testing-playwright.md)
   - [Test Coverage](./testing-coverage.md)
 - [Packaging](./packaging.md)
   - [Windows](./packaging-windows.md)

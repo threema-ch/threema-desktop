@@ -661,7 +661,7 @@ module.exports = {
         'import/no-extraneous-dependencies': [
             'error',
             {
-                devDependencies: ['./{config,packaging,test,tools}/**'],
+                devDependencies: ['./{config,packaging,test,tools}/**', './playwright.config.ts'],
                 peerDependencies: false,
                 bundledDependencies: false,
                 packageDir: __dirname,
@@ -805,6 +805,7 @@ module.exports = {
                 './src/test/**/*.js',
                 './tools/**/*.{cjs,js,ts}',
                 './svelte.config.js',
+                './playwright.config.ts',
             ],
             env: {
                 node: true,
@@ -1126,6 +1127,20 @@ module.exports = {
             },
             env: {
                 node: true,
+            },
+        },
+
+        // Playwright test source rules
+        {
+            files: './src/test/playwright/**/*.ts',
+            parserOptions: {
+                project: './src/test/playwright/tsconfig.json',
+            },
+            env: {
+                node: true,
+            },
+            rules: {
+                'no-empty-pattern': 'off', // Used for fixtures
             },
         },
     ],

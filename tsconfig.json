@@ -4,5 +4,5 @@
     "lib": ["esnext"],
     "types": ["node"]
   },
-  "include": ["./tools/assert.ts"]
+  "include": ["./tools/assert.ts", "./playwright.config.ts"]
 }

@@ -22,8 +22,9 @@ export type BuildEntry = (typeof BUILD_ENTRIES)[u53];
  * Build modes:
  * - development: Used while developing
  * - production: Used for all release artifacts (including internal releases)
+ * - testing: Same as production but different Electron fuses. Uses for playwright e2e testing
  */
-export const BUILD_MODES = ['development', 'production'] as const;
+export const BUILD_MODES = ['development', 'production', 'testing'] as const;
 /** See {@link BUILD_MODES}. */
 export type BuildMode = (typeof BUILD_MODES)[u53];
 

@@ -452,10 +452,11 @@ class SpecialSourceProvider:
             await self._handle_electron(package)
             if self.electron_node_headers:
                 await self._handle_electron_headers(package)
-        elif package.name == 'electron-chromedriver':
-            await self._handle_electron_chromedriver(package)
-        elif package.name == 'chromedriver':
-            await self._handle_node_chromedriver(package)
+        # Disable bc. browsers are not used during flatpak-source-generator build
+        # elif package.name == 'electron-chromedriver':
+        #     await self._handle_electron_chromedriver(package)
+        # elif package.name == 'chromedriver':
+        #     await self._handle_node_chromedriver(package)
         elif package.name == 'electron-builder':
             self._handle_electron_builder(package)
         elif package.name == 'gulp-atom-electron':
@@ -466,7 +467,8 @@ class SpecialSourceProvider:
             await self._handle_dugite_native(package)
         elif package.name in {'vscode-ripgrep', '@vscode/ripgrep'}:
             await self._handle_ripgrep_prebuilt(package)
-        elif package.name == 'playwright':
-            await self._handle_playwright(package)
+        # Disable bc. browsers are not used during flatpak-source-generator build
+        # elif package.name == 'playwright':
+        #     await self._handle_playwright(package)
         elif package.name == 'esbuild':
             await self._handle_esbuild(package)

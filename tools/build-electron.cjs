@@ -10,10 +10,21 @@ const ENTRIES = ['app', 'electron-preload', 'electron-main', 'cli'];
 
 // Parse arguments
 const [node, script, ...argv] = process.argv;
-if (argv.length !== 2) {
-    console.error(`Usage: ${node} ${script} (consumer|work) (sandbox|live|onprem)`);
+if (argv.length < 2) {
+    console.error(`Usage: ${node} ${script} [--testing] (consumer|work) (sandbox|live|onprem)`);
     process.exit(1);
 }
+
+// Handle optional flags
+let buildMode;
+if (argv[0] === '--testing') {
+    buildMode = 'testing';
+    argv.shift(); // Remove flag
+} else {
+    buildMode = 'production';
+}
+
+// Handle positional args
 const variant = argv[0];
 const environment = argv[1];
 
@@ -39,7 +50,7 @@ try {
 // Build all vite make targets
 for (const entry of ENTRIES) {
     console.info(
-        `Building target=${TARGET} variant=${variant} entry=${entry} environment=${environment}`,
+        `Building target=${TARGET} variant=${variant} entry=${entry} environment=${environment} buildMode=${buildMode}`,
     );
     try {
         childProcess.execFileSync(
@@ -48,7 +59,7 @@ for (const entry of ENTRIES) {
                 'node_modules/vite/bin/vite.js',
                 'build',
                 '-m',
-                'production',
+                buildMode,
                 '-c',
                 'config/vite.config.ts',
             ],

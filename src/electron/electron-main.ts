@@ -863,6 +863,7 @@ function main(
             height: electronSettings.window.height,
             x: isMacOrWindows ? electronSettings.window.offsetX : undefined,
             y: isMacOrWindows ? electronSettings.window.offsetY : undefined,
+            show: !(import.meta.env.BUILD_MODE === 'testing' && process.env.PW_HEADLESS === 'true'),
             webPreferences: {
                 // # SECURITY
                 //
