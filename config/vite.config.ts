@@ -414,8 +414,9 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
                 : undefined,
         // Calculates integrity hashes (when `app` entry point is built) and adds them to
         // `electron-main.cjs` (when `electron-main`) entry point is built. Plugin is added to all
-        // builds / entry points, because it defines which files to transform (and when) itself.
-        subresourceIntegrityPlugin: subresourceIntegrityPlugin(),
+        // entry points, because it defines which files to transform (and when) itself.
+        subresourceIntegrityPlugin:
+            env.mode !== 'development' ? subresourceIntegrityPlugin() : undefined,
     } as const;
 
     // Determine rollup options
