@@ -212,6 +212,22 @@ test:mocha:linux:
       junit:
         - junit/mocha.xml
 
+test:playwright:linux:
+  stage: test
+  needs: []
+  <<: *cache
+  before_script:
+    - apt-get update && apt-get install -y xvfb libxshmfence1 libnss3 libatk1.0-0 libatk-bridge2.0-0 libdrm2 libgtk-3-0 libgbm1 libasound2
+  script:
+    - set -euo pipefail
+    - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
+    - SKIP_LAUNCHER_BINARY=true npm run dist:test:consumer-sandbox
+    - xvfb-run npm run test:playwright:consumer-sandbox
+  artifacts:
+    expire_in: 1d
+    paths:
+      - build/playwright/
+
 test:mocha:windows:
   stage: test
   # Build on Windows (powershell)

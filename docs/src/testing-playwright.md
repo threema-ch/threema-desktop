@@ -12,8 +12,16 @@ To run all tests just execute:
 
 ```bash
 # e2e tests work-sandbox
-PW_PASSWORD="CHANGE_ME" npm run test:e2e:work-sandbox
+PW_PASSWORD="CHANGE_ME" npm run test:playwright:work-sandbox
 ```
+
+### Environment Variables:
+
+|          Name | Description                                      |             Types |
+| ------------: | ------------------------------------------------ | ----------------: |
+| `PW_HEADLESS` | Run tests in headless mode                       | `true` or `false` |
+|   `PW_FLAVOR` | App variant and environment, e.g. "work-sandbox" |   `BUILD_FLAVORS` |
+| `PW_PASSWORD` | Encryption password                              |          `string` |
 
 If you're using
 [Playwright Test for VSCode](https://marketplace.visualstudio.com/items?itemName=ms-playwright.playwright)
