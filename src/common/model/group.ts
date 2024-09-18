@@ -66,6 +66,7 @@ import {
     REQUIRED,
 } from '~/common/utils/property-validator';
 import {SequenceNumberU53} from '~/common/utils/sequence-number';
+import {difference} from '~/common/utils/set';
 import type {AbortListener} from '~/common/utils/signal';
 import {WritableStore, type ReadableStore} from '~/common/utils/store';
 import {LocalSetStore} from '~/common/utils/store/set-store';
@@ -500,23 +501,23 @@ export class GroupModelController implements GroupController {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromSync: (
             handle,
-            contacts: ModelStore<Contact>[],
-            createdAt: Date,
+            updatedGroupMembers: ModelStore<Contact>[],
+            reflectedAt: Date,
             newUserState?: GroupUserState.MEMBER,
         ) => {
             this._log.debug('GroupModelController: Set members from sync');
-            return this.setMembers.direct(contacts, createdAt, newUserState);
+            return this.setMembers.direct(updatedGroupMembers, reflectedAt, newUserState);
         },
         direct: (
-            contacts: ModelStore<Contact>[],
-            createdAt: Date,
+            updatedGroupMembers: ModelStore<Contact>[],
+            date: Date,
             newUserState?: GroupUserState.MEMBER,
         ) =>
             this.lifetimeGuard.run((guardedStoreHandle) => {
                 const {added, removed} = this._diffAndSetMembers(
                     guardedStoreHandle,
-                    contacts,
-                    createdAt,
+                    new Set(updatedGroupMembers),
+                    date,
                     newUserState,
                 );
                 if (added + removed > 0) {
@@ -527,7 +528,7 @@ export class GroupModelController implements GroupController {
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (
             handle: ActiveTaskCodecHandle<'volatile'>,
-            contacts: ModelStore<Contact>[],
+            updatedGroupMembers: ModelStore<Contact>[],
             createdAt: Date,
             newUserState?: GroupUserState.MEMBER,
         ) => {
@@ -535,7 +536,7 @@ export class GroupModelController implements GroupController {
             return this.lifetimeGuard.run((guardedStoreHandle) => {
                 const {added, removed} = this._diffAndSetMembers(
                     guardedStoreHandle,
-                    contacts,
+                    new Set(updatedGroupMembers),
                     createdAt,
                     newUserState,
                 );
@@ -847,55 +848,6 @@ export class GroupModelController implements GroupController {
         return numAdded;
     }
 
-    /**
-     * Diff the provided {@link contacts} against the group member list.
-     *
-     * Return which contacts would be removed or added as members when setting them all as the new
-     * member list.
-     */
-    private _diffMembers(
-        guardedStoreHandle: GuardedStoreHandle<GroupView>,
-        contacts: Set<ModelStore<Contact>>,
-    ): {
-        added: ModelStore<Contact>[];
-        removed: ModelStore<Contact>[];
-    } {
-        const currentMembers = guardedStoreHandle.view().members;
-        const creator = guardedStoreHandle.view().creator;
-        const added = new Set<ModelStore<Contact>>();
-        const removed = new Set<ModelStore<Contact>>();
-        this._log.debug(
-            `Current member list: ${[...currentMembers].map((member) => `(${[member.get().ctx, member.get().view.displayName]})`)}`,
-        );
-        this._log.debug(
-            `New member list: ${[...contacts].map((member) => `(${[member.get().ctx, member.get().view.displayName]})`)}`,
-        );
-        for (const c of contacts) {
-            // If the contact's reference is the creator, do nothing.
-            if (c === creator) {
-                this._log.warn('Cannot add a member which is the creator, ignoring it.');
-                continue;
-            }
-            if (!currentMembers.has(c)) {
-                this._log.debug(`Adding member ${c.get().view.displayName} to to be added list`);
-                added.add(c);
-            }
-        }
-
-        for (const m of currentMembers) {
-            if (m === creator) {
-                this._log.warn('Current group member list ignores creator, ignoring it.');
-                continue;
-            }
-            if (!contacts.has(m)) {
-                this._log.debug(`Adding member ${m.get().view.displayName} to to be removed list`);
-                removed.add(m);
-            }
-        }
-
-        return {added: [...added], removed: [...removed]};
-    }
-
     private _setMembers(
         handle: GuardedStoreHandle<GroupView>,
         added: ModelStore<Contact>[],
@@ -921,35 +873,87 @@ export class GroupModelController implements GroupController {
      * Note: Triggers a `group-member-change` status message if a new member was added.
      */
     private _diffAndSetMembers(
-        guardedStoreHandle: GuardedStoreHandle<GroupView>,
-        contacts: ModelStore<Contact>[],
-        createdAt: Date,
+        guardedGroupViewStoreHandle: GuardedStoreHandle<GroupView>,
+        updatedGroupMembers: Set<ModelStore<Contact>>,
+        date: Date,
         newUserState?: GroupUserState.MEMBER,
     ): {added: u53; removed: u53} {
-        let userAdded = 0;
-        if (newUserState !== undefined && newUserState !== guardedStoreHandle.view().userState) {
-            this._update(guardedStoreHandle, {userState: newUserState});
-            userAdded += 1;
+        let addedCount = 0;
+
+        // If the user is not part of the group, make them a member.
+        if (
+            newUserState !== undefined &&
+            newUserState !== guardedGroupViewStoreHandle.view().userState
+        ) {
+            this._update(guardedGroupViewStoreHandle, {userState: newUserState});
+            addedCount += 1;
         }
 
         // Because the user addition happens atomically with the addition of other members, they
         // share the same timestamp which determines the place where the frontend places the
         // messages. To avoid indeterministic behaviour, we always make the group member change
         // status message appear first by putting the timestamp one millisecond into the past.
-        if (userAdded === 1) {
+        if (addedCount === 1) {
             this._addUserStateChangedStatusMessage(
                 GroupUserState.MEMBER,
-                new Date(createdAt.getTime() - 1),
+                new Date(date.getTime() - 1),
             );
         }
 
-        const {added, removed} = this._diffMembers(guardedStoreHandle, new Set(contacts));
-        if (added.length === 0 && removed.length === 0) {
-            return {added: userAdded, removed: 0};
+        const currentGroupCreator = guardedGroupViewStoreHandle.view().creator;
+        const currentGroupMembers = guardedGroupViewStoreHandle.view().members;
+        const currentMemberIdentities = new Set(
+            [...currentGroupMembers].map((member) => member.get().view.identity),
+        );
+        const updatedMemberIdentities = new Set(
+            [...updatedGroupMembers].map((member) => member.get().view.identity),
+        );
+        this._log.debug(
+            `Current group member list: ${[...currentMemberIdentities].sort((a, b) => a.localeCompare(b)).join(', ')}`,
+        );
+        this._log.debug(
+            `Updated group member list: ${[...updatedMemberIdentities].sort((a, b) => a.localeCompare(b)).join(', ')}`,
+        );
+
+        // eslint-disable-next-line func-style
+        const isNotUndefinedOrCreator = (
+            member: ModelStore<Contact> | undefined,
+        ): member is ModelStore<Contact> => {
+            if (member === undefined) {
+                return false;
+            }
+            // The user's own identity can never be a `member`, so if `member` is defined but the
+            // group creator is `"me"`, we know for sure that `member` is not the creator, so we can
+            // always include them.
+            if (currentGroupCreator === 'me') {
+                return true;
+            }
+
+            // Keep all `member`s that are not the creator.
+            return member.get().view.identity !== currentGroupCreator.get().view.identity;
+        };
+
+        const membersToAdd = [...difference(updatedMemberIdentities, currentMemberIdentities)]
+            .map((identity) => this._services.model.contacts.getByIdentity(identity))
+            .filter(isNotUndefinedOrCreator);
+        const membersToRemove = [...difference(currentMemberIdentities, updatedMemberIdentities)]
+            .map((identity) => this._services.model.contacts.getByIdentity(identity))
+            .filter(isNotUndefinedOrCreator);
+
+        this._log.debug(
+            `Members to add: ${membersToAdd.map((member) => member.get().view.identity).join(', ')}`,
+        );
+        this._log.debug(
+            `Members to remove: ${membersToRemove.map((member) => member.get().view.identity).join(', ')}`,
+        );
+
+        if (membersToAdd.length === 0 && membersToRemove.length === 0) {
+            return {added: addedCount, removed: 0};
         }
-        this._setMembers(guardedStoreHandle, [...added], [...removed]);
-        this._addGroupMemberChangeStatusMessage(added, removed, createdAt);
-        return {added: added.length + userAdded, removed: removed.length};
+        this._setMembers(guardedGroupViewStoreHandle, membersToAdd, membersToRemove);
+        this._addGroupMemberChangeStatusMessage(membersToAdd, membersToRemove, date);
+
+        return {added: membersToAdd.length + addedCount, removed: membersToRemove.length};
     }
 
     /**
@@ -1158,8 +1162,8 @@ export class GroupModelController implements GroupController {
         groupConversation.controller.createStatusMessage({
             type: StatusMessageType.GROUP_MEMBER_CHANGED,
             value: {
-                added: added.map((c) => c.get().view.identity),
-                removed: removed.map((c) => c.get().view.identity),
+                added: added.map((contactModelStore) => contactModelStore.get().view.identity),
+                removed: removed.map((contactModelStore) => contactModelStore.get().view.identity),
             },
             createdAt,
         });
