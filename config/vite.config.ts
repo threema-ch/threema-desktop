@@ -147,9 +147,9 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
                 WORK_SERVER_URL: undefined,
                 UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop/',
 
-                // Only enabled for internal test builds on sandbox, if set through env variable
-                SENTRY_DSN: process.env.SENTRY_DSN,
-                MINIDUMP_ENDPOINT: process.env.MINIDUMP_ENDPOINT,
+                // We don't do any automatic crash reporting for our on premise builds
+                SENTRY_DSN: undefined,
+                MINIDUMP_ENDPOINT: undefined,
             };
         default:
             return unreachable(environment);
