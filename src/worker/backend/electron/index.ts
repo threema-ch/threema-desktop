@@ -19,6 +19,7 @@ import type {DbMigrationSupplements} from '~/common/node/db/migrations';
 import {SqliteDatabaseBackend} from '~/common/node/db/sqlite';
 import {loadElectronSettings} from '~/common/node/electron-settings';
 import {FileSystemFileStorage} from '~/common/node/file-storage/system-file-storage';
+import {TempFileSystemFileStorage} from '~/common/node/file-storage/temp-system-file-storage';
 import {directoryModeInternalObjectIfPosix} from '~/common/node/fs';
 import {FileSystemKeyStorage} from '~/common/node/key-storage';
 import {FileLogger} from '~/common/node/logging';
@@ -124,6 +125,15 @@ export async function run(): Promise<void> {
                 ...directoryModeInternalObjectIfPosix(),
             });
             return new FileSystemFileStorage(services, log, fileStoragePath);
+        },
+
+        tempFileStorage: (log: Logger) => {
+            const fileStoragePath = path.join(appPath, 'temp');
+            fs.mkdirSync(fileStoragePath, {
+                recursive: true,
+                ...directoryModeInternalObjectIfPosix(),
+            });
+            return new TempFileSystemFileStorage(log, fileStoragePath);
         },
 
         compressor: () => new ZlibCompressor(),

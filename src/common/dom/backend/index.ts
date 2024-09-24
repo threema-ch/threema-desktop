@@ -93,6 +93,7 @@ import {
     wrapRawDeviceGroupKey,
 } from '~/common/network/types/keys';
 import type {DbMigrationSupplements} from '~/common/node/db/migrations';
+import type {TempFileSystemFileStorage} from '~/common/node/file-storage/temp-system-file-storage';
 import {type NotificationCreator, NotificationService} from '~/common/notification';
 import type {SystemDialogService} from '~/common/system-dialog';
 import type {TestDataJson} from '~/common/test-data';
@@ -241,6 +242,8 @@ export interface FactoriesForBackend {
         log: Logger,
         loadFromOldProfile?: boolean,
     ) => FileStorage;
+    /** Instantiate temp file storage. */
+    readonly tempFileStorage: (log: Logger) => TempFileSystemFileStorage;
     /** Instantiate compressor. */
     readonly compressor: () => Compressor;
     /**
@@ -489,6 +492,7 @@ function initEarlyBackendServicesWithoutConfig(
     );
     const taskManager = new TaskManager({logging});
     const keyStorage = factories.keyStorage({crypto}, logging.logger('key-storage'));
+    const tempFile = factories.tempFileStorage(logging.logger('temp-file-storage'));
     const volatileProtocolState = new VolatileProtocolStateBackend();
     const webrtc = endpoint.wrap(backendInit.webRtcEndpoint, logging.logger('com.webrtc'));
 
@@ -503,6 +507,7 @@ function initEarlyBackendServicesWithoutConfig(
         systemDialog,
         systemInfo: backendInit.systemInfo,
         taskManager,
+        tempFile,
         volatileProtocolState,
         webrtc,
     };

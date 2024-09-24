@@ -4,7 +4,7 @@ import type {CryptoBackend} from '~/common/crypto';
 import type {INonceService} from '~/common/crypto/nonce';
 import type {Device} from '~/common/device';
 import type {SystemInfo} from '~/common/electron-ipc';
-import type {FileStorage} from '~/common/file-storage';
+import type {FileStorage, TempFileStorage} from '~/common/file-storage';
 import type {KeyStorage} from '~/common/key-storage';
 import type {LoadingInfo} from '~/common/loading';
 import type {LoggerFactory} from '~/common/logging';
@@ -46,6 +46,7 @@ export interface ServicesForBackend {
     readonly systemDialog: Remote<SystemDialogService>;
     readonly systemInfo: SystemInfo;
     readonly taskManager: TaskManager;
+    readonly tempFile: TempFileStorage;
     readonly viewModel: IViewModelRepository;
     readonly volatileProtocolState: VolatileProtocolState;
     readonly work: WorkBackend;

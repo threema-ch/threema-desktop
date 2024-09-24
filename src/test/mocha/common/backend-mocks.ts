@@ -46,7 +46,7 @@ import {
     WorkVerificationLevel,
 } from '~/common/enum';
 import {ConnectionClosed} from '~/common/error';
-import {InMemoryFileStorage} from '~/common/file-storage';
+import {InMemoryFileStorage, type TempFileStorage} from '~/common/file-storage';
 import {TRANSFER_HANDLER} from '~/common/index';
 import {LoadingInfo} from '~/common/loading';
 import {type Logger, type LoggerFactory, NOOP_LOGGER, TagLogger} from '~/common/logging';
@@ -152,6 +152,7 @@ import {type ClientKey, wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/
 import {ZlibCompressor} from '~/common/node/compressor';
 import {randomBytes} from '~/common/node/crypto/random';
 import {SqliteDatabaseBackend} from '~/common/node/db/sqlite';
+import {TempFileSystemFileStorage} from '~/common/node/file-storage/temp-system-file-storage';
 import {FileSystemKeyStorage} from '~/common/node/key-storage';
 import {
     type NotificationCreator,
@@ -636,6 +637,18 @@ export function makeTestFileSystemKeyStorage(crypto: CryptoBackend): TestKeyStor
     return {appPath, keyStoragePath, keyStorage};
 }
 
+interface TestTempFileStorageDetails {
+    tempFile: TempFileStorage;
+}
+
+export function makeTestTempFileSystemFileStorage(): TestTempFileStorageDetails {
+    const tempFileStoragePath = fs.mkdtempSync(
+        path.join(os.tmpdir(), 'threema-desktop-test-temp-'),
+    );
+    const tempFileStorage = new TempFileSystemFileStorage(NOOP_LOGGER, tempFileStoragePath);
+    return {tempFile: tempFileStorage};
+}
+
 export function makeTestServices(identity: IdentityString): TestServices {
     const nonces = new TestNonceService();
     const rawClientKeyBytes: Uint8Array = nodeRandomBytes(32);
@@ -671,6 +684,7 @@ export function makeTestServices(identity: IdentityString): TestServices {
     const notification = new TestNotificationService(logging.logger('notifications'));
     const media = new TestMediaService(logging.logger('media'));
     const file = new InMemoryFileStorage(crypto);
+    const {tempFile} = makeTestTempFileSystemFileStorage();
     const taskManager = new TaskManager({logging});
     const endpointCache = {
         local: new LocalObjectMapper(),
@@ -693,6 +707,7 @@ export function makeTestServices(identity: IdentityString): TestServices {
             exposeProperties: (object: unknown) => object,
         } as unknown as EndpointService,
         file,
+        tempFile,
         keyStorage,
         logging,
         media,
