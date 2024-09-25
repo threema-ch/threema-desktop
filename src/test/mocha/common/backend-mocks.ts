@@ -48,6 +48,7 @@ import {
 import {ConnectionClosed} from '~/common/error';
 import {InMemoryFileStorage, type TempFileStorage} from '~/common/file-storage';
 import {TRANSFER_HANDLER} from '~/common/index';
+import type {LauncherService} from '~/common/launcher';
 import {LoadingInfo} from '~/common/loading';
 import {type Logger, type LoggerFactory, NOOP_LOGGER, TagLogger} from '~/common/logging';
 import {BackendMediaService, type IFrontendMediaService} from '~/common/media';
@@ -580,6 +581,10 @@ const open = (async (dialog: SystemDialog) =>
         closed: new ResolvablePromise({uncaught: 'default'}),
     } as const)) as unknown as Remote<(dialog: SystemDialog) => SystemDialogHandle>;
 
+const TEST_LAUNCHER_SERVICE: Remote<LauncherService> = {
+    open,
+} as unknown as Remote<LauncherService>;
+
 const TEST_SYSTEM_DIALOG_SERVICE: Remote<SystemDialogService> = {
     open,
 } as unknown as Remote<SystemDialogService>;
@@ -709,6 +714,7 @@ export function makeTestServices(identity: IdentityString): TestServices {
         file,
         tempFile,
         keyStorage,
+        launcher: TEST_LAUNCHER_SERVICE,
         logging,
         media,
         nonces,

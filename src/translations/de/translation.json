@@ -42,15 +42,20 @@
     "prose--add-contact-instructions": "Bitte geben Sie die Threema-ID des Kontaktes ein, den Sie hinzufügen möchten:",
     "prose--add-contact-instructions-work-directory": "Suchen Sie alternativ einen Kontakt im Unternehmensverzeichnis, um ihn zu Ihrer Kontaktliste hinzuzufügen:"
   },
-  "dialog--app-update": {
-    "action--dismiss": "OK",
-    "label--title": "Update verfügbar: {current} → {latest}",
-    "markup--linux-p1": "Bitte installieren Sie das Update über Ihren Systempaketmanager oder indem Sie <1>flatpak update</1> in Ihrem Terminal ausführen.",
-    "markup--linux-p2": "Details zu diesem Update: <1 />",
-    "markup--macos-p1": "Bitte laden Sie die neueste Version von <1 /> herunter und installieren Sie sie.",
-    "markup--other-os-p1": "Bitte aktualisieren Sie {name}.",
-    "markup--windows-p1": "Bitte laden Sie die neueste Version von <1 /> herunter und installieren Sie sie.",
-    "prose--intro": "Ein Update für Threema ist verfügbar!"
+  "dialog--auto-app-update-download": {
+    "prose--downloading": "Threema {version} für Desktop wird heruntergeladen…",
+    "prose--restarting": "Installation wird vorbereitet…"
+  },
+  "dialog--auto-app-update-failed": {
+    "action--confirm": "Nochmals probieren",
+    "action--dismiss": "Später probieren",
+    "prose--info": "Download fehlgeschlagen!"
+  },
+  "dialog--auto-app-update-prompt": {
+    "action--confirm": "Jetzt aktualisieren",
+    "action--dismiss": "Später aktualisieren",
+    "prose--description-p1": "Ein Update ist verfügbar. <1 />{current} → {latest}",
+    "prose--description-p2": "Die Applikation startet nach dem Download automatisch neu. Dies kann einige Minuten dauern."
   },
   "dialog--change-password": {
     "action--cancel": "Abbrechen",
@@ -309,6 +314,15 @@
     "label--title-loading": "Daten werden geladen",
     "label--title-receiving": "Daten werden empfangen",
     "label--title-restoring": "Nachrichten werden wiederhergstellt"
+  },
+  "dialog--manual-app-update": {
+    "action--dismiss": "OK",
+    "label--title": "Update verfügbar: {current} → {latest}",
+    "markup--linux-p1": "Bitte installieren Sie das Update über Ihren Systempaketmanager oder indem Sie <1>flatpak update</1> in Ihrem Terminal ausführen.",
+    "markup--linux-p2": "Details zu diesem Update: <1 />",
+    "markup--macos-p1": "Bitte laden Sie die neueste Version von <1 /> herunter und installieren Sie sie.",
+    "markup--other-os-p1": "Bitte aktualisieren Sie {name}.",
+    "prose--intro": "Ein Update für Threema ist verfügbar!"
   },
   "dialog--media-message-viewer": {
     "error--media-not-loaded": "Medium konnte nicht geladen werden.",

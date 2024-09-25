@@ -37,6 +37,8 @@ const appApi: ElectronIpc = {
     deleteProfileAndRestartApp: (options: DeleteProfileOptions) =>
         ipcRenderer.send(ElectronIpcCommand.DELETE_PROFILE_AND_RESTART, options),
     restartApp: () => ipcRenderer.send(ElectronIpcCommand.RESTART_APP),
+    restartAppAndInstallUpdate: () =>
+        ipcRenderer.send(ElectronIpcCommand.RESTART_APP_AND_INSTALL_UPDATE),
     isSpellcheckEnabled: () => ipcRenderer.invoke(ElectronIpcCommand.GET_SPELLCHECK),
     setSpelleckEnabledAndRestart: (enabled) =>
         ipcRenderer.send(ElectronIpcCommand.SET_SPELLCHECK, enabled),

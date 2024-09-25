@@ -33,7 +33,6 @@ import {DeviceJoinProtocol, type DeviceJoinResult} from '~/common/dom/backend/jo
 import * as oppf from '~/common/dom/backend/onprem/oppf';
 import {OPPF_FILE_SCHEMA} from '~/common/dom/backend/onprem/oppf';
 import {unlockDatabaseKey, transferOldMessages} from '~/common/dom/backend/restore-db';
-import {updateCheck} from '~/common/dom/backend/update-check';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {DebugBackend} from '~/common/dom/debug';
 import {ConnectionManager} from '~/common/dom/network/protocol/connection';
@@ -45,6 +44,7 @@ import {
     RendezvousConnection,
     type RendezvousProtocolSetup,
 } from '~/common/dom/network/protocol/rendezvous';
+import {Updater} from '~/common/dom/update';
 import type {SystemInfo} from '~/common/electron-ipc';
 import {CloseCodeUtils, ConnectionState, NonceScope, TransferTag} from '~/common/enum';
 import {
@@ -65,6 +65,7 @@ import {
     type ServicesForKeyStorageFactory,
     type KeyStorageOppfConfig,
 } from '~/common/key-storage';
+import type {LauncherService} from '~/common/launcher';
 import {LoadingInfo} from '~/common/loading';
 import type {Logger, LoggerFactory} from '~/common/logging';
 import {BackendMediaService, type IFrontendMediaService} from '~/common/media';
@@ -183,6 +184,7 @@ export class BackendCreationError extends BaseError {
  * Data required to be supplied to a backend worker for initialisation.
  */
 export interface BackendInit {
+    readonly launcherEndpoint: ProxyEndpoint<LauncherService>;
     readonly mediaEndpoint: ProxyEndpoint<IFrontendMediaService>;
     readonly notificationEndpoint: ProxyEndpoint<NotificationCreator>;
     readonly systemDialogEndpoint: ProxyEndpoint<SystemDialogService>;
@@ -484,8 +486,9 @@ function initEarlyBackendServicesWithoutConfig(
     const crypto = new TweetNaClBackend(randomBytes);
     const {mediaEndpoint: frontendMediaServiceEndpoint, notificationEndpoint} = backendInit;
     const compressor = factories.compressor();
-    const notification = createNotificationService(endpoint, notificationEndpoint, logging);
+    const launcher = endpoint.wrap(backendInit.launcherEndpoint, logging.logger('com.launcher'));
     const media = createMediaService(endpoint, frontendMediaServiceEndpoint, logging);
+    const notification = createNotificationService(endpoint, notificationEndpoint, logging);
     const systemDialog = endpoint.wrap(
         backendInit.systemDialogEndpoint,
         logging.logger('com.system-dialog'),
@@ -501,6 +504,7 @@ function initEarlyBackendServicesWithoutConfig(
         crypto,
         endpoint,
         keyStorage,
+        launcher,
         logging,
         media,
         notification,
@@ -911,7 +915,10 @@ export class Backend {
         }
 
         if (!import.meta.env.DEBUG && checkForUpdates) {
-            updateCheck(phase1Services, phase1Services.systemInfo).catch(assertUnreachable);
+            const updater = new Updater(phase1Services);
+            await updater.checkAndPerformUpdate().catch((error: unknown) => {
+                log.error(`Update check or download failed: ${error}`);
+            });
         }
 
         const workData =

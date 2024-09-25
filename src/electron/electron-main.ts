@@ -52,6 +52,7 @@ const EXIT_CODE_UNCAUGHT_ERROR = 7;
 const EXIT_CODE_RESTART = 8;
 const EXIT_CODE_DELETE_PROFILE_AND_RESTART = 9;
 const EXIT_CODE_RENAME_PROFILE_AND_RESTART = 10;
+const EXIT_CODE_RESTART_AND_INSTALL_UPDATE = 11;
 
 // Path name for user data, see
 // https://www.electronjs.org/docs/latest/api/app#appgetpathname
@@ -513,13 +514,13 @@ function main(
      * or app bundle (macOS) from there.
      */
     function restartApplication(
-        mode: 'restart' | 'delete-profile-and-restart' | 'rename-profile-and-restart',
+        mode:
+            | 'delete-profile-and-restart'
+            | 'rename-profile-and-restart'
+            | 'restart'
+            | 'restart-and-install-update',
     ): void {
         switch (mode) {
-            case 'restart': {
-                log.info(`Requesting app restart`);
-                return electron.app.exit(EXIT_CODE_RESTART);
-            }
             case 'delete-profile-and-restart': {
                 log.info(`Requesting profile deletion and app restart`);
                 return electron.app.exit(EXIT_CODE_DELETE_PROFILE_AND_RESTART);
@@ -528,6 +529,13 @@ function main(
                 log.info(`Requesting profile renaming and app restart`);
                 return electron.app.exit(EXIT_CODE_RENAME_PROFILE_AND_RESTART);
             }
+            case 'restart': {
+                log.info(`Requesting app restart`);
+                return electron.app.exit(EXIT_CODE_RESTART);
+            }
+            case 'restart-and-install-update':
+                log.info(`Requesting app restart and update install`);
+                return electron.app.exit(EXIT_CODE_RESTART_AND_INSTALL_UPDATE);
             default:
                 return unreachable(mode);
         }
@@ -654,6 +662,13 @@ function main(
                 validateSenderFrame(event.senderFrame);
                 restartApplication('restart');
             })
+            .on(
+                ElectronIpcCommand.RESTART_APP_AND_INSTALL_UPDATE,
+                (event: electron.IpcMainEvent) => {
+                    validateSenderFrame(event.senderFrame);
+                    restartApplication('restart-and-install-update');
+                },
+            )
             .on(ElectronIpcCommand.CLOSE_APP, (event: electron.IpcMainEvent) => {
                 validateSenderFrame(event.senderFrame);
                 electron.app.quit();

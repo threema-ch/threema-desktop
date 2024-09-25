@@ -87,6 +87,14 @@ export interface ElectronIpc {
      */
     readonly restartApp: () => void;
 
+    /**
+     * Restart the application and install an app update.
+     *
+     * Restarting is done using `app.exit(...)`, which means that the application will be
+     * force-closed immediately.
+     */
+    readonly restartAppAndInstallUpdate: () => void;
+
     /*
      * Return whether or not the spellcheck is enabled. Returns undefined if the spellchecker is not
      * implemented.

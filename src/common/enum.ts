@@ -2543,6 +2543,8 @@ export namespace ElectronIpcCommand {
     export type CLEAR_LOG_FILES = typeof CLEAR_LOG_FILES;
     export const RESTART_APP = 'restartApp';
     export type RESTART_APP = typeof RESTART_APP;
+    export const RESTART_APP_AND_INSTALL_UPDATE = 'restartAppAndInstallUpdate';
+    export type RESTART_APP_AND_INSTALL_UPDATE = typeof RESTART_APP_AND_INSTALL_UPDATE;
     export const DELETE_PROFILE_AND_RESTART = 'deleteProfileAndRestart';
     export type DELETE_PROFILE_AND_RESTART = typeof DELETE_PROFILE_AND_RESTART;
     export const REMOVE_OLD_PROFILES = 'removeOldProfiles';

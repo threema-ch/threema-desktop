@@ -20,6 +20,7 @@ import type {ServicesForBackendController} from '~/common/backend';
 import type {LoadingState, LinkingState} from '~/common/dom/backend';
 import {BackendController} from '~/common/dom/backend/controller';
 import {randomBytes} from '~/common/dom/crypto/random';
+import {FrontendLauncherService} from '~/common/dom/launcher';
 import {DOM_CONSOLE_LOGGER} from '~/common/dom/logging';
 import {BlobCacheService} from '~/common/dom/ui/blob-cache';
 import {LocalStorageController} from '~/common/dom/ui/local-storage';
@@ -385,12 +386,14 @@ async function main(): Promise<() => void> {
 
     // Initialize early services and global dialog component
     const appServices: Delayed<AppServices> = Delayed.simple('AppServices');
-    attachSystemDialogs(elements.systemDialogs, appServices);
     const endpoint = createEndpointService({logging});
-    const systemDialog = new FrontendSystemDialogService();
+    const launcher = new FrontendLauncherService(window.app);
+    const systemDialogComponent = attachSystemDialogs(elements.systemDialogs, appServices);
+    const systemDialog = new FrontendSystemDialogService(systemDialogComponent.setProgress);
     const webRtc = new WebRtcServiceProvider({endpoint, logging});
     const backendControllerServices: ServicesForBackendController = {
         endpoint,
+        launcher,
         logging,
         media: new FrontendMediaService(appServices),
         notification: new FrontendNotificationCreator(),

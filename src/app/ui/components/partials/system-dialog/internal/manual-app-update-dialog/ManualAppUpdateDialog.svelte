@@ -4,11 +4,11 @@
 <script lang="ts">
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
-  import type {AppUpdateDialogProps} from '~/app/ui/components/partials/system-dialog/internal/app-update-dialog/props';
+  import type {ManualAppUpdateDialogProps} from '~/app/ui/components/partials/system-dialog/internal/manual-app-update-dialog/props';
   import {i18n} from '~/app/ui/i18n';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
 
-  type $$Props = AppUpdateDialogProps;
+  type $$Props = ManualAppUpdateDialogProps;
 
   export let currentVersion: $$Props['currentVersion'];
   export let latestVersion: $$Props['latestVersion'];
@@ -27,7 +27,7 @@
     buttons: [
       {
         isFocused: true,
-        label: $i18n.t('dialog--app-update.action--dismiss', 'OK'),
+        label: $i18n.t('dialog--manual-app-update.action--dismiss', 'OK'),
         onClick: () => {
           onSelectAction?.('dismissed');
           modalComponent?.close();
@@ -35,10 +35,14 @@
         type: 'filled',
       },
     ],
-    title: $i18n.t('dialog--app-update.label--title', 'Update available: {current} → {latest}', {
-      current: currentVersion,
-      latest: latestVersion,
-    }),
+    title: $i18n.t(
+      'dialog--manual-app-update.label--title',
+      'Update available: {current} → {latest}',
+      {
+        current: currentVersion,
+        latest: latestVersion,
+      },
+    ),
     minWidth: 340,
     maxWidth: 460,
   }}
@@ -52,13 +56,13 @@
 >
   <div class="content">
     <p>
-      {$i18n.t('dialog--app-update.prose--intro', 'An update for Threema is available!')}
+      {$i18n.t('dialog--manual-app-update.prose--intro', 'An update for Threema is available!')}
     </p>
     {#if systemInfo.os === 'linux'}
       <p>
         <SubstitutableText
           text={$i18n.t(
-            'dialog--app-update.markup--linux-p1',
+            'dialog--manual-app-update.markup--linux-p1',
             'Please install the update through your system package manager or by running <1>flatpak update</1> in your terminal.',
           )}
         >
@@ -68,7 +72,7 @@
       <p>
         <SubstitutableText
           text={$i18n.t(
-            'dialog--app-update.markup--linux-p2',
+            'dialog--manual-app-update.markup--linux-p2',
             'For more information about this update, see <1 />.',
           )}
         >
@@ -84,23 +88,7 @@
       <p>
         <SubstitutableText
           text={$i18n.t(
-            'dialog--app-update.markup--macos-p1',
-            'Please update by downloading and installing the latest release from <1 />.',
-          )}
-        >
-          <a
-            slot="1"
-            href={import.meta.env.URLS.downloadAndInfo.full}
-            target="_blank"
-            rel="noreferrer noopener">{import.meta.env.URLS.downloadAndInfo.short}</a
-          >
-        </SubstitutableText>
-      </p>
-    {:else if systemInfo.os === 'windows'}
-      <p>
-        <SubstitutableText
-          text={$i18n.t(
-            'dialog--app-update.markup--windows-p1',
+            'dialog--manual-app-update.markup--macos-p1',
             'Please update by downloading and installing the latest release from <1 />.',
           )}
         >
@@ -115,7 +103,7 @@
     {:else}
       <p>
         <SubstitutableText
-          text={$i18n.t('dialog--app-update.markup--other-os-p1', 'Please update {name}.', {
+          text={$i18n.t('dialog--manual-app-update.markup--other-os-p1', 'Please update {name}.', {
             name: import.meta.env.APP_NAME,
           })}
         />

@@ -1,5 +1,6 @@
 import type {ThreemaWorkCredentials} from '~/common/device';
 import type {SystemInfo} from '~/common/electron-ipc';
+import type {f64} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
 
 // Dialog variants
@@ -8,11 +9,14 @@ import type {ProxyMarked} from '~/common/utils/endpoint';
  * All possible system dialogs. Note: All Properties must be structurally clonable.
  */
 export type SystemDialog =
-    | AppUpdateDialog
+    | AutoAppUpdateDownloadDialog
+    | AutoAppUpdateFailedDialog
+    | AutoAppUpdatePromptDialog
     | ConnectionErrorDialog
     | ServerAlertDialog
     | UnrecoverableStateDialog
     | InvalidWorkCredentialsDialog
+    | ManualAppUpdateDialog
     | MissingDeviceCookieDialog
     | DeviceCookieMismatchDialog
     | D2dProtocolVersionIncompatibleDialog;
@@ -26,14 +30,36 @@ interface SystemDialogCommon {
 }
 
 /**
- * Dialog indicating that an app update is available.
+ * Dialog indicating that an app update is downloading.
  */
-export interface AppUpdateDialog extends SystemDialogCommon {
-    readonly type: 'app-update';
-    readonly context: AppUpdateDialogContext;
+export interface AutoAppUpdateDownloadDialog extends SystemDialogCommon {
+    readonly type: 'auto-app-update-download';
+    readonly context: AutoAppUpdateDownloadDialogContext;
 }
 
-export interface AppUpdateDialogContext {
+export interface AutoAppUpdateDownloadDialogContext {
+    /**
+     * Name of the most recent available application version.
+     */
+    readonly latestVersion: string;
+}
+
+/**
+ * Dialog indicating that an app update has failed.
+ */
+export interface AutoAppUpdateFailedDialog extends SystemDialogCommon {
+    readonly type: 'auto-app-update-failed';
+}
+
+/**
+ * Dialog indicating that an app update is downloading.
+ */
+export interface AutoAppUpdatePromptDialog extends SystemDialogCommon {
+    readonly type: 'auto-app-update-prompt';
+    readonly context: AutoAppUpdatePromptDialogContext;
+}
+
+export interface AutoAppUpdatePromptDialogContext {
     /**
      * Name of the currently installed application version.
      */
@@ -42,10 +68,6 @@ export interface AppUpdateDialogContext {
      * Name of the most recent available application version.
      */
     readonly latestVersion: string;
-    /**
-     * Details about the user's system.
-     */
-    readonly systemInfo: SystemInfo;
 }
 
 /**
@@ -92,6 +114,31 @@ export interface InvalidWorkCredentialsDialogContext {
 }
 
 /**
+ * Dialog indicating that an app update is available.
+ */
+export interface ManualAppUpdateDialog extends SystemDialogCommon {
+    readonly type: 'manual-app-update';
+    readonly context: ManualAppUpdateDialogContext;
+}
+
+export interface ManualAppUpdateDialogContext {
+    /**
+     * Name of the currently installed application version.
+     */
+    readonly currentVersion: string;
+    /**
+     * Name of the most recent available application version.
+     */
+    readonly latestVersion: string;
+    /**
+     * Details about the user's system.
+     */
+    readonly systemInfo: Omit<SystemInfo, 'os'> & {
+        readonly os: SystemInfo['os'];
+    };
+}
+
+/**
  * Dialog which is shown when there is no device cookie
  */
 export interface MissingDeviceCookieDialog extends SystemDialogCommon {
@@ -134,6 +181,7 @@ export type SystemDialogAction = 'confirmed' | 'dismissed';
 
 export type SystemDialogHandle = {
     closed: Promise<SystemDialogAction>;
+    setProgress: (progress: f64) => void;
 } & ProxyMarked;
 
 /**
@@ -142,6 +190,11 @@ export type SystemDialogHandle = {
  * Lives in the frontend thread.
  */
 export interface SystemDialogService extends ProxyMarked {
+    /**
+     * Close all open system dialogs.
+     */
+    readonly closeAll: () => void;
+
     /**
      * Show the specified system dialog.
      *

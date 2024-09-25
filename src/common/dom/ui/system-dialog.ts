@@ -5,6 +5,7 @@ import type {
     SystemDialogHandle,
     SystemDialogService,
 } from '~/common/system-dialog';
+import type {f64} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
 import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -29,10 +30,28 @@ export class FrontendSystemDialogHandle implements SystemDialogHandle {
         new ResolvablePromise<SystemDialogAction>({
             uncaught: 'default',
         });
+
+    public constructor(private readonly _setProgress: (progress: f64) => void) {}
+
+    /**
+     * Update the value of the progress bar displayed in the system dialog, if any.
+     *
+     * @param progress Fractional progress between `0` and `1`.
+     */
+    public setProgress(progress: f64): void {
+        this._setProgress(progress);
+    }
 }
 
 export class FrontendSystemDialogService implements SystemDialogService {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
+
+    public constructor(private readonly _setProgress: (progress: f64) => void) {}
+
+    /** @inheritdoc */
+    public closeAll(): void {
+        systemDialogStore.set([]);
+    }
 
     /** @inheritdoc */
     public open(dialog: SystemDialog): SystemDialogHandle {
@@ -61,7 +80,7 @@ export class FrontendSystemDialogService implements SystemDialogService {
             }
 
             // Otherwise, store a new dialog instance.
-            handle = new FrontendSystemDialogHandle();
+            handle = new FrontendSystemDialogHandle(this._setProgress);
             return [{dialog, handle}, ...currentDialogs];
         });
 

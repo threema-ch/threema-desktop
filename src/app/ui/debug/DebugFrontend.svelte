@@ -13,9 +13,12 @@
 
   const systemDialogDropdownItems: ContextMenuItem[] = (
     [
-      'app-update',
+      'auto-app-update-download',
+      'auto-app-update-failed',
+      'auto-app-update-prompt',
       'device-cookie-mismatch',
       'invalid-work-credentials',
+      'manual-app-update',
       'missing-device-cookie',
       'server-alert',
       'unrecoverable-state',
@@ -23,24 +26,46 @@
     ] as const
   ).map((type: Exclude<SystemDialog['type'], 'connection-error'>) => {
     switch (type) {
-      case 'app-update':
+      case 'auto-app-update-download':
+        return {
+          type: 'option',
+          handler: () => {
+            const systemDialogHandle = systemDialog.open({
+              type,
+              context: {
+                latestVersion: '2.0-betaAB',
+              },
+            });
+
+            systemDialogHandle.setProgress(1);
+          },
+          label: 'Automatic App Update Download',
+        };
+
+      case 'auto-app-update-failed':
+        return {
+          type: 'option',
+          handler: () => {
+            systemDialog.open({
+              type,
+            });
+          },
+          label: 'Automatic App Update Failed',
+        };
+
+      case 'auto-app-update-prompt':
         return {
           type: 'option',
           handler: () => {
             systemDialog.open({
               type,
               context: {
-                currentVersion: 'test-1',
-                latestVersion: 'test-2',
-                systemInfo: {
-                  arch: 'unknown',
-                  locale: 'en',
-                  os: 'other',
-                },
+                currentVersion: '2.0-betaAB',
+                latestVersion: '2.0-betaCD',
               },
             });
           },
-          label: 'App Update',
+          label: 'Automatic App Update Prompt',
         };
 
       case 'device-cookie-mismatch':
@@ -69,6 +94,26 @@
             });
           },
           label: 'Invalid Work Credentials',
+        };
+
+      case 'manual-app-update':
+        return {
+          type: 'option',
+          handler: () => {
+            systemDialog.open({
+              type,
+              context: {
+                currentVersion: '2.0-betaAB',
+                latestVersion: '2.0-betaCD',
+                systemInfo: {
+                  arch: 'unknown',
+                  locale: 'en',
+                  os: 'linux',
+                },
+              },
+            });
+          },
+          label: 'Manual App Update',
         };
 
       case 'missing-device-cookie':

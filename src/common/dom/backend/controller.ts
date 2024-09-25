@@ -17,6 +17,7 @@ import {
 import type {ConnectionState, D2mLeaderState} from '~/common/enum';
 import {extractErrorMessage} from '~/common/error';
 import {RELEASE_PROXY, TRANSFER_HANDLER} from '~/common/index';
+import type {LauncherService} from '~/common/launcher';
 import type {Logger} from '~/common/logging';
 import type {IFrontendMediaService} from '~/common/media';
 import type {ProfilePictureView} from '~/common/model';
@@ -123,6 +124,15 @@ export class BackendController {
          * Helper function to assemble a {@link BackendInit} object.
          */
         function assembleBackendInit(): BackendInit {
+            // Launcher
+            const {local: localLauncherEndpoint, remote: launcherEndpoint} =
+                endpoint.createEndpointPair<LauncherService>();
+            endpoint.exposeProxy(
+                services.launcher,
+                localLauncherEndpoint,
+                logging.logger('com.launcher'),
+            );
+
             // Media
             const {local: localMediaEndpoint, remote: mediaEndpoint} =
                 endpoint.createEndpointPair<IFrontendMediaService>();
@@ -158,13 +168,20 @@ export class BackendController {
             // Transfer
             return endpoint.transfer(
                 {
+                    launcherEndpoint,
                     mediaEndpoint,
                     notificationEndpoint,
                     systemDialogEndpoint,
                     webRtcEndpoint,
                     systemInfo: services.systemInfo,
                 },
-                [mediaEndpoint, notificationEndpoint, systemDialogEndpoint, webRtcEndpoint],
+                [
+                    launcherEndpoint,
+                    mediaEndpoint,
+                    notificationEndpoint,
+                    systemDialogEndpoint,
+                    webRtcEndpoint,
+                ],
             );
         }
 

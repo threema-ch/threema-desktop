@@ -42,15 +42,20 @@
     "prose--add-contact-instructions": "Please enter the Threema ID of the contact you would like to add:",
     "prose--add-contact-instructions-work-directory": "Alternatively, search a contact in the company directory, and add it to your contact list:"
   },
-  "dialog--app-update": {
-    "action--dismiss": "OK",
-    "label--title": "Update Available: {current} → {latest}",
-    "markup--linux-p1": "Please install the update through your system package manager or by running <1>flatpak update</1> in your terminal.",
-    "markup--linux-p2": "For more information about this update, see <1 />.",
-    "markup--macos-p1": "Please update by downloading and installing the latest release from <1 />.",
-    "markup--other-os-p1": "Please update {name}.",
-    "markup--windows-p1": "Please update by downloading and installing the latest release from <1 />.",
-    "prose--intro": "An update for Threema is available!"
+  "dialog--auto-app-update-download": {
+    "prose--downloading": "Downloading Threema {version} for desktop…",
+    "prose--restarting": "Preparing installation…"
+  },
+  "dialog--auto-app-update-failed": {
+    "action--confirm": "Retry now",
+    "action--dismiss": "Retry later",
+    "prose--info": "Download failed!"
+  },
+  "dialog--auto-app-update-prompt": {
+    "action--confirm": "Update now",
+    "action--dismiss": "Update later",
+    "prose--description-p1": "An update is available. <1 />{current} → {latest}",
+    "prose--description-p2": "After the download is complete, the application will restart automatically. This can take a couple of minutes."
   },
   "dialog--change-password": {
     "action--cancel": "Cancel",
@@ -309,6 +314,15 @@
     "label--title-loading": "Loading Data",
     "label--title-receiving": "Receiving Data",
     "label--title-restoring": "Restoring Messages"
+  },
+  "dialog--manual-app-update": {
+    "action--dismiss": "OK",
+    "label--title": "Update Available: {current} → {latest}",
+    "markup--linux-p1": "Please install the update through your system package manager or by running <1>flatpak update</1> in your terminal.",
+    "markup--linux-p2": "For more information about this update, see <1 />.",
+    "markup--macos-p1": "Please update by downloading and installing the latest release from <1 />.",
+    "markup--other-os-p1": "Please update {name}.",
+    "prose--intro": "An update for Threema is available!"
   },
   "dialog--media-message-viewer": {
     "error--media-not-loaded": "Media could not be loaded.",

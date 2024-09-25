@@ -6,6 +6,7 @@ import type {Device} from '~/common/device';
 import type {SystemInfo} from '~/common/electron-ipc';
 import type {FileStorage, TempFileStorage} from '~/common/file-storage';
 import type {KeyStorage} from '~/common/key-storage';
+import type {LauncherService} from '~/common/launcher';
 import type {LoadingInfo} from '~/common/loading';
 import type {LoggerFactory} from '~/common/logging';
 import type {BackendMediaService, IFrontendMediaService} from '~/common/media';
@@ -36,6 +37,7 @@ export interface ServicesForBackend {
     readonly endpoint: EndpointService;
     readonly file: FileStorage;
     readonly keyStorage: KeyStorage;
+    readonly launcher: Remote<LauncherService>;
     readonly logging: LoggerFactory;
     readonly media: BackendMediaService;
     readonly model: Repositories;
@@ -85,6 +87,7 @@ export type EarlyBackendServicesThatDontRequireConfig = Omit<
  */
 export interface ServicesForBackendController {
     readonly endpoint: EndpointService;
+    readonly launcher: LauncherService;
     readonly logging: LoggerFactory;
     readonly media: IFrontendMediaService;
     readonly notification: NotificationCreator;
