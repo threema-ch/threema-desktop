@@ -11,7 +11,14 @@ import * as v from '@badrap/valita';
 import type {ElectronInstallerDMGOptions} from 'electron-installer-dmg';
 import fsExtra from 'fs-extra';
 
-import {type BuildFlavor, isValidBuildFlavor, determineAppName} from '../config/build.js';
+import {
+    type BuildFlavor,
+    determineAppIdentifier,
+    determineAppName,
+    determineAppRdn,
+    determineMsixApplicationId,
+    isBuildFlavor,
+} from '../config/base.js';
 
 // Note: Eslint wants us to do "import {copySync, ensureDirSync} from 'fs-extra'", but when using
 //       that syntax, node complains and suggests to use the default import instead. In the
@@ -61,7 +68,7 @@ const TARGETS: Target[] = [
 function parseBuildFlavors(flavorList: string): BuildFlavor[] {
     const flavors = flavorList.split(',').map((val) => val.trim());
     for (const flavor of flavors) {
-        if (!isValidBuildFlavor(flavor)) {
+        if (!isBuildFlavor(flavor)) {
             printUsage(`Invalid build flavor: ${flavor}`);
             process.exit(1);
         }
@@ -137,46 +144,6 @@ function checkCommandAvailability(command: string, required = false): boolean {
  */
 function requireCommand(command: string): void {
     checkCommandAvailability(command, true);
-}
-
-/**
- * Determine the app reverse domain notation used as application ID.
- */
-function determineAppRdn(flavor: BuildFlavor): string {
-    switch (flavor) {
-        case 'consumer-live':
-            return 'ch.threema.threema-desktop';
-        case 'consumer-sandbox':
-            return 'ch.threema.threema-green-desktop';
-        case 'work-live':
-            return 'ch.threema.threema-work-desktop';
-        case 'work-sandbox':
-            return 'ch.threema.threema-blue-desktop';
-        case 'work-onprem':
-            return 'ch.threema.threema-onprem-desktop';
-        default:
-            return unreachable(flavor);
-    }
-}
-
-/**
- * Determine the app identifier (used e.g. in filenames).
- */
-function determineAppIdentifier(flavor: BuildFlavor): string {
-    switch (flavor) {
-        case 'consumer-live':
-            return 'threema-desktop';
-        case 'consumer-sandbox':
-            return 'threema-green-desktop';
-        case 'work-live':
-            return 'threema-work-desktop';
-        case 'work-sandbox':
-            return 'threema-blue-desktop';
-        case 'work-onprem':
-            return 'threema-onprem-desktop';
-        default:
-            return unreachable(flavor);
-    }
 }
 
 /**
@@ -845,27 +812,8 @@ function buildMsix(dirs: Directories, flavor: BuildFlavor, sign: boolean): void 
 
     // Variables depending on build flavor
     const displayName = determineAppName(flavor);
-    let identityName;
-    switch (flavor) {
-        case 'consumer-live':
-            identityName = 'Threema.Desktop.Consumer';
-            break;
-        case 'consumer-sandbox':
-            identityName = 'Threema.Desktop.Green';
-            break;
-        case 'work-live':
-            identityName = 'Threema.Desktop.Work';
-            break;
-        case 'work-sandbox':
-            identityName = 'Threema.Desktop.Blue';
-            break;
-        case 'work-onprem':
-            identityName = 'Threema.Desktop.OnPrem';
-            break;
-        default:
-            unreachable(flavor);
-    }
-    const applicationId = identityName;
+    const applicationId = determineMsixApplicationId(flavor);
+    const identityName = applicationId;
 
     // Write manifest file
     const manifestTemplate = fs.readFileSync('msix/AppxManifest.xml', {encoding: 'utf8'});

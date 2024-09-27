@@ -13,7 +13,7 @@ import {
 } from '~/test/playwright/common/utils/electron-utils';
 import {colorScheme} from '~/test/playwright/config';
 
-import {determineAppName} from '../../../../../config/build';
+import {determineAppName} from '../../../../../config/base';
 
 export const test = base.extend<ElectronFixture>({
     electronApp: async ({}, use) => {

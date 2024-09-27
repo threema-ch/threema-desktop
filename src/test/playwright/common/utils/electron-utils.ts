@@ -7,7 +7,7 @@ import * as ASAR from '@electron/asar';
 import {getPersistentAppDataBaseDir} from '~/electron/electron-utils';
 import type {ElectronAppInfo} from '~/test/playwright/common/types/electron-app-info';
 
-import {determineAppName, isValidBuildFlavor, type BuildFlavor} from '../../../../../config/build';
+import {determineAppName, isBuildFlavor, type BuildFlavor} from '../../../../../config/base';
 
 export function getBuildFlavor(): BuildFlavor {
     if (process.env.PW_FLAVOR === undefined) {
@@ -15,7 +15,7 @@ export function getBuildFlavor(): BuildFlavor {
             `Env variable 'PW_FLAVOR' is missing, please set it before running playwright tests.`,
         );
     }
-    if (!isValidBuildFlavor(process.env.PW_FLAVOR)) {
+    if (!isBuildFlavor(process.env.PW_FLAVOR)) {
         throw new Error(
             `Build flavor '${process.env.PW_FLAVOR}' is not supported, please export a valid flavor in the 'PW_FLAVOR' env variable.`,
         );

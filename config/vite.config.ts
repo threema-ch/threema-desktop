@@ -14,20 +14,20 @@ import {unreachable} from '../tools/assert';
 
 import {
     BUILD_ENTRIES,
-    BUILD_ENVIRONMENTS,
     BUILD_MODES,
     BUILD_TARGETS,
+    BUILD_ENVIRONMENTS,
     BUILD_VARIANTS,
-    type BuildFlavor,
     type BuildEntry,
-    type BuildEnvironment,
     type BuildMode,
     type BuildTarget,
+    type BuildFlavor,
+    type BuildEnvironment,
     type BuildVariant,
     determineAppName,
     determineMobileAppName,
-    isValidBuildFlavor,
-} from './build';
+    isBuildFlavor,
+} from './base';
 import cjsExternals from './vite-plugins/cjs-externals';
 import {subresourceIntegrityPlugin} from './vite-plugins/subresource-integrity';
 import {tsWorkerPlugin} from './vite-plugins/ts-worker';
@@ -74,7 +74,7 @@ function escapeRegex(value: string): string {
  */
 function determineBuildFlavor(variant: BuildVariant, environment: BuildEnvironment): BuildFlavor {
     const flavor = `${variant}-${environment}`;
-    if (isValidBuildFlavor(flavor)) {
+    if (isBuildFlavor(flavor)) {
         return flavor;
     }
     throw new Error(`Unsupported build flavor: ${flavor}`);

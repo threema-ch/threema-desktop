@@ -297,14 +297,14 @@ interface ImportMetaEnv extends ViteDefaultImportMetaEnv, BuildConfig {
     readonly DEBUG: boolean;
 
     // Build variables
-    readonly BUILD_MODE: import('../../config/build').BuildMode;
-    readonly BUILD_TARGET: import('../../config/build').BuildTarget;
+    readonly BUILD_MODE: import('../../config/base').BuildMode;
+    readonly BUILD_TARGET: import('../../config/base').BuildTarget;
     readonly BUILD_VERSION: string;
     // eslint-disable-next-line no-restricted-syntax
     readonly BUILD_VERSION_CODE: number;
-    readonly BUILD_VARIANT: import('../../config/build').BuildVariant;
-    readonly BUILD_ENVIRONMENT: import('../../config/build').BuildEnvironment;
-    readonly BUILD_FLAVOR: import('../../config/build').BuildFlavor;
+    readonly BUILD_VARIANT: import('../../config/base').BuildVariant;
+    readonly BUILD_ENVIRONMENT: import('../../config/base').BuildEnvironment;
+    readonly BUILD_FLAVOR: import('../../config/base').BuildFlavor;
 
     // Names
     /** Name of the desktop app. */
