@@ -8,7 +8,7 @@ import {ensureIdentityString, type IdentityString} from '~/common/network/types'
 import {tag, type ReadonlyUint8Array, type WeakOpaque} from '~/common/types';
 import {instanceOf} from '~/common/utils/valita-helpers';
 
-// As defined in the Profile Piccture Distribution Steps in the protocol.
+// As defined in the Profile Picture Distribution Steps in the protocol.
 export const LAST_USER_PROFILE_ENTRY_EXPIRATION_SECONDS = 604800;
 
 export interface PersistentProtocolStateValues {

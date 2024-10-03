@@ -1,5 +1,6 @@
 import type {DbPersistentProtocolState, DbPersistentProtocolStateUid} from '~/common/db';
 import {PersistentProtocolStateType} from '~/common/enum';
+import type {Logger} from '~/common/logging';
 import type {ServicesForModel} from '~/common/model';
 import type {IdentityString} from '~/common/network/types';
 import {
@@ -24,7 +25,7 @@ export interface PersistentProtocolState {
      *
      * As a side effect, this function cleans up expired entries in the cache.
      */
-    readonly getLastDistributedUserProfileState: (
+    readonly getLastUserProfileDistributionState: (
         receiverIdentity: IdentityString,
     ) => UserProfileDistributionProtocolValue | undefined;
 
@@ -34,7 +35,7 @@ export interface PersistentProtocolState {
      * If a cache entry already exists for that receiver, this entry is overwritten and the old
      * entry is deleted.
      */
-    readonly setLastDistributionUserProfileState: (
+    readonly setLastUserProfileDistributionState: (
         receiverIdentity: IdentityString,
         value: UserProfileDistributionProtocolValue,
         createdAt: Date,
@@ -42,12 +43,15 @@ export interface PersistentProtocolState {
 }
 
 export class PersistentProtocolStateBackend implements PersistentProtocolState {
+    private readonly _log: Logger;
+
     private readonly _userProfileDistributionCache = new Map<
         UserProfileDistributionCacheKey,
         UserProfileDistributionCacheValue
     >();
 
     public constructor(private readonly _services: Pick<ServicesForModel, 'db' | 'logging'>) {
+        this._log = _services.logging.logger(`persistent-protocol-state`);
         const state = this._services.db.getPersistentProtocolState();
         for (const entry of state) {
             this._deserializeFromDatabaseAndSet(entry);
@@ -55,7 +59,7 @@ export class PersistentProtocolStateBackend implements PersistentProtocolState {
     }
 
     /** @inheritdoc */
-    public getLastDistributedUserProfileState(
+    public getLastUserProfileDistributionState(
         receiverIdentity: IdentityString,
     ): UserProfileDistributionProtocolValue | undefined {
         this._cleanup(PersistentProtocolStateType.LAST_USER_PROFILE_DISTRIBUTION_STATE);
@@ -65,7 +69,7 @@ export class PersistentProtocolStateBackend implements PersistentProtocolState {
     }
 
     /** @inheritdoc */
-    public setLastDistributionUserProfileState(
+    public setLastUserProfileDistributionState(
         receiverIdentity: IdentityString,
         value: UserProfileDistributionProtocolValue,
         createdAt: Date,
@@ -105,18 +109,6 @@ export class PersistentProtocolStateBackend implements PersistentProtocolState {
         return tag<UserProfileDistributionCacheKey>(receiver);
     }
 
-    private _setUserProfileDistribution(
-        key: UserProfileDistributionCacheKey,
-        value: UserProfileDistributionCacheValue,
-    ): void {
-        const oldValue = this._userProfileDistributionCache.get(key);
-
-        // Only ever set the most recent value in the cache
-        if (oldValue === undefined || value.createdAt.getTime() > oldValue.createdAt.getTime()) {
-            this._userProfileDistributionCache.set(key, value);
-        }
-    }
-
     private _deserializeFromDatabaseAndSet(
         dbState: DbPersistentProtocolState<PersistentProtocolStateType>,
     ): void {
@@ -133,10 +125,28 @@ export class PersistentProtocolStateBackend implements PersistentProtocolState {
                 const decoded = PERSISTENT_PROTOCOL_STATE_CODEC[dbState.type].decode(
                     dbState.stateBytes,
                 );
-                this._setUserProfileDistribution(
-                    this._createUserProfileDistributionCacheKey(decoded.receiverIdentity),
-                    {...decoded.profilePicture, createdAt: dbState.createdAt, uid: dbState.uid},
-                );
+
+                const key = this._createUserProfileDistributionCacheKey(decoded.receiverIdentity);
+
+                const oldValue = this._userProfileDistributionCache.get(key);
+
+                if (oldValue !== undefined) {
+                    this._log.warn(
+                        'Duplicate last user profile distribution state for receiver in database',
+                    );
+                }
+
+                // Only ever set the most recent value in the cache
+                if (
+                    oldValue === undefined ||
+                    dbState.createdAt.getTime() > oldValue.createdAt.getTime()
+                ) {
+                    this._userProfileDistributionCache.set(key, {
+                        ...decoded.profilePicture,
+                        createdAt: dbState.createdAt,
+                        uid: dbState.uid,
+                    });
+                }
                 return;
             }
             default:
@@ -159,6 +169,11 @@ export class PersistentProtocolStateBackend implements PersistentProtocolState {
                     }
                 }
                 this._services.db.deletePersistentProtocolStateEntriesByUids(toBeDeleted);
+                if (toBeDeleted.length > 0) {
+                    this._log.debug(
+                        `Deleted ${toBeDeleted.length} stale entries from the database`,
+                    );
+                }
                 return;
             }
             default:

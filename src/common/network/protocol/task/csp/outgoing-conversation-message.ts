@@ -5,7 +5,12 @@ import {
     ReceiverTypeUtils,
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import type {AnyOutboundNonDeletedMessageModelStore, AnyReceiver} from '~/common/model';
+import type {
+    AnyOutboundNonDeletedMessageModelStore,
+    AnyReceiver,
+    Contact,
+    Group,
+} from '~/common/model';
 import {getIdentityString} from '~/common/model/contact';
 import type {UploadedBlobBytes} from '~/common/model/message/common';
 import type {CspE2eType, LayerEncoder} from '~/common/network/protocol';
@@ -20,13 +25,13 @@ import {
 import {serializeQuoteText} from '~/common/network/protocol/task/common/quotes';
 import {getFileJsonData} from '~/common/network/protocol/task/csp/common';
 import {OutgoingCspMessagesTask} from '~/common/network/protocol/task/csp/outgoing-csp-messages';
+import type {ValidCspMessageTypeForReceiver} from '~/common/network/protocol/task/csp/types';
 import * as structbuf from '~/common/network/structbuf';
 import type {
     FileEncodable,
     GroupMemberContainerEncodable,
     TextEncodable,
 } from '~/common/network/structbuf/csp/e2e';
-import type {ValidCspMessageTypeForReceiver} from '~/common/network/types/outgoing-csp-message';
 import {ensureError, unreachable} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {u64ToHexLe} from '~/common/utils/number';
@@ -103,17 +108,43 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
         const cspMessageFlags = CspMessageFlags.forMessageType(messageType);
         cspMessageFlags.groupMessage = this._receiverModel.type === ReceiverType.GROUP;
         const {id: messageId, createdAt} = this._messageModelStore.get().view;
-        const messageProperties = {
-            type: this._getCspE2eType() as ValidCspMessageTypeForReceiver<TReceiver>,
+        const commonMessageProperties = {
             encoder: this._getCspEncoder(),
             cspMessageFlags,
             messageId,
             createdAt,
             allowUserProfileDistribution: true,
         } as const;
-        const outCspMessageTask = new OutgoingCspMessagesTask(this._services, [
-            {messageProperties, receiver: this._receiverModel},
-        ]);
+
+        let outCspMessageTask: OutgoingCspMessagesTask;
+        switch (this._receiverModel.type) {
+            case ReceiverType.CONTACT:
+                outCspMessageTask = new OutgoingCspMessagesTask(this._services, [
+                    {
+                        messageProperties: {
+                            ...commonMessageProperties,
+                            type: this._getCspE2eType() as ValidCspMessageTypeForReceiver<Contact>,
+                        },
+                        receiver: this._receiverModel,
+                    },
+                ]);
+                break;
+            case ReceiverType.GROUP:
+                outCspMessageTask = new OutgoingCspMessagesTask(this._services, [
+                    {
+                        messageProperties: {
+                            ...commonMessageProperties,
+                            type: this._getCspE2eType() as ValidCspMessageTypeForReceiver<Group>,
+                        },
+                        receiver: this._receiverModel,
+                    },
+                ]);
+                break;
+            case ReceiverType.DISTRIBUTION_LIST:
+                throw new Error('DESK-237: Distribution lists not implemented');
+            default:
+                unreachable(this._receiverModel);
+        }
 
         // Run task
         await outCspMessageTask.run(handle);

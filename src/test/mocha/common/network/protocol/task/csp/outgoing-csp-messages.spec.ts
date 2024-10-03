@@ -21,6 +21,10 @@ import type {CspE2eType} from '~/common/network/protocol';
 import {BLOB_ID_LENGTH, ensureBlobId} from '~/common/network/protocol/blob';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {OutgoingCspMessagesTask} from '~/common/network/protocol/task/csp/outgoing-csp-messages';
+import type {
+    MessageProperties,
+    ValidCspMessageTypeForReceiver,
+} from '~/common/network/protocol/task/csp/types';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {
@@ -33,10 +37,6 @@ import {
     type Nickname,
 } from '~/common/network/types';
 import {wrapRawBlobKey, type ClientKey} from '~/common/network/types/keys';
-import type {
-    MessageProperties,
-    ValidCspMessageTypeForReceiver,
-} from '~/common/network/types/outgoing-csp-message';
 import type {u53} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
 import {byteWithoutZeroPadding} from '~/common/utils/byte';
@@ -160,6 +160,21 @@ export function run(): void {
             ];
         }
 
+        function checkProfilePicturePayload(
+            payload: protobuf.d2d.Envelope,
+            type:
+                | CspE2eContactControlType.CONTACT_DELETE_PROFILE_PICTURE
+                | CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE,
+        ): void {
+            expect(payload.content).to.equal('outgoingMessage');
+            const profilePicturePayload = payload.outgoingMessage;
+            assert(
+                profilePicturePayload !== null && profilePicturePayload !== undefined,
+                'payload.outgoingMessage is null or undefined',
+            );
+            expect(profilePicturePayload.type).to.equal(type);
+        }
+
         function getExpectedD2dOutgoingReflectedMessagesWithProfilePictureForGroup(
             numMembers: u53,
             messageProperties: {
@@ -191,13 +206,7 @@ export function run(): void {
                 let memberIdx = 1;
                 for (; memberIdx <= numMembers; memberIdx++) {
                     const profilePictureMessagePayload = unwrap(payloads[memberIdx]);
-                    expect(profilePictureMessagePayload.content).to.equal('outgoingMessage');
-                    const profilePicturePayload = profilePictureMessagePayload.outgoingMessage;
-                    assert(
-                        profilePicturePayload !== null && profilePicturePayload !== undefined,
-                        'payload.outgoingMessage is null or undefined',
-                    );
-                    expect(profilePicturePayload.type).to.equal(profilePictureType);
+                    checkProfilePicturePayload(profilePictureMessagePayload, profilePictureType);
                 }
             });
         }
@@ -234,13 +243,7 @@ export function run(): void {
                 const profilePictureMessagePayload = unwrap(
                     payloads[messagePropertiesArray.length],
                 );
-                expect(profilePictureMessagePayload.content).to.equal('outgoingMessage');
-                const profilePicturePayload = profilePictureMessagePayload.outgoingMessage;
-                assert(
-                    profilePicturePayload !== null && profilePicturePayload !== undefined,
-                    'payload.outgoingMessage is null or undefined',
-                );
-                expect(profilePicturePayload.type).to.equal(profilePictureType);
+                checkProfilePicturePayload(profilePictureMessagePayload, profilePictureType);
             });
         }
 
@@ -278,13 +281,7 @@ export function run(): void {
                     const profilePictureMessagePayload = unwrap(
                         payloads[messagePropertiesArray.length + idx],
                     );
-                    expect(profilePictureMessagePayload.content).to.equal('outgoingMessage');
-                    const profilePicturePayload = profilePictureMessagePayload.outgoingMessage;
-                    assert(
-                        profilePicturePayload !== null && profilePicturePayload !== undefined,
-                        'payload.outgoingMessage is null or undefined',
-                    );
-                    expect(profilePicturePayload.type).to.equal(profilePictureType);
+                    checkProfilePicturePayload(profilePictureMessagePayload, profilePictureType);
                 }
             });
         }
@@ -317,13 +314,7 @@ export function run(): void {
                 expect(message.type).to.equal(messageProperties.type);
 
                 const profilePictureMessagePayload = unwrap(payloads[1]);
-                expect(profilePictureMessagePayload.content).to.equal('outgoingMessage');
-                const profilePicturePayload = profilePictureMessagePayload.outgoingMessage;
-                assert(
-                    profilePicturePayload !== null && profilePicturePayload !== undefined,
-                    'payload.outgoingMessage is null or undefined',
-                );
-                expect(profilePicturePayload.type).to.equal(profilePictureType);
+                checkProfilePicturePayload(profilePictureMessagePayload, profilePictureType);
             });
         }
 

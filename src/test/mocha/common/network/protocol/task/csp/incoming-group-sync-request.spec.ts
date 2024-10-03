@@ -53,7 +53,7 @@ export function run(): void {
         this.beforeEach(function () {
             services = makeTestServices(me);
             // Make sure the tasks have no side effects
-            services.persistentProtocolState.setLastDistributionUserProfileState(
+            services.persistentProtocolState.setLastUserProfileDistributionState(
                 user1.identity.string,
                 {
                     type: 'removed',
@@ -61,7 +61,7 @@ export function run(): void {
                 new Date(),
             );
 
-            services.persistentProtocolState.setLastDistributionUserProfileState(
+            services.persistentProtocolState.setLastUserProfileDistributionState(
                 user2.identity.string,
                 {
                     type: 'removed',

@@ -124,10 +124,10 @@ export const PROFILE_SETTINGS_CODEC: SettingsCategoryCodec<'profile'> = {
         // Encode protobuf
         return proto.ProfileSettings.encode({
             nickname: settings.nickname,
-            blob: profilePicture.blob,
-            blobId: profilePicture.blobId,
-            key: profilePicture.key,
-            lastUploadedAt:
+            profilePictureBlob: profilePicture.blob,
+            profilePictureBlobId: profilePicture.blobId,
+            profilePictureKey: profilePicture.key,
+            profilePictureLastUploadedAt:
                 settings.profilePicture?.lastUploadedAt !== undefined
                     ? intoUnsignedLong(BigInt(settings.profilePicture.lastUploadedAt.getTime()))
                     : undefined,
@@ -141,13 +141,13 @@ export const PROFILE_SETTINGS_CODEC: SettingsCategoryCodec<'profile'> = {
             nickname: decoded.nickname,
             profilePictureShareWith: decoded.profilePictureShareWith,
             profilePicture:
-                decoded.blob === undefined
+                decoded.profilePictureBlob === undefined
                     ? undefined
                     : {
-                          blob: decoded.blob,
-                          blobId: decoded.blobId,
-                          lastUploadedAt: decoded.lastUploadedAt,
-                          key: decoded.key,
+                          blob: decoded.profilePictureBlob,
+                          blobId: decoded.profilePictureBlobId,
+                          lastUploadedAt: decoded.profilePictureLastUploadedAt,
+                          key: decoded.profilePictureKey,
                       },
         });
     },

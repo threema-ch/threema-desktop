@@ -31,7 +31,7 @@ export function run(): void {
         it('add to protocol cache', async function () {
             const createdAt = new Date();
             const profilePicture = createProfilePicture();
-            services.persistentProtocolState.setLastDistributionUserProfileState(
+            services.persistentProtocolState.setLastUserProfileDistributionState(
                 you.identity.string,
                 profilePicture,
                 createdAt,
@@ -39,17 +39,17 @@ export function run(): void {
 
             await TIMER.sleep(200);
 
-            services.persistentProtocolState.setLastDistributionUserProfileState(
+            services.persistentProtocolState.setLastUserProfileDistributionState(
                 him.identity.string,
                 createProfilePicture(),
                 new Date(),
             );
 
-            const youDistr = services.persistentProtocolState.getLastDistributedUserProfileState(
+            const youDistr = services.persistentProtocolState.getLastUserProfileDistributionState(
                 you.identity.string,
             );
 
-            const himDistr = services.persistentProtocolState.getLastDistributedUserProfileState(
+            const himDistr = services.persistentProtocolState.getLastUserProfileDistributionState(
                 him.identity.string,
             );
 
@@ -62,7 +62,7 @@ export function run(): void {
             );
 
             expect(
-                services.persistentProtocolState.getLastDistributedUserProfileState(
+                services.persistentProtocolState.getLastUserProfileDistributionState(
                     her.identity.string,
                 ),
             ).to.be.undefined;
@@ -71,13 +71,13 @@ export function run(): void {
         it('expired protocol values are not returned', function () {
             const createdAt = new Date(2016);
             const profilePicture = createProfilePicture();
-            services.persistentProtocolState.setLastDistributionUserProfileState(
+            services.persistentProtocolState.setLastUserProfileDistributionState(
                 you.identity.string,
                 profilePicture,
                 createdAt,
             );
 
-            const youDistr = services.persistentProtocolState.getLastDistributedUserProfileState(
+            const youDistr = services.persistentProtocolState.getLastUserProfileDistributionState(
                 you.identity.string,
             );
 
@@ -87,7 +87,7 @@ export function run(): void {
         it('overwrite cache value if already existing', async function () {
             const createdAt = new Date();
             const profilePicture = createProfilePicture();
-            services.persistentProtocolState.setLastDistributionUserProfileState(
+            services.persistentProtocolState.setLastUserProfileDistributionState(
                 you.identity.string,
                 profilePicture,
                 createdAt,
@@ -97,13 +97,13 @@ export function run(): void {
 
             const newProfilePicture = createProfilePicture();
 
-            services.persistentProtocolState.setLastDistributionUserProfileState(
+            services.persistentProtocolState.setLastUserProfileDistributionState(
                 you.identity.string,
                 newProfilePicture,
                 new Date(),
             );
 
-            const youDistr = services.persistentProtocolState.getLastDistributedUserProfileState(
+            const youDistr = services.persistentProtocolState.getLastUserProfileDistributionState(
                 you.identity.string,
             );
 

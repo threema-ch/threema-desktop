@@ -20,6 +20,12 @@ export type ReceiverStoreFor<TReceiver extends AnyReceiver> = {
     readonly [ReceiverType.GROUP]: ModelStore<Group>;
 }[TReceiver['type']];
 
+export type ReceiverFor<TType extends ReceiverType> = {
+    readonly [ReceiverType.CONTACT]: Contact;
+    readonly [ReceiverType.DISTRIBUTION_LIST]: DistributionList;
+    readonly [ReceiverType.GROUP]: Group;
+}[TType];
+
 /**
  * This interface is the common base for the contact controller, the group controller and the
  * distribution list controller.

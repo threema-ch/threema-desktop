@@ -33,7 +33,7 @@ export async function profilePictureDistributionSteps(
     let remove: ProfileDistributionResult['remove'] = undefined;
     let set: ProfileDistributionResult['set'] = undefined;
 
-    // 3. If the message does not allow user profile disribution abort these steps.
+    // 3. If the message does not allow user profile distribution abort these steps.
     if (!userProfileDistribution) {
         return {remove, set};
     }
@@ -50,7 +50,7 @@ export async function profilePictureDistributionSteps(
 
         // Is defined if there is a cache entry towards the receiver that is not expired (i.e from
         // within the last 7 days).
-        const cache = persistentProtocolState.getLastDistributedUserProfileState(
+        const cache = persistentProtocolState.getLastUserProfileDistributionState(
             receiver.view.identity,
         );
 
@@ -73,7 +73,7 @@ export async function profilePictureDistributionSteps(
             }
 
             // 6.2. Update the `cache` for `receiver` to a _remove_ mark with the current timestamp.
-            persistentProtocolState.setLastDistributionUserProfileState(
+            persistentProtocolState.setLastUserProfileDistributionState(
                 receiver.view.identity,
                 {type: 'removed'},
                 new Date(),
@@ -142,7 +142,7 @@ export async function profilePictureDistributionSteps(
         }
 
         // 10. Update the `cache` for `receiver` to the blob ID of the cached profile picture.
-        services.persistentProtocolState.setLastDistributionUserProfileState(
+        services.persistentProtocolState.setLastUserProfileDistributionState(
             receiver.view.identity,
             {blobId, type: 'profile-picture'},
             new Date(),

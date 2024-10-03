@@ -14,6 +14,7 @@ import {
 import type {Logger} from '~/common/logging';
 import type {AnyReceiver, Contact, Group} from '~/common/model';
 import {getIdentityString} from '~/common/model/contact';
+import type {ReceiverFor} from '~/common/model/types/receiver';
 import * as protobuf from '~/common/network/protobuf';
 import type {ProtobufInstanceOf} from '~/common/network/protobuf/utils';
 import {
@@ -33,14 +34,14 @@ import {
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
 import {profilePictureDistributionSteps} from '~/common/network/protocol/task/common/user-profile-distribution';
+import type {
+    MessageProperties,
+    ValidCspMessageTypeForReceiver,
+} from '~/common/network/protocol/task/csp/types';
 import {ReflectOutgoingMessageUpdateTask} from '~/common/network/protocol/task/d2d/reflect-message-update';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {conversationIdForReceiver} from '~/common/network/types';
-import type {
-    MessageProperties,
-    ValidCspMessageTypeForReceiver,
-} from '~/common/network/types/outgoing-csp-message';
 import type {ReadonlyUint8Array, u53} from '~/common/types';
 import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';
@@ -53,19 +54,15 @@ import {dateToUnixTimestampMs, dateToUnixTimestampS, intoUnsignedLong} from '~/c
  */
 type NonceList = Pick<Nonce[], 'pop' | 'length' | 'map'>;
 
-interface CSPMessage<TReceiver extends AnyReceiver = AnyReceiver> {
-    readonly receiver: TReceiver;
-    readonly messageProperties: MessageProperties<
-        unknown,
-        ValidCspMessageTypeForReceiver<TReceiver>
-    >;
-}
-
-type CSPMessages<T extends CSPMessage[] = CSPMessage[]> = T extends [infer First, ...infer Rest]
-    ? First extends CSPMessage
-        ? [CSPMessage<First['receiver']>, ...CSPMessages<Rest extends CSPMessage[] ? Rest : []>]
-        : never
-    : T;
+type CspMessage = {
+    readonly [TType in ReceiverType]: {
+        readonly receiver: ReceiverFor<TType>;
+        readonly messageProperties: MessageProperties<
+            unknown,
+            ValidCspMessageTypeForReceiver<ReceiverFor<TType>>
+        >;
+    };
+}[AnyReceiver['type']];
 
 type AnyMessageProperty = MessageProperties<unknown, CspE2eType>;
 
@@ -101,7 +98,7 @@ export class OutgoingCspMessagesTask
      */
     public constructor(
         private readonly _services: ServicesForTasks,
-        messages: CSPMessages,
+        messages: CspMessage[],
     ) {
         this._log = _services.logging.logger(
             `network.protocol.task.out-csp-messages.[${messages.map((message) => message.messageProperties.messageId).join(', ')}]`,
@@ -161,11 +158,14 @@ export class OutgoingCspMessagesTask
     public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
         for (const {nonces, properties, receiverContacts: receivers} of this._messages) {
             for (const receiver of receivers) {
-                // If this happens, we have a bug somewhere else.
-                assert(
-                    receiver.view.identity !== this._services.device.identity.string,
-                    'A contact cannot have the identity of the user',
-                );
+                // 2.1.1 If `receiver` is the user, log a warning, remove `receiver` from
+                // `receivers` and abort these sub-steps.
+                if (receiver.view.identity === this._services.device.identity.string) {
+                    this._log.warn('A contact cannot have the same identity as the user');
+                    receivers.delete(receiver);
+                    nonces.pop();
+                    continue;
+                }
 
                 // 2.1.2 If `receiver` is marked as _invalid_, remove `receiver` from
                 // `receivers and abort these sub-steps.

@@ -17,6 +17,7 @@ import {
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
 import {OutgoingCspMessagesTask} from '~/common/network/protocol/task/csp/outgoing-csp-messages';
+import type {MessageProperties} from '~/common/network/protocol/task/csp/types';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import type {
@@ -24,7 +25,6 @@ import type {
     GroupMemberContainerEncodable,
 } from '~/common/network/structbuf/csp/e2e';
 import type {MessageId} from '~/common/network/types';
-import type {MessageProperties} from '~/common/network/types/outgoing-csp-message';
 import {chunk} from '~/common/utils/array';
 import {unreachable} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';

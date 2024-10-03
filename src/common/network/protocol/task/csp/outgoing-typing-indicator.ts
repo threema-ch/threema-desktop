@@ -10,10 +10,10 @@ import {
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
 import {OutgoingCspMessagesTask} from '~/common/network/protocol/task/csp/outgoing-csp-messages';
+import type {MessageProperties} from '~/common/network/protocol/task/csp/types';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import type {TypingIndicatorEncodable} from '~/common/network/structbuf/csp/e2e';
-import type {MessageProperties} from '~/common/network/types/outgoing-csp-message';
 
 export class OutgoingTypingIndicatorTask<TReceiver extends Contact>
     implements ActiveTask<void, 'volatile'>

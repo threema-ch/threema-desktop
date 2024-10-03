@@ -85,7 +85,7 @@ export function run(): void {
             ).to.byteEqual(key.unwrap() as Uint8Array);
 
             const protocolState =
-                services.persistentProtocolState.getLastDistributedUserProfileState(
+                services.persistentProtocolState.getLastUserProfileDistributionState(
                     contact.get().view.identity,
                 );
 
@@ -123,7 +123,7 @@ export function run(): void {
             ).to.byteEqual(key.unwrap() as Uint8Array);
 
             const protocolStateContact1 =
-                services.persistentProtocolState.getLastDistributedUserProfileState(
+                services.persistentProtocolState.getLastUserProfileDistributionState(
                     contact.get().view.identity,
                 );
 
@@ -134,7 +134,7 @@ export function run(): void {
             ).to.byteEqual(blobId as ReadonlyUint8Array as Uint8Array);
 
             const protocolStateContact2 =
-                services.persistentProtocolState.getLastDistributedUserProfileState(
+                services.persistentProtocolState.getLastUserProfileDistributionState(
                     contact2.get().view.identity,
                 );
 
@@ -163,7 +163,7 @@ export function run(): void {
             assert(distributionResult.remove !== undefined);
             expect(
                 distributionResult.remove.size,
-                'The user profile pocture should be removed at for contact',
+                'The user profile picture should be removed at for contact',
             ).to.eq(1);
             expect(
                 distributionResult.set.contacts.size,
@@ -185,17 +185,17 @@ export function run(): void {
             ).to.byteEqual(key.unwrap() as Uint8Array);
 
             const protocolStateContact1 =
-                services.persistentProtocolState.getLastDistributedUserProfileState(
+                services.persistentProtocolState.getLastUserProfileDistributionState(
                     contact.get().view.identity,
                 );
 
             assert(
                 protocolStateContact1?.type === 'removed',
-                'Profile picture should have a remove mark in teh cache',
+                'Profile picture should have a remove mark in the cache',
             );
 
             const protocolStateContact2 =
-                services.persistentProtocolState.getLastDistributedUserProfileState(
+                services.persistentProtocolState.getLastUserProfileDistributionState(
                     contact2.get().view.identity,
                 );
 
@@ -241,7 +241,7 @@ export function run(): void {
             ).to.not.byteEqual(key.unwrap() as Uint8Array);
 
             const protocolState =
-                services.persistentProtocolState.getLastDistributedUserProfileState(
+                services.persistentProtocolState.getLastUserProfileDistributionState(
                     contact.get().view.identity,
                 );
 
@@ -277,7 +277,7 @@ export function run(): void {
             ).to.byteEqual(key.unwrap() as Uint8Array);
 
             const protocolState =
-                services.persistentProtocolState.getLastDistributedUserProfileState(
+                services.persistentProtocolState.getLastUserProfileDistributionState(
                     contact.get().view.identity,
                 );
 
@@ -295,7 +295,7 @@ export function run(): void {
             );
 
             const laterProtocolState =
-                services.persistentProtocolState.getLastDistributedUserProfileState(
+                services.persistentProtocolState.getLastUserProfileDistributionState(
                     contact.get().view.identity,
                 );
 
@@ -312,7 +312,7 @@ export function run(): void {
             ).to.byteEqual(laterProtocolState.blobId as ReadonlyUint8Array as Uint8Array);
         });
         it('send if the cached entry is stale but dont upload it since the profile picture itself is not', async function () {
-            services.persistentProtocolState.setLastDistributionUserProfileState(
+            services.persistentProtocolState.setLastUserProfileDistributionState(
                 contact.get().view.identity,
                 {blobId, type: 'profile-picture'},
                 new Date(2024, 1, 0),
@@ -341,7 +341,7 @@ export function run(): void {
             ).to.byteEqual(key.unwrap() as Uint8Array);
 
             const protocolState =
-                services.persistentProtocolState.getLastDistributedUserProfileState(
+                services.persistentProtocolState.getLastUserProfileDistributionState(
                     contact.get().view.identity,
                 );
 
@@ -361,7 +361,7 @@ export function run(): void {
                     lastUploadedAt: new Date(2024, 0, 1),
                 },
             });
-            services.persistentProtocolState.setLastDistributionUserProfileState(
+            services.persistentProtocolState.setLastUserProfileDistributionState(
                 contact.get().view.identity,
                 {blobId, type: 'profile-picture'},
                 new Date(2024, 1, 0),
@@ -390,7 +390,7 @@ export function run(): void {
             ).to.not.byteEqual(key.unwrap() as Uint8Array);
 
             const protocolState =
-                services.persistentProtocolState.getLastDistributedUserProfileState(
+                services.persistentProtocolState.getLastUserProfileDistributionState(
                     contact.get().view.identity,
                 );
 
@@ -427,7 +427,7 @@ export function run(): void {
             ).to.byteEqual(key.unwrap() as Uint8Array);
 
             expect(
-                services.persistentProtocolState.getLastDistributedUserProfileState(
+                services.persistentProtocolState.getLastUserProfileDistributionState(
                     contact.get().view.identity,
                 )?.type,
             ).to.eq('profile-picture');
@@ -470,7 +470,7 @@ export function run(): void {
             ).to.not.byteEqual(key.unwrap() as Uint8Array);
 
             const protocolState =
-                services.persistentProtocolState.getLastDistributedUserProfileState(
+                services.persistentProtocolState.getLastUserProfileDistributionState(
                     contact.get().view.identity,
                 );
 

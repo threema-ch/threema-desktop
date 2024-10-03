@@ -36,19 +36,19 @@ export interface ProfileSettings {
     | string
     | undefined;
   /** Profile picture blob */
-  blob?:
+  profilePictureBlob?:
     | Uint8Array
     | undefined;
   /** Profile picture blobID */
-  blobId?:
+  profilePictureBlobId?:
     | Uint8Array
     | undefined;
   /** The date the profile picture was last uploaded to the server */
-  lastUploadedAt?:
+  profilePictureLastUploadedAt?:
     | Long
     | undefined;
   /** The symmetric key of the current profile picture */
-  key?: Uint8Array | undefined;
+  profilePictureKey?: Uint8Array | undefined;
   profilePictureShareWith?: ProfileSettings_ProfilePictureShareWith | undefined;
 }
 
@@ -323,10 +323,10 @@ export const Identities = {
 function createBaseProfileSettings(): ProfileSettings {
   return {
     nickname: undefined,
-    blob: undefined,
-    blobId: undefined,
-    lastUploadedAt: undefined,
-    key: undefined,
+    profilePictureBlob: undefined,
+    profilePictureBlobId: undefined,
+    profilePictureLastUploadedAt: undefined,
+    profilePictureKey: undefined,
     profilePictureShareWith: undefined,
   };
 }
@@ -336,17 +336,17 @@ export const ProfileSettings = {
     if (message.nickname !== undefined) {
       writer.uint32(10).string(message.nickname);
     }
-    if (message.blob !== undefined) {
-      writer.uint32(18).bytes(message.blob);
+    if (message.profilePictureBlob !== undefined) {
+      writer.uint32(18).bytes(message.profilePictureBlob);
     }
-    if (message.blobId !== undefined) {
-      writer.uint32(34).bytes(message.blobId);
+    if (message.profilePictureBlobId !== undefined) {
+      writer.uint32(34).bytes(message.profilePictureBlobId);
     }
-    if (message.lastUploadedAt !== undefined) {
-      writer.uint32(40).uint64(message.lastUploadedAt);
+    if (message.profilePictureLastUploadedAt !== undefined) {
+      writer.uint32(40).uint64(message.profilePictureLastUploadedAt);
     }
-    if (message.key !== undefined) {
-      writer.uint32(50).bytes(message.key);
+    if (message.profilePictureKey !== undefined) {
+      writer.uint32(50).bytes(message.profilePictureKey);
     }
     if (message.profilePictureShareWith !== undefined) {
       ProfileSettings_ProfilePictureShareWith.encode(message.profilePictureShareWith, writer.uint32(26).fork())
@@ -374,28 +374,28 @@ export const ProfileSettings = {
             break;
           }
 
-          message.blob = reader.bytes();
+          message.profilePictureBlob = reader.bytes();
           continue;
         case 4:
           if (tag !== 34) {
             break;
           }
 
-          message.blobId = reader.bytes();
+          message.profilePictureBlobId = reader.bytes();
           continue;
         case 5:
           if (tag !== 40) {
             break;
           }
 
-          message.lastUploadedAt = reader.uint64() as Long;
+          message.profilePictureLastUploadedAt = reader.uint64() as Long;
           continue;
         case 6:
           if (tag !== 50) {
             break;
           }
 
-          message.key = reader.bytes();
+          message.profilePictureKey = reader.bytes();
           continue;
         case 3:
           if (tag !== 26) {
