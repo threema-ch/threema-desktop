@@ -33,14 +33,14 @@ import {
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
 import {profilePictureDistributionSteps} from '~/common/network/protocol/task/common/user-profile-distribution';
-import type {
-    MessageProperties,
-    ValidCspMessageTypeForReceiver,
-} from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import {ReflectOutgoingMessageUpdateTask} from '~/common/network/protocol/task/d2d/reflect-message-update';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {conversationIdForReceiver} from '~/common/network/types';
+import type {
+    MessageProperties,
+    ValidCspMessageTypeForReceiver,
+} from '~/common/network/types/outgoing-csp-message';
 import type {ReadonlyUint8Array, u53} from '~/common/types';
 import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';

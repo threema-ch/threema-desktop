@@ -19,7 +19,6 @@ import {
 } from '~/common/network/protocol/task';
 import {serializeQuoteText} from '~/common/network/protocol/task/common/quotes';
 import {getFileJsonData} from '~/common/network/protocol/task/csp/common';
-import type {ValidCspMessageTypeForReceiver} from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import {OutgoingCspMessagesTask} from '~/common/network/protocol/task/csp/outgoing-csp-messages';
 import * as structbuf from '~/common/network/structbuf';
 import type {
@@ -27,6 +26,7 @@ import type {
     GroupMemberContainerEncodable,
     TextEncodable,
 } from '~/common/network/structbuf/csp/e2e';
+import type {ValidCspMessageTypeForReceiver} from '~/common/network/types/outgoing-csp-message';
 import {ensureError, unreachable} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {u64ToHexLe} from '~/common/utils/number';

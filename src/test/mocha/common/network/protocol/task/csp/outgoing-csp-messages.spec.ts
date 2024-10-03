@@ -20,10 +20,6 @@ import * as protobuf from '~/common/network/protobuf';
 import type {CspE2eType} from '~/common/network/protocol';
 import {BLOB_ID_LENGTH, ensureBlobId} from '~/common/network/protocol/blob';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
-import type {
-    MessageProperties,
-    ValidCspMessageTypeForReceiver,
-} from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import {OutgoingCspMessagesTask} from '~/common/network/protocol/task/csp/outgoing-csp-messages';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
@@ -37,6 +33,10 @@ import {
     type Nickname,
 } from '~/common/network/types';
 import {wrapRawBlobKey, type ClientKey} from '~/common/network/types/keys';
+import type {
+    MessageProperties,
+    ValidCspMessageTypeForReceiver,
+} from '~/common/network/types/outgoing-csp-message';
 import type {u53} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
 import {byteWithoutZeroPadding} from '~/common/utils/byte';
