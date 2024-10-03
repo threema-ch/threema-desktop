@@ -32,7 +32,7 @@ export function removeOldProfiles(appPath: string, profile: string, log: Logger)
 function findOldProfiles(appPath: string, profile: string): string[] {
     const files = fs.readdirSync(path.join(appPath, '..'));
     const oldProfiles: string[] = [];
-    const profileDirPattern = `^${import.meta.env.BUILD_FLAVOR}-${profile}.[0-9]{10}$`;
+    const profileDirPattern = `^${import.meta.env.BUILD_FLAVOR}-${profile}\\.[0-9]{10}$`;
 
     // Find all profile directories where the directory name ends with a timestamp and where a key
     // storage file exists.
