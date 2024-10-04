@@ -176,9 +176,9 @@ function determineUrls(buildFlavor: BuildFlavor): ImportMeta['env']['URLS'] {
             break;
 
         case 'work-onprem':
-            downloadAndInfoShort = 'https://threema.ch/de/onprem/download';
+            downloadAndInfoShort = 'three.ma/mdo';
             downloadAndInfoForOtherVariantShort = 'three.ma/md';
-            overviewFull = 'https://threema.ch/de/work/support#onprem';
+            overviewFull = 'https://threema.ch/work/support#onprem';
             break;
 
         default:
