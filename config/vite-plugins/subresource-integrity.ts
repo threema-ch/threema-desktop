@@ -113,7 +113,7 @@ export function subresourceIntegrityPlugin(): Plugin {
                     .map<string>((file) => {
                         const contents = fs.readFileSync(path.resolve(appOutPath, file.name));
 
-                        return getDigest('sha512', contents);
+                        return getDigest('sha512', new Uint8Array(contents.buffer));
                     });
 
                 // Add fingerprints to `electron-main.ts`.
@@ -153,7 +153,7 @@ export function subresourceIntegrityPlugin(): Plugin {
                             `Inline script found, but it did not have content: ${match.raw}`,
                         );
 
-                        return `<script integrity="${getDigest('sha512', match.content)}"${match.raw.substring(7)}`;
+                        return `<script integrity="${getDigest('sha512', normalizeEol(match.content))}"${match.raw.substring(7)}`;
                     }
 
                     // External script: load from bundle and calculate fingerprint from file.
@@ -202,7 +202,7 @@ export function subresourceIntegrityPlugin(): Plugin {
                         `Inline stylesheet found, but it did not have content: ${match.raw}`,
                     );
 
-                    return `<style integrity="${getDigest('sha512', match.content)}"${match.raw.substring(6)}`;
+                    return `<style integrity="${getDigest('sha512', normalizeEol(match.content))}"${match.raw.substring(6)}`;
                 });
 
                 return transformed;
@@ -367,6 +367,18 @@ function getAttributeMatches(tag: string): readonly {
             value: match.groups.quoted_value ?? match.groups.unquoted_value,
         };
     });
+}
+
+/**
+ * Returns the given text with all CRLF line endings replaced by `\n`, if any. Else, returns the
+ * text unchanged. This is useful if the build platform is Windows, as the integrity hashes would be
+ * incorrect otherwise.
+ *
+ * @param text Text to replace line endings in.
+ */
+function normalizeEol(text: string): string {
+    // eslint-disable-next-line threema/ban-stateful-regex-flags
+    return text.replaceAll(/\r\n/gmu, '\n');
 }
 
 /**
