@@ -121,6 +121,7 @@ export abstract class GroupSetupTaskBase<
         assert(creatorContact !== undefined);
         // Create missing contacts (with acquaintance level "GROUP").
         if (identitiesToAdd.length > 0) {
+            this._log.debug(`Adding missing group members: ${identitiesToAdd.join(', ')}}`);
             memberContacts.push(
                 ...(await this._handleMissingGroupMembers(handle, identitiesToAdd)),
             );

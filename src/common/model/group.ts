@@ -858,7 +858,7 @@ export class GroupModelController implements GroupController {
             `Current member list: ${[...currentMembers].map((member) => `(${[member.get().ctx, member.get().view.displayName]})`)}`,
         );
         this._log.debug(
-            `New member list: ${[...currentMembers].map((member) => `(${[member.get().ctx, member.get().view.displayName]})`)}`,
+            `New member list: ${[...contacts].map((member) => `(${[member.get().ctx, member.get().view.displayName]})`)}`,
         );
         for (const c of contacts) {
             // If the contact's reference is the creator, do nothing.
