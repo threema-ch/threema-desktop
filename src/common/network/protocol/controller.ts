@@ -36,6 +36,7 @@ import {CspAuthState, D2mAuthState} from './state';
 export type ClosingEvent = AbortListener<{
     readonly info: CloseInfo;
     readonly done: QueryablePromise<void>;
+    readonly disconnectForMs?: u53;
 }>;
 
 export interface ConnectionHandle {

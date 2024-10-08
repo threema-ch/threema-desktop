@@ -98,11 +98,9 @@ export class ReflectedIncomingGroupSetupTask extends GroupSetupTaskBase<PassiveT
             );
 
             // Throw unrecoverable state error.
-            throw new ProtocolError(
-                'd2d',
-                `Application state is inconsistent: ${errorMessage}`,
-                'unrecoverable',
-            );
+            throw new ProtocolError('d2d', `Application state is inconsistent: ${errorMessage}`, {
+                type: 'unrecoverable',
+            });
         }
         return [];
     }

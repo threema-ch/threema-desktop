@@ -8,9 +8,6 @@ import type {INonceGuard} from '~/common/crypto/nonce';
 import type {DbContact, UidOf} from '~/common/db';
 import {
     AcquaintanceLevel,
-    ActivityState,
-    ConversationCategory,
-    ConversationVisibility,
     CspE2eContactControlType,
     CspE2eConversationType,
     CspE2eDeliveryReceiptStatus,
@@ -22,9 +19,6 @@ import {
     type D2dCspMessageType,
     MessageDirection,
     ReceiverType,
-    SyncState,
-    VerificationLevel,
-    WorkVerificationLevel,
     CspE2eWebSessionResumeType,
     CspE2eMessageUpdateType,
     CspE2eGroupMessageUpdateType,
@@ -39,7 +33,7 @@ import type {
     Group,
     MessageFor,
 } from '~/common/model';
-import {isPredefinedContact} from '~/common/model/types/contact';
+import {isSpecialContact, type ContactInitFragment} from '~/common/model/types/contact';
 import type {AnyNonDeletedMessageType} from '~/common/model/types/message';
 import {ModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
@@ -62,6 +56,7 @@ import {
     placeholderTextForUnhandledMessage,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
+import {validContactsLookupSteps} from '~/common/network/protocol/task/common/contact-helper';
 import {
     getFileBasedMessageTypeAndExtraProperties,
     messageStoreHasThumbnail,
@@ -106,7 +101,6 @@ import type {ReadonlyUint8Array, u53, u8} from '~/common/types';
 import {assert, ensureError, exhausted, unreachable} from '~/common/utils/assert';
 import {byteWithoutPkcs7, byteWithoutZeroPadding} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
-import {idColorIndex} from '~/common/utils/id-color';
 import {Identity} from '~/common/utils/identity';
 import {
     dateToUnixTimestampMs,
@@ -303,7 +297,7 @@ function getD2dIncomingMessage(
 }
 
 /** An existing contact or almost everything we need to create a contact. */
-type ContactOrInitFragment = ModelStore<Contact> | Omit<ContactInit, 'nickname'>;
+type ContactOrInitFragment = ModelStore<Contact> | ContactInitFragment;
 
 /** An existing contact or everything we need to create a contact. */
 export type ContactOrInit = ModelStore<Contact> | ContactInit;
@@ -464,7 +458,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
     ): Promise<TaskResult> {
         const {device, model} = this._services;
 
-        // Sanity check: Ensure that CSP messages are only received if we're the leader device
+        // 1. (MD) If the device is currently not declared _leader_, exceptionally abort these steps
+        //    and the connection.
         assert(
             handle.controller.d2m.promotedToLeader.done,
             "Received incoming CSP message even though we weren't promoted to leader",
@@ -483,50 +478,33 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return await this._discard(handle);
             }
 
-            // Ensure the message is intended for us
+            // 3. If `receiver-identity` does not equal the user's Threema ID, log a warning,
+            //    _Acknowledge_ and discard the message and abort these steps.
             if (receiver !== device.identity.string) {
                 this._log.warn(`Discarding message not intended for us, receiver: ${receiver}`);
                 return await this._discard(handle);
             }
-
-            // Ensure we're not holding a monologue...
-            if (sender.string === device.identity.string) {
-                this._log.warn('Discarding message that appears to be sent by ourselves');
-                return await this._discard(handle);
-            }
         }
 
-        // Look up the sender contact. If not found, create it (for predefined contacts) or prepare
-        // an init fragment (for all other contacts).
-        let senderContactOrInitFragment: ContactOrInitFragment | undefined;
-        if (isPredefinedContact(sender.string)) {
-            senderContactOrInitFragment = await model.contacts.getOrCreatePredefinedContact(
-                sender.string,
+        // 4. Run the _Valid Contacts Lookup Steps_ for `sender-identity` and let
+        //    `contact-or-init` be the result.
+        const contactOrInitMap = await validContactsLookupSteps(
+            this._services,
+            new Set([sender.string]),
+            this._log,
+        );
+
+        const senderContactOrInitFragment = contactOrInitMap.get(sender.string);
+
+        assert(senderContactOrInitFragment !== undefined);
+
+        // 5.  If `contact-or-init` indicates that the _contact is the user_ or that the
+        //     _contact is invalid_, log a warning, _Acknowledge_ and discard the message and
+        //     abort these steps.
+        if (senderContactOrInitFragment === 'me' || senderContactOrInitFragment === 'invalid') {
+            this._log.warn(
+                'Discarding message that appears to be sent by ourselves or by an invalid contat',
             );
-        } else {
-            senderContactOrInitFragment = model.contacts.getByIdentity(sender.string);
-        }
-        if (senderContactOrInitFragment === undefined) {
-            // Fetch from contact directory
-            try {
-                senderContactOrInitFragment = await this._getContactInitFragment(sender.string);
-            } catch (error) {
-                // Note: We could handle this more generously (by ignoring the message and risk
-                //       reordering) and/or try again a couple of times.
-                this._log.warn(
-                    'Unable to fetch from directory, will try again in the next connection',
-                );
-                throw ensureError(error);
-            }
-        }
-
-        // Discard messages from revoked/invalid contacts
-        if (
-            senderContactOrInitFragment === undefined ||
-            (senderContactOrInitFragment instanceof ModelStore &&
-                senderContactOrInitFragment.get().view.activityState === ActivityState.INVALID)
-        ) {
-            this._log.warn('Discarding message from a revoked or invalid sender');
             return await this._discard(handle);
         }
 
@@ -637,7 +615,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
 
         // If we have a special contact, it has already been added and reflected. Furthermore, no
         // nickname handling is required.
-        if (!isPredefinedContact(sender.string)) {
+        if (!isSpecialContact(sender.string)) {
             // Sync the contact within a transaction and store it permanently,
             // if necessary.
             if (senderContactOrInit instanceof ModelStore) {
@@ -991,41 +969,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         const receiver = UTF8.decode(this._message.receiverIdentity);
         return [sender, receiver];
     }
-
-    /**
-     * Fetch identity data for the specified identity string and return a {@link ContactInit}.
-     *
-     * @returns the {@link ContactInit} object, or `undefined` if contact is invalid or has been
-     *   revoked
-     * @throws {DirectoryError} if directory fetch failed.
-     */
-    private async _getContactInitFragment(
-        sender: IdentityString,
-    ): Promise<Omit<ContactInit, 'nickname'> | undefined> {
-        const {directory} = this._services;
-        const fetched = await directory.identity(sender);
-        if (fetched.state === ActivityState.INVALID) {
-            return undefined;
-        }
-        return {
-            identity: sender,
-            publicKey: fetched.publicKey,
-            firstName: '',
-            lastName: '',
-            colorIndex: idColorIndex({type: ReceiverType.CONTACT, identity: sender}),
-            createdAt: new Date(),
-            verificationLevel: VerificationLevel.UNVERIFIED,
-            workVerificationLevel: WorkVerificationLevel.NONE,
-            identityType: fetched.type,
-            acquaintanceLevel: AcquaintanceLevel.DIRECT,
-            featureMask: fetched.featureMask,
-            syncState: SyncState.INITIAL,
-            activityState: fetched.state ?? ActivityState.ACTIVE,
-            category: ConversationCategory.DEFAULT,
-            visibility: ConversationVisibility.SHOW,
-        };
-    }
-
     private _decodeAndDecryptMetadata(
         senderPublicKey: PublicKey,
     ):
@@ -1100,6 +1043,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         const nickname = this._getSenderNickname(messageType, this._message, metadata);
         return {
             ...senderContactOrInitFragment,
+            acquaintanceLevel: AcquaintanceLevel.DIRECT,
             nickname: isNickname(nickname) ? nickname : undefined,
         };
     }

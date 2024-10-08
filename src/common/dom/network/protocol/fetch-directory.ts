@@ -133,7 +133,7 @@ export class FetchDirectoryBackend implements DirectoryBackend {
     /** @inheritdoc */
     public async identities(
         identities: IdentityString[],
-    ): Promise<Map<IdentityString, IdentityData | undefined>> {
+    ): Promise<Map<IdentityString, IdentityData>> {
         const responseData = await this._request(
             'Bulk identity data',
             `identity/fetch_bulk`,
@@ -314,6 +314,13 @@ export class FetchDirectoryBackend implements DirectoryBackend {
             }
             if (response.status === 404) {
                 return undefined;
+            }
+
+            if (response.status === 429) {
+                throw new DirectoryError(
+                    'rate-limit-exceeded',
+                    `${description} fetch request returned status ${response.status}`,
+                );
             }
             if (response.status !== 200) {
                 throw new DirectoryError(

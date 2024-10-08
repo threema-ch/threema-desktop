@@ -18,7 +18,7 @@ import {
     D2mLeaderStateUtils,
     GlobalPropertyKey,
 } from '~/common/enum';
-import {ConnectionClosed, extractErrorTraceback} from '~/common/error';
+import {ConnectionClosed, extractErrorTraceback, ProtocolError} from '~/common/error';
 import {TRANSFER_HANDLER} from '~/common/index';
 import {createLoggerStyle, type Logger} from '~/common/logging';
 import type {CloseInfo} from '~/common/network';
@@ -65,6 +65,7 @@ interface ClosingSignal {
 type ClosedRaiser = AbortRaiser<{
     readonly type: 'normal' | 'error';
     readonly info: CloseInfo;
+    readonly disconnectForMs?: u53;
 }>;
 
 /**
@@ -116,6 +117,7 @@ class Connection {
         private readonly _closing: AbortRaiser<{
             readonly info: CloseInfo;
             readonly done: ResolvablePromise<void>;
+            readonly disconnectForMs?: u53;
         }>,
 
         private readonly _mediator: MediatorWebSocketTransport,
@@ -436,11 +438,13 @@ class Connection {
             raiser: new AbortRaiser<{
                 readonly info: CloseInfo;
                 readonly done: ResolvablePromise<void>;
+                readonly disconnectForMs?: u53;
             }>(),
         } as const;
         const closed = new AbortRaiser<{
             readonly type: 'normal' | 'error';
             readonly info: CloseInfo;
+            readonly disconnectForMs?: u53;
         }>();
         let abort: AbortListener<CloseInfo>;
         {
@@ -473,8 +477,8 @@ class Connection {
         //
         // Only the readable pipeline is allowed to finish the closing sequence since we need to
         // check for CSP errors alerts before finishing the closing sequence.
-        closed.subscribe(({type, info}) => {
-            closing.raiser.raise({info, done: closing.done});
+        closed.subscribe(({type, info, disconnectForMs}) => {
+            closing.raiser.raise({info, done: closing.done, disconnectForMs});
 
             // Short-circuit the closing sequence if...
             //
@@ -604,6 +608,13 @@ class Connection {
                     'Mediator transport writable side errored:',
                     extractErrorTraceback(ensureError(error)),
                 );
+                let disconnectForMs = undefined;
+                if (
+                    error instanceof ProtocolError &&
+                    error.recoverability.type === 'recoverable-on-reconnect'
+                ) {
+                    disconnectForMs = error.recoverability.disconnectForMs;
+                }
                 closed.raise({
                     type: 'error',
                     info: {
@@ -611,6 +622,7 @@ class Connection {
                         origin: 'unknown',
                         reason: 'Mediator transport writable side errored',
                     },
+                    disconnectForMs,
                 });
             });
         connectionState.set(ConnectionState.HANDSHAKE);
@@ -644,6 +656,7 @@ interface ConnectionResultDisconnected {
     readonly connected: false;
     readonly wasConnected: boolean;
     readonly info: CloseInfo;
+    readonly disconnectForMs?: u53;
 }
 
 /**
@@ -998,12 +1011,18 @@ export class ConnectionManager implements ConnectionManagerHandle {
                 );
                 await TIMER.sleep(reconnectionDelayMs);
             } else {
-                // When we were connected, we ensure that the total wait time does not exceed 5s
-                // between connection attempts.
-                const waitMs = clamp(reconnectionDelayMs - elapsedMs, {
-                    min: 0,
-                    max: reconnectionDelayMs,
-                });
+                let waitMs;
+                // If we got a hint for how long to wait, apply it here.
+                if (result.disconnectForMs !== undefined) {
+                    waitMs = result.disconnectForMs;
+                } else {
+                    // When we were connected, we ensure that the total wait time does not exceed 5s
+                    // between connection attempts.
+                    waitMs = clamp(reconnectionDelayMs - elapsedMs, {
+                        min: 0,
+                        max: reconnectionDelayMs,
+                    });
+                }
                 this._log.debug(
                     `Waiting ${(waitMs / 1000).toFixed(
                         1,
@@ -1055,15 +1074,16 @@ export class ConnectionManager implements ConnectionManagerHandle {
             uncaught: 'default',
         });
         const disconnectedPromise = connection.closing.promise
-            .then(async ({info, done}) => {
+            .then(async ({info, done, disconnectForMs}) => {
                 await done;
-                return info;
+                return {info, disconnectForMs};
             })
             .then(
-                (info): ConnectionResultDisconnected => ({
+                ({info, disconnectForMs}): ConnectionResultDisconnected => ({
                     connected: false,
                     wasConnected: connectedPromise.done,
                     info,
+                    disconnectForMs,
                 }),
             );
 

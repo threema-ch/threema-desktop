@@ -63,6 +63,8 @@ export type ContactViewDerivedProperties = StrictExtract<
 >;
 export type ContactInit = StrictOmit<ContactView, ContactViewDerivedProperties> &
     ConversationInitMixin;
+export type ContactInitFragment = Omit<ContactInit, 'acquaintanceLevel' | 'nickname'>;
+
 export type ContactUpdate = Partial<
     StrictOmit<ContactView, ContactViewDerivedProperties | 'identity' | 'publicKey' | 'colorIndex'>
 >;
@@ -99,9 +101,9 @@ export type ContactRepository = {
 } & ProxyMarked;
 
 /**
- * List of predefined contacts by Threema.
+ * List of predefined contacts by Threema without any special meaning.
  */
-export const PREDEFINED_CONTACTS = {
+export const PREDEFINED_NON_SPECIAL_CONTACTS = {
     /* eslint-disable @typescript-eslint/naming-convention */
     '*SUPPORT': {
         name: 'Threema Support',
@@ -124,6 +126,12 @@ export const PREDEFINED_CONTACTS = {
         ),
         visibleInContactList: true,
     },
+} as const;
+
+/**
+ * List of predefined contacts that are assigned a special meaning by the protocol.
+ */
+export const SPECIAL_CONTACTS = {
     '*3MAPUSH': {
         name: 'Threema Push',
         publicKey: ensurePublicKey(
@@ -134,11 +142,26 @@ export const PREDEFINED_CONTACTS = {
     /* eslint-enable @typescript-eslint/naming-convention */
 } as const;
 
-export type PredefinedContactIdentity = keyof typeof PREDEFINED_CONTACTS;
+export const PREDEFINED_CONTACTS = {
+    ...PREDEFINED_NON_SPECIAL_CONTACTS,
+    ...SPECIAL_CONTACTS,
+} as const;
 
+export type PredefinedContactIdentity =
+    | keyof typeof PREDEFINED_NON_SPECIAL_CONTACTS
+    | keyof typeof SPECIAL_CONTACTS;
+
+export type SpecialContactIdentity = Extract<PredefinedContactIdentity, '*3MAPUSH'>;
 /**
  * Return whether the specified identity is a {@link PredefinedContactIdentity}.
  */
 export function isPredefinedContact(identity: string): identity is PredefinedContactIdentity {
     return Object.keys(PREDEFINED_CONTACTS).includes(identity);
+}
+
+/**
+ * Return whether the specified identity is a {@link SpecialContactIdentity}.
+ */
+export function isSpecialContact(identity: string): identity is SpecialContactIdentity {
+    return Object.keys(SPECIAL_CONTACTS).includes(identity);
 }

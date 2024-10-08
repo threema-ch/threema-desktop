@@ -51,6 +51,20 @@ export class FetchWorkBackend implements WorkBackend {
             });
         }
 
+        if (response.status === 401) {
+            throw new WorkError(
+                'invalid-credentials',
+                `Work contacts endpoint request returned status ${response.status}. The work credentials are invalid.`,
+            );
+        }
+
+        if (response.status === 429) {
+            throw new WorkError(
+                'rate-limit-exceeded',
+                `Work contacts endpoint request returned status ${response.status}. The rate limit was exceeded.`,
+            );
+        }
+
         if (response.status !== 200) {
             throw new WorkError(
                 'invalid-response',

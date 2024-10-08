@@ -29,6 +29,7 @@ export type ServicesForModel = Pick<
     | 'persistentProtocolState'
     | 'volatileProtocolState'
     | 'webrtc'
+    | 'work'
 > & {
     readonly db: DatabaseBackend;
     readonly taskManager: Pick<TaskManager, 'schedule'>;

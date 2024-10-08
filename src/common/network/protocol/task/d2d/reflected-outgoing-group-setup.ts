@@ -92,7 +92,7 @@ export class ReflectedOutgoingGroupSetupTask
                 throw new ProtocolError(
                     'd2d',
                     `Application state is inconsistent: ${errorMessage}`,
-                    'unrecoverable',
+                    {type: 'unrecoverable'},
                 );
             }
             memberContacts.push(contact);

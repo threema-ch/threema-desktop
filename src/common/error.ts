@@ -2,6 +2,7 @@ import {TransferTag} from '~/common/enum';
 import type {FileStorageErrorType} from '~/common/file-storage';
 import {TRANSFER_HANDLER} from '~/common/index';
 import type {RendezvousCloseCause} from '~/common/network/protocol/rendezvous';
+import type {u53} from '~/common/types';
 import {ensureError} from '~/common/utils/assert';
 import {
     type RegisteredErrorTransferHandler,
@@ -132,9 +133,9 @@ export type ProtocolErrorType = 'csp' | 'd2m' | 'd2d';
  * - unrecoverable: Error is not recoverable and
  */
 export type ProtocolErrorRecoverability =
-    | 'recovery-not-needed'
-    | 'recoverable-on-reconnect'
-    | 'unrecoverable';
+    | {readonly type: 'recovery-not-needed'}
+    | {readonly type: 'recoverable-on-reconnect'; readonly disconnectForMs?: u53}
+    | {readonly type: 'unrecoverable'};
 
 const PROTOCOL_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     ProtocolError<ProtocolErrorType>,
@@ -164,7 +165,7 @@ export class ProtocolError<TType extends ProtocolErrorType> extends BaseError {
     public constructor(
         public readonly type: TType,
         message: string,
-        public readonly recoverability: ProtocolErrorRecoverability = 'recovery-not-needed',
+        public readonly recoverability: ProtocolErrorRecoverability = {type: 'recovery-not-needed'},
         options?: BaseErrorOptions,
     ) {
         super(message, options);

@@ -61,6 +61,7 @@ export type ServicesForTasks = Pick<
     | 'systemDialog'
     | 'persistentProtocolState'
     | 'volatileProtocolState'
+    | 'work'
 >;
 
 /**

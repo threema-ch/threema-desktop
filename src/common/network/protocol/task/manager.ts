@@ -800,7 +800,10 @@ export class ConnectedTaskManager {
             } catch (error_) {
                 const error = ensureError(error_);
 
-                if (error instanceof ProtocolError && error.recoverability === 'unrecoverable') {
+                if (
+                    error instanceof ProtocolError &&
+                    error.recoverability.type === 'unrecoverable'
+                ) {
                     const {model, device} = services;
 
                     this._log.error('Unrecoverable application state detected!');

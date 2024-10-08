@@ -117,9 +117,7 @@ export type DirectoryBackend = {
      * @throws {DirectoryError} if something went wrong during fetching of the data.
      *   See {@link DirectoryErrorType} for a list of possible error types.
      */
-    identities: (
-        identities: IdentityString[],
-    ) => Promise<Map<IdentityString, IdentityData | undefined>>;
+    identities: (identities: IdentityString[]) => Promise<Map<IdentityString, IdentityData>>;
 
     /**
      * Fetch identity private data from the directory.
@@ -169,7 +167,8 @@ export type DirectoryErrorType =
     | 'authentication'
     | 'identity-transfer-prohibited'
     | 'invalid-identity'
-    | 'invalid-response';
+    | 'invalid-response'
+    | 'rate-limit-exceeded';
 
 const DIRECTORY_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     DirectoryError,

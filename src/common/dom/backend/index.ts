@@ -571,6 +571,7 @@ function initBackendServices(
         taskManager,
         volatileProtocolState,
         webrtc,
+        work,
     } = earlyServices;
 
     const device = new DeviceBackend(
@@ -604,6 +605,7 @@ function initBackendServices(
         persistentProtocolState,
         volatileProtocolState,
         webrtc,
+        work,
     });
     const viewModel = new ViewModelRepository(
         {model, config, crypto, endpoint, file, logging, device},

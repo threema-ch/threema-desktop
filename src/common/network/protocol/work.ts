@@ -23,7 +23,12 @@ import {nullEmptyStringOptional, nullOptional} from '~/common/utils/valita-helpe
  * - invalid-response: We got an unexpected or invalid response from the server (e.g. an internal
  *   server error, an empty response or a response that does not validate against the schema)
  */
-export type WorkErrorType = 'non-work-build' | 'fetch' | 'invalid-response';
+export type WorkErrorType =
+    | 'non-work-build'
+    | 'fetch'
+    | 'invalid-response'
+    | 'invalid-credentials'
+    | 'rate-limit-exceeded';
 
 const WORK_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     WorkError,
