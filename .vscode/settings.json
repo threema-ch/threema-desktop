@@ -9,6 +9,9 @@
   "[proto3]": {
     "editor.defaultFormatter": "zxh404.vscode-proto3"
   },
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
   "prettier.configPath": "./.prettierrc.yml",
   "editor.formatOnSave": true,
   "editor.formatOnPaste": false,
@@ -21,5 +24,6 @@
   "typescript.preferences.importModuleSpecifier": "non-relative",
   "typescript.preferences.preferTypeOnlyAutoImports": true,
   "rewrap.wrappingColumn": 100,
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "rust-analyzer.linkedProjects": ["src/launcher/Cargo.toml"]
 }
