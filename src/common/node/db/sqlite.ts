@@ -213,6 +213,13 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         }
         this._log.info('Using cipher provider:', provider);
 
+        // Suppress memory logs to avoid mlock memory spams, see:
+        // https://discuss.zetetic.net/t/errors-with-mlock-virtuallock-in-ci-cd-pipelines/6704/3)
+        this._rawDb.pragma('cipher_log_source = NONE');
+        this._rawDb.pragma('cipher_log_source = CORE');
+        this._rawDb.pragma('cipher_log_source = MUTEX');
+        this._rawDb.pragma('cipher_log_source = PROVIDER');
+
         // Because we want to ensure that only encrypted data is written to the database, make sure
         // that SQLite doesn't write teporary files to disk. Our SQLite bindings already force
         // in-memory storage for temporary files (SQLITE_TEMP_STORE=3 compile time option), but as a
