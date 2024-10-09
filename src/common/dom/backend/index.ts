@@ -979,6 +979,9 @@ export class Backend {
                 backend._connectionManager
                     .reflectionQueueLength()
                     .then(async (reflectionQueueLength) => {
+                        log.info(
+                            `Processed ${value} message(s) of total reflection queue length of ${reflectionQueueLength}`,
+                        );
                         await loadingState.updateState({
                             state: 'processing-reflection-queue',
                             reflectionQueueLength,
