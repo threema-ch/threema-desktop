@@ -183,8 +183,12 @@ export class ProfilePictureModelController implements ProfilePictureController {
             return undefined;
         },
 
-        fromSync: (profilePicture: ReadonlyUint8Array, source: ProfilePictureSource) => {
+        fromSync: (handle, profilePicture: ReadonlyUint8Array, source: ProfilePictureSource) => {
             this._log.debug(`ProfilePictureModelController: Set ${source} picture from sync`);
+            return this.setPicture.direct(profilePicture, source);
+        },
+
+        direct: (profilePicture: ReadonlyUint8Array, source: ProfilePictureSource) => {
             switch (this._receiver.type) {
                 case ReceiverType.CONTACT:
                     // Note: Profile pictures from gateway aren't reflected, because these are being
@@ -275,7 +279,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
             return undefined;
         },
 
-        fromSync: (source: ProfilePictureSource) => {
+        fromSync: (handle, source: ProfilePictureSource) => {
             this._log.debug(`ProfilePictureModelController: Remove ${source} picture from sync`);
             this._persistProfilePicture(undefined, source);
         },

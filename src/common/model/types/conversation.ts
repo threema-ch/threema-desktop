@@ -7,7 +7,9 @@ import type {
     StatusMessageType,
 } from '~/common/enum';
 import type {
-    ControllerCustomUpdateFromSource,
+    ControllerCustomUpdate,
+    ControllerUpdate,
+    ControllerUpdateDirect,
     ControllerUpdateFromLocal,
     ControllerUpdateFromSource,
     Model,
@@ -86,7 +88,7 @@ export type ConversationController = {
      * decremented by the specified amount. Note that the unread message count can never go below 0.
      */
     readonly update: Omit<
-        ControllerUpdateFromSource<[change: ConversationUpdate, unreadMessageCountDelta?: i53]>,
+        ControllerUpdate<[change: ConversationUpdate, unreadMessageCountDelta?: i53]>,
         'fromLocal' | 'fromRemote'
     >;
 
@@ -108,10 +110,11 @@ export type ConversationController = {
      *
      * Note: This triggers an update of the `_lastModificationStore`.
      */
-    readonly addMessage: ControllerCustomUpdateFromSource<
-        [init: DirectedMessageFor<MessageDirection.OUTBOUND, AnyNonDeletedMessageType, 'init'>],
-        [init: DirectedMessageFor<MessageDirection, AnyNonDeletedMessageType, 'init'>],
-        [init: DirectedMessageFor<MessageDirection.INBOUND, AnyNonDeletedMessageType, 'init'>],
+    readonly addMessage: ControllerCustomUpdate<
+        [init: DirectedMessageFor<MessageDirection.OUTBOUND, AnyNonDeletedMessageType, 'init'>], // FromLocal
+        [init: DirectedMessageFor<MessageDirection, AnyNonDeletedMessageType, 'init'>], // FromSync
+        [init: DirectedMessageFor<MessageDirection.INBOUND, AnyNonDeletedMessageType, 'init'>], // FromRemote
+        [init: DirectedMessageFor<MessageDirection, AnyNonDeletedMessageType, 'init'>], // Direct
         AnyNonDeletedMessageModelStore
     >;
 
@@ -123,7 +126,7 @@ export type ConversationController = {
      *
      * Note: This triggers an update of the `_lastModificationStore`.
      */
-    readonly removeMessage: ControllerUpdateFromLocal<[uid: MessageId]>;
+    readonly removeMessage: ControllerUpdateDirect<[uid: MessageId]>;
 
     /**
      * Remove all messages from this conversation.
@@ -133,21 +136,21 @@ export type ConversationController = {
      *
      * Note: This triggers an update of the `_lastModificationStore`.
      */
-    readonly removeAllMessages: ControllerUpdateFromLocal;
+    readonly removeAllMessages: ControllerUpdateDirect;
 
     /**
      * Remove a status message from this conversation. This is a local action, i.e it is not reflected.
      *
      * Note: This triggers an update of the `_lastModificationStore`.
      */
-    readonly removeStatusMessage: ControllerUpdateFromLocal<[uid: StatusMessageId]>;
+    readonly removeStatusMessage: ControllerUpdateDirect<[uid: StatusMessageId]>;
 
     /**
      * Remove all status messages from this conversation. This is a local action, i.e it is not reflected.
      *
      * Note: This triggers an update of the `_lastModificationStore`.
      */
-    readonly removeAllStatusMessages: ControllerUpdateFromLocal;
+    readonly removeAllStatusMessages: ControllerUpdateDirect;
 
     /**
      * Mark a message as deleted. Contrary to `removeMessage`, this function deletes all text

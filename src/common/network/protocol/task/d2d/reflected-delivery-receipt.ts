@@ -34,7 +34,7 @@ export class ReflectedDeliveryReceiptTask extends DeliveryReceiptTaskBase<Passiv
         message: AnyOutboundMessageModel,
         deliveredAt: Date,
     ): void {
-        message.controller.delivered.fromSync(deliveredAt);
+        message.controller.delivered.fromSync(handle, deliveredAt);
     }
 
     protected _markAsRead(
@@ -42,7 +42,7 @@ export class ReflectedDeliveryReceiptTask extends DeliveryReceiptTaskBase<Passiv
         message: AnyMessageModel,
         readAt: Date,
     ): void {
-        message.controller.read.fromSync(readAt);
+        message.controller.read.fromSync(handle, readAt);
     }
 
     protected _reaction(
@@ -59,6 +59,6 @@ export class ReflectedDeliveryReceiptTask extends DeliveryReceiptTaskBase<Passiv
             );
             return;
         }
-        message.controller.reaction.fromSync(reaction, reactedAt, this._senderIdentity);
+        message.controller.reaction.fromSync(handle, reaction, reactedAt, this._senderIdentity);
     }
 }

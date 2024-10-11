@@ -79,7 +79,7 @@ export function run(): void {
 
             // Add outgoing message
             const messageId = randomMessageId(crypto);
-            conversation.get().controller.addMessage.fromSync({
+            conversation.get().controller.addMessage.direct({
                 direction: MessageDirection.OUTBOUND,
                 type: 'text',
                 id: messageId,
@@ -144,7 +144,7 @@ export function run(): void {
             // Add incoming message
             const messageId = randomMessageId(crypto);
             const originalReceivedAt = new Date();
-            conversation.get().controller.addMessage.fromSync({
+            conversation.get().controller.addMessage.direct({
                 direction: MessageDirection.INBOUND,
                 type: 'text',
                 id: messageId,

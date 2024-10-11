@@ -68,7 +68,7 @@ export class ReflectedGroupSyncTask implements PassiveTask<void> {
                     return;
                 }
                 try {
-                    this._updateGroupFromD2dSync(group, validatedMessage.update.group);
+                    this._updateGroupFromD2dSync(handle, group, validatedMessage.update.group);
                 } catch (error) {
                     this._log.error(`Update to update group: ${error}`);
                     return;
@@ -93,6 +93,7 @@ export class ReflectedGroupSyncTask implements PassiveTask<void> {
      * - conversationVisibility
      */
     private _updateGroupFromD2dSync(
+        handle: PassiveTaskCodecHandle,
         group: ModelStore<Group>,
         update: protobuf.validate.sync.Group.TypeUpdate,
     ): void {
@@ -105,15 +106,15 @@ export class ReflectedGroupSyncTask implements PassiveTask<void> {
             }),
         );
 
-        controller.update.fromSync(propertiesToUpdate);
+        controller.update.fromSync(handle, propertiesToUpdate);
 
         if (update.conversationCategory !== undefined) {
-            controller.conversation().get().controller.update.fromSync({
+            controller.conversation().get().controller.update.fromSync(handle, {
                 category: update.conversationCategory,
             });
         }
         if (update.conversationVisibility !== undefined) {
-            controller.conversation().get().controller.update.fromSync({
+            controller.conversation().get().controller.update.fromSync(handle, {
                 visibility: update.conversationVisibility,
             });
         }

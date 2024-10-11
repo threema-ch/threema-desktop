@@ -157,7 +157,7 @@ export function run(): void {
                 randomMessageId(crypto),
             ] as const;
             for (const messageId of messageIds) {
-                singleConversation.get().controller.addMessage.fromSync({
+                singleConversation.get().controller.addMessage.direct({
                     direction: MessageDirection.OUTBOUND,
                     type: 'text',
                     id: messageId,
@@ -255,7 +255,7 @@ export function run(): void {
 
             // Add outgoing message
             const messageId = randomMessageId(crypto);
-            singleConversation.get().controller.addMessage.fromSync({
+            singleConversation.get().controller.addMessage.direct({
                 direction: MessageDirection.OUTBOUND,
                 type: 'text',
                 id: messageId,
@@ -319,7 +319,7 @@ export function run(): void {
             // Add incoming message
             const messageId = randomMessageId(crypto);
             const originalReceivedAt = new Date();
-            singleConversation.get().controller.addMessage.fromSync({
+            singleConversation.get().controller.addMessage.direct({
                 direction: MessageDirection.INBOUND,
                 type: 'text',
                 id: messageId,
@@ -369,7 +369,7 @@ export function run(): void {
 
             // Add outgoing message
             const messageId = randomMessageId(crypto);
-            singleConversation.get().controller.addMessage.fromSync({
+            singleConversation.get().controller.addMessage.direct({
                 direction: MessageDirection.OUTBOUND,
                 type: 'text',
                 id: messageId,
@@ -427,7 +427,7 @@ export function run(): void {
 
             // Add outbound message
             const messageId = randomMessageId(crypto);
-            groupConversation.get().controller.addMessage.fromSync({
+            groupConversation.get().controller.addMessage.direct({
                 direction: MessageDirection.OUTBOUND,
                 type: 'text',
                 id: messageId,
@@ -609,7 +609,7 @@ export function run(): void {
             const originalReceivedAt = new Date();
             const sender = testGroup.members[0];
             assert(sender !== undefined);
-            groupConversation.get().controller.addMessage.fromSync({
+            groupConversation.get().controller.addMessage.direct({
                 direction: MessageDirection.INBOUND,
                 type: 'text',
                 id: messageId,

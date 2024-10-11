@@ -528,6 +528,12 @@ export enum TriggerSource {
      * side effects (e.g. implicit contact creation) will need to be reflected separately.
      */
     REMOTE = 2,
+
+    /**
+     * An update that does not fall into any of the above categories. This should never trigger
+     * further messages to other devices.
+     */
+    DIRECT = 3,
 }
 
 /**

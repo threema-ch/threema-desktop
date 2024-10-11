@@ -72,11 +72,11 @@ export class ReflectedOutgoingGroupLeaveTask
         // If we're the creator of this group, dissolve the group.
         // Otherwise, leave it.
         if (this._container.creatorIdentity === device.identity.string) {
-            group.get().controller.dissolve.fromSync();
+            group.get().controller.dissolve.fromSync(handle);
             this._log.info(`We dissolved the group ${this._groupDebugString}`);
         } else {
             // Otherwise, process the leave message and leave the group
-            group.get().controller.leave.fromSync(this._reflectedAt);
+            group.get().controller.leave.fromSync(handle, this._reflectedAt);
             this._log.info(`We left the group ${this._groupDebugString}`);
         }
     }

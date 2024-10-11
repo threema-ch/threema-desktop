@@ -262,8 +262,10 @@ export class ConversationModelController implements ConversationController {
             // Return the added message
             return messageStore;
         },
-        fromSync: (init: DirectedMessageFor<MessageDirection, AnyNonDeletedMessageType, 'init'>) =>
-            this._addMessage(init),
+        fromSync: (
+            handle,
+            init: DirectedMessageFor<MessageDirection, AnyNonDeletedMessageType, 'init'>,
+        ) => this.addMessage.direct(init),
         fromRemote: async (
             activeTaskHandle,
             init: DirectedMessageFor<MessageDirection.INBOUND, AnyNonDeletedMessageType, 'init'>,
@@ -298,13 +300,14 @@ export class ConversationModelController implements ConversationController {
             // Return the added message
             return store;
         },
+        direct: (init: DirectedMessageFor<MessageDirection, AnyNonDeletedMessageType, 'init'>) =>
+            this._addMessage(init),
     };
 
     /** @inheritdoc */
     public readonly removeMessage: ConversationController['removeMessage'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
-        // eslint-disable-next-line @typescript-eslint/require-await
-        fromLocal: async (uid: MessageId) => {
+        direct: (uid: MessageId) => {
             const messageToRemove = this.getMessage(uid);
 
             if (messageToRemove === undefined) {
@@ -356,7 +359,7 @@ export class ConversationModelController implements ConversationController {
             });
         },
 
-        fromSync: (uid: MessageId, deletedAt: Date) => {
+        fromSync: (handle, uid: MessageId, deletedAt: Date) => {
             const messageToDelete = this.getMessage(uid);
 
             // Validate message
@@ -422,7 +425,7 @@ export class ConversationModelController implements ConversationController {
     public readonly removeAllMessages: ConversationController['removeAllMessages'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
-        fromLocal: async () => {
+        direct: () => {
             this.lifetimeGuard.update(() => {
                 message.removeAll(this._services, this._log, this.uid);
                 this._updateStoresOnConversationUpdate();
@@ -435,7 +438,7 @@ export class ConversationModelController implements ConversationController {
     public readonly removeStatusMessage: ConversationController['removeStatusMessage'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
-        fromLocal: async (statusMessageId: StatusMessageId) => {
+        direct: (statusMessageId: StatusMessageId) => {
             this.lifetimeGuard.update(() => {
                 status.remove(
                     this._services,
@@ -452,8 +455,7 @@ export class ConversationModelController implements ConversationController {
     /** @inheritdoc */
     public readonly removeAllStatusMessages: ConversationController['removeAllStatusMessages'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
-        // eslint-disable-next-line @typescript-eslint/require-await
-        fromLocal: async () => {
+        direct: () => {
             this.lifetimeGuard.update(() => {
                 status.removeAllOfConversation(this._services, this._log, this.uid);
                 this._updateStatusStoresOnConversationUpdate();
@@ -466,6 +468,13 @@ export class ConversationModelController implements ConversationController {
     public readonly update: ConversationController['update'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromSync: (
+            handle,
+            change: Mutable<ConversationUpdate, 'lastUpdate'>,
+            unreadMessageCountDelta?: i53,
+        ): void => {
+            this.update.direct(change, unreadMessageCountDelta);
+        },
+        direct: (
             change: Mutable<ConversationUpdate, 'lastUpdate'>,
             unreadMessageCountDelta?: i53,
         ): void => {
@@ -540,7 +549,7 @@ export class ConversationModelController implements ConversationController {
             this._updateIsTyping(isTyping);
         },
 
-        fromSync: (isTyping) => {
+        fromSync: (handle, isTyping) => {
             this._updateIsTyping(isTyping);
         },
 
@@ -1190,7 +1199,7 @@ export class ConversationModelController implements ConversationController {
         // Update 'last update' date and unread count
         const lastUpdate = isInbound ? init.receivedAt : init.createdAt;
         const unreadMessageCountDelta = isInbound && isUnread ? 1 : 0;
-        this.update.fromSync({lastUpdate}, unreadMessageCountDelta);
+        this.update.direct({lastUpdate}, unreadMessageCountDelta);
 
         // Store the message in the DB and retrieve the model
         const store = message.create(this._services, this._handle, MESSAGE_FACTORY, init);

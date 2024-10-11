@@ -52,7 +52,7 @@ export class ReflectedGroupNameTask implements ComposableTask<PassiveTaskCodecHa
         }
 
         // Update group name
-        group.get().controller.name.fromSync(groupName, this._reflectedAt);
+        group.get().controller.name.fromSync(handle, groupName, this._reflectedAt);
         this._log.info(`Group ${this._groupDebugString} name updated to "${groupName}"`);
     }
 }

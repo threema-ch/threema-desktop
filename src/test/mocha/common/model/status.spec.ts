@@ -63,7 +63,7 @@ export function run(): void {
                 });
             });
 
-            it('deletes a status message', async function () {
+            it('deletes a status message', function () {
                 const uid1 = conversation
                     .get()
                     .controller.createStatusMessage({
@@ -89,11 +89,9 @@ export function run(): void {
                     .get().controller.uid;
 
                 expect(conversation.get().controller.getAllStatusMessages().get().size).to.eq(2);
-                await conversation
+                conversation
                     .get()
-                    .controller.removeStatusMessage.fromLocal(
-                        statusMessageUidToStatusMessageId(uid1),
-                    );
+                    .controller.removeStatusMessage.direct(statusMessageUidToStatusMessageId(uid1));
 
                 const statusMessages = conversation.get().controller.getAllStatusMessages();
 
@@ -120,7 +118,7 @@ export function run(): void {
                     .get().controller.uid;
 
                 expect(conversation.get().controller.getAllStatusMessages().get().size).to.eq(2);
-                await conversation.get().controller.removeAllStatusMessages.fromLocal();
+                conversation.get().controller.removeAllStatusMessages.direct();
                 expect(conversation.get().controller.getAllStatusMessages().get().size).to.eq(0);
             });
         });

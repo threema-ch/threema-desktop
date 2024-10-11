@@ -1201,7 +1201,7 @@ export function run(): void {
                 });
 
                 const groupId = randomGroupId(crypto);
-                const group = model.groups.add.fromSync(
+                const group = model.groups.add.direct(
                     {
                         groupId,
                         creator: 'me',
@@ -1277,7 +1277,7 @@ export function run(): void {
                 });
 
                 const groupId = randomGroupId(crypto);
-                const group = model.groups.add.fromSync(
+                const group = model.groups.add.direct(
                     {
                         groupId,
                         creator: 'me',

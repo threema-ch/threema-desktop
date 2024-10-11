@@ -79,7 +79,7 @@ export function run(): void {
                 expect(message.get().view.lastEditedAt, 'Message was not edited').to.be.undefined;
 
                 const editedAt = new Date();
-                message.get().controller.editMessage.fromSync({
+                message.get().controller.editMessage.direct({
                     lastEditedAt: editedAt,
                     newText: 'abcdefg',
                 });
@@ -91,7 +91,7 @@ export function run(): void {
 
                 const editedAt2 = new Date();
 
-                message.get().controller.editMessage.fromSync({
+                message.get().controller.editMessage.direct({
                     lastEditedAt: editedAt2,
                     newText: 'caption2',
                 });

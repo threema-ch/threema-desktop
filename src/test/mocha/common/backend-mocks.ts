@@ -1200,7 +1200,7 @@ export function addTestUserAsContact(
     repositories: TestModelRepositories,
     user: TestUser,
 ): ModelStore<Contact> {
-    return repositories.contacts.add.fromSync(makeContactInit(user));
+    return repositories.contacts.add.direct(makeContactInit(user));
 }
 
 export function addTestUserToFakeDirectory(directory: TestDirectoryBackend, user: TestUser): void {
@@ -1237,7 +1237,7 @@ export function addTestGroup(
     group: TestGroup,
 ): ModelStore<Group> {
     const crypto = new TestTweetNaClBackend();
-    return repositories.groups.add.fromSync(
+    return repositories.groups.add.direct(
         {
             creator: group.creator,
             groupId: group.groupId ?? randomGroupId(crypto),

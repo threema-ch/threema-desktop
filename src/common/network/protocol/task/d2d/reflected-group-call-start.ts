@@ -30,7 +30,7 @@ export class ReflectedGroupCallStartTask implements ComposableTask<PassiveTaskCo
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    public async run(): Promise<void> {
+    public async run(handle: PassiveTaskCodecHandle): Promise<void> {
         // Look up group
         const group = this._services.model.groups.getByGroupIdAndCreator(
             this._container.groupId,
@@ -45,6 +45,7 @@ export class ReflectedGroupCallStartTask implements ComposableTask<PassiveTaskCo
         group
             .get()
             .controller.registerCall.fromSync(
+                handle,
                 getGroupCallBaseData(
                     this._services,
                     this._senderIdentity,

@@ -49,7 +49,7 @@ export function run(): void {
             // not yet mocked.
 
             it('from sync', function () {
-                services.model.contacts.add.fromSync(makeContactInit(anotherUser));
+                services.model.contacts.add.direct(makeContactInit(anotherUser));
                 expect(services.model.contacts.getAll().get().size).to.eql(1);
             });
         });
@@ -81,7 +81,7 @@ export function run(): void {
 
             it('from sync', function () {
                 expect(function () {
-                    services.model.contacts.add.fromSync(makeContactInit(me));
+                    services.model.contacts.add.direct(makeContactInit(me));
                 }).throws(Error, expectedErrorMessage);
                 expect(services.model.contacts.getAll().get().size).to.eql(0);
             });

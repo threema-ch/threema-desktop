@@ -34,7 +34,7 @@ export class ReflectedIncomingTypingIndicatorTask
             return;
         }
 
-        conversation.get().controller.updateTyping.fromSync(this._isTyping);
+        conversation.get().controller.updateTyping.fromSync(handle, this._isTyping);
 
         this._log.info(
             `Updated typing indicator with value ${this._isTyping} for conversation: ${conversation.ctx}`,

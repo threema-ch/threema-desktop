@@ -313,7 +313,7 @@ export class ContactModelController implements ContactController {
             this._log.debug('ContactModelController: Update from remote');
             return await this._updateAsync({source: TriggerSource.REMOTE, handle}, change);
         },
-        fromSync: (change: ContactUpdate) => {
+        fromSync: (handle, change: ContactUpdate) => {
             this._log.debug('ContactModelController: Update from sync');
             this._update(change);
         },
@@ -357,7 +357,7 @@ export class ContactModelController implements ContactController {
             });
         },
 
-        fromSync: () => this._remove(),
+        fromSync: (handle) => this._remove(),
     };
 
     private readonly _lookup: DbContactReceiverLookup;
@@ -571,8 +571,11 @@ export class ContactModelRepository implements ContactRepository {
             return await this._addAsync({source: TriggerSource.REMOTE, handle}, init);
         },
 
-        fromSync: (init: ContactInit) => {
+        fromSync: (handle, init: ContactInit) => {
             this._log.debug('ContactModelRepository: Add from sync');
+            return this.add.direct(init);
+        },
+        direct: (init: ContactInit) => {
             this._assertNotOwnIdentity(init);
             return create(this._services, ensureExactContactInit(init));
         },

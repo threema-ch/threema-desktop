@@ -60,10 +60,10 @@ export class ReflectedMessageContentUpdateTask
 
         switch (this._update.type) {
             case 'edit':
-                this._editMessage(messageStore, this._update.newText);
+                this._editMessage(handle, messageStore, this._update.newText);
                 return;
             case 'delete':
-                this._deleteMessage(conversation, messageStore.ctx);
+                this._deleteMessage(handle, conversation, messageStore.ctx);
                 return;
             default:
                 unreachable(this._update);
@@ -71,6 +71,7 @@ export class ReflectedMessageContentUpdateTask
     }
 
     private _deleteMessage(
+        handle: PassiveTaskCodecHandle,
         conversation: ModelStore<Conversation>,
         direction: MessageDirection,
     ): void {
@@ -80,15 +81,19 @@ export class ReflectedMessageContentUpdateTask
         );
         conversation
             .get()
-            .controller.markMessageAsDeleted.fromSync(this._messageId, this._timeStamp);
+            .controller.markMessageAsDeleted.fromSync(handle, this._messageId, this._timeStamp);
     }
 
-    private _editMessage(message: AnyNonDeletedMessageModelStore, newText: string): void {
+    private _editMessage(
+        handle: PassiveTaskCodecHandle,
+        message: AnyNonDeletedMessageModelStore,
+        newText: string,
+    ): void {
         assert(
             message.ctx === this._expectedMessageDirection,
             `Expected ${message.ctx} message to have direction ${this._expectedMessageDirection}`,
         );
-        message.get().controller.editMessage.fromSync({
+        message.get().controller.editMessage.fromSync(handle, {
             newText,
             lastEditedAt: this._timeStamp,
         });

@@ -1391,6 +1391,12 @@ export namespace TriggerSource {
      * side effects (e.g. implicit contact creation) will need to be reflected separately.
      */
     export type REMOTE = typeof REMOTE;
+    export const DIRECT = 3;
+    /**
+     * An update that does not fall into any of the above categories. This should never trigger
+     * further messages to other devices.
+     */
+    export type DIRECT = typeof DIRECT;
 }
 /**
  * Source that triggered some kind of update.

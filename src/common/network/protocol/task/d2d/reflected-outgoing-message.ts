@@ -269,7 +269,7 @@ export class ReflectedOutgoingMessageTask
                     `Saving ${this._direction} ${messageTypeDebug} message`,
                     messageReferenceDebug,
                 );
-                const messageStore = conversation.get().controller.addMessage.fromSync({
+                const messageStore = conversation.get().controller.addMessage.fromSync(handle, {
                     ...instructions.initFragment,
                     createdAt: instructions.initFragment.createdAt,
                     direction: MessageDirection.OUTBOUND,

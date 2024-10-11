@@ -992,7 +992,7 @@ export function run(): void {
                 const groupUid = makeGroup(model.db, {creatorUid: contact1.ctx});
                 const group = unwrap(model.groups.getByUid(groupUid));
                 const groupConversation = group.get().controller.conversation();
-                group.get().controller.setMembers.fromSync([contact1], new Date());
+                group.get().controller.setMembers.direct([contact1], new Date());
 
                 function makeGroupMessage(
                     sender: TestUser,
@@ -1128,7 +1128,7 @@ export function run(): void {
                 const groupUid = makeGroup(model.db, {creatorUid: contact1.ctx}, [contact2.ctx]);
                 const group = unwrap(model.groups.getByUid(groupUid));
                 const groupConversation = group.get().controller.conversation();
-                group.get().controller.setMembers.fromSync([contact1], new Date());
+                group.get().controller.setMembers.direct([contact1], new Date());
 
                 function makeGroupMessage(
                     sender: TestUser,

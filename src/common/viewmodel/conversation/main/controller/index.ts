@@ -38,11 +38,11 @@ export interface IConversationViewModelController extends ProxyMarked {
     /**
      * Clear the conversation by deleting all stored messages.
      */
-    readonly clear: () => Promise<void>;
-    readonly delete: () => Promise<void>;
-    readonly removeMessage: (messageId: MessageId) => Promise<void>;
+    readonly clear: () => void;
+    readonly delete: () => void;
+    readonly removeMessage: (messageId: MessageId) => void;
     readonly markMessageAsDeleted: (messageId: MessageId) => Promise<void>;
-    readonly removeStatusMessage: (statusMessageId: StatusMessageId) => Promise<void>;
+    readonly removeStatusMessage: (statusMessageId: StatusMessageId) => void;
     readonly findForwardedMessage: (
         receiverLookup: DbReceiverLookup,
         messageId: MessageId,
@@ -121,29 +121,27 @@ export class ConversationViewModelController implements IConversationViewModelCo
             .controller.updateVisibility.fromLocal(ConversationVisibility.ARCHIVED);
     }
 
-    public async clear(): Promise<void> {
-        await this._conversation.get().controller.removeAllStatusMessages.fromLocal();
-        return await this._conversation.get().controller.removeAllMessages.fromLocal();
+    public clear(): void {
+        this._conversation.get().controller.removeAllStatusMessages.direct();
+        this._conversation.get().controller.removeAllMessages.direct();
     }
 
     /** @inheritdoc */
-    public async delete(): Promise<void> {
+    public delete(): void {
         // Clear all conversation contents.
-        await this.clear();
+        this.clear();
 
         // Soft-delete the conversation (i.e., the conversation is kept in the database but is not
         // shown in the conversation list anymore).
-        return this._conversation.get().controller.update.fromSync({lastUpdate: undefined});
+        this._conversation.get().controller.update.direct({lastUpdate: undefined});
     }
 
-    public async removeMessage(messageId: MessageId): Promise<void> {
-        return await this._conversation.get().controller.removeMessage.fromLocal(messageId);
+    public removeMessage(messageId: MessageId): void {
+        return this._conversation.get().controller.removeMessage.direct(messageId);
     }
 
-    public async removeStatusMessage(statusMessageId: StatusMessageId): Promise<void> {
-        return await this._conversation
-            .get()
-            .controller.removeStatusMessage.fromLocal(statusMessageId);
+    public removeStatusMessage(statusMessageId: StatusMessageId): void {
+        this._conversation.get().controller.removeStatusMessage.direct(statusMessageId);
     }
 
     public async markMessageAsDeleted(messageId: MessageId): Promise<void> {

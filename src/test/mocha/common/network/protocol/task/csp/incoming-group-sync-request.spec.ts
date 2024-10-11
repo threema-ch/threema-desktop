@@ -192,7 +192,7 @@ export function run(): void {
                     group
                         .get()
                         .controller.profilePicture.get()
-                        .controller.setPicture.fromSync(
+                        .controller.setPicture.direct(
                             services.crypto.randomBytes(new Uint8Array(23)),
                             'admin-defined',
                         );

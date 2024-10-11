@@ -310,7 +310,7 @@ export class DeviceJoinProtocol {
             this._log.debug(`Restoring contact ${contact.identity}`);
 
             // Basic data
-            const contactModelStore = repositories.contacts.add.fromSync(
+            const contactModelStore = repositories.contacts.add.direct(
                 mapValitaDefaultsToUndefined({
                     identity: contact.identity,
                     publicKey: contact.publicKey,
@@ -350,7 +350,7 @@ export class DeviceJoinProtocol {
                     contactDefinedProfilePictureBlobId,
                     'contact-defined contact profile picture',
                 );
-                profilePictureController.setPicture.fromSync(bytes, 'contact-defined');
+                profilePictureController.setPicture.direct(bytes, 'contact-defined');
             }
             const userDefinedProfilePictureBlobId =
                 contact.userDefinedProfilePicture?.updated.blob.id;
@@ -359,7 +359,7 @@ export class DeviceJoinProtocol {
                     userDefinedProfilePictureBlobId,
                     'user-defined contact profile picture',
                 );
-                profilePictureController.setPicture.fromSync(bytes, 'user-defined');
+                profilePictureController.setPicture.direct(bytes, 'user-defined');
             }
         }
     }
@@ -420,7 +420,7 @@ export class DeviceJoinProtocol {
                 creatorIdentity: group.groupIdentity.creatorIdentity,
                 groupId: group.groupIdentity.groupId,
             };
-            const groupModelStore = repositories.groups.add.fromSync(
+            const groupModelStore = repositories.groups.add.direct(
                 mapValitaDefaultsToUndefined({
                     groupId: group.groupIdentity.groupId,
                     creator: creator ?? 'me',
@@ -447,7 +447,7 @@ export class DeviceJoinProtocol {
                     profilePictureBlobId,
                     'group profile picture',
                 );
-                profilePictureController.setPicture.fromSync(bytes, 'admin-defined');
+                profilePictureController.setPicture.direct(bytes, 'admin-defined');
             }
 
             this._log.debug(`Group ${debugString} successfully imported`);

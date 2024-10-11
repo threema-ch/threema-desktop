@@ -58,7 +58,7 @@ export class ReflectedIncomingGroupLeaveTask extends GroupLeaveTaskBase<PassiveT
     ): Promise<boolean> {
         const removedCount = group
             .get()
-            .controller.removeMembers.fromSync([member], this._createdAt);
+            .controller.removeMembers.fromSync(handle, [member], this._createdAt);
         return removedCount > 0;
     }
 }

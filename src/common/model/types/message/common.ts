@@ -8,7 +8,8 @@ import type {
 import type {FileEncryptionKey, FileId} from '~/common/file-storage';
 import type {UploadedBlobBytes} from '~/common/model/message/common';
 import type {
-    ControllerCustomUpdateFromSource,
+    ControllerCustomUpdate,
+    ControllerUpdate,
     ControllerUpdateFromSource,
     ControllerUpdateFromSync,
 } from '~/common/model/types/common';
@@ -187,17 +188,18 @@ export type InboundBaseMessageController<TView extends InboundBaseMessageView> =
         /**
          * The user's reaction towards the message.
          */
-        readonly reaction: ControllerCustomUpdateFromSource<
+        readonly reaction: ControllerCustomUpdate<
             [type: MessageReaction, reactedAt: Date], // From Local
             [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString], // FromSync
-            [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString] // FromRemote
+            [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString], // FromRemote
+            [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString] // Direct
         >;
 
         /**
          * Edits the message text/content of this message.
          */
         readonly editMessage: Omit<
-            ControllerUpdateFromSource<[editedMessage: UnifiedEditMessage]>,
+            ControllerUpdate<[editedMessage: UnifiedEditMessage]>,
             'fromLocal'
         >;
     };
@@ -227,17 +229,18 @@ export type OutboundBaseMessageController<TView extends OutboundBaseMessageView>
         /**
          * The receiver's reaction towards the message.
          */
-        readonly reaction: ControllerCustomUpdateFromSource<
+        readonly reaction: ControllerCustomUpdate<
             [type: MessageReaction, reactedAt: Date], // From Local
             [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString], // FromSync
-            [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString] // FromRemote
+            [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString], // FromRemote
+            [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString] // Direct
         >;
 
         /**
          * Edits the message text/content of this message.
          */
         readonly editMessage: Omit<
-            ControllerUpdateFromSource<[editedMessage: UnifiedEditMessage]>,
+            ControllerUpdate<[editedMessage: UnifiedEditMessage]>,
             'fromRemote'
         >;
     };

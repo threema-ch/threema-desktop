@@ -75,11 +75,11 @@ export class ReflectedGroupProfilePictureTask
             );
 
             // Set group profile picture
-            profilePictureController.setPicture.fromSync(decryptedBlobBytes, source);
+            profilePictureController.setPicture.fromSync(handle, decryptedBlobBytes, source);
             this._log.info(`Group ${this._groupDebugString} profile picture updated`);
         } else {
             // Remove group profile picture
-            profilePictureController.removePicture.fromSync(source);
+            profilePictureController.removePicture.fromSync(handle, source);
             this._log.info(`Group ${this._groupDebugString} profile picture removed`);
         }
     }

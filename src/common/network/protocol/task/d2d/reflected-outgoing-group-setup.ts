@@ -107,6 +107,7 @@ export class ReflectedOutgoingGroupSetupTask
             // Note: This is not expected to happen, because a disbanded group cannot be reactivated
             //       in the UI. However, apply the update just to be on the safe side.
             group.controller.setMembers.fromSync(
+                handle,
                 memberContacts,
                 this._reflectedAt,
                 previousUserState !== GroupUserState.MEMBER ? GroupUserState.MEMBER : undefined,
@@ -118,6 +119,7 @@ export class ReflectedOutgoingGroupSetupTask
         } else {
             // Create new group
             model.groups.add.fromSync(
+                handle,
                 {
                     groupId,
                     creator: 'me',

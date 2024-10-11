@@ -67,7 +67,7 @@ export function run(): void {
 
             for (let i = 0; i < 10; i += 1) {
                 const messageId = randomMessageId(crypto);
-                singleConversation.get().controller.addMessage.fromSync({
+                singleConversation.get().controller.addMessage.direct({
                     direction: MessageDirection.OUTBOUND,
                     type: 'text',
                     id: messageId,
@@ -78,7 +78,7 @@ export function run(): void {
             const messageId = randomMessageId(crypto);
 
             const lastMessageDate = new Date();
-            singleConversation.get().controller.addMessage.fromSync({
+            singleConversation.get().controller.addMessage.direct({
                 direction: MessageDirection.OUTBOUND,
                 type: 'text',
                 id: messageId,
@@ -157,7 +157,7 @@ export function run(): void {
                     });
                 } else {
                     const messageId = randomMessageId(crypto);
-                    singleConversation.get().controller.addMessage.fromSync({
+                    singleConversation.get().controller.addMessage.direct({
                         direction: MessageDirection.OUTBOUND,
                         type: 'text',
                         id: messageId,
@@ -200,7 +200,7 @@ export function run(): void {
             const messageId = randomMessageId(crypto);
 
             const lastMessageDate = new Date(now + 10000);
-            singleConversation.get().controller.addMessage.fromSync({
+            singleConversation.get().controller.addMessage.direct({
                 direction: MessageDirection.OUTBOUND,
                 type: 'text',
                 id: messageId,

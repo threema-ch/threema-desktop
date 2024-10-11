@@ -11,11 +11,11 @@ export interface IConversationListItemViewModelController extends ProxyMarked {
     /**
      * Clear the conversation by deleting all its contents (e.g., messages, etc.).
      */
-    readonly clear: () => Promise<void>;
+    readonly clear: () => void;
     /**
      * Delete the conversation (i.e., clear and hide it).
      */
-    readonly delete: () => Promise<void>;
+    readonly delete: () => void;
     /**
      * Toggle pinned state of the conversation.
      */
@@ -45,19 +45,19 @@ export class ConversationListItemViewModelController
     }
 
     /** @inheritdoc */
-    public async clear(): Promise<void> {
-        await this._conversation.get().controller.removeAllStatusMessages.fromLocal();
-        return await this._conversation.get().controller.removeAllMessages.fromLocal();
+    public clear(): void {
+        this._conversation.get().controller.removeAllStatusMessages.direct();
+        return this._conversation.get().controller.removeAllMessages.direct();
     }
 
     /** @inheritdoc */
-    public async delete(): Promise<void> {
+    public delete(): void {
         // Clear all conversation contents.
-        await this.clear();
+        this.clear();
 
         // Soft-delete the conversation (i.e., the conversation is kept in the database but is not
         // shown in the conversation list anymore).
-        return this._conversation.get().controller.update.fromSync({lastUpdate: undefined});
+        return this._conversation.get().controller.update.direct({lastUpdate: undefined});
     }
 
     /** @inheritdoc */

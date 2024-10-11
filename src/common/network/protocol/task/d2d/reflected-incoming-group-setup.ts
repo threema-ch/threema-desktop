@@ -41,7 +41,7 @@ export class ReflectedIncomingGroupSetupTask extends GroupSetupTaskBase<PassiveT
     /** @inheritdoc */
     // eslint-disable-next-line @typescript-eslint/require-await
     protected async _kicked(handle: PassiveTaskCodecHandle, group: Group): Promise<void> {
-        group.controller.kicked.fromSync(this._reflectedAt);
+        group.controller.kicked.fromSync(handle, this._reflectedAt);
     }
 
     /** @inheritdoc */
@@ -52,7 +52,7 @@ export class ReflectedIncomingGroupSetupTask extends GroupSetupTaskBase<PassiveT
         memberUids: ModelStore<Contact>[],
         newUserState?: GroupUserState.MEMBER,
     ): Promise<void> {
-        group.controller.setMembers.fromSync(memberUids, this._reflectedAt, newUserState);
+        group.controller.setMembers.fromSync(handle, memberUids, this._reflectedAt, newUserState);
     }
 
     /** @inheritdoc */
@@ -62,7 +62,11 @@ export class ReflectedIncomingGroupSetupTask extends GroupSetupTaskBase<PassiveT
         init: Omit<GroupInit, 'createdAt'>,
         members: ModelStore<Contact>[],
     ): Promise<void> {
-        this._services.model.groups.add.fromSync({...init, createdAt: this._reflectedAt}, members);
+        this._services.model.groups.add.fromSync(
+            handle,
+            {...init, createdAt: this._reflectedAt},
+            members,
+        );
     }
 
     /** @inheritdoc */

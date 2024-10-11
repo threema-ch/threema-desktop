@@ -83,7 +83,7 @@ export function run(): void {
 
             const {added, removed} = group
                 .get()
-                .controller.setMembers.fromSync([contact, thirdContact], new Date());
+                .controller.setMembers.direct([contact, thirdContact], new Date());
 
             const members = group.get().view.members;
 
@@ -97,7 +97,7 @@ export function run(): void {
 
             const {added: added2, removed: removed2} = group
                 .get()
-                .controller.setMembers.fromSync([], new Date());
+                .controller.setMembers.direct([], new Date());
 
             const members2 = group.get().view.members;
 
@@ -113,7 +113,7 @@ export function run(): void {
 
             const {added, removed} = group
                 .get()
-                .controller.setMembers.fromSync(
+                .controller.setMembers.direct(
                     [contact, thirdContact, contact, thirdContact],
                     new Date(),
                 );
@@ -138,7 +138,7 @@ export function run(): void {
 
             const {added, removed} = group2
                 .get()
-                .controller.setMembers.fromSync([contact], new Date());
+                .controller.setMembers.direct([contact], new Date());
 
             expect(group2.get().view.members).to.be.empty;
 
@@ -161,13 +161,13 @@ export function run(): void {
             const thirdUser = makeTestUser('USER0002');
             const thirdContact = addTestUserAsContact(services.model, thirdUser);
 
-            group2.get().controller.kicked.fromSync(new Date());
+            group2.get().controller.kicked.direct(new Date());
 
             expect(group2.get().view.userState).to.eq(GroupUserState.KICKED);
 
             const {added} = group2
                 .get()
-                .controller.setMembers.fromSync([thirdContact], new Date(), GroupUserState.MEMBER);
+                .controller.setMembers.direct([thirdContact], new Date(), GroupUserState.MEMBER);
 
             expect(group2.get().view.userState).to.eq(GroupUserState.MEMBER);
 

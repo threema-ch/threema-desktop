@@ -465,9 +465,9 @@ export class GroupModelController implements GroupController {
             createdAt: Date,
         ) => {
             this._log.debug('GroupModelController: Remove members from remote');
-            return this.lifetimeGuard.run((guardedHandle) => {
+            return this.lifetimeGuard.run((guardedStoreHandle) => {
                 const numRemoved = this._removeMembers(
-                    guardedHandle,
+                    guardedStoreHandle,
                     TriggerSource.REMOTE,
                     contacts,
                     createdAt,
@@ -478,11 +478,11 @@ export class GroupModelController implements GroupController {
                 return numRemoved;
             });
         },
-        fromSync: (contacts: ModelStore<Contact>[], createdAt: Date) => {
+        fromSync: (handle, contacts: ModelStore<Contact>[], createdAt: Date) => {
             this._log.debug('GroupModelController: Remove members from sync');
-            return this.lifetimeGuard.run((handle) => {
+            return this.lifetimeGuard.run((guardedStoreHandle) => {
                 const numRemoved = this._removeMembers(
-                    handle,
+                    guardedStoreHandle,
                     TriggerSource.SYNC,
                     contacts,
                     createdAt,
@@ -499,14 +499,22 @@ export class GroupModelController implements GroupController {
     public readonly setMembers: GroupController['setMembers'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromSync: (
+            handle,
             contacts: ModelStore<Contact>[],
             createdAt: Date,
             newUserState?: GroupUserState.MEMBER,
         ) => {
             this._log.debug('GroupModelController: Set members from sync');
-            return this.lifetimeGuard.run((handle) => {
+            return this.setMembers.direct(contacts, createdAt, newUserState);
+        },
+        direct: (
+            contacts: ModelStore<Contact>[],
+            createdAt: Date,
+            newUserState?: GroupUserState.MEMBER,
+        ) =>
+            this.lifetimeGuard.run((guardedStoreHandle) => {
                 const {added, removed} = this._diffAndSetMembers(
-                    handle,
+                    guardedStoreHandle,
                     contacts,
                     createdAt,
                     newUserState,
@@ -515,8 +523,7 @@ export class GroupModelController implements GroupController {
                     this._versionSequence.next();
                 }
                 return {added, removed};
-            });
-        },
+            }),
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (
             handle: ActiveTaskCodecHandle<'volatile'>,
@@ -525,9 +532,9 @@ export class GroupModelController implements GroupController {
             newUserState?: GroupUserState.MEMBER,
         ) => {
             this._log.debug('GroupModelController: Set members from remote');
-            return this.lifetimeGuard.run((guardedHandle) => {
+            return this.lifetimeGuard.run((guardedStoreHandle) => {
                 const {added, removed} = this._diffAndSetMembers(
-                    guardedHandle,
+                    guardedStoreHandle,
                     contacts,
                     createdAt,
                     newUserState,
@@ -559,10 +566,10 @@ export class GroupModelController implements GroupController {
                     }),
             );
         },
-        fromSync: (change: GroupUpdateFromToSync) => {
+        fromSync: (handle, change: GroupUpdateFromToSync) => {
             this._log.debug('GroupModelController: Update from sync');
-            this.lifetimeGuard.run((handle) => {
-                this._update(handle, ensureExactGroupUpdateFromToSync(change));
+            this.lifetimeGuard.run((guardedStoreHandle) => {
+                this._update(guardedStoreHandle, ensureExactGroupUpdateFromToSync(change));
                 this._versionSequence.next();
             });
         },
@@ -584,17 +591,17 @@ export class GroupModelController implements GroupController {
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle, name, createdAt) => {
             this._log.debug('GroupModelController: Change name from remote');
-            this.lifetimeGuard.run((guardedHandle) => {
-                const changed = this._updateName(guardedHandle, name, createdAt);
+            this.lifetimeGuard.run((guardedStoreHandle) => {
+                const changed = this._updateName(guardedStoreHandle, name, createdAt);
                 if (changed) {
                     this._versionSequence.next();
                 }
             });
         },
-        fromSync: (name, createdAt) => {
+        fromSync: (handle, name, createdAt) => {
             this._log.debug('GroupModelController: Change name from sync');
-            this.lifetimeGuard.run((handle) => {
-                const changed = this._updateName(handle, name, createdAt);
+            this.lifetimeGuard.run((guardedStoreHandle) => {
+                const changed = this._updateName(guardedStoreHandle, name, createdAt);
                 if (changed) {
                     this._versionSequence.next();
                 }
@@ -610,7 +617,7 @@ export class GroupModelController implements GroupController {
             // TODO(DESK-551): Remove Group and sync to D2D
             await Promise.resolve();
         },
-        fromSync: () => {
+        fromSync: (handle) => {
             this._log.debug('GroupModelController: Remove from sync');
             // TODO(DESK-551): Remove Group
         },
@@ -622,16 +629,19 @@ export class GroupModelController implements GroupController {
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle, createdAt) => {
             this._log.debug('GroupModelController: Kicked from remote');
-            this.lifetimeGuard.run((guardedHandle) => {
-                this._update(guardedHandle, {userState: GroupUserState.KICKED});
+            this.lifetimeGuard.run((guardedStoreHandle) => {
+                this._update(guardedStoreHandle, {userState: GroupUserState.KICKED});
                 this._addUserStateChangedStatusMessage(GroupUserState.KICKED, createdAt);
                 this._versionSequence.next();
             });
         },
-        fromSync: (createdAt) => {
+        fromSync: (handle, createdAt) => {
             this._log.debug('GroupModelController: Kicked from sync');
-            this.lifetimeGuard.run((handle) => {
-                this._update(handle, {userState: GroupUserState.KICKED});
+            this.kicked.direct(createdAt);
+        },
+        direct: (createdAt) => {
+            this.lifetimeGuard.run((guardedStoreHandle) => {
+                this._update(guardedStoreHandle, {userState: GroupUserState.KICKED});
                 this._addUserStateChangedStatusMessage(GroupUserState.KICKED, createdAt);
                 this._versionSequence.next();
             });
@@ -651,10 +661,10 @@ export class GroupModelController implements GroupController {
                 this._versionSequence.next();
             });
         },
-        fromSync: (createdAt) => {
+        fromSync: (handle, createdAt) => {
             this._log.debug('GroupModelController: Leave from sync');
-            this.lifetimeGuard.run((handle) => {
-                this._update(handle, {userState: GroupUserState.LEFT});
+            this.lifetimeGuard.run((guardedStoreHandle) => {
+                this._update(guardedStoreHandle, {userState: GroupUserState.LEFT});
                 this._addUserStateChangedStatusMessage(GroupUserState.LEFT, createdAt);
                 this._versionSequence.next();
             });
@@ -664,10 +674,10 @@ export class GroupModelController implements GroupController {
     /** @inheritdoc */
     public readonly dissolve: GroupController['dissolve'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
-        fromSync: () => {
+        fromSync: (handle) => {
             this._log.debug('GroupModelController: Dissolve from sync');
-            this.lifetimeGuard.run((handle) => {
-                this._update(handle, {userState: GroupUserState.LEFT});
+            this.lifetimeGuard.run((guardedStoreHandle) => {
+                this._update(guardedStoreHandle, {userState: GroupUserState.LEFT});
                 this._versionSequence.next();
             });
         },
@@ -679,7 +689,7 @@ export class GroupModelController implements GroupController {
         fromRemote: async (handle, call) => {
             await this._registerCalls([{type: 'init', base: call}], 'new');
         },
-        fromSync: (call) => {
+        fromSync: (handle, call) => {
             // TODO(DESK-1466): This is wrong. this._registerCall must be awaited or the
             // registration may get lost.
             this._registerCalls([{type: 'init', base: call}], 'new').catch((error: unknown) =>
@@ -844,14 +854,14 @@ export class GroupModelController implements GroupController {
      * member list.
      */
     private _diffMembers(
-        guardedHandle: GuardedStoreHandle<GroupView>,
+        guardedStoreHandle: GuardedStoreHandle<GroupView>,
         contacts: Set<ModelStore<Contact>>,
     ): {
         added: ModelStore<Contact>[];
         removed: ModelStore<Contact>[];
     } {
-        const currentMembers = guardedHandle.view().members;
-        const creator = guardedHandle.view().creator;
+        const currentMembers = guardedStoreHandle.view().members;
+        const creator = guardedStoreHandle.view().creator;
         const added = new Set<ModelStore<Contact>>();
         const removed = new Set<ModelStore<Contact>>();
         this._log.debug(
@@ -911,14 +921,14 @@ export class GroupModelController implements GroupController {
      * Note: Triggers a `group-member-change` status message if a new member was added.
      */
     private _diffAndSetMembers(
-        guardedHandle: GuardedStoreHandle<GroupView>,
+        guardedStoreHandle: GuardedStoreHandle<GroupView>,
         contacts: ModelStore<Contact>[],
         createdAt: Date,
         newUserState?: GroupUserState.MEMBER,
     ): {added: u53; removed: u53} {
         let userAdded = 0;
-        if (newUserState !== undefined && newUserState !== guardedHandle.view().userState) {
-            this._update(guardedHandle, {userState: newUserState});
+        if (newUserState !== undefined && newUserState !== guardedStoreHandle.view().userState) {
+            this._update(guardedStoreHandle, {userState: newUserState});
             userAdded += 1;
         }
 
@@ -933,11 +943,11 @@ export class GroupModelController implements GroupController {
             );
         }
 
-        const {added, removed} = this._diffMembers(guardedHandle, new Set(contacts));
+        const {added, removed} = this._diffMembers(guardedStoreHandle, new Set(contacts));
         if (added.length === 0 && removed.length === 0) {
             return {added: userAdded, removed: 0};
         }
-        this._setMembers(guardedHandle, [...added], [...removed]);
+        this._setMembers(guardedStoreHandle, [...added], [...removed]);
         this._addGroupMemberChangeStatusMessage(added, removed, createdAt);
         return {added: added.length + userAdded, removed: removed.length};
     }
@@ -983,6 +993,7 @@ export class GroupModelController implements GroupController {
                 break;
             case TriggerSource.REMOTE:
             case TriggerSource.SYNC:
+            case TriggerSource.DIRECT:
                 break;
             default:
                 unreachable(triggerSource);
@@ -1279,10 +1290,12 @@ export class GroupModelRepository implements GroupRepository {
             return create(this._services, ensureExactGroupInit(init), members);
         },
 
-        fromSync: (init: GroupInit, members: ModelStore<Contact>[]) => {
+        fromSync: (handle, init: GroupInit, members: ModelStore<Contact>[]) => {
             this._log.debug('Add group from sync');
-            return create(this._services, ensureExactGroupInit(init), members);
+            return this.add.direct(init, members);
         },
+        direct: (init: GroupInit, members: ModelStore<Contact>[]) =>
+            create(this._services, ensureExactGroupInit(init), members),
     };
 
     private readonly _log: Logger;

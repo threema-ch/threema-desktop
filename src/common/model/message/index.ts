@@ -704,7 +704,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
 
     public readonly read: InboundBaseMessageController<TView>['read'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
-        fromSync: (readAt: Date) => this._handleRead(TriggerSource.SYNC, readAt),
+        fromSync: (handle, readAt: Date) => this._handleRead(TriggerSource.SYNC, readAt),
     };
 
     public readonly reaction: InboundBaseMessageController<TView>['reaction'] = {
@@ -717,8 +717,12 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
                 reactedAt,
                 this._services.device.identity.string,
             ),
-        fromSync: (type: MessageReaction, reactedAt: Date, reactionSender: IdentityString) =>
-            this._handleReaction(TriggerSource.SYNC, type, reactedAt, reactionSender),
+        fromSync: (
+            handle,
+            type: MessageReaction,
+            reactedAt: Date,
+            reactionSender: IdentityString,
+        ) => this._handleReaction(TriggerSource.SYNC, type, reactedAt, reactionSender),
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (
             handle: ActiveTaskCodecHandle<'volatile'>,
@@ -726,6 +730,8 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
             reactedAt: Date,
             reactionSender: IdentityString,
         ) => this._handleReaction(TriggerSource.REMOTE, type, reactedAt, reactionSender),
+        direct: (type: MessageReaction, reactedAt: Date, reactionSender: IdentityString) =>
+            this._handleReaction(TriggerSource.DIRECT, type, reactedAt, reactionSender),
     };
 
     /** @inheritdoc */
@@ -767,14 +773,20 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
             });
         },
 
-        fromSync: (editedMessage: UnifiedEditMessage) => {
+        fromSync: (handle, editedMessage: UnifiedEditMessage) => {
+            this.editMessage.direct(editedMessage);
+        },
+
+        direct: (editedMessage: UnifiedEditMessage) => {
             if (this._type === MessageType.TEXT && editedMessage.newText.trim().length === 0) {
                 this._log.warn('New text of a text message edit may not be empty');
                 return;
             }
 
             // Update database
-            this.lifetimeGuard.run((handle) => this._editMessage(handle, editedMessage));
+            this.lifetimeGuard.run((guardedStoreHandle) =>
+                this._editMessage(guardedStoreHandle, editedMessage),
+            );
         },
     };
 
@@ -896,7 +908,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
 
     public readonly delivered: OutboundBaseMessageController<TView>['delivered'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
-        fromSync: (deliveredAt: Date) => this._handleDelivered(deliveredAt),
+        fromSync: (handle, deliveredAt: Date) => this._handleDelivered(deliveredAt),
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle: ActiveTaskCodecHandle<'volatile'>, deliveredAt: Date) =>
             this._handleDelivered(deliveredAt),
@@ -914,8 +926,15 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
                 this._services.device.identity.string,
             ),
 
-        fromSync: (type: MessageReaction, reactedAt: Date, reactionSender: IdentityString) =>
-            this._handleReaction(TriggerSource.SYNC, type, reactedAt, reactionSender),
+        fromSync: (
+            handle,
+            type: MessageReaction,
+            reactedAt: Date,
+            reactionSender: IdentityString,
+        ) => this._handleReaction(TriggerSource.SYNC, type, reactedAt, reactionSender),
+
+        direct: (type: MessageReaction, reactedAt: Date, reactionSender: IdentityString) =>
+            this._handleReaction(TriggerSource.DIRECT, type, reactedAt, reactionSender),
 
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (
@@ -928,7 +947,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
 
     public readonly read: OutboundBaseMessageController<TView>['read'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
-        fromSync: (readAt: Date) => this._handleRead(readAt),
+        fromSync: (handle, readAt: Date) => this._handleRead(readAt),
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle: ActiveTaskCodecHandle<'volatile'>, readAt: Date) =>
             this._handleRead(readAt),
@@ -958,9 +977,14 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
             this.lifetimeGuard.run((handle) => this._editMessage(handle, editedMessage));
         },
 
-        fromSync: (editedMessage: UnifiedEditMessage) => {
+        fromSync: (handle, editedMessage: UnifiedEditMessage) => {
+            this.editMessage.direct(editedMessage);
+        },
+        direct: (editedMessage: UnifiedEditMessage) => {
             // Update database
-            this.lifetimeGuard.run((handle) => this._editMessage(handle, editedMessage));
+            this.lifetimeGuard.run((guardedStoreHandle) =>
+                this._editMessage(guardedStoreHandle, editedMessage),
+            );
         },
     };
 

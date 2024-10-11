@@ -1,5 +1,5 @@
 import type {
-    ControllerCustomUpdateFromSource,
+    ControllerCustomUpdate,
     ControllerUpdateFromSource,
     Model,
 } from '~/common/model/types/common';
@@ -25,18 +25,19 @@ export type ProfilePictureController = {
     /**
      * Update the profile picture from a certain picture `source`.
      */
-    readonly setPicture: ControllerCustomUpdateFromSource<
-        [profilePicture: ReadonlyUint8Array, source: ProfilePictureSource], // Local
-        [profilePicture: ReadonlyUint8Array, source: ProfilePictureSource], // Sync
+    readonly setPicture: ControllerCustomUpdate<
+        [profilePicture: ReadonlyUint8Array, source: ProfilePictureSource], // FromLocal
+        [profilePicture: ReadonlyUint8Array, source: ProfilePictureSource], // FromSync
         [
-            // Remote
+            // FromRemote
             profilePicture: {
                 readonly bytes: ReadonlyUint8Array;
                 readonly blobId: BlobId;
                 readonly blobKey: RawBlobKey;
             },
             source: ProfilePictureSource,
-        ]
+        ],
+        [profilePicture: ReadonlyUint8Array, source: ProfilePictureSource] // Direct
     >;
 
     /**

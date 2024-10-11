@@ -99,7 +99,7 @@ class InboundDeletedMessageModelController
 
     public readonly read: OutboundDeletedMessageController['read'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
-        fromSync: (readAt: Date) => this._handleRead(readAt),
+        fromSync: (handle, readAt: Date) => this._handleRead(readAt),
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle: ActiveTaskCodecHandle<'volatile'>, readAt: Date) =>
             this._handleRead(readAt),
@@ -154,7 +154,7 @@ class OutboundDeletedMessageModelController
 
     public readonly delivered: OutboundDeletedMessageController['delivered'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
-        fromSync: (deliveredAt: Date) => this._handleDelivered(deliveredAt),
+        fromSync: (handle, deliveredAt: Date) => this._handleDelivered(deliveredAt),
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle: ActiveTaskCodecHandle<'volatile'>, deliveredAt: Date) =>
             this._handleDelivered(deliveredAt),
@@ -162,7 +162,7 @@ class OutboundDeletedMessageModelController
 
     public readonly read: OutboundDeletedMessageController['read'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
-        fromSync: (readAt: Date) => this._handleRead(readAt),
+        fromSync: (handle, readAt: Date) => this._handleRead(readAt),
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle: ActiveTaskCodecHandle<'volatile'>, readAt: Date) =>
             this._handleRead(readAt),

@@ -8,6 +8,7 @@ import type {
 import type {GroupModelStore} from '~/common/model/group';
 import type {OngoingGroupCall} from '~/common/model/group-call';
 import type {
+    ControllerUpdate,
     ControllerUpdateFromLocal,
     ControllerUpdateFromSource,
     ControllerUpdateFromSync,
@@ -123,7 +124,7 @@ export type GroupController = ReceiverController & {
      * @returns the number of added and removed contacts.
      */
     readonly setMembers: Omit<
-        ControllerUpdateFromSource<
+        ControllerUpdate<
             [
                 contacts: ModelStore<Contact>[],
                 createdAt: Date,
@@ -156,7 +157,7 @@ export type GroupController = ReceiverController & {
      * Mark group membership as {@link GroupUserState.KICKED}. This means that we were removed from
      * the group by the creator.
      */
-    readonly kicked: Omit<ControllerUpdateFromSource<[createdAt: Date]>, 'fromLocal'>;
+    readonly kicked: Omit<ControllerUpdate<[createdAt: Date]>, 'fromLocal'>;
 
     /**
      * Mark group membership as {@link GroupUserState.LEFT}. This means that we left the group.
@@ -235,7 +236,7 @@ export type GroupRepository = {
      * @param init The group data
      * @param members The members list (including the creator)
      */
-    readonly add: ControllerUpdateFromSource<
+    readonly add: ControllerUpdate<
         [init: GroupInit, members: ModelStore<Contact>[]],
         ModelStore<Group>
     >;

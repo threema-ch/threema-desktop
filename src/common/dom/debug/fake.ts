@@ -133,7 +133,7 @@ export async function generateFakeContactConversation({
 }: Pick<ServicesForBackend, 'crypto' | 'device' | 'file' | 'model'>): Promise<void> {
     // Add contact
     const identity = ensureIdentityString(`Q${randomString(crypto, 7).toUpperCase()}`);
-    const contact = model.contacts.add.fromSync({
+    const contact = model.contacts.add.direct({
         identity,
         publicKey: ensurePublicKey(randomBytes(new Uint8Array(32))),
         createdAt: new Date(),
@@ -171,7 +171,7 @@ export async function generateFakeContactConversation({
         switch (direction) {
             case MessageDirection.INBOUND:
                 {
-                    const modelStore = conversation.controller.addMessage.fromSync({
+                    const modelStore = conversation.controller.addMessage.direct({
                         id: messageId,
                         direction,
                         sender: contact.ctx,
@@ -184,7 +184,7 @@ export async function generateFakeContactConversation({
                     if (reaction !== undefined) {
                         modelStore
                             .get()
-                            .controller.reaction.fromSync(
+                            .controller.reaction.direct(
                                 reaction.type,
                                 reaction.at,
                                 device.identity.string,
@@ -196,7 +196,7 @@ export async function generateFakeContactConversation({
                 if (Math.random() < 0.1) {
                     const fileData = await file.store(TEST_IMAGE);
                     const thumbnailFileData = await file.store(TEST_THUMBNAIL);
-                    const modelStore = conversation.controller.addMessage.fromSync({
+                    const modelStore = conversation.controller.addMessage.direct({
                         id: messageId,
                         direction,
                         createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
@@ -216,14 +216,14 @@ export async function generateFakeContactConversation({
                     if (reaction !== undefined) {
                         modelStore
                             .get()
-                            .controller.reaction.fromSync(
+                            .controller.reaction.direct(
                                 reaction.type,
                                 reaction.at,
                                 contact.get().view.identity,
                             );
                     }
                 } else {
-                    const modelStore = conversation.controller.addMessage.fromSync({
+                    const modelStore = conversation.controller.addMessage.direct({
                         id: messageId,
                         direction,
                         createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
@@ -233,7 +233,7 @@ export async function generateFakeContactConversation({
                     if (reaction !== undefined) {
                         modelStore
                             .get()
-                            .controller.reaction.fromSync(
+                            .controller.reaction.direct(
                                 reaction.type,
                                 reaction.at,
                                 contact.get().view.identity,
@@ -268,7 +268,7 @@ export async function generateFakeGroupConversation({
         contactObjects.push(contact);
     });
 
-    const group = model.groups.add.fromSync(
+    const group = model.groups.add.direct(
         {
             groupId: randomU64(crypto) as GroupId,
             creator: 'me',
@@ -323,7 +323,7 @@ export async function generateFakeGroupConversation({
 
         switch (direction) {
             case MessageDirection.INBOUND: {
-                const modelStore = conversation.controller.addMessage.fromSync({
+                const modelStore = conversation.controller.addMessage.direct({
                     id: messageId,
                     direction,
                     sender: senderContact.ctx,
@@ -336,7 +336,7 @@ export async function generateFakeGroupConversation({
                 for (const reaction of reactions) {
                     modelStore
                         .get()
-                        .controller.reaction.fromSync(
+                        .controller.reaction.direct(
                             reaction.reaction.type,
                             reaction.reaction.at,
                             reaction.senderIdentity,
@@ -348,7 +348,7 @@ export async function generateFakeGroupConversation({
                 if (Math.random() < 0.1) {
                     const fileData = await file.store(TEST_IMAGE);
                     const thumbnailFileData = await file.store(TEST_THUMBNAIL);
-                    const modelStore = conversation.controller.addMessage.fromSync({
+                    const modelStore = conversation.controller.addMessage.direct({
                         id: messageId,
                         direction,
                         createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
@@ -368,14 +368,14 @@ export async function generateFakeGroupConversation({
                     for (const reaction of reactions) {
                         modelStore
                             .get()
-                            .controller.reaction.fromSync(
+                            .controller.reaction.direct(
                                 reaction.reaction.type,
                                 reaction.reaction.at,
                                 reaction.senderIdentity,
                             );
                     }
                 } else {
-                    const modelStore = conversation.controller.addMessage.fromSync({
+                    const modelStore = conversation.controller.addMessage.direct({
                         id: messageId,
                         direction,
                         createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
@@ -385,7 +385,7 @@ export async function generateFakeGroupConversation({
                     for (const reaction of reactions) {
                         modelStore
                             .get()
-                            .controller.reaction.fromSync(
+                            .controller.reaction.direct(
                                 reaction.reaction.type,
                                 reaction.reaction.at,
                                 reaction.senderIdentity,
@@ -453,7 +453,7 @@ export async function importScreenshotData(
             continue;
         }
         log.info(`Adding contact with ID ${identity}`);
-        const contactModel = model.contacts.add.fromSync({
+        const contactModel = model.contacts.add.direct({
             identity,
             publicKey: contact.publicKey,
             createdAt: getReferenceTimestamp(),
@@ -483,7 +483,7 @@ export async function importScreenshotData(
             contactModel
                 .get()
                 .controller.profilePicture.get()
-                .controller.setPicture.fromSync(contact.avatar, 'user-defined');
+                .controller.setPicture.direct(contact.avatar, 'user-defined');
         }
 
         // Create conversation
@@ -529,7 +529,7 @@ export async function importScreenshotData(
         const createdAt = new Date(
             getReferenceTimestamp().getTime() - group.createdMinutesAgo * 60 * 1000,
         );
-        const groupModel = model.groups.add.fromSync(
+        const groupModel = model.groups.add.direct(
             {
                 groupId: group.id,
                 creator: 'me',
@@ -557,7 +557,7 @@ export async function importScreenshotData(
             groupModel
                 .get()
                 .controller.profilePicture.get()
-                .controller.setPicture.fromSync(group.avatar, 'admin-defined');
+                .controller.setPicture.direct(group.avatar, 'admin-defined');
         }
 
         // Create conversation
@@ -680,7 +680,7 @@ async function addConversationMessages(
                     default:
                         unreachable(receiver);
                 }
-                const modelStore = conversation.controller.addMessage.fromSync({
+                const modelStore = conversation.controller.addMessage.direct({
                     id: messageId,
                     direction: message.direction,
                     sender: senderUid,
@@ -693,7 +693,7 @@ async function addConversationMessages(
                 for (const reaction of reactions) {
                     modelStore
                         .get()
-                        .controller.reaction.fromSync(
+                        .controller.reaction.direct(
                             reaction.type,
                             reaction.at,
                             reaction.senderIdentity,
@@ -702,7 +702,7 @@ async function addConversationMessages(
                 break;
             }
             case MessageDirection.OUTBOUND: {
-                const modelStore = conversation.controller.addMessage.fromSync({
+                const modelStore = conversation.controller.addMessage.direct({
                     id: messageId,
                     direction: message.direction,
                     createdAt: messageDate,
@@ -712,7 +712,7 @@ async function addConversationMessages(
                 for (const reaction of reactions) {
                     modelStore
                         .get()
-                        .controller.reaction.fromSync(
+                        .controller.reaction.direct(
                             reaction.type,
                             reaction.at,
                             reaction.senderIdentity,

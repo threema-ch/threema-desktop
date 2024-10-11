@@ -89,7 +89,7 @@ export class ReflectedIncomingMessageUpdateTask implements PassiveTask<void> {
             switch (update.update) {
                 case 'read':
                     this._log.debug(`Marking incoming message ${u64ToHexLe(messageId)} as read`);
-                    message.controller.read.fromSync(update.read.at);
+                    message.controller.read.fromSync(handle, update.read.at);
                     continue;
                 default:
                     unreachable(update.update);

@@ -86,7 +86,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
                     return;
                 }
                 try {
-                    await this._createContactFromD2dSync(validatedMessage.create.contact);
+                    await this._createContactFromD2dSync(handle, validatedMessage.create.contact);
                 } catch (error) {
                     this._log.error(`Update to create contact: ${error}`);
                     return;
@@ -100,7 +100,11 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
                     return;
                 }
                 try {
-                    await this._updateContactFromD2dSync(contact, validatedMessage.update.contact);
+                    await this._updateContactFromD2dSync(
+                        handle,
+                        contact,
+                        validatedMessage.update.contact,
+                    );
                 } catch (error) {
                     this._log.error(`Update to update contact: ${error}`);
                     return;
@@ -114,7 +118,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
                     return;
                 }
                 try {
-                    contact.get().controller.remove.fromSync();
+                    contact.get().controller.remove.fromSync(handle);
                 } catch (error) {
                     this._log.error(
                         `Discarding 'delete' message, failed to remove contact: ${error}`,
@@ -128,6 +132,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
     }
 
     private async _processProfilePicture(
+        handle: PassiveTaskCodecHandle,
         profilePicture: ModelStore<ProfilePicture>,
         deltaImage: DeltaImage.Type,
         source: ProfilePictureSource,
@@ -151,16 +156,17 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
                 'local',
                 'local',
             );
-            profilePicture.get().controller.setPicture.fromSync(decryptedBlobBytes, source);
+            profilePicture.get().controller.setPicture.fromSync(handle, decryptedBlobBytes, source);
         }
 
         // Handle removal
         if (deltaImage.removed !== undefined) {
-            profilePicture.get().controller.removePicture.fromSync(source);
+            profilePicture.get().controller.removePicture.fromSync(handle, source);
         }
     }
 
     private async _processProfilePictures(
+        handle: PassiveTaskCodecHandle,
         identity: IdentityString,
         createOrUpdate: ProfilePictures,
         profilePicture: ModelStore<ProfilePicture>,
@@ -170,6 +176,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
         if (createOrUpdate.contactDefinedProfilePicture !== undefined) {
             promises.push(
                 this._processProfilePicture(
+                    handle,
                     profilePicture,
                     createOrUpdate.contactDefinedProfilePicture,
                     'contact-defined',
@@ -179,6 +186,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
         if (createOrUpdate.userDefinedProfilePicture !== undefined) {
             promises.push(
                 this._processProfilePicture(
+                    handle,
                     profilePicture,
                     createOrUpdate.userDefinedProfilePicture,
                     // TODO(DESK-1074): Remove logic below. Instead, ignore user-defined profile
@@ -191,10 +199,12 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
     }
 
     private async _createContactFromD2dSync(
+        handle: PassiveTaskCodecHandle,
         create: protobuf.validate.sync.Contact.TypeCreate,
     ): Promise<void> {
         // Create contact
         const contact = this._services.model.contacts.add.fromSync(
+            handle,
             mapValitaDefaultsToUndefined({
                 identity: create.identity,
                 publicKey: create.publicKey,
@@ -220,6 +230,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
         );
 
         await this._processProfilePictures(
+            handle,
             create.identity,
             create,
             contact.get().controller.profilePicture,
@@ -227,6 +238,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
     }
 
     private async _updateContactFromD2dSync(
+        handle: PassiveTaskCodecHandle,
         contact: ModelStore<Contact>,
         update: protobuf.validate.sync.Contact.TypeUpdate,
     ): Promise<void> {
@@ -252,20 +264,21 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
             }),
         );
 
-        controller.update.fromSync(propertiesToUpdate);
+        controller.update.fromSync(handle, propertiesToUpdate);
 
         if (update.conversationCategory !== undefined) {
-            controller.conversation().get().controller.update.fromSync({
+            controller.conversation().get().controller.update.fromSync(handle, {
                 category: update.conversationCategory,
             });
         }
         if (update.conversationVisibility !== undefined) {
-            controller.conversation().get().controller.update.fromSync({
+            controller.conversation().get().controller.update.fromSync(handle, {
                 visibility: update.conversationVisibility,
             });
         }
 
         await this._processProfilePictures(
+            handle,
             contact.get().view.identity,
             update,
             controller.profilePicture,

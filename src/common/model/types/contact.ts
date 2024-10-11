@@ -13,7 +13,11 @@ import type {
     VerificationLevel,
     WorkVerificationLevel,
 } from '~/common/enum';
-import type {ControllerUpdateFromSource, Model} from '~/common/model/types/common';
+import type {
+    ControllerUpdate,
+    ControllerUpdateFromSource,
+    Model,
+} from '~/common/model/types/common';
 import type {ConversationInitMixin} from '~/common/model/types/conversation';
 import type {ReceiverController} from '~/common/model/types/receiver';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
@@ -96,7 +100,7 @@ export type ContactRepository = {
      *
      * @param init The contact data
      */
-    readonly add: ControllerUpdateFromSource<[init: ContactInit], ModelStore<Contact>>;
+    readonly add: ControllerUpdate<[init: ContactInit], ModelStore<Contact>>;
     readonly getByUid: (uid: DbContactUid) => ModelStore<Contact> | undefined;
     readonly getByIdentity: (identity: IdentityString) => ModelStore<Contact> | undefined;
     readonly getAll: () => LocalSetStore<ModelStore<Contact>>;
