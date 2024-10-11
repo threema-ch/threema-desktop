@@ -2,7 +2,7 @@ import type {ServicesForBackend} from '~/common/backend';
 import type {DatabaseBackend} from '~/common/db';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {ModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
-import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
+import type {ActiveTaskCodecHandle, PassiveTaskCodecHandle} from '~/common/network/protocol/task';
 import type {TaskManager} from '~/common/network/protocol/task/manager';
 import type {ProxyMarked, RemoteProxy} from '~/common/utils/endpoint';
 
@@ -142,51 +142,72 @@ export type RemoteModelStoreFor<T> =
         : never;
 
 /* eslint-disable @typescript-eslint/no-invalid-void-type */
-export type ControllerUpdateFromSource<
+export type ControllerUpdate<
     TParams extends readonly unknown[] = [],
     TReturn = void,
-> = ControllerCustomUpdateFromSource<TParams, TParams, TParams, TReturn>;
+> = ControllerCustomUpdate<TParams, TParams, TParams, TParams, TReturn>;
 
-export type ControllerCustomUpdateFromSource<
+export type ControllerCustomUpdate<
     TParamsFromLocal extends readonly unknown[] = [],
     TParamsFromSync extends readonly unknown[] = [],
     TParamsFromRemote extends readonly unknown[] = [],
+    TParamsDirect extends readonly unknown[] = [],
     TReturn = void,
 > = {
     /**
-     * Update from local source (e.g. nickname change due to user interaction).
+     * Update from local source (e.g. nickname change due to user interaction). This function might
+     * trigger side-effects. In particular, it might reflect a message if necessary and send an
+     * outgoing Csp message.
      */
     readonly fromLocal: (...params: TParamsFromLocal) => Promise<TReturn>;
 
     /**
      * Update from another linked device (e.g. reflected nickname change).
      */
-    readonly fromSync: (...params: TParamsFromSync) => TReturn;
+    readonly fromSync: (handle: PassiveTaskCodecHandle, ...params: TParamsFromSync) => TReturn;
 
     /**
-     * Update from other identity (e.g. being removed from a group).
+     * Update from other identity (e.g. being removed from a group). Update from local source (e.g.
+     * nickname change due to user interaction). This function might trigger side-effects. In
+     * particular, it might reflect a message.
      */
     readonly fromRemote: (
         handle: ActiveTaskCodecHandle<'volatile'>,
         ...params: TParamsFromRemote
     ) => Promise<TReturn>;
+
+    /**
+     * Update local only, without any side-effects to/from other devices.
+     */
+    readonly direct: (...params: TParamsDirect) => TReturn;
 } & ProxyMarked;
-/* eslint-enable @typescript-eslint/no-invalid-void-type */
+
+export type ControllerUpdateFromSource<
+    TParams extends readonly unknown[] = [],
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+    TReturn = void,
+> = ProxyMarked & Pick<ControllerUpdate<TParams, TReturn>, 'fromLocal' | 'fromRemote' | 'fromSync'>;
 
 export type ControllerUpdateFromLocal<
     TParams extends readonly unknown[] = [],
     // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
     TReturn = void,
-> = ProxyMarked & Pick<ControllerUpdateFromSource<TParams, TReturn>, 'fromLocal'>;
+> = ProxyMarked & Pick<ControllerUpdate<TParams, TReturn>, 'fromLocal'>;
 
 export type ControllerUpdateFromRemote<
     TParams extends readonly unknown[] = [],
     // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
     TReturn = void,
-> = ProxyMarked & Pick<ControllerUpdateFromSource<TParams, TReturn>, 'fromRemote'>;
+> = ProxyMarked & Pick<ControllerUpdate<TParams, TReturn>, 'fromRemote'>;
 
 export type ControllerUpdateFromSync<
     TParams extends readonly unknown[] = [],
     // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
     TReturn = void,
-> = ProxyMarked & Pick<ControllerUpdateFromSource<TParams, TReturn>, 'fromSync'>;
+> = ProxyMarked & Pick<ControllerUpdate<TParams, TReturn>, 'fromSync'>;
+
+export type ControllerUpdateDirect<
+    TParams extends readonly unknown[] = [],
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+    TReturn = void,
+> = ProxyMarked & Pick<ControllerUpdate<TParams, TReturn>, 'direct'>;
