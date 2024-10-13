@@ -8,6 +8,7 @@
   - [RPC](./rpc.md)
   - [Launcher Binary](./launcher-binary.md)
 - [Guidelines](./guidelines.md)
+  - [General](./general-guidelines.md)
   - [Dependencies](./dependencies.md)
   - [Models](./models.md)
   - [Cryptography](./cryptography.md)

@@ -121,3 +121,8 @@ As a rule of thumb, the `.svelte` files should contain as little logic as possib
 should be extracted to a `types.ts` file. Standalone helper functions should be extracted to a
 `helpers.ts` file. If it makes sense, feel free to add additional TypeScript files for structuring
 your code.
+
+## Inline Scripts
+
+Keep inline script code in Svelte files at a minimum. If you require to write larger functions, put
+them in their own TypeScript file and import them.
