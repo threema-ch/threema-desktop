@@ -89,8 +89,7 @@ export function tsWorkerPlugin(): WorkerPlugin {
                             sourcemap: config.build.sourcemap,
 
                             // Duct-tape level over 9000: Keep asset file names in sync with the
-                            // parent builder because for some fucking reason the hashes don't
-                            // match...
+                            // parent builder because for some reason the hashes don't match...
                             assetFileNames: (asset) => {
                                 const hash = createHash('sha256')
                                     .update(asset.source)

@@ -60,8 +60,7 @@ filename `test-data-${PW_FLAVOR}.local.json`.
 }
 ```
 
-A standalone ThreemaId can be created with
-[console-client](https://git.threema.ch/clients/android/console-client):
+A standalone ThreemaId can be created with the Android `console-client` in our GitLab instance:
 
 ```bash
 ./console/threema-console -s \

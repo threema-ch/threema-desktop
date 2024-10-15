@@ -9,4 +9,5 @@
    commit from one of the older branches. Push the branch.
 
 3. In our internal `better-sqlcipher-patch` repo, look at the README to find out how to update and
-   apply the patches to our internal fork of `better-sqlcipher`.
+   apply the patches to
+   [our fork of `better-sqlcipher`](https://github.com/threema-ch/better-sqlcipher).
