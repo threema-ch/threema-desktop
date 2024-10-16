@@ -350,6 +350,13 @@ export class ContactModelController implements ContactController {
      */
     private _update(change: ContactUpdate): void {
         this.lifetimeGuard.update((contact) => {
+            // If the acquaintanceLevel was set to Group_Or_Deleted, it means we need to delete the
+            // messages and make the chat invisible.
+            if (change.acquaintanceLevel === AcquaintanceLevel.GROUP_OR_DELETED) {
+                this.conversation().get().controller.removeAllMessages.direct();
+                this.conversation().get().controller.removeAllStatusMessages.direct();
+                this.conversation().get().controller.update.direct({lastUpdate: undefined});
+            }
             update(this._services, ensureExactContactUpdate(change), this.uid);
             this._versionSequence.next();
             return addDerivedData({...contact, ...change});

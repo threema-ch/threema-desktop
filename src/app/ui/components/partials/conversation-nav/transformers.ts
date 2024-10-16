@@ -26,10 +26,18 @@ export function conversationListItemSetStoreToConversationPreviewListPropsStore(
         ([{currentValue: conversationListItemSet}], getAndSubscribe) => ({
             items: [...conversationListItemSet]
                 // Remove deleted / hidden conversations.
-                .filter(
-                    (conversation) =>
-                        getAndSubscribe(conversation.viewModelStore).lastUpdate !== undefined,
-                )
+                .filter((conversation) => {
+                    const receiver = conversation.viewModelStore.get().receiver;
+                    return (
+                        getAndSubscribe(conversation.viewModelStore).lastUpdate !== undefined ||
+                        // This is a sanity check. When a contact is deleted, last updated is set to
+                        // undefined anyway.
+                        !(
+                            receiver.type === 'contact' &&
+                            receiver.acquaintanceLevel === 'group-or-deleted'
+                        )
+                    );
+                })
                 .sort((a, b) =>
                     conversationCompareFn(
                         getAndSubscribe(a.viewModelStore),

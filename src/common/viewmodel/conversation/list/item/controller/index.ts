@@ -47,7 +47,7 @@ export class ConversationListItemViewModelController
     /** @inheritdoc */
     public clear(): void {
         this._conversation.get().controller.removeAllStatusMessages.direct();
-        return this._conversation.get().controller.removeAllMessages.direct();
+        this._conversation.get().controller.removeAllMessages.direct();
     }
 
     /** @inheritdoc */
@@ -57,7 +57,7 @@ export class ConversationListItemViewModelController
 
         // Soft-delete the conversation (i.e., the conversation is kept in the database but is not
         // shown in the conversation list anymore).
-        return this._conversation.get().controller.update.direct({lastUpdate: undefined});
+        this._conversation.get().controller.update.direct({lastUpdate: undefined});
     }
 
     /** @inheritdoc */
