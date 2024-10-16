@@ -4635,7 +4635,7 @@ export default function (
     ).map(([key, nonce, plain, encrypted]) => [
         wrapRawKey(base64ToU8a(key), NACL_CONSTANTS.KEY_LENGTH).asReadonly(),
         base64ToU8a(nonce) as Nonce,
-        base64ToU8a(plain, plainHeadroom) as RawPlainData,
-        base64ToU8a(encrypted, encryptedHeadroom) as RawEncryptedData,
+        base64ToU8a(plain, {headroom: plainHeadroom}) as RawPlainData,
+        base64ToU8a(encrypted, {headroom: encryptedHeadroom}) as RawEncryptedData,
     ]);
 }

@@ -1563,7 +1563,7 @@ export default function (
     ).map(([publicKey, secretKey, plain, encrypted]) => [
         base64ToU8a(publicKey) as ReadonlyUint8Array as PublicKey,
         wrapRawKey(base64ToU8a(secretKey), NACL_CONSTANTS.KEY_LENGTH).asReadonly(),
-        base64ToU8a(plain, plainHeadroom) as RawPlainData,
-        base64ToU8a(encrypted, encryptedHeadroom) as RawEncryptedData,
+        base64ToU8a(plain, {headroom: plainHeadroom}) as RawPlainData,
+        base64ToU8a(encrypted, {headroom: encryptedHeadroom}) as RawEncryptedData,
     ]);
 }

@@ -1,12 +1,17 @@
-import type {ReadonlyUint8Array} from '~/common/types';
+import type {ReadonlyUint8Array, u53} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
 
 // These exist both in DOM and Node
 declare function atob(data: string): string;
 declare function btoa(data: string): string;
 
-export interface Base64Options {
+interface Base64Options {
     readonly urlSafe?: boolean;
+}
+
+interface Base64ToU8Options {
+    // Amount of 0-padded bytes to be left upfront.
+    readonly headroom?: u53;
 }
 
 /**
@@ -29,16 +34,17 @@ export function u8aToBase64(array: ReadonlyUint8Array, options?: Base64Options):
  * Decode a base 64 string into a Uint8Array.
  *
  * @param base64String Input base64 string to be decoded.
- * @param headroom Amount of 0-padded bytes to be left upfront. Defaults to `0`.
+ * @param options Optional options for the transformation.
  * @returns Output byte array.
  */
-export function base64ToU8a(base64String: string, headroom = 0): Uint8Array {
+export function base64ToU8a(base64String: string, options: Base64ToU8Options = {}): Uint8Array {
     let decoded;
     try {
         decoded = atob(base64String);
     } catch (error) {
         throw new Error(`Failed to decode base64 string: ${error}`);
     }
+    const headroom = options.headroom ?? 0;
     const array = new Uint8Array(headroom + decoded.length);
     const view = array.subarray(headroom);
     for (let index = 0; index < decoded.length; ++index) {

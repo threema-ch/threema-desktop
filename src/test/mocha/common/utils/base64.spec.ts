@@ -35,9 +35,9 @@ export function run(): void {
             });
 
             it('allows specifying headroom', function () {
-                const decoded0 = base64ToU8a('AQID', 0);
-                const decoded2 = base64ToU8a('AQID', 2);
-                const decoded5 = base64ToU8a('AQID', 5);
+                const decoded0 = base64ToU8a('AQID', {headroom: 0});
+                const decoded2 = base64ToU8a('AQID', {headroom: 2});
+                const decoded5 = base64ToU8a('AQID', {headroom: 5});
                 expect(decoded0).to.byteEqual(Uint8Array.of(1, 2, 3));
                 expect(decoded2).to.byteEqual(Uint8Array.of(0, 0, 1, 2, 3));
                 expect(decoded5).to.byteEqual(Uint8Array.of(0, 0, 0, 0, 0, 1, 2, 3));
