@@ -1084,7 +1084,7 @@ export class ConversationModelController implements ConversationController {
             return;
         }
         this._log.info(
-            `Promoting contact from AcquaintanceLevel.GROUP to AcquaintanceLevel.DIRECT: ${receiver.view.identity}`,
+            `Promoting contact from AcquaintanceLevel.GROUP_OR_DELETED to AcquaintanceLevel.DIRECT: ${receiver.view.identity}`,
         );
 
         switch (scope.source) {

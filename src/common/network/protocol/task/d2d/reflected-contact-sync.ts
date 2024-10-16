@@ -34,10 +34,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
         private readonly _services: ServicesForTasks,
         private readonly _message: protobuf.d2d.ContactSync,
     ) {
-        const identity =
-            _message.create?.contact?.identity ??
-            _message.update?.contact?.identity ??
-            _message.delete?.deleteIdentity;
+        const identity = _message.create?.contact?.identity ?? _message.update?.contact?.identity;
         this._log = _services.logging.logger(
             `network.protocol.task.in-contact-sync.${
                 isIdentityString(identity) ? identity : 'unknown'
@@ -70,9 +67,6 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
             case 'update':
                 identity = validatedMessage.update.contact.identity;
                 break;
-            case 'delete':
-                identity = validatedMessage.delete.deleteIdentity;
-                break;
             default:
                 unreachable(validatedMessage);
         }
@@ -93,7 +87,6 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
                 }
                 return;
             }
-
             case 'update': {
                 if (contact === undefined) {
                     this._log.error("Discarding 'update' message for unknown contact");
@@ -108,21 +101,6 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
                 } catch (error) {
                     this._log.error(`Update to update contact: ${error}`);
                     return;
-                }
-                return;
-            }
-
-            case 'delete': {
-                if (contact === undefined) {
-                    this._log.error("Discarding 'delete' message for unknown contact");
-                    return;
-                }
-                try {
-                    contact.get().controller.remove.fromSync(handle);
-                } catch (error) {
-                    this._log.error(
-                        `Discarding 'delete' message, failed to remove contact: ${error}`,
-                    );
                 }
                 return;
             }

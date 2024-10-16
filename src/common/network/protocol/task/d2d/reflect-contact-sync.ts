@@ -371,16 +371,6 @@ async function getD2dContactSyncUpdateProfilePicture(
     });
 }
 
-function getD2dContactSyncDelete(identity: IdentityString): protobuf.d2d.ContactSync {
-    return protobuf.utils.creator(protobuf.d2d.ContactSync, {
-        create: undefined,
-        update: undefined,
-        delete: protobuf.utils.creator(protobuf.d2d.ContactSync.Delete, {
-            deleteIdentity: identity,
-        }),
-    });
-}
-
 export interface ContactSyncCreate {
     readonly type: 'create';
     readonly contact: ContactInit;
@@ -400,16 +390,12 @@ export interface ContactSyncUpdateProfilePicture {
     readonly identity: IdentityString;
     readonly profilePicture: ProfilePictureUpdate;
 }
-export interface ContactSyncDelete {
-    readonly type: 'delete';
-    readonly identity: IdentityString;
-}
+
 export type ContactSyncVariant =
     | ContactSyncCreate
     | ContactSyncUpdateData
     | ContactConversationSyncUpdateData
-    | ContactSyncUpdateProfilePicture
-    | ContactSyncDelete;
+    | ContactSyncUpdateProfilePicture;
 
 /**
  * Reflect contact create/update/delete to other devices in the device group.
@@ -456,9 +442,6 @@ export class ReflectContactSyncTask
                     variant.profilePicture,
                     this._services,
                 );
-                break;
-            case 'delete':
-                contactSync = getD2dContactSyncDelete(variant.identity);
                 break;
             default:
                 unreachable(variant);

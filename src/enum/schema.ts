@@ -631,10 +631,12 @@ export enum AcquaintanceLevel {
      */
     DIRECT = 0,
     /**
-     * The contact is part of a group the user is also part of. The contact was
-     * not explicitly added and no 1:1 conversation has been initiated.
+     * This field has two meanings:
+     * 1. The contact is part of a group the user is also part of. The contact was not explicitly
+     *    added and no 1:1 conversation has been initiated.
+     * 2. The contact has existed once and has been marked as deleted.
      */
-    GROUP = 1,
+    GROUP_OR_DELETED = 1,
 }
 /** @generate convert */
 export enum ActivityState {

@@ -251,8 +251,8 @@ function getAcquaintanceLevelData(contactModel: Contact): AcquaintanceLevelData 
         case AcquaintanceLevel.DIRECT:
             return 'direct';
 
-        case AcquaintanceLevel.GROUP:
-            return 'group';
+        case AcquaintanceLevel.GROUP_OR_DELETED:
+            return 'group-or-deleted';
 
         default:
             return unreachable(contactModel.view.acquaintanceLevel);
@@ -516,7 +516,7 @@ export async function updateReceiverData<TReceiver extends AnyReceiver>(
     }
 }
 
-type AcquaintanceLevelData = 'direct' | 'group';
+type AcquaintanceLevelData = 'direct' | 'group-or-deleted';
 
 type NotificationPolicyData =
     | DefaultNotificationPolicyData

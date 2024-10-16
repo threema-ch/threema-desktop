@@ -709,17 +709,6 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     readonly updateContact: (contact: DbUpdate<DbContact>) => void;
 
     /**
-     * Remove the specified contact, its conversation and all associated messages. Return whether
-     * the contact was found and removed.
-     *
-     * The caller must ensure that the contact is not member of any groups or distribution lists at
-     * this point.
-     *
-     * @throws if contact is still a member of a group or distribution list
-     */
-    readonly removeContact: (uid: DbRemove<DbContact>) => boolean;
-
-    /**
      * Return the uid for all contacts.
      */
     readonly getAllContactUids: () => DbList<DbContact, 'uid'>;
@@ -793,7 +782,7 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      *
      * Returns the number of removed group members (0 or 1).
      *
-     * TODO(DESK-538): When contact with AcquaintanceLevel.GROUP is removed from the last group, delete it
+     * TODO(DESK-538): When contact with AcquaintanceLevel.GROUP_OR_DELETED is removed from the last group, delete it
      */
     readonly removeGroupMember: (groupUid: DbGroupUid, contactUid: DbContactUid) => u53;
 

@@ -1657,19 +1657,21 @@ export namespace AcquaintanceLevel {
      * the contact has been initiated.
      */
     export type DIRECT = typeof DIRECT;
-    export const GROUP = 1;
+    export const GROUP_OR_DELETED = 1;
     /**
-     * The contact is part of a group the user is also part of. The contact was
-     * not explicitly added and no 1:1 conversation has been initiated.
+     * This field has two meanings:
+     * 1. The contact is part of a group the user is also part of. The contact was not explicitly
+     *    added and no 1:1 conversation has been initiated.
+     * 2. The contact has existed once and has been marked as deleted.
      */
-    export type GROUP = typeof GROUP;
+    export type GROUP_OR_DELETED = typeof GROUP_OR_DELETED;
 }
 /** @generate convert */
 export type AcquaintanceLevel = (typeof AcquaintanceLevel)[keyof typeof AcquaintanceLevel];
 export namespace AcquaintanceLevelUtils {
     export const ALL: ReadonlySet<AcquaintanceLevel> = new Set([
         AcquaintanceLevel.DIRECT,
-        AcquaintanceLevel.GROUP,
+        AcquaintanceLevel.GROUP_OR_DELETED,
     ] as const);
     export function fromNumber(value: u53, fallback?: AcquaintanceLevel): AcquaintanceLevel {
         if ((ALL as ReadonlySet<u53>).has(value)) {

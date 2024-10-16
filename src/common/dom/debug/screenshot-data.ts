@@ -167,16 +167,18 @@ const TEST_CONTACT_SCHEMA = v
                 .rest(v.unknown()),
         ),
         verificationLevel: v.number().map((value) => VerificationLevelUtils.fromNumber(value)),
-        acquaintanceLevel: v.union(v.literal('DIRECT'), v.literal('GROUP')).map((value) => {
-            switch (value) {
-                case 'DIRECT':
-                    return AcquaintanceLevel.DIRECT;
-                case 'GROUP':
-                    return AcquaintanceLevel.GROUP;
-                default:
-                    return unreachable(value);
-            }
-        }),
+        acquaintanceLevel: v
+            .union(v.literal('DIRECT'), v.literal('GROUP_OR_DELETED'))
+            .map((value) => {
+                switch (value) {
+                    case 'DIRECT':
+                        return AcquaintanceLevel.DIRECT;
+                    case 'GROUP_OR_DELETED':
+                        return AcquaintanceLevel.GROUP_OR_DELETED;
+                    default:
+                        return unreachable(value);
+                }
+            }),
         identityType: v.union(v.literal('WORK'), v.literal('REGULAR')).map((value) => {
             switch (value) {
                 case 'WORK':

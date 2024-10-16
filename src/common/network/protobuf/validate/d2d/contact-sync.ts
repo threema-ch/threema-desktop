@@ -4,7 +4,6 @@ import {d2d} from '~/common/network/protobuf/js';
 import {validator} from '~/common/network/protobuf/utils';
 import {NULL_OR_UNDEFINED_SCHEMA} from '~/common/network/protobuf/validate/helpers';
 import * as Contact from '~/common/network/protobuf/validate/sync/contact';
-import {ensureIdentityString} from '~/common/network/types';
 
 /** Base schema for an {@link d2d.ContactSync} oneof instance */
 const BASE_SCHEMA = {
@@ -29,19 +28,5 @@ const SCHEMA_UPDATE = v
     })
     .rest(v.unknown());
 
-const SCHEMA_DELETE = v
-    .object({
-        ...BASE_SCHEMA,
-        action: v.literal('delete'),
-        delete: validator(
-            d2d.ContactSync.Delete,
-            v.object({deleteIdentity: v.string().map(ensureIdentityString)}),
-        ),
-    })
-    .rest(v.unknown());
-
-export const SCHEMA = validator(
-    d2d.ContactSync,
-    v.union(SCHEMA_CREATE, SCHEMA_UPDATE, SCHEMA_DELETE),
-);
+export const SCHEMA = validator(d2d.ContactSync, v.union(SCHEMA_CREATE, SCHEMA_UPDATE));
 export type Type = v.Infer<typeof SCHEMA>;

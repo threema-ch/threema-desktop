@@ -463,65 +463,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public removeContact(uid: DbRemove<DbContact>): boolean {
-        return this._db.syncTransaction(() => {
-            // Remove the conversation first. This implicitly removes any associated messages.
-            sync(
-                this._db
-                    .deleteFrom(tConversation)
-                    .where(tConversation.contactUid.equals(uid))
-                    .executeDelete(),
-            );
-
-            // Next, remove all remaining messages from this user (e.g. in group conversations)
-            // TODO(DESK-770): Ensure that group messages don't get silently deleted when removing a contact
-            sync(
-                this._db
-                    .deleteFrom(tMessage)
-                    .where(tMessage.senderContactUid.equals(uid))
-                    .executeDelete(),
-            );
-
-            // Delete all inactive groups where the contact to be deleted is the creator. Note: This
-            // will not update the corresponding stores, so that the UI might be inconsistent until
-            // reload.
-            // TODO(DESK-770): Do not automatically delete these groups.
-            const groupUids = sync(
-                this._db
-                    .selectFrom(tGroup)
-                    .where(
-                        tGroup.creatorUid
-                            .equals(uid)
-                            .and(tGroup.userState.notEquals(GroupUserState.MEMBER)),
-                    )
-                    .selectOneColumn(tGroup.uid)
-                    .executeSelectMany(),
-            );
-            for (const groupUid of groupUids) {
-                // Remove the conversation first. This implicitly removes any associated messages.
-                sync(
-                    this._db
-                        .deleteFrom(tConversation)
-                        .where(tConversation.groupUid.equals(groupUid))
-                        .executeDelete(),
-                );
-
-                // Now, remove the group
-                sync(
-                    this._db.deleteFrom(tGroup).where(tGroup.uid.equals(groupUid)).executeDelete(),
-                );
-            }
-
-            // Now, remove the contact
-            return (
-                sync(
-                    this._db.deleteFrom(tContact).where(tContact.uid.equals(uid)).executeDelete(),
-                ) > 0
-            );
-        }, this._log);
-    }
-
-    /** @inheritdoc */
     public getAllContactUids(): DbList<DbContact, 'uid'> {
         return sync(this._db.selectFrom(tContact).select({uid: tContact.uid}).executeSelectMany());
     }
@@ -724,7 +665,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .selectFrom(tGroup)
                 .leftJoin(groupMemberLeftJoin)
                 .on(
-                    // TODO(DESK-770): Do not take into account only active groups
                     tGroup.uid
                         .equals(groupMemberLeftJoin.groupUid)
                         .and(tGroup.userState.equals(GroupUserState.MEMBER)),

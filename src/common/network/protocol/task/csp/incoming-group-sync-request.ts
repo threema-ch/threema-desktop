@@ -79,7 +79,7 @@ export class IncomingGroupSyncRequestTask
             this._log.debug('Received group sync request from unknown user. Adding user.');
             senderContact = await model.contacts.add.fromRemote(handle, {
                 ...this._senderContactOrInit,
-                acquaintanceLevel: AcquaintanceLevel.GROUP,
+                acquaintanceLevel: AcquaintanceLevel.GROUP_OR_DELETED,
             });
         }
 

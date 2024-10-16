@@ -80,17 +80,6 @@ export type ContactController = ReceiverController & {
      * Update the contact.
      */
     readonly update: ControllerUpdateFromSource<[change: ContactUpdate]>;
-
-    /**
-     * Remove the contact and the corresponding conversation, and deactivate the controller.
-     */
-    readonly remove: Omit<ControllerUpdateFromSource, 'fromRemote'>;
-
-    /**
-     * Informs whether a contact can be deleted. Currently a user is only deletable if it does not
-     * belong to any active group. This might change with DESK-770.
-     */
-    readonly isRemovable: () => boolean;
 } & ProxyMarked;
 export type Contact = Model<ContactView, ContactController, UidOf<DbContact>, ReceiverType.CONTACT>;
 

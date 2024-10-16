@@ -81,7 +81,7 @@ export class IncomingGroupLeaveTask extends GroupLeaveTaskBase<ActiveTaskCodecHa
         this._log.debug('Received group leave from unknown user. Adding user.');
         return await model.contacts.add.fromRemote(handle, {
             ...this._senderContactOrInit,
-            acquaintanceLevel: AcquaintanceLevel.GROUP,
+            acquaintanceLevel: AcquaintanceLevel.GROUP_OR_DELETED,
         });
     }
 

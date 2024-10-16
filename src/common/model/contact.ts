@@ -248,24 +248,6 @@ function update(services: ServicesForModel, change: Exact<ContactUpdate>, uid: D
     db.updateContact({...change, uid});
 }
 
-function isRemovable(services: ServicesForModel, uid: DbContactUid): boolean {
-    const {db} = services;
-    const groupsWithContactAsMember = db.getAllCommonGroupsByContact(uid);
-    return groupsWithContactAsMember.length === 0;
-}
-
-function remove(services: ServicesForModel, uid: DbContactUid): void {
-    const {db} = services;
-
-    // Remove the contact
-    //
-    // Note: This implicitly removes the associated conversation and all of its associated
-    //       messages. The contact may not be part of any groups at this point.
-    assert(isRemovable(services, uid), 'The contact may not be part of any groups at this point.');
-    db.removeContact(uid);
-    cache.remove(uid);
-}
-
 function all(services: ServicesForModel): LocalSetStore<ModelStore<Contact>> {
     return cache.setRef.derefOrCreate(() => {
         const {db, logging} = services;
@@ -299,12 +281,17 @@ export class ContactModelController implements ContactController {
             this._log.debug('ContactModelController: Update from local');
 
             // When editing a contact with acquaintance level GROUP, we want the contact to be
-            // visible in the contact list, so we change the acquaintance level to DIRECT.
+            // visible in the contact list, so we change the acquaintance level to DIRECT. The sole
+            // exception is when the contact is deleted, i.e the change contains
+            // `acquaintanceLevel.DIRECT`.
             const currentAcquaintanceLevel = this.lifetimeGuard.run(
                 (contactStoreHandle) => contactStoreHandle.view().acquaintanceLevel,
             );
-            if (currentAcquaintanceLevel === AcquaintanceLevel.GROUP) {
-                change = {acquaintanceLevel: AcquaintanceLevel.DIRECT, ...change};
+            if (
+                change.acquaintanceLevel !== AcquaintanceLevel.GROUP_OR_DELETED &&
+                currentAcquaintanceLevel === AcquaintanceLevel.GROUP_OR_DELETED
+            ) {
+                change = {...change, acquaintanceLevel: AcquaintanceLevel.DIRECT};
             }
 
             return await this._updateAsync({source: TriggerSource.LOCAL}, change);
@@ -317,47 +304,6 @@ export class ContactModelController implements ContactController {
             this._log.debug('ContactModelController: Update from sync');
             this._update(change);
         },
-    };
-
-    public readonly remove: ContactController['remove'] = {
-        [TRANSFER_HANDLER]: PROXY_HANDLER,
-
-        fromLocal: async () => {
-            const {taskManager} = this._services;
-
-            await this._lock.with(async () => {
-                // Precondition: Abort if the contact has already been removed (and consequently
-                // disabled the contact's controller) or if the contact is still member of any
-                // group.
-                const precondition = (): boolean =>
-                    this.lifetimeGuard.active.get() && this._isRemovable();
-
-                // Reflect contact removal to other devices inside a transaction
-                const result = await taskManager.schedule(
-                    new ReflectContactSyncTransactionTask(this._services, precondition, {
-                        type: 'delete',
-                        identity: this._identity,
-                    }),
-                );
-
-                // Commit removal, if necessary
-                switch (result) {
-                    case 'success':
-                        // Remove locally
-                        this._remove();
-                        break;
-                    case 'aborted':
-                        // Local contact already removed.
-                        //
-                        // Note: This can only happen because another device synchronized removal of this contact.
-                        return;
-                    default:
-                        unreachable(result);
-                }
-            });
-        },
-
-        fromSync: (handle) => this._remove(),
     };
 
     private readonly _lookup: DbContactReceiverLookup;
@@ -397,11 +343,6 @@ export class ContactModelController implements ContactController {
     /** @inheritdoc */
     public conversation(): ModelStore<Conversation> {
         return this._conversation();
-    }
-
-    /** @inheritdoc */
-    public isRemovable(): boolean {
-        return isRemovable(this._services, this._lookup.uid);
     }
 
     /**
@@ -459,33 +400,6 @@ export class ContactModelController implements ContactController {
                 default:
                     unreachable(result);
             }
-        });
-    }
-
-    private _isRemovable(): boolean {
-        if (isRemovable(this._services, this.uid)) {
-            return true;
-        }
-        this._log.warn(`Unable to delete contact because it is still member of one or more groups`);
-        return false;
-    }
-
-    /**
-     * Locally remove the contact, deactivate and purge the conversation and all of its messages
-     * from their respective caches, and remove the conversation and all of its messages in the
-     * database. The contact may not be part of any groups at this point.
-     */
-    private _remove(): void {
-        assert(this._isRemovable(), 'The contact may not be part of any groups at this point.');
-
-        this.lifetimeGuard.deactivate(() => {
-            // Deactivate and purge the conversation and all of its messages
-            // from their respective caches
-            conversation.deactivateAndPurgeCacheCascade(this._lookup, this.conversation());
-
-            // Now, remove the contact. This implicitly removes the
-            // conversation and all of its messages in the database.
-            remove(this._services, this.uid);
         });
     }
 
@@ -624,11 +538,6 @@ export class ContactModelRepository implements ContactRepository {
         return all(this._services);
     }
 
-    /** @inheritdoc */
-    public remove(uid: DbContactUid): void {
-        return remove(this._services, uid);
-    }
-
     private _assertNotOwnIdentity(init: ContactInit): void {
         if (init.identity === this._services.device.identity.string) {
             throw new Error('The user cannot add themself as contact.');
@@ -660,12 +569,12 @@ export class ContactModelRepository implements ContactRepository {
             verificationLevel: VerificationLevel.FULLY_VERIFIED,
             workVerificationLevel: WorkVerificationLevel.NONE,
             identityType: IdentityType.REGULAR,
-            // Note: Semantics of "AcquaintanceLevel.GROUP" are not quite correct, but since the
+            // Note: Semantics of "AcquaintanceLevel.GROUP_OR_DELETED" are not quite correct, but since the
             // behavior should be exactly the same as for group contacts, this should be fine for
             // now.
             acquaintanceLevel: predefinedContact.visibleInContactList
                 ? AcquaintanceLevel.DIRECT
-                : AcquaintanceLevel.GROUP,
+                : AcquaintanceLevel.GROUP_OR_DELETED,
             featureMask: identityData.featureMask,
             syncState: SyncState.INITIAL,
             activityState: identityData.state ?? ActivityState.ACTIVE,

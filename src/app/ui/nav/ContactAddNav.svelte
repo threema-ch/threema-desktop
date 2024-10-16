@@ -77,7 +77,7 @@
 
       if (
         contactStore === undefined ||
-        contactStore.get().view.acquaintanceLevel === AcquaintanceLevel.GROUP
+        contactStore.get().view.acquaintanceLevel === AcquaintanceLevel.GROUP_OR_DELETED
       ) {
         navigateToContactDetails(identityData);
       } else {

@@ -54,12 +54,12 @@
       contactStore = await addContact();
     } else {
       // Normally when we arrive here contactStore.get().view.acquaintanceLevel will be equal to
-      // AcquaintanceLevel.GROUP most of the time (i.e. contact exists from a group, but is not
-      // shown in the contact list). This is checked in the previous component before allowing to
-      // navigate to here. However, under some circumstances (e.g. already synced in another device
-      // while on the contact details component) it could happen that acquaintanceLevel is
-      // AcquaintanceLevel.DIRECT (i.e. contact already exists in contactlist!). In that case, we
-      // simply override existing data (firstname / lastname).
+      // AcquaintanceLevel.GROUP_OR_DELETED most of the time (i.e. contact exists from a group, but
+      // is not shown in the contact list or has been marked as deleted). This is checked in the
+      // previous component before allowing to navigate to here. However, under some circumstances
+      // (e.g. already synced in another device while on the contact details component) it could
+      // happen that acquaintanceLevel is AcquaintanceLevel.DIRECT (i.e. contact already exists in
+      // contactlist!). In that case, we simply override existing data (firstname / lastname).
       await contactStore.get().controller.update.fromLocal({
         acquaintanceLevel: AcquaintanceLevel.DIRECT,
         lastName,

@@ -407,25 +407,18 @@ export function backendTests(
             expect(contact2?.uid).to.equal(uid2);
         });
 
-        it('removeContact / hasContactByIdentity', function () {
+        it('hasContactByIdentity', function () {
             // Add two contacts
             const uid = makeContact(db, {identity: 'TESTTEST'});
-            makeContact(db, {identity: 'ABCDEFGH'});
 
             // Ensure that test contact and its conversation can be found
-            expect(db.hasContactByIdentity('TESTTEST' as IdentityString)).not.to.be.undefined;
+            expect(db.hasContactByIdentity(ensureIdentityString('TESTTEST'))).not.to.be.undefined;
             expect(db.getConversationOfReceiver({type: ReceiverType.CONTACT, uid})).to.not.be
                 .undefined;
-
-            // Remove contact
-            expect(db.removeContact(uid)).to.be.true;
-
-            // Ensure that test contact and its conversation is gone
-            expect(db.hasContactByIdentity('TESTTEST' as IdentityString)).to.be.undefined;
-            expect(db.getConversationOfReceiver({type: ReceiverType.CONTACT, uid})).to.be.undefined;
-
-            // Removing contact again does nothing
-            expect(db.removeContact(uid)).to.be.false;
+            const uid2 = makeContact(db, {identity: 'ABCDEFGH'});
+            expect(db.hasContactByIdentity(ensureIdentityString('ABCDEFGH'))).to.not.be.undefined;
+            expect(db.getConversationOfReceiver({type: ReceiverType.CONTACT, uid: uid2})).to.not.be
+                .undefined;
         });
 
         it('updateContact / getContactByUid', function () {
@@ -451,10 +444,10 @@ export function backendTests(
             );
 
             // Update contact
-            db.updateContact({uid, acquaintanceLevel: AcquaintanceLevel.GROUP});
+            db.updateContact({uid, acquaintanceLevel: AcquaintanceLevel.GROUP_OR_DELETED});
             contact = db.getContactByUid(uid);
             assert(contact !== undefined);
-            expect(contact.acquaintanceLevel).to.equal(AcquaintanceLevel.GROUP);
+            expect(contact.acquaintanceLevel).to.equal(AcquaintanceLevel.GROUP_OR_DELETED);
             expect(contact.notificationTriggerPolicyOverride).to.deep.equal(
                 notificationTriggerPolicyOverride,
             );
@@ -463,11 +456,11 @@ export function backendTests(
             db.updateContact({uid, notificationTriggerPolicyOverride: undefined});
             contact = db.getContactByUid(uid);
             assert(contact !== undefined);
-            expect(contact.acquaintanceLevel).to.equal(AcquaintanceLevel.GROUP);
+            expect(contact.acquaintanceLevel).to.equal(AcquaintanceLevel.GROUP_OR_DELETED);
             expect(contact.notificationTriggerPolicyOverride).to.equal(undefined);
         });
 
-        it('removeContact / getAllContactUids', function () {
+        it('getAllContactUids', function () {
             // Add two contacts
             const identities = ['TESTTEST' as IdentityString, 'ABCDEFGH' as IdentityString];
             const [uid1, uid2] = identities.map((identity) => makeContact(db, {identity}));
@@ -478,17 +471,6 @@ export function backendTests(
                 uid1,
                 uid2,
             ]);
-
-            // Remove first contact
-            expect(db.removeContact(uid1)).to.be.true;
-
-            // First contact is gone
-            expect(db.getAllContactUids().map((contact) => contact.uid)).to.have.same.members([
-                uid2,
-            ]);
-
-            // Removing again does nothing
-            expect(db.removeContact(uid1)).to.be.false;
         });
     });
 
@@ -583,12 +565,6 @@ export function backendTests(
             // Expect two conversation receivers
             expect(db.getAllConversationReceivers().map(({receiver}) => receiver)).to.deep.equal([
                 {type: ReceiverType.CONTACT, uid: uid1},
-                {type: ReceiverType.CONTACT, uid: uid2},
-            ]);
-
-            // Remove the first contact and expect only the second conversation receiver
-            db.removeContact(uid1);
-            expect(db.getAllConversationReceivers().map(({receiver}) => receiver)).to.deep.equal([
                 {type: ReceiverType.CONTACT, uid: uid2},
             ]);
         });
@@ -858,29 +834,6 @@ export function backendTests(
             expect(group.notificationTriggerPolicyOverride?.expiresAt?.toISOString()).to.equal(
                 now.toISOString(),
             );
-        });
-
-        it('removeContact ensures that no group membership is active', function () {
-            // Add contact
-            const contactUid = makeContact(db, {identity: 'TESTTEST'});
-
-            // Add group with this contact
-            const groupUid = makeGroup(
-                db,
-                {
-                    creatorUid: undefined,
-                },
-                [contactUid],
-            );
-
-            // Removing contact should fail
-            expect(() => db.removeContact(contactUid)).to.throw;
-
-            // Delete group
-            expect(db.removeGroup(groupUid)).to.be.true;
-
-            // Now removing contact should succeed
-            expect(db.removeContact(contactUid)).to.be.true;
         });
     });
 

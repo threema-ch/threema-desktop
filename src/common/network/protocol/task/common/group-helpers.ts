@@ -104,7 +104,7 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
         log.debug('Received group message from unknown user. Adding user.');
         senderContact = await model.contacts.add.fromRemote(handle, {
             ...senderContactOrInit,
-            acquaintanceLevel: AcquaintanceLevel.GROUP,
+            acquaintanceLevel: AcquaintanceLevel.GROUP_OR_DELETED,
         });
     }
 
@@ -206,7 +206,7 @@ export async function addGroupContacts(
             verificationLevel: VerificationLevel.UNVERIFIED,
             workVerificationLevel: WorkVerificationLevel.NONE,
             identityType: fetched.type,
-            acquaintanceLevel: AcquaintanceLevel.GROUP,
+            acquaintanceLevel: AcquaintanceLevel.GROUP_OR_DELETED,
             featureMask: fetched.featureMask,
             syncState: SyncState.INITIAL,
             activityState: fetched.state ?? ActivityState.ACTIVE,

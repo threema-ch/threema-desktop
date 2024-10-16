@@ -141,7 +141,9 @@ export function groupSetupTests(
         if (mode === 'csp') {
             const memberModel = model.contacts.getByIdentity(member.identity.string);
             assert(memberModel !== undefined, 'User not found');
-            expect(memberModel.get().view.acquaintanceLevel).to.equal(AcquaintanceLevel.GROUP);
+            expect(memberModel.get().view.acquaintanceLevel).to.equal(
+                AcquaintanceLevel.GROUP_OR_DELETED,
+            );
         }
 
         // Ensure creation date is set correctly

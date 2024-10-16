@@ -94,7 +94,7 @@ def convert_contacts(contacts, current_dir, own_identity):
                 in data['name'].items()
             },
             'verificationLevel': data.get('verification', 1) - 1, # Note: Desktop uses 0-2, not 1-3
-            'acquaintanceLevel': 'GROUP' if data.get('hidden', False) else 'DIRECT',
+            'acquaintanceLevel': 'GROUP_OR_DELETED' if data.get('hidden', False) else 'DIRECT',
             'identityType': 'WORK' if data.get('isWork', False) else 'REGULAR',
         }
         assert len(contact['publicKey']) == 64
