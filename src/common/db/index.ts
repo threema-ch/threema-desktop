@@ -781,8 +781,6 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      * Remove a group membership.
      *
      * Returns the number of removed group members (0 or 1).
-     *
-     * TODO(DESK-538): When contact with AcquaintanceLevel.GROUP_OR_DELETED is removed from the last group, delete it
      */
     readonly removeGroupMember: (groupUid: DbGroupUid, contactUid: DbContactUid) => u53;
 

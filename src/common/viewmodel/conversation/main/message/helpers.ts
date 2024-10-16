@@ -23,7 +23,7 @@ export type AnyConversationMessageViewModelBundle =
 /**
  * Data related to a (message) sender.
  *
- * TODO(DESK-770): Remove and replace all usages with `AnySenderData` instead.
+ * TODO(DESK-1640): Remove and replace all usages with `AnySenderData` instead.
  *
  * @deprecated Use {@link AnySender} instead.
  */
@@ -57,7 +57,7 @@ interface MessageStatusDetailData {
 /**
  * Returns data related to the sender of a message for a message viewmodel.
  *
- * TODO(DESK-770): Replace with `getSenderData`.
+ * TODO(DESK-1640): Replace with `getSenderData`.
  *
  * @deprecated Use `getSenderData` here instead.
  */
