@@ -2507,6 +2507,8 @@ export namespace ElectronIpcCommand {
     export type GET_SPELLCHECK = typeof GET_SPELLCHECK;
     export const SET_SPELLCHECK = 'setSpellcheck';
     export type SET_SPELLCHECK = typeof SET_SPELLCHECK;
+    export const GET_TEST_DATA = 'getTestData';
+    export type GET_TEST_DATA = typeof GET_TEST_DATA;
 }
 /**
  * ELECTRON

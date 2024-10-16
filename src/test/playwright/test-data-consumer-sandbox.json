@@ -1,0 +1,13 @@
+{
+  "profile": {
+    "identity": "0YETJAAT",
+    "keyStoragePassword": "CHANGE_ME",
+    "privateKey": "52c9c38e297b57bdf710fade0773ffb46be57efe82164f102b5ec71957d0b0bf"
+  },
+  "serverGroup": "90",
+  "deviceIds": {
+    "d2mDeviceId": 123,
+    "cspDeviceId": 456
+  },
+  "deviceCookie": "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f"
+}

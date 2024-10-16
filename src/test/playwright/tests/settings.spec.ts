@@ -1,6 +1,8 @@
+import path from 'node:path';
+
 import {expect, type ElectronApplication, type Page} from '@playwright/test';
 
-import {test} from '~/test/playwright/common/fixtures/authenticated';
+import {test} from '~/test/playwright/common/fixtures/base';
 import {SettingsPage} from '~/test/playwright/pages/settings.page';
 
 let electronApplication: ElectronApplication;
@@ -15,7 +17,7 @@ test.afterAll(async () => {
     await electronApplication.close();
 });
 
-test('Assert app version', async () => {
+test('Assert app version', async ({screenshotPath}) => {
     // Arrange
     const settingsPage = new SettingsPage(page);
     const version = await electronApplication.evaluate(({app}) => app.getVersion());
@@ -26,9 +28,10 @@ test('Assert app version', async () => {
 
     // Assert
     await expect(page.getByText(version)).toBeVisible();
+    await page.screenshot({path: path.join(screenshotPath, 'assert_app_version.png')});
 });
 
-test('Assert app name', async () => {
+test('Assert app name', async ({screenshotPath}) => {
     // Arrange
     const settingsPage = new SettingsPage(page);
     const name = await electronApplication.evaluate(({app}) => app.getName());
@@ -39,4 +42,5 @@ test('Assert app name', async () => {
 
     // Assert
     await expect(page.getByText(name)).toBeVisible();
+    await page.screenshot({path: path.join(screenshotPath, 'assert_app_name.png')});
 });

@@ -11,6 +11,7 @@ import {
 import {createEndpointService, ensureEndpoint} from '~/common/dom/utils/endpoint';
 import {extractErrorTraceback} from '~/common/error';
 import {TRANSFER_HANDLER} from '~/common/index';
+import type {TestDataJson} from '~/common/test-data';
 import {setAssertFailLogger} from '~/common/utils/assert';
 import {PROXY_HANDLER, type ProxyEndpoint} from '~/common/utils/endpoint';
 import {BACKEND_WORKER_CONFIG} from '~/worker/backend/config';
@@ -75,6 +76,22 @@ export function main(factories: FactoriesForBackend): void {
                 pinForwarder,
                 oldProfileRemover,
                 shouldRestoreOldMessages,
+            );
+        },
+        fromTestConfiguration: async (
+            init: BackendInit,
+            pinForwarder: ProxyEndpoint<PinForwarder>,
+            loadingStateSetup: ProxyEndpoint<LoadingStateSetup>,
+            testData: TestDataJson,
+        ) => {
+            log.info('Creating backend from test configuration');
+            return await Backend.createFromTestConfiguration(
+                init,
+                factories,
+                services,
+                pinForwarder,
+                loadingStateSetup,
+                testData,
             );
         },
     };

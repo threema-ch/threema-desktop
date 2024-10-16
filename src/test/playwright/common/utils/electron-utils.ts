@@ -1,8 +1,10 @@
+import fs from 'node:fs';
 import path from 'node:path';
 
 import * as v from '@badrap/valita';
 import * as ASAR from '@electron/asar';
 
+import {getPersistentAppDataBaseDir} from '~/electron/electron-utils';
 import type {ElectronAppInfo} from '~/test/playwright/common/types/electron-app-info';
 
 import {determineAppName, isValidBuildFlavor, type BuildFlavor} from '../../../../../config/build';
@@ -20,6 +22,25 @@ export function getBuildFlavor(): BuildFlavor {
     }
 
     return process.env.PW_FLAVOR;
+}
+
+export function getTestProfile(): string {
+    if (process.env.PW_PROFILE === undefined) {
+        throw new Error(
+            `Env variable 'PW_PROFILE' is missing, please set it before running playwright tests.`,
+        );
+    }
+    return process.env.PW_PROFILE;
+}
+
+export function getTestDataFile(flavor: BuildFlavor): string {
+    const fileName = `test-data-${flavor}.json`;
+    return path.resolve(path.join('src', 'test', 'playwright', fileName));
+}
+
+export function deleteProfileDirectory(flavor: BuildFlavor, profile: string): void {
+    const profileDirectory = path.join(...getPersistentAppDataBaseDir(), `${flavor}-${profile}`);
+    fs.rmSync(profileDirectory, {recursive: true, force: true});
 }
 
 /**

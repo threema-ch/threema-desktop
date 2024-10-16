@@ -48,6 +48,7 @@ const appApi: ElectronIpc = {
         ipcRenderer.send(ElectronIpcCommand.UPDATE_APP_BADGE, totalUnreadMessageCount),
     updatePublicKeyPins: (publicKeyPins: DomainCertificatePin[]) =>
         ipcRenderer.send(ElectronIpcCommand.UPDATE_PUBLIC_KEY_PINS, publicKeyPins),
+    getTestData: () => ipcRenderer.invoke(ElectronIpcCommand.GET_TEST_DATA),
 };
 /* eslint-enable @typescript-eslint/promise-function-async */
 contextBridge.exposeInMainWorld('app', appApi);

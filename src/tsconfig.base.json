@@ -10,6 +10,7 @@
     // TS config file)
     "baseUrl": ".",
     "paths": {
+      "~/electron/*": ["./electron/*"],
       "~/common/*": ["./common/*"],
       "~/app/*": ["./app/*"],
       "~/test/*": ["./test/*"],

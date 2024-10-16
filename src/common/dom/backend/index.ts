@@ -94,6 +94,7 @@ import {
 import type {DbMigrationSupplements} from '~/common/node/db/migrations';
 import {type NotificationCreator, NotificationService} from '~/common/notification';
 import type {SystemDialogService} from '~/common/system-dialog';
+import type {TestDataJson} from '~/common/test-data';
 import type {DomainCertificatePin, ReadonlyUint8Array, u53} from '~/common/types';
 import {
     assertError,
@@ -103,7 +104,7 @@ import {
     unwrap,
 } from '~/common/utils/assert';
 import {u8aToBase64} from '~/common/utils/base64';
-import {bytesToHex} from '~/common/utils/byte';
+import {bytesToHex, hexToBytes} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 import {
     type EndpointService,
@@ -210,6 +211,14 @@ export interface BackendCreator extends ProxyMarked {
         pinForwarder: ProxyEndpoint<PinForwarder>,
         oldProfileRemover: ProxyEndpoint<OldProfileRemover>,
         shouldRestoreOldMessages: boolean,
+    ) => Promise<ProxyEndpoint<BackendHandle>>;
+
+    /** Instantiate backend from an existing test configuration. */
+    readonly fromTestConfiguration: (
+        init: Remote<BackendInit>,
+        pinForwarder: ProxyEndpoint<PinForwarder>,
+        loadingStateSetup: ProxyEndpoint<LoadingStateSetup>,
+        testData: TestDataJson,
     ) => Promise<ProxyEndpoint<BackendHandle>>;
 }
 
@@ -1035,6 +1044,85 @@ export class Backend {
         endpoint.exposeProxy(backend.handle, local, logging.logger('com.backend'));
         // eslint-disable-next-line @typescript-eslint/return-await
         return endpoint.transfer(remote, [remote]);
+    }
+
+    public static async createFromTestConfiguration(
+        backendInit: BackendInit,
+        factories: FactoriesForBackend,
+        {endpoint, logging}: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
+        pinForwarder: ProxyEndpoint<PinForwarder>,
+        loadingStateSetup: ProxyEndpoint<LoadingStateSetup>,
+        {profile, serverGroup, deviceIds, deviceCookie}: TestDataJson,
+    ): Promise<ProxyEndpoint<BackendHandle>> {
+        // Initialize services that are needed early
+        const phase1Services = initEarlyBackendServicesWithoutConfig(
+            factories,
+            {endpoint, logging},
+            backendInit,
+        );
+
+        // Generate new random database key and keep a copy for key storage
+        const databaseKey = wrapRawDatabaseKey(
+            phase1Services.crypto.randomBytes(new Uint8Array(DATABASE_KEY_LENGTH)),
+        );
+        const databaseKeyForKeyStorage = wrapRawDatabaseKey(databaseKey.unwrap().slice());
+
+        // Create database
+        const config = createDefaultConfig();
+        const db = factories.db(
+            {config},
+            logging.logger('db'),
+            {userIdentity: profile.identity},
+            databaseKey,
+            false,
+        );
+
+        // Create nonces service
+        const nonces = new NonceService(
+            {crypto: phase1Services.crypto, db, logging},
+            new Identity(profile.identity),
+        );
+
+        // Wrap the client key and keep a copy for key storage
+        const rawClientKey = wrapRawClientKey(hexToBytes(profile.privateKey));
+        const rawClientKeyForKeyStorage = wrapRawClientKey(rawClientKey.unwrap().slice());
+
+        // Create new identity data
+        const identityData: IdentityData = {
+            identity: profile.identity,
+            ck: SecureSharedBoxFactory.consume(
+                phase1Services.crypto,
+                nonces,
+                NonceScope.CSP,
+                rawClientKey,
+            ) as ClientKey,
+            serverGroup,
+        };
+
+        // Generate new random device group key
+        const dgkForKeyStorage: RawDeviceGroupKey = wrapRawDeviceGroupKey(
+            phase1Services.crypto.randomBytes(new Uint8Array(32)),
+        );
+
+        await writeKeyStorage(
+            phase1Services,
+            profile.keyStoragePassword,
+            identityData,
+            deviceIds,
+            deviceCookie,
+            rawClientKeyForKeyStorage,
+            dgkForKeyStorage,
+            databaseKeyForKeyStorage,
+        );
+
+        return await Backend.createFromKeyStorage(
+            backendInit,
+            factories,
+            {endpoint, logging},
+            profile.keyStoragePassword,
+            pinForwarder,
+            loadingStateSetup,
+        );
     }
 
     /**

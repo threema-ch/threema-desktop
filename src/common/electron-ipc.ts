@@ -140,4 +140,9 @@ export interface ElectronIpc {
      *   '99+' is displayed automatically by the OS on macOS.
      */
     readonly updateAppBadge: (totalUnreadMessageCount: u53) => void;
+
+    /**
+     * Get the test data.
+     */
+    readonly getTestData: () => Promise<string | undefined>;
 }

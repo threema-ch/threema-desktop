@@ -785,6 +785,7 @@ export enum ElectronIpcCommand {
     UPDATE_PUBLIC_KEY_PINS = 'updatePublicKeyPins',
     GET_SPELLCHECK = 'getSpellcheck',
     SET_SPELLCHECK = 'setSpellcheck',
+    GET_TEST_DATA = 'getTestData',
 }
 
 /**

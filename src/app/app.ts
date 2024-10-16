@@ -36,6 +36,7 @@ import type {ElectronIpc} from '~/common/electron-ipc';
 import {extractErrorTraceback} from '~/common/error';
 import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import type {SettingsService} from '~/common/model/types/settings';
+import {parseTestData, type TestDataJson} from '~/common/test-data';
 import type {DomainCertificatePin, u53} from '~/common/types';
 import {assertUnreachable, setAssertFailLogger, unwrap} from '~/common/utils/assert';
 import {Delayed} from '~/common/utils/delayed';
@@ -410,13 +411,21 @@ async function main(): Promise<() => void> {
         window.app.removeOldProfiles();
     }
 
+    // Parse test data if json file was provided via command line and BUILD_MODE is testing
+    let testDataJson: TestDataJson | undefined = undefined;
+    if (import.meta.env.BUILD_MODE === 'testing') {
+        const testDataString = await window.app.getTestData();
+        testDataJson = testDataString !== undefined ? parseTestData(testDataString) : undefined;
+    }
+
     log.info('Instantiating Backend');
     // Instantiate backend
-    const [backend, isNewIdentity] = await BackendController.create(
+    const [backend, identityIsReady] = await BackendController.create(
         oldProfilePath,
         backendControllerServices,
         endpoint.wrap(ensureEndpoint(worker), logging.logger('com.backend-creator')),
         loadingStateStore,
+        testDataJson,
         showLinkingWizard,
         requestUserPassword,
         removeOldProfiles,
@@ -468,8 +477,8 @@ async function main(): Promise<() => void> {
     };
     appServices.set(services);
 
-    // If this is an existing identity, resolve `identityReady` promise
-    if (!isNewIdentity) {
+    // If this identity is ready, resolve `identityReady` promise
+    if (identityIsReady) {
         identityReady.resolve();
     }
 

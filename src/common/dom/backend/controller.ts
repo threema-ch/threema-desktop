@@ -24,6 +24,7 @@ import type {DisplayPacket} from '~/common/network/protocol/capture';
 import type {IdentityString} from '~/common/network/types';
 import type {NotificationCreator} from '~/common/notification';
 import type {SystemDialogService} from '~/common/system-dialog';
+import type {TestDataJson} from '~/common/test-data';
 import {assertError, assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, type RemoteProxy, type ProxyEndpoint} from '~/common/utils/endpoint';
 import {ReusablePromise, eternalPromise} from '~/common/utils/promise';
@@ -102,6 +103,7 @@ export class BackendController {
         services: ServicesForBackendController,
         creator: RemoteProxy<BackendCreator>,
         loadingStateStore: WritableStore<LoadingState, LoadingState>,
+        testData: TestDataJson | undefined,
         showLinkingWizard: (
             linkingStateStore: ReadableStore<LinkingState>,
             userPassword: ResolvablePromise<string>,
@@ -113,7 +115,7 @@ export class BackendController {
         removeOldProfiles: () => void,
         forwardPins: PinForwarder['forward'],
         requestMissingWorkCredentialsModal: () => Promise<void>,
-    ): Promise<[controller: BackendController, isNewIdentity: boolean]> {
+    ): Promise<[controller: BackendController, identityIsReady: boolean]> {
         const {endpoint, logging} = services;
         const log = logging.logger('backend-controller');
 
@@ -254,9 +256,9 @@ export class BackendController {
 
         // Create backend from existing key storage (if present).
         log.debug('Waiting for remote backend to be created');
-        const isNewIdentity = !(await creator.hasIdentity());
+        let identityIsReady = false;
         let backendEndpoint;
-        if (!isNewIdentity) {
+        if (await creator.hasIdentity()) {
             let passwordForExistingKeyStorage: string | undefined = await requestUserPassword();
 
             // eslint-disable-next-line no-labels
@@ -269,6 +271,7 @@ export class BackendController {
                         assembleForwardPinCommunication(forwardPins),
                         assembleLoadingStateSetup(loadingStateStore),
                     );
+                    identityIsReady = true;
                 } catch (error) {
                     assertError(
                         error,
@@ -318,6 +321,27 @@ export class BackendController {
                     }
                 }
                 break;
+            }
+        }
+
+        // Create backend from test profile if it was requested and does not exist yet.
+        if (backendEndpoint === undefined && testData !== undefined) {
+            try {
+                backendEndpoint = await creator.fromTestConfiguration(
+                    assembleBackendInit(),
+                    assembleForwardPinCommunication(forwardPins),
+                    assembleLoadingStateSetup(loadingStateStore),
+                    testData,
+                );
+                identityIsReady = true;
+            } catch (error) {
+                assertError(
+                    error,
+                    BackendCreationError,
+                    'Backend creator threw an unexpected error',
+                );
+                const errorMessage = extractErrorMessage(ensureError(error), 'short');
+                throw new Error(`Unexpected error type: ${error.type} (${errorMessage})`);
             }
         }
 
@@ -432,7 +456,7 @@ export class BackendController {
             user: {identity, profilePicture},
         });
 
-        return [backend, isNewIdentity];
+        return [backend, identityIsReady];
     }
 
     /**

@@ -1,5 +1,4 @@
 import * as fs from 'node:fs';
-import * as os from 'node:os';
 import * as path from 'node:path';
 import * as process from 'node:process';
 import {pathToFileURL, URL} from 'node:url';
@@ -46,6 +45,7 @@ import {
 } from '~/common/utils/assert';
 import {base64ToU8a} from '~/common/utils/base64';
 
+import {getPersistentAppDataBaseDir} from './electron-utils';
 import {createTlsCertificateVerifier} from './tls-cert-verifier';
 
 const EXIT_CODE_UNCAUGHT_ERROR = 7;
@@ -78,6 +78,7 @@ const RUN_PARAMETERS_SCHEMA = v.object({
             return v.err('Profile name is only allowed to contain lower-case letters or numbers');
         }),
     'single-instance-lock': RUN_PARAMETER_BOOL_SCHEMA.optional(),
+    'test-data': v.string().optional(),
 });
 type RunParameters = Readonly<v.Infer<typeof RUN_PARAMETERS_SCHEMA>>;
 
@@ -89,6 +90,7 @@ const RUN_PARAMETERS_DOCS: {readonly [K in keyof RunParameters]: string} = {
         '<session-profile-name> – The name of the profile to use. Only lower-case letters and numbers are allowed. "default" by default.',
     'single-instance-lock':
         '<true|false> – Prevent running multiple instances of Threema Desktop at the same time (default: "true"). Development option, disable at your own risk!',
+    'test-data': '<path> – Path to test data including a profile. Used for e2e testing.',
 };
 
 const ABOUT_PANEL_OPTIONS: electron.AboutPanelOptionsOptions = {
@@ -372,49 +374,6 @@ interface MainInit {
 // Initialise the Electron process. Nothing in here (besides `log`) is allowed to modify global
 // state!
 async function init(): Promise<MainInit> {
-    /**
-     * Return the path to the platform-specific application data base directory.
-     *
-     * - Linux / BSD: $XDG_DATA_HOME/ThreemaDesktop/ or ~/.local/share/ThreemaDesktop/
-     * - macOS: ~/Library/Application Support/ThreemaDesktop/
-     * - Windows: %APPDATA%/ThreemaDesktop/
-     * - Other: ~/.ThreemaDesktop/
-     */
-    function getPersistentAppDataBaseDir(): string[] {
-        const rootDirectoryName = 'ThreemaDesktop';
-        switch (process.platform) {
-            case 'linux':
-            case 'freebsd':
-            case 'netbsd':
-            case 'openbsd':
-            case 'sunos': {
-                // Note: Don't use dot notation below, see https://stackoverflow.com/a/72403165/284318
-                // eslint-disable-next-line @typescript-eslint/dot-notation
-                const XDG_DATA_HOME = (process.env['XDG_DATA_HOME'] ?? '').trim();
-                if (XDG_DATA_HOME.length > 0) {
-                    return [XDG_DATA_HOME, rootDirectoryName];
-                }
-                return [os.homedir(), '.local', 'share', rootDirectoryName];
-            }
-            case 'darwin':
-                return [os.homedir(), 'Library', 'Application Support', rootDirectoryName];
-            case 'win32': {
-                // Note: Don't use dot notation below, see https://stackoverflow.com/a/72403165/284318
-                // eslint-disable-next-line @typescript-eslint/dot-notation
-                const appData = process.env['APPDATA'];
-                assert(appData !== undefined && appData !== '', '%APPDATA% is undefined or empty');
-                return [appData, rootDirectoryName];
-            }
-            case 'aix':
-            case 'android':
-            case 'cygwin':
-            case 'haiku':
-                return [os.homedir(), `.${rootDirectoryName}`];
-            default:
-                return unreachable(process.platform);
-        }
-    }
-
     /**
      * Parses the CLI arguments into options:
      */
@@ -715,6 +674,18 @@ function main(
                     electron.app.setBadgeCount(totalUnreadMessageCount);
                 },
             );
+
+        electron.ipcMain.handle(ElectronIpcCommand.GET_TEST_DATA, (event) => {
+            validateSenderFrame(event.senderFrame);
+            const testDataFileName = parameters['test-data'];
+            try {
+                return testDataFileName !== undefined
+                    ? fs.readFileSync(testDataFileName, 'utf8')
+                    : undefined;
+            } catch (error) {
+                throw new Error(`Failed to load test data file: ${testDataFileName}`);
+            }
+        });
         electron.ipcMain.handle(
             ElectronIpcCommand.GET_SYSTEM_INFO,
             // eslint-disable-next-line @typescript-eslint/require-await
