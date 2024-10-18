@@ -3,7 +3,7 @@ import type {AnyReceiver} from '~/common/model';
 import {PROXY_HANDLER, type ProxyMarked} from '~/common/utils/endpoint';
 import {updateReceiverData, type ReceiverUpdateDataFor} from '~/common/viewmodel/utils/receiver';
 
-export interface IContactListItemViewModelController<TReceiver extends AnyReceiver>
+export interface IReceiverListItemViewModelController<TReceiver extends AnyReceiver>
     extends ProxyMarked {
     /**
      * Update the receiver with the provided data.
@@ -11,8 +11,8 @@ export interface IContactListItemViewModelController<TReceiver extends AnyReceiv
     readonly edit: (update: ReceiverUpdateDataFor<TReceiver>) => Promise<void>;
 }
 
-export class ContactListItemViewModelController<TReceiver extends AnyReceiver>
-    implements IContactListItemViewModelController<TReceiver>
+export class ReceiverListItemViewModelController<TReceiver extends AnyReceiver>
+    implements IReceiverListItemViewModelController<TReceiver>
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 

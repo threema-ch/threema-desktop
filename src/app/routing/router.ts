@@ -330,14 +330,17 @@ export class Router extends ReadableStore<RouterState> {
         assert(params.receiverLookup.type !== ReceiverType.DISTRIBUTION_LIST, 'TODO(DESK-236)');
         const current = this.get();
 
+        const withAside = current.aside !== undefined && display.get() === 'large';
+        const asideDefinition =
+            params.receiverLookup.type === ReceiverType.CONTACT
+                ? ROUTE_DEFINITIONS.aside.contactDetails.withParams(params.receiverLookup)
+                : ROUTE_DEFINITIONS.aside.groupDetails.withParams(params.receiverLookup);
+
         // Navigate to the conversation
         this.go({
             ...routes,
             main: ROUTE_DEFINITIONS.main.conversation.withParams(params),
-            aside:
-                current.aside !== undefined && display.get() === 'large'
-                    ? ROUTE_DEFINITIONS.aside.receiverDetails.withParams(params.receiverLookup)
-                    : 'close',
+            aside: withAside ? asideDefinition : 'close',
             modal: 'close',
         });
     }

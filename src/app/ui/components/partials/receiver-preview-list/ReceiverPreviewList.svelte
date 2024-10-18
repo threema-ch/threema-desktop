@@ -2,8 +2,6 @@
   @component Renders a list of preview cards for the given receivers.
 -->
 <script lang="ts" generics="THandlerProps = never">
-  import {createEventDispatcher} from 'svelte';
-
   import type {ConversationRouteParams} from '~/app/ui/components/partials/conversation/types';
   import ReceiverPreview from '~/app/ui/components/partials/receiver-preview-list/internal/receiver-preview/ReceiverPreview.svelte';
   import type {ReceiverPreviewListProps} from '~/app/ui/components/partials/receiver-preview-list/props';
@@ -22,16 +20,13 @@
   export let items: $$Props['items'] = [];
   export let options: NonNullable<$$Props['options']> = {};
   export let services: $$Props['services'];
+  export let onClickReceiverListElement: $$Props['onClickReceiverListElement'] = undefined;
 
   const {router} = services;
 
   let routeParams: ConversationRouteParams | undefined = undefined;
 
   let containerElement: SvelteNullableBinding<HTMLElement> = null;
-
-  const dispatch = createEventDispatcher<{
-    clickitem: DbReceiverLookup;
-  }>();
 
   function handleChangeRouterState(): void {
     const routerState = router.get();
@@ -44,16 +39,18 @@
     }
   }
 
-  function handleClickItem(
+  async function handleClickItem(
     event: MouseEvent,
     receiverLookup?: DbReceiverLookup,
     active?: boolean,
-  ): void {
+  ): Promise<void> {
     event.preventDefault();
     if (receiverLookup === undefined) {
       return;
     }
-    dispatch('clickitem', receiverLookup);
+
+    // Execute side-effects, if any.
+    await onClickReceiverListElement?.(receiverLookup);
 
     if (options.routeOnClick === false) {
       return;
@@ -92,8 +89,8 @@
       }}
       {receiver}
       {services}
-      on:click={(event) =>
-        handleClickItem(
+      on:click={async (event) =>
+        await handleClickItem(
           event.detail,
           receiver.type === 'self' ? undefined : receiver.lookup,
           active,

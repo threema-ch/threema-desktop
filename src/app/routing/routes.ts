@@ -29,6 +29,15 @@ const PARAM_RECEIVER_LOOKUP_SCHEMA = v
     .map((value) => value as DbReceiverLookup);
 
 /**
+ * Information needed to look up a contact.
+ *
+ * Note: Keep this compatible with {@link DbContactReceiverLookup}.
+ */
+const PARAM_CONTACT_LOOKUP_SCHEMA = PARAM_RECEIVER_LOOKUP_SCHEMA.assert(
+    (lookup) => lookup.type === ReceiverType.CONTACT,
+);
+
+/**
  * Information needed to look up a group.
  *
  * Note: Keep this compatible with {@link DbGroupReceiverLookup}.
@@ -394,9 +403,13 @@ export const ROUTE_DEFINITIONS = {
         }),
     },
     aside: {
-        receiverDetails: defineAside({
-            id: 'receiverDetails',
-            params: PARAM_RECEIVER_LOOKUP_SCHEMA,
+        contactDetails: defineAside({
+            id: 'contactDetails',
+            params: PARAM_CONTACT_LOOKUP_SCHEMA,
+        }),
+        groupDetails: defineAside({
+            id: 'groupDetails',
+            params: PARAM_GROUP_LOOKUP_SCHEMA,
         }),
     },
     modal: {

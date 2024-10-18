@@ -65,7 +65,19 @@
   }
 
   function handleClickReceiverCard(): void {
-    router.go({aside: ROUTE_DEFINITIONS.aside.receiverDetails.withParams(receiver.lookup)});
+    switch (receiver.type) {
+      case 'contact':
+        router.go({aside: ROUTE_DEFINITIONS.aside.contactDetails.withParams(receiver.lookup)});
+        break;
+      case 'group':
+        router.go({aside: ROUTE_DEFINITIONS.aside.groupDetails.withParams(receiver.lookup)});
+        break;
+      case 'distribution-list':
+        log.debug('TODO(DESK-236) Distribution List not yet implemented');
+        break;
+      default:
+        unreachable(receiver);
+    }
   }
 
   function handleclickjoincall(event: MouseEvent, intent: 'join' | 'join-or-create'): void {

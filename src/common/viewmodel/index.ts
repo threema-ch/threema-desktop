@@ -1,6 +1,5 @@
 import type {ServicesForBackend} from '~/common/backend';
-import type {DbReceiverLookup} from '~/common/db';
-import {ReceiverType} from '~/common/enum';
+import type {DbContactReceiverLookup, DbGroupReceiverLookup, DbReceiverLookup} from '~/common/db';
 import {TRANSFER_HANDLER} from '~/common/index';
 import type {AnyReceiver} from '~/common/model';
 import type {ConversationModelStore} from '~/common/model/conversation';
@@ -10,24 +9,11 @@ import type {
 } from '~/common/model/types/message';
 import type {ReceiverStoreFor} from '~/common/model/types/receiver';
 import type {AnyStatusMessageModelStore} from '~/common/model/types/status';
-import {unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, type ProxyMarked} from '~/common/utils/endpoint';
 import {WeakValueMap} from '~/common/utils/map';
 import type {LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import type {ViewModelCache} from '~/common/viewmodel/cache';
-import {
-    getContactDetailViewModelBundle,
-    type ContactDetailViewModelBundle,
-} from '~/common/viewmodel/contact/detail';
-import {
-    getContactListViewModelBundle,
-    type ContactListViewModelBundle,
-} from '~/common/viewmodel/contact/list';
-import {
-    getContactListItemViewModelBundle,
-    type ContactListItemViewModelBundle,
-} from '~/common/viewmodel/contact/list/item';
 import {
     getConversationListViewModelBundle,
     type ConversationListViewModelBundle,
@@ -54,6 +40,22 @@ import {
 } from '~/common/viewmodel/conversation/main/message/status-message';
 import {type DebugPanelViewModel, getDebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/viewmodel/profile';
+import {
+    getContactDetailViewModelBundle,
+    type ContactDetailViewModelBundle,
+} from '~/common/viewmodel/receiver/detail/contact';
+import {
+    getGroupDetailViewModelBundle,
+    type GroupDetailViewModelBundle,
+} from '~/common/viewmodel/receiver/detail/group';
+import {
+    getReceiverListViewModelBundle,
+    type ReceiverListViewModelBundle,
+} from '~/common/viewmodel/receiver/list';
+import {
+    getReceiverListItemViewModelBundle,
+    type ReceiverListItemViewModelBundle,
+} from '~/common/viewmodel/receiver/list/item';
 import {getSearchViewModelBundle, type SearchViewModelBundle} from '~/common/viewmodel/search/nav';
 import {
     getSettingsViewModelBundle,
@@ -116,24 +118,29 @@ export interface IViewModelRepository extends ProxyMarked {
     ) => ConversationStatusMessageViewModelBundle;
 
     /**
-     * Returns the {@link ContactListViewModelBundle}.
+     * Returns the {@link ReceiverListViewModelBundle}.
      */
-    readonly contactList: () => ContactListViewModelBundle;
+    readonly receiverList: () => ReceiverListViewModelBundle;
 
     /**
-     * Returns the {@link ContactListItemViewModelBundle} that belongs to the given
+     * Returns the {@link ReceiverListItemViewModelBundle} that belongs to the given
      * {@link receiverModelStore}.
      */
-    readonly contactListItem: <TReceiver extends AnyReceiver>(
+    readonly receiverListItem: <TReceiver extends AnyReceiver>(
         receiverModelStore: ReceiverStoreFor<TReceiver>,
-    ) => ContactListItemViewModelBundle<TReceiver>;
+    ) => ReceiverListItemViewModelBundle<TReceiver>;
 
     /**
-     * Returns the {@link ContactDetailViewModelBundle} that belongs to the given {@link receiver}.
+     * Returns the {@link ContactDetailViewModelBundle} that belongs to the given {@link lookup}.
      */
     readonly contactDetail: (
-        receiver: DbReceiverLookup,
-    ) => ContactDetailViewModelBundle<AnyReceiver> | undefined;
+        lookup: DbContactReceiverLookup,
+    ) => ContactDetailViewModelBundle | undefined;
+
+    /**
+     * Returns the {@link GroupDetailViewModelBundle} that belongs to the given {@link lookup}.
+     */
+    readonly groupDetail: (lookup: DbGroupReceiverLookup) => GroupDetailViewModelBundle | undefined;
 
     readonly user: () => LocalStore<SelfReceiverData>;
 
@@ -243,49 +250,48 @@ export class ViewModelRepository implements IViewModelRepository {
     }
 
     /** @inheritdoc */
-    public contactList(): ContactListViewModelBundle {
-        return this._cache.contactList.derefOrCreate(() =>
-            getContactListViewModelBundle(this._services, this),
+    public receiverList(): ReceiverListViewModelBundle {
+        return this._cache.receiverList.derefOrCreate(() =>
+            getReceiverListViewModelBundle(this._services, this),
         );
     }
 
     /** @inheritdoc */
-    public contactListItem<TReceiver extends AnyReceiver>(
+    public receiverListItem<TReceiver extends AnyReceiver>(
         receiverModelStore: ReceiverStoreFor<TReceiver>,
-    ): ContactListItemViewModelBundle<TReceiver> {
+    ): ReceiverListItemViewModelBundle<TReceiver> {
         // The bundle needs to be cast to `AnyReceiver` in order to add it to the cache, and back to
         // `TReceiver` when it's retrieved, because the cache is shared among all types.
-        return this._cache.contactListItem.getOrCreate(receiverModelStore, () =>
-            getContactListItemViewModelBundle<AnyReceiver>(this._services, receiverModelStore),
-        ) satisfies ContactListItemViewModelBundle<AnyReceiver> as unknown as ContactListItemViewModelBundle<TReceiver>;
+        return this._cache.receiverListItem.getOrCreate(receiverModelStore, () =>
+            getReceiverListItemViewModelBundle<AnyReceiver>(this._services, receiverModelStore),
+        ) satisfies ReceiverListItemViewModelBundle<AnyReceiver> as unknown as ReceiverListItemViewModelBundle<TReceiver>;
     }
 
     /** @inheritdoc */
     public contactDetail(
-        receiver: DbReceiverLookup,
-    ): ContactDetailViewModelBundle<AnyReceiver> | undefined {
-        let receiverModelStore: ReceiverStoreFor<AnyReceiver> | undefined;
-        switch (receiver.type) {
-            case ReceiverType.CONTACT:
-                receiverModelStore = this._services.model.contacts.getByUid(receiver.uid);
-                break;
+        lookup: DbContactReceiverLookup,
+    ): ContactDetailViewModelBundle | undefined {
+        const contactModelStore = this._services.model.contacts.getByUid(lookup.uid);
 
-            case ReceiverType.DISTRIBUTION_LIST:
-                throw new Error('TODO(DESK-771): Implement distribution lists');
-
-            case ReceiverType.GROUP:
-                receiverModelStore = this._services.model.groups.getByUid(receiver.uid);
-                break;
-
-            default:
-                return unreachable(receiver);
-        }
-        if (receiverModelStore === undefined) {
+        if (contactModelStore === undefined) {
             return undefined;
         }
 
-        return this._cache.contactDetail.getOrCreate(receiverModelStore, () =>
-            getContactDetailViewModelBundle(this._services, receiverModelStore),
+        return this._cache.contactDetail.getOrCreate(contactModelStore, () =>
+            getContactDetailViewModelBundle(this._services, contactModelStore),
+        );
+    }
+
+    /** @inheritdoc */
+    public groupDetail(lookup: DbGroupReceiverLookup): GroupDetailViewModelBundle | undefined {
+        const groupModelStore = this._services.model.groups.getByUid(lookup.uid);
+
+        if (groupModelStore === undefined) {
+            return undefined;
+        }
+
+        return this._cache.groupDetail.getOrCreate(groupModelStore, () =>
+            getGroupDetailViewModelBundle(this._services, groupModelStore),
         );
     }
 

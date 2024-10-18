@@ -3,25 +3,22 @@ import {type LocalStore, WritableStore} from '~/common/utils/store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
 import {
     getContactListItemSetStore,
-    getGroupContactListItemSetStore,
-} from '~/common/viewmodel/contact/list/store/helpers';
-import type {ContactListViewModel} from '~/common/viewmodel/contact/list/store/types';
+    getGroupListItemSetStore,
+} from '~/common/viewmodel/receiver/list/store/helpers';
+import type {ReceiverListViewModel} from '~/common/viewmodel/receiver/list/store/types';
 
-export type ContactListViewModelStore = LocalStore<ContactListViewModel & PropertiesMarked>;
+export type ReceiverListViewModelStore = LocalStore<ReceiverListViewModel & PropertiesMarked>;
 
-export function getContactListViewModelStore(
+export function getReceiverListViewModelStore(
     services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
     viewModelRepository: IViewModelRepository,
-): ContactListViewModelStore {
+): ReceiverListViewModelStore {
     const {endpoint} = services;
 
-    const contactListViewModel: ContactListViewModel = {
+    const receiverListViewModel: ReceiverListViewModel = {
         contactListItemSetStore: getContactListItemSetStore(services, viewModelRepository),
-        groupContactListItemSetStore: getGroupContactListItemSetStore(
-            services,
-            viewModelRepository,
-        ),
+        groupContactListItemSetStore: getGroupListItemSetStore(services, viewModelRepository),
     };
 
-    return new WritableStore(endpoint.exposeProperties({...contactListViewModel}));
+    return new WritableStore(endpoint.exposeProperties({...receiverListViewModel}));
 }

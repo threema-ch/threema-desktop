@@ -44,7 +44,7 @@
             uid: sender.uid,
           },
         }),
-        aside: ROUTE_DEFINITIONS.aside.receiverDetails.withParams({
+        aside: ROUTE_DEFINITIONS.aside.contactDetails.withParams({
           type: ReceiverType.CONTACT,
           uid: sender.uid,
         }),

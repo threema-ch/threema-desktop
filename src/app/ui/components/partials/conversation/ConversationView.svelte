@@ -620,7 +620,9 @@
     };
   }
 
-  function handleClickMentionReceiver(event: CustomEvent<DbReceiverLookup>): void {
+  // This function is asynchronous since this is required by `ReceiverPreviewList`
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async function handleClickMentionReceiver(lookup: DbReceiverLookup): Promise<void> {
     if ($viewModelStore?.receiver.type !== 'group') {
       log.error('Mentioning is only allowed in groups');
       return;
@@ -632,8 +634,8 @@
       .find(
         (member): member is ContactReceiverData =>
           member.type === 'contact' &&
-          member.lookup.type === event.detail.type &&
-          member.lookup.uid === event.detail.uid,
+          member.lookup.type === lookup.type &&
+          member.lookup.uid === lookup.uid,
       );
     if (receiver === undefined) {
       log.error("Mentioned receiver couldn't be found in the current group");
@@ -861,6 +863,13 @@
       ? undefined
       : messageSetStoreToMessageListMessagesStore($viewModelStore.messageSetStore, $i18n);
 
+  $: if (
+    $viewModelStore?.receiver.type === 'contact' &&
+    $viewModelStore.receiver.acquaintanceLevel === 'group-or-deleted'
+  ) {
+    router.goToWelcome();
+  }
+
   onMount(() => {
     window.addEventListener('keydown', handleKeyDown);
   });
@@ -1038,7 +1047,7 @@
                     )}
                     options={{routeOnClick: false}}
                     {services}
-                    on:clickitem={handleClickMentionReceiver}
+                    onClickReceiverListElement={handleClickMentionReceiver}
                   />
                 </FocusMoverProvider>
               </div>

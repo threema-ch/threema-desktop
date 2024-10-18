@@ -4,6 +4,7 @@ import type {
     ContextMenuOption,
 } from '~/app/ui/components/hocs/context-menu-provider/types';
 import type {ReceiverPreviewProps} from '~/app/ui/components/partials/receiver-preview-list/internal/receiver-preview/props';
+import type {DbReceiverLookup} from '~/common/db';
 
 /**
  * Props accepted by the `ReceiverPreviewList` component.
@@ -32,6 +33,13 @@ export interface ReceiverPreviewListProps<THandlerProps = undefined> {
         readonly routeOnClick?: boolean;
     };
     readonly services: Pick<AppServicesForSvelte, 'router' | 'settings' | 'profilePicture'>;
+
+    /**
+     * A function that is executed when the user clicks on an element in the receiver preview list.
+     * This is useful if the click has asynchronous side-effects that need to be executed before
+     * routing is triggered.
+     */
+    readonly onClickReceiverListElement?: (lookup: DbReceiverLookup) => Promise<void>;
 }
 
 export interface ReceiverPreviewListItem<THandlerProps>

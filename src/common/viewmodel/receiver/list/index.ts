@@ -1,21 +1,21 @@
 import type {PropertiesMarked} from '~/common/utils/endpoint';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
 import {
-    getContactListViewModelStore,
-    type ContactListViewModelStore,
-} from '~/common/viewmodel/contact/list/store';
+    getReceiverListViewModelStore,
+    type ReceiverListViewModelStore,
+} from '~/common/viewmodel/receiver/list/store';
 
-export interface ContactListViewModelBundle extends PropertiesMarked {
-    readonly viewModelStore: ContactListViewModelStore;
+export interface ReceiverListViewModelBundle extends PropertiesMarked {
+    readonly viewModelStore: ReceiverListViewModelStore;
 }
 
-export function getContactListViewModelBundle(
+export function getReceiverListViewModelBundle(
     services: ServicesForViewModel,
     viewModelRepository: IViewModelRepository,
-): ContactListViewModelBundle {
+): ReceiverListViewModelBundle {
     const {endpoint} = services;
 
-    const viewModelStore = getContactListViewModelStore(services, viewModelRepository);
+    const viewModelStore = getReceiverListViewModelStore(services, viewModelRepository);
 
     return endpoint.exposeProperties({
         viewModelStore,

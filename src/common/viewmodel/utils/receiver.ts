@@ -615,7 +615,7 @@ export interface DistributionListReceiverData extends CommonReceiverData {
     readonly lookup: DbDistributionListReceiverLookup;
 }
 
-interface ContactReceiverUpdateData {
+export interface ContactReceiverUpdateData {
     readonly type: 'contact';
     readonly firstName: string;
     readonly lastName: string;

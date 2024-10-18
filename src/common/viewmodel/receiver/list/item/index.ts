@@ -3,28 +3,28 @@ import type {ReceiverStoreFor} from '~/common/model/types/receiver';
 import type {PropertiesMarked} from '~/common/utils/endpoint';
 import type {ServicesForViewModel} from '~/common/viewmodel';
 import {
-    ContactListItemViewModelController,
-    type IContactListItemViewModelController,
-} from '~/common/viewmodel/contact/list/item/controller';
+    ReceiverListItemViewModelController,
+    type IReceiverListItemViewModelController,
+} from '~/common/viewmodel/receiver/list/item/controller';
 import {
-    getContactListItemViewModelStore,
-    type ContactListItemViewModelStore,
-} from '~/common/viewmodel/contact/list/item/store';
+    getReceiverListItemViewModelStore,
+    type ReceiverListItemViewModelStore,
+} from '~/common/viewmodel/receiver/list/item/store';
 
-export interface ContactListItemViewModelBundle<TReceiver extends AnyReceiver>
+export interface ReceiverListItemViewModelBundle<TReceiver extends AnyReceiver>
     extends PropertiesMarked {
-    readonly viewModelController: IContactListItemViewModelController<TReceiver>;
-    readonly viewModelStore: ContactListItemViewModelStore<TReceiver>;
+    readonly viewModelController: IReceiverListItemViewModelController<TReceiver>;
+    readonly viewModelStore: ReceiverListItemViewModelStore<TReceiver>;
 }
 
-export function getContactListItemViewModelBundle<TReceiver extends AnyReceiver>(
+export function getReceiverListItemViewModelBundle<TReceiver extends AnyReceiver>(
     services: Pick<ServicesForViewModel, 'device' | 'endpoint' | 'logging' | 'model'>,
     receiverModelStore: ReceiverStoreFor<TReceiver>,
-): ContactListItemViewModelBundle<TReceiver> {
+): ReceiverListItemViewModelBundle<TReceiver> {
     const {endpoint} = services;
 
-    const viewModelController = new ContactListItemViewModelController(receiverModelStore.get());
-    const viewModelStore = getContactListItemViewModelStore<TReceiver>(
+    const viewModelController = new ReceiverListItemViewModelController(receiverModelStore.get());
+    const viewModelStore = getReceiverListItemViewModelStore<TReceiver>(
         services,
         receiverModelStore,
     );

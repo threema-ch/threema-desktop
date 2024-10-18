@@ -8,10 +8,10 @@
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import AddressBook from '~/app/ui/components/partials/address-book/AddressBook.svelte';
   import type {TabState} from '~/app/ui/components/partials/address-book/types';
-  import {contactListViewModelStoreToReceiverPreviewListPropsStore} from '~/app/ui/components/partials/contact-nav/transformers';
+  import {receiverListViewModelStoreToReceiverPreviewListPropsStore} from '~/app/ui/components/partials/contact-nav/transformers';
   import type {
     ContextMenuItemHandlerProps,
-    RemoteContactListViewModelStoreValue,
+    RemoteReceiverListViewModelStoreValue,
   } from '~/app/ui/components/partials/contact-nav/types';
   import type {MessageForwardModalProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-forward-modal/props';
   import {i18n} from '~/app/ui/i18n';
@@ -34,7 +34,7 @@
   const {backend, router} = services;
 
   // ViewModelBundle containing all contacts.
-  let viewModelStore: IQueryableStore<RemoteContactListViewModelStoreValue | undefined> =
+  let viewModelStore: IQueryableStore<RemoteReceiverListViewModelStoreValue | undefined> =
     new ReadableStore(undefined);
 
   let modalComponent: SvelteNullableBinding<Modal> = null;
@@ -59,14 +59,14 @@
   }
 
   // Current list items.
-  $: receiverPreviewListPropsStore = contactListViewModelStoreToReceiverPreviewListPropsStore(
+  $: receiverPreviewListPropsStore = receiverListViewModelStoreToReceiverPreviewListPropsStore(
     viewModelStore,
     addressBookTabState,
   );
 
   onMount(async () => {
     await backend.viewModel
-      .contactList()
+      .receiverList()
       .then((viewModelBundle) => {
         // Replace `viewModelBundle`.
         viewModelStore = viewModelBundle.viewModelStore;

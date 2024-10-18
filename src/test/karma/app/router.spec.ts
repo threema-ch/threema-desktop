@@ -116,7 +116,7 @@ export function run(): void {
 
             // Aside
             router.go({
-                aside: ROUTE_DEFINITIONS.aside.receiverDetails.withParams({
+                aside: ROUTE_DEFINITIONS.aside.contactDetails.withParams({
                     type: ReceiverType.CONTACT,
                     uid: 1n as DbContactUid,
                 }),
@@ -124,7 +124,7 @@ export function run(): void {
             router.assertRouteIds({
                 nav: 'contactList',
                 main: 'conversation',
-                aside: 'receiverDetails',
+                aside: 'contactDetails',
                 modal: undefined,
                 activity: undefined,
             });
@@ -134,7 +134,7 @@ export function run(): void {
             router.assertRouteIds({
                 nav: 'contactList',
                 main: 'conversation',
-                aside: 'receiverDetails',
+                aside: 'contactDetails',
                 modal: 'changePassword',
                 activity: undefined,
             });

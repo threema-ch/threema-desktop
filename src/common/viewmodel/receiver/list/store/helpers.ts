@@ -1,16 +1,16 @@
 import type {Contact, Group} from '~/common/model';
 import {LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
-import type {ContactListViewModel} from '~/common/viewmodel/contact/list/store/types';
+import type {ReceiverListViewModel} from '~/common/viewmodel/receiver/list/store/types';
 
 /**
- * Returns a {@link ContactListItemSetStore} containing {@link ContactListItemViewModelBundle}s of
+ * Returns a {@link ContactListItemSetStore} containing {@link ReceiverListItemViewModelBundle}s of
  * all contacts.
  */
 export function getContactListItemSetStore(
     services: Pick<ServicesForViewModel, 'logging' | 'model'>,
     viewModelRepository: IViewModelRepository,
-): ContactListViewModel['contactListItemSetStore'] {
+): ReceiverListViewModel['contactListItemSetStore'] {
     const {logging, model} = services;
 
     // Options for all derived stores below.
@@ -24,10 +24,10 @@ export function getContactListItemSetStore(
 
     const contactSetStore = model.contacts.getAll();
 
-    // Fetch the `ContactListItemViewModelBundle` for every contact in the set store.
+    // Fetch the `ReceiverListItemViewModelBundle` for every contact in the set store.
     const contactListItemSetStore = new LocalDerivedSetStore(
         contactSetStore,
-        (contactModelStore) => viewModelRepository.contactListItem<Contact>(contactModelStore),
+        (contactModelStore) => viewModelRepository.receiverListItem<Contact>(contactModelStore),
         storeOptions,
     );
 
@@ -35,13 +35,13 @@ export function getContactListItemSetStore(
 }
 
 /**
- * Returns a {@link ContactListItemSetStore} containing {@link ContactListItemViewModelBundle}s of
+ * Returns a {@link GroupListItemSetStore} containing {@link ReceiverListItemViewModelBundle}s of
  * all groups.
  */
-export function getGroupContactListItemSetStore(
+export function getGroupListItemSetStore(
     services: Pick<ServicesForViewModel, 'logging' | 'model'>,
     viewModelRepository: IViewModelRepository,
-): ContactListViewModel['groupContactListItemSetStore'] {
+): ReceiverListViewModel['groupContactListItemSetStore'] {
     const {logging, model} = services;
 
     // Options for all derived stores below.
@@ -58,7 +58,7 @@ export function getGroupContactListItemSetStore(
     // Fetch the `ContactListItemViewModelBundle` for every group in the set store.
     const groupContactListItemSetStore = new LocalDerivedSetStore(
         groupSetStore,
-        (groupModelStore) => viewModelRepository.contactListItem<Group>(groupModelStore),
+        (groupModelStore) => viewModelRepository.receiverListItem<Group>(groupModelStore),
         storeOptions,
     );
 

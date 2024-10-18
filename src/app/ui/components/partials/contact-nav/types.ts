@@ -1,21 +1,21 @@
 import type {EditContactModalProps} from '~/app/ui/components/partials/modals/edit-contact-modal/props';
 import type {AnyReceiver} from '~/common/model';
 import type {Remote} from '~/common/utils/endpoint';
-import type {ContactListViewModelBundle} from '~/common/viewmodel/contact/list';
-import type {ContactListItemViewModelBundle} from '~/common/viewmodel/contact/list/item';
+import type {ReceiverListViewModelBundle} from '~/common/viewmodel/receiver/list';
+import type {ReceiverListItemViewModelBundle} from '~/common/viewmodel/receiver/list/item';
 
 /**
- * Type of the value contained in a `ContactListViewModelStore` transferred from {@link Remote}.
+ * Type of the value contained in a `ReceiverListViewModelStore` transferred from {@link Remote}.
  */
-export type RemoteContactListViewModelStoreValue = ReturnType<
-    Remote<ContactListViewModelBundle>['viewModelStore']['get']
+export type RemoteReceiverListViewModelStoreValue = ReturnType<
+    Remote<ReceiverListViewModelBundle>['viewModelStore']['get']
 >;
 
 /**
  * Type of the props passed to each context menu item's handler callback.
  */
 export interface ContextMenuItemHandlerProps<TReceiver extends AnyReceiver> {
-    readonly viewModelBundle: Remote<ContactListItemViewModelBundle<TReceiver>>;
+    readonly viewModelBundle: Remote<ReceiverListItemViewModelBundle<TReceiver>>;
 }
 
 export type ModalState = NoneModalState | EditContactModalState;

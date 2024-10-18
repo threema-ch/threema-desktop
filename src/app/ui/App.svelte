@@ -7,6 +7,7 @@
   import ContactNav from '~/app/ui/components/partials/contact-nav/ContactNav.svelte';
   import ConversationView from '~/app/ui/components/partials/conversation/ConversationView.svelte';
   import ConversationNav from '~/app/ui/components/partials/conversation-nav/ConversationNav.svelte';
+  import GroupDetail from '~/app/ui/components/partials/group-detail/GroupDetail.svelte';
   import Settings from '~/app/ui/components/partials/settings/Settings.svelte';
   import NavSettingsList from '~/app/ui/components/partials/settings-nav/SettingsNav.svelte';
   import MainWelcome from '~/app/ui/components/partials/welcome/Welcome.svelte';
@@ -161,11 +162,14 @@
       switch ($router.aside.id) {
         case undefined:
           break;
-        case 'receiverDetails':
+        case 'contactDetails':
           asidePanelComponent = ContactDetail;
           break;
+        case 'groupDetails':
+          asidePanelComponent = GroupDetail;
+          break;
         default:
-          unreachable($router.aside.id, 'Unhandled aside panel router state');
+          unreachable($router.aside, 'Unhandled aside panel router state');
       }
     }
 
