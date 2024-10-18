@@ -5,7 +5,7 @@
   "author": "Threema GmbH",
   "version": "2.0-beta45",
   "versionCode": 47,
-  "license": "UNLICENSED",
+  "license": "AGPL-3.0+",
   "homepage": "https://threema.ch/",
   "keywords": [
     "threema",

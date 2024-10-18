@@ -150,9 +150,10 @@
     {/if}
 
     <KeyValueList.Item key={$i18n.t('settings--about.label--copyright', 'Copyright')}>
-      <Text text={'Threema GmbH © 2020-2024'} selectable />
+      <Text text={'© Threema GmbH – Released under the AGPL-3.0 license'} selectable />
     </KeyValueList.Item>
   </KeyValueList.Section>
+
   <KeyValueList.Section
     title={$i18n.t('settings--about.label--troubleshooting', 'Troubleshooting')}
   >

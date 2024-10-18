@@ -283,7 +283,7 @@ async function packageApp(variant, environment, isPlaywrightTestBuild, config) {
     // DOC: https://electron.github.io/electron-packager/v16.0.0/interfaces/electronpackager.options.html
     console.info('📦 Packaging application with electron-packager');
     const [outputPath] = await packager({
-        appCopyright: '© Threema GmbH, all rights reserved',
+        appCopyright: '© Threema GmbH – Released under the AGPL-3.0 license',
         name: appName,
         executableName: 'ThreemaDesktop',
         dir: resolve(__dirname, '..'),
