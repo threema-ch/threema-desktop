@@ -314,32 +314,6 @@ i18n-translations-in-sync:
         echo -e "\e[32mNo changes detected after running 'npm run i18n:parse'\e[0m"
       fi
 
-protobuf-in-sync:
-  stage: test
-  needs: []
-  <<: *cache
-  before_script:
-    - node --version
-    - npm --version
-    - apt-get update && apt-get install -y protobuf-compiler
-  script:
-    - set -euo pipefail
-    # Install npm dependencies
-    - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
-    # Re-generate protobuf bindings
-    - npm run protobuf:generate
-    # Ensure that there are no local changes
-    - |
-      DIFF="$(git diff)"
-      if [[ -n "$DIFF" ]]; then
-        echo -e "\e[31mFound local changes after generating protobuf files. Schema out of sync?\e[0m"
-        echo -e "\n$ git diff:\n$DIFF"
-        exit 1
-      else
-        echo ""
-        echo -e "\e[32mNo changes detected after re-generating protobuf files\e[0m"
-      fi
-
 validate-metainfo:
   stage: test
   needs: []

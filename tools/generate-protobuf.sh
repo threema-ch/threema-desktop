@@ -10,6 +10,16 @@ if ! command -v protoc >/dev/null 2>&1; then
     exit 1
 fi
 
+function print_usage() {
+    echo "Usage: $0 <path-to-threema-protocols>"
+}
+
+# If no arguments are passed, print usage
+if [ "$#" -lt 1 ]; then print_usage; exit 1; fi
+
+# Parse arguments
+protocols_dir="$1"; shift
+
 # Determine script directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT="$DIR/.."
@@ -20,7 +30,7 @@ cd "$ROOT"
 # Protocol layer
 OUTFILE=src/common/network/protobuf/js/index.js
 node_modules/.bin/pbjs \
-    threema-protocols/src/*.proto \
+    "${protocols_dir}"/src/*.proto \
     -o $OUTFILE \
     -t static-module \
     -w es6 \
