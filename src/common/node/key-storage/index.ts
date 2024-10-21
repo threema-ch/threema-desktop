@@ -55,6 +55,7 @@ import path from 'node:path';
 import {performance} from 'node:perf_hooks';
 
 import * as argon2 from 'argon2';
+
 import {
     NACL_CONSTANTS,
     NONCE_UNGUARDED_SCOPE,

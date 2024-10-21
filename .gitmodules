@@ -5,7 +5,3 @@
 [submodule "libs/structbuf-typescript"]
 	path = libs/structbuf-typescript
 	url = ../../structbuf/structbuf-typescript.git
-[submodule "libs/node-argon2"]
-	path = libs/node-argon2
-	url = ../node-argon2.git
-	fetchRecurseSubmodules = "yes"

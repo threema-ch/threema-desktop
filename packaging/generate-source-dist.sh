@@ -119,9 +119,6 @@ find . -depth -name .prettierrc.yml -type f -delete
 find . -depth -name .prettierignore -type f -delete
 find . -depth -name .editorconfig -type f -delete
 rm -f .git-pre-commit.sh
-log_minor "Third party documentation"
-find libs/node-argon2/ -depth -name latex -type d -exec rm -rf "{}" \;
-find libs/node-argon2/ -name '*.pdf' -type f -delete
 
 # Helper function: Generate checksums
 function generate_checksums() {

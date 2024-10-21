@@ -76,7 +76,7 @@
     "@sentry/browser": "8.33.1",
     "@threema/compose-area": "~0.4.6",
     "@threema/threema-markup": "1.1.0",
-    "argon2": "file:libs/node-argon2",
+    "argon2": "threema-ch/node-argon2#threema-20241021",
     "autolinker": "4.0.0",
     "better-sqlcipher": "threema-ch/better-sqlcipher#9.6.0-sqlcipher4.5.7-bearssl0.6",
     "croppie": "^2.6.5",
@@ -112,7 +112,7 @@
         "/": "^(LICENSE|package.json|package-lock.json|README.md)$",
         "/build/electron/": "^(app($|\\/)|electron-main($|\\/)|electron-preload($|\\/))",
         "/node_modules/@phc/format/": "^(index.js|package.json)$",
-        "/node_modules/argon2/": "^(argon2.js|package.json)$",
+        "/node_modules/argon2/": "^(argon2.cjs|package.json)$",
         "/node_modules/argon2/build/Release/": "^argon2.node$",
         "/node_modules/better-sqlcipher/": "^(lib($|\\/)|package.json$)",
         "/node_modules/better-sqlcipher/build/Release/": "^better_sqlcipher.node$"

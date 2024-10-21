@@ -4,7 +4,6 @@ A standalone Threema client for the desktop and the web.
 
 ## Table of Contents
 
-- [Cloning](#cloning)
 - [Building](#building)
   - [Requirements](#requirements)
   - [Install Dependencies](#install-dependencies)
@@ -19,16 +18,6 @@ A standalone Threema client for the desktop and the web.
   - [JSDoc Rules](#jsdoc-rules)
   - [Pre-Commit](#pre-commit)
 - [License](#license)
-
-## Cloning
-
-⚠️ Note: This project contains recursive git submodules. Make sure to clone with `--recursive`. If
-you already cloned the repository without that flag, run the following command inside the project
-directory.
-
-    git submodule update --init --recursive
-
-(If you downloaded the source distribution, then the submodules are already included.)
 
 ## Building
 
@@ -65,7 +54,7 @@ the following command to [enable git support for symlinks globally][win-git-syml
     git config --global core.symlinks true
 
 Afterwards clone the repository as usual. (Alternatively, clone with
-`git clone -c core.symlinks=true --recursive ...` if you don't want to enable this option globally.)
+`git clone -c core.symlinks=true ...` if you don't want to enable this option globally.)
 
 [win-symlinks]: https://blogs.windows.com/windowsdeveloper/2016/12/02/symlinks-windows-10/
 [win-devmode]:
@@ -93,12 +82,8 @@ To build Threema Desktop, run:
 
 Now you can find the application bundle at `build/out/`.
 
-Note 1: To launch Threema directly without unpacking, you can find the uncompressed directory
+Note: To launch Threema directly without unpacking, you can find the uncompressed directory
 (containing the `ThreemaDesktop` binary) in `build/tmp/`.
-
-Note 2: If you get an error message while building similar to
-`Error: ENOENT: no such file or directory, lstat '...'`, check out the hints about
-[cloning](#cloning).
 
 ### Package
 
