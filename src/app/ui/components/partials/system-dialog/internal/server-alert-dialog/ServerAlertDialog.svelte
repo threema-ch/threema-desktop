@@ -5,11 +5,13 @@
   import {globals} from '~/app/globals';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
+  import type {ModalButton} from '~/app/ui/components/hocs/modal/props';
   import type {ServerAlertDialogProps} from '~/app/ui/components/partials/system-dialog/internal/server-alert-dialog/props';
   import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {unlinkAndCreateBackup} from '~/app/ui/utils/profile';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
+  import {unreachable} from '~/common/utils/assert';
 
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.server-alert-dialog');
@@ -23,7 +25,68 @@
 
   let modalComponent: SvelteNullableBinding<Modal> = null;
 
+  let errorType: 'other-connection-for-same-identity' | 'unknown' = 'unknown';
   let errorMessage: string | undefined;
+
+  function getButtonsForErrorType(type: typeof errorType): ModalButton[] | undefined {
+    switch (type) {
+      case 'other-connection-for-same-identity':
+        return [
+          {
+            label: $i18n.t('dialog--server-alert.action--dismiss', 'Ignore'),
+            onClick: () => {
+              onSelectAction?.('dismissed');
+              modalComponent?.close();
+            },
+            type: 'naked',
+          },
+          {
+            label: $i18n.t('dialog--server-alert.action--relink', 'Relink Device'),
+            onClick: () => {
+              if (!services.isSet()) {
+                log.warn('Cannot unlink the profile because the app services are not yet ready');
+                return;
+              }
+              unlinkAndCreateBackup(services.unwrap()).catch((error) => {
+                log.error(error);
+                errorMessage = $i18n.t(
+                  'dialog--server-alert.error--no-connection',
+                  'Failed to unlink the device. Please check your Internet connection and try again.',
+                );
+              });
+            },
+            type: 'filled',
+          },
+        ];
+
+      case 'unknown':
+        return [
+          {
+            label: $i18n.t('dialog--server-alert.action--dismiss'),
+            onClick: () => {
+              onSelectAction?.('dismissed');
+              modalComponent?.close();
+            },
+            type: 'filled',
+          },
+        ];
+
+      default:
+        return unreachable(type);
+    }
+  }
+
+  $: {
+    switch (text) {
+      case 'Another connection for the same identity has been established. New messages will no longer be received on this device.':
+        errorType = 'other-connection-for-same-identity';
+        break;
+
+      default:
+        errorType = 'unknown';
+        break;
+    }
+  }
 </script>
 
 <Modal
@@ -31,33 +94,7 @@
   {target}
   wrapper={{
     type: 'card',
-    buttons: [
-      {
-        label: $i18n.t('dialog--server-alert.action--dismiss', 'Ignore'),
-        onClick: () => {
-          onSelectAction?.('dismissed');
-          modalComponent?.close();
-        },
-        type: 'naked',
-      },
-      {
-        label: $i18n.t('dialog--server-alert.action--relink', 'Relink Device'),
-        onClick: () => {
-          if (!services.isSet()) {
-            log.warn('Cannot unlink the profile because the app services are not yet ready');
-            return;
-          }
-          unlinkAndCreateBackup(services.unwrap()).catch((error) => {
-            log.error(error);
-            errorMessage = $i18n.t(
-              'dialog--server-alert.error--no-connection',
-              'Failed to unlink the device. Please check your Internet connection and try again.',
-            );
-          });
-        },
-        type: 'filled',
-      },
-    ],
+    buttons: getButtonsForErrorType(errorType),
     title: $i18n.t('dialog--server-alert.label--title', 'Message from Server'),
     minWidth: 340,
     maxWidth: 460,
@@ -71,7 +108,7 @@
   on:close
 >
   <div class="content">
-    {#if text.localeCompare('Another connection for the same identity has been established. New messages will no longer be received on this device.') === 0}
+    {#if errorType === 'other-connection-for-same-identity'}
       <p>
         <Text
           text={$i18n.t(
@@ -96,18 +133,12 @@
           )}
         />
       </p>
-    {:else}
+    {:else if errorType === 'unknown'}
       <p>
         <Text {text} />
       </p>
-      <p>
-        <Text
-          text={$i18n.t(
-            'dialog--server-alert.error--unknown',
-            'We recommend that you relink this device. Your message history can be kept.',
-          )}
-        />
-      </p>
+    {:else}
+      {unreachable(errorType)}
     {/if}
     {#if errorMessage !== undefined}
       <div class="error">

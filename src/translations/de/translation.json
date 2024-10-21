@@ -343,7 +343,6 @@
     "error--another-device-p2": "Wenn Sie Ihre Threema-ID in der Zwischenzeit nicht auf einem anderen Gerät oder mit einer älteren App-Version genutzt haben, kontaktieren Sie bitte den Support und senden Sie falls möglich die Logdatei mit.",
     "error--another-device-p3": "Ansonsten empfehlen wir Ihnen, Threema Desktop neu zu verknüpfen. Ihr Nachrichtenverlauf kann dabei wiederhergestellt werden.",
     "error--no-connection": "Die Aufhebung der Verknüpfung dieses Geräts ist fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
-    "error--unknown": "Wir empfehlen, dieses Gerät neu zu verknüpfen. Ihr Nachrichtenverlauf kann dabei wiederhergestellt werden.",
     "label--title": "Nachricht vom Server"
   },
   "dialog--startup-unlock": {
