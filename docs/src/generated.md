@@ -13,4 +13,4 @@ install it, check the [official documentation](https://grpc.io/docs/protoc-insta
 
 Generating the static structbuf modules can be done in the following way:
 
-    npm run structbuf:generate <path-to-threema-protocols-directory>
+    npm run structbuf:generate <path-to-structbuf-typescript-bin.js> <path-to-threema-protocols-directory>
