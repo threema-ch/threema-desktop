@@ -1,5 +1,6 @@
 import type {ServicesForBackend} from '~/common/backend';
 import {ensureEncryptedDataWithNonceAhead} from '~/common/crypto';
+import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {randomU8} from '~/common/crypto/random';
 import {
     ConnectionState,
@@ -32,7 +33,6 @@ import {
 } from '~/common/network/types';
 import type {u32, u53, WeakOpaque} from '~/common/types';
 import {assert, ensureError, unreachable, unwrap} from '~/common/utils/assert';
-import {ByteBuffer} from '~/common/utils/byte-buffer';
 import {intoUnsignedLong, u64ToHexLe} from '~/common/utils/number';
 import {
     Queue,
@@ -178,7 +178,6 @@ export function transactionCompleted<S extends TransactionScope>(
 
 class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle {
     private readonly _log: Logger;
-    private readonly _buffer: ByteBuffer;
 
     public constructor(
         private readonly _services: ServicesForTasks,
@@ -191,9 +190,6 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
         private readonly _state: ProtocolTaskState,
     ) {
         this._log = _services.logging.logger('network.protocol.task-codec');
-        this._buffer = new ByteBuffer(
-            new Uint8Array(_services.config.MEDIATOR_FRAME_MAX_BYTE_LENGTH),
-        );
     }
 
     public async step<T>(executor: () => Promise<T>): Promise<T> {
@@ -272,7 +268,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
                   readonly envelope: protobuf.d2d.IEnvelope;
                   readonly flags: D2mMessageFlags;
               }[]
-            | [],
+            | readonly [],
     >(payloads: T): Promise<{readonly [P in keyof T]: Date}> {
         const {d2d} = this.controller;
         const {crypto, device} = this._services;
@@ -307,8 +303,8 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
                         reflectId: id as u32,
                         envelope: d2d.dgrk
                             .encryptor(
-                                this._buffer.reset(),
-                                protobuf.utils.byteEncoder(protobuf.d2d.Envelope, {
+                                CREATE_BUFFER_TOKEN,
+                                protobuf.utils.encoder(protobuf.d2d.Envelope, {
                                     outgoingMessage: undefined,
                                     outgoingMessageUpdate: undefined,
                                     incomingMessage: undefined,
@@ -325,7 +321,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
                                     >),
                                     deviceId: intoUnsignedLong(device.d2m.deviceId),
                                     padding: new Uint8Array(randomU8(crypto)),
-                                }).encode,
+                                }),
                             )
                             .encryptWithRandomNonceAhead('TaskCodec#reflect'),
                     }),
@@ -396,10 +392,10 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
                 payload: protobuf.utils.encoder(protobuf.d2m.BeginTransaction, {
                     encryptedScope: d2d.dgtsk
                         .encryptor(
-                            this._buffer.reset(),
-                            protobuf.utils.byteEncoder(protobuf.d2d.TransactionScope, {
+                            CREATE_BUFFER_TOKEN,
+                            protobuf.utils.encoder(protobuf.d2d.TransactionScope, {
                                 scope,
-                            }).encode,
+                            }),
                         )
                         .encryptWithRandomNonceAhead('TaskCodec#transaction(begin-transaction)'),
                     ttl: 0, // TODO(DESK-658): Set appropriate TTL
@@ -543,7 +539,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
         try {
             const encodedMessage = this._services.device.d2d.dgtsk
                 .decryptorWithNonceAhead(
-                    this._buffer.reset(),
+                    CREATE_BUFFER_TOKEN,
                     ensureEncryptedDataWithNonceAhead(messagePayload.encryptedScope),
                 )
                 .decrypt('TaskCodec#_getTransactionScopeName');

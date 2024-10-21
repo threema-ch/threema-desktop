@@ -175,7 +175,7 @@ export interface InternalActiveTaskCodecHandle extends TaskCodecHandle {
                   readonly envelope: protobuf.d2d.IEnvelope;
                   readonly flags: D2mMessageFlags;
               }[]
-            | [],
+            | readonly [],
     >(
         payloads: T,
     ) => Promise<{readonly [P in keyof T]: Date}>;
