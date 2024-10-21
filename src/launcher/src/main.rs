@@ -1,5 +1,9 @@
 #![windows_subsystem = "windows"] // Prevent console window from showing up on Windows
 
+mod update;
+mod util;
+
+use colored::Colorize;
 use std::{
     env, fs,
     io::{stderr, stdout, IsTerminal},
@@ -7,75 +11,7 @@ use std::{
     process::{self, Command, Stdio},
     time::Duration,
 };
-
-use colored::Colorize;
-use home::home_dir;
-
-// Compile-time constants
-const VERSION: &str = env!("CARGO_PKG_VERSION");
-const BUILD_FLAVOR: &str = env!("THREEMA_BUILD_FLAVOR"); // e.g. consumer-sandbox or work-live
-
-// Valid build flavors
-const VALID_BUILD_FLAVORS: [&str; 5] = [
-    "consumer-sandbox",
-    "consumer-live",
-    "work-sandbox",
-    "work-live",
-    "work-onprem",
-];
-
-// Exit codes
-const EXIT_CODE_EXIT: i32 = 0;
-const EXIT_CODE_RESTART: i32 = 8;
-const EXIT_CODE_DELETE_PROFILE_AND_RESTART: i32 = 9;
-const EXIT_CODE_RENAME_PROFILE_AND_RESTART: i32 = 10;
-const EXIT_CODE_LAUNCHER_ERROR: i32 = 20;
-
-// Delays
-const DELAY_BEFORE_ERROR_EXIT_MS: u64 = 2000;
-
-#[cfg(windows)]
-fn init_terminal() {
-    let _ = colored::control::set_virtual_terminal(true);
-}
-
-#[cfg(not(windows))]
-fn init_terminal() {}
-
-/// Print a log if stdout is a terminal.
-#[macro_export]
-macro_rules! print_log {
-    () => {{
-        if stdout().is_terminal() {
-            println!();
-        }
-    }};
-    ($msg:expr) => {{
-        if stdout().is_terminal() {
-            println!($msg);
-        }
-    }};
-    ($msg:expr, $($args:expr),* $(,)?) => {{
-        if stdout().is_terminal() {
-            println!($msg, $($args),*);
-        }
-    }}
-}
-
-/// Print an error in red if stderr is a terminal.
-#[macro_export]
-macro_rules! print_error {
-    ($msg:expr) => {{
-        if stderr().is_terminal() {
-            eprintln!("{}", $msg.bright_red());
-        }
-    }};
-    ($msg:expr, $($args:expr),* $(,)?) => {{
-        if stderr().is_terminal() {
-            eprintln!("{}", format!($msg, $($args),*).bright_red());
-        }
-    }}
-}
+use util::{constants::*, logging::init_terminal, paths::*};
 
 fn print_usage_and_exit(launcher_path: &str) -> ! {
     if cfg!(feature = "allow_path_override") {
@@ -98,68 +34,6 @@ fn determine_binary_name() -> &'static str {
         "windows" => "ThreemaDesktop.exe",
         _other => "ThreemaDesktop",
     }
-}
-
-/// Determine profile directory location based on operating system:
-///
-/// - Linux / BSD: $XDG_DATA_HOME/ThreemaDesktop/ or ~/.local/share/ThreemaDesktop/
-/// - macOS: ~/Library/Application Support/ThreemaDesktop/
-/// - Windows: %APPDATA%/ThreemaDesktop/
-/// - Other: ~/.ThreemaDesktop/
-///
-/// Note: This must match the path determined by the application in `src/electron/electron-main.ts`
-/// by the function `getPersistentAppDataBaseDir`!
-fn determine_profile_directory_location() -> PathBuf {
-    let root_directory_name = "ThreemaDesktop";
-    match env::consts::OS {
-        "linux" | "freebsd" | "dragonfly" | "netbsd" | "openbsd" | "solaris" => {
-            let xdg_data_home = env::var("XDG_DATA_HOME")
-                .unwrap_or_default()
-                .trim()
-                .to_string();
-            if !xdg_data_home.is_empty() {
-                return Path::new(&xdg_data_home).join(root_directory_name);
-            }
-            home_dir()
-                .expect("Could not determine user home directory")
-                .join(".local")
-                .join("share")
-                .join(root_directory_name)
-        }
-        "macos" => home_dir()
-            .expect("Could not determine user home directory")
-            .join("Library")
-            .join("Application Support")
-            .join(root_directory_name),
-        "windows" => {
-            let appdata = env::var("APPDATA").expect("No %APPDATA% found");
-            if appdata.trim().is_empty() {
-                panic!("%APPDATA% is empty");
-            }
-            Path::new(&appdata).join(root_directory_name)
-        }
-        other => {
-            print_error!("Unknown operating system: {}", other);
-            home_dir()
-                .expect("Could not determine user home directory")
-                .join(format!(".{root_directory_name}"))
-        }
-    }
-}
-
-fn determine_profile_directory(args: &[String]) -> PathBuf {
-    static PROFILE_DIRECTORY_FLAG_PREFIX: &str = "--threema-profile=";
-
-    let profile_directory_location = determine_profile_directory_location();
-    let profile = match args
-        .iter()
-        .find(|arg| arg.starts_with(PROFILE_DIRECTORY_FLAG_PREFIX))
-    {
-        Some(arg) => arg.trim_start_matches(PROFILE_DIRECTORY_FLAG_PREFIX),
-        None => "default",
-    };
-
-    profile_directory_location.join(format!("{BUILD_FLAVOR}-{profile}"))
 }
 
 /// Append a suffix to a path and return the modified path
@@ -243,7 +117,8 @@ fn main() {
     }
 
     // Determine profile directory
-    let profile_directory = determine_profile_directory(args.as_slice());
+    let profile_directory =
+        get_persistent_app_data_dir().join(get_profile_directory_name(args.as_slice()));
     print_log!("Profile directory: {:?}", profile_directory);
 
     loop {
@@ -343,6 +218,27 @@ fn main() {
                 print_log!("Restarting");
                 continue;
             }
+            Some(EXIT_CODE_RESTART_AND_INSTALL_UPDATE) => match env::consts::OS {
+                #[cfg(windows)]
+                "windows" => {
+                    let result = update::windows::validate_and_install_latest_predownloaded_update(
+                        profile_directory.clone(),
+                    );
+                    if result.is_err() {
+                        print_error!(
+                            "Failed to install update (Windows): {:#}",
+                            result.err().unwrap()
+                        );
+                        std::thread::sleep(Duration::from_millis(DELAY_BEFORE_ERROR_EXIT_MS));
+                        process::exit(EXIT_CODE_LAUNCHER_ERROR);
+                    }
+                }
+                other => {
+                    print_error!("Unexpected update request on unsupported OS: {}", other);
+                    std::thread::sleep(Duration::from_millis(DELAY_BEFORE_ERROR_EXIT_MS));
+                    process::exit(EXIT_CODE_LAUNCHER_ERROR);
+                }
+            },
             Some(other) => {
                 print_error!("Unexpected exit code: {}", other);
                 std::thread::sleep(Duration::from_millis(DELAY_BEFORE_ERROR_EXIT_MS));
