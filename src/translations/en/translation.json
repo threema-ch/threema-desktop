@@ -81,6 +81,13 @@
     "label--send-as-file-option": "Send as File (Original Size)",
     "label--title": "Send File to {name}"
   },
+  "dialog--d2d-protocol-version-incompatible": {
+    "action--relink": "Relink Device",
+    "error--no-connection": "Failed to unlink the device. Please check your internet connection and try again.",
+    "label--title": "Incompatbile App Version on your Mobile Device",
+    "prose--description-p1": "The Threema version installed on your mobile device is not compatible with this version of Threema for desktop. To avoid synchronization problems, please update the app on your mobile device and relink it with Threema for desktop.",
+    "prose--description-p2": "The message history can be restored after relinking."
+  },
   "dialog--delete-conversation": {
     "action--cancel": "Cancel",
     "action--contact-conversation-confirm": "Delete Chat",

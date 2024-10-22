@@ -81,6 +81,13 @@
     "label--send-as-file-option": "Als Datei senden (in Originalgrösse)",
     "label--title": "Datei an {name} senden"
   },
+  "dialog--d2d-protocol-version-incompatible": {
+    "action--relink": "Gerät neu verknüpfen",
+    "error--no-connection": "Die Verknüpfung dieses Geräts konnte nicht aufgehoben werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "label--title": "Inkompatible App-Version auf Ihrem Mobilgerät",
+    "prose--description-p1": "Auf Ihrem Mobilgerät ist eine Threema-Version installiert, die nicht mit dieser Version von Threema für Desktop kompatibel ist. Um Synchronisationsfehler zu vermeiden, aktualisieren Sie bitte die App auf Ihrem Mobilgerät und verknüpfen sie das Gerät erneut mit Threema für Desktop.",
+    "prose--description-p2": "Die Chatverläufe können nach erneutem Verknüpfen wiederhergestellt werden."
+  },
   "dialog--delete-conversation": {
     "action--cancel": "Abbrechen",
     "action--contact-conversation-confirm": "Chat löschen",
@@ -111,7 +118,7 @@
   "dialog--device-cookie-mismatch": {
     "action--dismiss": "Ignorieren",
     "action--relink": "Gerät neu verknüpfen",
-    "error--no-connection": "Die Aufhebung der Verknüpfung dieses Geräts ist fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "error--no-connection": "Die Verknüpfung dieses Geräts konnte nicht aufgehoben werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
     "label--title": "Verbindung von einem anderen Gerät erkannt",
     "prose--description-p1": "Der Server hat eine Verbindung von einem anderen Gerät mit derselben Threema-ID erkannt. Falls Sie Ihre Threema-ID nicht kürzlich auf einem anderen Gerät verwendet haben, kontaktieren Sie bitte unseren Support und senden Sie wenn möglich die Logdatei mit.",
     "prose--description-p2": "Falls Sie Ihre Threema-ID auf einem anderen Gerät verwendet haben, empfehlen wir, die Desktop-App erneut mit dem Mobilgerät zu verknüpfen. Die Chatverläufe können nach erneutem Verknüpfen wiederhergestellt werden."
@@ -119,7 +126,7 @@
   "dialog--device-cookie-missing": {
     "action--dismiss": "Ignorieren",
     "action--relink": "Gerät neu verknüpfen",
-    "error--no-connection": "Die Aufhebung der Verknüpfung dieses Geräts ist fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "error--no-connection": "Die Verknüpfung dieses Geräts konnte nicht aufgehoben werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
     "label--title": "Erneutes Verknüpfen empfohlen",
     "prose--description": "Um die Multi-Device-Sicherheit zu verbessern, muss dieses Gerät neu verknüpft werden. Die Chatverläufe werden nach erneutem Verknüpfen wiederhergestellt."
   },
@@ -342,7 +349,7 @@
     "error--another-device-p1": "Der Server hat eine Verbindung von einem anderen Gerät mit derselben Threema-ID erkannt.",
     "error--another-device-p2": "Wenn Sie Ihre Threema-ID in der Zwischenzeit nicht auf einem anderen Gerät oder mit einer älteren App-Version genutzt haben, kontaktieren Sie bitte den Support und senden Sie falls möglich die Logdatei mit.",
     "error--another-device-p3": "Ansonsten empfehlen wir Ihnen, Threema Desktop neu zu verknüpfen. Ihr Nachrichtenverlauf kann dabei wiederhergestellt werden.",
-    "error--no-connection": "Die Aufhebung der Verknüpfung dieses Geräts ist fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "error--no-connection": "Die Verknüpfung dieses Geräts konnte nicht aufgehoben werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
     "label--title": "Nachricht vom Server"
   },
   "dialog--startup-unlock": {

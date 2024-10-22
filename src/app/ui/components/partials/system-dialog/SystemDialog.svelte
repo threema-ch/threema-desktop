@@ -5,6 +5,7 @@
   import {globals} from '~/app/globals';
   import AppUpdateDialog from '~/app/ui/components/partials/system-dialog/internal/app-update-dialog/AppUpdateDialog.svelte';
   import ConnectionErrorDialog from '~/app/ui/components/partials/system-dialog/internal/connection-error-dialog/ConnectionErrorDialog.svelte';
+  import D2DProtocolVersionIncompatibleDialog from '~/app/ui/components/partials/system-dialog/internal/d2d-protocol-version-incompatible-dialog/D2DProtocolVersionIncompatibleDialog.svelte';
   import DeviceCookieMismatchDialog from '~/app/ui/components/partials/system-dialog/internal/device-cookie-mismatch-dialog/DeviceCookieMismatchDialog.svelte';
   import InvalidWorkCredentialsDialog from '~/app/ui/components/partials/system-dialog/internal/invalid-work-credentials-dialog/InvalidWorkCredentialsDialog.svelte';
   import MissingDeviceCookieDialog from '~/app/ui/components/partials/system-dialog/internal/missing-device-cookie-dialog/MissingDeviceCookieDialog.svelte';
@@ -92,6 +93,12 @@
   {:else if systemDialog.dialog.type === 'unrecoverable-state'}
     <UnrecoverableStateDialog
       onSelectAction={(action) => handleSelectAction(action, systemDialog)}
+      {services}
+      {target}
+      on:close={() => handleClose(systemDialog)}
+    />
+  {:else if systemDialog.dialog.type === 'device-protocols-incompatible'}
+    <D2DProtocolVersionIncompatibleDialog
       {services}
       {target}
       on:close={() => handleClose(systemDialog)}

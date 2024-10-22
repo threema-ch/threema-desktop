@@ -19,6 +19,7 @@
       'missing-device-cookie',
       'server-alert',
       'unrecoverable-state',
+      'device-protocols-incompatible',
     ] as const
   ).map((type: Exclude<SystemDialog['type'], 'connection-error'>) => {
     switch (type) {
@@ -104,6 +105,15 @@
             });
           },
           label: 'Unrecoverable State',
+        };
+
+      case 'device-protocols-incompatible':
+        return {
+          type: 'option',
+          handler: () => {
+            systemDialog.open({type});
+          },
+          label: 'Device Protocols Incompatible',
         };
 
       default:

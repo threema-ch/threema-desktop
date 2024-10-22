@@ -14,7 +14,8 @@ export type SystemDialog =
     | UnrecoverableStateDialog
     | InvalidWorkCredentialsDialog
     | MissingDeviceCookieDialog
-    | DeviceCookieMismatchDialog;
+    | DeviceCookieMismatchDialog
+    | D2dProtocolVersionIncompatibleDialog;
 
 /**
  * Base interface for all system dialogs.
@@ -117,6 +118,13 @@ export interface ServerAlertDialogContext {
  */
 export interface UnrecoverableStateDialog extends SystemDialogCommon {
     readonly type: 'unrecoverable-state';
+}
+
+/**
+ * Dialog which is shown when the protocol versions are incompatible
+ */
+export interface D2dProtocolVersionIncompatibleDialog extends SystemDialogCommon {
+    readonly type: 'device-protocols-incompatible';
 }
 
 // Helper types & interfaces

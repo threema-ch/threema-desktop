@@ -15,7 +15,7 @@ import {
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
 import {type IdentityString, isIdentityString} from '~/common/network/types';
-import {unreachable} from '~/common/utils/assert';
+import {assertUnreachable, unreachable} from '~/common/utils/assert';
 import {idColorIndex} from '~/common/utils/id-color';
 import {filterUndefinedProperties} from '~/common/utils/object';
 import {mapValitaDefaultsToUndefined} from '~/common/utils/valita-helpers';
@@ -67,6 +67,15 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
             case 'update':
                 identity = validatedMessage.update.contact.identity;
                 break;
+            // TODO(DESK-1646) Remove this
+            case 'delete': {
+                await this._services.systemDialog
+                    .open({
+                        type: 'device-protocols-incompatible',
+                    })
+                    .catch(assertUnreachable);
+                return;
+            }
             default:
                 unreachable(validatedMessage);
         }
