@@ -159,7 +159,19 @@ export const enum PrivacySettings_KeyboardDataCollectionPolicy {
 export interface CallsSettings {
   o2oCallPolicy?: CallsSettings_O2oCallPolicy | undefined;
   o2oCallConnectionPolicy?: CallsSettings_O2oCallConnectionPolicy | undefined;
-  groupCallPolicy?: CallsSettings_GroupCallPolicy | undefined;
+  groupCallPolicy?:
+    | CallsSettings_GroupCallPolicy
+    | undefined;
+  /** The name of the most recently selected camera device */
+  lastSelectedCamera?:
+    | string
+    | undefined;
+  /** The name of the most recently selected microphone device */
+  lastSelectedMicrophone?:
+    | string
+    | undefined;
+  /** The name of the most recently selected speaker device */
+  lastSelectedSpeakers?: string | undefined;
 }
 
 /**
@@ -588,7 +600,14 @@ export const PrivacySettings = {
 };
 
 function createBaseCallsSettings(): CallsSettings {
-  return { o2oCallPolicy: undefined, o2oCallConnectionPolicy: undefined, groupCallPolicy: undefined };
+  return {
+    o2oCallPolicy: undefined,
+    o2oCallConnectionPolicy: undefined,
+    groupCallPolicy: undefined,
+    lastSelectedCamera: undefined,
+    lastSelectedMicrophone: undefined,
+    lastSelectedSpeakers: undefined,
+  };
 }
 
 export const CallsSettings = {
@@ -601,6 +620,15 @@ export const CallsSettings = {
     }
     if (message.groupCallPolicy !== undefined) {
       writer.uint32(24).int32(message.groupCallPolicy);
+    }
+    if (message.lastSelectedCamera !== undefined) {
+      writer.uint32(34).string(message.lastSelectedCamera);
+    }
+    if (message.lastSelectedMicrophone !== undefined) {
+      writer.uint32(42).string(message.lastSelectedMicrophone);
+    }
+    if (message.lastSelectedSpeakers !== undefined) {
+      writer.uint32(50).string(message.lastSelectedSpeakers);
     }
     return writer;
   },
@@ -632,6 +660,27 @@ export const CallsSettings = {
           }
 
           message.groupCallPolicy = reader.int32() as any;
+          continue;
+        case 4:
+          if (tag !== 34) {
+            break;
+          }
+
+          message.lastSelectedCamera = reader.string();
+          continue;
+        case 5:
+          if (tag !== 42) {
+            break;
+          }
+
+          message.lastSelectedMicrophone = reader.string();
+          continue;
+        case 6:
+          if (tag !== 50) {
+            break;
+          }
+
+          message.lastSelectedSpeakers = reader.string();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {

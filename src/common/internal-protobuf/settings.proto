@@ -163,6 +163,15 @@ message CallsSettings {
     DENY_GROUP_CALL = 1;
   }
   optional GroupCallPolicy group_call_policy = 3;
+
+  // The name of the most recently selected camera device
+  optional string last_selected_camera = 4;
+
+  // The name of the most recently selected microphone device
+  optional string last_selected_microphone = 5;
+
+  // The name of the most recently selected speaker device
+  optional string last_selected_speakers = 6;
 }
 
 // Devices Settings

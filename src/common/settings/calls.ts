@@ -11,9 +11,12 @@ import {optionalEnum} from '~/common/utils/valita-helpers';
 
 const CALLS_SETTINGS_SCHEMA = v
     .object({
-        o2oCallPolicy: optionalEnum(O2oCallPolicyUtils),
-        o2oCallConnectionPolicy: optionalEnum(O2oCallConnectionPolicyUtils),
         groupCallPolicy: optionalEnum(GroupCallPolicyUtils),
+        lastSelectedCamera: v.string().optional(),
+        lastSelectedMicrophone: v.string().optional(),
+        lastSelectedSpeakers: v.string().optional(),
+        o2oCallConnectionPolicy: optionalEnum(O2oCallConnectionPolicyUtils),
+        o2oCallPolicy: optionalEnum(O2oCallPolicyUtils),
     })
     .rest(v.unknown());
 
@@ -25,9 +28,12 @@ export type CallsSettings = v.Infer<typeof CALLS_SETTINGS_SCHEMA>;
 export const CALLS_SETTINGS_CODEC: SettingsCategoryCodec<'calls'> = {
     encode: (settings) =>
         proto.CallsSettings.encode({
-            o2oCallPolicy: settings.o2oCallPolicy,
-            o2oCallConnectionPolicy: settings.o2oCallConnectionPolicy,
             groupCallPolicy: settings.groupCallPolicy,
+            lastSelectedCamera: settings.lastSelectedCamera,
+            lastSelectedMicrophone: settings.lastSelectedMicrophone,
+            lastSelectedSpeakers: settings.lastSelectedSpeakers,
+            o2oCallConnectionPolicy: settings.o2oCallConnectionPolicy,
+            o2oCallPolicy: settings.o2oCallPolicy,
         }).finish(),
     decode: (encoded) => CALLS_SETTINGS_SCHEMA.parse(proto.CallsSettings.decode(encoded)),
 } as const;

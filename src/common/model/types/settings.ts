@@ -84,9 +84,12 @@ export type PrivacySettings = Model<PrivacySettingsView, PrivacySettingsControll
 
 // Note: Type must be compatible with common.settings.CallsSettings
 export interface CallsSettingsView {
-    readonly o2oCallPolicy: O2oCallPolicy;
-    readonly o2oCallConnectionPolicy: O2oCallConnectionPolicy;
     readonly groupCallPolicy: GroupCallPolicy;
+    readonly lastSelectedCamera?: string;
+    readonly lastSelectedMicrophone?: string;
+    readonly lastSelectedSpeakers?: string;
+    readonly o2oCallConnectionPolicy: O2oCallConnectionPolicy;
+    readonly o2oCallPolicy: O2oCallPolicy;
 }
 export type CallsSettingsUpdate = Partial<CallsSettingsView>;
 export type CallsSettingsController = {

@@ -13,9 +13,12 @@ import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import {filterUndefinedProperties} from '~/common/utils/object';
 
 export const DEFAULT_CALLS_SETTINGS: CallsSettingsView = {
-    o2oCallPolicy: O2oCallPolicy.ALLOW_CALL,
-    o2oCallConnectionPolicy: O2oCallConnectionPolicy.ALLOW_DIRECT,
     groupCallPolicy: GroupCallPolicy.ALLOW_GROUP_CALL,
+    lastSelectedCamera: undefined,
+    lastSelectedMicrophone: undefined,
+    lastSelectedSpeakers: undefined,
+    o2oCallConnectionPolicy: O2oCallConnectionPolicy.ALLOW_DIRECT,
+    o2oCallPolicy: O2oCallPolicy.ALLOW_CALL,
 };
 
 export class CallsSettingsModelController implements CallsSettingsController {
