@@ -16,6 +16,7 @@
     createCaptureDevices,
     selectMicrophoneDevice,
     selectCameraDevice,
+    findMediaDevice,
   } from '~/app/ui/components/partials/call-activity/helpers';
   import ControlBar from '~/app/ui/components/partials/call-activity/internal/control-bar/ControlBar.svelte';
   import type {
@@ -64,7 +65,7 @@
 
   let audioElement: SvelteNullableBinding<HTMLAudioElement> = null;
   let audioMediaStream: MediaStream | undefined = undefined;
-  let audioSinkId: string | undefined = undefined;
+  let audioSinkDeviceId: string | undefined = undefined;
 
   const {guard: localDevicesGuard, store: localDevices} = createCaptureDevices();
   let localFeed: Omit<ParticipantFeedProps<'local'>, 'activity' | 'services'> | undefined;
@@ -132,7 +133,7 @@
    */
   async function handleUpdateAudioSink(
     currentAudioElement: SvelteNullableBinding<HTMLAudioElement>,
-    currentAudioSinkId: typeof audioSinkId,
+    currentAudioSinkDeviceId: typeof audioSinkDeviceId,
     // Needed to update audio sink when feeds change.
     currentFeeds: typeof feeds,
   ): Promise<void> {
@@ -140,7 +141,7 @@
       if (currentAudioElement === null) {
         return undefined;
       }
-      if (currentAudioSinkId === undefined) {
+      if (currentAudioSinkDeviceId === undefined) {
         return undefined;
       }
 
@@ -153,7 +154,9 @@
         return undefined;
       }
 
-      return await currentAudioElement.setSinkId(currentAudioSinkId);
+      // TODO(DESK-1613): Prevent setting sink id again if it's already set and the sink id or
+      // element didn't change. This would probably solve popping noises when feeds update.
+      return await currentAudioElement.setSinkId(currentAudioSinkDeviceId);
     });
   }
 
@@ -184,25 +187,54 @@
 
   function handleSelectAudioInputDevice(device: AudioInputDeviceInfo): void {
     selectMicrophoneDevice(localDevicesGuard, call, {
-      device,
+      device: {
+        deviceId: device.deviceId,
+      },
       state: ($localDevices.microphone?.track.enabled ?? false) ? 'on' : 'off',
-    }).catch((error) => {
-      log.warn(`Unable to select audio device ${device.label}: ${error}`);
-    });
+    })
+      .then(async () => {
+        await services.settings.calls.get().controller.update({
+          lastSelectedMicrophone: device.label,
+        });
+        log.debug(`Selected microphone device "${device.label}" was saved to settings`);
+      })
+      .catch((error) => {
+        log.error(`Error selecting or saving selected microphone device ${device.label}: ${error}`);
+      });
   }
 
   function handleSelectAudioOutputDevice(device: AudioOutputDeviceInfo): void {
-    audioSinkId = device.deviceId;
+    audioSinkDeviceId = device.deviceId;
+    services.settings.calls
+      .get()
+      .controller.update({
+        lastSelectedSpeakers: device.label,
+      })
+      .then(() => {
+        log.debug(`Selected speaker device "${device.label}" was saved to settings`);
+      })
+      .catch((error) => {
+        log.error(`Error saving selected speaker device "${device.label}" to settings: ${error}`);
+      });
   }
 
   function handleSelectVideoDevice(device: VideoDeviceInfo): void {
     selectCameraDevice(localDevicesGuard, call, {
-      device,
+      device: {
+        deviceId: device.deviceId,
+      },
       facing: 'user',
       state: ($localDevices.camera?.track.enabled ?? false) ? 'on' : 'off',
-    }).catch((error) => {
-      log.warn(`Unable to select video device ${device.label}: ${error}`);
-    });
+    })
+      .then(async () => {
+        await services.settings.calls.get().controller.update({
+          lastSelectedCamera: device.label,
+        });
+        log.debug(`Selected camera device "${device.label}" was saved to settings`);
+      })
+      .catch((error) => {
+        log.warn(`Error selecting or saving selected camera device ${device.label}: ${error}`);
+      });
   }
 
   function handleKeydown(event: KeyboardEvent): void {
@@ -271,16 +303,49 @@
       });
   }
 
-  // Setup capture devices at startup
+  // Setup media devices at startup.
   //
   // Note: Microphone capture will be 'on' by default whereas camera capture will be 'off' by
   // default. However, the call may auto-mute the microphone after joining.
-  selectInitialCaptureDevices(log, localDevicesGuard, {microphone: 'on', camera: 'off'}).catch(
-    (error) => {
-      log.error(`Setting initial local capture devices failed`, error);
-      stop?.raise({origin: 'ui-component', cause: 'unexpected-error'});
+  const {lastSelectedCamera, lastSelectedMicrophone, lastSelectedSpeakers} =
+    services.settings.calls.get().view;
+  // Camera & Microphone
+  selectInitialCaptureDevices(
+    log,
+    localDevicesGuard,
+    {microphone: 'on', camera: 'off'},
+    {
+      preferredDevices: {
+        camera:
+          lastSelectedCamera === undefined
+            ? {type: 'default'}
+            : {type: 'by-device-label', deviceLabel: lastSelectedCamera, kind: 'videoinput'},
+        microphone:
+          lastSelectedMicrophone === undefined
+            ? {type: 'default'}
+            : {type: 'by-device-label', deviceLabel: lastSelectedMicrophone, kind: 'audioinput'},
+      },
     },
-  );
+  ).catch((error) => {
+    log.error(`Setting initial local capture devices failed`, error);
+    stop?.raise({origin: 'ui-component', cause: 'unexpected-error'});
+  });
+  // Speakers
+  audioElementAsyncLock
+    .with(async () => {
+      if (lastSelectedSpeakers === undefined) {
+        return;
+      }
+      const initialAudioSinkDevice = await findMediaDevice('audiooutput', lastSelectedSpeakers);
+      if (initialAudioSinkDevice === undefined) {
+        return;
+      }
+
+      audioSinkDeviceId = initialAudioSinkDevice.deviceId;
+    })
+    .catch((error) => {
+      log.error(`Error setting initial speaker device: ${error}`);
+    });
 
   // Update local feed
   let user: RemoteStore<SelfReceiverData> | undefined;
@@ -539,7 +604,7 @@
     log.error(`Error updating audio feeds: ${error}`);
   });
 
-  $: handleUpdateAudioSink(audioElement, audioSinkId, feeds).catch((error) => {
+  $: handleUpdateAudioSink(audioElement, audioSinkDeviceId, feeds).catch((error) => {
     log.error(`Error updating audio sink: ${error}`);
   });
 
@@ -598,7 +663,7 @@
     <div class="footer">
       <ControlBar
         currentAudioInputDeviceId={$localDevices.microphone?.track.getSettings().deviceId}
-        currentAudioOutputDeviceId={audioSinkId}
+        currentAudioOutputDeviceId={audioSinkDeviceId}
         currentVideoDeviceId={$localDevices.camera?.track.getSettings().deviceId}
         isAudioEnabled={$localDevices.microphone?.track.enabled ?? false}
         isVideoEnabled={$localDevices.camera?.track.enabled ?? false}

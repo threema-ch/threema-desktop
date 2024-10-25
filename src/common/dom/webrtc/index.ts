@@ -15,9 +15,9 @@ import {AbortRaiser, type RemoteAbortListener} from '~/common/utils/signal';
 import type {WebRtcService} from '~/common/webrtc';
 import type {GroupCallContext, AnyGroupCallContextAbort} from '~/common/webrtc/group-call';
 
-export const MICROPHONE_STREAM_CONSTRAINTS: MediaTrackConstraints = {} as const;
+export const DEFAULT_MICROPHONE_TRACK_CONSTRAINTS: MediaTrackConstraints = {} as const;
 
-export const CAMERA_STREAM_CONSTRAINTS: MediaTrackConstraints = {
+export const DEFAULT_CAMERA_TRACK_CONSTRAINTS: MediaTrackConstraints = {
     width: {ideal: 1280, max: 1280},
     height: {ideal: 960, max: 960},
     frameRate: {ideal: 30, max: 30},

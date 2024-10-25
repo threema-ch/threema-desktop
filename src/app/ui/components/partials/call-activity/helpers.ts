@@ -3,7 +3,10 @@ import {
     transformOngoingGroupCallProps,
     type AugmentedOngoingGroupCallViewModelBundle,
 } from '~/app/ui/components/partials/call-activity/transformer';
-import {CAMERA_STREAM_CONSTRAINTS, MICROPHONE_STREAM_CONSTRAINTS} from '~/common/dom/webrtc';
+import {
+    DEFAULT_CAMERA_TRACK_CONSTRAINTS,
+    DEFAULT_MICROPHONE_TRACK_CONSTRAINTS,
+} from '~/common/dom/webrtc';
 import type {Logger} from '~/common/logging';
 import type {ParticipantId} from '~/common/network/protocol/call/group-call';
 import type {Dimensions} from '~/common/types';
@@ -42,6 +45,15 @@ export type CaptureDevicesGuard = AsyncLock<
     WritableStore<CaptureDevices>
 >;
 
+type MediaDeviceSelector =
+    | {readonly type: 'default'}
+    | {readonly type: 'by-device-id'; readonly kind: MediaDeviceKind; readonly deviceId: string}
+    | {
+          readonly type: 'by-device-label';
+          readonly kind: MediaDeviceKind;
+          readonly deviceLabel: string;
+      };
+
 export function createCaptureDevices(): {
     readonly guard: CaptureDevicesGuard;
     readonly store: ReadableStore<CaptureDevices>;
@@ -55,24 +67,59 @@ export function createCaptureDevices(): {
     };
 }
 
+export async function findMediaDevice(
+    kind: MediaDeviceKind,
+    label: string,
+): Promise<MediaDeviceInfo | undefined> {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+
+    return devices.find((device) => device.kind === kind && device.label === label);
+}
+
+async function getMediaTrackConstraintsForSelector(
+    mediaDeviceSelector: MediaDeviceSelector,
+): Promise<MediaTrackConstraints> {
+    switch (mediaDeviceSelector.type) {
+        case 'default':
+            return {};
+
+        case 'by-device-id':
+            return {deviceId: {exact: mediaDeviceSelector.deviceId}};
+
+        case 'by-device-label': {
+            const device = await findMediaDevice(
+                mediaDeviceSelector.kind,
+                mediaDeviceSelector.deviceLabel,
+            );
+            if (device === undefined) {
+                return {};
+            }
+            return {deviceId: {exact: device.deviceId}};
+        }
+
+        default:
+            return unreachable(mediaDeviceSelector);
+    }
+}
+
 /**
  * Select the default or a specific microphone device.
  */
 async function selectMicrophoneDeviceInternal(
     current: MediaStreamTrack | undefined,
     target: {
-        readonly device: 'default' | {readonly deviceId: string};
+        readonly device: MediaDeviceSelector;
         readonly state: 'on' | 'off';
     },
 ): Promise<CaptureDevices['microphone']> {
-    // Release current track (if any)
+    // Release current track (if any).
     current?.stop();
 
-    // Get new track
+    // Get new track.
     const streams = await navigator.mediaDevices.getUserMedia({
         audio: {
-            ...MICROPHONE_STREAM_CONSTRAINTS,
-            ...(target.device !== 'default' ? {deviceId: {exact: target.device.deviceId}} : {}),
+            ...DEFAULT_MICROPHONE_TRACK_CONSTRAINTS,
+            ...(await getMediaTrackConstraintsForSelector(target.device)),
         },
     });
     const [track] = streams.getAudioTracks();
@@ -92,10 +139,17 @@ export async function selectMicrophoneDevice(
     },
 ): Promise<void> {
     return await guard.with(async (store) => {
-        const microphone = await selectMicrophoneDeviceInternal(
-            store.get().microphone?.track,
-            target,
-        );
+        const microphone = await selectMicrophoneDeviceInternal(store.get().microphone?.track, {
+            device:
+                target.device === 'default'
+                    ? {type: 'default'}
+                    : {
+                          type: 'by-device-id',
+                          deviceId: target.device.deviceId,
+                          kind: 'audioinput',
+                      },
+            state: target.state,
+        });
         await attachLocalDeviceAndAnnounceCaptureState(
             guard,
             call,
@@ -112,7 +166,7 @@ export async function selectMicrophoneDevice(
 async function selectCameraDeviceInternal(
     current: MediaStreamTrack | undefined,
     target: {
-        readonly device: 'default' | {readonly deviceId: string};
+        readonly device: MediaDeviceSelector;
         readonly facing: 'user' | 'environment';
         readonly state: 'on' | 'off';
     },
@@ -123,8 +177,8 @@ async function selectCameraDeviceInternal(
     // Get new track
     const streams = await navigator.mediaDevices.getUserMedia({
         video: {
-            ...CAMERA_STREAM_CONSTRAINTS,
-            ...(target.device !== 'default' ? {deviceId: {exact: target.device.deviceId}} : {}),
+            ...DEFAULT_CAMERA_TRACK_CONSTRAINTS,
+            ...(await getMediaTrackConstraintsForSelector(target.device)),
             facingMode: target.facing,
         },
     });
@@ -146,7 +200,18 @@ export async function selectCameraDevice(
     },
 ): Promise<void> {
     return await guard.with(async (store) => {
-        const camera = await selectCameraDeviceInternal(store.get().camera?.track, target);
+        const camera = await selectCameraDeviceInternal(store.get().camera?.track, {
+            device:
+                target.device === 'default'
+                    ? {type: 'default'}
+                    : {
+                          type: 'by-device-id',
+                          deviceId: target.device.deviceId,
+                          kind: 'videoinput',
+                      },
+            facing: target.facing,
+            state: target.state,
+        });
         await attachLocalDeviceAndAnnounceCaptureState(guard, call, store, 'camera', camera);
     }, 'select-camera');
 }
@@ -158,6 +223,12 @@ export async function selectInitialCaptureDevices(
     log: Logger,
     guard: CaptureDevicesGuard,
     state: CaptureState,
+    options?: {
+        readonly preferredDevices?: {
+            readonly camera?: MediaDeviceSelector;
+            readonly microphone?: MediaDeviceSelector;
+        };
+    },
 ): Promise<void> {
     return await guard.with(async (store) => {
         // Sanity-check
@@ -172,7 +243,7 @@ export async function selectInitialCaptureDevices(
         let microphone: CaptureDevices['microphone'];
         try {
             microphone = await selectMicrophoneDeviceInternal(undefined, {
-                device: 'default',
+                device: options?.preferredDevices?.microphone ?? {type: 'default'},
                 state: state.microphone,
             });
         } catch (error) {
@@ -181,7 +252,7 @@ export async function selectInitialCaptureDevices(
         let camera: CaptureDevices['camera'];
         try {
             camera = await selectCameraDeviceInternal(undefined, {
-                device: 'default',
+                device: options?.preferredDevices?.camera ?? {type: 'default'},
                 facing: 'user',
                 state: state.camera,
             });
