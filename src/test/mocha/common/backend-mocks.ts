@@ -18,6 +18,7 @@ import {
     NACL_CONSTANTS,
     type Nonce,
     type NonceHash,
+    type PublicKey,
     type RawKey,
     wrapRawKey,
 } from '~/common/crypto';
@@ -1224,11 +1225,30 @@ export function addTestUserAsContact(
     return repositories.contacts.add.direct(makeContactInit(user));
 }
 
-export function addTestUserToFakeDirectory(directory: TestDirectoryBackend, user: TestUser): void {
+export function addTestUserToFakeDirectory(
+    directory: TestDirectoryBackend,
+    user: TestUser,
+    state: ActivityState = ActivityState.ACTIVE,
+): void {
     directory.registerUser(user.identity.string, {
         featureMask: FEATURE_MASK_FLAG.GROUP_SUPPORT as FeatureMask,
         identity: user.identity.string,
         publicKey: user.ck.public,
+        state,
+        type: IdentityType.REGULAR,
+    });
+}
+
+/** Note: This cannot be used in tasks where messages are decripted */
+export function addTestUserToFakeDirectoryPredefinedContact(
+    directory: TestDirectoryBackend,
+    user: TestUser,
+    publicKey: PublicKey,
+): void {
+    directory.registerUser(user.identity.string, {
+        featureMask: FEATURE_MASK_FLAG.GROUP_SUPPORT as FeatureMask,
+        identity: user.identity.string,
+        publicKey,
         state: ActivityState.ACTIVE,
         type: IdentityType.REGULAR,
     });
