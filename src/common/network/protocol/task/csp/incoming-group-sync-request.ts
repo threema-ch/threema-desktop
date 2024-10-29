@@ -93,10 +93,7 @@ export class IncomingGroupSyncRequestTask
                 creatorIdentity,
                 senderIdentity,
             );
-        if (
-            lastGroupSyncTimestamp !== undefined &&
-            groupSyncTimestamp.getTime() - lastGroupSyncTimestamp.getTime() < 3.6e6
-        ) {
+        if (lastGroupSyncTimestamp !== undefined) {
             this._log.info(
                 'Received a group sync request before the timer allows a new one. Discarding the message.',
             );

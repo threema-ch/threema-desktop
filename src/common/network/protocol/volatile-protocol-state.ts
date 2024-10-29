@@ -2,6 +2,10 @@ import type {ContactInitFragment} from '~/common/model/types/contact';
 import type {GroupId, IdentityString} from '~/common/network/types';
 import {tag, type WeakOpaque} from '~/common/types';
 
+// Lifetime constants as defined by the protocol.
+const GROUP_SYNC_REQUEST_CACHE_ENTRY_LIFETIME_MS = 3.6e6; // One hour
+const VALID_CONTACT_LOOKUP_CACHE_ENTRY_LIFETIME_MS = 60_000;
+
 type GroupSyncRequestsCacheKey = WeakOpaque<
     string,
     {readonly GroupSyncRequestsCacheKey: unique symbol}
@@ -27,7 +31,10 @@ export interface VolatileProtocolState {
      * {@link senderIdentity}.
      *
      * @returns `undefined` if the specified sender has never requested a group sync in this
-     *   "volatile" protocol session, and the timestamp of the last request otherwise.
+     *   "volatile" protocol session or if the corresponding entry has expired, and the timestamp of
+     *   the last request otherwise.
+     *
+     *   Note: Deletes the corresponding cache etnry if it has expired.
      */
     readonly getLastProcessedGroupSyncRequest: (
         groupId: GroupId,
@@ -49,8 +56,10 @@ export interface VolatileProtocolState {
     /**
      * Get the timestamp and the {@link ContactInit} of a contact specified by `contactIdentity.
      *
-     * @returns `undefined` if the specified identity has not been lookup up and the contact
-     *   information together with the timestamp otherwise.
+     * @returns `undefined` if the specified identity has not been lookup up or is expired and the
+     *   contact information together with the timestamp otherwise.
+     *
+     *   Note: Deletes the corresponding cache etnry if it has expired.
      */
     readonly getValidContactLookup: (
         contactIdentity: IdentityString,
@@ -79,9 +88,16 @@ export class VolatileProtocolStateBackend implements VolatileProtocolState {
         creatorIdentity: IdentityString,
         senderIdentity: IdentityString,
     ): Date | undefined {
-        return this._lastGroupSyncRequests.get(
-            this._createGroupSyncRequestCacheKey(groupId, creatorIdentity, senderIdentity),
-        );
+        const key = this._createGroupSyncRequestCacheKey(groupId, creatorIdentity, senderIdentity);
+        const lookup = this._lastGroupSyncRequests.get(key);
+        if (lookup === undefined) {
+            return undefined;
+        }
+        if (Date.now() - lookup.getTime() > GROUP_SYNC_REQUEST_CACHE_ENTRY_LIFETIME_MS) {
+            this._lastGroupSyncRequests.delete(key);
+            return undefined;
+        }
+        return lookup;
     }
 
     /** @inheritdoc */
@@ -101,9 +117,19 @@ export class VolatileProtocolStateBackend implements VolatileProtocolState {
     public getValidContactLookup(
         contactIdentity: IdentityString,
     ): ValidContactLookupCacheValue | undefined {
-        return this._lastContactLookups.get(
-            this._createValidContactLookupCacheKey(contactIdentity),
-        );
+        const key = this._createValidContactLookupCacheKey(contactIdentity);
+        const lookup = this._lastContactLookups.get(key);
+        if (lookup === undefined) {
+            return undefined;
+        }
+        if (
+            Date.now() - lookup.createdAt.getTime() >
+            VALID_CONTACT_LOOKUP_CACHE_ENTRY_LIFETIME_MS
+        ) {
+            this._lastContactLookups.delete(key);
+            return undefined;
+        }
+        return lookup;
     }
 
     /** @inheritdoc */

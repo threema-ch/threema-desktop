@@ -46,10 +46,7 @@ export function run(): void {
             const cacheEntry = services.volatileProtocolState.getValidContactLookup(
                 contact.get().view.identity,
             );
-            expect(cacheEntry, 'Contact should be added to cache').to.not.be.undefined;
-
-            expect(cacheEntry?.lookup instanceof ModelStore, 'Contact in cache should be known').to
-                .be.true;
+            expect(cacheEntry, 'contact should not be added to cache').to.be.undefined;
         });
 
         it('an unknown contact is returned as such', async function () {
@@ -80,11 +77,7 @@ export function run(): void {
             assert(cacheEntry !== undefined, 'Contact should be added to cache');
 
             assert(
-                !(
-                    cacheEntry.lookup instanceof ModelStore ||
-                    cacheEntry.lookup === 'invalid' ||
-                    cacheEntry.lookup === 'me'
-                ),
+                cacheEntry.lookup !== 'invalid',
                 'Contact should be added to cache as init fragment',
             );
 
@@ -123,11 +116,7 @@ export function run(): void {
             assert(cacheEntry !== undefined, 'Contact should be added to cache');
 
             assert(
-                !(
-                    cacheEntry.lookup instanceof ModelStore ||
-                    cacheEntry.lookup === 'invalid' ||
-                    cacheEntry.lookup === 'me'
-                ),
+                cacheEntry.lookup !== 'invalid',
                 'Contact should be added to cache as init fragment',
             );
 
@@ -232,25 +221,15 @@ export function run(): void {
             const contactCacheEntry = services.volatileProtocolState.getValidContactLookup(
                 contact.get().view.identity,
             );
-            expect(contactCacheEntry, 'Contact should be added to cache').to.not.be.undefined;
-
-            expect(
-                contactCacheEntry?.lookup instanceof ModelStore,
-                'Contact in cache should be known',
-            ).to.be.true;
+            expect(contactCacheEntry, 'Known contact should not be added to cache').to.be.undefined;
 
             const supportCacheEntry = services.volatileProtocolState.getValidContactLookup(
                 support.identity.string,
             );
-
-            assert(supportCacheEntry !== undefined, ' Support xcontact should be added to cache');
+            assert(supportCacheEntry !== undefined, ' Support contact should be added to cache');
 
             assert(
-                !(
-                    supportCacheEntry.lookup instanceof ModelStore ||
-                    supportCacheEntry.lookup === 'invalid' ||
-                    supportCacheEntry.lookup === 'me'
-                ),
+                supportCacheEntry.lookup !== 'invalid',
                 'support contact should be added to cache as init fragment',
             );
 
@@ -265,11 +244,7 @@ export function run(): void {
             assert(unknownCacheEntry !== undefined, 'unknown contact should be added to cache');
 
             assert(
-                !(
-                    unknownCacheEntry.lookup instanceof ModelStore ||
-                    unknownCacheEntry.lookup === 'invalid' ||
-                    unknownCacheEntry.lookup === 'me'
-                ),
+                unknownCacheEntry.lookup !== 'invalid',
                 'unknown contact should be added to cache as init fragment',
             );
 

@@ -33,8 +33,6 @@ export type ContactOrInitMapValue = ModelStore<Contact> | ContactInitFragment | 
 // level. That's why we only put a `ContactOrInitFragment` into the map.
 type ContactOrInitMap = Map<IdentityString, ContactOrInitMapValue>;
 
-const VALID_CONTACT_LOOKUP_EXPIRATION_MS = 600000;
-
 export async function validContactsLookupSteps(
     services: Pick<
         ServicesForTasks,
@@ -92,10 +90,7 @@ export async function validContactsLookupSteps(
         // 4.5 Lookup the properties to create a contact from associated to identity from the
         // contact lookup cache and let init be the result.
         const init = services.volatileProtocolState.getValidContactLookup(identity);
-        if (
-            init !== undefined &&
-            Date.now() - init.createdAt.getTime() < VALID_CONTACT_LOOKUP_EXPIRATION_MS
-        ) {
+        if (init !== undefined) {
             // 4.6 If init is defined, add init to the contact-or-inits map and abort these
             // sub-steps.
             contactOrInitMap.set(identity, init.lookup);
