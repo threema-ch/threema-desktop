@@ -35,7 +35,12 @@ export function getTestProfile(): string {
 
 export function getTestDataFile(flavor: BuildFlavor): string {
     const fileName = `test-data-${flavor}.json`;
-    return path.resolve(path.join('src', 'test', 'playwright', fileName));
+    const filePath = path.resolve(path.join('src', 'test', 'playwright', fileName));
+
+    const localOverride = `test-data-${flavor}.local.json`;
+    const localOverridePath = path.resolve(path.join('src', 'test', 'playwright', localOverride));
+
+    return fs.existsSync(localOverridePath) ? localOverridePath : filePath;
 }
 
 export function deleteProfileDirectory(flavor: BuildFlavor, profile: string): void {

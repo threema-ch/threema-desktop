@@ -41,6 +41,9 @@ you can setup the required env vars in your `settings.json`:
 Playwright is expecting a test data file at `src/test/playwright/`. The filename should be
 `test-data-${PW_FLAVOR}.json` and match your `PW_FLAVOR` e.g. `test-data-consumer-sandbox.json`
 
+For local development, you shouldn’t modify this file. Instead, create a local override with the
+filename `test-data-${PW_FLAVOR}.local.json`.
+
 ```json
 {
   "profile": {
