@@ -1,9 +1,5 @@
 #![windows_subsystem = "windows"] // Prevent console window from showing up on Windows
 
-mod update;
-mod util;
-
-use colored::Colorize;
 use std::{
     env, fs,
     io::{stderr, stdout, IsTerminal},
@@ -11,7 +7,12 @@ use std::{
     process::{self, Command, Stdio},
     time::Duration,
 };
+
+use colored::Colorize;
 use util::{constants::*, logging::init_terminal, paths::*};
+
+mod update;
+mod util;
 
 fn print_usage_and_exit(launcher_path: &str) -> ! {
     if cfg!(feature = "allow_path_override") {
@@ -118,7 +119,7 @@ fn main() {
 
     // Determine profile directory
     let profile_directory =
-        get_persistent_app_data_dir().join(get_profile_directory_name(args.as_slice()));
+        get_persistent_app_data_base_dir().join(get_profile_directory_name(args.as_slice()));
     print_log!("Profile directory: {:?}", profile_directory);
 
     loop {
@@ -232,6 +233,7 @@ fn main() {
                         std::thread::sleep(Duration::from_millis(DELAY_BEFORE_ERROR_EXIT_MS));
                         process::exit(EXIT_CODE_LAUNCHER_ERROR);
                     }
+                    break;
                 }
                 other => {
                     print_error!("Unexpected update request on unsupported OS: {}", other);
