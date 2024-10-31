@@ -73,10 +73,7 @@ export interface Argon2MinParams {
     readonly iterations: u53;
     readonly parallelism: u53;
 }
-export const ARGON2_MIN_PARAMS: {
-    accept: Argon2MinParams;
-    create: Argon2MinParams;
-} = {
+export const ARGON2_MIN_PARAMS = {
     accept: {
         saltLengthBytes: 16,
         memoryBytes: 128 * MiB,
@@ -89,6 +86,9 @@ export const ARGON2_MIN_PARAMS: {
         iterations: 3,
         parallelism: 1,
     },
+} as const satisfies {
+    readonly accept: Argon2MinParams;
+    readonly create: Argon2MinParams;
 };
 
 /**
