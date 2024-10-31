@@ -9,7 +9,7 @@
   import MessageContextMenuProvider from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-context-menu-provider/MessageContextMenuProvider.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {reactive} from '~/app/ui/utils/svelte';
-  import {formatDateLocalized} from '~/app/ui/utils/timestamp';
+  import {getDisplayTimestampForMessage} from '~/app/ui/utils/timestamp';
   import {extractErrorMessage} from '~/common/error';
 
   const {uiLogging, systemTime} = globals.unwrap();
@@ -30,10 +30,7 @@
   } = services;
 
   $: timestamp = reactive(
-    () => ({
-      fluent: formatDateLocalized(status.created.at, $i18n, 'auto', $appearance.view.use24hTime),
-      short: formatDateLocalized(status.created.at, $i18n, 'time', $appearance.view.use24hTime),
-    }),
+    () => getDisplayTimestampForMessage($i18n, direction, status, $appearance.view.use24hTime),
     [$systemTime.current],
   );
 </script>

@@ -15,7 +15,7 @@
     transformMessageQuoteProps,
   } from '~/app/ui/components/partials/message-preview-list/transformers';
   import {i18n} from '~/app/ui/i18n';
-  import {formatDateLocalized} from '~/app/ui/utils/timestamp';
+  import {getDisplayTimestampForMessage} from '~/app/ui/utils/timestamp';
   import type {DbReceiverLookup} from '~/common/db';
   import {ReceiverType} from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
@@ -95,20 +95,12 @@
                 direction={message.direction}
                 reactions={message.reactions}
                 status={message.status}
-                timestamp={{
-                  fluent: formatDateLocalized(
-                    message.status.created.at,
-                    $i18n,
-                    'auto',
-                    $appearance.view.use24hTime,
-                  ),
-                  short: formatDateLocalized(
-                    message.status.created.at,
-                    $i18n,
-                    'time',
-                    $appearance.view.use24hTime,
-                  ),
-                }}
+                timestamp={getDisplayTimestampForMessage(
+                  $i18n,
+                  message.direction,
+                  message.status,
+                  $appearance.view.use24hTime,
+                )}
                 content={htmlContent === undefined
                   ? undefined
                   : {

@@ -73,12 +73,7 @@ export interface MessageProps {
     readonly sender?: Pick<AvatarProps, 'color' | 'initials'> & Pick<SenderProps, 'color' | 'name'>;
     readonly status: IndicatorProps['status'];
     /** Formatted timestamp of creation. */
-    readonly timestamp: {
-        /** Human-readable, textual representation of a relative date. */
-        readonly fluent: string;
-        /** Short representation of a timestamp, usually only the time itself. */
-        readonly short: string;
-    };
+    readonly timestamp: Timestamp;
 }
 
 interface DefaultQuoteProps extends QuoteProps {
@@ -93,4 +88,11 @@ interface NotFoundQuoteProps {
 interface DeletedQuoteProps {
     readonly type: 'deleted';
     readonly fallbackText: string;
+}
+
+export interface Timestamp {
+    /** Human-readable, textual representation of a relative date. */
+    readonly fluent: string;
+    /** Short representation of a timestamp, usually only the time itself. */
+    readonly short: string;
 }

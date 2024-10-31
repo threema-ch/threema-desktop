@@ -24,7 +24,7 @@
   import {syncAndGetPayload} from '~/app/ui/utils/file-sync/helpers';
   import {reactive} from '~/app/ui/utils/svelte';
   import {escapeHtmlUnsafeChars} from '~/app/ui/utils/text';
-  import {formatDateLocalized} from '~/app/ui/utils/timestamp';
+  import {getDisplayTimestampForMessage} from '~/app/ui/utils/timestamp';
   import {extractErrorMessage} from '~/common/error';
   import {EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES} from '~/common/network/protocol/constants';
   import {assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
@@ -241,10 +241,7 @@
   );
 
   $: timestamp = reactive(
-    () => ({
-      fluent: formatDateLocalized(status.created.at, $i18n, 'auto', $appearance.view.use24hTime),
-      short: formatDateLocalized(status.created.at, $i18n, 'time', $appearance.view.use24hTime),
-    }),
+    () => getDisplayTimestampForMessage($i18n, direction, status, $appearance.view.use24hTime),
     [$systemTime.current],
   );
 

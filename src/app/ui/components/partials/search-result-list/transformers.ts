@@ -58,6 +58,7 @@ export function conversationSearchResultSetStoreToConversationPreviewListPropsSt
                                     reactions: [],
                                     sender: lastMessageViewModel.sender,
                                     status: lastMessageViewModel.status,
+                                    direction: lastMessageViewModel.direction,
                                 };
                                 break;
 
@@ -71,6 +72,7 @@ export function conversationSearchResultSetStoreToConversationPreviewListPropsSt
                                     sender: lastMessageViewModel.sender,
                                     status: lastMessageViewModel.status,
                                     text: lastMessageViewModel.text,
+                                    direction: lastMessageViewModel.direction,
                                 };
                                 break;
 

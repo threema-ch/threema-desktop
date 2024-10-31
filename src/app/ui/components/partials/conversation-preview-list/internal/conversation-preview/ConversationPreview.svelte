@@ -19,6 +19,7 @@
   import type {VirtualRect} from '~/app/ui/generic/popover/types';
   import {i18n} from '~/app/ui/i18n';
   import {reactive} from '~/app/ui/utils/svelte';
+  import {getDisplayDateForMessage} from '~/app/ui/utils/timestamp';
   import type {DbReceiverLookup} from '~/common/db';
   import {WritableStore} from '~/common/utils/store';
   import {unusedProp} from '~/common/utils/svelte-helpers';
@@ -173,7 +174,7 @@
               : [
                   {
                     type: 'relative-timestamp',
-                    date: lastMessage.status.created.at,
+                    date: getDisplayDateForMessage(lastMessage.direction, lastMessage.status),
                     format: 'auto',
                     services,
                   },

@@ -25,6 +25,7 @@ export interface ConversationPreviewProps {
     readonly isTyping?: boolean;
     readonly isPrivate: boolean;
     readonly lastMessage?: {
+        readonly direction: 'inbound' | 'outbound';
         readonly file?: Pick<NonNullable<MessageProps['file']>, 'type'>;
         readonly reactions: IndicatorProps['reactions'];
         readonly sender?: NonNullable<MessageProps['sender']> &

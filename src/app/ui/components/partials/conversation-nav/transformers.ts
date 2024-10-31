@@ -61,6 +61,7 @@ export function conversationListItemSetStoreToConversationPreviewListPropsStore(
                                     reactions: [],
                                     sender: lastMessageViewModel.sender,
                                     status: lastMessageViewModel.status,
+                                    direction: lastMessageViewModel.direction,
                                 };
                                 break;
 
@@ -74,6 +75,7 @@ export function conversationListItemSetStoreToConversationPreviewListPropsStore(
                                     sender: lastMessageViewModel.sender,
                                     status: lastMessageViewModel.status,
                                     text: lastMessageViewModel.text,
+                                    direction: lastMessageViewModel.direction,
                                 };
                                 break;
 

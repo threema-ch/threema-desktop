@@ -1,7 +1,61 @@
+import type {Status} from '~/app/ui/components/molecules/message/internal/indicator/props';
+import type {Timestamp} from '~/app/ui/components/molecules/message/props';
 import type {I18nType} from '~/app/ui/i18n-types';
 import type {u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {isToday, isWithinCurrentYear, isWithinLastWeek, isYesterday} from '~/common/utils/date';
+
+/**
+ * Return the date that should be displayed given a message.
+ *
+ * @param i18n Translation provider.
+ * @param direction Message direction.
+ * @param status Message status fields.
+ * @param use24hTime Whether or not to use 24h time format. Defaults to true.
+ * @returns A timestamp containing a fluent and a short represantion of the date that should be
+ *   displayed in relation to a message status.
+ */
+export function getDisplayTimestampForMessage(
+    i18n: I18nType,
+    direction: 'inbound' | 'outbound',
+    status: Status,
+    use24hTime: boolean,
+): Timestamp {
+    const date = getDisplayDateForMessage(direction, status);
+    return {
+        fluent: formatDateLocalized(date, i18n, 'auto', use24hTime),
+        short: formatDateLocalized(date, i18n, 'time', use24hTime),
+    };
+}
+
+/**
+ * Return the date that should be displayed given a message.
+ *
+ * @param i18n Translation provider.
+ * @param direction Message direction.
+ * @param status Message status fields.
+ * @returns A date that corresponds to the date that should be displayed in relation to a message
+ *   status.
+ */
+export function getDisplayDateForMessage(direction: 'inbound' | 'outbound', status: Status): Date {
+    return direction === 'inbound' ? dateForInboundMessage(status) : dateForOutboundMessage(status);
+}
+
+function dateForInboundMessage(status: Status): Date {
+    return status.created.at;
+}
+
+function dateForOutboundMessage(status: Status): Date {
+    let date = status.created.at;
+    if (status.read !== undefined) {
+        date = status.read.at;
+    } else if (status.delivered !== undefined) {
+        date = status.delivered.at;
+    } else if (status.sent) {
+        date = status.sent.at;
+    }
+    return date;
+}
 
 /**
  * Format a date as a "fluent", localized string, while choosing the appropriate length
