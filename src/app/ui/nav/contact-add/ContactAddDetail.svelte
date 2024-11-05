@@ -41,8 +41,8 @@
     });
   }
 
-  function navigateToContactList(): void {
-    router.go({nav: ROUTE_DEFINITIONS.nav.contactList.withoutParams()});
+  function navigateToReceiverList(): void {
+    router.go({nav: ROUTE_DEFINITIONS.nav.receiverList.withoutParams()});
   }
 
   async function handleAddContact(): Promise<void> {
@@ -74,7 +74,7 @@
           uid: contactStore.ctx,
         },
       },
-      {nav: ROUTE_DEFINITIONS.nav.contactList.withoutParams()},
+      {nav: ROUTE_DEFINITIONS.nav.receiverList.withoutParams()},
     );
   }
 
@@ -115,7 +115,7 @@
   >
     <HiddenSubmit />
     <div class="bar">
-      <ContactAddNavBar on:back={navigateBack} on:cancel={navigateToContactList} />
+      <ContactAddNavBar on:back={navigateBack} on:cancel={navigateToReceiverList} />
     </div>
 
     <div class="content">

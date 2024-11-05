@@ -3,7 +3,7 @@ import type {TabState} from '~/app/ui/components/partials/address-book/types';
 import type {
     ContextMenuItemHandlerProps,
     RemoteReceiverListViewModelStoreValue,
-} from '~/app/ui/components/partials/contact-nav/types';
+} from '~/app/ui/components/partials/receiver-nav/types';
 import type {AnyReceiver} from '~/common/model';
 import {unreachable} from '~/common/utils/assert';
 import type {Remote} from '~/common/utils/endpoint';
@@ -21,11 +21,11 @@ export function receiverListViewModelStoreToReceiverPreviewListPropsStore(
 ): IQueryableStore<AddressBookProps<ContextMenuItemHandlerProps<AnyReceiver>>['items']> {
     return derive(
         [receiverListViewModelStore],
-        ([{currentValue: contactListViewModel}], getAndSubscribe) => {
+        ([{currentValue: receiverListViewModel}], getAndSubscribe) => {
             let filteredListItems: Remote<ReceiverListItemViewModelBundle<AnyReceiver>>[] = [];
             switch (tabState) {
                 case 'contact': {
-                    const contactListItemSetStore = contactListViewModel?.contactListItemSetStore;
+                    const contactListItemSetStore = receiverListViewModel?.contactListItemSetStore;
                     if (contactListItemSetStore === undefined) {
                         return undefined;
                     }
@@ -39,22 +39,21 @@ export function receiverListViewModelStoreToReceiverPreviewListPropsStore(
                 }
 
                 case 'group': {
-                    const groupContactListItemSetStore =
-                        contactListViewModel?.groupContactListItemSetStore;
-                    if (groupContactListItemSetStore === undefined) {
+                    const groupListItemSetStore = receiverListViewModel?.groupListItemSetStore;
+                    if (groupListItemSetStore === undefined) {
                         return undefined;
                     }
 
                     // Cast is necessary here, as TypeScript is not able to infer that `Group` is a subtype
                     // of `AnyReceiver`.
-                    filteredListItems = [
-                        ...getAndSubscribe(groupContactListItemSetStore),
-                    ] as Remote<ReceiverListItemViewModelBundle<AnyReceiver>>[];
+                    filteredListItems = [...getAndSubscribe(groupListItemSetStore)] as Remote<
+                        ReceiverListItemViewModelBundle<AnyReceiver>
+                    >[];
                     break;
                 }
 
                 case 'work-subscription-contact': {
-                    const contactListItemSetStore = contactListViewModel?.contactListItemSetStore;
+                    const contactListItemSetStore = receiverListViewModel?.contactListItemSetStore;
                     if (contactListItemSetStore === undefined) {
                         return undefined;
                     }

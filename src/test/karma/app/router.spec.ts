@@ -91,9 +91,9 @@ export function run(): void {
             });
 
             // Nav
-            router.go({nav: ROUTE_DEFINITIONS.nav.contactList.withoutParams()});
+            router.go({nav: ROUTE_DEFINITIONS.nav.receiverList.withoutParams()});
             router.assertRouteIds({
-                nav: 'contactList',
+                nav: 'receiverList',
                 main: 'welcome',
                 aside: undefined,
                 modal: undefined,
@@ -107,7 +107,7 @@ export function run(): void {
                 }),
             });
             router.assertRouteIds({
-                nav: 'contactList',
+                nav: 'receiverList',
                 main: 'conversation',
                 aside: undefined,
                 modal: undefined,
@@ -122,7 +122,7 @@ export function run(): void {
                 }),
             });
             router.assertRouteIds({
-                nav: 'contactList',
+                nav: 'receiverList',
                 main: 'conversation',
                 aside: 'contactDetails',
                 modal: undefined,
@@ -132,7 +132,7 @@ export function run(): void {
             // Modal
             router.go({modal: ROUTE_DEFINITIONS.modal.changePassword.withoutParams()});
             router.assertRouteIds({
-                nav: 'contactList',
+                nav: 'receiverList',
                 main: 'conversation',
                 aside: 'contactDetails',
                 modal: 'changePassword',
@@ -142,7 +142,7 @@ export function run(): void {
             // Close aside
             router.go({aside: 'close'});
             router.assertRouteIds({
-                nav: 'contactList',
+                nav: 'receiverList',
                 main: 'conversation',
                 aside: undefined,
                 modal: 'changePassword',
@@ -152,7 +152,7 @@ export function run(): void {
             // Close modal
             router.go({modal: 'close'});
             router.assertRouteIds({
-                nav: 'contactList',
+                nav: 'receiverList',
                 main: 'conversation',
                 aside: undefined,
                 modal: undefined,
@@ -208,9 +208,9 @@ export function run(): void {
                         },
                     }),
                 });
-                // @ts-expect-error The `contactList` route is a nav route, not a main route
-                expect(() => router.assert('main', ['contactList'])).to.throw(
-                    'Unexpected state for panel main (expected=contactList, got=conversation)',
+                // @ts-expect-error The `receiverList` route is a nav route, not a main route
+                expect(() => router.assert('main', ['receiverList'])).to.throw(
+                    'Unexpected state for panel main (expected=receiverList, got=conversation)',
                 );
             });
         });

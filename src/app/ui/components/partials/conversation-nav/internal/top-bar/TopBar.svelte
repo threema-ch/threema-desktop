@@ -20,15 +20,15 @@
   export let initials: $$Props['initials'];
 
   const dispatch = createEventDispatcher<{
-    clickcontactlistbutton: undefined;
+    clickreceiverlistbutton: undefined;
     clickprofilepicture: undefined;
     clicksettingsbutton: undefined;
   }>();
 
   let popover: SvelteNullableBinding<Popover> = null;
 
-  function handleClickContactListButton(): void {
-    dispatch('clickcontactlistbutton');
+  function handleClickReceiverListButton(): void {
+    dispatch('clickreceiverlistbutton');
   }
 
   function handleClickProfilePicture(): void {
@@ -61,7 +61,7 @@
         >
       </IconButton> -->
 
-    <IconButton on:click={handleClickContactListButton} flavor="naked">
+    <IconButton on:click={handleClickReceiverListButton} flavor="naked">
       <MdIcon theme="Outlined">person_outline</MdIcon>
     </IconButton>
 

@@ -8,12 +8,12 @@
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import AddressBook from '~/app/ui/components/partials/address-book/AddressBook.svelte';
   import type {TabState} from '~/app/ui/components/partials/address-book/types';
-  import {receiverListViewModelStoreToReceiverPreviewListPropsStore} from '~/app/ui/components/partials/contact-nav/transformers';
+  import type {MessageForwardModalProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-forward-modal/props';
+  import {receiverListViewModelStoreToReceiverPreviewListPropsStore} from '~/app/ui/components/partials/receiver-nav/transformers';
   import type {
     ContextMenuItemHandlerProps,
     RemoteReceiverListViewModelStoreValue,
-  } from '~/app/ui/components/partials/contact-nav/types';
-  import type {MessageForwardModalProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-forward-modal/props';
+  } from '~/app/ui/components/partials/receiver-nav/types';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';

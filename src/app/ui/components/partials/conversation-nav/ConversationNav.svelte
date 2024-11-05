@@ -67,8 +67,8 @@
     searchBarComponent?.focusAndSelect();
   }
 
-  function handleClickContactListButton(): void {
-    router.go({nav: ROUTE_DEFINITIONS.nav.contactList.withoutParams()});
+  function handleClickReceiverListButton(): void {
+    router.go({nav: ROUTE_DEFINITIONS.nav.receiverList.withoutParams()});
   }
 
   function handleClickProfilePicture(): void {
@@ -249,7 +249,7 @@
       <TopBar
         profilePicture={$profileViewModelStore.profilePicture}
         initials={$profileViewModelStore.initials}
-        on:clickcontactlistbutton={handleClickContactListButton}
+        on:clickreceiverlistbutton={handleClickReceiverListButton}
         on:clickprofilepicture={handleClickProfilePicture}
         on:clicksettingsbutton={handleClickSettingsButton}
       />

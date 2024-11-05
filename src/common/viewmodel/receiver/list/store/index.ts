@@ -17,7 +17,7 @@ export function getReceiverListViewModelStore(
 
     const receiverListViewModel: ReceiverListViewModel = {
         contactListItemSetStore: getContactListItemSetStore(services, viewModelRepository),
-        groupContactListItemSetStore: getGroupListItemSetStore(services, viewModelRepository),
+        groupListItemSetStore: getGroupListItemSetStore(services, viewModelRepository),
     };
 
     return new WritableStore(endpoint.exposeProperties({...receiverListViewModel}));

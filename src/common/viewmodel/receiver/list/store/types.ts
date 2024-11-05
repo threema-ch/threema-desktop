@@ -9,7 +9,7 @@ import type {ReceiverListItemViewModelBundle} from '~/common/viewmodel/receiver/
  */
 export interface ReceiverListViewModel {
     readonly contactListItemSetStore: ReceiverListItemSetStore<Contact>;
-    readonly groupContactListItemSetStore: ReceiverListItemSetStore<Group>;
+    readonly groupListItemSetStore: ReceiverListItemSetStore<Group>;
 }
 
 /**

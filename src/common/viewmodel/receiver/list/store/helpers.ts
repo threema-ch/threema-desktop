@@ -4,7 +4,7 @@ import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmode
 import type {ReceiverListViewModel} from '~/common/viewmodel/receiver/list/store/types';
 
 /**
- * Returns a {@link ContactListItemSetStore} containing {@link ReceiverListItemViewModelBundle}s of
+ * Returns a {@link ReceiverListItemSetStore} containing {@link ReceiverListItemViewModelBundle}s of
  * all contacts.
  */
 export function getContactListItemSetStore(
@@ -14,7 +14,7 @@ export function getContactListItemSetStore(
     const {logging, model} = services;
 
     // Options for all derived stores below.
-    const tag = `contact.contact-list.item[]`;
+    const tag = `receiver-list.contact[]`;
     const storeOptions = {
         debug: {
             log: logging.logger(`viewmodel.${tag}`),
@@ -35,17 +35,17 @@ export function getContactListItemSetStore(
 }
 
 /**
- * Returns a {@link GroupListItemSetStore} containing {@link ReceiverListItemViewModelBundle}s of
+ * Returns a {@link ReceiverListItemSetStore} containing {@link ReceiverListItemViewModelBundle}s of
  * all groups.
  */
 export function getGroupListItemSetStore(
     services: Pick<ServicesForViewModel, 'logging' | 'model'>,
     viewModelRepository: IViewModelRepository,
-): ReceiverListViewModel['groupContactListItemSetStore'] {
+): ReceiverListViewModel['groupListItemSetStore'] {
     const {logging, model} = services;
 
     // Options for all derived stores below.
-    const tag = `contact.group-contact-list.item[]`;
+    const tag = `receiver-list.grou[[]`;
     const storeOptions = {
         debug: {
             log: logging.logger(`viewmodel.${tag}`),
@@ -55,12 +55,12 @@ export function getGroupListItemSetStore(
 
     const groupSetStore = model.groups.getAll();
 
-    // Fetch the `ContactListItemViewModelBundle` for every group in the set store.
-    const groupContactListItemSetStore = new LocalDerivedSetStore(
+    // Fetch the `ReceiverListItemViewModelBundle` for every group in the set store.
+    const groupListItemSetStore = new LocalDerivedSetStore(
         groupSetStore,
         (groupModelStore) => viewModelRepository.receiverListItem<Group>(groupModelStore),
         storeOptions,
     );
 
-    return groupContactListItemSetStore;
+    return groupListItemSetStore;
 }

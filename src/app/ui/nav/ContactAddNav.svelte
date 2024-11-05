@@ -35,8 +35,8 @@
     identityFieldError = undefined;
   }
 
-  function navigateToContactList(): void {
-    router.go({nav: ROUTE_DEFINITIONS.nav.contactList.withoutParams()});
+  function navigateToReceiverList(): void {
+    router.go({nav: ROUTE_DEFINITIONS.nav.receiverList.withoutParams()});
   }
 
   function navigateToContactDetails(identityData: ValidIdentityData): void {
@@ -117,7 +117,7 @@
   >
     <HiddenSubmit />
     <div class="bar">
-      <ContactAddNavBar on:back={navigateToContactList} on:cancel={navigateToContactList} />
+      <ContactAddNavBar on:back={navigateToReceiverList} on:cancel={navigateToReceiverList} />
     </div>
     <div class="content">
       <span class="note-enter"

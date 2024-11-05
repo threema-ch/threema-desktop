@@ -349,8 +349,8 @@ export const ROUTE_DEFINITIONS = {
             id: 'conversationList',
             params: undefined,
         }),
-        contactList: defineNav({
-            id: 'contactList',
+        receiverList: defineNav({
+            id: 'receiverList',
             params: undefined,
         }),
         contactAdd: defineNav({

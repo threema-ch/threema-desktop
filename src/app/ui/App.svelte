@@ -4,10 +4,10 @@
   import type {AppServices, AppServicesForSvelte} from '~/app/types';
   import GroupCallActivity from '~/app/ui/components/partials/call-activity/GroupCallActivity.svelte';
   import ContactDetail from '~/app/ui/components/partials/contact-detail/ContactDetail.svelte';
-  import ContactNav from '~/app/ui/components/partials/contact-nav/ContactNav.svelte';
   import ConversationView from '~/app/ui/components/partials/conversation/ConversationView.svelte';
   import ConversationNav from '~/app/ui/components/partials/conversation-nav/ConversationNav.svelte';
   import GroupDetail from '~/app/ui/components/partials/group-detail/GroupDetail.svelte';
+  import ReceiverNav from '~/app/ui/components/partials/receiver-nav/ReceiverNav.svelte';
   import Settings from '~/app/ui/components/partials/settings/Settings.svelte';
   import NavSettingsList from '~/app/ui/components/partials/settings-nav/SettingsNav.svelte';
   import MainWelcome from '~/app/ui/components/partials/welcome/Welcome.svelte';
@@ -126,8 +126,8 @@
       case 'conversationList':
         navPanelComponent = ConversationNav;
         break;
-      case 'contactList':
-        navPanelComponent = ContactNav;
+      case 'receiverList':
+        navPanelComponent = ReceiverNav;
         break;
       case 'contactAdd':
         navPanelComponent = NavContactAdd;

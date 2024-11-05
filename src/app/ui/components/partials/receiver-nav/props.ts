@@ -1,8 +1,8 @@
 import type {AppServicesForSvelte} from '~/app/types';
 
 /**
- * Props accepted by the `ContactNav` component.
+ * Props accepted by the `ReceiverNav` component.
  */
-export interface ContactNavProps {
+export interface ReceiverNavProps {
     readonly services: AppServicesForSvelte;
 }

@@ -1,5 +1,5 @@
 <!--
-  @component Renders the contact navigation sidebar (i.e., the address book).
+  @component Renders the receiver navigation sidebar (i.e., the address book).
 -->
 <script lang="ts">
   import {onMount} from 'svelte';
@@ -8,18 +8,19 @@
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import AddressBook from '~/app/ui/components/partials/address-book/AddressBook.svelte';
   import type {TabState} from '~/app/ui/components/partials/address-book/types';
-  import TopBar from '~/app/ui/components/partials/contact-nav/internal/top-bar/TopBar.svelte';
-  import type {ContactNavProps} from '~/app/ui/components/partials/contact-nav/props';
-  import {receiverListViewModelStoreToReceiverPreviewListPropsStore} from '~/app/ui/components/partials/contact-nav/transformers';
+  import EditContactModal from '~/app/ui/components/partials/modals/edit-contact-modal/EditContactModal.svelte';
+  import TopBar from '~/app/ui/components/partials/receiver-nav/internal/top-bar/TopBar.svelte';
+  import type {ReceiverNavProps} from '~/app/ui/components/partials/receiver-nav/props';
+  import {receiverListViewModelStoreToReceiverPreviewListPropsStore} from '~/app/ui/components/partials/receiver-nav/transformers';
   import type {
     ContextMenuItemHandlerProps,
     ModalState,
     RemoteReceiverListViewModelStoreValue,
-  } from '~/app/ui/components/partials/contact-nav/types';
-  import EditContactModal from '~/app/ui/components/partials/modals/edit-contact-modal/EditContactModal.svelte';
+  } from '~/app/ui/components/partials/receiver-nav/types';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
+  import type {DbReceiverLookup} from '~/common/db';
   import {ConnectionState} from '~/common/enum';
   import type {AnyReceiver} from '~/common/model';
   import {DEFAULT_CATEGORY} from '~/common/settings';
@@ -27,15 +28,14 @@
   import {ReadableStore, type IQueryableStore} from '~/common/utils/store';
 
   const {uiLogging, hotkeyManager} = globals.unwrap();
-  const log = uiLogging.logger('ui.component.contact-nav');
+  const log = uiLogging.logger('ui.component.receiver-nav');
 
-  type $$Props = ContactNavProps;
+  type $$Props = ReceiverNavProps;
 
   export let services: $$Props['services'];
 
   const {backend, router} = services;
 
-  // ViewModelBundle containing all contacts.
   let viewModelStore: IQueryableStore<RemoteReceiverListViewModelStoreValue | undefined> =
     new ReadableStore(undefined);
 
@@ -101,6 +101,14 @@
     };
   }
 
+  function handleClickReceiverListItem(lookup: DbReceiverLookup, active?: boolean): void {
+    if (active === true) {
+      router.goToWelcome();
+    } else {
+      router.goToConversation({receiverLookup: lookup});
+    }
+  }
+
   // Current list items.
   $: receiverPreviewListPropsStore = receiverListViewModelStoreToReceiverPreviewListPropsStore(
     viewModelStore,
@@ -115,7 +123,7 @@
         viewModelStore = viewModelBundle.viewModelStore;
       })
       .catch((error: unknown) => {
-        log.error(`Failed to load ContactListViewModelBundle: ${ensureError(error)}`);
+        log.error(`Failed to load ReceiverListViewModelBundle: ${ensureError(error)}`);
 
         toast.addSimpleFailure(
           i18n.get().t('contacts.error--contact-list-load', 'Contacts could not be loaded'),
@@ -148,6 +156,8 @@
       {services}
       on:clickadd={handleClickAdd}
       on:clickedititem={handleClickEditItem}
+      on:clickitem={(event) =>
+        handleClickReceiverListItem(event.detail.lookup, event.detail.active)}
     />
   </div>
 </div>

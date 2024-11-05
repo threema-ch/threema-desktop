@@ -21,11 +21,6 @@ export interface AddressBookProps<THandlerProps = undefined> {
          * Defaults to `true`.
          */
         readonly highlightActiveReceiver?: boolean;
-        /**
-         * Whether to route to the respective receiver's conversation when it's clicked. Defaults to
-         * `true`.
-         */
-        readonly routeOnClick?: boolean;
     };
     readonly services: AppServicesForSvelte;
     /**
