@@ -44,14 +44,14 @@
   > = null;
   let addressBookTabState: TabState = 'contact';
 
-  function handleClickItem(lookup: DbReceiverLookup): void {
+  function handleClickItem(event: CustomEvent<{lookup: DbReceiverLookup}>): void {
     const messageToForward = {
       receiverLookup,
       messageId: id,
     };
 
     router.goToConversation({
-      receiverLookup: lookup,
+      receiverLookup: event.detail.lookup,
       forwardedMessage: messageToForward,
     });
 
@@ -107,7 +107,7 @@
         highlightActiveReceiver: false,
       }}
       {services}
-      on:clickitem={(event) => handleClickItem(event.detail.lookup)}
+      on:clickitem={handleClickItem}
     />
   </div>
 </Modal>

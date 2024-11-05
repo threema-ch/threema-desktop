@@ -101,11 +101,13 @@
     };
   }
 
-  function handleClickReceiverListItem(lookup: DbReceiverLookup, active?: boolean): void {
-    if (active === true) {
+  function handleClickReceiverListItem(
+    event: CustomEvent<{lookup: DbReceiverLookup; active: boolean}>,
+  ): void {
+    if (event.detail.active) {
       router.goToWelcome();
     } else {
-      router.goToConversation({receiverLookup: lookup});
+      router.goToConversation({receiverLookup: event.detail.lookup});
     }
   }
 
@@ -156,8 +158,7 @@
       {services}
       on:clickadd={handleClickAdd}
       on:clickedititem={handleClickEditItem}
-      on:clickitem={(event) =>
-        handleClickReceiverListItem(event.detail.lookup, event.detail.active)}
+      on:clickitem={handleClickReceiverListItem}
     />
   </div>
 </div>

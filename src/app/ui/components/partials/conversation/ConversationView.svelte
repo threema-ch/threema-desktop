@@ -620,7 +620,7 @@
     };
   }
 
-  function handleClickMentionReceiver(lookup: DbReceiverLookup): void {
+  function handleClickMentionReceiver(event: CustomEvent<{lookup: DbReceiverLookup}>): void {
     if ($viewModelStore?.receiver.type !== 'group') {
       log.error('Mentioning is only allowed in groups');
       return;
@@ -632,8 +632,8 @@
       .find(
         (member): member is ContactReceiverData =>
           member.type === 'contact' &&
-          member.lookup.type === lookup.type &&
-          member.lookup.uid === lookup.uid,
+          member.lookup.type === event.detail.lookup.type &&
+          member.lookup.uid === event.detail.lookup.uid,
       );
     if (receiver === undefined) {
       log.error("Mentioned receiver couldn't be found in the current group");
@@ -1044,7 +1044,7 @@
                       composeBarState.mentionString,
                     )}
                     {services}
-                    on:clickitem={(event) => handleClickMentionReceiver(event.detail.lookup)}
+                    on:clickitem={handleClickMentionReceiver}
                   />
                 </FocusMoverProvider>
               </div>
