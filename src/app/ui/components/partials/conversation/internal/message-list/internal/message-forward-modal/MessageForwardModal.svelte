@@ -64,6 +64,17 @@
     addressBookTabState,
   );
 
+  // Filter out the current recipient since forwarding to the same conversation is an operation
+  // without use-case.
+  $: filteredReceiverPreviewListProps = $receiverPreviewListPropsStore?.filter(
+    (item) =>
+      item.receiver.type !== 'self' &&
+      !(
+        item.receiver.lookup.type === receiverLookup.type &&
+        item.receiver.lookup.uid === receiverLookup.uid
+      ),
+  );
+
   onMount(async () => {
     await backend.viewModel
       .receiverList()
@@ -100,7 +111,7 @@
     <AddressBook
       bind:this={addressBookComponent}
       bind:tabState={addressBookTabState}
-      items={$receiverPreviewListPropsStore}
+      items={filteredReceiverPreviewListProps}
       options={{
         allowReceiverCreation: false,
         allowReceiverEditing: false,
