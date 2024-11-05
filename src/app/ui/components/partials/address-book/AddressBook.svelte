@@ -83,7 +83,7 @@
       },
       timeoutMs: 100,
     }).catch((error: unknown) => {
-      log.info(`Scroll to contact was not performed: ${error}`);
+      log.info(`Scroll to receiver was not performed: ${error}`);
     });
   }
 
@@ -216,7 +216,6 @@
     allowReceiverCreation = true,
     allowReceiverEditing = true,
     highlightActiveReceiver = true,
-    routeOnClick = true,
   } = options);
 
   $: filteredItems = getFilteredItems(items, searchTerm, $appearance);
@@ -261,7 +260,6 @@
         items={filteredItems}
         options={{
           highlightActiveReceiver,
-          routeOnClick,
         }}
         {services}
         on:clickitem

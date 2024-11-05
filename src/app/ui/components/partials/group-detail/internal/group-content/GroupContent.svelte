@@ -1,5 +1,5 @@
 <!--
-  @component Renders details about a receiver of type `Contact`.
+  @component Renders details about a receiver of type `Group`.
 -->
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
@@ -19,7 +19,6 @@
 
   export let receiver: $$Props['receiver'];
   export let services: $$Props['services'];
-  export let handleClickGroupMember: $$Props['handleClickGroupMember'];
 
   const DEFAULT_LIMIT = 4;
 
@@ -82,11 +81,7 @@
     </div>
 
     {#if receiverPreviewListProps.items.length > 0}
-      <ReceiverPreviewList
-        {...receiverPreviewListProps}
-        {services}
-        onClickReceiverListElement={handleClickGroupMember}
-      />
+      <ReceiverPreviewList {...receiverPreviewListProps} {services} on:clickitem />
       {#if totalMemberCount > DEFAULT_LIMIT}
         <button class="expand" on:click={handleClickToggleExpand}>
           {#if currentLimit === undefined}

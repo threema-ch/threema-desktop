@@ -620,9 +620,7 @@
     };
   }
 
-  // This function is asynchronous since this is required by `ReceiverPreviewList`
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async function handleClickMentionReceiver(lookup: DbReceiverLookup): Promise<void> {
+  function handleClickMentionReceiver(lookup: DbReceiverLookup): void {
     if ($viewModelStore?.receiver.type !== 'group') {
       log.error('Mentioning is only allowed in groups');
       return;
@@ -1045,9 +1043,8 @@
                       $viewModelStore.receiver,
                       composeBarState.mentionString,
                     )}
-                    options={{routeOnClick: false}}
                     {services}
-                    onClickReceiverListElement={handleClickMentionReceiver}
+                    on:clickitem={(event) => handleClickMentionReceiver(event.detail.lookup)}
                   />
                 </FocusMoverProvider>
               </div>

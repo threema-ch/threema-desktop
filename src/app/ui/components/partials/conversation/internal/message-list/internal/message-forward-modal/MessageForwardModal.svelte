@@ -33,7 +33,7 @@
 
   const {backend, router} = services;
 
-  // ViewModelBundle containing all contacts.
+  // ViewModelBundle containing all receivers.
   let viewModelStore: IQueryableStore<RemoteReceiverListViewModelStoreValue | undefined> =
     new ReadableStore(undefined);
 
@@ -44,14 +44,14 @@
   > = null;
   let addressBookTabState: TabState = 'contact';
 
-  function handleClickItem(event: CustomEvent<DbReceiverLookup>): void {
+  function handleClickItem(lookup: DbReceiverLookup): void {
     const messageToForward = {
       receiverLookup,
       messageId: id,
     };
 
     router.goToConversation({
-      receiverLookup: event.detail,
+      receiverLookup: lookup,
       forwardedMessage: messageToForward,
     });
 
@@ -72,7 +72,7 @@
         viewModelStore = viewModelBundle.viewModelStore;
       })
       .catch((error: unknown) => {
-        log.error(`Failed to load ContactListViewModelBundle: ${ensureError(error)}`);
+        log.error(`Failed to load ReceiverListViewModelBundle: ${ensureError(error)}`);
 
         toast.addSimpleFailure(
           i18n.get().t('contacts.error--contact-list-load', 'Contacts could not be loaded'),
@@ -105,10 +105,9 @@
         allowReceiverCreation: false,
         allowReceiverEditing: false,
         highlightActiveReceiver: false,
-        routeOnClick: false,
       }}
       {services}
-      on:clickitem={handleClickItem}
+      on:clickitem={(event) => handleClickItem(event.detail.lookup)}
     />
   </div>
 </Modal>

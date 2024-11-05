@@ -2,6 +2,8 @@
   @component Renders a list of preview cards for the given receivers.
 -->
 <script lang="ts" generics="THandlerProps = never">
+  import {createEventDispatcher} from 'svelte';
+
   import type {ConversationRouteParams} from '~/app/ui/components/partials/conversation/types';
   import ReceiverPreview from '~/app/ui/components/partials/receiver-preview-list/internal/receiver-preview/ReceiverPreview.svelte';
   import type {ReceiverPreviewListProps} from '~/app/ui/components/partials/receiver-preview-list/props';
@@ -20,9 +22,12 @@
   export let items: $$Props['items'] = [];
   export let options: NonNullable<$$Props['options']> = {};
   export let services: $$Props['services'];
-  export let onClickReceiverListElement: $$Props['onClickReceiverListElement'] = undefined;
 
   const {router} = services;
+
+  const dispatch = createEventDispatcher<{
+    clickitem: {lookup: DbReceiverLookup; active: boolean};
+  }>();
 
   let routeParams: ConversationRouteParams | undefined = undefined;
 
@@ -39,28 +44,17 @@
     }
   }
 
-  async function handleClickItem(
+  function handleClickItem(
     event: MouseEvent,
+    active: boolean,
     receiverLookup?: DbReceiverLookup,
-    active?: boolean,
-  ): Promise<void> {
+  ): void {
     event.preventDefault();
     if (receiverLookup === undefined) {
       return;
     }
 
-    // Execute side-effects, if any.
-    await onClickReceiverListElement?.(receiverLookup);
-
-    if (options.routeOnClick === false) {
-      return;
-    }
-    if (active === true) {
-      // Close conversation of the respective receiver if it was already open.
-      router.goToWelcome();
-    } else {
-      router.goToConversation({receiverLookup});
-    }
+    dispatch('clickitem', {lookup: receiverLookup, active});
   }
 
   $: reactive(handleChangeRouterState, [$router]);
@@ -89,11 +83,11 @@
       }}
       {receiver}
       {services}
-      on:click={async (event) =>
-        await handleClickItem(
+      on:click={(event) =>
+        handleClickItem(
           event.detail,
-          receiver.type === 'self' ? undefined : receiver.lookup,
           active,
+          receiver.type === 'self' ? undefined : receiver.lookup,
         )}
     />
   {/each}

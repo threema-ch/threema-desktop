@@ -146,7 +146,7 @@
       });
   }
 
-  async function handleClickGroupMember(lookup: DbReceiverLookup): Promise<void> {
+  async function handleClickGroupMember(lookup: DbReceiverLookup, active?: boolean): Promise<void> {
     if (lookup.type !== ReceiverType.CONTACT) {
       log.error(
         `Called the clickGroupMember callback with lookup of type ${ReceiverTypeUtils.nameOf(lookup.type)} instead of contact`,
@@ -154,7 +154,18 @@
       return;
     }
 
-    await viewModelController?.setAcquaintanceLevelDirect(lookup);
+    try {
+      await viewModelController?.setAcquaintanceLevelDirect(lookup);
+    } catch (error) {
+      log.error('Failed to set acquaintance level, routing to welcome');
+      router.goToWelcome();
+    }
+
+    if (active === true) {
+      router.goToWelcome();
+    } else {
+      router.goToConversation({receiverLookup: lookup});
+    }
   }
 
   $: reactive(handleChangeRouterState, [$router]);
@@ -172,7 +183,10 @@
         receiver={$viewModelStore.receiver}
         {services}
         on:clickprofilepicture={handleOpenProfilePictureModal}
-        {handleClickGroupMember}
+        on:clickitem={async (event) =>
+          await handleClickGroupMember(event.detail.lookup, event.detail.active).catch(
+            assertUnreachable,
+          )}
       />
     </div>
   </div>
