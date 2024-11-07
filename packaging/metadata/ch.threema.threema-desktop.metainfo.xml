@@ -44,6 +44,27 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta44" date="2024-11-11">
+            <description>
+                <p>New features:</p>
+                <ul>
+                    <li>Remember audio/video input/output in group calls</li>
+                </ul>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Improved handling of blocked contacts</li>
+                    <li>
+                        Changes to the profile picture are now reflected on the chat partner's end
+                    </li>
+                    <li>Switched to dynamic timestamps to conform with mobile apps</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>Fixed a bug that could lead to incorrect information in status messages</li>
+                </ul>
+                <p>…and various under-the-hood changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta43" date="2024-10-16">
             <description>
                 <p>New features:</p>
