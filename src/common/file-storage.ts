@@ -48,24 +48,6 @@ export interface CopyableFileStorage extends FileStorage {
  */
 export interface TempFileStorage {
     /**
-     * Load a file from the storage, and return the bytes.
-     *
-     * @param relativePath The path relative to the temp file storage directory, including the file
-     *   name and extension, of the file to load.
-     * @throws `FileStorageError` In case the file cannot be found or read (e.g. due to a permission
-     *   problem).
-     */
-    readonly load: (relativePath: string) => Promise<ReadonlyUint8Array>;
-    /**
-     * Store the provided bytes in the file storage and return its full path.
-     *
-     * @param data The bytes to store.
-     * @param relativePath The path relative to the temp file storage directory, including the file
-     *   name and extension, to store the file at.
-     * @throws `FileStorageError` if file cannot be stored or already exists.
-     */
-    readonly store: (data: Uint8Array, relativePath: string) => Promise<string>;
-    /**
      * Open a write stream to write a file at the given path. Note: The returned
      * {@link fs.WriteStream} is auto-closing.
      *
@@ -82,28 +64,11 @@ export interface TempFileStorage {
         relativePath: string | string[],
     ) => Promise<adapter.WritableStreamLike<Uint8Array>>;
     /**
-     * Delete the file at the given {@link relativePath}.
-     *
-     * @returns `true` if a file was deleted. `false` if no file was present.
-     * @throws `FileStorageError` if something went wrong during deletion.
-     */
-    readonly delete: (relativePath: string) => Promise<boolean>;
-    /**
      * Clear all items currently stored in the temp directory.
      *
      * @throws `FileStorageError` if something went wrong during deletion.
      */
     readonly clear: () => Promise<void>;
-    /**
-     * Return the full file path.
-     *
-     * If `options.create` is `true`, then the parent directories will be created if they don't yet
-     * exist. Defaults to `false`.
-     */
-    readonly getFullFilePath: (
-        relativePath: string | string[],
-        options?: {create?: boolean},
-    ) => Promise<string>;
 }
 
 /**
