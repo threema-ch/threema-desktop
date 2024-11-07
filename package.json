@@ -144,7 +144,7 @@
     "@typescript-eslint/utils": "~7.18.0",
     "chai": "~4.5.0",
     "debug": "~4.3.5",
-    "electron": "32.1.2",
+    "electron": "30.5.1",
     "electron-installer-dmg": "~5.0.1",
     "emojibase-data": "15.1.0",
     "es-module-lexer": "~1.5.4",
