@@ -916,9 +916,20 @@ export class Backend {
 
         if (!import.meta.env.DEBUG && checkForUpdates) {
             const updater = new Updater(phase1Services);
-            await updater.checkAndPerformUpdate().catch((error: unknown) => {
-                log.error(`Update check or download failed: ${error}`);
-            });
+            await updater
+                .checkAndPerformUpdate({
+                    forceManualUpdate:
+                        // TODO(DESK-1627): Remove `true` constant to enable auto-updates for Windows
+                        // and macOS at the same time.
+                        //
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-binary-expression
+                        true ||
+                        // Force manual update for sandbox builds.
+                        import.meta.env.BUILD_ENVIRONMENT === 'sandbox',
+                })
+                .catch((error: unknown) => {
+                    log.error(`Update check or download failed: ${error}`);
+                });
         }
 
         const workData =

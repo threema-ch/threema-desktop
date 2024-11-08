@@ -322,6 +322,7 @@
     "markup--linux-p2": "For more information about this update, see <1 />.",
     "markup--macos-p1": "Please update by downloading and installing the latest release from <1 />.",
     "markup--other-os-p1": "Please update {name}.",
+    "markup--windows-p1": "Please update by downloading and installing the latest release from <1 />.",
     "prose--intro": "An update for Threema is available!"
   },
   "dialog--media-message-viewer": {

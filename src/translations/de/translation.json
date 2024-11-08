@@ -320,8 +320,9 @@
     "label--title": "Update verfügbar: {current} → {latest}",
     "markup--linux-p1": "Bitte installieren Sie das Update über Ihren Systempaketmanager oder indem Sie <1>flatpak update</1> in Ihrem Terminal ausführen.",
     "markup--linux-p2": "Details zu diesem Update: <1 />",
-    "markup--macos-p1": "Bitte laden Sie die neueste Version von <1 /> herunter und installieren Sie sie.",
+    "markup--macos-p1": "Bitte laden Sie die neueste Version von <1 /> herunter und installieren Sie diese.",
     "markup--other-os-p1": "Bitte aktualisieren Sie {name}.",
+    "markup--windows-p1": "Bitte laden Sie die neueste Version von <1 /> herunter und installieren Sie diese.",
     "prose--intro": "Ein Update für Threema ist verfügbar!"
   },
   "dialog--media-message-viewer": {

@@ -46,7 +46,15 @@ export class Updater {
      * Performs an update check and facilitates the update procedure if the user choses to do so,
      * and the OS supports auto-updates.
      */
-    public async checkAndPerformUpdate(): Promise<void> {
+    public async checkAndPerformUpdate({
+        forceManualUpdate,
+    }: {
+        /**
+         * Whether to always force the manual update dialog if an update is available and never
+         * offer to auto-update, even if it would be supported on the respective OS.
+         */
+        forceManualUpdate: boolean;
+    }): Promise<void> {
         const updateInfo = await this._check();
         if (updateInfo === undefined) {
             // Nothing to update.
@@ -55,8 +63,7 @@ export class Updater {
 
         // Show an update system dialog for platforms which don't support auto-updating.
         if (
-            // Force manual update for sandbox builds.
-            import.meta.env.BUILD_ENVIRONMENT === 'sandbox' ||
+            forceManualUpdate ||
             process.platform === 'linux' ||
             // TODO(DESK-1627): Implement auto-updates for macOS.
             process.platform === 'darwin'

@@ -100,6 +100,22 @@
           >
         </SubstitutableText>
       </p>
+    {:else if systemInfo.os === 'windows'}
+      <p>
+        <SubstitutableText
+          text={$i18n.t(
+            'dialog--manual-app-update.markup--windows-p1',
+            'Please update by downloading and installing the latest release from <1 />.',
+          )}
+        >
+          <a
+            slot="1"
+            href={import.meta.env.URLS.downloadAndInfo.full}
+            target="_blank"
+            rel="noreferrer noopener">{import.meta.env.URLS.downloadAndInfo.short}</a
+          >
+        </SubstitutableText>
+      </p>
     {:else}
       <p>
         <SubstitutableText
