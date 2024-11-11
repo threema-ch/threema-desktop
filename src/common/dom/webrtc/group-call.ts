@@ -212,6 +212,17 @@ export class GroupCallContextProvider implements GroupCallContext {
                 }
             });
 
+            pc.addEventListener('iceconnectionstatechange', () => {
+                if (this._abort.aborted || pc.iceConnectionState !== 'disconnected') {
+                    return;
+                }
+                this._log.debug('Scheduling ICE restart');
+                this._connection?.backendHandle.triggerIceRestart().catch((error: unknown) => {
+                    this._log.error('Restarting ice failed', error);
+                    this._abort.raise({origin: 'main-thread', cause: 'unexpected-error'});
+                });
+            });
+
             // Add P2S data channel
             let p2s: ConnectionContext['p2s'];
             {
@@ -547,6 +558,26 @@ export class GroupCallContextProvider implements GroupCallContext {
         for (const array of arrays) {
             this._connection.p2s.dc.send(array);
         }
+    }
+
+    public async restartIce(answerSdp: string): Promise<void> {
+        if (this._abort.aborted) {
+            this._log.warn('Unable to do an ICE restart as the call is already aborted');
+            return;
+        }
+        assert(this._connection !== undefined, 'Connection must not be undefined');
+        const {pc} = this._connection;
+
+        const offer = await pc.createOffer({iceRestart: true});
+        this._log.info('Offer (ICE restart)', offer);
+        await pc.setLocalDescription(offer);
+
+        const answer = {
+            type: 'answer',
+            sdp: answerSdp,
+        } as const;
+        this._log.info('Answer (ICE restart)', answer);
+        await pc.setRemoteDescription(answer);
     }
 
     public async update(

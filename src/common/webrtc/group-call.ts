@@ -579,7 +579,8 @@ type LockContext =
     | 'abort-participant'
     | 'increase-epoch-stale'
     | 'apply-to-participant'
-    | 'broadcast-to-participants';
+    | 'broadcast-to-participants'
+    | 'restart-ice';
 
 interface RemoteParticipantCryptoContext {
     readonly pck: ParticipantCallBox;
@@ -1692,6 +1693,26 @@ export class GroupCall {
                             });
                         });
                 },
+                triggerIceRestart: () => {
+                    this._state.remote
+                        .with(async (remote_) => {
+                            this._log.debug('Triggering ICE restart');
+                            const answer = this._createNextSdpVersionRemoteSessionDescription(
+                                remote_.get(),
+                            );
+                            await this._connection.context.restartIce(answer);
+                        }, 'restart-ice')
+                        .catch((error: unknown) => {
+                            if (this._abort.aborted) {
+                                return;
+                            }
+                            this._log.error('Restarting ice failed', error);
+                            this._abort.raise({
+                                origin: 'backend-worker',
+                                cause: 'unexpected-error',
+                            });
+                        });
+                },
             },
             endpoint,
             _services.logging.logger('com.bw.group-call-connection-handle'),
@@ -2209,18 +2230,26 @@ export class GroupCall {
         remoteStore.update(() => remote);
 
         // Create offer
-        const offer = createRemoteSessionDescription({
-            static: this._connection.sdp.static,
-            version: this._connection.sdp.version.next(),
-            mLineOrder: [...this._connection.sdp.mLineOrder],
-            local: this._local.id,
-            remote: new Set(remote.keys()),
-        });
+        const offer = this._createNextSdpVersionRemoteSessionDescription(remote);
 
         // Wait for the update to be applied
         await this._connection.context.update(offer, this._connection.sdp.mLineOrder, {
             added: new Set(change.added.keys()),
             removed: new Set(change.removed.keys()),
+        });
+    }
+
+    private _createNextSdpVersionRemoteSessionDescription(
+        remote: Map<ParticipantId, AnyRemoteParticipant>,
+    ): string {
+        assert(this._state.remote.context !== undefined);
+
+        return createRemoteSessionDescription({
+            static: this._connection.sdp.static,
+            version: this._connection.sdp.version.next(),
+            mLineOrder: [...this._connection.sdp.mLineOrder],
+            local: this._local.id,
+            remote: new Set(remote.keys()),
         });
     }
 
@@ -2551,6 +2580,7 @@ export class GroupCall {
  */
 export interface GroupCallConnectionHandle extends ProxyMarked {
     readonly handleP2s: (array: Uint8Array) => void;
+    readonly triggerIceRestart: () => void;
 }
 
 /**
@@ -2576,6 +2606,7 @@ export interface GroupCallContext extends ProxyMarked {
         initialLocalPcmk: RawParticipantCallMediaKeyState,
     ) => Promise<S2pHello>;
     readonly sendP2s: (arrays: readonly Uint8Array[]) => void;
+    readonly restartIce: (answerSdp: string) => Promise<void>;
     readonly update: (
         offerSdp: string,
         all: Set<ParticipantId>,
