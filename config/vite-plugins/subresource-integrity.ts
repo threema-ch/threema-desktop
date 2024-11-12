@@ -54,17 +54,17 @@ export function subresourceIntegrityPlugin(): Plugin {
                 const indexHtml = fs.readFileSync(path.join(appOutPath, 'index.html'), {
                     encoding: 'utf-8',
                 });
-                const scripts: string[] = [];
+                const scriptDigests: string[] = [];
                 forAllTagsOfType('script', indexHtml, ({attributes}) => {
                     const fingerprint = attributes.find(({key}) => key === 'integrity')?.value;
                     if (fingerprint === undefined) {
                         throw new Error('Script tag without integrity fingerprint found');
                     }
 
-                    scripts.push(fingerprint);
+                    scriptDigests.push(fingerprint);
                 });
 
-                const stylesheets: string[] = [];
+                const stylesheetDigests: string[] = [];
                 forAllTagsOfType('link', indexHtml, ({attributes}) => {
                     // Skip non-stylesheet tags.
                     if (
@@ -78,7 +78,7 @@ export function subresourceIntegrityPlugin(): Plugin {
                         throw new Error('Stylesheet link tag without integrity fingerprint found');
                     }
 
-                    stylesheets.push(fingerprint);
+                    stylesheetDigests.push(fingerprint);
                 });
                 forAllTagsOfType('style', indexHtml, ({attributes}) => {
                     const fingerprint = attributes.find(({key}) => key === 'integrity')?.value;
@@ -86,17 +86,15 @@ export function subresourceIntegrityPlugin(): Plugin {
                         throw new Error('Inline style tag without integrity fingerprint found');
                     }
 
-                    stylesheets.push(fingerprint);
+                    stylesheetDigests.push(fingerprint);
                 });
 
-                // External assets that are not referenced in `index.html`. These haven't been
-                // fingerprinted yet, so we need to find the source files in the output
-                // directory of the `app` build and generate the digests manually, so we can add
-                // them to the CSP as well.
-                //
-                // Note: These assets currently only include the two worker scripts, because
-                // fingerprinting of WASM modules is not yet supported by the CSP API.
-                const workers = fs
+                // Determine final URIs of the two worker scripts, so they can be added to the
+                // `worker-src` CSP rule. This is technically not SRI, but prevents additional
+                // workers from being spawned (from different paths than the two pinned ones). Note:
+                // True SRI is not possible yet for `worker-src` (and maybe never will be), see:
+                // https://issues.chromium.org/issues/41475753.
+                const workerUris = fs
                     .readdirSync(appOutPath, {withFileTypes: true})
                     .filter((dirent) => {
                         if (!dirent.isFile()) {
@@ -110,26 +108,22 @@ export function subresourceIntegrityPlugin(): Plugin {
                             `${name}${extension}`,
                         );
                     })
-                    .map<string>((file) => {
-                        const contents = fs.readFileSync(path.resolve(appOutPath, file.name));
-
-                        return getDigest('sha512', new Uint8Array(contents.buffer));
-                    });
+                    .map<string>((file) => `threemadesktop://app/${file.name}`);
 
                 // Add fingerprints to `electron-main.ts`.
-                return code
-                    .replace(
-                        /("script-src 'self')(.*)/u,
-                        `$1 ${scripts.map((digest) => `'${digest}'`).join(' ')}$2`,
-                    )
-                    .replace(
-                        /("style-src 'self')(.*)/u,
-                        `$1 ${stylesheets.map((digest) => `'${digest}'`).join(' ')}$2`,
-                    )
-                    .replace(
-                        /("worker-src 'self')(.*)/u,
-                        `$1 ${workers.map((digest) => `'${digest}'`).join(' ')}$2`,
-                    );
+                return (
+                    code
+                        .replace(
+                            /("script-src)(.*)/u,
+                            `$1 ${scriptDigests.map((digest) => `'${digest}'`).join(' ')}$2`,
+                        )
+                        .replace(
+                            /("style-src)(.*)/u,
+                            `$1 ${stylesheetDigests.map((digest) => `'${digest}'`).join(' ')}$2`,
+                        )
+                        // URIs of scripts used to spawn workers.
+                        .replace(/("worker-src)(.*)/u, `$1 ${workerUris.join(' ')}$2`)
+                );
             },
         },
         // The following hook will only run when processing the "app" entry point, because it's the

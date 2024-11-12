@@ -1083,9 +1083,14 @@ function main(
                             ? // Note: This case needs to be first, because integrity hashes will be
                               // inserted here!
                               [
-                                  "script-src 'self' 'wasm-unsafe-eval'",
-                                  "style-src 'self'",
-                                  "worker-src 'self'",
+                                  "script-src 'wasm-unsafe-eval'",
+                                  // `'self'` and `'strict-dynamic'` are both needed at the same
+                                  // time to ensure the hashes (which are inserted by the
+                                  // `SubresourceIntegrityPlugin` at build time) are actually
+                                  // checked.
+                                  "style-src 'self' 'strict-dynamic'",
+                                  // prettier-ignore
+                                  "worker-src",
                               ]
                             : [
                                   "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
