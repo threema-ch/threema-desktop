@@ -361,7 +361,10 @@ function signWindowsBinaryOrPackage(pathToSign: string, flavor: BuildFlavor): vo
     // For more information on how to determine some of the env variables below, and for
     // documentation on the syntax used, please refer to
     // https://stackoverflow.com/a/54439759/284318
-    const signtoolPath = unwrap(process.env.SIGNTOOL_EXE_PATH, 'Missing SIGNTOOL_EXE_PATH env var');
+    const signtoolPath = unwrap(
+        process.env.WIN_SIGNTOOL_EXE_PATH,
+        'Missing WIN_SIGNTOOL_EXE_PATH env var',
+    );
     const certificatePath = unwrap(
         process.env.WIN_SIGN_CERT_PATH,
         'Missing WIN_SIGN_CERT_PATH env var',

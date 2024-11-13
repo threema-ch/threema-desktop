@@ -370,10 +370,10 @@ package:source:
         pushd build/out/
         for FILENAME in *-source.*; do
           # Ensure that file wasn't already uploaded
-          FTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" -I "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/releases/$FILENAME" --user "$FTP_USER:$FTP_PASS_RELEASES" || true)
+          FTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" -I "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/releases/$FILENAME" --user "$FTP_USER:$FTP_RELEASE_PASS" || true)
           if [ "$FTP_STATUS" = "350" ]; then echo "File already exists"; exit 42; fi
           # Upload
-          curl -T "$FILENAME" "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/releases/$FILENAME" --user "$FTP_USER:$FTP_PASS_RELEASES"
+          curl -T "$FILENAME" "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/releases/$FILENAME" --user "$FTP_USER:$FTP_RELEASE_PASS"
         done
         popd
       fi
@@ -382,7 +382,7 @@ package:source:
     FTP_PROTO: $FTP_RELEASE_PROTO
     FTP_PATH: /
     FTP_USER: threema-desktop
-    # Set FTP_PASS_RELEASES masked variable in CI!
+    # Set FTP_RELEASE_PASS masked variable in CI!
   artifacts:
     paths:
       - build/out/
@@ -571,7 +571,7 @@ package:flatpak-internal-publish:
     PUBLISH: 'true'
     FTP_HOST: $FLATPAK_INTERNAL_FTP_HOST
     FTP_USER: flatpak-internal
-    # Set FTP_PASS variable in CI!
+    FTP_PASS: $FLATPAK_INTERNAL_FTP_PASS
 
 # Note: Public builds are also pushed to the internal fileserver, and are then
 #       published using a separate script.
@@ -588,7 +588,7 @@ package:flatpak-public-publish:
     PUBLISH: 'true'
     FTP_HOST: $FLATPAK_PUBLIC_FTP_HOST
     FTP_USER: flatpak-internal
-    # Set FTP_PASS variable in CI!
+    FTP_PASS: $FLATPAK_PUBLIC_FTP_PASS
 
 # An optional, manually-triggered, build-but-not-publish Linux binary job
 package:linux-binary-buildonly:
@@ -722,15 +722,15 @@ package:linux-binary-buildonly:
           case "$BUILD_TYPE" in
             nightly)
               # Upload, overwrite if it exists
-              curl -T "build/dmg/$FILENAME" "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/nightly/$FILENAME" --user "$FTP_USER:$FTP_PASS_RELEASES"
+              curl -T "build/dmg/$FILENAME" "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/nightly/$FILENAME" --user "$FTP_USER:$FTP_RELEASE_PASS"
               ;;
             release)
               # Ensure that build wasn't already uploaded
-              FTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" -I "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/releases/$FILENAME" --user "$FTP_USER:$FTP_PASS_RELEASES" || true)
+              FTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" -I "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/releases/$FILENAME" --user "$FTP_USER:$FTP_RELEASE_PASS" || true)
               if [ "$FTP_STATUS" = "350" ]; then echo "File already exists"; exit 42; fi
               # Upload DMG and checksums
               for ext in '' '.sha256' '.b2'; do
-                curl -T "build/dmg/$FILENAME$ext" "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/releases/$FILENAME$ext" --user "$FTP_USER:$FTP_PASS_RELEASES"
+                curl -T "build/dmg/$FILENAME$ext" "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/releases/$FILENAME$ext" --user "$FTP_USER:$FTP_RELEASE_PASS"
               done
               ;;
             *)
@@ -782,7 +782,7 @@ package:macos-publish:
     FTP_PROTO: $FTP_RELEASE_PROTO
     FTP_PATH: /
     FTP_USER: threema-desktop
-    # Set FTP_PASS_RELEASES masked variable in CI!
+    # Set FTP_RELEASE_PASS masked variable in CI!
 
 .windows: &windows
   stage: package
@@ -839,20 +839,20 @@ package:macos-publish:
 
               # Upload, overwrite if it exists
               echo "Uploading $filenameExe"
-              curl.exe -T "$sourceFileExe" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/nightly/$filenameExe" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
+              curl.exe -T "$sourceFileExe" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/nightly/$filenameExe" --user "${env:FTP_USER}:${env:FTP_RELEASE_PASS}"
               echo "Uploading $filenameMsix"
-              curl.exe -T "$sourceFileMsix" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/nightly/$filenameMsix" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
+              curl.exe -T "$sourceFileMsix" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/nightly/$filenameMsix" --user "${env:FTP_USER}:${env:FTP_RELEASE_PASS}"
             }
             "release" {
               $filenameExe = "$name-desktop-$CI_COMMIT_REF_NAME-windows-${env:ARCH}.zip"
               $filenameMsix = "$name-desktop-$CI_COMMIT_REF_NAME-windows-${env:ARCH}.msix"
 
               # Ensure that build wasn't already uploaded
-              $ftp_status = (curl.exe -o NUL -s -w "%{http_code}" -I "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameExe" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}")
+              $ftp_status = (curl.exe -o NUL -s -w "%{http_code}" -I "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameExe" --user "${env:FTP_USER}:${env:FTP_RELEASE_PASS}")
               If ($ftp_status -eq 350) {
                 throw "File $filenameExe already exists on FTP server"
               }
-              $ftp_status = (curl.exe -o NUL -s -w "%{http_code}" -I "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameMsix" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}")
+              $ftp_status = (curl.exe -o NUL -s -w "%{http_code}" -I "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameMsix" --user "${env:FTP_USER}:${env:FTP_RELEASE_PASS}")
               If ($ftp_status -eq 350) {
                 throw "File $filenameMsix already exists on FTP server"
               }
@@ -860,11 +860,11 @@ package:macos-publish:
               # Upload ZIP, MSIX and checksums
               Foreach ($ext in '','.sha256') {
                 echo "Uploading $filenameExe$ext"
-                curl.exe -T "$sourceFileExe$ext" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameExe$ext" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
+                curl.exe -T "$sourceFileExe$ext" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameExe$ext" --user "${env:FTP_USER}:${env:FTP_RELEASE_PASS}"
               }
               Foreach ($ext in '','.sha256') {
                 echo "Uploading $filenameMsix$ext"
-                curl.exe -T "$sourceFileMsix$ext" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameMsix$ext" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
+                curl.exe -T "$sourceFileMsix$ext" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameMsix$ext" --user "${env:FTP_USER}:${env:FTP_RELEASE_PASS}"
               }
             }
             default {
@@ -906,7 +906,7 @@ package:windows-publish:
     FTP_PROTO: $FTP_RELEASE_PROTO
     FTP_PATH: /
     FTP_USER: threema-desktop
-    # Set FTP_PASS_RELEASES masked variable in CI!
+    # Set FTP_RELEASE_PASS masked variable in CI!
 
 pages:
   stage: build
