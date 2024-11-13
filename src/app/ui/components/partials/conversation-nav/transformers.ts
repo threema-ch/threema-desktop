@@ -29,7 +29,7 @@ export function conversationListItemSetStoreToConversationPreviewListPropsStore(
                 .filter((conversation) => {
                     const receiver = conversation.viewModelStore.get().receiver;
                     return (
-                        getAndSubscribe(conversation.viewModelStore).lastUpdate !== undefined ||
+                        getAndSubscribe(conversation.viewModelStore).lastUpdate !== undefined &&
                         // This is a sanity check. When a contact is deleted, last updated is set to
                         // undefined anyway.
                         !(
