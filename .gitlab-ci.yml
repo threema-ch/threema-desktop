@@ -135,6 +135,18 @@ launcher:
     RUSTFLAGS: '-D warnings'
     THREEMA_BUILD_FLAVOR: consumer-sandbox
 
+source-dist:
+  stage: build
+  needs: []
+  before_script:
+    - apt-get update && apt-get install -y p7zip
+  script:
+    - bash packaging/generate-source-dist.sh
+  artifacts:
+    paths:
+      - build/out/
+    expire_in: 2d
+
 lint:
   stage: test
   needs: []
