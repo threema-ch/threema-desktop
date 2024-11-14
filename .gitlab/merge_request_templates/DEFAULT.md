@@ -1,7 +1,7 @@
 /assign me
-/label ~"ready"
+/label ~"workflow::ready"
 <!-- alternatively, if not yet ready:
-/label ~"wip"
+/label ~"workflow::wip"
 /draft
 -->
 
@@ -31,6 +31,3 @@
 <!-- Add more review hints to this list, to be checked off by the reviewer -->
 - [ ] Smoke test passed
 - [ ] Implemented feature works as intended
-
-
-<!-- Workflow reminders: https://docs.threema.ch/doc/desktop-mr-workflow-afAgx0wptk -->
