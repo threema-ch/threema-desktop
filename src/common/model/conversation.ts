@@ -429,7 +429,9 @@ export class ConversationModelController implements ConversationController {
             this.lifetimeGuard.update(() => {
                 message.removeAll(this._services, this._log, this.uid);
                 this._updateStoresOnConversationUpdate();
-                return {};
+                // When we remove all messages, we also want to set the unread count to 0. As the
+                // messages are removed from the database and the model, no message can be unread.
+                return {unreadMessageCount: 0};
             });
         },
     };
