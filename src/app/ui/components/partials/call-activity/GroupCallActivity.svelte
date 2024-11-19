@@ -48,6 +48,9 @@
 
   type $$Props = GroupCallActivityProps;
 
+  const audioContext = new AudioContext();
+  const incomingAudioSink = audioContext.createMediaStreamDestination();
+
   export let isExpanded: $$Props['isExpanded'];
   export let services: $$Props['services'];
 
@@ -64,7 +67,14 @@
   let feedContainerElement: SvelteNullableBinding<HTMLDivElement> = null;
 
   let audioElement: SvelteNullableBinding<HTMLAudioElement> = null;
-  let audioMediaStream: MediaStream | undefined = undefined;
+
+  // Maps from track to the associated media stream and the node that receives said stream.
+  let audioTracksMap:
+    | Map<
+        MediaStreamTrack,
+        {readonly stream: MediaStream; readonly node: MediaStreamAudioSourceNode}
+      >
+    | undefined = undefined;
   let audioSinkDeviceId: string | undefined = undefined;
 
   const {guard: localDevicesGuard, store: localDevices} = createCaptureDevices();
@@ -103,12 +113,13 @@
       if (currentAudioElement === null) {
         return;
       }
-      if (audioMediaStream === undefined) {
-        audioMediaStream = new MediaStream();
+      // We attach the stream to the audio element's source object only once.
+      if (audioTracksMap === undefined) {
+        audioTracksMap = new Map();
+        currentAudioElement.srcObject = incomingAudioSink.stream;
       }
-      currentAudioElement.srcObject = audioMediaStream;
 
-      const activeAudioTracks = new Set(audioMediaStream.getAudioTracks());
+      const activeAudioTracks = new Set([...audioTracksMap.keys()]);
       const currentAudioTracks = new Set(
         currentFeeds
           .filter((feed): feed is (typeof remoteFeeds)[u53] => feed.type === 'remote')
@@ -120,10 +131,25 @@
       const lostAudioTracks = difference(activeAudioTracks, currentAudioTracks);
 
       for (const track of newAudioTracks) {
-        audioMediaStream.addTrack(track);
+        if (audioTracksMap.has(track)) {
+          log.warn('Tried to add a media stream track that already exists.');
+          continue;
+        }
+        const stream = new MediaStream([track]);
+        const node = audioContext.createMediaStreamSource(stream);
+        node.connect(incomingAudioSink);
+        // Workaround because of https://issues.chromium.org/issues/40094084
+        new Audio().srcObject = stream;
+        audioTracksMap.set(track, {stream, node});
       }
-      for (const track of lostAudioTracks) {
-        audioMediaStream.removeTrack(track);
+      for (const trackId of lostAudioTracks) {
+        const mapEntry = audioTracksMap.get(trackId);
+        if (mapEntry === undefined) {
+          log.warn('Tried to a remove an audio stream that did not exist');
+          continue;
+        }
+        mapEntry.node.disconnect(incomingAudioSink);
+        audioTracksMap.delete(trackId);
       }
     });
   }
@@ -626,6 +652,9 @@
         devices.camera?.track.stop();
       }, 'stop')
       .catch(assertUnreachable);
+
+    audioTracksMap?.clear();
+    void audioContext.close().catch(assertUnreachable);
   });
 </script>
 
