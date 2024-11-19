@@ -67,7 +67,9 @@ for (const entry of ENTRIES) {
                 cwd: rootDir,
                 env: {
                     VITE_MAKE: `${TARGET},${entry},${variant},${environment}`,
-                    GIT_REVISION: gitRevision,
+                    // Note: Only include GIT_REVISION in sandbox builds in order to support
+                    // reproducible builds.
+                    GIT_REVISION: environment === 'sandbox' ? gitRevision : '',
                     PATH: process.env.PATH,
                     SENTRY_DSN: process.env.SENTRY_DSN,
                     MINIDUMP_ENDPOINT: process.env.MINIDUMP_ENDPOINT,
