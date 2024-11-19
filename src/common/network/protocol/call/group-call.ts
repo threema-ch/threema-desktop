@@ -156,9 +156,11 @@ export interface GroupCallBaseData {
     readonly group: ModelStore<Group>;
     /** Identity of the group member that started the group call. */
     readonly startedBy: IdentityString;
-    // TODO(DESK-1466): At risk, rather use reflected-at (outgoing), created-at (incoming)
-    /** When this _base_ data was received (or created, when the call was created by the user). */
-    readonly receivedAt: Date;
+    /**
+     * When the call corresponding to this base data was created. If the call was reflected, it
+     * amounts to reflected-at.
+     */
+    readonly startedAt: Date;
     /** Protocol version used in the announcement. */
     readonly protocolVersion: u53;
     /** Group Call Key (GCK) used for the call. */
@@ -225,7 +227,7 @@ function serializeRunningGroupCall(call: RunningGroupCall): DbCreate<DbRunningGr
         nFailed: type !== 'failed' ? 0 : call.nFailed,
         protocolVersion: call.base.protocolVersion,
         baseUrl: call.base.sfuBaseUrl.raw,
-        receivedAt: call.base.receivedAt,
+        startedAt: call.base.startedAt,
         creatorIdentity: call.base.startedBy,
     };
 }
@@ -237,7 +239,7 @@ export function deserializeRunningGroupCall(
 ): RunningGroupCall<'init' | 'failed'> {
     const init = {
         startedBy: call.creatorIdentity,
-        receivedAt: call.receivedAt,
+        startedAt: call.startedAt,
         protocolVersion: call.protocolVersion,
         gck: call.gck,
         sfuBaseUrl: {
@@ -643,7 +645,7 @@ class GroupCallRunningContext {
                         // and the call was received more than 10h ago.
                         if (
                             nFailed >= 3 &&
-                            new Date().getTime() - current.base.receivedAt.getTime() > 36_000_000
+                            new Date().getTime() - current.base.startedAt.getTime() > 36_000_000
                         ) {
                             log.warn(`Removed group call considered failed (id=${id.id})`);
                             return {type: 'not-running', ended: current};
@@ -761,18 +763,23 @@ class GroupCallRunningContext {
                         // Note 2: Desktop slightly violates the protocol here and announces group calls
                         // which later turn out to have a bad SFU base URL. Considered an edge case for now.
                         if (type === 'new') {
-                            this._group.store
+                            const conversation = this._group.store
                                 .get()
                                 .controller.conversation()
-                                .get()
-                                .controller.createStatusMessage({
-                                    type: StatusMessageType.GROUP_CALL_STARTED,
-                                    createdAt: call.base.receivedAt,
-                                    value: {
-                                        callId: call.base.derivations.callId,
-                                        startedBy: call.base.startedBy,
-                                    },
-                                });
+                                .get();
+                            conversation.controller.createStatusMessage({
+                                type: StatusMessageType.GROUP_CALL_STARTED,
+                                createdAt: call.base.startedAt,
+                                value: {
+                                    callId: call.base.derivations.callId,
+                                    startedBy: call.base.startedBy,
+                                },
+                            });
+                            // When the status message was created, we also want to bump lastUpdate
+                            // to the time of group call (if nothing happened in between).
+                            conversation.controller.update.direct({
+                                lastUpdate: call.base.startedAt,
+                            });
                         }
                     }
 
@@ -1110,7 +1117,7 @@ export class GroupCallManager {
                         // Create new call
                         const base = {
                             startedBy: this._services.device.identity.string,
-                            receivedAt: new Date(),
+                            startedAt: new Date(),
                             protocolVersion: 1,
                             gck: wrapRawGroupCallKey(
                                 this._services.crypto.randomBytes(new Uint8Array(32)),

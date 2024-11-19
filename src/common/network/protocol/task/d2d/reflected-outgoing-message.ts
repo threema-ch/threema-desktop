@@ -517,6 +517,7 @@ export class ReflectedOutgoingMessageTask
                         this._services.device.identity.string,
                         validatedBody.container,
                         validatedBody.message,
+                        this._reflectedAt,
                     ),
                 };
                 return instructions;

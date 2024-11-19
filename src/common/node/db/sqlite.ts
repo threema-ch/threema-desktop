@@ -3624,7 +3624,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     uid: tRunningGroupCalls.uid,
                     groupUid: tRunningGroupCalls.groupUid,
                     nFailed: tRunningGroupCalls.nFailed,
-                    receivedAt: tRunningGroupCalls.receivedAt,
+                    startedAt: tRunningGroupCalls.startedAt,
                     creatorIdentity: tRunningGroupCalls.creatorIdentity,
                     protocolVersion: tRunningGroupCalls.protocolVersion,
                     gck: tRunningGroupCalls.gck,

@@ -11,11 +11,11 @@ export function getGroupCallBaseData(
     senderIdentity: IdentityString,
     groupCallStart: GroupCallStart.Type,
     group: ModelStore<Group>,
+    startedAt: Date,
 ): GroupCallBaseData {
     const init = {
         startedBy: senderIdentity,
-        // TODO(DESK-1466): Rather use reflected-at (outgoing), created-at (incoming)
-        receivedAt: new Date(),
+        startedAt,
         protocolVersion: groupCallStart.protocolVersion,
         gck: groupCallStart.gck,
         sfuBaseUrl: groupCallStart.sfuBaseUrl,

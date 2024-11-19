@@ -28,6 +28,7 @@ export class IncomingGroupCallStartTask
         private readonly _senderContactOrInit: ModelStore<Contact> | ContactInit,
         private readonly _container: GroupMemberContainer.Type,
         private readonly _groupCallStart: GroupCallStart.Type,
+        private readonly _createdAt: Date,
     ) {
         const messageIdHex = u64ToHexLe(messageId);
         this._log = _services.logging.logger(
@@ -73,6 +74,7 @@ export class IncomingGroupCallStartTask
                     this._senderIdentity,
                     this._groupCallStart,
                     group,
+                    this._createdAt,
                 ),
             );
     }

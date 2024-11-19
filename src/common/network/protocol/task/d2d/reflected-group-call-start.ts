@@ -22,6 +22,7 @@ export class ReflectedGroupCallStartTask implements ComposableTask<PassiveTaskCo
         private readonly _senderIdentity: IdentityString,
         private readonly _container: GroupMemberContainer.Type,
         private readonly _groupCallStart: GroupCallStart.Type,
+        private readonly _reflectedAt: Date,
     ) {
         const messageIdHex = u64ToHexLe(messageId);
         this._log = _services.logging.logger(
@@ -51,6 +52,7 @@ export class ReflectedGroupCallStartTask implements ComposableTask<PassiveTaskCo
                     this._senderIdentity,
                     this._groupCallStart,
                     group,
+                    this._reflectedAt,
                 ),
             );
     }

@@ -42,7 +42,7 @@ export function createOutgoingCspGroupCallStartTask(
                 }),
                 cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
                 messageId: randomMessageId(services.crypto),
-                createdAt: call.receivedAt,
+                createdAt: call.startedAt,
                 allowUserProfileDistribution: true,
             },
         },

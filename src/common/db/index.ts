@@ -661,7 +661,7 @@ export interface DbRunningGroupCall {
     readonly uid: DbRunningGroupCallUid;
     readonly groupUid: DbGroupUid;
     readonly nFailed: u53;
-    readonly receivedAt: Date;
+    readonly startedAt: Date;
     readonly creatorIdentity: IdentityString;
     readonly protocolVersion: u53;
     readonly gck: RawGroupCallKey;

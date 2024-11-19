@@ -1585,6 +1585,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         senderContactOrInit,
                         validatedContainer,
                         validatedGroupCallStart,
+                        clampedCreatedAt,
                     ),
                     reflect: reflectFor(maybeCspE2eType),
                 };

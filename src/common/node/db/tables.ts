@@ -1369,9 +1369,9 @@ export const tRunningGroupCalls = new (class TRunningGroupCalls extends Table<
     public nFailed = this.column<u53>('nFailed', 'custom', CUSTOM_TYPES.U53);
 
     /**
-     * Corresponds to {@link GroupCallBaseData.receivedAt}.
+     * Corresponds to {@link GroupCallBaseData.startedAt}.
      */
-    public receivedAt = this.column('receivedAt', 'localDateTime');
+    public startedAt = this.column('startedAt', 'localDateTime');
 
     /**
      * Corresponds to {@link GroupCallBaseData.startedBy}.

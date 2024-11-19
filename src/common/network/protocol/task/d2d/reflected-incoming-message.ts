@@ -495,6 +495,7 @@ export class ReflectedIncomingMessageTask
                         senderIdentity,
                         validatedBody.container,
                         validatedBody.message,
+                        this._reflectedAt,
                     ),
                 };
                 return instructions;
