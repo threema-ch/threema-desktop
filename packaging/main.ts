@@ -948,7 +948,7 @@ function buildFlatpaks(dirs: Directories, args: string[]): void {
     requireCommand('python3');
 
     // Layer dependencies
-    const layerDependenciesVersion = '23.08';
+    const layerDependenciesVersion = '24.08';
     const dependencies = [
         'org.electronjs.Electron2.BaseApp',
         'org.freedesktop.Sdk',
