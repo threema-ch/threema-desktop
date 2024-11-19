@@ -4,6 +4,7 @@
 -->
 <script lang="ts">
   import {globals} from '~/app/globals';
+  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
   import {collectLogsAndComposeMessageToSupport} from '~/app/ui/components/partials/settings/internal/about/helpers';
@@ -148,9 +149,26 @@
         <Text text={import.meta.env.GIT_REVISION} selectable />
       </KeyValueList.Item>
     {/if}
+  </KeyValueList.Section>
 
+  <KeyValueList.Section title={$i18n.t('settings--about.label--licenses-title', 'Licenses')}>
     <KeyValueList.Item key={$i18n.t('settings--about.label--copyright', 'Copyright')}>
       <Text text={'© Threema GmbH – Released under the AGPL-3.0 license'} selectable />
+    </KeyValueList.Item>
+
+    <KeyValueList.Item key={$i18n.t('settings--about.label--credits-font', 'Font Credits')}>
+      <SubstitutableText
+        text={$i18n.t(
+          'settings--about.prose--font-credits',
+          'The font software <1/> is the property of <2/> and licensed to Threema GmbH. All rights reserved. May not be used by any third party without acquiring a license from <3/>.',
+        )}
+      >
+        <em slot="1">Lab Grotesque</em>
+        <em slot="2">Letters from Sweden</em>
+        <a slot="3" href="https://lettersfromsweden.se/" target="_blank" rel="noreferrer noopener">
+          www.lettersfromsweden.se
+        </a>
+      </SubstitutableText>
     </KeyValueList.Item>
   </KeyValueList.Section>
 
