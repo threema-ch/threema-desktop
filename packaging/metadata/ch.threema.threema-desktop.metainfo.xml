@@ -44,6 +44,23 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta45" date="2024-11-26">
+            <description>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Tightened Content-Security-Policy</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>Fixed a bug where some chats could not be deleted</li>
+                    <li>
+                        Fixed a bug where the unread messages counter was not reset after deleting a
+                        chat
+                    </li>
+                </ul>
+                <p>…and various under-the-hood changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta44" date="2024-11-11">
             <description>
                 <p>New features:</p>
