@@ -54,7 +54,7 @@ the last release will be published.
 ### <a name="requirements"></a>Requirements
 
 - NodeJS / npm (we recommend using something like nvm for version management)
-- Python3 (for [`node-gyp`])
+- Python3 with distutils (for [`node-gyp`], e.g. `python` and `python-setuptools` on Arch)
 - C/C++ compiler toolchain (e.g. `build-essential` on Debian or `base-devel` on Arch)
 - Rust compiler and Cargo
 
