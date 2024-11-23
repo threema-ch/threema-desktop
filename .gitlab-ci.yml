@@ -3,7 +3,7 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   NODE_VERSION: '20.11.1'
   PROTOC_VERSION: '23.4'
-  RUST_VERSION: '1.78.0'
+  RUST_VERSION: '1.82.0' # Should be kept in sync with src/launcher/rust-toolchain.toml
   FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR: 'true'
 
 default:
