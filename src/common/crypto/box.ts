@@ -522,7 +522,14 @@ export class SharedBoxFactory<
  * corresponding shared boxes.
  *
  * IMPORTANT: After constructing an instance of this class, the `secret` key passed in will have
- *            been purged and should not be used anymore.
+ * been purged and should not be used anymore.
+ *
+ * Note: At best, the obfuscation helps against unsophisticated attacks where an attacker
+ * temporarily has RAM access to scrape from it but is unable or unwilling to make a snapshot of the
+ * RAM for later analysis. It does not help against targeted attacks because the encryption key is
+ * right next to it. At worst, it does not help at all and just wastes a couple of CPU cycles. A
+ * constant {@link ByteBuffer} is used intentionally to not risk scattering the key across many
+ * memory regions.
  */
 export class SecureSharedBoxFactory<
     TBox extends CryptoBox<Cookie, Cookie, u64, u64, NonceScope | NonceUnguardedScope>,
