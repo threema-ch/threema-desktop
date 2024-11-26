@@ -180,8 +180,6 @@
         return undefined;
       }
 
-      // TODO(DESK-1613): Prevent setting sink id again if it's already set and the sink id or
-      // element didn't change. This would probably solve popping noises when feeds update.
       return await currentAudioElement.setSinkId(currentAudioSinkDeviceId);
     });
   }
