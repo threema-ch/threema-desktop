@@ -39,9 +39,11 @@ test('Send message', async ({screenshotPath}) => {
 test('Delete last message', async ({screenshotPath}) => {
     // Arrange
     const message = `Test message at ${new Date().toISOString()}`;
+    await conversationPage.sendMessage(message);
+    const inbound = page.locator('.inbound').last();
+    await expect(inbound.getByText(message)).toBeVisible();
 
     // Act
-    await conversationPage.sendMessage(message);
     await conversationPage.deleteMessage(message);
 
     // Assert
