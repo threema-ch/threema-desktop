@@ -1,5 +1,5 @@
 <!--
-  @component 
+  @component
   Renders the supplied date as a friendly timestamp, relative to the current datetime.
 -->
 <script lang="ts">
@@ -19,11 +19,13 @@
   export let services: $$Props['services'];
 
   const {
-    settings: {appearance},
+    settings: {
+      views: {appearance},
+    },
   } = services;
 
   $: timestamp = reactive(
-    () => formatDateLocalized(date, $i18n, format, $appearance.view.use24hTime),
+    () => formatDateLocalized(date, $i18n, format, $appearance.use24hTime),
     [$systemTime.current],
   );
 </script>

@@ -44,7 +44,9 @@
 
   const {
     router,
-    settings: {appearance},
+    settings: {
+      views: {appearance},
+    },
   } = services;
 
   let searchBarComponent: SvelteNullableBinding<SearchBar> = null;
@@ -179,7 +181,7 @@
   function getFilteredItems(
     currentItems: typeof items,
     currentSearchTerm: typeof searchTerm,
-    currentAppearance: ReturnType<(typeof appearance)['get']>,
+    currentAppearance: typeof $appearance,
   ): typeof items {
     return currentItems.filter((item) => {
       // Only retain contacts that were added manually by the user.
@@ -189,7 +191,7 @@
 
       // Filter inactive contacts according to the respective policy.
       if (
-        currentAppearance.view.inactiveContactsPolicy === InactiveContactsPolicy.HIDE &&
+        currentAppearance.inactiveContactsPolicy === InactiveContactsPolicy.HIDE &&
         item.receiver.type === 'contact' &&
         item.receiver.isInactive
       ) {

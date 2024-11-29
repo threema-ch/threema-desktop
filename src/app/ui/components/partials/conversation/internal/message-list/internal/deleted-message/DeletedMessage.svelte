@@ -26,11 +26,13 @@
   export let status: $$Props['status'];
 
   const {
-    settings: {appearance},
+    settings: {
+      views: {appearance},
+    },
   } = services;
 
   $: timestamp = reactive(
-    () => getDisplayTimestampForMessage($i18n, direction, status, $appearance.view.use24hTime),
+    () => getDisplayTimestampForMessage($i18n, direction, status, $appearance.use24hTime),
     [$systemTime.current],
   );
 </script>

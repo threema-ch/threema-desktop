@@ -27,6 +27,7 @@ import {LocalStorageController} from '~/common/dom/ui/local-storage';
 import {FrontendMediaService} from '~/common/dom/ui/media';
 import {FrontendNotificationCreator} from '~/common/dom/ui/notification';
 import {ProfilePictureService} from '~/common/dom/ui/profile-picture';
+import {SettingsService} from '~/common/dom/ui/settings';
 import {appVisibility, getAppVisibility} from '~/common/dom/ui/state';
 import {FrontendSystemDialogService} from '~/common/dom/ui/system-dialog';
 import {applyThemeBranding} from '~/common/dom/ui/theme';
@@ -36,14 +37,13 @@ import {WebRtcServiceProvider} from '~/common/dom/webrtc';
 import type {ElectronIpc, SystemInfo} from '~/common/electron-ipc';
 import {extractErrorTraceback} from '~/common/error';
 import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
-import type {SettingsService} from '~/common/model/types/settings';
 import {parseTestData, type TestDataJson} from '~/common/test-data';
 import type {DomainCertificatePin, u53} from '~/common/types';
 import {assertUnreachable, setAssertFailLogger, unwrap} from '~/common/utils/assert';
 import {Delayed} from '~/common/utils/delayed';
 import type {ReusablePromise} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
-import {WritableStore, type IQueryableStore, type ReadableStore} from '~/common/utils/store';
+import {type ReadableStore, WritableStore, type IQueryableStore} from '~/common/utils/store';
 import {TIMER} from '~/common/utils/timer';
 
 // Extend global APIs
@@ -457,34 +457,7 @@ async function main(): Promise<() => void> {
         requestMissingWorkCredentialsModal,
     );
 
-    const [
-        appearanceSettings,
-        callsSettings,
-        chatSettings,
-        devicesSettings,
-        mediaSettings,
-        privacySettings,
-        profileSettings,
-    ] = await Promise.all([
-        backend.model.user.appearanceSettings,
-        backend.model.user.callsSettings,
-        backend.model.user.chatSettings,
-        backend.model.user.devicesSettings,
-        backend.model.user.mediaSettings,
-        backend.model.user.privacySettings,
-        backend.model.user.profileSettings,
-    ]);
-
-    const settings: SettingsService = {
-        appearance: appearanceSettings,
-        calls: callsSettings,
-        chat: chatSettings,
-        devices: devicesSettings,
-        media: mediaSettings,
-        privacy: privacySettings,
-        profile: profileSettings,
-    };
-
+    const settings = await SettingsService.create(backend);
     // Create app services
     const services: AppServices = {
         crypto: {randomBytes},

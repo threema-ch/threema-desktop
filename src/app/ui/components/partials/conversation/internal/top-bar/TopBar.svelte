@@ -32,7 +32,9 @@
 
   const {
     router,
-    settings: {calls: callsSettings},
+    settings: {
+      views: {calls},
+    },
   } = services;
 
   const anchorPoints: AnchorPoint = {
@@ -169,7 +171,7 @@
       </div>
     {/if}
 
-    {#if $callsSettings.view.groupCallPolicy === GroupCallPolicy.ALLOW_GROUP_CALL}
+    {#if $calls.groupCallPolicy === GroupCallPolicy.ALLOW_GROUP_CALL}
       {#if receiver.type === 'group' && !receiver.isLeft}
         {#if call === undefined}
           <IconButton

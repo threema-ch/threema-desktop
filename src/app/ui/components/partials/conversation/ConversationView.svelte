@@ -80,7 +80,9 @@
   const {
     router,
     backend,
-    settings: {chat},
+    settings: {
+      views: {chat},
+    },
   } = services;
 
   // Unsubscriber for the view model store
@@ -690,7 +692,7 @@
         }),
         mediaFiles,
         visible: true,
-        enterKeyMode: $chat.view.onEnterSubmit ? 'submit' : 'newline',
+        enterKeyMode: $chat.onEnterSubmit ? 'submit' : 'newline',
       },
     };
   }
@@ -1070,7 +1072,7 @@
                 },
               ]}
               onPaste={(text) => insertComposeBarText($viewModelStore.receiver, text)}
-              enterKeyMode={$chat.view.onEnterSubmit ? 'submit' : 'newline'}
+              enterKeyMode={$chat.onEnterSubmit ? 'submit' : 'newline'}
               on:attachfiles={handleAddFiles}
               on:clicksend={handleClickSend}
               on:pastefiles={handleAddFiles}

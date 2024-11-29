@@ -35,7 +35,9 @@
   const {
     profilePicture,
     router,
-    settings: {appearance},
+    settings: {
+      views: {appearance},
+    },
   } = services;
 
   function handleClickMessage(receiverLookup: DbReceiverLookup, messageId: MessageId): void {
@@ -99,7 +101,7 @@
                   $i18n,
                   message.direction,
                   message.status,
-                  $appearance.view.use24hTime,
+                  $appearance.use24hTime,
                 )}
                 content={htmlContent === undefined
                   ? undefined

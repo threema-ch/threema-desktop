@@ -29,7 +29,9 @@
   export let statusMessageType: $$Props['statusMessageType'] = undefined;
 
   const {
-    settings: {appearance},
+    settings: {
+      views: {appearance},
+    },
   } = services;
 
   let acknowledgeReactions: string[] = [];
@@ -67,7 +69,7 @@
   let sortedHistory: $$Props['history'] = [];
   $: sortedHistory = [...history].sort((a, b) => (a.at < b.at ? 1 : -1));
 
-  $: use24hTime = $appearance.view.use24hTime;
+  $: use24hTime = $appearance.use24hTime;
   $: handleUpdateReactions(reactions);
 </script>
 

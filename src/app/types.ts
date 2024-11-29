@@ -9,10 +9,10 @@ import type {BackendController} from '~/common/dom/backend/controller';
 import type {BlobCacheService} from '~/common/dom/ui/blob-cache';
 import type {LocalStorageController} from '~/common/dom/ui/local-storage';
 import type {ProfilePictureService} from '~/common/dom/ui/profile-picture';
+import type {SettingsService} from '~/common/dom/ui/settings';
 import type {WebRtcServiceProvider} from '~/common/dom/webrtc';
 import type {SystemInfo} from '~/common/electron-ipc';
 import type {LoggerFactory} from '~/common/logging';
-import type {SettingsService} from '~/common/model/types/settings';
 import type {SystemDialogService} from '~/common/system-dialog';
 
 /**

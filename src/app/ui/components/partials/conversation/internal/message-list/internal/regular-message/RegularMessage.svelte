@@ -49,7 +49,9 @@
   export let text: $$Props['text'] = undefined;
 
   const {
-    settings: {appearance},
+    settings: {
+      views: {appearance},
+    },
   } = services;
 
   let quoteProps: MessageProps['quote'];
@@ -241,7 +243,7 @@
   );
 
   $: timestamp = reactive(
-    () => getDisplayTimestampForMessage($i18n, direction, status, $appearance.view.use24hTime),
+    () => getDisplayTimestampForMessage($i18n, direction, status, $appearance.use24hTime),
     [$systemTime.current],
   );
 

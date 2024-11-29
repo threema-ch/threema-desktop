@@ -15,8 +15,6 @@
   import type {I18nType} from '~/app/ui/i18n-types';
   import VerificationDots from '~/app/ui/svelte-components/threema/VerificationDots/VerificationDots.svelte';
   import {formatDateLocalized} from '~/app/ui/utils/timestamp';
-  import type {AppearanceSettings} from '~/common/model/types/settings';
-  import type {RemoteModelStore} from '~/common/model/utils/model-store';
   import {unreachable} from '~/common/utils/assert';
   import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
@@ -26,7 +24,9 @@
   export let services: $$Props['services'];
 
   const {
-    settings: {appearance},
+    settings: {
+      views: {appearance},
+    },
   } = services;
 
   let modalState: ModalState = {type: 'none'};
@@ -69,7 +69,7 @@
   }
 
   function getDoNotDisturbDuration(
-    currentAppearance: ReturnType<RemoteModelStore<AppearanceSettings>['get']>,
+    currentAppearance: typeof $appearance,
     currentI18n: I18nType,
     currentNotificationPolicy: AnyReceiverData['notificationPolicy'],
   ): string {
@@ -86,7 +86,7 @@
                 currentNotificationPolicy.expiresAt,
                 currentI18n,
                 'auto',
-                currentAppearance.view.use24hTime,
+                currentAppearance.use24hTime,
               ),
             });
 

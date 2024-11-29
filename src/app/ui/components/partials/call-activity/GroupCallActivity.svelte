@@ -217,8 +217,9 @@
       state: ($localDevices.microphone?.track.enabled ?? false) ? 'on' : 'off',
     })
       .then(async () => {
-        await services.settings.calls.get().controller.update({
-          lastSelectedMicrophone: device.label,
+        await services.settings.update({
+          type: 'calls',
+          update: {lastSelectedMicrophone: device.label},
         });
         log.debug(`Selected microphone device "${device.label}" was saved to settings`);
       })
@@ -229,10 +230,12 @@
 
   function handleSelectAudioOutputDevice(device: AudioOutputDeviceInfo): void {
     audioSinkDeviceId = device.deviceId;
-    services.settings.calls
-      .get()
-      .controller.update({
-        lastSelectedSpeakers: device.label,
+    services.settings
+      .update({
+        type: 'calls',
+        update: {
+          lastSelectedSpeakers: device.label,
+        },
       })
       .then(() => {
         log.debug(`Selected speaker device "${device.label}" was saved to settings`);
@@ -251,9 +254,7 @@
       state: ($localDevices.camera?.track.enabled ?? false) ? 'on' : 'off',
     })
       .then(async () => {
-        await services.settings.calls.get().controller.update({
-          lastSelectedCamera: device.label,
-        });
+        await services.settings.update({type: 'calls', update: {lastSelectedCamera: device.label}});
         log.debug(`Selected camera device "${device.label}" was saved to settings`);
       })
       .catch((error) => {
@@ -332,7 +333,7 @@
   // Note: Microphone capture will be 'on' by default whereas camera capture will be 'off' by
   // default. However, the call may auto-mute the microphone after joining.
   const {lastSelectedCamera, lastSelectedMicrophone, lastSelectedSpeakers} =
-    services.settings.calls.get().view;
+    services.settings.views.calls.get();
   // Camera & Microphone
   selectInitialCaptureDevices(
     log,
