@@ -1,4 +1,4 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 import {
     transformOngoingGroupCallProps,
     type AugmentedOngoingGroupCallViewModelBundle,
@@ -365,7 +365,7 @@ export async function updateRemoteParticipantRemoteCameras({
 }
 
 export async function startCall(
-    services: Pick<AppServices, 'webRtc'>,
+    services: Pick<AppServicesForSvelte, 'webRtc'>,
     log: Logger,
     conversation: Remote<ConversationViewModelBundle>,
     intent: 'join' | 'join-or-create',

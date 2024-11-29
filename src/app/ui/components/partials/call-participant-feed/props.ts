@@ -1,4 +1,4 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 import type {ActivityLayout} from '~/app/ui/components/partials/call-activity/helpers';
 import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
 import type {ParticipantId} from '~/common/network/protocol/call/group-call';
@@ -32,7 +32,7 @@ export interface ParticipantFeedProps<TType extends 'local' | 'remote'> {
     readonly updateCameraSubscription: (dimensions: Dimensions | undefined) => void;
     readonly participantId: TType extends 'local' ? 'local' : ParticipantId;
     readonly receiver: GroupCallParticipantReceiverData;
-    readonly services: Pick<AppServices, 'profilePicture'>;
+    readonly services: Pick<AppServicesForSvelte, 'profilePicture'>;
     readonly tracks: TType extends 'local'
         ? {
               readonly type: TType;

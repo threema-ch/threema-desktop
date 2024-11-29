@@ -1,4 +1,4 @@
-import type {AppServices} from '~/app/types';
+import type {AppServicesForSvelte} from '~/app/types';
 import type {MessageProps} from '~/app/ui/components/molecules/message/props';
 import {getTextContent} from '~/app/ui/components/partials/message-preview-list/helpers';
 import type {MessagePreviewListProps} from '~/app/ui/components/partials/message-preview-list/props';
@@ -40,7 +40,7 @@ export function transformMessageReactionsProps(
 export function transformMessageQuoteProps(
     rawQuoteProps: MessagePreviewListProps['items'][u53]['messages'][u53]['quote'],
     receiverLookup: DbReceiverLookup,
-    services: Pick<AppServices, 'blobCache'>,
+    services: Pick<AppServicesForSvelte, 'blobCache'>,
     i18n: I18nType,
     log: Logger,
 ): MessageProps['quote'] {
@@ -105,7 +105,7 @@ export function transformMessageFileProps(
     fileProps: MessagePreviewListProps['items'][u53]['messages'][u53]['file'],
     messageId: MessageId,
     receiverLookup: DbReceiverLookup,
-    services: Pick<AppServices, 'blobCache'>,
+    services: Pick<AppServicesForSvelte, 'blobCache'>,
     contentLength: u53 = 0,
 ): MessageProps['file'] {
     // If the message doesn't have any file, keep its `fileProps` `undefined`.

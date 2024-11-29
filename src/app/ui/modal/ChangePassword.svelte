@@ -2,7 +2,7 @@
   import {tick} from 'svelte';
 
   import {APP_CONFIG} from '~/app/config';
-  import type {AppServices} from '~/app/types';
+  import type {AppServicesForSvelte} from '~/app/types';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import Password from '~/app/ui/svelte-components/blocks/Input/Password.svelte';
@@ -12,7 +12,7 @@
   import {KeyStorageError} from '~/common/key-storage';
   import {assertError, assertUnreachable, unreachable} from '~/common/utils/assert';
 
-  export let services: AppServices;
+  export let services: AppServicesForSvelte;
 
   const {router, backend} = services;
 
