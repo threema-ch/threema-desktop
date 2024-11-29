@@ -560,6 +560,7 @@
     "action--play-notification-sound-default": "On",
     "action--play-notification-sound-off": "Off",
     "action--toggle-debug-panel": "Toggle Debug Panel",
+    "error--settings-update": "Unable to update settings, please try again.",
     "hint--own-profile-picture": "My profile picture",
     "label--about": "About Threema",
     "label--appearance": "Appearance",

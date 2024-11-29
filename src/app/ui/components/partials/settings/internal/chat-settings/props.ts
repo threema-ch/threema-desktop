@@ -1,5 +1,8 @@
-import type {AppServicesForSvelte} from '~/app/types';
+import type {ChatSettingsUpdate, ChatSettingsView} from '~/common/model/types/settings';
 
 export interface ChatSettingsProps {
-    services: AppServicesForSvelte;
+    readonly actions: {
+        readonly updateSettings: (update: ChatSettingsUpdate) => void;
+    };
+    readonly settings: ChatSettingsView;
 }

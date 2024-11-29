@@ -1,5 +1,4 @@
 <script lang="ts">
-  import {globals} from '~/app/globals';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
   import EditDeviceNameModal from '~/app/ui/components/partials/settings/internal/devices-settings/internal/edit-device-name-modal/EditDeviceNameModal.svelte';
@@ -7,22 +6,18 @@
   import type {DevicesSettingsProps} from '~/app/ui/components/partials/settings/internal/devices-settings/props';
   import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
-  import type {DevicesSettingsView} from '~/common/model/types/settings';
   import {isDeviceName} from '~/common/network/types';
   import {assertUnreachable, unreachable} from '~/common/utils/assert';
-
-  const log = globals.unwrap().uiLogging.logger('ui.component.settings-devices');
 
   type $$Props = DevicesSettingsProps;
 
   export let services: $$Props['services'];
+  export let actions: $$Props['actions'];
+  export let settings: $$Props['settings'];
 
   let modalState: 'none' | 'edit-device-name' | 'relink-device' = 'none';
 
-  const {
-    backend,
-    settings: {devices},
-  } = services;
+  const {backend} = services;
 
   function handleClickEditDeviceName(): void {
     modalState = 'edit-device-name';
@@ -35,22 +30,10 @@
   function handleNewDeviceName(event: CustomEvent<string>): void {
     const newDeviceName = event.detail;
     if (isDeviceName(newDeviceName)) {
-      updateSetting(newDeviceName, 'deviceName');
+      actions.updateSettings({deviceName: newDeviceName});
     }
     backend.connectionManager.disconnect().catch(assertUnreachable);
     modalState = 'none';
-  }
-
-  function updateSetting<N extends keyof DevicesSettingsView>(
-    newValue: DevicesSettingsView[N],
-    updateKey: N,
-  ): void {
-    devices
-      .get()
-      .controller.update({[updateKey]: newValue})
-      .catch(() => {
-        log.error(`Failed to update setting: ${updateKey}`);
-      });
   }
 </script>
 
@@ -63,7 +46,7 @@
         </div>
 
         <div class="content">
-          <Text text={$devices.view.deviceName}></Text>
+          <Text text={settings.deviceName} />
         </div>
       </div>
     </KeyValueList.ItemWithButton>
@@ -84,7 +67,7 @@
   <EditDeviceNameModal
     on:newDeviceName={handleNewDeviceName}
     on:close={handleCloseModal}
-    value={devices.get().view.deviceName}
+    value={settings.deviceName}
   />
 {:else if modalState === 'relink-device'}
   <RelinkDeviceModal {services} on:close={handleCloseModal} />

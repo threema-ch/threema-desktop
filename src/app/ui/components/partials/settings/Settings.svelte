@@ -3,52 +3,59 @@
   Renders the main settings view.
 -->
 <script lang="ts">
-  import type {SvelteComponent} from 'svelte';
-
+  import {globals} from '~/app/globals';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
+  import {getCategoryTitle} from '~/app/ui/components/partials/settings/helpers';
   import About from '~/app/ui/components/partials/settings/internal/about/About.svelte';
-  import type {AboutProps} from '~/app/ui/components/partials/settings/internal/about/props';
   import AppearanceSettings from '~/app/ui/components/partials/settings/internal/appearance-settings/AppearanceSettings.svelte';
-  import type {AppearanceSettingsProps} from '~/app/ui/components/partials/settings/internal/appearance-settings/props';
   import ChatSettings from '~/app/ui/components/partials/settings/internal/chat-settings/ChatSettings.svelte';
-  import type {ChatSettingsProps} from '~/app/ui/components/partials/settings/internal/chat-settings/props';
   import DevicesSettings from '~/app/ui/components/partials/settings/internal/devices-settings/DevicesSettings.svelte';
-  import type {DevicesSettingsProps} from '~/app/ui/components/partials/settings/internal/devices-settings/props';
   import MediaSettings from '~/app/ui/components/partials/settings/internal/media-settings/MediaSettings.svelte';
-  import type {MediaSettingsProps} from '~/app/ui/components/partials/settings/internal/media-settings/props';
   import ProfileSettings from '~/app/ui/components/partials/settings/internal/profile-settings/ProfileSettings.svelte';
-  import type {ProfileSettingsProps} from '~/app/ui/components/partials/settings/internal/profile-settings/props';
   import SecuritySettings from '~/app/ui/components/partials/settings/internal/security-settings/SecuritySettings.svelte';
-  import type {SecuritySettingsProps} from '~/app/ui/components/partials/settings/internal/security-settings/props';
   import type {SettingsProps} from '~/app/ui/components/partials/settings/props';
+  import type {RemoteSettingsViewModelStoreValue} from '~/app/ui/components/partials/settings/types';
   import {i18n} from '~/app/ui/i18n';
+  import {toast} from '~/app/ui/snackbar';
   import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {reactive} from '~/app/ui/utils/svelte';
   import {display} from '~/common/dom/ui/state';
   import type {SettingsCategory} from '~/common/settings';
+  import {ensureError, unreachable} from '~/common/utils/assert';
+  import type {Remote} from '~/common/utils/endpoint';
+  import {ReadableStore, type IQueryableStore} from '~/common/utils/store';
+  import type {SettingsViewModelBundle} from '~/common/viewmodel/settings';
+  import type {SettingsPageUpdate} from '~/common/viewmodel/settings/controller/types';
+
+  const {uiLogging} = globals.unwrap();
+  const log = uiLogging.logger('ui.component.settings');
 
   type $$Props = SettingsProps;
-
-  interface SettingsPage {
-    readonly title: string;
-    readonly component: typeof SvelteComponent<
-      | AboutProps
-      | AppearanceSettingsProps
-      | ChatSettingsProps
-      | DevicesSettingsProps
-      | MediaSettingsProps
-      | ProfileSettingsProps
-      | SecuritySettingsProps
-    >;
-  }
 
   export let services: $$Props['services'];
 
   const {router} = services;
 
-  let settingsPageMap: {[Key in Exclude<SettingsCategory, 'calls' | 'privacy'>]: SettingsPage};
-  let settingsPage: SettingsPage;
+  // ViewModelBundle of the settings.
+  let viewModelStore: IQueryableStore<RemoteSettingsViewModelStoreValue | undefined> =
+    new ReadableStore(undefined);
+  let viewModelController: Remote<SettingsViewModelBundle>['viewModelController'] | undefined =
+    undefined;
+
+  let currentCategory: Exclude<SettingsCategory, 'calls' | 'privacy'> = 'profile';
+
+  services.backend.viewModel
+    .settings()
+    .then((viewModelBundle) => {
+      // Unpack bundle
+      viewModelStore = viewModelBundle.viewModelStore;
+      viewModelController = viewModelBundle.viewModelController;
+    })
+    .catch((error: unknown) => {
+      log.error(`Failed to load settings page: ${ensureError(error)}`);
+      router.goToWelcome();
+    });
 
   function handleClickBack(): void {
     router.goToWelcome();
@@ -65,65 +72,102 @@
       return;
     }
 
-    settingsPage = settingsPageMap[route.params.category];
+    currentCategory = route.params.category;
   }
 
-  function handleChangeLanguage(): void {
-    settingsPageMap = {
-      about: {
-        title: $i18n.t('settings--about.label--title', 'About Threema'),
-        component: About,
-      },
-      appearance: {
-        title: $i18n.t('settings--appearance.label--title', 'Appearance Settings'),
-        component: AppearanceSettings,
-      },
-      profile: {
-        title: $i18n.t('settings--profile.label--title', 'Profile Settings'),
-        component: ProfileSettings,
-      },
-      security: {
-        title: $i18n.t('settings--security.label--title', 'Security Settings'),
-        component: SecuritySettings,
-      },
-      devices: {
-        title: $i18n.t('settings--devices.label--title', 'Device Settings'),
-        component: DevicesSettings,
-      },
-      media: {
-        title: $i18n.t('settings--media.label--title', 'Media & Storage'),
-        component: MediaSettings,
-      },
-      chat: {
-        title: $i18n.t('settings--chat.label--title', 'Chat Settings'),
-        component: ChatSettings,
-      },
-    };
+  function handleUpdateSettings(settingsUpdate: SettingsPageUpdate): void {
+    viewModelController?.update(settingsUpdate).catch((error) => {
+      log.error(`Error updating settings: ${error}`);
+
+      toast.addSimpleFailure(
+        $i18n.t('settings.error--settings-update', 'Unable to update settings, please try again.'),
+      );
+    });
   }
 
-  $: reactive(handleChangeLanguage, [$i18n]);
-  $: reactive(handleChangeRoute, [$router.main, settingsPageMap]);
+  $: reactive(handleChangeRoute, [$router.main]);
 </script>
 
-<div class="container">
-  <div class="navbar">
-    {#if $display === 'small'}
-      <div class="left">
-        <IconButton flavor="naked" on:click={handleClickBack}>
-          <MdIcon theme="Outlined">arrow_back</MdIcon>
-        </IconButton>
-      </div>
-    {/if}
+{#if $viewModelStore !== undefined}
+  <div class="container">
+    <div class="navbar">
+      {#if $display === 'small'}
+        <div class="left">
+          <IconButton flavor="naked" on:click={handleClickBack}>
+            <MdIcon theme="Outlined">arrow_back</MdIcon>
+          </IconButton>
+        </div>
+      {/if}
 
-    <div class="center">
-      <Text text={settingsPage.title} color="mono-high" family="secondary" size="body" />
+      <div class="center">
+        <Text
+          text={getCategoryTitle(currentCategory, $i18n)}
+          color="mono-high"
+          family="secondary"
+          size="body"
+        />
+      </div>
+    </div>
+
+    <div class="content">
+      {#if currentCategory === 'about'}
+        <About {services} />
+      {:else if currentCategory === 'appearance'}
+        <AppearanceSettings
+          {services}
+          actions={{
+            updateSettings: (update) => {
+              handleUpdateSettings({update, type: 'appearance'});
+            },
+          }}
+          settings={$viewModelStore.appearance}
+        />
+      {:else if currentCategory === 'chat'}
+        <ChatSettings
+          actions={{
+            updateSettings: (update) => {
+              handleUpdateSettings({update, type: 'chat'});
+            },
+          }}
+          settings={$viewModelStore.chat}
+        />
+      {:else if currentCategory === 'devices'}
+        <DevicesSettings
+          {services}
+          actions={{
+            updateSettings: (update) => {
+              handleUpdateSettings({update, type: 'devices'});
+            },
+          }}
+          settings={$viewModelStore.devices}
+        />
+      {:else if currentCategory === 'media'}
+        <MediaSettings
+          actions={{
+            updateSettings: (update) => {
+              handleUpdateSettings({update, type: 'media'});
+            },
+          }}
+          settings={$viewModelStore.media}
+        />
+      {:else if currentCategory === 'profile'}
+        <ProfileSettings
+          {services}
+          actions={{
+            updateSettings: (update) => {
+              handleUpdateSettings({update, type: 'profile'});
+            },
+          }}
+          settings={$viewModelStore.profile}
+        />
+      {:else if currentCategory === 'security'}
+        <SecuritySettings {services} />
+      {:else}
+        {unreachable(currentCategory)}
+      {/if}
     </div>
   </div>
-
-  <div class="content">
-    <svelte:component this={settingsPage.component} {services} />
-  </div>
-</div>
+{/if}
 
 <style lang="scss">
   @use 'component' as *;

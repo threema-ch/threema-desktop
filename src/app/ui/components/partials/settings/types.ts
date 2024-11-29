@@ -1,4 +1,11 @@
 import type {ContextMenuOption} from '~/app/ui/components/hocs/context-menu-provider/types';
+import type {Remote} from '~/common/utils/endpoint';
+import type {SettingsViewModelStore} from '~/common/viewmodel/settings/store';
+
+/**
+ * Type of the value contained in a `SettingsViewModelStore` transferred from {@link Remote}.
+ */
+export type RemoteSettingsViewModelStoreValue = Remote<ReturnType<SettingsViewModelStore['get']>>;
 
 /**
  * A single item in a dropdown menu.

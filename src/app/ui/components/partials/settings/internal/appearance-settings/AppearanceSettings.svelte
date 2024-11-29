@@ -21,7 +21,6 @@
   import type {Theme} from '~/common/dom/ui/theme';
   import {InactiveContactsPolicy, InactiveContactsPolicyUtils, TimeFormat} from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
-  import type {AppearanceSettingsView} from '~/common/model/types/settings';
   import {ensureError, unreachable} from '~/common/utils/assert';
 
   type $$Props = AppearanceSettingsProps;
@@ -29,6 +28,8 @@
   const log = globals.unwrap().uiLogging.logger('ui.component.appearance-settings');
 
   export let services: $$Props['services'];
+  export let actions: $$Props['actions'];
+  export let settings: $$Props['settings'];
 
   let isSpellcheckEnabled: boolean | undefined = undefined;
   let isSpellcheckEnabledToggleState: boolean = false;
@@ -37,18 +38,7 @@
 
   const {
     storage: {theme, locale},
-    settings: {appearance},
   } = services;
-
-  function updateSetting<N extends keyof AppearanceSettingsView>(
-    newValue: AppearanceSettingsView[N],
-    updateKey: N,
-  ): void {
-    appearance
-      .get()
-      .controller.update({[updateKey]: newValue})
-      .catch(() => log.error(`Failed to update setting: ${updateKey}`));
-  }
 
   function updateTheme(newValue: Theme): void {
     $theme = newValue;
@@ -100,8 +90,7 @@
   $: themeDropdownItems = createDropdownItems(getThemeDropdown($i18n), updateTheme);
   $: localeDropdownItems = createDropdownItems(getLocaleDropdown(), updateLocale);
 
-  $: use24hTime = $appearance.view.use24hTime;
-  $: showInactiveContacts = $appearance.view.inactiveContactsPolicy === InactiveContactsPolicy.SHOW;
+  $: showInactiveContacts = settings.inactiveContactsPolicy === InactiveContactsPolicy.SHOW;
 </script>
 
 <KeyValueList>
@@ -151,11 +140,13 @@
     {/if}
 
     <KeyValueList.ItemWithSwitch
-      checked={use24hTime}
+      checked={settings.use24hTime}
       key={$i18n.t('settings--appearance.label--24-hour-time-format-title', 'Time Format')}
       on:switchevent={() =>
         // Note: Boolean logic is inverted because we're toggling it
-        updateSetting(!use24hTime ? TimeFormat.TIME_24H : TimeFormat.TIME_12H, 'timeFormat')}
+        actions.updateSettings({
+          timeFormat: !settings.use24hTime ? TimeFormat.TIME_24H : TimeFormat.TIME_12H,
+        })}
     >
       <Text
         text={$i18n.t(
@@ -171,10 +162,11 @@
       key=""
       checked={showInactiveContacts}
       on:switchevent={() =>
-        updateSetting(
-          InactiveContactsPolicyUtils.fromNumber(showInactiveContacts ? 1 : 0),
-          'inactiveContactsPolicy',
-        )}
+        actions.updateSettings({
+          inactiveContactsPolicy: InactiveContactsPolicyUtils.fromNumber(
+            showInactiveContacts ? 1 : 0,
+          ),
+        })}
     >
       <Text
         text={$i18n.t(

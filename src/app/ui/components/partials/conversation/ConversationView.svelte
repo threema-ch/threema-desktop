@@ -457,7 +457,7 @@
         );
 
         toast.addSimpleFailure(
-          i18n.get().t('messaging.error--conversation-not-found', 'Conversation not found'),
+          $i18n.t('messaging.error--conversation-not-found', 'Conversation not found'),
         );
 
         // Navigate back to the welcome page.

@@ -6,17 +6,13 @@
   import {i18n} from '~/app/ui/i18n';
   import type {SystemInfo} from '~/common/electron-ipc';
   import {ComposeBarEnterMode} from '~/common/enum';
-  import type {ChatSettingsViewNonDerivedProperties} from '~/common/model/types/settings';
 
   type $$Props = ChatSettingsProps;
 
   const log = globals.unwrap().uiLogging.logger('ui.component.chat-settings');
 
-  export let services: $$Props['services'];
-
-  const {
-    settings: {chat},
-  } = services;
+  export let actions: $$Props['actions'];
+  export let settings: $$Props['settings'];
 
   let systemInfo: SystemInfo | undefined = undefined;
 
@@ -27,19 +23,9 @@
       log.error('Could not fetch system info', error);
     });
 
-  $: onEnterSubmit = $chat.view.onEnterSubmit;
+  $: onEnterSubmit = settings.onEnterSubmit;
 
   $: onEnterSubmitToggleState = onEnterSubmit;
-
-  function updateSetting<N extends keyof ChatSettingsViewNonDerivedProperties>(
-    newValue: ChatSettingsViewNonDerivedProperties[N],
-    updateKey: N,
-  ): void {
-    chat
-      .get()
-      .controller.update({[updateKey]: newValue})
-      .catch(() => log.error(`Failed to update setting: ${updateKey}`));
-  }
 </script>
 
 <KeyValueList>
@@ -48,10 +34,11 @@
       key={$i18n.t('settings--chat.label--on-enter-send', 'Enter to Send')}
       bind:checked={onEnterSubmitToggleState}
       on:switchevent={() =>
-        updateSetting(
-          !onEnterSubmit ? ComposeBarEnterMode.SUBMIT : ComposeBarEnterMode.LINE_BREAK,
-          'composeBarEnterMode',
-        )}
+        actions.updateSettings({
+          composeBarEnterMode: !onEnterSubmit
+            ? ComposeBarEnterMode.SUBMIT
+            : ComposeBarEnterMode.LINE_BREAK,
+        })}
     >
       <Text
         text={onEnterSubmit

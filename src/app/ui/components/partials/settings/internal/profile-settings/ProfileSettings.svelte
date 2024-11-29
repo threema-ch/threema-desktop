@@ -19,6 +19,7 @@
   import type {ProfileSettingsProps} from '~/app/ui/components/partials/settings/internal/profile-settings/props';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
+  import {reactive} from '~/app/ui/utils/svelte';
   import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
   import type {ProfileSettingsView} from '~/common/model/types/settings';
   import type {IdentityString} from '~/common/network/types';
@@ -31,10 +32,11 @@
   type $$Props = ProfileSettingsProps;
 
   export let services: $$Props['services'];
+  export let actions: $$Props['actions'];
+  export let settings: $$Props['settings'];
 
   const {
     backend: {viewModel},
-    settings: {profile: profileSettings},
   } = services;
 
   let profileViewModelStore: Remote<ProfileViewModelStore>;
@@ -73,30 +75,22 @@
     );
   }
 
-  function handleChangeProfileSettings(settings: typeof $profileSettings, t: typeof $i18n.t): void {
-    const sharedArray: readonly IdentityString[] =
-      $profileSettings.view.profilePictureShareWith.group === 'allowList'
-        ? $profileSettings.view.profilePictureShareWith.allowList
+  function handleChangeProfileSettings(): void {
+    const currentAllowList: readonly IdentityString[] =
+      settings.profilePictureShareWith.group === 'allowList'
+        ? settings.profilePictureShareWith.allowList
         : [];
 
-    const dropdown = getProfilePictureShareWithDropdown($i18n, sharedArray);
+    const dropdown = getProfilePictureShareWithDropdown($i18n, currentAllowList);
     profilePictureShareWithItems = createDropdownItems<
       ProfileSettingsView,
       ProfilePictureShareWith
-    >(dropdown, updateSetting);
+    >(dropdown, (profilePictureShareWith) => {
+      actions.updateSettings({profilePictureShareWith});
+    });
   }
 
-  function updateSetting<N extends keyof ProfileSettingsView>(
-    newValue: ProfileSettingsView[N],
-    updateKey: N,
-  ): void {
-    profileSettings
-      .get()
-      .controller.update({[updateKey]: newValue})
-      .catch(() => log.error(`Failed to update setting: ${updateKey}`));
-  }
-
-  $: handleChangeProfileSettings($profileSettings, $i18n.t);
+  $: reactive(handleChangeProfileSettings, [settings, $i18n]);
 </script>
 
 <!-- eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -->
@@ -146,7 +140,7 @@
           >
             <Text
               text={getProfilePictureShareWithDropdownLabel(
-                $profileSettings.view.profilePictureShareWith.group,
+                settings.profilePictureShareWith.group,
                 $i18n,
               )}
             ></Text>
