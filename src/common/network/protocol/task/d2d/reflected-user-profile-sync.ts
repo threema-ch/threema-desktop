@@ -64,7 +64,7 @@ export class ReflectedUserProfileSyncTask implements PassiveTask<void> {
         this._processUpdateForProfilePictureShareWith(validatedMessage, profileUpdate);
         await this._processUpdateForProfilePicture(validatedMessage, profileUpdate);
 
-        await model.user.profileSettings.get().controller.update(profileUpdate);
+        model.user.profileSettings.get().controller.update(profileUpdate);
     }
 
     private _processUpdateForNickname(

@@ -19,7 +19,7 @@ export class ChatSettingsModelController implements ChatSettingsController {
     public constructor(private readonly _services: ServicesForModel) {}
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    public async update(change: ChatSettingsUpdate): Promise<void> {
+    public update(change: ChatSettingsUpdate): void {
         this.lifetimeGuard.update((view) => {
             const updatedView: ChatSettingsViewNonDerivedProperties = {...view, ...change};
             this._services.db.setSettings('chat', updatedView);

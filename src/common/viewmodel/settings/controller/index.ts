@@ -8,7 +8,7 @@ import type {ServicesForViewModel} from '~/common/viewmodel';
 import type {SettingsPageUpdate} from '~/common/viewmodel/settings/controller/types';
 
 export interface ISettingsViewModelController extends ProxyMarked {
-    readonly update: (settingsUpdate: SettingsPageUpdate) => Promise<void>;
+    readonly update: (settingsUpdate: SettingsPageUpdate) => void;
 
     /**
      * Checks whether a contact for the given `identity` string exists, otherwise creating a new
@@ -24,29 +24,29 @@ export class SettingsViewModelController implements ISettingsViewModelController
 
     public constructor(private readonly _services: ServicesForViewModel) {}
 
-    public async update(settingsUpdate: SettingsPageUpdate): Promise<void> {
+    public update(settingsUpdate: SettingsPageUpdate): void {
         const {user} = this._services.model;
         switch (settingsUpdate.type) {
             case 'appearance':
-                await user.appearanceSettings.get().controller.update(settingsUpdate.update);
+                user.appearanceSettings.get().controller.update(settingsUpdate.update);
                 break;
             case 'calls':
-                await user.callsSettings.get().controller.update(settingsUpdate.update);
+                user.callsSettings.get().controller.update(settingsUpdate.update);
                 break;
             case 'chat':
-                await user.chatSettings.get().controller.update(settingsUpdate.update);
+                user.chatSettings.get().controller.update(settingsUpdate.update);
                 break;
             case 'devices':
-                await user.devicesSettings.get().controller.update(settingsUpdate.update);
+                user.devicesSettings.get().controller.update(settingsUpdate.update);
                 break;
             case 'media':
-                await user.mediaSettings.get().controller.update(settingsUpdate.update);
+                user.mediaSettings.get().controller.update(settingsUpdate.update);
                 break;
             case 'privacy':
-                await user.privacySettings.get().controller.update(settingsUpdate.update);
+                user.privacySettings.get().controller.update(settingsUpdate.update);
                 break;
             case 'profile':
-                await user.profileSettings.get().controller.update(settingsUpdate.update);
+                user.profileSettings.get().controller.update(settingsUpdate.update);
                 break;
             default:
                 unreachable(settingsUpdate);

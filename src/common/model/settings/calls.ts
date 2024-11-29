@@ -27,8 +27,7 @@ export class CallsSettingsModelController implements CallsSettingsController {
 
     public constructor(private readonly _services: ServicesForModel) {}
 
-    // eslint-disable-next-line @typescript-eslint/require-await
-    public async update(change: CallsSettingsUpdate): Promise<void> {
+    public update(change: CallsSettingsUpdate): void {
         this.lifetimeGuard.update((view) =>
             this._services.db.setSettings('calls', {
                 ...view,

@@ -48,13 +48,11 @@ export class ReflectedSettingsSyncTask implements PassiveTask<void> {
             `Received reflected SettingsSync message from ${this._senderDeviceIdString}`,
         );
 
-        await this._processPrivacySettings(validatedMessage.update.settings);
-        await this._processCallsSettings(validatedMessage.update.settings);
+        this._processPrivacySettings(validatedMessage.update.settings);
+        this._processCallsSettings(validatedMessage.update.settings);
     }
 
-    private async _processPrivacySettings(
-        settingsUpdate: validate.sync.Settings.Type,
-    ): Promise<void> {
+    private _processPrivacySettings(settingsUpdate: validate.sync.Settings.Type): void {
         const {
             contactSyncPolicy,
             unknownContactPolicy,
@@ -65,7 +63,7 @@ export class ReflectedSettingsSyncTask implements PassiveTask<void> {
             blockedIdentities,
             excludeFromSyncIdentities,
         } = settingsUpdate;
-        await this._services.model.user.privacySettings.get().controller.update(
+        this._services.model.user.privacySettings.get().controller.update(
             filterUndefinedProperties({
                 contactSyncPolicy,
                 unknownContactPolicy,
@@ -79,11 +77,9 @@ export class ReflectedSettingsSyncTask implements PassiveTask<void> {
         );
     }
 
-    private async _processCallsSettings(
-        settingsUpdate: validate.sync.Settings.Type,
-    ): Promise<void> {
+    private _processCallsSettings(settingsUpdate: validate.sync.Settings.Type): void {
         const {o2oCallPolicy, o2oCallConnectionPolicy, groupCallPolicy} = settingsUpdate;
-        await this._services.model.user.callsSettings.get().controller.update(
+        this._services.model.user.callsSettings.get().controller.update(
             filterUndefinedProperties({
                 o2oCallPolicy,
                 o2oCallConnectionPolicy,

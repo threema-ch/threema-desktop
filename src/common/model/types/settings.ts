@@ -19,11 +19,10 @@ import type {AutoDownload} from '~/common/model/settings/media';
 import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
 import type {Model} from '~/common/model/types/common';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import type {ModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
+import type {ModelStore} from '~/common/model/utils/model-store';
 import type {BlobId} from '~/common/network/protocol/blob';
 import type {DeviceName, IdentityString, Nickname} from '~/common/network/types';
 import type {RawBlobKey} from '~/common/network/types/keys';
-import type {Settings} from '~/common/settings';
 import type {ReadonlyUint8Array, StrictExtract} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
 
@@ -42,7 +41,7 @@ export interface ProfileSettingsView {
 export type ProfileSettingsUpdate = Partial<ProfileSettingsView>;
 export type ProfileSettingsController = {
     readonly lifetimeGuard: ModelLifetimeGuard<ProfileSettingsView>;
-    readonly update: (change: ProfileSettingsUpdate) => Promise<void>;
+    readonly update: (change: ProfileSettingsUpdate) => void;
 } & ProxyMarked;
 export type ProfileSettings = Model<ProfileSettingsView, ProfileSettingsController>;
 
@@ -62,7 +61,7 @@ export interface PrivacySettingsView {
 export type PrivacySettingsUpdate = Partial<PrivacySettingsView>;
 export type PrivacySettingsController = {
     readonly lifetimeGuard: ModelLifetimeGuard<PrivacySettingsView>;
-    readonly update: (change: PrivacySettingsUpdate) => Promise<void>;
+    readonly update: (change: PrivacySettingsUpdate) => void;
 
     /**
      * Returns whether an identity string is explicitly blocked, i.e. whether it is present in the
@@ -94,7 +93,7 @@ export interface CallsSettingsView {
 export type CallsSettingsUpdate = Partial<CallsSettingsView>;
 export type CallsSettingsController = {
     readonly lifetimeGuard: ModelLifetimeGuard<CallsSettingsView>;
-    readonly update: (change: CallsSettingsUpdate) => Promise<void>;
+    readonly update: (change: CallsSettingsUpdate) => void;
 } & ProxyMarked;
 export type CallsSettings = Model<CallsSettingsView, CallsSettingsController>;
 
@@ -115,7 +114,7 @@ export interface ChatSettingsView {
 export type ChatSettingsUpdate = Partial<ChatSettingsViewNonDerivedProperties>;
 export type ChatSettingsController = {
     readonly lifetimeGuard: ModelLifetimeGuard<ChatSettingsView>;
-    readonly update: (change: ChatSettingsUpdate) => Promise<void>;
+    readonly update: (change: ChatSettingsUpdate) => void;
 } & ProxyMarked;
 
 export type ChatSettings = Model<ChatSettingsView, ChatSettingsController>;
@@ -138,7 +137,7 @@ export interface DevicesSettingsView {
 export type DevicesSettingsUpdate = Partial<DevicesSettingsView>;
 export type DevicesSettingsController = {
     readonly lifetimeGuard: ModelLifetimeGuard<DevicesSettingsView>;
-    readonly update: (change: DevicesSettingsUpdate) => Promise<void>;
+    readonly update: (change: DevicesSettingsUpdate) => void;
 } & ProxyMarked;
 export type DevicesSettings = Model<DevicesSettingsView, DevicesSettingsController>;
 
@@ -167,7 +166,7 @@ export type AppearanceSettingsViewNonDerivedProperties = Omit<
 export type AppearanceSettingsUpdate = Omit<Partial<AppearanceSettingsView>, 'use24hTime'>;
 export type AppearanceSettingsController = {
     readonly lifetimeGuard: ModelLifetimeGuard<AppearanceSettingsView>;
-    readonly update: (change: AppearanceSettingsUpdate) => Promise<void>;
+    readonly update: (change: AppearanceSettingsUpdate) => void;
 } & ProxyMarked;
 export type AppearanceSettings = Model<AppearanceSettingsView, AppearanceSettingsController>;
 

@@ -32,8 +32,7 @@ export class MediaSettingsModelController implements MediaSettingsController {
 
     public constructor(private readonly _services: ServicesForModel) {}
 
-    // eslint-disable-next-line @typescript-eslint/require-await
-    public async update(change: MediaSettingsUpdate): Promise<void> {
+    public update(change: MediaSettingsUpdate): void {
         this.lifetimeGuard.update((view) =>
             this._services.db.setSettings('media', {
                 ...view,

@@ -18,8 +18,7 @@ export class AppearanceSettingsModelController implements AppearanceSettingsCont
 
     public constructor(private readonly _services: ServicesForModel) {}
 
-    // eslint-disable-next-line @typescript-eslint/require-await
-    public async update(change: AppearanceSettingsUpdate): Promise<void> {
+    public update(change: AppearanceSettingsUpdate): void {
         this.lifetimeGuard.update((view) => {
             const updatedView: AppearanceSettingsViewNonDerivedProperties = {...view, ...change};
             this._services.db.setSettings('appearance', updatedView);

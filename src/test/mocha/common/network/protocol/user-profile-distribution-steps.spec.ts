@@ -33,7 +33,7 @@ export function run(): void {
 
         let group: ModelStore<Group>;
 
-        this.beforeEach(async function () {
+        this.beforeEach(function () {
             services = makeTestServices(me.identity.string);
             // Add a profile picture
             blob = new Uint8Array([1, 2, 3, 4]);
@@ -43,7 +43,7 @@ export function run(): void {
             );
             lastUploadedAt = new Date();
 
-            await services.model.user.profileSettings.get().controller.update({
+            services.model.user.profileSettings.get().controller.update({
                 profilePicture: {
                     blob,
                     blobId,
@@ -146,7 +146,7 @@ export function run(): void {
         });
 
         it('remove the profile picture of a contact that is not on the allow list', async function () {
-            await services.model.user.profileSettings.get().controller.update({
+            services.model.user.profileSettings.get().controller.update({
                 profilePictureShareWith: {
                     group: 'allowList',
                     allowList: [contact2.get().view.identity],
@@ -208,7 +208,7 @@ export function run(): void {
         it('upload the profile picture if it is older than 7 days', async function () {
             lastUploadedAt = new Date(2024, 0, 1);
 
-            await services.model.user.profileSettings.get().controller.update({
+            services.model.user.profileSettings.get().controller.update({
                 profilePicture: {
                     blob,
                     blobId,
@@ -353,7 +353,7 @@ export function run(): void {
             ).to.byteEqual(distributionResult.set.blobId as ReadonlyUint8Array as Uint8Array);
         });
         it('send and upload because profile picture and cache is stale', async function () {
-            await services.model.user.profileSettings.get().controller.update({
+            services.model.user.profileSettings.get().controller.update({
                 profilePicture: {
                     blob,
                     blobId,
@@ -432,7 +432,7 @@ export function run(): void {
                 )?.type,
             ).to.eq('profile-picture');
 
-            await services.model.user.profileSettings.get().controller.update({
+            services.model.user.profileSettings.get().controller.update({
                 profilePicture: {
                     blob: new Uint8Array([3, 4, 9, 9]),
                     blobId: ensureBlobId(

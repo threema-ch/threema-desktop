@@ -434,7 +434,7 @@ export async function importScreenshotData(
 
     // Set own profile
     if (data.profile !== undefined) {
-        await model.user.profileSettings.get().controller.update({
+        model.user.profileSettings.get().controller.update({
             nickname: data.profile.nickname,
             profilePicture: {
                 blob: data.profile.profilePicture,

@@ -86,11 +86,11 @@ export function run(): void {
 
         // Set up services and log printing
         let services: TestServices;
-        this.beforeEach(async function () {
+        this.beforeEach(function () {
             services = makeTestServices(me);
 
             // Add a profile picture
-            await services.model.user.profileSettings.get().controller.update({
+            services.model.user.profileSettings.get().controller.update({
                 profilePicture: {
                     blob: new Uint8Array([1, 2, 3, 4]),
                     blobId: ensureBlobId(new Uint8Array(BLOB_ID_LENGTH)),
@@ -394,7 +394,7 @@ export function run(): void {
 
             const receiverContact = addTestUserAsContact(model, receiver);
 
-            await services.model.user.profileSettings
+            services.model.user.profileSettings
                 .get()
                 .controller.update({nickname: ensureNickname('W00T')});
             const ownNickname = services.model.user.profileSettings.get().view.nickname;
@@ -1141,7 +1141,7 @@ export function run(): void {
                 const user1store = addTestUserAsContact(model, user1);
 
                 // Block user2
-                await model.user.privacySettings.get().controller.update({
+                model.user.privacySettings.get().controller.update({
                     blockedIdentities: {identities: [user1.identity.string]},
                 });
 
@@ -1196,7 +1196,7 @@ export function run(): void {
                 const user2store = addTestUserAsContact(model, user2);
 
                 // Block user2
-                await model.user.privacySettings.get().controller.update({
+                model.user.privacySettings.get().controller.update({
                     blockedIdentities: {identities: [user2.identity.string]},
                 });
 
@@ -1272,7 +1272,7 @@ export function run(): void {
                 const user2store = addTestUserAsContact(model, user2);
 
                 // Block user2
-                await model.user.privacySettings.get().controller.update({
+                model.user.privacySettings.get().controller.update({
                     blockedIdentities: {identities: [user2.identity.string]},
                 });
 

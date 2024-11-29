@@ -274,7 +274,7 @@ export async function transferOldMessages(
             value: {},
         });
     }
-    await restoreSettings(services, oldDb);
+    restoreSettings(services, oldDb);
 
     oldDb.close();
 
@@ -282,10 +282,10 @@ export async function transferOldMessages(
     model.conversations.refreshCache();
 }
 
-async function restoreSettings(
+function restoreSettings(
     services: Pick<ServicesForBackend, 'model'>,
     oldDb: DatabaseBackend,
-): Promise<void> {
+): void {
     const settings: LocalSettings = {
         appearance:
             oldDb.getSettings('appearance') ?? services.model.user.appearanceSettings.get().view,
@@ -295,9 +295,9 @@ async function restoreSettings(
     };
 
     // We can directly update the settings through the model to directly see the effects.
-    await services.model.user.appearanceSettings.get().controller.update(settings.appearance);
-    await services.model.user.devicesSettings.get().controller.update(settings.devices);
-    await services.model.user.mediaSettings.get().controller.update(settings.media);
+    services.model.user.appearanceSettings.get().controller.update(settings.appearance);
+    services.model.user.devicesSettings.get().controller.update(settings.devices);
+    services.model.user.mediaSettings.get().controller.update(settings.media);
 }
 
 function restoreReactionsAndHistory(
