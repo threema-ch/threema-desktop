@@ -110,47 +110,45 @@
             }
           }}
         />
-        {#if import.meta.env.BUILD_ENVIRONMENT === 'sandbox'}
-          <div>
-            <div class="save">
-              <Hint
-                icon="info"
-                text={isSafeStorageAvailable
-                  ? $i18n.t(
-                      'dialog--linking-set-password.prose--save-password-tooltip',
-                      "Your password is stored using your system's default secure credential storage.",
-                    )
-                  : $i18n.t(
-                      'dialog--linking-set-password.prose--save-password-tooltip-unavailable',
-                      'Threema for Desktop could not detect a default secure credential storage on your device.',
-                    )}
-              />
-              <label for="savePassword"
-                >{$i18n.t(
-                  'dialog--linking-set-password.label--save-password',
-                  'Save securely on device',
-                )}</label
-              >
-              <Switch
-                role="switch"
-                disabled={!isSafeStorageAvailable}
-                bind:checked={shouldStorePasswordValue}
-                on:click={handleClickSwitch}
-              />
-            </div>
-            <div class="save">
-              {shouldStorePasswordValue
+        <div>
+          <div class="save">
+            <Hint
+              icon="info"
+              text={isSafeStorageAvailable
                 ? $i18n.t(
-                    'dialog--linking-set-password.prose--save-password--hint-true',
-                    'You will be logged in automatically when you open the Desktop app.',
+                    'dialog--linking-set-password.prose--save-password-tooltip',
+                    "Your password is stored using your system's default secure credential storage.",
                   )
                 : $i18n.t(
-                    'dialog--linking-set-password.prose---save-password-hint-false',
-                    'You will need to enter your password each time you open the Desktop app.',
+                    'dialog--linking-set-password.prose--save-password-tooltip-unavailable',
+                    'Threema for Desktop could not detect a default secure credential storage on your device.',
                   )}
-            </div>
+            />
+            <label for="savePassword"
+              >{$i18n.t(
+                'dialog--linking-set-password.label--save-password',
+                'Save securely on device',
+              )}</label
+            >
+            <Switch
+              role="switch"
+              disabled={!isSafeStorageAvailable}
+              bind:checked={shouldStorePasswordValue}
+              on:click={handleClickSwitch}
+            />
           </div>
-        {/if}
+          <div class="save">
+            {shouldStorePasswordValue
+              ? $i18n.t(
+                  'dialog--linking-set-password.prose--save-password--hint-true',
+                  'You will be logged in automatically when you open the Desktop app.',
+                )
+              : $i18n.t(
+                  'dialog--linking-set-password.prose---save-password-hint-false',
+                  'You will need to enter your password each time you open the Desktop app.',
+                )}
+          </div>
+        </div>
       </div>
     </div>
 

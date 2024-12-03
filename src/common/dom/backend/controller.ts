@@ -299,11 +299,7 @@ export class BackendController {
                     );
                     identityIsReady = true;
 
-                    if (
-                        import.meta.env.BUILD_ENVIRONMENT === 'sandbox' &&
-                        shouldStorePassword.done &&
-                        (await shouldStorePassword)
-                    ) {
+                    if (shouldStorePassword.done && (await shouldStorePassword)) {
                         await storeUserPassword(password);
                     }
                 } catch (error) {
@@ -424,10 +420,7 @@ export class BackendController {
                     shouldRestoreOldMessages,
                 );
 
-                if (
-                    import.meta.env.BUILD_ENVIRONMENT === 'sandbox' &&
-                    (await shouldStorePassword)
-                ) {
+                if (await shouldStorePassword) {
                     const password = await userPassword;
                     await storeUserPassword(password);
                 }

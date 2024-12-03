@@ -439,11 +439,7 @@ async function main(): Promise<() => void> {
     }
 
     // Load password from safeStorage
-    const passwordForExistingKeyStorage =
-        import.meta.env.BUILD_ENVIRONMENT === 'sandbox'
-            ? await window.app.loadUserPassword()
-            : undefined;
-
+    const passwordForExistingKeyStorage = await window.app.loadUserPassword();
     log.info('Instantiating Backend');
     // Instantiate backend
     const [backend, identityIsReady] = await BackendController.create(

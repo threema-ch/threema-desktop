@@ -102,34 +102,32 @@
           }
         }}
       />
-      {#if import.meta.env.BUILD_ENVIRONMENT === 'sandbox'}
-        <div class="save">
-          <Hint
-            icon="info"
-            text={systemInfo.isSafeStorageAvailable
-              ? $i18n.t(
-                  'dialog--startup-unlock.prose--save-password-tooltip',
-                  "Your password is stored using your system's default secure credential storage.",
-                )
-              : $i18n.t(
-                  'dialog--startup-unlock.prose--save-password-tooltip-unavailable',
-                  'Threema for Desktop could not detect a default secure credential storage on your device.',
-                )}
-          />
-          <label for="savePassword"
-            >{$i18n.t(
-              'dialog--startup-unlock.label--save-password',
-              'Save securely on device',
-            )}</label
-          >
-          <Switch
-            role="switch"
-            disabled={!systemInfo.isSafeStorageAvailable}
-            bind:checked={shouldStorePasswordValue}
-            on:click={handleClickSwitch}
-          />
-        </div>
-      {/if}
+      <div class="save">
+        <Hint
+          icon="info"
+          text={systemInfo.isSafeStorageAvailable
+            ? $i18n.t(
+                'dialog--startup-unlock.prose--save-password-tooltip',
+                "Your password is stored using your system's default secure credential storage.",
+              )
+            : $i18n.t(
+                'dialog--startup-unlock.prose--save-password-tooltip-unavailable',
+                'Threema for Desktop could not detect a default secure credential storage on your device.',
+              )}
+        />
+        <label for="savePassword"
+          >{$i18n.t(
+            'dialog--startup-unlock.label--save-password',
+            'Save securely on device',
+          )}</label
+        >
+        <Switch
+          role="switch"
+          disabled={!systemInfo.isSafeStorageAvailable}
+          bind:checked={shouldStorePasswordValue}
+          on:click={handleClickSwitch}
+        />
+      </div>
     </div>
     <div class="footer" slot="footer">
       <Button
