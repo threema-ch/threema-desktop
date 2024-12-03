@@ -14,6 +14,7 @@ export interface SystemInfo {
     readonly os: 'linux' | 'macos' | 'windows' | 'other';
     readonly arch: string;
     readonly locale: string;
+    readonly isSafeStorageAvailable: boolean;
 }
 
 export interface DeleteProfileOptions {
@@ -153,4 +154,14 @@ export interface ElectronIpc {
      * Get the test data.
      */
     readonly getTestData: () => Promise<string | undefined>;
+
+    /**
+     * Load user's password from encrypted storage.
+     */
+    readonly loadUserPassword: () => Promise<string | undefined>;
+
+    /**
+     * Store user's password into encrypted storage.
+     */
+    readonly storeUserPassword: (password: string) => Promise<boolean>;
 }

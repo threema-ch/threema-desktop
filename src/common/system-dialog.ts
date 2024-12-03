@@ -19,7 +19,8 @@ export type SystemDialog =
     | ManualAppUpdateDialog
     | MissingDeviceCookieDialog
     | DeviceCookieMismatchDialog
-    | D2dProtocolVersionIncompatibleDialog;
+    | D2dProtocolVersionIncompatibleDialog
+    | ChangePasswordConfirmDialog;
 
 /**
  * Base interface for all system dialogs.
@@ -68,6 +69,13 @@ export interface AutoAppUpdatePromptDialogContext {
      * Name of the most recent available application version.
      */
     readonly latestVersion: string;
+}
+
+/**
+ * Dialog prompting user to confirm password change.
+ */
+export interface ChangePasswordConfirmDialog extends SystemDialogCommon {
+    readonly type: 'change-password-confirm-dialog';
 }
 
 /**
@@ -133,7 +141,7 @@ export interface ManualAppUpdateDialogContext {
     /**
      * Details about the user's system.
      */
-    readonly systemInfo: Omit<SystemInfo, 'os'> & {
+    readonly systemInfo: Omit<SystemInfo, 'os' | 'isSafeStorageAvailable'> & {
         readonly os: SystemInfo['os'];
     };
 }

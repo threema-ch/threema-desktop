@@ -5,7 +5,6 @@
   import type {AppServices} from '~/app/types';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
-  import {toast} from '~/app/ui/snackbar';
   import Password from '~/app/ui/svelte-components/blocks/Input/Password.svelte';
   import CancelAndConfirm from '~/app/ui/svelte-components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '~/app/ui/svelte-components/blocks/ModalDialog/Header/Title.svelte';
@@ -74,15 +73,12 @@
     if (hasAnyError) {
       return;
     }
-    const wasSuccessfullyChanged = await attemptPasswordChange();
-    if (wasSuccessfullyChanged) {
-      router.go({modal: 'close'});
-      toast.addSimpleSuccess(
-        $i18n.t(
-          'dialog--change-password.success--password-changed',
-          'Successfully changed password',
-        ),
-      );
+    const promptDialogHandle = services.systemDialog.open({
+      type: 'change-password-confirm-dialog',
+    });
+    const promptAction = await promptDialogHandle.closed;
+    if (promptAction === 'confirmed' && (await attemptPasswordChange())) {
+      window.app.restartApp();
     }
   }
 

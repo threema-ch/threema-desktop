@@ -117,6 +117,8 @@
             component: 'setPassword',
             props: {
               userPassword: params.userPassword,
+              shouldStorePassword: params.shouldStorePassword,
+              isSafeStorageAvailable: params.isSafeStorageAvailable,
             },
           };
           break;

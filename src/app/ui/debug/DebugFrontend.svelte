@@ -161,6 +161,17 @@
           label: 'Device Protocols Incompatible',
         };
 
+      case 'change-password-confirm-dialog':
+        return {
+          type: 'option',
+          handler: () => {
+            systemDialog.open({
+              type,
+            });
+          },
+          label: 'Change password confirm',
+        };
+
       default:
         return unreachable(type);
     }

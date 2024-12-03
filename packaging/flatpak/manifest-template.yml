@@ -28,6 +28,8 @@ finish-args:
   - --filesystem=xdg-download
   # Allow desktop notifications
   - --talk-name=org.freedesktop.Notifications
+  # Allow writing to system secrets storage
+  - --talk-name=org.freedesktop.secrets
 build-options:
   append-path: /usr/lib/sdk/node20/bin:/usr/lib/sdk/rust-stable/bin
   cflags: -O2 -g

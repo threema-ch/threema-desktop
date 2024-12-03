@@ -69,8 +69,15 @@
     "label--new-password": "Neues Passwort",
     "label--repeat-new-password": "Neues Passwort wiederholen",
     "label--title": "Passwort ändern",
-    "prose--intro": "Das Passwort schützt Ihre Nachrichten, Threema-ID und weitere Daten auf diesem Computer. Es wird jedes Mal abgefragt, wenn Sie Threema für Desktop öffnen. Bitte beachten Sie, dass das Passwort nicht wiederhergestellt werden kann. Bei Verlust des Passworts muss dieses Gerät neu verknüpft werden.",
-    "success--password-changed": "Passwort wurde geändert"
+    "prose--intro": "Das Passwort schützt Ihre Nachrichten, Threema-ID und weitere Daten auf diesem Computer. Es wird jedes Mal abgefragt, wenn Sie Threema für Desktop öffnen. Bitte beachten Sie, dass das Passwort nicht wiederhergestellt werden kann. Bei Verlust des Passworts muss dieses Gerät neu verknüpft werden."
+  },
+  "dialog--change-password-confirmation": {
+    "action--back": "Zurück",
+    "action--confirm": "Bestätigen und neu starten",
+    "label--title": "Passwort ändern",
+    "prose--description": "Bitte vergewissern Sie sich, dass Sie dieses neue Passwort zur Eingabe bereit haben. Bei der Anmeldung besteht die Option, das Passwort zu speichern.",
+    "prose--intro": "Threema für Desktop muss neu gestartet werden, um Ihre Änderungen zu speichern.",
+    "prose--note": "Achtung: Sie müssen sich mit Ihrem neuen Passwort authentifizieren."
   },
   "dialog--clear-logs": {
     "action--cancel": "Abbrechen",
@@ -300,8 +307,13 @@
     "error--password-length": "Bitte geben Sie mindestens {n, plural, =1 {1 Zeichen} other {# Zeichen}} ein",
     "label--password": "Passwort",
     "label--repeat-password": "Passwort wiederholen",
+    "label--save-password": "Save securely on device",
     "label--title": "Passwort festlegen",
-    "prose--intro": "Das Passwort schützt Ihre Nachrichten, Threema-ID und weitere Daten auf diesem Computer. Es wird jedes Mal abgefragt, wenn Sie Threema für Desktop öffnen."
+    "prose---save-password-hint-false": "Sie müssen beim Starten der Desktop-App jedes mal Ihr Passwort eingeben.",
+    "prose--intro": "Das Passwort schützt Ihre Nachrichten, Threema-ID und weitere Daten auf diesem Computer. Es wird jedes Mal abgefragt, wenn Sie Threema für Desktop öffnen.",
+    "prose--save-password--hint-true": "Sie werden automatisch angemeldet, wenn Sie die Desktop-App öffnen.",
+    "prose--save-password-tooltip": "Ihr Passwort wird mithilfe Ihres System-Schlüsselbunds abgelegt.",
+    "prose--save-password-tooltip-unavailable": "Threema für Desktop konnte keinen System-Schlüsselbund auf Ihrem Gerät finden."
   },
   "dialog--linking-success": {
     "action--confirm": "Threema jetzt verwenden",
@@ -313,7 +325,7 @@
     "label--title-encrypting": "Daten werden mit Ihrem Passwort verschlüsselt",
     "label--title-loading": "Daten werden geladen",
     "label--title-receiving": "Daten werden empfangen",
-    "label--title-restoring": "Nachrichten werden wiederhergstellt"
+    "label--title-restoring": "Nachrichten werden wiederhergestellt"
   },
   "dialog--manual-app-update": {
     "action--dismiss": "OK",
@@ -373,8 +385,11 @@
     "action--confirm": "Weiter",
     "error--incorrect-password": "Das eingegebene Passwort ist falsch. Bitte versuchen Sie es erneut.",
     "label--password": "App-Passwort",
+    "label--save-password": "Verschlüsselt auf diesem Gerät speichern",
     "label--title": "App-Passwort eingeben",
-    "markup--password-hint": "Passwort vergessen?"
+    "markup--password-hint": "Passwort vergessen?",
+    "prose--save-password-tooltip": "Ihr Passwort wird mithilfe Ihres System-Schlüsselbunds abgelegt.",
+    "prose--save-password-tooltip-unavailable": "Threema für Desktop konnte keinen System-Schlüsselbund auf Ihrem Gerät finden."
   },
   "dialog--toggle-logger": {
     "action--cancel": "Abbrechen",
@@ -390,7 +405,7 @@
   },
   "dialog--toggle-spellcheck": {
     "action--cancel": "Abbrechen",
-    "action--confirm": "Bestätigen und neustarten",
+    "action--confirm": "Bestätigen und neu starten",
     "label--title-disable": "Rechtschreibprüfung deaktivieren",
     "label--title-enable": "Rechtschreibprüfung aktivieren",
     "prose--warning-disable": "Die Deaktivierung der Rechtschreibprüfung wird einen Neustart der App erzwingen.",

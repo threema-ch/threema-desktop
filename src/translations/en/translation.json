@@ -69,8 +69,15 @@
     "label--new-password": "New Password",
     "label--repeat-new-password": "Repeat New Password",
     "label--title": "Change Password",
-    "prose--intro": "The password protects your messages, Threema ID, and other data on this computer. You have to enter it when opening Threema for desktop. Please note that there is no way to recover this password. If you forget it, you will have to link this device again.",
-    "success--password-changed": "Successfully changed password"
+    "prose--intro": "The password protects your messages, Threema ID, and other data on this computer. You have to enter it when opening Threema for desktop. Please note that there is no way to recover this password. If you forget it, you will have to link this device again."
+  },
+  "dialog--change-password-confirmation": {
+    "action--back": "Back",
+    "action--confirm": "Confirm and Relaunch",
+    "label--title": "Change Password",
+    "prose--description": "Please ensure you have this password on hand. It cannot be reset if you forget it. You can opt to save your password when you log back in.",
+    "prose--intro": "Threema for Desktop must be re-launched to save your changes.",
+    "prose--note": "Please note: You will need to re-authenticate with your new password."
   },
   "dialog--clear-logs": {
     "action--cancel": "Cancel",
@@ -300,8 +307,13 @@
     "error--password-length": "Please enter at least {n, plural, =1 {1 character} other {# characters}}",
     "label--password": "Password",
     "label--repeat-password": "Repeat Password",
+    "label--save-password": "Save securely on device",
     "label--title": "Set Password",
-    "prose--intro": "The password will protect your messages, Threema ID, and other data on this computer. You have to enter it when starting the desktop app."
+    "prose---save-password-hint-false": "You will need to enter your password each time you open the Desktop app.",
+    "prose--intro": "The password will protect your messages, Threema ID, and other data on this computer. You have to enter it when starting the desktop app.",
+    "prose--save-password--hint-true": "You will be logged in automatically when you open the Desktop app.",
+    "prose--save-password-tooltip": "Your password is stored using your system's default secure credential storage.",
+    "prose--save-password-tooltip-unavailable": "Threema for Desktop could not detect a default secure credential storage on your device."
   },
   "dialog--linking-success": {
     "action--confirm": "Start Using Threema",
@@ -373,8 +385,11 @@
     "action--confirm": "Continue",
     "error--incorrect-password": "The entered password is incorrect. Please try again.",
     "label--password": "App Password",
+    "label--save-password": "Save securely on device",
     "label--title": "Enter App Password",
-    "markup--password-hint": "Forgot password?"
+    "markup--password-hint": "Forgot password?",
+    "prose--save-password-tooltip": "Your password is stored using your system's default secure credential storage.",
+    "prose--save-password-tooltip-unavailable": "Threema for Desktop could not detect a default secure credential storage on your device."
   },
   "dialog--toggle-logger": {
     "action--cancel": "Cancel",

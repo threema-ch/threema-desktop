@@ -33,7 +33,7 @@ import {applyThemeBranding} from '~/common/dom/ui/theme';
 import {initCrashReportingInSandboxBuilds} from '~/common/dom/utils/crash-reporting';
 import {createEndpointService, ensureEndpoint} from '~/common/dom/utils/endpoint';
 import {WebRtcServiceProvider} from '~/common/dom/webrtc';
-import type {ElectronIpc} from '~/common/electron-ipc';
+import type {ElectronIpc, SystemInfo} from '~/common/electron-ipc';
 import {extractErrorTraceback} from '~/common/error';
 import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import type {SettingsService} from '~/common/model/types/settings';
@@ -99,12 +99,16 @@ function attachLinkingWizard(elements: Elements, params: LinkingParams): Linking
  */
 function attachPasswordInput(
     elements: Elements,
+    shouldStorePassword: ResolvablePromise<boolean>,
+    systemInfo: SystemInfo,
     previouslyAttemptedPassword?: string,
 ): PasswordInput {
     elements.container.innerHTML = '';
     return new PasswordInput({
         target: elements.container,
         props: {
+            shouldStorePassword,
+            systemInfo,
             previouslyAttemptedPassword,
         },
     });
@@ -176,7 +180,9 @@ async function main(): Promise<() => void> {
 
     // Get system info
     const systemInfo = await window.app.getSystemInfo();
-    log.info(`System info: os=${systemInfo.os} (${systemInfo.arch}), locale=${systemInfo.locale}`);
+    log.info(
+        `System info: os=${systemInfo.os} (${systemInfo.arch}), locale=${systemInfo.locale}, isSafeStorageAvailable=${systemInfo.isSafeStorageAvailable}`,
+    );
 
     // Instantiate global hotkeys manager
     const hotkeyManager = new GlobalHotkeyManager(logging.logger('hotkey-manager'), systemInfo, {
@@ -348,6 +354,7 @@ async function main(): Promise<() => void> {
     async function showLinkingWizard(
         linkingState: ReadableStore<LinkingState>,
         userPassword: ResolvablePromise<string>,
+        shouldStorePassword: ResolvablePromise<boolean>,
         oldProfilePassword: ReusablePromise<string | undefined>,
         continueWithoutRestoring: ResolvablePromise<void>,
         oppfConfig: ResolvablePromise<OppfConfig>,
@@ -358,19 +365,29 @@ async function main(): Promise<() => void> {
         attachLinkingWizard(elements, {
             linkingState,
             userPassword,
+            shouldStorePassword,
             oldProfilePassword,
             continueWithoutRestoring,
             identityReady,
             oppfConfig,
+            isSafeStorageAvailable: systemInfo.isSafeStorageAvailable,
         });
     }
 
     // Define function that will request user to enter the password for the key storage
-    async function requestUserPassword(previouslyAttemptedPassword?: string): Promise<string> {
+    async function requestUserPassword(
+        shouldStorePassword: ResolvablePromise<boolean>,
+        previouslyAttemptedPassword?: string,
+    ): Promise<string> {
         await domContentLoaded;
         log.debug('Showing password request dialog');
         elements.splash.classList.add('hidden'); // Hide splash screen
-        const passwordInput = attachPasswordInput(elements, previouslyAttemptedPassword);
+        const passwordInput = attachPasswordInput(
+            elements,
+            shouldStorePassword,
+            systemInfo,
+            previouslyAttemptedPassword,
+        );
 
         return await passwordInput.passwordPromise;
     }
@@ -421,6 +438,12 @@ async function main(): Promise<() => void> {
         testDataJson = testDataString !== undefined ? parseTestData(testDataString) : undefined;
     }
 
+    // Load password from safeStorage
+    const passwordForExistingKeyStorage =
+        import.meta.env.BUILD_ENVIRONMENT === 'sandbox'
+            ? await window.app.loadUserPassword()
+            : undefined;
+
     log.info('Instantiating Backend');
     // Instantiate backend
     const [backend, identityIsReady] = await BackendController.create(
@@ -429,8 +452,10 @@ async function main(): Promise<() => void> {
         endpoint.wrap(ensureEndpoint(worker), logging.logger('com.backend-creator')),
         loadingStateStore,
         testDataJson,
+        passwordForExistingKeyStorage,
         showLinkingWizard,
         requestUserPassword,
+        window.app.storeUserPassword,
         removeOldProfiles,
         forwardPins,
         requestMissingWorkCredentialsModal,

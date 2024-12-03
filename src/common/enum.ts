@@ -2563,6 +2563,10 @@ export namespace ElectronIpcCommand {
     export type SET_SPELLCHECK = typeof SET_SPELLCHECK;
     export const GET_TEST_DATA = 'getTestData';
     export type GET_TEST_DATA = typeof GET_TEST_DATA;
+    export const LOAD_USER_PASSWORD = 'loadUserPassword';
+    export type LOAD_USER_PASSWORD = typeof LOAD_USER_PASSWORD;
+    export const STORE_USER_PASSWORD = 'storeUserPassword';
+    export type STORE_USER_PASSWORD = typeof STORE_USER_PASSWORD;
 }
 /**
  * ELECTRON

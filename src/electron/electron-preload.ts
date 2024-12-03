@@ -51,6 +51,9 @@ const appApi: ElectronIpc = {
     updatePublicKeyPins: (publicKeyPins: DomainCertificatePin[]) =>
         ipcRenderer.send(ElectronIpcCommand.UPDATE_PUBLIC_KEY_PINS, publicKeyPins),
     getTestData: () => ipcRenderer.invoke(ElectronIpcCommand.GET_TEST_DATA),
+    loadUserPassword: () => ipcRenderer.invoke(ElectronIpcCommand.LOAD_USER_PASSWORD),
+    storeUserPassword: (password) =>
+        ipcRenderer.invoke(ElectronIpcCommand.STORE_USER_PASSWORD, password),
 };
 /* eslint-enable @typescript-eslint/promise-function-async */
 contextBridge.exposeInMainWorld('app', appApi);

@@ -19,6 +19,11 @@
    */
   export let elevated = true;
 
+  /**
+   * Determine if the modal is scrollable.
+   */
+  export let scrollable = true;
+
   // Create event dispatcher.
   const dispatch = createEventDispatcher<{
     clickoutside: undefined;
@@ -78,7 +83,7 @@
           <div class="header">
             <slot name="header" {modal} />
           </div>
-          <div class="body">
+          <div class={scrollable ? 'scrollable' : ''}>
             <slot name="body" {modal} />
           </div>
           <div class="footer">
@@ -121,7 +126,7 @@
         @extend %elevation-160;
       }
 
-      .body {
+      .scrollable {
         overflow-y: auto;
       }
     }

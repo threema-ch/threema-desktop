@@ -6,6 +6,7 @@
   import AutoAppUpdateDownloadDialog from '~/app/ui/components/partials/system-dialog/internal/auto-app-update-download-dialog/AutoAppUpdateDownloadDialog.svelte';
   import AutoAppUpdateFailedDialog from '~/app/ui/components/partials/system-dialog/internal/auto-app-update-failed-dialog/AutoAppUpdateFailedDialog.svelte';
   import AutoAppUpdatePromptDialog from '~/app/ui/components/partials/system-dialog/internal/auto-app-update-prompt-dialog/AutoAppUpdatePromptDialog.svelte';
+  import ChangePasswordConfirmDialog from '~/app/ui/components/partials/system-dialog/internal/change-password-confirm-dialog/ChangePasswordConfirmDialog.svelte';
   import ConnectionErrorDialog from '~/app/ui/components/partials/system-dialog/internal/connection-error-dialog/ConnectionErrorDialog.svelte';
   import D2DProtocolVersionIncompatibleDialog from '~/app/ui/components/partials/system-dialog/internal/d2d-protocol-version-incompatible-dialog/D2DProtocolVersionIncompatibleDialog.svelte';
   import DeviceCookieMismatchDialog from '~/app/ui/components/partials/system-dialog/internal/device-cookie-mismatch-dialog/DeviceCookieMismatchDialog.svelte';
@@ -74,6 +75,12 @@
   {:else if systemDialog.dialog.type === 'auto-app-update-prompt'}
     <AutoAppUpdatePromptDialog
       {...systemDialog.dialog.context}
+      onSelectAction={(action) => handleSelectAction(action, systemDialog)}
+      {target}
+      on:close={() => handleClose(systemDialog)}
+    />
+  {:else if systemDialog.dialog.type === 'change-password-confirm-dialog'}
+    <ChangePasswordConfirmDialog
       onSelectAction={(action) => handleSelectAction(action, systemDialog)}
       {target}
       on:close={() => handleClose(systemDialog)}

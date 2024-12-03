@@ -697,7 +697,12 @@ export function makeTestServices(identity: IdentityString): TestServices {
         remote: new RemoteObjectMapper(),
         counter: undefined,
     };
-    const systemInfo: SystemInfo = {os: 'other', arch: 'pentium386', locale: 'de_CH.utf8'};
+    const systemInfo: SystemInfo = {
+        os: 'other',
+        arch: 'pentium386',
+        locale: 'de_CH.utf8',
+        isSafeStorageAvailable: true,
+    };
     const services: Omit<
         TestServices,
         'rawClientKeyBytes' | 'model' | 'persistentProtocolState' | 'viewModel'

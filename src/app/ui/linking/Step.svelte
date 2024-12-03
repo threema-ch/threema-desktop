@@ -1,6 +1,10 @@
+<script lang="ts">
+  export let scrollable = true;
+</script>
+
 <template>
   <div class="wrapper">
-    <section class="panel">
+    <section class={scrollable ? 'panel scrollable' : 'panel'}>
       <slot />
     </section>
   </div>
@@ -28,6 +32,9 @@
       max-width: calc(100vw - calc(2 * rem(20px)));
       max-height: calc(100vh - calc(2 * rem(20px)));
       padding: $padding;
+    }
+
+    .scrollable {
       overflow-y: auto;
     }
   }

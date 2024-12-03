@@ -98,6 +98,8 @@ import {
     MigrationHelper,
 } from './migrations';
 
+export const KEYSTORAGE_PASSWORD_FILENAME = 'keystorage.password.bin';
+
 /** @inheritdoc */
 export class FileSystemKeyStorage implements KeyStorage {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
@@ -241,6 +243,7 @@ export class FileSystemKeyStorage implements KeyStorage {
     public async changePassword(currentPassword: string, newPassword: string): Promise<void> {
         const content = await this.read(currentPassword);
         await this.write(newPassword, content);
+        this._deleteCurrentPasswordFile();
     }
 
     /** @inheritdoc */
@@ -623,5 +626,22 @@ export class FileSystemKeyStorage implements KeyStorage {
                 },
             },
         };
+    }
+
+    /**
+     * Remove password file from profile directory.
+     */
+    private _deleteCurrentPasswordFile(): void {
+        const passwordFile = path.join(
+            path.dirname(this._keyStoragePath),
+            KEYSTORAGE_PASSWORD_FILENAME,
+        );
+
+        try {
+            fs.unlinkSync(passwordFile);
+            this._log.info(`Password file '${passwordFile}' deleted`);
+        } catch (error) {
+            this._log.info(`Password file '${passwordFile}' does NOT exist`);
+        }
     }
 }

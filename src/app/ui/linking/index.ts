@@ -22,6 +22,11 @@ export interface LinkingParams {
     readonly userPassword: ResolvablePromise<string>;
 
     /**
+     * A promise that should be fulfilled when the user has chosen to store the password or not.
+     */
+    readonly shouldStorePassword: ResolvablePromise<boolean>;
+
+    /**
      * A promise that fulfills when the user enters a password to unlock the key storage of an old
      * profile. Can be resolved multiple times.
      *
@@ -45,6 +50,8 @@ export interface LinkingParams {
      * A promise that should be fulfilled when the user has entered OnPrem credentials and URL.
      */
     readonly oppfConfig: ResolvablePromise<OppfConfig>;
+
+    readonly isSafeStorageAvailable: boolean;
 }
 
 export interface LinkingWizardOppfProps {
@@ -71,6 +78,8 @@ export interface RestorationIdentityMismatchProps {
 
 export interface LinkingWizardSetPasswordProps {
     readonly userPassword: ResolvablePromise<string>;
+    readonly shouldStorePassword: ResolvablePromise<boolean>;
+    readonly isSafeStorageAvailable: boolean;
 }
 
 export interface LinkingWizardSyncingProps {

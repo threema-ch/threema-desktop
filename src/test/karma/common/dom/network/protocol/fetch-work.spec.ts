@@ -64,7 +64,12 @@ export function run(): void {
         const backend = new FetchWorkBackend({
             config: TEST_CONFIG,
             logging: new NoopLoggerFactory(),
-            systemInfo: {os: 'other', arch: 'pentium386', locale: 'de_CH.utf8'},
+            systemInfo: {
+                os: 'other',
+                arch: 'pentium386',
+                locale: 'de_CH.utf8',
+                isSafeStorageAvailable: true,
+            },
         });
 
         this.beforeEach(function () {

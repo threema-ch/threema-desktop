@@ -58,6 +58,8 @@ const EXIT_CODE_RESTART_AND_INSTALL_UPDATE = 11;
 // https://www.electronjs.org/docs/latest/api/app#appgetpathname
 const ELECTRON_PATH_USER_DATA = 'userData';
 
+const KEYSTORAGE_PASSWORD_FILENAME = 'keystorage.password.bin';
+
 /**
  * Run parameters parsed from CLI arguments.
  */
@@ -701,6 +703,50 @@ function main(
                 throw new Error(`Failed to load test data file: ${testDataFileName}`);
             }
         });
+        electron.ipcMain.handle(ElectronIpcCommand.LOAD_USER_PASSWORD, (event) => {
+            validateSenderFrame(event.senderFrame);
+            const userPasswordFile = path.join(appPath, 'data', KEYSTORAGE_PASSWORD_FILENAME);
+
+            if (!fs.existsSync(userPasswordFile)) {
+                log.info('Password file not found, loading password skipped.');
+                return undefined;
+            }
+
+            if (electron.safeStorage.isEncryptionAvailable()) {
+                try {
+                    const encryptedPassword = fs.readFileSync(userPasswordFile);
+                    return electron.safeStorage.decryptString(encryptedPassword);
+                } catch (error) {
+                    log.warn(`Failed to read or decrypt the password.`);
+                }
+            } else {
+                log.warn(
+                    'Electron safeStorage is not available (no password manager?), loading password skipped.',
+                );
+            }
+            return undefined;
+        });
+        electron.ipcMain.handle(
+            ElectronIpcCommand.STORE_USER_PASSWORD,
+            (event, password: string) => {
+                validateSenderFrame(event.senderFrame);
+                const userPasswordFile = path.join(appPath, 'data', KEYSTORAGE_PASSWORD_FILENAME);
+                if (electron.safeStorage.isEncryptionAvailable()) {
+                    try {
+                        const encryptedPassword = electron.safeStorage.encryptString(password);
+                        fs.writeFileSync(userPasswordFile, encryptedPassword);
+                        return true;
+                    } catch (error) {
+                        log.error(`Failed to store or encrypt the password.`);
+                    }
+                } else {
+                    log.warn(
+                        'Electron safeStorage is not available (no password manager?), storing password skipped.',
+                    );
+                }
+                return false;
+            },
+        );
         electron.ipcMain.handle(
             ElectronIpcCommand.GET_SYSTEM_INFO,
             // eslint-disable-next-line @typescript-eslint/require-await
@@ -726,6 +772,7 @@ function main(
                     arch: process.arch,
                     // TODO(DESK-1122): Improve this
                     locale: electron.app.getLocale(),
+                    isSafeStorageAvailable: electron.safeStorage.isEncryptionAvailable(),
                 };
             },
         );

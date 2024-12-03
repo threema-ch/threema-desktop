@@ -105,14 +105,20 @@ export class BackendController {
         creator: RemoteProxy<BackendCreator>,
         loadingStateStore: WritableStore<LoadingState, LoadingState>,
         testData: TestDataJson | undefined,
+        passwordForExistingKeyStorage: string | undefined,
         showLinkingWizard: (
             linkingStateStore: ReadableStore<LinkingState>,
             userPassword: ResolvablePromise<string>,
+            shouldStorePassword: ResolvablePromise<boolean>,
             oldProfilePassword: ReusablePromise<string | undefined>,
             continueWithoutRestoring: ResolvablePromise<void>,
             oppfConfig: ResolvablePromise<OppfFetchConfig>,
         ) => Promise<void>,
-        requestUserPassword: (previouslyAttemptedPassword?: string) => Promise<string>,
+        requestUserPassword: (
+            shouldStorePassword: ResolvablePromise<boolean>,
+            previouslyAttemptedPassword?: string,
+        ) => Promise<string>,
+        storeUserPassword: (password: string) => Promise<boolean>,
         removeOldProfiles: () => void,
         forwardPins: PinForwarder['forward'],
         requestMissingWorkCredentialsModal: () => Promise<void>,
@@ -273,22 +279,33 @@ export class BackendController {
 
         // Create backend from existing key storage (if present).
         log.debug('Waiting for remote backend to be created');
+        let shouldStorePassword = new ResolvablePromise<boolean>({uncaught: 'default'});
         let identityIsReady = false;
         let backendEndpoint;
         if (await creator.hasIdentity()) {
-            let passwordForExistingKeyStorage: string | undefined = await requestUserPassword();
-
             // eslint-disable-next-line no-labels
             loopToCreateBackendWithKeyStorage: for (;;) {
                 log.debug('Loop to create backend with existing key storage');
+                const password =
+                    passwordForExistingKeyStorage ??
+                    (await requestUserPassword(shouldStorePassword));
+
                 try {
                     backendEndpoint = await creator.fromKeyStorage(
                         assembleBackendInit(),
-                        passwordForExistingKeyStorage,
+                        password,
                         assembleForwardPinCommunication(forwardPins),
                         assembleLoadingStateSetup(loadingStateStore),
                     );
                     identityIsReady = true;
+
+                    if (
+                        import.meta.env.BUILD_ENVIRONMENT === 'sandbox' &&
+                        shouldStorePassword.done &&
+                        (await shouldStorePassword)
+                    ) {
+                        await storeUserPassword(password);
+                    }
                 } catch (error) {
                     assertError(
                         error,
@@ -315,8 +332,12 @@ export class BackendController {
                             );
                         case 'key-storage-error-wrong-password':
                             log.debug('Backend could not be created, wrong key storage password');
+                            shouldStorePassword = new ResolvablePromise<boolean>({
+                                uncaught: 'default',
+                            });
                             passwordForExistingKeyStorage = await requestUserPassword(
-                                passwordForExistingKeyStorage,
+                                shouldStorePassword,
+                                password,
                             );
                             continue;
                         case 'missing-work-credentials':
@@ -382,6 +403,7 @@ export class BackendController {
             await showLinkingWizard(
                 linkingStateStore,
                 userPassword,
+                shouldStorePassword,
                 oldProfilePassword,
                 continueWithoutRestoring,
                 oppfConfig,
@@ -401,6 +423,14 @@ export class BackendController {
                     assembleRemoveOldProfileCommunication(removeOldProfiles),
                     shouldRestoreOldMessages,
                 );
+
+                if (
+                    import.meta.env.BUILD_ENVIRONMENT === 'sandbox' &&
+                    (await shouldStorePassword)
+                ) {
+                    const password = await userPassword;
+                    await storeUserPassword(password);
+                }
             } catch (error) {
                 assertError(
                     error,

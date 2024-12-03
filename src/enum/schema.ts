@@ -807,6 +807,8 @@ export enum ElectronIpcCommand {
     GET_SPELLCHECK = 'getSpellcheck',
     SET_SPELLCHECK = 'setSpellcheck',
     GET_TEST_DATA = 'getTestData',
+    LOAD_USER_PASSWORD = 'loadUserPassword',
+    STORE_USER_PASSWORD = 'storeUserPassword',
 }
 
 /**
