@@ -333,6 +333,7 @@
         <div class="footer" slot="footer">
           <div class="caption">
             <Caption
+              autofocus={true}
               bind:this={captionComposeArea}
               initialText={activeMediaFile?.caption.get()}
               {enterKeyMode}

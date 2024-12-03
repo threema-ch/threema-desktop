@@ -4,6 +4,14 @@
   import {i18n} from '~/app/ui/i18n';
   import type {u53} from '~/common/types';
 
+  /**
+   * Whether this field should be autofocused on mount. Defaults to `false`.
+   *
+   * Note: This should only be set on one input element if you have multiple, as it could lead to
+   * unexpected behavior otherwise, because only one element can be focused at a time.
+   */
+  export let autofocus: boolean = false;
+
   export let initialText: string | undefined = undefined;
   export let enterKeyMode: TextAreaProps['enterKeyMode'] = 'submit';
 
@@ -49,6 +57,7 @@
 <template>
   <div>
     <TextArea
+      {autofocus}
       bind:this={composeArea}
       {initialText}
       {enterKeyMode}

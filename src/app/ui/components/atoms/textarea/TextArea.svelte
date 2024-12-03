@@ -48,6 +48,7 @@
   export let placeholder: $$Props['placeholder'];
   export let triggerWords: NonNullable<$$Props['triggerWords']> = [];
   export let onPaste: $$Props['onPaste'] = undefined;
+  export let autofocus: NonNullable<$$Props['autofocus']> = false;
 
   const dispatch = createEventDispatcher<{
     submit: undefined;
@@ -394,7 +395,10 @@
     on:changesize={handleChangeSizeSpacerElement}
   />
 
+  <!-- Disable `autofocus` warning, because we only use it where needed. -->
+  <!-- svelte-ignore a11y-autofocus -->
   <div
+    {autofocus}
     bind:this={areaElement}
     use:mutation={{
       options: {

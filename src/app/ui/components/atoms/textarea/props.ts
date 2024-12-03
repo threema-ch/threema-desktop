@@ -22,6 +22,13 @@ export interface TextAreaProps {
      * @param text The pasted plain text.
      */
     readonly onPaste?: (text: string) => void;
+    /**
+     * Whether this field should be autofocused on mount. Defaults to `false`.
+     *
+     * Note: This should only be set on one input element if you have multiple, as it could lead to
+     * unexpected behavior otherwise, because only one element can be focused at a time.
+     */
+    readonly autofocus?: boolean;
 }
 
 /**
