@@ -2,7 +2,7 @@ const MOCK_WSS_URL = 'wss://127.0.0.1';
 const MOCK_URL = 'https://127.0.0.1:9999/';
 export const MOCK_OPPF = {
     license: {
-        expires: '2024-12-01',
+        expires: '2300-12-01',
         count: 1000,
         id: 'opt-o00-5',
     },
@@ -61,7 +61,7 @@ export const CORRECT_OPPF_STRING = `{
     "version": "1",
     "directory": {"url": "https://127.0.0.1:9999/"},
     "license": {
-        "expires": "2024-12-01",
+        "expires": "2300-12-01",
         "count": 1000,
         "id": "opt-o00-5"
     },
@@ -101,7 +101,7 @@ export const CORRECT_OPPF_STRING = `{
         "url": "wss://127.0.0.1"
     }
 }
-Ii5iIW6lJU3OLj/ojTiB9KdDjohzo/wiFwdGdwloyAFFqx2SwEAQ3K8g4JEXnI+SU2plgA7khY8VkExNa7y5BQ==`;
+bMl837WCvwIztJoEJSO6Ff9VLaqdLnG6QTWWzztEcOaTjXrnETAyNV+9UFhv/O19R5sfuVc4/mQnUK2SAGEsAA==`;
 
 export const WRONG_OPPF_SIGNATURE_STRING = `{
     "work": {"url": "https://127.0.0.1:9999/"},
