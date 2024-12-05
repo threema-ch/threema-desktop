@@ -131,7 +131,9 @@
   }
 
   function handleIsTyping(event: CustomEvent<boolean>): void {
-    dispatch('istyping', event.detail);
+    if (mode === 'insert') {
+      dispatch('istyping', event.detail);
+    }
   }
 
   function handlePressHotkeyControlE(): void {
