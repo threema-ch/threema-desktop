@@ -73,6 +73,8 @@
 
   let systemInfo: SystemInfo | undefined = undefined;
 
+  let isTyping: boolean = false;
+
   window.app
     .getSystemInfo()
     .then((systemInfo_) => (systemInfo = systemInfo_))
@@ -80,13 +82,7 @@
       log.error('Could not fetch system info', error);
     });
 
-  const dispatchIsTyping = TIMER.debounce(
-    (isTyping: boolean) => {
-      dispatch('istyping', isTyping);
-    },
-    1000,
-    false,
-  );
+  const dispatchIsTyping = TIMER.debounce(() => dispatch('istyping', isTyping), 1000, false);
 
   /**
    * Clears the contents of the text area.
@@ -178,7 +174,8 @@
       // Fix this, see this discussion in MR !92 (#note_31788) for details.
       const currentIsEmpty = area.is_empty();
       isEmptyStore.set(currentIsEmpty);
-      dispatchIsTyping(!currentIsEmpty);
+      isTyping = !currentIsEmpty;
+      dispatchIsTyping();
 
       area.store_selection_range();
       const wordAtCaret = area.get_word_at_caret();
@@ -252,6 +249,7 @@
     // Handle submission.
     if (submit) {
       dispatch('submit');
+      isTyping = false;
       dispatch('istyping', false);
     }
   }
