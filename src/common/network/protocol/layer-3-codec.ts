@@ -338,6 +338,11 @@ export class Layer3Decoder<TType extends 'full' | 'd2m-only'>
                     );
                 }
 
+                // Ensure that the CCK and the SCK are not equal to avoid nonce reuse.
+                if (byteEquals(serverHello.sck, csp.cck)) {
+                    throw new ProtocolError('csp', 'SCK and CCK must not match');
+                }
+
                 // Verify the challenge response (i.e. the encrypted client
                 // cookie equals the one we have sent, thereby proving that
                 // the server has the corresponding secret key).
