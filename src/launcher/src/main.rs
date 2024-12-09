@@ -1,4 +1,5 @@
 #![windows_subsystem = "windows"] // Prevent console window from showing up on Windows
+#![deny(clippy::print_stdout, clippy::print_stderr)] // Use print_log and print_error
 
 use std::{
     env, fs,
