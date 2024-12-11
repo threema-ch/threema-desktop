@@ -62,12 +62,7 @@ export class Updater {
         }
 
         // Show an update system dialog for platforms which don't support auto-updating.
-        if (
-            forceManualUpdate ||
-            process.platform === 'linux' ||
-            // TODO(DESK-1627): Implement auto-updates for macOS.
-            process.platform === 'darwin'
-        ) {
+        if (forceManualUpdate || process.platform === 'linux') {
             await this._services.systemDialog.open({
                 type: 'manual-app-update',
                 context: {
@@ -108,8 +103,8 @@ export class Updater {
         let retry = false;
         do {
             try {
-                // Clear existing temp storage before downloading any new files.
-                await this._services.tempFile.clear();
+                // Clear existing update subfolder before downloading any new files.
+                await this._services.tempFile.clear('update');
 
                 // Show auto update progress dialog.
                 const downloadDialogHandle = await this._services.systemDialog.open({

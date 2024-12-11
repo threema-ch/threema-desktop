@@ -12,7 +12,6 @@
 //! is sandboxed and rewrite the paths accordingly.
 
 use std::{
-    fs::read_dir,
     io::{Error, ErrorKind},
     os::windows::ffi::OsStrExt,
     path::{Path, PathBuf},
@@ -29,7 +28,10 @@ use windows::{
     },
 };
 
-use crate::{get_windows_appdata_dir, print_log, util::fs::validate_file_hash};
+use crate::{
+    get_windows_appdata_dir, print_log, update::common::find_files_by_extension_in,
+    util::fs::validate_file_hash,
+};
 
 /// Validate and install the first MSIX package found in "{profile_directory}/temp/update".
 ///
@@ -93,19 +95,6 @@ pub fn validate_and_install_latest_predownloaded_update(
     install_msix_package(msix.as_path())
         .map(|_result| ())
         .map_err(|error| Error::new(ErrorKind::Other, error))
-}
-
-/// Returns all files with the given `extension` in the given `directory`.
-fn find_files_by_extension_in(directory: &Path, extension: &str) -> Vec<PathBuf> {
-    let result = read_dir(directory).ok().map(|value| {
-        value
-            .filter_map(Result::ok)
-            .map(|file| file.path())
-            .filter(|path| path.extension().and_then(|ext| ext.to_str()) == Some(extension))
-            .collect()
-    });
-
-    result.unwrap_or_default()
 }
 
 /// Returns whether a file or directory exists at the given path.

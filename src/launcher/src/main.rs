@@ -11,6 +11,7 @@ use std::{
 use colored::Colorize;
 use util::{constants::*, logging::init_terminal, paths::*};
 
+#[cfg(any(windows, target_os = "macos"))]
 mod update;
 mod util;
 
@@ -230,10 +231,22 @@ fn main() {
                             "Failed to install update (Windows): {:#}",
                             result.err().unwrap()
                         );
-                        std::thread::sleep(Duration::from_millis(DELAY_BEFORE_ERROR_EXIT_MS));
-                        process::exit(EXIT_CODE_LAUNCHER_ERROR);
+                        continue;
                     }
                     break;
+                }
+                #[cfg(target_os = "macos")]
+                "macos" => {
+                    let result = update::macos::validate_and_install_latest_predownloaded_update(
+                        profile_directory.clone(),
+                    );
+                    if result.is_err() {
+                        print_error!(
+                            "Failed to install update (macOS): {:#}",
+                            result.err().unwrap()
+                        );
+                    }
+                    continue;
                 }
                 other => {
                     print_error!("Unexpected update request on unsupported OS: {}", other);

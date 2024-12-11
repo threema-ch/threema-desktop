@@ -143,6 +143,8 @@ export function determineAppIdentifier(flavor) {
 /**
  * Determine the app name used for packaging.
  *
+ * Note: Keep this in sync with determine_app_name in constants.rs.
+ *
  * @param {BuildFlavor} flavor Build flavor to determine the app name for.
  * @returns {string} Pretty app name for the given `flavor`.
  */

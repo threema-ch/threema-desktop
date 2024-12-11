@@ -67,9 +67,13 @@ export class TempFileSystemFileStorage implements TempFileStorage {
     }
 
     /** @inheritdoc */
-    public async clear(): Promise<void> {
+    public async clear(subdir?: string): Promise<void> {
         try {
-            await this._removeDirectoryContents(this._storageDirPath);
+            const dir =
+                subdir === undefined
+                    ? this._storageDirPath
+                    : path.join(this._storageDirPath, subdir);
+            await this._removeDirectoryContents(dir);
         } catch (error: unknown) {
             throw new FileStorageError('delete-error', `Could not clear temp directory: ${error}`, {
                 from: error,
@@ -109,6 +113,11 @@ export class TempFileSystemFileStorage implements TempFileStorage {
      * Removes all the contents (files and subdirectories) of the given directory.
      */
     private async _removeDirectoryContents(directoryPath: string): Promise<void> {
+        if (!fs.existsSync(directoryPath)) {
+            this._log.debug(`Directory '${directoryPath}' does not exist. Not removing!`);
+            return;
+        }
+
         const items = await fsPromises.readdir(directoryPath);
 
         for (const item of items) {

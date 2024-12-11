@@ -64,11 +64,11 @@ export interface TempFileStorage {
         relativePath: string | string[],
     ) => Promise<adapter.WritableStreamLike<Uint8Array>>;
     /**
-     * Clear all items currently stored in the temp directory.
+     * Clear all items currently stored in the temp directory or inside subdirectory.
      *
      * @throws `FileStorageError` if something went wrong during deletion.
      */
-    readonly clear: () => Promise<void>;
+    readonly clear: (subdir?: string) => Promise<void>;
 }
 
 /**
