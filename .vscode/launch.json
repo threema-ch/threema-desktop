@@ -1,0 +1,71 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Desktop (dev:consumer-live)",
+      "runtimeArgs": ["run-script", "dev:consumer-live"],
+      "runtimeExecutable": "npm",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Desktop (dev:consumer-sandbox)",
+      "runtimeArgs": ["run-script", "dev:consumer-sandbox"],
+      "runtimeExecutable": "npm",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Desktop (dev:work-live)",
+      "runtimeArgs": ["run-script", "dev:work-live"],
+      "runtimeExecutable": "npm",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Desktop (dev:work-sandbox)",
+      "runtimeArgs": ["run-script", "dev:work-sandbox"],
+      "runtimeExecutable": "npm",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Desktop (dev:work-onprem)",
+      "runtimeArgs": ["run-script", "dev:work-onprem"],
+      "runtimeExecutable": "npm",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Launcher (env:consumer-sandbox)",
+      "cargo": {
+        "args": ["build", "--manifest-path", "${workspaceFolder}/src/launcher/Cargo.toml"],
+        "env": {
+          "THREEMA_BUILD_FLAVOR": "consumer-sandbox"
+        }
+      },
+      "cwd": "${workspaceFolder}/src/launcher/",
+      "args": []
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Launcher (env:work-sandbox)",
+      "cargo": {
+        "args": ["build", "--manifest-path", "${workspaceFolder}/src/launcher/Cargo.toml"],
+        "env": {
+          "THREEMA_BUILD_FLAVOR": "work-sandbox"
+        }
+      },
+      "cwd": "${workspaceFolder}/src/launcher/",
+      "args": []
+    }
+  ]
+}

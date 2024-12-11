@@ -8,6 +8,7 @@
     "yoavbls.pretty-ts-errors",
     "nick-lvov-dev.typescript-explicit-types",
     "zxh404.vscode-proto3",
-    "ms-playwright.playwright"
+    "ms-playwright.playwright",
+    "rust-lang.rust-analyzer"
   ]
 }
