@@ -54,8 +54,9 @@
   "dialog--auto-app-update-prompt": {
     "action--confirm": "Update now",
     "action--dismiss": "Update later",
-    "prose--description-p1": "An update is available. <1 />{current} → {latest}",
-    "prose--description-p2": "After the download is complete, the application will restart automatically. This can take a couple of minutes."
+    "prose--description-p1": "An update is available.",
+    "prose--description-p2": "After the download is complete, the application will restart automatically. This can take a couple of minutes.",
+    "prose--description-p3": "If the automatic update fails, please download and install the update manually:"
   },
   "dialog--change-password": {
     "action--cancel": "Cancel",

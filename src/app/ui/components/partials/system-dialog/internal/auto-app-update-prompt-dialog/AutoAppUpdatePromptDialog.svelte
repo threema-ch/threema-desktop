@@ -2,7 +2,6 @@
   @component Renders a system dialog to ask the user whether to install an available app update.
 -->
 <script lang="ts">
-  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import Logo from '~/app/ui/components/partials/logo/Logo.svelte';
   import type {AutoAppUpdatePromptDialogProps} from '~/app/ui/components/partials/system-dialog/internal/auto-app-update-prompt-dialog/props';
@@ -12,8 +11,6 @@
 
   type $$Props = AutoAppUpdatePromptDialogProps;
 
-  export let currentVersion: $$Props['currentVersion'];
-  export let latestVersion: $$Props['latestVersion'];
   export let onSelectAction: $$Props['onSelectAction'] = undefined;
   export let target: $$Props['target'] = undefined;
 
@@ -53,18 +50,10 @@
       </div>
       <div class="text">
         <p>
-          <SubstitutableText
-            text={$i18n.t(
-              'dialog--auto-app-update-prompt.prose--description-p1',
-              'An update is available. <1 />{current} → {latest}',
-              {
-                current: currentVersion,
-                latest: latestVersion,
-              },
-            )}
-          >
-            <br slot="1" />
-          </SubstitutableText>
+          {$i18n.t(
+            'dialog--auto-app-update-prompt.prose--description-p1',
+            'An update is available.',
+          )}
         </p>
         <p>
           {$i18n.t(
@@ -73,16 +62,26 @@
           )}
         </p>
       </div>
+      <div class="buttons">
+        <Button flavor="naked" on:click={handleClickDismiss}>
+          {$i18n.t('dialog--auto-app-update-prompt.action--dismiss', 'Update later')}
+        </Button>
+
+        <Button autofocus={true} flavor="filled" on:click={handleClickConfirm}>
+          {$i18n.t('dialog--auto-app-update-prompt.action--confirm', 'Update now')}
+        </Button>
+      </div>
     </div>
-
     <div class="footer">
-      <Button flavor="naked" on:click={handleClickDismiss}>
-        {$i18n.t('dialog--auto-app-update-prompt.action--dismiss', 'Update later')}
-      </Button>
-
-      <Button autofocus={true} flavor="filled" on:click={handleClickConfirm}>
-        {$i18n.t('dialog--auto-app-update-prompt.action--confirm', 'Update now')}
-      </Button>
+      <p class="hint">
+        <small>
+          {$i18n.t(
+            'dialog--auto-app-update-prompt.prose--description-p3',
+            'If the automatic update fails, please download and install the update manually:',
+          )}
+          <a href="https://three.ma/md" target="_blank">three.ma/md</a>
+        </small>
+      </p>
     </div>
   </div>
 </Modal>
@@ -94,8 +93,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    gap: rem(16px);
 
     padding: rem(16px);
     height: rem(380px);
@@ -112,8 +109,8 @@
       transition: padding 0.25s ease-out;
 
       .logo {
-        width: rem(96px);
-        height: rem(121px);
+        width: rem(72px);
+        height: rem(90px);
       }
 
       .text {
@@ -132,20 +129,30 @@
           margin-bottom: 0;
         }
       }
+
+      .buttons {
+        flex: 0 0 auto;
+
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        gap: rem(8px);
+
+        height: rem(40px + 32px);
+        padding: rem(16px) 0;
+
+        transform: opacity 0.25s ease-out;
+      }
     }
 
     .footer {
-      flex: 0 0 auto;
+      padding: 0 rem(16px);
+      text-align: center;
+      color: var(--t-text-e2-color);
 
-      display: flex;
-      align-items: stretch;
-      justify-content: center;
-      gap: rem(8px);
-
-      height: rem(40px + 32px);
-      padding: rem(16px);
-
-      transform: opacity 0.25s ease-out;
+      .hint {
+        margin: 0;
+      }
     }
   }
 </style>
