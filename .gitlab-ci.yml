@@ -91,6 +91,21 @@ stages:
   - curl.exe --version
   - cargo +stable --version
 
+# Download Lab Grotesque fonts (for POSIX systems)
+.before_script_download_fonts: &before_script_download_fonts
+  - |
+    if [ -n "$FONT_URL_LAB_GROTESQUE" ]; then
+      mkdir -p src/public/res/fonts/lab-grotesque/
+      pushd src/public/res/fonts/lab-grotesque/
+      curl --proto '=https' --tlsv1.2 -o lab-grotesque.tar.gz "$FONT_URL_LAB_GROTESQUE"
+      tar xfv lab-grotesque.tar.gz
+      rm lab-grotesque.tar.gz
+      echo "Downloaded Lab Grotesque font"
+      popd
+    else
+      echo "\$FONT_URL_LAB_GROTESQUE not defined, not including Lab Grotesque font"
+    fi
+
 dist:
   stage: build
   needs: []
@@ -432,6 +447,8 @@ package:source:
     - eval $(ssh-agent -s)
     # Add SSH deploy key
     - chmod 400 $SSH_DEPLOY_KEY && ssh-add $SSH_DEPLOY_KEY
+    # Fetch fonts
+    - *before_script_download_fonts
   script:
     - set -euo pipefail
     # Handle ref
@@ -618,6 +635,7 @@ package:linux-binary-buildonly:
       - FLAVOR: [consumer-sandbox, consumer-live, work-sandbox, work-live, work-onprem]
   before_script:
     - *before_script_install_cargo
+    - *before_script_download_fonts
   script:
     - set -euo pipefail
     # Install dependencies
@@ -652,6 +670,8 @@ package:linux-binary-buildonly:
     - nvm use
     # Ensure coreutils are installed
     - brew install coreutils
+    # Fetch fonts
+    - *before_script_download_fonts
   script:
     - set -euo pipefail
     # Install build script deps
@@ -817,6 +837,20 @@ package:macos-publish:
       echo "Build type is $BUILD_TYPE"
     - *before_script_windows
   script:
+    # Fetch fonts
+    - |
+      if (Test-Path env:FONT_URL_LAB_GROTESQUE) {
+        New-Item -ItemType Directory -Force -Path "src\public\res\fonts\lab-grotesque\"
+        Push-Location "src\public\res\fonts\lab-grotesque\"
+        Invoke-WebRequest -Uri $env:FONT_URL_LAB_GROTESQUE -OutFile "lab-grotesque.tar.gz"
+        tar -xvf lab-grotesque.tar.gz
+        Remove-Item lab-grotesque.tar.gz
+        echo "Downloaded Lab Grotesque font"
+        Pop-Location
+      } else {
+        echo "\$FONT_URL_LAB_GROTESQUE not defined, not including Lab Grotesque font"
+      }
+
     # Install dependencies
     - npm ci --cache .npm
 
