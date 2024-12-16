@@ -12,12 +12,10 @@ use crate::print_log;
 #[cfg_attr(not(windows), allow(dead_code))]
 pub fn validate_file_hash(file_path: &Path, sha256_file_path: &Path) -> Result<()> {
     let file_hash = calculate_hash(file_path)?.to_uppercase();
-    let control_hash = extract_hash(sha256_file_path)?.to_uppercase();
+    print_log!("Calculated file hash: {:?}", file_hash);
 
-    print_log!(
-        "{}",
-        format!("Comparing file hash {file_hash:?} to control {control_hash:?}",)
-    );
+    let control_hash = extract_hash(sha256_file_path)?.to_uppercase();
+    print_log!("Comparing file hash to control hash: {:?}", control_hash);
 
     match file_hash == control_hash {
         true => Ok(()),
@@ -31,7 +29,14 @@ pub fn validate_file_hash(file_path: &Path, sha256_file_path: &Path) -> Result<(
 /// the SHA-256 hash, followed by a whitespace.
 #[cfg_attr(not(windows), allow(dead_code))]
 fn extract_hash(file_path: &Path) -> Result<String> {
-    let file_content = fs::read_to_string(file_path)?;
+    let mut file_content = fs::read_to_string(file_path)?;
+    // Remove BOM if present.
+    if file_content.starts_with('\u{FEFF}') {
+        print_log!("Removing BOM from hash file content");
+        // Note: UTF-8 representation of the BOM (U+FEFF) is `EF BB BF`.
+        file_content = file_content[3..].to_string();
+    };
+
     let file_hash: String = file_content
         .chars()
         .take_while(|&char| char != ' ')
