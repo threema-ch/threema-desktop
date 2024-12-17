@@ -6,7 +6,6 @@ LICENSE_FILES=(
     'argon2' 'node_modules/argon2/LICENSE'
     'autolinker' 'node_modules/autolinker/LICENSE'
     'better-sqlite' 'node_modules/better-sqlcipher/LICENSE'
-    'croppie' 'node_modules/croppie/LICENSE'
     'electron' 'node_modules/electron/LICENSE'
     'emojibase-data' 'node_modules/emojibase-data/LICENSE'
     'fast-sha256' 'node_modules/fast-sha256/LICENSE'
