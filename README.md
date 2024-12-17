@@ -17,6 +17,7 @@ A standalone Threema client for the desktop (Windows/macOS/Linux).
 - [Building](#building)
   - [Requirements](#requirements)
   - [Install Dependencies](#install-dependencies)
+  - [Set Up Fonts](#set-up-fonts)
   - [Build and Package](#build-and-package)
 - [Development](#development)
   - [Dev Container](#dev-container)
@@ -103,6 +104,18 @@ Next, install dependencies:
 Note that this requires a C/C++ compiler toolchain due to native dependencies, as mentioned above.
 
 [nvm]: https://github.com/nvm-sh/nvm
+
+### <a name="set-up-fonts"></a>Set Up Fonts
+
+When building from source, due to its license, the Threema font (Lab Grotesque) is not included in
+the build. To ensure that all fonts are rendered correctly, obtain a desktop license from
+[Letters from Sweden](https://lettersfromsweden.se/) and install the font family on your system.
+
+If you don't install the font, you can still build and run Threema, but some layouts might not be
+rendered as intended. (Known issue: Numbers are not displayed correctly.)
+
+_Note: In official builds provided by Threema, the Lab Grotesque font is bundled and does not need
+to be installed manually._
 
 ### <a name="build-and-package"></a>Build and Package
 
