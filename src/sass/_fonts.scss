@@ -4,6 +4,7 @@ obtain a license, please see: https://lettersfromsweden.se */
 @font-face {
   font-family: 'Lab Grotesque';
   src:
+    local('LabGrotesque-Thin'),
     url('/res/fonts/lab-grotesque/LabGrotesque-Thin.woff2') format('woff2'),
     url('/res/fonts/lab-grotesque/LabGrotesque-Thin.woff') format('woff');
   font-weight: 100;
@@ -13,6 +14,7 @@ obtain a license, please see: https://lettersfromsweden.se */
 @font-face {
   font-family: 'Lab Grotesque';
   src:
+    local('LabGrotesque-ThinItalic'),
     url('/res/fonts/lab-grotesque/LabGrotesque-ThinItalic.woff2') format('woff2'),
     url('/res/fonts/lab-grotesque/LabGrotesque-ThinItalic.woff') format('woff');
   font-weight: 100;
@@ -22,6 +24,7 @@ obtain a license, please see: https://lettersfromsweden.se */
 @font-face {
   font-family: 'Lab Grotesque';
   src:
+    local('LabGrotesque-Light'),
     url('/res/fonts/lab-grotesque/LabGrotesque-Light.woff2') format('woff2'),
     url('/res/fonts/lab-grotesque/LabGrotesque-Light.woff') format('woff');
   font-weight: 200;
@@ -31,6 +34,7 @@ obtain a license, please see: https://lettersfromsweden.se */
 @font-face {
   font-family: 'Lab Grotesque';
   src:
+    local('LabGrotesque-LightItalic'),
     url('/res/fonts/lab-grotesque/LabGrotesque-LightItalic.woff2') format('woff2'),
     url('/res/fonts/lab-grotesque/LabGrotesque-LightItalic.woff') format('woff');
   font-weight: 200;
@@ -40,6 +44,7 @@ obtain a license, please see: https://lettersfromsweden.se */
 @font-face {
   font-family: 'Lab Grotesque';
   src:
+    local('LabGrotesque-Regular'),
     url('/res/fonts/lab-grotesque/LabGrotesque-Regular.woff2') format('woff2'),
     url('/res/fonts/lab-grotesque/LabGrotesque-Regular.woff') format('woff');
   font-weight: 400;
@@ -49,6 +54,7 @@ obtain a license, please see: https://lettersfromsweden.se */
 @font-face {
   font-family: 'Lab Grotesque';
   src:
+    local('LabGrotesque-Italic'),
     url('/res/fonts/lab-grotesque/LabGrotesque-Italic.woff2') format('woff2'),
     url('/res/fonts/lab-grotesque/LabGrotesque-Italic.woff') format('woff');
   font-weight: 400;
@@ -58,6 +64,7 @@ obtain a license, please see: https://lettersfromsweden.se */
 @font-face {
   font-family: 'Lab Grotesque';
   src:
+    local('LabGrotesque-Medium'),
     url('/res/fonts/lab-grotesque/LabGrotesque-Medium.woff2') format('woff2'),
     url('/res/fonts/lab-grotesque/LabGrotesque-Medium.woff') format('woff');
   font-weight: 500;
@@ -67,6 +74,7 @@ obtain a license, please see: https://lettersfromsweden.se */
 @font-face {
   font-family: 'Lab Grotesque';
   src:
+    local('LabGrotesque-MediumItalic'),
     url('/res/fonts/lab-grotesque/LabGrotesque-MediumItalic.woff2') format('woff2'),
     url('/res/fonts/lab-grotesque/LabGrotesque-MediumItalic.woff') format('woff');
   font-weight: 500;
@@ -76,6 +84,7 @@ obtain a license, please see: https://lettersfromsweden.se */
 @font-face {
   font-family: 'Lab Grotesque';
   src:
+    local('LabGrotesque-Bold'),
     url('/res/fonts/lab-grotesque/LabGrotesque-Bold.woff2') format('woff2'),
     url('/res/fonts/lab-grotesque/LabGrotesque-Bold.woff') format('woff');
   font-weight: 700;
@@ -85,6 +94,7 @@ obtain a license, please see: https://lettersfromsweden.se */
 @font-face {
   font-family: 'Lab Grotesque';
   src:
+    local('LabGrotesque-BoldItalic'),
     url('/res/fonts/lab-grotesque/LabGrotesque-BoldItalic.woff2') format('woff2'),
     url('/res/fonts/lab-grotesque/LabGrotesque-BoldItalic.woff') format('woff');
   font-weight: 700;
@@ -94,6 +104,7 @@ obtain a license, please see: https://lettersfromsweden.se */
 @font-face {
   font-family: 'Lab Grotesque';
   src:
+    local('LabGrotesque-Black'),
     url('/res/fonts/lab-grotesque/LabGrotesque-Black.woff2') format('woff2'),
     url('/res/fonts/lab-grotesque/LabGrotesque-Black.woff') format('woff');
   font-weight: 800;
@@ -103,6 +114,7 @@ obtain a license, please see: https://lettersfromsweden.se */
 @font-face {
   font-family: 'Lab Grotesque';
   src:
+    local('LabGrotesque-BlackItalic'),
     url('/res/fonts/lab-grotesque/LabGrotesque-BlackItalic.woff2') format('woff2'),
     url('/res/fonts/lab-grotesque/LabGrotesque-BlackItalic.woff') format('woff');
   font-weight: 800;
