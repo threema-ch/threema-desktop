@@ -1116,7 +1116,8 @@ function main(
                     ...details.responseHeaders,
                     'Content-Security-Policy': [
                         // Fetch directives
-                        "default-src 'self'",
+                        "default-src 'none'",
+                        "manifest-src 'self'",
                         "child-src 'none'",
                         securityRule,
                         "font-src 'self' https://static.threema.ch",
