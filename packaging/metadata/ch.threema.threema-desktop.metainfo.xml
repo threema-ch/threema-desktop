@@ -44,6 +44,27 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta46" date="2024-12-19">
+            <description>
+                <p>Features:</p>
+                <ul>
+                    <li>Implemented automatic updates for Windows and macOS</li>
+                    <li>Securely store the password to log in without having to enter it again</li>
+                </ul>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Automatically recover group calls after a short disconnection</li>
+                    <li>Display the respective chat on top when a group call is started</li>
+                    <li>Noise reduction in group calls</li>
+                    <li>Improved chat-server handshake security</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>Fixed a bug where the typing indicator was sent when editing a message</li>
+                </ul>
+                <p>…and various under-the-hood changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta45" date="2024-11-26">
             <description>
                 <p>Improvements:</p>
