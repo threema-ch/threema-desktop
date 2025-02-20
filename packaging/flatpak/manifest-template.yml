@@ -30,6 +30,8 @@ finish-args:
   - --talk-name=org.freedesktop.Notifications
   # Allow writing to system secrets storage
   - --talk-name=org.freedesktop.secrets
+  # Enable custom mouse cursors & fix scaling
+  - --env=XCURSOR_PATH=/run/host/user-share/icons:/run/host/share/icons
 build-options:
   append-path: /usr/lib/sdk/node20/bin:/usr/lib/sdk/rust-stable/bin
   cflags: -O2 -g
