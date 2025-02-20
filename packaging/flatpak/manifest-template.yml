@@ -14,7 +14,7 @@ finish-args:
   - --share=ipc
   # Show window using Wayland or X11
   - --socket=wayland
-  - --socket=x11
+  - --socket=fallback-x11
   # Access sound devices using pulseaudio
   - --socket=pulseaudio
   # Allow access to network
@@ -30,6 +30,8 @@ finish-args:
   - --talk-name=org.freedesktop.Notifications
   # Allow writing to system secrets storage
   - --talk-name=org.freedesktop.secrets
+  # Use native Wayland if available
+  - --env=ELECTRON_OZONE_PLATFORM_HINT=auto
 build-options:
   append-path: /usr/lib/sdk/node20/bin:/usr/lib/sdk/rust-stable/bin
   cflags: -O2 -g
