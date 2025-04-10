@@ -42,6 +42,7 @@ export function getAudioDeviceContextMenuItems(
                         ? {name: 'check'}
                         : undefined,
                 label: truncate(deviceInfo.label, 24, 'end'),
+                labelOnHover: deviceInfo.label,
             } as const;
         }),
         {type: 'divider'},
@@ -66,6 +67,7 @@ export function getAudioDeviceContextMenuItems(
                         ? {name: 'check'}
                         : undefined,
                 label: truncate(deviceInfo.label, 24, 'end'),
+                labelOnHover: deviceInfo.label,
             } as const;
         }),
     ];

@@ -28,12 +28,12 @@
     ],
     buttons: [
       {
-        label: $i18n.t('dialog--toggle-logger.action--cancel', 'Cancel'),
+        label: $i18n.t('dialog--common.action--cancel', 'Cancel'),
         type: 'naked',
         onClick: 'close',
       },
       {
-        label: $i18n.t('dialog--toggle-logger.action--confirm', 'Confirm and Restart'),
+        label: $i18n.t('dialog--common.action--confirm-and-restart', 'Confirm and Restart'),
         type: 'filled',
         onClick: 'submit',
       },

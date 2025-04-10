@@ -26,7 +26,9 @@ import {BLOB_ID_LENGTH, ensureBlobId} from '~/common/network/protocol/blob';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
     OutgoingCspMessagesTask,
-    type DynamicMessageEncoder,
+    type DynamicMessage,
+    type IndividualMessageProperties,
+    type SharedMessageProperties,
 } from '~/common/network/protocol/task/csp/outgoing-csp-messages';
 import type {
     CommonMessageProperties,
@@ -408,23 +410,24 @@ export function run(): void {
             const ownNickname = services.model.user.profileSettings.get().view.nickname;
             expect(ownNickname).not.to.be.empty;
 
-            function makeProperties(
-                messageId: MessageId,
-            ): CommonMessageProperties<CspE2eConversationType.TEXT> {
+            function makeSharedProperties(messageId: MessageId): SharedMessageProperties {
                 return {
-                    type: CspE2eConversationType.TEXT,
-                    cspMessageFlags: CspMessageFlags.forMessageType('text'),
                     messageId,
                     createdAt: new Date(),
                     allowUserProfileDistribution: distributeNickname,
                 };
             }
 
-            function makeEncoder(): {default: LayerEncoder<structbuf.csp.e2e.TextEncodable>} {
+            function makeEncoder(): LayerEncoder<structbuf.csp.e2e.TextEncodable> {
+                return structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                    text: UTF8.encode('Hello World!'),
+                });
+            }
+
+            function makeSpecificProperties(): IndividualMessageProperties<ReceiverType.CONTACT> {
                 return {
-                    default: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
-                        text: UTF8.encode('Hello World!'),
-                    }),
+                    type: CspE2eConversationType.TEXT,
+                    cspMessageFlags: CspMessageFlags.forMessageType('text'),
                 };
             }
 
@@ -432,8 +435,13 @@ export function run(): void {
             const task = new OutgoingCspMessagesTask(services, [
                 {
                     receiver: receiverContact.get(),
-                    messageProperties: makeProperties(messageId),
-                    encoder: makeEncoder(),
+                    sharedMessageProperties: makeSharedProperties(messageId),
+                    specifics: {
+                        default: {
+                            encoder: makeEncoder(),
+                            messageProperties: makeSpecificProperties(),
+                        },
+                    },
                 },
             ]);
             const messageIdDelayed = Delayed.simple<MessageId>('MessageId', messageId);
@@ -539,21 +547,28 @@ export function run(): void {
                 const cspMessageFlags = CspMessageFlags.forMessageType('text');
                 const messageId = randomMessageId(crypto);
                 // Create new OutgoingMessageTask
-                const messageProperties = {
-                    type: CspE2eConversationType.TEXT,
-                    cspMessageFlags,
+                const sharedMessageProperties = {
                     messageId,
                     createdAt: new Date(),
                     allowUserProfileDistribution: true,
                 } as const;
+
+                const type = CspE2eConversationType.TEXT;
+
                 const task = new OutgoingCspMessagesTask(services, [
                     {
                         receiver: user1store.get(),
-                        messageProperties,
-                        encoder: {
-                            default: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
-                                text: UTF8.encode('Hello World!'),
-                            }),
+                        sharedMessageProperties,
+                        specifics: {
+                            default: {
+                                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                                    text: UTF8.encode('Hello World!'),
+                                }),
+                                messageProperties: {
+                                    cspMessageFlags,
+                                    type: CspE2eConversationType.TEXT,
+                                },
+                            },
                         },
                     },
                 ]);
@@ -562,14 +577,14 @@ export function run(): void {
                 const expectations: NetworkExpectation[] = [
                     // First, the outgoing message must be reflected
                     getExpectedD2dOutgoingReflectedMessagesWithProfilePicture(
-                        messageProperties,
+                        {...sharedMessageProperties, type},
                         CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE,
                     ),
 
                     ...getExpectedCspMessagesForGroupMember(
                         user1,
-                        messageProperties.messageId,
-                        messageProperties.type,
+                        sharedMessageProperties.messageId,
+                        type,
                     ),
 
                     ...getExpectedCspOutgoingProfilePictureMessage(
@@ -590,7 +605,7 @@ export function run(): void {
                         const update = unwrap(message.updates[0]);
                         expect(update.conversation?.contact).to.equal(user1.identity.string);
                         expect(ensureMessageId(intoU64(update.messageId))).to.equal(
-                            messageProperties.messageId,
+                            sharedMessageProperties.messageId,
                         );
                     }),
                 ];
@@ -607,21 +622,28 @@ export function run(): void {
                 const cspMessageFlags = CspMessageFlags.forMessageType('text');
                 const messageId = randomMessageId(crypto);
                 // Create new OutgoingMessageTask
-                const messageProperties = {
-                    type: CspE2eConversationType.TEXT,
-                    cspMessageFlags,
+                const sharedMessageProperties = {
                     messageId,
                     createdAt: new Date(),
                     allowUserProfileDistribution: true,
                 } as const;
+
+                const type = CspE2eConversationType.TEXT;
+
                 const task = new OutgoingCspMessagesTask(services, [
                     {
                         receiver: user1store.get(),
-                        messageProperties,
-                        encoder: {
-                            default: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
-                                text: UTF8.encode('Hello World!'),
-                            }),
+                        sharedMessageProperties,
+                        specifics: {
+                            default: {
+                                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                                    text: UTF8.encode('Hello World!'),
+                                }),
+                                messageProperties: {
+                                    type: CspE2eConversationType.TEXT,
+                                    cspMessageFlags,
+                                },
+                            },
                         },
                     },
                 ]);
@@ -630,14 +652,14 @@ export function run(): void {
                 const expectations: NetworkExpectation[] = [
                     // First, the outgoing message must be reflected
                     getExpectedD2dOutgoingReflectedMessagesWithProfilePicture(
-                        messageProperties,
+                        {...sharedMessageProperties, type},
                         CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE,
                     ),
 
                     ...getExpectedCspMessagesForGroupMember(
                         user1,
-                        messageProperties.messageId,
-                        messageProperties.type,
+                        sharedMessageProperties.messageId,
+                        type,
                     ),
 
                     ...getExpectedCspOutgoingProfilePictureMessage(
@@ -658,7 +680,7 @@ export function run(): void {
                         const update = unwrap(message.updates[0]);
                         expect(update.conversation?.contact).to.equal(user1.identity.string);
                         expect(ensureMessageId(intoU64(update.messageId))).to.equal(
-                            messageProperties.messageId,
+                            sharedMessageProperties.messageId,
                         );
                     }),
                 ];
@@ -673,29 +695,43 @@ export function run(): void {
                 });
 
                 const editMessageProperties = {
-                    type: CspE2eMessageUpdateType.EDIT_MESSAGE as ValidCspMessageTypeForReceiver<Contact>,
-                    cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
                     messageId: randomMessageId(crypto),
                     createdAt: new Date(),
                     allowUserProfileDistribution: false,
                 };
+
+                const editType =
+                    CspE2eMessageUpdateType.EDIT_MESSAGE as ValidCspMessageTypeForReceiver<Contact>;
                 const editTask = new OutgoingCspMessagesTask(services, [
                     {
                         receiver: user1store.get(),
-                        messageProperties: editMessageProperties,
-                        encoder: {default: encoder},
+                        sharedMessageProperties: editMessageProperties,
+                        specifics: {
+                            default: {
+                                encoder,
+                                messageProperties: {
+                                    type: editType,
+                                    cspMessageFlags: CspMessageFlags.fromPartial({
+                                        sendPushNotification: true,
+                                    }),
+                                },
+                            },
+                        },
                     },
                 ]);
 
                 // Run task
                 const editExpectations: NetworkExpectation[] = [
                     // First, the outgoing message must be reflected
-                    getExpectedD2dOutgoingReflectedMessage(editMessageProperties),
+                    getExpectedD2dOutgoingReflectedMessage({
+                        ...editMessageProperties,
+                        type: editType,
+                    }),
 
                     ...getExpectedCspMessagesForGroupMember(
                         user1,
                         editMessageProperties.messageId,
-                        editMessageProperties.type,
+                        editType,
                     ),
 
                     // Finally, an OutgoingMessageUpdate.Sent is reflected
@@ -708,7 +744,7 @@ export function run(): void {
                         );
                         expect(message.conversation?.contact).to.equal(user1.identity.string);
                         expect(ensureMessageId(intoU64(message.messageId))).to.equal(
-                            messageProperties.messageId,
+                            sharedMessageProperties.messageId,
                         );
                     }),
                 ];
@@ -726,21 +762,28 @@ export function run(): void {
                 const cspMessageFlags = CspMessageFlags.forMessageType('text');
                 const messageId = randomMessageId(crypto);
                 // Create new OutgoingMessageTask
-                const messageProperties = {
-                    type: CspE2eConversationType.TEXT,
-                    cspMessageFlags,
+                const sharedTextMessageProperties = {
                     messageId,
                     createdAt: new Date(),
                     allowUserProfileDistribution: true,
                 } as const;
+
+                const type = CspE2eConversationType.TEXT;
+
                 const task = new OutgoingCspMessagesTask(services, [
                     {
                         receiver: user1store.get(),
-                        messageProperties,
-                        encoder: {
-                            default: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
-                                text: UTF8.encode('Hello World!'),
-                            }),
+                        sharedMessageProperties: sharedTextMessageProperties,
+                        specifics: {
+                            default: {
+                                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                                    text: UTF8.encode('Hello World!'),
+                                }),
+                                messageProperties: {
+                                    type,
+                                    cspMessageFlags,
+                                },
+                            },
                         },
                     },
                 ]);
@@ -749,14 +792,14 @@ export function run(): void {
                 const expectations: NetworkExpectation[] = [
                     // First, the outgoing message must be reflected
                     getExpectedD2dOutgoingReflectedMessagesWithProfilePicture(
-                        messageProperties,
+                        {...sharedTextMessageProperties, type},
                         CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE,
                     ),
 
                     ...getExpectedCspMessagesForGroupMember(
                         user1,
-                        messageProperties.messageId,
-                        messageProperties.type,
+                        sharedTextMessageProperties.messageId,
+                        type,
                     ),
 
                     ...getExpectedCspOutgoingProfilePictureMessage(
@@ -777,7 +820,7 @@ export function run(): void {
                         const update = unwrap(message.updates[0]);
                         expect(update.conversation?.contact).to.equal(user1.identity.string);
                         expect(ensureMessageId(intoU64(update.messageId))).to.equal(
-                            messageProperties.messageId,
+                            sharedTextMessageProperties.messageId,
                         );
                     }),
                 ];
@@ -789,30 +832,44 @@ export function run(): void {
                     messageId: intoUnsignedLong(messageId),
                 });
 
-                const deleteMessageProperties = {
-                    type: CspE2eMessageUpdateType.DELETE_MESSAGE as ValidCspMessageTypeForReceiver<Contact>,
-                    cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
+                const sharedDeleteMessageProperties = {
                     messageId: randomMessageId(crypto),
                     createdAt: new Date(),
                     allowUserProfileDistribution: false,
                 };
+
+                const deleteType =
+                    CspE2eMessageUpdateType.DELETE_MESSAGE as ValidCspMessageTypeForReceiver<Contact>;
                 const deleteTask = new OutgoingCspMessagesTask(services, [
                     {
                         receiver: user1store.get(),
-                        messageProperties: deleteMessageProperties,
-                        encoder: {default: encoder},
+                        sharedMessageProperties: sharedDeleteMessageProperties,
+                        specifics: {
+                            default: {
+                                encoder,
+                                messageProperties: {
+                                    type: deleteType,
+                                    cspMessageFlags: CspMessageFlags.fromPartial({
+                                        sendPushNotification: true,
+                                    }),
+                                },
+                            },
+                        },
                     },
                 ]);
 
                 // Run task
                 const editExpectations: NetworkExpectation[] = [
                     // First, the outgoing message must be reflected
-                    getExpectedD2dOutgoingReflectedMessage(deleteMessageProperties),
+                    getExpectedD2dOutgoingReflectedMessage({
+                        ...sharedDeleteMessageProperties,
+                        type: deleteType,
+                    }),
 
                     ...getExpectedCspMessagesForGroupMember(
                         user1,
-                        deleteMessageProperties.messageId,
-                        deleteMessageProperties.type,
+                        sharedDeleteMessageProperties.messageId,
+                        deleteType,
                     ),
 
                     // Finally, an OutgoingMessageUpdate.Sent is reflected
@@ -825,7 +882,7 @@ export function run(): void {
                         );
                         expect(message.conversation?.contact).to.equal(user1.identity.string);
                         expect(ensureMessageId(intoU64(message.messageId))).to.equal(
-                            messageProperties.messageId,
+                            sharedDeleteMessageProperties.messageId,
                         );
                     }),
                 ];
@@ -908,12 +965,10 @@ export function run(): void {
             const task = new OutgoingCspMessagesTask(services, [
                 {
                     receiver: groupStore.get(),
-                    messageProperties: {
+                    sharedMessageProperties: {
                         ...properties,
                     } as CommonMessageProperties<ValidCspMessageTypeForReceiver<Group>>,
-                    encoder: {
-                        default: message.encoder,
-                    },
+                    specifics: {default: {encoder: message.encoder, messageProperties: properties}},
                 },
             ]);
 
@@ -1230,21 +1285,28 @@ export function run(): void {
                 const cspMessageFlags = CspMessageFlags.forMessageType('text');
 
                 // Create new OutgoingMessageTask
-                const messageProperties = {
-                    type: CspE2eConversationType.TEXT,
-                    cspMessageFlags,
+                const sharedMessageProperties = {
                     messageId: randomMessageId(crypto),
                     createdAt: new Date(),
                     allowUserProfileDistribution: true,
                 } as const;
+
+                const type = CspE2eConversationType.TEXT;
+
                 const task = new OutgoingCspMessagesTask(services, [
                     {
                         receiver: user1store.get(),
-                        messageProperties,
-                        encoder: {
-                            default: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
-                                text: UTF8.encode('Hello World!'),
-                            }),
+                        sharedMessageProperties,
+                        specifics: {
+                            default: {
+                                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                                    text: UTF8.encode('Hello World!'),
+                                }),
+                                messageProperties: {
+                                    type,
+                                    cspMessageFlags,
+                                },
+                            },
                         },
                     },
                 ]);
@@ -1252,7 +1314,7 @@ export function run(): void {
                 // Run task
                 const expectations: NetworkExpectation[] = [
                     // First, the outgoing message must be reflected
-                    getExpectedD2dOutgoingReflectedMessage(messageProperties),
+                    getExpectedD2dOutgoingReflectedMessage({...sharedMessageProperties, type}),
 
                     // Finally, an OutgoingMessageUpdate.Sent is reflected. There is no exception
                     // for blocked contacts here specified by the protocol.
@@ -1267,7 +1329,7 @@ export function run(): void {
                         const update = unwrap(message.updates[0]);
                         expect(update.conversation?.contact).to.equal(user1.identity.string);
                         expect(ensureMessageId(intoU64(update.messageId))).to.equal(
-                            messageProperties.messageId,
+                            sharedMessageProperties.messageId,
                         );
                     }),
                 ];
@@ -1305,28 +1367,35 @@ export function run(): void {
                 const cspMessageFlags = CspMessageFlags.forMessageType('text');
 
                 // Create new OutgoingMessageTask
-                const messageProperties = {
-                    type: CspE2eGroupConversationType.GROUP_TEXT,
+                const sharedMessageProperties = {
                     cspMessageFlags,
                     messageId: randomMessageId(crypto),
                     createdAt: new Date(),
                     allowUserProfileDistribution: true,
                 } as const;
+
+                const type = CspE2eGroupConversationType.GROUP_TEXT;
                 const task = new OutgoingCspMessagesTask(services, [
                     {
                         receiver: group.get(),
-                        messageProperties,
-                        encoder: {
-                            default: structbuf.bridge.encoder(
-                                structbuf.csp.e2e.GroupMemberContainer,
-                                {
-                                    groupId,
-                                    creatorIdentity: UTF8.encode(gateway.identity.string),
-                                    innerData: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
-                                        text: UTF8.encode('Hello World!'),
-                                    }),
-                                },
-                            ),
+                        sharedMessageProperties,
+                        specifics: {
+                            default: {
+                                encoder: structbuf.bridge.encoder(
+                                    structbuf.csp.e2e.GroupMemberContainer,
+                                    {
+                                        groupId,
+                                        creatorIdentity: UTF8.encode(gateway.identity.string),
+                                        innerData: structbuf.bridge.encoder(
+                                            structbuf.csp.e2e.Text,
+                                            {
+                                                text: UTF8.encode('Hello World!'),
+                                            },
+                                        ),
+                                    },
+                                ),
+                                messageProperties: {type, cspMessageFlags},
+                            },
                         },
                     },
                 ]);
@@ -1336,7 +1405,7 @@ export function run(): void {
                     // First, the outgoing message must be reflected
                     getExpectedD2dOutgoingReflectedMessagesWithProfilePictureForGroup(
                         1,
-                        messageProperties,
+                        {...sharedMessageProperties, type},
                         CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE,
                     ),
 
@@ -1346,8 +1415,8 @@ export function run(): void {
                     //       members in the database
                     ...getExpectedCspMessagesForGroupMember(
                         user1,
-                        messageProperties.messageId,
-                        messageProperties.type,
+                        sharedMessageProperties.messageId,
+                        type,
                     ),
 
                     ...getExpectedCspOutgoingProfilePictureMessage(
@@ -1391,38 +1460,41 @@ export function run(): void {
                 );
 
                 // Create new OutgoingMessageTask
-                const messageProperties = {
-                    type: CspE2eGroupControlType.GROUP_NAME,
+                const sharedMessageProperties = {
                     encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
                         groupId,
                         innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupName, {
                             name: UTF8.encode('Chüngel- und Hoppelhasenzüchter Pfäffikon'),
                         }),
                     }),
-                    cspMessageFlags: CspMessageFlags.none(),
                     messageId: randomMessageId(crypto),
                     createdAt: new Date(),
                     allowUserProfileDistribution: false,
                 } as const;
+
+                const type = CspE2eGroupControlType.GROUP_NAME;
                 const task = new OutgoingCspMessagesTask(services, [
                     {
                         receiver: group.get(),
-                        messageProperties,
-                        encoder: {
-                            default: structbuf.bridge.encoder(
-                                structbuf.csp.e2e.GroupCreatorContainer,
-                                {
-                                    groupId,
-                                    innerData: structbuf.bridge.encoder(
-                                        structbuf.csp.e2e.GroupName,
-                                        {
-                                            name: UTF8.encode(
-                                                'Chüngel- und Hoppelhasenzüchter Pfäffikon',
-                                            ),
-                                        },
-                                    ),
-                                },
-                            ),
+                        sharedMessageProperties,
+                        specifics: {
+                            default: {
+                                encoder: structbuf.bridge.encoder(
+                                    structbuf.csp.e2e.GroupCreatorContainer,
+                                    {
+                                        groupId,
+                                        innerData: structbuf.bridge.encoder(
+                                            structbuf.csp.e2e.GroupName,
+                                            {
+                                                name: UTF8.encode(
+                                                    'Chüngel- und Hoppelhasenzüchter Pfäffikon',
+                                                ),
+                                            },
+                                        ),
+                                    },
+                                ),
+                                messageProperties: {type, cspMessageFlags: CspMessageFlags.none()},
+                            },
                         },
                     },
                 ]);
@@ -1430,7 +1502,7 @@ export function run(): void {
                 // Run task
                 const expectations: NetworkExpectation[] = [
                     // First, the outgoing message must be reflected
-                    getExpectedD2dOutgoingReflectedMessage(messageProperties),
+                    getExpectedD2dOutgoingReflectedMessage({...sharedMessageProperties, type}),
 
                     // Reflect a message to every member and wait for the ack.
                     //
@@ -1438,13 +1510,13 @@ export function run(): void {
                     //       members in the database
                     ...getExpectedCspMessagesForGroupMember(
                         user1,
-                        messageProperties.messageId,
-                        messageProperties.type,
+                        sharedMessageProperties.messageId,
+                        type,
                     ),
                     ...getExpectedCspMessagesForGroupMember(
                         user2,
-                        messageProperties.messageId,
-                        messageProperties.type,
+                        sharedMessageProperties.messageId,
+                        type,
                     ),
                 ];
                 const handle = new TestHandle(services, expectations);
@@ -1461,7 +1533,7 @@ export function run(): void {
                 const messageId = randomMessageId(services.crypto);
                 const messageId2 = randomMessageId(services.crypto);
                 // Create new OutgoingMessageTask
-                const messageProperties = {
+                const sharedMessageProperties = {
                     type: CspE2eConversationType.TEXT,
                     cspMessageFlags,
                     messageId,
@@ -1469,7 +1541,7 @@ export function run(): void {
                     allowUserProfileDistribution: true,
                 } as const;
 
-                const messageProperties2 = {
+                const sharedMessageProperties2 = {
                     type: CspE2eConversationType.TEXT,
                     cspMessageFlags,
                     messageId: messageId2,
@@ -1477,23 +1549,31 @@ export function run(): void {
                     allowUserProfileDistribution: true,
                 } as const;
 
+                const type = CspE2eConversationType.TEXT;
+
                 const task = new OutgoingCspMessagesTask(services, [
                     {
                         receiver: user1store.get(),
-                        messageProperties,
-                        encoder: {
-                            default: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
-                                text: UTF8.encode('Hello World!'),
-                            }),
+                        sharedMessageProperties,
+                        specifics: {
+                            default: {
+                                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                                    text: UTF8.encode('Hello World!'),
+                                }),
+                                messageProperties: {cspMessageFlags, type},
+                            },
                         },
                     },
                     {
                         receiver: user1store.get(),
-                        messageProperties: messageProperties2,
-                        encoder: {
-                            default: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
-                                text: UTF8.encode('Goodbye world!'),
-                            }),
+                        sharedMessageProperties: sharedMessageProperties2,
+                        specifics: {
+                            default: {
+                                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                                    text: UTF8.encode('Hello World!'),
+                                }),
+                                messageProperties: {cspMessageFlags, type},
+                            },
                         },
                     },
                 ]);
@@ -1502,20 +1582,23 @@ export function run(): void {
                 const expectations: NetworkExpectation[] = [
                     // First, the outgoing message must be reflected
                     getExpectedD2dOutgoingReflectedMessagesWithProfilePictureForMultipleMessagesWithSameReceiver(
-                        [messageProperties, messageProperties2],
+                        [
+                            {...sharedMessageProperties, type},
+                            {...sharedMessageProperties2, type},
+                        ],
                         CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE,
                     ),
 
                     ...getExpectedCspMessagesForGroupMember(
                         user1,
-                        messageProperties.messageId,
-                        messageProperties.type,
+                        sharedMessageProperties.messageId,
+                        type,
                     ),
 
                     ...getExpectedCspMessagesForGroupMember(
                         user1,
-                        messageProperties2.messageId,
-                        messageProperties2.type,
+                        sharedMessageProperties2.messageId,
+                        type,
                     ),
 
                     // Only send one profile picture because it should be cached
@@ -1536,7 +1619,7 @@ export function run(): void {
                         const update = unwrap(message.updates[0]);
                         expect(update.conversation?.contact).to.equal(user1.identity.string);
                         expect(ensureMessageId(intoU64(update.messageId))).to.equal(
-                            messageProperties.messageId,
+                            sharedMessageProperties.messageId,
                         );
                     }),
 
@@ -1551,7 +1634,7 @@ export function run(): void {
                         const update = unwrap(message.updates[0]);
                         expect(update.conversation?.contact).to.equal(user1.identity.string);
                         expect(ensureMessageId(intoU64(update.messageId))).to.equal(
-                            messageProperties2.messageId,
+                            sharedMessageProperties2.messageId,
                         );
                     }),
                 ];
@@ -1569,39 +1652,43 @@ export function run(): void {
                 const messageId = randomMessageId(services.crypto);
                 const messageId2 = randomMessageId(services.crypto);
                 // Create new OutgoingMessageTask
-                const messageProperties = {
-                    type: CspE2eConversationType.TEXT,
-                    cspMessageFlags,
+                const sharedMessageProperties = {
                     messageId,
                     createdAt: new Date(),
                     allowUserProfileDistribution: true,
                 } as const;
 
-                const messageProperties2 = {
-                    type: CspE2eConversationType.TEXT,
-                    cspMessageFlags,
+                const sharedMessageProperties2 = {
                     messageId: messageId2,
                     createdAt: new Date(),
                     allowUserProfileDistribution: true,
                 } as const;
 
+                const type = CspE2eConversationType.TEXT;
+
                 const task = new OutgoingCspMessagesTask(services, [
                     {
                         receiver: user1store.get(),
-                        messageProperties,
-                        encoder: {
-                            default: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
-                                text: UTF8.encode('Hello World!'),
-                            }),
+                        sharedMessageProperties,
+                        specifics: {
+                            default: {
+                                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                                    text: UTF8.encode('Hello World!'),
+                                }),
+                                messageProperties: {cspMessageFlags, type},
+                            },
                         },
                     },
                     {
                         receiver: user2store.get(),
-                        messageProperties: messageProperties2,
-                        encoder: {
-                            default: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
-                                text: UTF8.encode('Goodbye world!'),
-                            }),
+                        sharedMessageProperties: sharedMessageProperties2,
+                        specifics: {
+                            default: {
+                                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                                    text: UTF8.encode('Hello World!'),
+                                }),
+                                messageProperties: {cspMessageFlags, type},
+                            },
                         },
                     },
                 ]);
@@ -1610,20 +1697,23 @@ export function run(): void {
                 const expectations: NetworkExpectation[] = [
                     // First, the outgoing message must be reflected
                     getExpectedD2dOutgoingReflectedMessagesWithProfilePictureForMultipleMessagesWithMultipleReceivers(
-                        [messageProperties, messageProperties2],
+                        [
+                            {...sharedMessageProperties, type},
+                            {...sharedMessageProperties2, type},
+                        ],
                         CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE,
                     ),
 
                     ...getExpectedCspMessagesForGroupMember(
                         user1,
-                        messageProperties.messageId,
-                        messageProperties.type,
+                        sharedMessageProperties.messageId,
+                        type,
                     ),
 
                     ...getExpectedCspMessagesForGroupMember(
                         user2,
-                        messageProperties2.messageId,
-                        messageProperties2.type,
+                        sharedMessageProperties2.messageId,
+                        type,
                     ),
 
                     // Send profile picture to both users
@@ -1651,7 +1741,7 @@ export function run(): void {
                         const update = unwrap(message.updates[0]);
                         expect(update.conversation?.contact).to.equal(user1.identity.string);
                         expect(ensureMessageId(intoU64(update.messageId))).to.equal(
-                            messageProperties.messageId,
+                            sharedMessageProperties.messageId,
                         );
                     }),
 
@@ -1666,7 +1756,7 @@ export function run(): void {
                         const update = unwrap(message.updates[0]);
                         expect(update.conversation?.contact).to.equal(user2.identity.string);
                         expect(ensureMessageId(intoU64(update.messageId))).to.equal(
-                            messageProperties2.messageId,
+                            sharedMessageProperties2.messageId,
                         );
                     }),
                 ];
@@ -1750,23 +1840,31 @@ export function run(): void {
                     return contact.view.identity === user1.identity.string
                         ? {
                               encoder: legacyEncoder,
-                              type: CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT,
+                              messageProperties: {
+                                  type: CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT,
+                                  cspMessageFlags: CspMessageFlags.none(),
+                              },
                           }
                         : {
                               encoder: defaultEncoder,
-                              type: CspE2eGroupMessageReactionType.GROUP_REACTION,
+                              messageProperties: {
+                                  type: CspE2eGroupMessageReactionType.GROUP_REACTION,
+                                  cspMessageFlags: CspMessageFlags.fromPartial({
+                                      sendPushNotification: true,
+                                  }),
+                              },
                           };
                 }
 
                 const reactionMessageId = randomMessageId(services.crypto);
 
-                const messageProperties = {
-                    type: CspE2eGroupMessageReactionType.GROUP_REACTION,
-                    cspMessageFlags: CspMessageFlags.none(),
+                const sharedMessageProperties = {
                     messageId: reactionMessageId,
                     createdAt: new Date(),
-                    allowUserProfileDistribution: false,
+                    allowUserProfileDistribution: true,
                 } as const;
+
+                const type = CspE2eGroupMessageReactionType.GROUP_REACTION;
 
                 // Now make sure that only the default message is reflected, but each receiver gets a different message according to the function
                 const networkExpectations = [
@@ -1778,7 +1876,7 @@ export function run(): void {
                             'payload.outgoingMessage is null or undefined',
                         );
                         const createdAt = unixTimestampToDateMs(intoU64(message.createdAt));
-                        expect(createdAt).to.eql(messageProperties.createdAt);
+                        expect(createdAt).to.eql(sharedMessageProperties.createdAt);
                         expect(message.type).to.equal(
                             CspE2eGroupMessageReactionType.GROUP_REACTION,
                         );
@@ -1804,10 +1902,18 @@ export function run(): void {
 
                 const task = new OutgoingCspMessagesTask(services, [
                     {
-                        messageProperties,
-                        encoder: {
-                            default: defaultEncoder,
-                            dynamic: dynamic as DynamicMessageEncoder<ReceiverType.GROUP>,
+                        sharedMessageProperties,
+                        specifics: {
+                            default: {
+                                encoder: defaultEncoder,
+                                messageProperties: {
+                                    cspMessageFlags: CspMessageFlags.fromPartial({
+                                        sendPushNotification: true,
+                                    }),
+                                    type,
+                                },
+                            },
+                            dynamic: dynamic as DynamicMessage<ReceiverType.GROUP>,
                         },
                         receiver: groupStore.get(),
                     },

@@ -58,6 +58,7 @@
   import type {SingleUnicodeEmoji} from '~/common/utils/emoji';
   import type {Remote} from '~/common/utils/endpoint';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
+  import {EVERYONE_IDENTITY_STRING} from '~/common/utils/mentions';
   import {
     WritableStore,
     ReadableStore,
@@ -69,7 +70,6 @@
   import type {SendMessageEventDetail} from '~/common/viewmodel/conversation/main/controller/types';
   import type {ConversationRegularMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/regular-message';
   import type {FeatureSupport} from '~/common/viewmodel/conversation/main/store/types';
-  import {EVERYONE_IDENTITY_STRING} from '~/common/viewmodel/utils/mentions';
   import type {AnyReceiverData, ContactReceiverData} from '~/common/viewmodel/utils/receiver';
 
   const {uiLogging} = globals.unwrap();

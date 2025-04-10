@@ -88,14 +88,20 @@ export class IncomingForwardSecurityEnvelopeTask
         await new OutgoingCspMessagesTask(this._services, [
             {
                 receiver: receiver.get(),
-                messageProperties: {
-                    type: CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE,
-                    cspMessageFlags: CspMessageFlags.none(),
+                sharedMessageProperties: {
                     messageId: randomMessageId(crypto),
                     createdAt: new Date(),
                     allowUserProfileDistribution: false,
                 },
-                encoder: {default: encoder},
+                specifics: {
+                    default: {
+                        encoder,
+                        messageProperties: {
+                            type: CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE,
+                            cspMessageFlags: CspMessageFlags.none(),
+                        },
+                    },
+                },
             },
         ]).run(handle);
         this._log.info('Rejected incoming forward security message');

@@ -114,17 +114,31 @@ const LoggingDownloader = {
 };
 
 /**
- * Build and copy the launcher binary.
+ * Build and add an extra binary to the bundle. Note: The given path must contain a valid Rust
+ * project.
  *
+ * @param {string[]} basePath The base path of the extra binary's Rust project.
+ * @param {*} outputPath The output path to copy the extra binary to.
+ * @param {string} outputName The name of the output binary without extension.
  * @param {*} flavor The app flavor.
- * @param {*} outputPath The output path to copy the launcher binary to.
  * @param {typeof import("../config/base")} config Base config and utils.
+ * @param {string=} outputNameOverride Override for `outputName` when the binary is copied to the
+ *   destination bundle.
+ * @param {boolean=false} isPrivilegedHelper Whether the extra binary is a privileged helper.
  */
-function buildAndCopyLauncherBinary(flavor, outputPath, config) {
-    // Build launcher
-    console.log(`🦀 Building launcher binary for ${flavor} through cargo`);
-    const resultLauncher = spawnSync('cargo', ['build', `--release`], {
-        cwd: resolve(__dirname, '..', 'src', 'launcher'),
+function buildAndBundleExtraBinary(
+    basePath,
+    outputPath,
+    outputName,
+    flavor,
+    config,
+    outputNameOverride,
+    isPrivilegedHelper = false,
+) {
+    // Build binary.
+    console.log(`🦀 Building extra binary ${outputName} for ${flavor} through cargo`);
+    const buildResult = spawnSync('cargo', ['build', `--release`], {
+        cwd: resolve(...basePath),
         encoding: 'utf8',
         shell: false,
         stdio: [null, 1, 2],
@@ -133,51 +147,63 @@ function buildAndCopyLauncherBinary(flavor, outputPath, config) {
             THREEMA_BUILD_FLAVOR: flavor,
         },
     });
-    if (resultLauncher.status !== 0) {
-        console.warn(resultLauncher);
-        fail(`Building launcher binary failed, exit code ${resultLauncher.status}`);
+    if (buildResult.status !== 0) {
+        console.warn(buildResult);
+        fail(`Building extra binary failed, exit code ${buildResult.status}`);
     }
     if (!config.isBuildPlatform(process.platform)) {
         fail(
-            `Launcher binary build error: Platform "${process.platform}" is not a valid build target`,
+            `Extra binary build error: Platform "${process.platform}" is not a valid build target`,
         );
         return;
     }
 
-    // Copy launcher into application dir
-    const launcherBinaryName = config.determineLauncherBinaryName(process.platform);
-    const launcherBinaryPath = resolve(
-        __dirname,
-        '..',
-        'src',
-        'launcher',
+    // Copy extra binary into application dir.
+    const extraBinaryPath = resolve(
+        ...basePath,
         'target',
         'release',
-        launcherBinaryName,
+        config.determineExtraBinaryName(process.platform, outputName),
     );
-    if (!fs.existsSync(launcherBinaryPath)) {
+    if (!fs.existsSync(extraBinaryPath)) {
         fail(
-            `Could not find launcher binary after building, path\n    ${launcherBinaryPath}\n    does not exist`,
+            `Could not find extra binary after building, path\n    ${extraBinaryPath}\n    does not exist`,
         );
     }
-    const launcherBinaryPathNew =
+
+    const extraBinaryDestinationName =
+        outputNameOverride === undefined
+            ? config.determineExtraBinaryName(process.platform, outputName)
+            : config.determineExtraBinaryName(process.platform, outputNameOverride);
+    const extraBinaryDestinationPath =
+        // eslint-disable-next-line no-nested-ternary
         process.platform === 'darwin'
-            ? join(
-                  outputPath,
-                  config.determineBinaryName(flavor, process.platform),
-                  'Contents',
-                  'MacOS',
-                  launcherBinaryName,
-              )
-            : join(outputPath, launcherBinaryName);
-    fsExtra.copySync(launcherBinaryPath, launcherBinaryPathNew, {
+            ? !isPrivilegedHelper
+                ? join(
+                      outputPath,
+                      config.determineBinaryName(flavor, process.platform),
+                      'Contents',
+                      'MacOS',
+                      extraBinaryDestinationName,
+                  )
+                : join(
+                      outputPath,
+                      config.determineBinaryName(flavor, process.platform),
+                      'Contents',
+                      'Library',
+                      'LaunchServices',
+                      extraBinaryDestinationName,
+                  )
+            : join(outputPath, extraBinaryDestinationName);
+
+    fsExtra.copySync(extraBinaryPath, extraBinaryDestinationPath, {
         errorOnExist: true,
         dereference: false,
         preserveTimestamps: false,
     });
-    console.log(`Copied launcher binary ${launcherBinaryName} to output directory`);
+    console.log(`Copied extra binary ${extraBinaryDestinationName} to output directory`);
 
-    // On macOS, patch bundle executable in `Info.plist`
+    // On macOS, patch bundle executable in `Info.plist`.
     if (process.platform === 'darwin') {
         const plistPath = join(
             outputPath,
@@ -189,7 +215,7 @@ function buildAndCopyLauncherBinary(flavor, outputPath, config) {
             .readFileSync(plistPath, 'utf8')
             .replace(
                 /<key>CFBundleExecutable<\/key>(?<whitespace>[\s]+)<string>ThreemaDesktop<\/string>/u,
-                `<key>CFBundleExecutable</key>$<whitespace><string>${launcherBinaryName}</string>`,
+                `<key>CFBundleExecutable</key>$<whitespace><string>${extraBinaryDestinationName}</string>`,
             );
         fs.writeFileSync(plistPath, plist, 'utf8');
     }
@@ -240,6 +266,29 @@ async function packageApp(variant, environment, isPlaywrightTestBuild, config) {
                 'mac',
                 `${variant}-${environment}.icns`,
             );
+
+            // Important: Keep this complementary to the `SMAuthorizedClients` value defined in the
+            // helper's `Info.plist`.
+            let smPrivilegedExecutables;
+            switch (variant) {
+                case 'consumer':
+                    smPrivilegedExecutables = {
+                        'ch.threema.threema-desktop-helper': `identifier "ch.threema.threema-desktop-helper" and anchor apple generic and certificate leaf[subject.OU] = ${process.env.APPLE_TEAM_ID} and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */`,
+                    };
+                    break;
+
+                case 'work':
+                    smPrivilegedExecutables = {
+                        'ch.threema.threema-work-desktop-helper': `identifier "ch.threema.threema-work-desktop-helper" and anchor apple generic and certificate leaf[subject.OU] = ${process.env.APPLE_TEAM_ID} and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */`,
+                    };
+                    break;
+
+                default:
+                    throw new Error(
+                        `SMPrivilegedExecutables cannot be determined for unknown variant: "${variant}"`,
+                    );
+            }
+
             platformSpecificOptions = {
                 // Will be used as CFBundleIdentifier in Info.plist
                 appBundleId,
@@ -249,6 +298,7 @@ async function packageApp(variant, environment, isPlaywrightTestBuild, config) {
                 darwinDarkModeSupport: true,
                 extendInfo: {
                     LSFileQuarantineEnabled: true,
+                    SMPrivilegedExecutables: smPrivilegedExecutables,
                 },
             };
             break;
@@ -398,9 +448,29 @@ async function packageApp(variant, environment, isPlaywrightTestBuild, config) {
     const binaryPath = join(outputPath, config.determineBinaryName(flavor, process.platform));
     await setElectronFuses(binaryPath, isPlaywrightTestBuild);
 
-    // Build launcher binary (unless the $SKIP_LAUNCHER_BINARY env var is set to "true")
+    // Build launcher binary (unless the $SKIP_LAUNCHER_BINARY env var is set to "true").
     if (process.env.SKIP_LAUNCHER_BINARY !== 'true') {
-        buildAndCopyLauncherBinary(flavor, outputPath, config);
+        buildAndBundleExtraBinary(
+            [__dirname, '..', 'src', 'rust', 'launcher'],
+            outputPath,
+            'ThreemaDesktopLauncher',
+            flavor,
+            config,
+        );
+
+        if (process.platform === 'darwin') {
+            // On macOS, also bundle the privileged helper binary (required by the launcher binary
+            // for updating).
+            buildAndBundleExtraBinary(
+                [__dirname, '..', 'src', 'rust', 'helper'],
+                outputPath,
+                'ThreemaDesktopHelper',
+                flavor,
+                config,
+                `${config.determineAppRdn(flavor)}-helper`,
+                true,
+            );
+        }
     }
 
     console.info(`Packaged: ${outputPath}`);

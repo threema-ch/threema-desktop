@@ -719,12 +719,15 @@ export function run(): void {
                 const encryptedFileBlobBytes = encryptionSecretBox
                     .encryptor(CREATE_BUFFER_TOKEN, plainFileBlobBytes)
                     .encryptWithDangerousUnguardedNonce(BLOB_FILE_NONCE);
-                await blob.upload('public', encryptedFileBlobBytes);
+                await blob.upload('public-volatile', encryptedFileBlobBytes);
                 const encryptedThumbnailBlobBytes = encryptionSecretBox
                     .encryptor(CREATE_BUFFER_TOKEN, plainThumbnailBlobBytes)
                     .encryptWithDangerousUnguardedNonce(BLOB_THUMBNAIL_NONCE);
-                const fileBlobId = await blob.upload('public', encryptedFileBlobBytes);
-                const thumbnailBlobId = await blob.upload('public', encryptedThumbnailBlobBytes);
+                const fileBlobId = await blob.upload('public-volatile', encryptedFileBlobBytes);
+                const thumbnailBlobId = await blob.upload(
+                    'public-volatile',
+                    encryptedThumbnailBlobBytes,
+                );
 
                 return {
                     fileBlobId,

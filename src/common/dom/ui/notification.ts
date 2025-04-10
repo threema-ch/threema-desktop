@@ -101,6 +101,8 @@ export class FrontendNotificationCreator implements NotificationCreator {
                 break;
 
             case 'new-message': {
+                const replacedBody = this._replaceMentionAll(options.body);
+
                 const title = this._getNewMessageTitle(
                     notification.unreadCount,
                     notification.receiverConversation,
@@ -108,7 +110,7 @@ export class FrontendNotificationCreator implements NotificationCreator {
                 );
                 proxyNotification = new ProxyNotification(
                     title,
-                    options,
+                    {...options, body: replacedBody},
                     identifier,
                     this._registerOnCloseEventHandler.bind(this),
                 );
@@ -153,6 +155,7 @@ export class FrontendNotificationCreator implements NotificationCreator {
                 }
 
                 case 'new-message': {
+                    const replacedBody = this._replaceMentionAll(options.body);
                     const title = this._getNewMessageTitle(
                         notification.unreadCount,
                         notification.receiverConversation,
@@ -160,7 +163,7 @@ export class FrontendNotificationCreator implements NotificationCreator {
                     );
                     updatedNotification = new ProxyNotification(
                         title,
-                        options,
+                        {...options, body: replacedBody},
                         identifier,
                         this._registerOnCloseEventHandler.bind(this),
                     );
@@ -249,6 +252,13 @@ export class FrontendNotificationCreator implements NotificationCreator {
                     name: startedByContactName,
                 },
             );
+    }
+
+    private _replaceMentionAll(body: string | undefined): string | undefined {
+        if (body === undefined) {
+            return body;
+        }
+        return body.replaceAll('@[@@@@@@@@]', `@${i18n.get().t('messaging.label--mention-all')}`);
     }
 
     private _registerOnCloseEventHandler(notification: ProxyNotification): void {

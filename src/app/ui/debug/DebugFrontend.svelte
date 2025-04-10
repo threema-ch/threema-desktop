@@ -62,6 +62,9 @@
               context: {
                 currentVersion: '2.0-betaAB',
                 latestVersion: '2.0-betaCD',
+                systemInfo: {
+                  os: 'macos',
+                },
               },
             });
           },
@@ -106,8 +109,6 @@
                 currentVersion: '2.0-betaAB',
                 latestVersion: '2.0-betaCD',
                 systemInfo: {
-                  arch: 'unknown',
-                  locale: 'en',
                   os: 'linux',
                 },
               },

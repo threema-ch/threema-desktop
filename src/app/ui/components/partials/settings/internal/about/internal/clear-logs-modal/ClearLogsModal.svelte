@@ -30,7 +30,7 @@
     ],
     buttons: [
       {
-        label: $i18n.t('dialog--clear-logs.action--cancel', 'Cancel'),
+        label: $i18n.t('dialog--common.action--cancel', 'Cancel'),
         type: 'naked',
         onClick: 'close',
         isFocused: false,

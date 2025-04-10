@@ -21,7 +21,7 @@
     buttons: [
       {
         isFocused: false,
-        label: $i18n.t('dialog--missing-work-credentials.action--relink', 'Relink Device'),
+        label: $i18n.t('dialog--common.action--relink', 'Relink Device'),
         onClick: unlinkAndBackup,
         type: 'filled',
       },

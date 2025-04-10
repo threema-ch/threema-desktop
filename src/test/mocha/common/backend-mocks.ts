@@ -110,6 +110,7 @@ import {
     type BlobDownloadResult,
     type BlobId,
     type BlobScope,
+    type BlobUploadScope,
     ensureBlobId,
 } from '~/common/network/protocol/blob';
 import {CallManager} from '~/common/network/protocol/call';
@@ -541,7 +542,7 @@ export class TestNonceService implements INonceService {
 }
 
 class TestNotificationService extends NotificationService {
-    public constructor(log: Logger) {
+    public constructor(services: Pick<TestServices, 'device'>, log: Logger) {
         // Mock remote NotificationCreator
         // eslint-disable-next-line @typescript-eslint/require-await
         async function create(
@@ -549,7 +550,7 @@ class TestNotificationService extends NotificationService {
         ): Promise<NotificationHandle | undefined> {
             return undefined;
         }
-        super(log, {create} as RemoteProxy<NotificationCreator>);
+        super(services, log, {create} as RemoteProxy<NotificationCreator>);
     }
 }
 
@@ -596,7 +597,7 @@ const TEST_SYSTEM_DIALOG_SERVICE: Remote<SystemDialogService> = {
 
 class TestBlobBackend implements BlobBackend {
     // eslint-disable-next-line @typescript-eslint/require-await
-    public async upload(scope: BlobScope, data: EncryptedData): Promise<BlobId> {
+    public async upload(blobUploadScope: BlobUploadScope, data: EncryptedData): Promise<BlobId> {
         return ensureBlobId(nodeRandomBytes(16));
     }
 
@@ -691,7 +692,7 @@ export function makeTestServices(identity: IdentityString): TestServices {
             dgtsk: deviceGroupBoxes.dgtsk,
         },
     };
-    const notification = new TestNotificationService(logging.logger('notifications'));
+    const notification = new TestNotificationService({device}, logging.logger('notifications'));
     const media = new TestMediaService(logging.logger('media'));
     const file = new InMemoryFileStorage(crypto);
     const {tempFile} = makeTestTempFileSystemFileStorage();

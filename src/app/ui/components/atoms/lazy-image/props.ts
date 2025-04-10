@@ -1,4 +1,5 @@
 import type {Constraints} from '~/app/ui/components/atoms/lazy-image/types';
+import type {ProfilePictureBlobStoreValue} from '~/common/dom/ui/profile-picture';
 import type {Dimensions} from '~/common/types';
 import type {IQueryableStore} from '~/common/utils/store';
 
@@ -7,10 +8,17 @@ import type {IQueryableStore} from '~/common/utils/store';
  */
 export interface LazyImageProps {
     /**
-     * Bytes of the image. Note: Please ensure the {@link Blob} has a defined media type, or it will
-     * be rendered as failed.
+     * Bytes of the image.
+     *
+     * Profile pictures are loaded once and kept in memory. Therefore, their dimensions must be
+     * calculated upfront upon fetching.
+     *
+     * Note: Please ensure the {@link Blob} has a defined media type, or it will be rendered as
+     * failed.
      */
-    readonly byteStore: IQueryableStore<'loading' | Blob | undefined>;
+    readonly byteStore: IQueryableStore<
+        'loading' | Blob | ProfilePictureBlobStoreValue | undefined
+    >;
     /**
      * Constraints to control the display size of an image.
      */

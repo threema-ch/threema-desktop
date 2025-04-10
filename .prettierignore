@@ -8,7 +8,7 @@
 /packaging/flatpak/generated-*.json
 /src/common/network/protobuf/js
 /src/common/internal-protobuf/
-/src/launcher/
+/src/rust/
 /threema-protocols/
 
 # Forked code, keep differences to original minimal

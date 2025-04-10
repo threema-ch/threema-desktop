@@ -44,6 +44,46 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta49" date="2025-04-02">
+            <description>
+                <p>Features:</p>
+                <ul>
+                    <li>
+                        “Do Not Disturb” mode for individual chats, reflecting the settings on the
+                        mobile device
+                    </li>
+                </ul>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Significantly faster loading of profile pictures</li>
+                    <li>Increased frame size in group calls for better stability</li>
+                    <li>Store all transmitted settings when linking devices</li>
+                    <li>Fully display device names when hovering over them in group calls</li>
+                    <li>
+                        Enlarge profile pictures by clicking on them in the group/contact details
+                    </li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>
+                        Fixed a bug where two consecutive automatic updates did not work properly
+                    </li>
+                    <li>
+                        Fixed a bug that caused automatic updates not to work in a multi-user
+                        setting on macOS
+                    </li>
+                    <li>
+                        Fixed a bug where groups did not appear in some cases when two desktop
+                        devices were linked
+                    </li>
+                    <li>
+                        Fixed a bug where global app settings on the phone were not applied to the
+                        desktop app in some cases
+                    </li>
+                </ul>
+                <p>…and various under-the-hood changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta48" date="2025-02-17">
             <description>
                 <p>Features:</p>

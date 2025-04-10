@@ -10,7 +10,6 @@ import {
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
 import {OutgoingCspMessagesTask} from '~/common/network/protocol/task/csp/outgoing-csp-messages';
-import type {CommonMessageProperties} from '~/common/network/protocol/task/csp/types';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 
@@ -33,9 +32,7 @@ export class OutgoingTypingIndicatorTask<TReceiver extends Contact>
     public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
         const isTyping = this._isTyping ? 1 : 0;
         this._log.debug(`Sending typing indicator with value '${isTyping}'`);
-        const messageProperties: CommonMessageProperties<CspE2eStatusUpdateType> = {
-            type: CspE2eStatusUpdateType.TYPING_INDICATOR,
-            cspMessageFlags: CspMessageFlags.fromPartial({dontQueue: true, dontAck: true}),
+        const sharedMessageProperties = {
             messageId: randomMessageId(this._services.crypto),
             createdAt: new Date(),
             allowUserProfileDistribution: false,
@@ -44,11 +41,20 @@ export class OutgoingTypingIndicatorTask<TReceiver extends Contact>
         const messageTask = new OutgoingCspMessagesTask(this._services, [
             {
                 receiver: this._receiver,
-                messageProperties,
-                encoder: {
-                    default: structbuf.bridge.encoder(structbuf.csp.e2e.TypingIndicator, {
-                        isTyping,
-                    }),
+                sharedMessageProperties,
+                specifics: {
+                    default: {
+                        encoder: structbuf.bridge.encoder(structbuf.csp.e2e.TypingIndicator, {
+                            isTyping,
+                        }),
+                        messageProperties: {
+                            type: CspE2eStatusUpdateType.TYPING_INDICATOR,
+                            cspMessageFlags: CspMessageFlags.fromPartial({
+                                dontQueue: true,
+                                dontAck: true,
+                            }),
+                        },
+                    },
                 },
             },
         ]);

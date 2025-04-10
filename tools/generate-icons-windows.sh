@@ -12,19 +12,19 @@ cd "$ROOT"
 # available.
 if ! command -v convert -version &> /dev/null; then
     echo "Command \"convert\" could not be found! Is \"ImageMagick\" installed?"
-    exit
+    exit 1
 fi
 
 # This script needs the `icotool` utility to be installed. On Arch, it's included in the `icoutils`
 # package.
 if ! command -v icotool &> /dev/null; then
     echo "Command \"icotool\" could not be found! Is it installed?"
-    exit
+    exit 1
 fi
 
 if ! command -v optipng &> /dev/null; then
     echo "Command \"optipng\" could not be found! Is it installed?"
-    exit
+    exit 1
 fi
 
 #
@@ -43,7 +43,7 @@ declare -a sizes=(16 32 64 128 256)
 for variant in "${variants[@]}"; do
   for environment in "${environments[@]}"; do
     echo "Building \"$variant-$environment\""
-    
+
     TEMP_PATH="$WIN_ASSETS_PATH/$variant-$environment"
     mkdir -p "$TEMP_PATH";
 

@@ -31,7 +31,7 @@
     type: 'card',
     buttons: [
       {
-        label: $i18n.t('dialog--d2d-protocol-version-incompatible.action--relink', 'Relink Device'),
+        label: $i18n.t('dialog--common.action--relink', 'Relink Device'),
         onClick: () => {
           if (!services.isSet()) {
             log.warn('Cannot unlink the profile because the app services are not yet ready');

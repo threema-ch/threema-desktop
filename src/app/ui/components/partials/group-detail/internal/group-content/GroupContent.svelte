@@ -4,7 +4,9 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
+  import {globals} from '~/app/globals';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
+  import KeyValueList from '~/app/ui/components/molecules/key-value-list';
   import {getGroupReceiverDataMemberCount} from '~/app/ui/components/partials/group-detail/internal/group-content/helpers';
   import type {GroupContentProps} from '~/app/ui/components/partials/group-detail/internal/group-content/props';
   import {groupReceiverDataToReceiverPreviewListProps} from '~/app/ui/components/partials/group-detail/internal/group-content/transformers';
@@ -12,13 +14,22 @@
   import ReceiverPreviewList from '~/app/ui/components/partials/receiver-preview-list/ReceiverPreviewList.svelte';
   import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import {getDoNotDisturbDuration} from '~/app/ui/utils/do-not-disturb';
   import {reactive} from '~/app/ui/utils/svelte';
   import type {u53} from '~/common/types';
+
+  const {systemTime} = globals.unwrap();
 
   type $$Props = GroupContentProps;
 
   export let receiver: $$Props['receiver'];
   export let services: $$Props['services'];
+
+  const {
+    settings: {
+      views: {appearance},
+    },
+  } = services;
 
   const DEFAULT_LIMIT = 4;
 
@@ -101,6 +112,64 @@
       <!-- No members. -->
     {/if}
   </div>
+
+  <!-- TODO(DESK-1163):  When notification policies are respected by the system, show this in all
+    environments. -->
+  {#if import.meta.env.DEBUG}
+    <KeyValueList>
+      <KeyValueList.Section
+        title={`🐞 ${$i18n.t('settings.label--notifications', 'Notifications')}`}
+        options={{disableItemInset: true}}
+      >
+        <KeyValueList.Item key={$i18n.t('settings.label--do-not-disturb', 'Do Not Disturb')}>
+          <Text
+            text={getDoNotDisturbDuration(
+              $appearance,
+              $i18n,
+              receiver.notificationPolicy,
+              $systemTime,
+            )}
+          />
+        </KeyValueList.Item>
+
+        {#if receiver.notificationPolicy.type === 'mentioned' || receiver.notificationPolicy.type === 'never'}
+          <KeyValueList.ItemWithSwitch
+            key={$i18n.t('settings.action--do-not-disturb-mentioned', 'Notify When Mentioned')}
+            checked={receiver.notificationPolicy.type === 'mentioned'}
+            disabled
+          >
+            {#if receiver.notificationPolicy.type === 'mentioned'}
+              <Text
+                text={$i18n.t(
+                  'settings.prose--do-not-disturb-mentioned-on',
+                  'You will only receive notifications when you are mentioned',
+                )}
+              />
+            {:else}
+              <Text
+                text={$i18n.t(
+                  'settings.prose--do-not-disturb-mentioned-off',
+                  'You will not receive any notifications',
+                )}
+              />
+            {/if}
+          </KeyValueList.ItemWithSwitch>
+        {/if}
+
+        <KeyValueList.ItemWithSwitch
+          key={$i18n.t('settings.label--play-notification-sound', 'Play Notification Sound')}
+          checked={!receiver.notificationPolicy.isMuted}
+          disabled
+        >
+          {#if receiver.notificationPolicy.isMuted}
+            <Text text={$i18n.t('settings.action--play-notification-sound-off', 'Off')} />
+          {:else}
+            <Text text={$i18n.t('settings.action--play-notification-sound-default', 'On')} />
+          {/if}
+        </KeyValueList.ItemWithSwitch>
+      </KeyValueList.Section>
+    </KeyValueList>
+  {/if}
 </div>
 
 <style lang="scss">

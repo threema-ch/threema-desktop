@@ -108,6 +108,17 @@ export function blobIdToString(blobId: BlobId): BlobIdString {
 export type BlobScope = 'local' | 'public';
 
 /**
+ * The internal scope of a blob upload.
+ *
+ * Depending of `BlobScope` and persistency, the possible values are as follows:
+ *
+ * - `local`: used to upload a blob for reflection. Local blobs are never marked as persistent.
+ * - `public-persistent`: used to upload a persistent blob for an outgoing CSP message.
+ * - `public-volatile`: used to upload a non-persistent blob for an outgoing CSP message.
+ **/
+export type BlobUploadScope = 'local' | 'public-persistent' | 'public-volatile';
+
+/**
  * Downloaded blob result.
  */
 export interface BlobDownloadResult {
@@ -132,11 +143,11 @@ export interface BlobDownloadResult {
  */
 export interface BlobBackend {
     /**
-     * Upload a blob.
+     * Upload a blob and set the persistance flag.
      *
      * @throws {BlobBackendError} if uploading the blob fails.
      */
-    upload: (scope: BlobScope, data: EncryptedData) => Promise<BlobId>;
+    upload: (blobUploadScope: BlobUploadScope, data: EncryptedData) => Promise<BlobId>;
 
     /**
      * Download a blob.
@@ -237,7 +248,7 @@ export async function encryptAndUploadBlobWithEncryptionKey(
     bytes: ReadonlyUint8Array,
     nonce: Nonce,
     key: RawBlobKey,
-    uploadScope: BlobScope,
+    uploadScope: BlobUploadScope,
 ): Promise<BlobInfo> {
     const {blob, crypto} = services;
 
@@ -268,7 +279,7 @@ export async function encryptAndUploadBlob(
     services: Pick<ServicesForTasks, 'blob' | 'crypto'>,
     bytes: ReadonlyUint8Array,
     nonce: Nonce,
-    uploadScope: BlobScope,
+    uploadScope: BlobUploadScope,
 ): Promise<BlobInfo> {
     const randomKey = wrapRawBlobKey(
         services.crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),

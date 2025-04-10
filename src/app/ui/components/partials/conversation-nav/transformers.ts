@@ -1,5 +1,6 @@
 import type {ContextMenuItemHandlerProps} from '~/app/ui/components/partials/conversation-nav/types';
 import type {ConversationPreviewListProps} from '~/app/ui/components/partials/conversation-preview-list/props';
+import {transformMessageSenderProps} from '~/app/ui/utils/sender';
 import {ConversationCategory, ConversationVisibility} from '~/common/enum';
 import {conversationCompareFn} from '~/common/model/utils/conversation';
 import type {u53} from '~/common/types';
@@ -55,7 +56,7 @@ export function conversationListItemSetStoreToConversationPreviewListPropsStore(
                         switch (lastMessageViewModel.type) {
                             case 'deleted-message':
                                 lastMessage = {
-                                    sender: lastMessageViewModel.sender,
+                                    sender: transformMessageSenderProps(lastMessageViewModel),
                                     status: lastMessageViewModel.status,
                                     direction: lastMessageViewModel.direction,
                                 };
@@ -64,7 +65,7 @@ export function conversationListItemSetStoreToConversationPreviewListPropsStore(
                             case 'regular-message':
                                 lastMessage = {
                                     file: lastMessageViewModel.file,
-                                    sender: lastMessageViewModel.sender,
+                                    sender: transformMessageSenderProps(lastMessageViewModel),
                                     status: lastMessageViewModel.status,
                                     text: lastMessageViewModel.text,
                                     direction: lastMessageViewModel.direction,

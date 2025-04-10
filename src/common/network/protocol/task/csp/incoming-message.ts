@@ -903,18 +903,22 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             await new OutgoingCspMessagesTask(this._services, [
                 {
                     receiver: senderContactOrInit.get(),
-                    messageProperties: {
-                        type: CspE2eStatusUpdateType.DELIVERY_RECEIPT,
-                        cspMessageFlags: CspMessageFlags.none(),
+                    sharedMessageProperties: {
                         messageId: randomMessageId(this._services.crypto),
                         createdAt: instructions.initFragment?.receivedAt ?? new Date(),
                         allowUserProfileDistribution: false,
                     },
-                    encoder: {
-                        default: structbuf.bridge.encoder(structbuf.csp.e2e.DeliveryReceipt, {
-                            messageIds: [this._id],
-                            status: CspE2eDeliveryReceiptStatus.RECEIVED,
-                        }),
+                    specifics: {
+                        default: {
+                            encoder: structbuf.bridge.encoder(structbuf.csp.e2e.DeliveryReceipt, {
+                                messageIds: [this._id],
+                                status: CspE2eDeliveryReceiptStatus.RECEIVED,
+                            }),
+                            messageProperties: {
+                                type: CspE2eStatusUpdateType.DELIVERY_RECEIPT,
+                                cspMessageFlags: CspMessageFlags.none(),
+                            },
+                        },
                     },
                 },
             ]).run(handle);

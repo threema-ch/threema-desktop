@@ -1,7 +1,9 @@
+import type {MessageProps} from '~/app/ui/components/molecules/message/props';
 import type {MessageDetailsModalProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-details-modal/props';
 import type {MessageForwardModalProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-forward-modal/props';
 import type {MessageMediaViewerModalProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-media-viewer-modal/props';
 import type {MessageListProps} from '~/app/ui/components/partials/conversation/internal/message-list/props';
+import type {DbContactUid} from '~/common/db';
 
 export interface UnreadState {
     readonly firstUnreadMessageId: MessageListProps['conversation']['firstUnreadMessageId'];
@@ -37,3 +39,14 @@ interface MessageMediaViewerModalState {
     type: 'message-media-viewer';
     props: MessageMediaViewerModalProps;
 }
+
+export type MessageSender = NonNullable<MessageProps['sender']> &
+    (
+        | {
+              readonly type: 'self';
+          }
+        | {
+              readonly type: 'contact';
+              readonly uid: DbContactUid;
+          }
+    );

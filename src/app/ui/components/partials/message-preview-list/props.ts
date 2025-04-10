@@ -1,7 +1,7 @@
 import type {AppServicesForSvelte} from '~/app/types';
 import type {MessageProps} from '~/app/ui/components/molecules/message/props';
+import type {MessageSender} from '~/app/ui/components/partials/conversation/internal/message-list/types';
 import type {SanitizeAndParseTextToHtmlOptions} from '~/app/ui/utils/text';
-import type {DbContactUid} from '~/common/db';
 import type {MessageId} from '~/common/network/types';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
@@ -48,16 +48,7 @@ interface MessagePreviewProps {
     readonly id: MessageId;
     readonly deletedAt?: Date;
     readonly quote?: AnyQuotedMessage;
-    readonly sender?: NonNullable<MessageProps['sender']> &
-        (
-            | {
-                  readonly type: 'self';
-              }
-            | {
-                  readonly type: 'contact';
-                  readonly uid: DbContactUid;
-              }
-        );
+    readonly sender: MessageSender;
     readonly status: MessageProps['status'];
     readonly text?: TextContent;
 }

@@ -15,12 +15,12 @@ FLATPAK_ASSETS_PATH="packaging/assets/icons/flatpak"
 # available.
 if ! command -v convert -version &> /dev/null; then
     echo "Command \"convert\" could not be found! Is \"ImageMagick\" installed?"
-    exit
+    exit 1
 fi
 
 if ! command -v optipng &> /dev/null; then
     echo "Command \"optipng\" could not be found! Is it installed?"
-    exit
+    exit 1
 fi
 
 echo "Starting build"

@@ -27,25 +27,30 @@ export function createOutgoingCspGroupCallStartTask(
     return new OutgoingCspMessagesTask(services, [
         {
             receiver: group,
-            messageProperties: {
-                type: CspE2eGroupControlType.GROUP_CALL_START,
-                cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
+            sharedMessageProperties: {
                 messageId: randomMessageId(services.crypto),
                 createdAt: call.startedAt,
                 allowUserProfileDistribution: true,
             },
-            encoder: {
-                default: structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
-                    groupId: group.view.groupId,
-                    creatorIdentity: UTF8.encode(
-                        getIdentityString(services.device, group.view.creator),
-                    ),
-                    innerData: protobuf.utils.encoder(protobuf.csp_e2e.GroupCallStart, {
-                        protocolVersion: call.protocolVersion,
-                        gck: call.gck.unwrap(),
-                        sfuBaseUrl: call.sfuBaseUrl.raw,
+            specifics: {
+                default: {
+                    encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
+                        groupId: group.view.groupId,
+                        creatorIdentity: UTF8.encode(
+                            getIdentityString(services.device, group.view.creator),
+                        ),
+                        innerData: protobuf.utils.encoder(protobuf.csp_e2e.GroupCallStart, {
+                            protocolVersion: call.protocolVersion,
+                            gck: call.gck.unwrap(),
+                            sfuBaseUrl: call.sfuBaseUrl.raw,
+                        }),
                     }),
-                }),
+
+                    messageProperties: {
+                        cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
+                        type: CspE2eGroupControlType.GROUP_CALL_START,
+                    },
+                },
             },
         },
     ]);

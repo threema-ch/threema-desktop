@@ -250,7 +250,7 @@
 
       <div class="button">
         <Button flavor="filled" on:click={() => window.location.reload()}
-          >{$i18n.t('dialog--linking-error.action--confirm', 'Retry')}</Button
+          >{$i18n.t('dialog--common.action--retry', 'Retry')}</Button
         >
       </div>
     </div>

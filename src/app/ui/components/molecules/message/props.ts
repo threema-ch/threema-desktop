@@ -69,7 +69,7 @@ export interface MessageProps {
     /** Data of the quoted message. */
     readonly quote?: DefaultQuoteProps | NotFoundQuoteProps | DeletedQuoteProps;
     /** Details about the message sender. */
-    readonly sender?: Pick<AvatarProps, 'color' | 'initials'> & Pick<SenderProps, 'color' | 'name'>;
+    readonly sender: Pick<AvatarProps, 'color' | 'initials'> & Pick<SenderProps, 'color' | 'name'>;
     readonly status: IndicatorProps['status'];
     /** Formatted timestamp of creation. */
     readonly timestamp: Timestamp;

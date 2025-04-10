@@ -56,6 +56,11 @@ interface ContextMenuOptionWithoutHandlerProps {
      * Text label to describe the option.
      */
     readonly label: string;
+
+    /**
+     * Text label to display on hover, if any.
+     */
+    readonly labelOnHover?: string;
 }
 
 interface ContextMenuOptionWithHandlerProps<THandlerProps>

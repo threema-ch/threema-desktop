@@ -111,7 +111,7 @@
         pictureBytes:
           profilePictureBlob === undefined
             ? undefined
-            : new Uint8Array(await profilePictureBlob.arrayBuffer()),
+            : new Uint8Array(await profilePictureBlob.blob.arrayBuffer()),
       },
     };
   }

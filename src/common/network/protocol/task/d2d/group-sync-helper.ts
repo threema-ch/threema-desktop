@@ -1,8 +1,10 @@
 import type {Nonce} from '~/common/crypto';
-import type {
-    GroupNotificationTriggerPolicy,
-    GroupUserState,
-    NotificationSoundPolicy,
+import {
+    ConversationCategory,
+    ConversationVisibility,
+    type GroupNotificationTriggerPolicy,
+    type GroupUserState,
+    type NotificationSoundPolicy,
 } from '~/common/enum';
 import type {GroupUpdate, GroupView} from '~/common/model';
 import type {
@@ -80,7 +82,7 @@ export function getD2dGroupSyncCreate(
                     creatorIdentity: groupIdentity.creatorIdentity,
                     groupId: intoUnsignedLong(groupIdentity.groupId),
                 }),
-                name: undefined,
+                name: '',
                 createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
                 userState,
                 profilePicture: undefined,
@@ -89,8 +91,8 @@ export function getD2dGroupSyncCreate(
                 }),
                 notificationTriggerPolicyOverride: DEFAULT_NOTIFICATION_TRIGGER_POLICY_OVERRIDE,
                 notificationSoundPolicyOverride: DEFAULT_NOTIFICATION_SOUND_POLICY_OVERRIDE,
-                conversationCategory: undefined,
-                conversationVisibility: undefined,
+                conversationCategory: ConversationCategory.DEFAULT,
+                conversationVisibility: ConversationVisibility.SHOW,
             }),
         }),
         update: undefined,

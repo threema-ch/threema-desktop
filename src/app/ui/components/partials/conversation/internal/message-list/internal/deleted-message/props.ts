@@ -1,7 +1,7 @@
 import type {AppServicesForSvelte} from '~/app/types';
 import type {MessageProps} from '~/app/ui/components/molecules/message/props';
 import type {MessageContextMenuProviderProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-context-menu-provider/props';
-import type {DbContactUid} from '~/common/db';
+import type {MessageSender} from '~/app/ui/components/partials/conversation/internal/message-list/types';
 import type {MessageId} from '~/common/network/types';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
@@ -20,16 +20,7 @@ export interface DeletedMessageProps {
      */
     readonly highlighted?: MessageProps['highlighted'];
     readonly id: MessageId;
-    readonly sender?: NonNullable<MessageProps['sender']> &
-        (
-            | {
-                  readonly type: 'self';
-              }
-            | {
-                  readonly type: 'contact';
-                  readonly uid: DbContactUid;
-              }
-        );
+    readonly sender: MessageSender;
     readonly services: AppServicesForSvelte;
     readonly status: MessageProps['status'];
 }

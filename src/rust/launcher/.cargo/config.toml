@@ -1,5 +1,5 @@
 [env]
-MACOSX_DEPLOYMENT_TARGET="10.15"
+MACOSX_DEPLOYMENT_TARGET="11.0"
 
 [target.x86_64-pc-windows-msvc]
 rustflags = ["-Ctarget-feature=+crt-static"]

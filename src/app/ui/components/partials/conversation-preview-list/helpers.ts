@@ -160,7 +160,7 @@ function getLastMessagePreviewText(
     }
 
     if (receiver.type === 'group' && text !== undefined) {
-        switch (lastMessage.sender?.type) {
+        switch (lastMessage.sender.type) {
             case 'self':
                 return i18n.t('messaging.label--default-sender-self', 'Me: {text}', {
                     text,

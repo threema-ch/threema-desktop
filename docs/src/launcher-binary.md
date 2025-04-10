@@ -13,7 +13,7 @@ There are certain limitations when starting the Electron application binary dire
 
 To solve this issues, we put a separate binary in front of the Electron application: The _Launcher
 Binary_. It is written in Rust, which allows for robust code and easy cross-compilation. The source
-code can be found in the `src/launcher/` directory.
+code can be found in the `src/rust/launcher/` directory.
 
 The application communicates with the launcher binary through the exit code. For example, the exit
 code 0 means "close application" while the exit code 8 means "restart application".

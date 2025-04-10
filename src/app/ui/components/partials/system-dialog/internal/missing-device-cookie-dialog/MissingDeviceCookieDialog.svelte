@@ -32,7 +32,7 @@
     type: 'card',
     buttons: [
       {
-        label: $i18n.t('dialog--device-cookie-missing.action--dismiss', 'Ignore'),
+        label: $i18n.t('dialog--common.action--ignore', 'Ignore'),
         onClick: () => {
           onSelectAction?.('dismissed');
           modalComponent?.close();
@@ -40,7 +40,7 @@
         type: 'naked',
       },
       {
-        label: $i18n.t('dialog--device-cookie-missing.action--relink', 'Relink Device'),
+        label: $i18n.t('dialog--common.action--relink', 'Relink Device'),
         onClick: () => {
           if (!services.isSet()) {
             log.warn('Cannot unlink the profile because the app services are not yet ready');

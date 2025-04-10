@@ -10,6 +10,7 @@
   import type {LazyImageProps} from '~/app/ui/components/atoms/lazy-image/props';
   import type {LazyImageContent} from '~/app/ui/components/atoms/lazy-image/types';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import type {ProfilePictureBlobStoreValue} from '~/common/dom/ui/profile-picture';
   import {assertUnreachable, unreachable} from '~/common/utils/assert';
   import {isSupportedImageType} from '~/common/utils/image';
 
@@ -29,7 +30,9 @@
     state: 'loading',
   };
 
-  async function updateContent(value: 'loading' | Blob | undefined): Promise<void> {
+  async function updateContent(
+    value: 'loading' | Blob | ProfilePictureBlobStoreValue | undefined,
+  ): Promise<void> {
     revokeCurrentImageUrl(image);
 
     if (value === 'loading') {
@@ -42,8 +45,14 @@
       return;
     }
 
-    // At this point it's certain that `value` is a `Blob`.
-    const blob: Blob = value;
+    // At this point it's certain that `value` is either a blob or contains a blob with
+    // precalculated dimensions.
+    let blob: Blob;
+    if (value instanceof Blob) {
+      blob = value;
+    } else {
+      blob = value.blob;
+    }
 
     // If the blob is an unsupported image type (e.g., an SVG), don't render it at all.
     if (!isSupportedImageType(blob.type)) {
@@ -52,18 +61,32 @@
     }
 
     try {
-      const imageBitmap = await createImageBitmap(blob);
+      // If the dimensions are not calculated yet, calculate them here.
+      if (value instanceof Blob) {
+        const imageBitmap = await createImageBitmap(blob);
 
+        revokeCurrentImageUrl(image);
+        image = {
+          state: 'loaded',
+          url: URL.createObjectURL(blob),
+          dimensions: {
+            width: imageBitmap.width,
+            height: imageBitmap.height,
+          },
+        };
+        imageBitmap.close();
+        return;
+      }
+      // Use the precalculated information to create the image.
       revokeCurrentImageUrl(image);
       image = {
         state: 'loaded',
         url: URL.createObjectURL(blob),
         dimensions: {
-          width: imageBitmap.width,
-          height: imageBitmap.height,
+          width: value.dimensions.width,
+          height: value.dimensions.height,
         },
       };
-      imageBitmap.close();
     } catch (error) {
       // Creating bitmap from blob failed, e.g., if the blob's media type didn't match its actual
       // content.

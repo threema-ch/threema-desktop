@@ -305,7 +305,7 @@
     <button
       class="tab"
       class:active={highestIntersectingGroup.groupId === 'favorites'}
-      title={$i18n.t('emoji-picker.label--most-used', 'Most Used')}
+      title={$i18n.t('emoji-picker.label--most-used', 'Most used')}
       on:click={() => handleClickTab('favorites')}
     >
       <MdIcon theme="Outlined">schedule</MdIcon>

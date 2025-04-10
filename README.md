@@ -147,34 +147,56 @@ More developer docs can be found under [docs/](./docs/).
 
 ### <a name="dev-container"></a>Dev Container
 
-We recommend to use the provided
-[VS Code Dev Container](https://code.visualstudio.com/docs/devcontainers/create-dev-container)
-considering that any `npm` dependency can run arbitrary code and we have a ton of development
-dependencies. Note that this currently requires Visual Studio Code (not Code OSS) and the
-proprietary
-[`ms-vscode-remote.remote-containers`](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-extension.
+**Note: Only works on Linux!**
 
-    > Dev Containers: Reopen in Container
-
-You will have to rebuild the Dev Container every time the Node version of `.nvmrc` changes.
-
-    > Dev Containers: Rebuild Container
-
-It is also possible to use the native shell to run `npm` and `node` commands inside of the
-container. You'll need `jq` and a compatible shell, then run:
+When developing, you should use the dev container environment to run appropriate commands inside of
+an isolated environment considering that any `npm` dependency can run arbitrary code and we have a
+ton of development dependencies. You'll need `jq` and a compatible shell, then run:
 
     source ./.devcontainer/env.sh
     node --version
 
+You can exit this environment and stop the running container by running `deactivate`. If you have
+closed your shell, you can still stop the container by calling `docker ps` to list and `docker rm`
+to stop the environment.
+
+Moreover, this dev container can also be used in VS Code by using
+[VS Code Dev Container](https://code.visualstudio.com/docs/devcontainers/create-dev-container) Note
+that this currently requires Visual Studio Code (not Code OSS).
+
+    > Dev Containers: Reopen in Container
+
+You will have to rebuild the Dev Container every time the dev environment script rebuilds the image.
+VS Code will prompt you in that case but you can also force a rebuild manually.
+
+    > Dev Containers: Rebuild Container
+
 Limitations:
 
-- Needs X11 compatibility to run `npm run dev:*`. It may run slower and may not support all UI
-  features (e.g. drag & drop). To use the native UI, it is recommended to make a `npm run dist:*`
-  build and run that locally but only when needed.
-- Cannot run `npm run test:karma`. Let this be run by the CI after pushing a branch.
+- Cannot run `npm run dev:*` commands because it cannot spawn an Electron GUI, nor can it access the
+  Threema Desktop profile directory.
+- Cannot run `npm run generate-screenshots` command because it cannot spawn an Electron GUI.
+- Cannot run `npm run test:karma` command because Chromium and Firefox are not provided by the dev
+  environment. Let this be run by the CI after pushing a branch.
+- Cannot run `npm run test:playwright:*` command because it cannot spawn an Electron GUI.
+- Cannot run `npm run package dmg` command because it needs native MacOS tools.
+- Cannot run `npm run assets:generate:icons:macos` command because it needs native MacOS tools.
+- Cannot run `npm run assets:generate:icons:windows` command because it needs native tools (this
+  script can be run on a macOS machine).
+- To run `npm run protobuf:generate` the threema-protocols repository needs to be cloned inside the
+  project working directory or inside of the container.
+- To run `npm run structbuf:generate` the structbuf-typescript project needs to be installed inside
+  the project working directory or inside of the container.
+- If you need to add environment variables, just use `enter`, define the environment variables and
+  run it from there.
+
+It is accepted to run above commands outside of the dev environment. For convenience, above commands
+that cannot run will be automatically omitted from running inside the dev environment when using
+`source ./.devcontainer/env.sh`.
 
 ### <a name="no-dev-container"></a>Development Outside Dev Container
+
+**This is discouraged but unfortunately necessary on platforms other than Linux.**
 
 The project provides an `.nvmrc` file in case the default NodeJS installation on your device is
 being rejected by `npm install`.

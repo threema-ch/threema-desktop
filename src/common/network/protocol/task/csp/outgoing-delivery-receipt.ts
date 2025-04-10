@@ -17,7 +17,6 @@ import {
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
 import {OutgoingCspMessagesTask} from '~/common/network/protocol/task/csp/outgoing-csp-messages';
-import type {CommonMessageProperties} from '~/common/network/protocol/task/csp/types';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import type {MessageId} from '~/common/network/types';
@@ -107,23 +106,29 @@ export class OutgoingDeliveryReceiptTask<TReceiver extends AnyReceiver>
         messageIds: MessageId[],
         handle: ActiveTaskCodecHandle<'persistent'>,
     ): Promise<void> {
-        const messageProperties: CommonMessageProperties<CspE2eStatusUpdateType> = {
-            type: CspE2eStatusUpdateType.DELIVERY_RECEIPT,
-            cspMessageFlags: CspMessageFlags.none(),
+        const sharedMessageProperties = {
             messageId: randomMessageId(this._services.crypto),
             createdAt: this._createdAt,
             allowUserProfileDistribution: isReaction(this._status),
         } as const;
 
+        const cspMessageFlags = CspMessageFlags.none();
+
         const messageTask = new OutgoingCspMessagesTask(this._services, [
             {
                 receiver: contact,
-                messageProperties,
-                encoder: {
-                    default: structbuf.bridge.encoder(structbuf.csp.e2e.DeliveryReceipt, {
-                        messageIds,
-                        status: this._status,
-                    }),
+                sharedMessageProperties,
+                specifics: {
+                    default: {
+                        encoder: structbuf.bridge.encoder(structbuf.csp.e2e.DeliveryReceipt, {
+                            messageIds,
+                            status: this._status,
+                        }),
+                        messageProperties: {
+                            cspMessageFlags,
+                            type: CspE2eStatusUpdateType.DELIVERY_RECEIPT,
+                        },
+                    },
                 },
             },
         ]);
@@ -135,29 +140,35 @@ export class OutgoingDeliveryReceiptTask<TReceiver extends AnyReceiver>
         messageIds: MessageId[],
         handle: ActiveTaskCodecHandle<'persistent'>,
     ): Promise<void> {
-        const messageProperties: CommonMessageProperties<CspE2eGroupStatusUpdateType> = {
-            type: CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT,
-            cspMessageFlags: CspMessageFlags.none(),
+        const sharedMessageProperties = {
             messageId: randomMessageId(this._services.crypto),
             createdAt: this._createdAt,
             allowUserProfileDistribution: isReaction(this._status),
         };
 
+        const cspMessageFlags = CspMessageFlags.none();
+
         const messageTask = new OutgoingCspMessagesTask(this._services, [
             {
                 receiver: group,
-                messageProperties,
-                encoder: {
-                    default: structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
-                        groupId: group.view.groupId,
-                        creatorIdentity: UTF8.encode(
-                            getIdentityString(this._services.device, group.view.creator),
-                        ),
-                        innerData: structbuf.bridge.encoder(structbuf.csp.e2e.DeliveryReceipt, {
-                            messageIds,
-                            status: this._status,
+                sharedMessageProperties,
+                specifics: {
+                    default: {
+                        encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
+                            groupId: group.view.groupId,
+                            creatorIdentity: UTF8.encode(
+                                getIdentityString(this._services.device, group.view.creator),
+                            ),
+                            innerData: structbuf.bridge.encoder(structbuf.csp.e2e.DeliveryReceipt, {
+                                messageIds,
+                                status: this._status,
+                            }),
                         }),
-                    }),
+                        messageProperties: {
+                            cspMessageFlags,
+                            type: CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT,
+                        },
+                    },
                 },
             },
         ]);

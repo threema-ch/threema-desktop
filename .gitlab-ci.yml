@@ -2,8 +2,8 @@
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   NODE_VERSION: '20.11.1'
-  PROTOC_VERSION: '23.4'
-  RUST_VERSION: '1.82.0' # Should be kept in sync with src/launcher/rust-toolchain.toml
+  # Should be kept in sync with src/rust/{common, helper, launcher}/rust-toolchain.toml.
+  RUST_VERSION: '1.82.0'
   FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR: 'true'
 
 default:
@@ -145,7 +145,7 @@ launcher:
   image: rust:${RUST_VERSION}
   script:
     - set -euo pipefail
-    - cd src/launcher/ && cargo check
+    - cd src/rust/launcher/ && cargo check
   variables:
     RUSTFLAGS: '-D warnings'
     THREEMA_BUILD_FLAVOR: consumer-sandbox

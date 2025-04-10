@@ -235,7 +235,7 @@ export class OutboundImageMessageModelController
         return await uploadBlobs(
             MessageType.IMAGE,
             this.uid,
-            this._conversation.uid,
+            this._conversation,
             this._services,
             this.lifetimeGuard,
         );

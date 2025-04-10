@@ -147,7 +147,7 @@
   </div>
   <div class="footer">
     <Button flavor="filled" on:click={handleClickConfirm}>
-      {$i18n.t('dialog--linking-oppf.action--confirm', 'Next')}
+      {$i18n.t('dialog--common.action--next', 'Next')}
     </Button>
   </div>
 </Step>

@@ -7,6 +7,7 @@ import type {
     MessageListStatusMessage,
 } from '~/app/ui/components/partials/conversation/internal/message-list/props';
 import type {I18nType} from '~/app/ui/i18n-types';
+import {transformMessageSenderProps} from '~/app/ui/utils/sender';
 import {tag, type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {isSingleUnicodeEmoji, type UnsupportedEmoji} from '~/common/utils/emoji';
@@ -130,7 +131,7 @@ function getMessageProps(
         file: getMessageFileProps(viewModelController, viewModel),
         emojiReactions: getEmojiReactionProps(viewModel, i18n),
         id: viewModel.id,
-        sender: viewModel.sender,
+        sender: transformMessageSenderProps(viewModel),
         status: viewModel.status,
         text: viewModel.text,
         history: viewModel.history.map((val) => ({
@@ -190,7 +191,7 @@ function getDeletedMessageProps(
         type: 'deleted-message',
         direction: viewModel.direction,
         id: viewModel.id,
-        sender: viewModel.sender,
+        sender: transformMessageSenderProps(viewModel),
         status: viewModel.status,
     };
 }

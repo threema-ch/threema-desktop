@@ -37,7 +37,7 @@
     ],
     buttons: [
       {
-        label: $i18n.t('dialog--delete-profile.action--cancel', 'Cancel'),
+        label: $i18n.t('dialog--common.action--cancel', 'Cancel'),
         type: 'naked',
         onClick: 'close',
       },

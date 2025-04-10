@@ -57,12 +57,12 @@
     ],
     buttons: [
       {
-        label: $i18n.t('dialog--edit-contact.action--cancel', 'Cancel'),
+        label: $i18n.t('dialog--common.action--cancel', 'Cancel'),
         type: 'naked',
         onClick: 'close',
       },
       {
-        label: $i18n.t('dialog--edit-contact.action--confirm', 'OK'),
+        label: $i18n.t('dialog--common.action--ok', 'OK'),
         onClick: 'submit',
         type: 'filled',
       },

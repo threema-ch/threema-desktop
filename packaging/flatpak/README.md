@@ -13,7 +13,7 @@ Then, run flatpak builder tools to convert `package-lock.json` and `Cargo.lock` 
 `generated-*-sources.json `file.
 
     python -m flatpak-builder-tools.flatpak_node_generator npm --electron-node-headers -o generated-npm-sources.json ../../package-lock.json
-    python -m flatpak-builder-tools.flatpak-cargo-generator -o generated-cargo-sources.json ../../src/launcher/Cargo.lock
+    python -m flatpak-builder-tools.flatpak-cargo-generator -o generated-cargo-sources.json ../../src/rust/launcher/Cargo.lock
 
 Generate the flatpak yaml file(s):
 

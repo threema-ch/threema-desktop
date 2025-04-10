@@ -7,6 +7,7 @@
   - [Stores](./stores.md)
   - [RPC](./rpc.md)
   - [Launcher Binary](./launcher-binary.md)
+  - [Helper Binary](./helper-binary.md)
 - [Guidelines](./guidelines.md)
   - [General](./general-guidelines.md)
   - [Dependencies](./dependencies.md)

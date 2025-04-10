@@ -61,7 +61,14 @@ export interface ServicesForBackend {
  */
 export type EarlyBackendServices = Omit<
     ServicesForBackend,
-    'device' | 'blob' | 'loadingInfo' | 'model' | 'nonces' | 'persistentProtocolState' | 'viewModel'
+    | 'device'
+    | 'blob'
+    | 'loadingInfo'
+    | 'model'
+    | 'notification'
+    | 'nonces'
+    | 'persistentProtocolState'
+    | 'viewModel'
 >;
 
 /**

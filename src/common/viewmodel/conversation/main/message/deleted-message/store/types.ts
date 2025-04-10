@@ -1,7 +1,7 @@
 import type {MessageId} from '~/common/network/types';
 import type {u53} from '~/common/types';
 import type {
-    DeprecatedAnySenderData,
+    MessageSenderData,
     MessageStatusData,
 } from '~/common/viewmodel/conversation/main/message/helpers';
 
@@ -18,6 +18,6 @@ export interface ConversationDeletedMessageViewModel {
      * Ordinal for message ordering in the conversation list.
      */
     readonly ordinal: u53;
-    readonly sender?: DeprecatedAnySenderData;
+    readonly sender: MessageSenderData;
     readonly status: MessageStatusData;
 }

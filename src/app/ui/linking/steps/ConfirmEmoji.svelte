@@ -31,7 +31,7 @@
 
     <footer>
       <a href={import.meta.env.URLS.overview.full} target="_blank" rel="noreferrer noopener"
-        >{$i18n.t('dialog--linking-confirm-emoji.action--need-help', 'Need help?')}</a
+        >{$i18n.t('dialog--common.action--need-help', 'Need help?')}</a
       >
     </footer>
   </Step>

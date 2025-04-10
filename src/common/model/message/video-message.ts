@@ -232,7 +232,7 @@ export class OutboundVideoMessageModelController
         return await uploadBlobs(
             MessageType.VIDEO,
             this.uid,
-            this._conversation.uid,
+            this._conversation,
             this._services,
             this.lifetimeGuard,
         );

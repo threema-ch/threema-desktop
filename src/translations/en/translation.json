@@ -56,12 +56,11 @@
     "action--confirm": "Update now",
     "action--dismiss": "Update later",
     "prose--description-p1": "An update is available.",
-    "prose--description-p2": "After the download is complete, the application will restart automatically. This can take a couple of minutes.",
+    "prose--description-p2-macos": "If prompted, please approve installing the helper tool. This is required for automatic updates to work properly.",
+    "prose--description-p2-other-os": "After the download is complete, the application will restart automatically. This can take a couple of minutes.",
     "prose--description-p3": "If the automatic update fails, please download and install the update manually:"
   },
   "dialog--change-password": {
-    "action--cancel": "Cancel",
-    "action--confirm": "Confirm",
     "error--current-password-incorrect": "The current password is incorrect",
     "error--current-password-present": "Please enter your current password",
     "error--new-password-must-be-different": "The new password must be different from the old one",
@@ -74,20 +73,31 @@
     "prose--intro": "The password protects your messages, Threema ID, and other data on this computer. You have to enter it when opening Threema for desktop. Please note that there is no way to recover this password. If you forget it, you will have to link this device again."
   },
   "dialog--change-password-confirmation": {
-    "action--back": "Back",
-    "action--confirm": "Confirm and Relaunch",
     "label--title": "Change Password",
     "prose--description": "Please ensure you have this password on hand. It cannot be reset if you forget it. You can opt to save your password when you log back in.",
     "prose--intro": "Threema for Desktop must be re-launched to save your changes.",
     "prose--note": "Please note: You will need to re-authenticate with your new password."
   },
   "dialog--clear-logs": {
-    "action--cancel": "Cancel",
     "action--confirm": "Clear logs",
     "label--application-log-path": "Application Log",
     "label--backend-worker-log-path": "Backend Worker Log",
     "label--title": "Clear Logs",
     "prose--description-disable": "The following files will be cleared irrevocably:"
+  },
+  "dialog--common": {
+    "action--back": "Back",
+    "action--cancel": "Cancel",
+    "action--confirm": "Confirm",
+    "action--confirm-and-restart": "Confirm and Restart",
+    "action--continue": "Continue",
+    "action--continue-without-connection": "Continue Without Connection",
+    "action--ignore": "Ignore",
+    "action--need-help": "Need help?",
+    "action--next": "Next",
+    "action--ok": "OK",
+    "action--relink": "Relink Device",
+    "action--retry": "Retry"
   },
   "dialog--compose-media-message": {
     "hint--drop-files-to-add": "Drop files to send",
@@ -96,14 +106,12 @@
     "label--title": "Send File to {name}"
   },
   "dialog--d2d-protocol-version-incompatible": {
-    "action--relink": "Relink Device",
     "error--no-connection": "Failed to unlink the device. Please check your internet connection and try again.",
     "label--title": "Incompatbile App Version on your Mobile Device",
     "prose--description-p1": "The Threema version installed on your mobile device is not compatible with this version of Threema for desktop. To avoid synchronization problems, please update the app on your mobile device and relink it with Threema for desktop.",
     "prose--description-p2": "The message history can be restored after relinking."
   },
   "dialog--delete-conversation": {
-    "action--cancel": "Cancel",
     "action--contact-conversation-confirm": "Delete Chat",
     "action--distribution-list-conversation-confirm": "Delete Distribution List",
     "action--group-conversation-confirm": "Delete Group Chat",
@@ -116,7 +124,6 @@
     "success--delete-conversation": "Chat successfully deleted"
   },
   "dialog--delete-message": {
-    "action--cancel": "Cancel",
     "action--delete-for-everyone": "Delete for Everyone",
     "action--delete-locally": "Delete from This Device",
     "label--title": "Delete message",
@@ -124,35 +131,27 @@
     "prose--delete-not-supported-partial": "Note: If you select \"{buttonText}\", this message will not be deleted for the following group members: {names}{n, plural, =0 {.} other { and {n} others.}} To support deleted messages, they need to install the latest Threema version."
   },
   "dialog--delete-profile": {
-    "action--cancel": "Cancel",
     "label--title": "Remove Threema ID and Data",
     "prose--description": "This Threema ID and the corresponding data will be removed from this device (but not on your other devices).",
     "prose--failed": "Something went wrong when deleting your data on this device. Please check your connection and try again."
   },
   "dialog--device-cookie-mismatch": {
-    "action--dismiss": "Continue Without Connection",
-    "action--relink": "Relink Device",
     "error--no-connection": "Failed to unlink the device. Please check your internet connection and try again.",
     "label--title": "Connection from Another Device Detected",
     "prose--description-p1": "The server has detected a connection from a different device with the same Threema ID. If you haven’t recently used your Threema ID on another device, please contact our support and send us the log file if possible.",
     "prose--description-p2": "If you have used your Threema ID on another device, we recommend relinking the desktop app with your mobile device. The message history can be restored after relinking."
   },
   "dialog--device-cookie-missing": {
-    "action--dismiss": "Ignore",
-    "action--relink": "Relink Device",
     "error--no-connection": "Failed to unlink the device. Please check your internet connection and try again.",
     "label--title": "Relinking Recommended",
     "prose--description": "To improve multi-device security, it is necessary to relink this device. Your message history will be restored after relinking."
   },
   "dialog--discard-media-message": {
-    "action--cancel": "Cancel",
     "action--confirm": "Discard",
     "label--title": "Discard Media",
     "prose--prompt": "Discard unsent media messages?"
   },
   "dialog--edit-contact": {
-    "action--cancel": "Cancel",
-    "action--confirm": "OK",
     "error--edit-contact": "Failed to edit contact",
     "label--first-name": "First Name",
     "label--last-name": "Last Name",
@@ -160,13 +159,10 @@
     "success--edit-contact": "Contact successfully edited"
   },
   "dialog--edit-device-name": {
-    "action--cancel": "Cancel",
-    "action--confirm": "Confirm",
     "action--title": "Edit Device Name",
     "error--device-name-empty": "Device name must not be empty"
   },
   "dialog--empty-conversation": {
-    "action--cancel": "Cancel",
     "action--contact-conversation-confirm": "Empty Chat",
     "action--distribution-list-conversation-confirm": "Empty Chat",
     "action--group-conversation-confirm": "Empty Group Chat",
@@ -177,8 +173,6 @@
   },
   "dialog--error-connection": {
     "action--confirm-reconnect": "Reconnect",
-    "action--confirm-relink": "Relink Device",
-    "action--dismiss": "Ignore",
     "label--title": "Connection Failed",
     "markup--backup": "The message history will be restored after relinking.",
     "markup--client-update-required-p1": "This Threema version is no longer supported (outdated protocol version).",
@@ -191,10 +185,6 @@
     "prose--mediator-update-required-p2": "Please contact your Threema server administrator."
   },
   "dialog--forgot-password": {
-    "action--back": "Back",
-    "action--cancel": "Cancel",
-    "action--next": "Next",
-    "action--relink": "Relink Device",
     "label--title": "Forgot Password",
     "prose--step-1-description-p1": "For security reasons, there is no way to recover a lost password for the desktop app. To keep using Threema for desktop, you need to relink it with your mobile device. Click “Next” for the relink instructions.",
     "prose--step-2-description-p1": "To relink your device, follow these steps:",
@@ -212,7 +202,6 @@
     "prose--threema-id-description-p2": "Your Threema ID is just one of two components that make up your identity in Threema. The other one is the so-called key pair (consisting of a public key and a private key) which is essential for the encryption. Your Threema ID is permanently tied to your public key. While the public key is sent to Threema’s servers to be distributed to your chat partners, the private key remains on your device, where it is securely stored. All messages directed to you will be individually encrypted with your public key on the sender’s device and can only be decrypted with your personal private key."
   },
   "dialog--invalid-work-credentials": {
-    "action--relink": "Relink Device",
     "action--store-credentials": "Save Credentials and Close",
     "error--incorrect-password": "The entered password is incorrect. Please try again.",
     "error--invalid-credentials": "Invalid credentials: {message}",
@@ -233,11 +222,9 @@
     "prose--update-success": "Threema Work credentials successfully updated"
   },
   "dialog--linking-confirm-emoji": {
-    "action--need-help": "Need help?",
     "label--title": "Confirm images on your mobile device."
   },
   "dialog--linking-error": {
-    "action--confirm": "Retry",
     "hint--expand-full-error-message": "Show full error",
     "label--message-connection-error-timeout": "Due to inactivity, the linking process was terminated. Please start the process again.",
     "label--message-rendezvous-error-timeout": "Due to inactivity, the linking process was terminated. Please start the process again.",
@@ -272,7 +259,6 @@
     "prose--intro": "Previous chats were found. To restore them, please enter the corresponding password. If you skip this step, the old chats will be deleted irrevocably."
   },
   "dialog--linking-oppf": {
-    "action--confirm": "Next",
     "error--credentials-error": "The provided credentials are incorrect. Please check that the combination of URL and work credentials is correct or contact your administrator.",
     "error--fetch-error": "The provided URL is invalid. Please check that the combination of URL and work credentials is correct or contact your administrator.",
     "error--fetch-error-connection": "The provided URL is not accessible. Please check your network connection or contact your administrator.",
@@ -285,13 +271,11 @@
     "prose--private-user": "If you are a private user, please visit <1 /> to download Threema."
   },
   "dialog--linking-restoration-identity-mismatch": {
-    "action--confirm": "Retry",
     "label--continue": "Link Without Chat History",
     "label--title": "Restore Messages",
     "prose--intro": "A different Threema ID was previously used on this device. Your chat history cannot be restored."
   },
   "dialog--linking-scan": {
-    "action--need-help": "Need help?",
     "label--connecting": "Connecting",
     "label--step-1": "Step 1:",
     "label--step-2": "Step 2:",
@@ -303,8 +287,6 @@
     "markup--step-3": "Scan this QR code"
   },
   "dialog--linking-set-password": {
-    "action--confirm": "Next",
-    "action--need-help": "Need help?",
     "error--password-equality": "Passwords do not match",
     "error--password-length": "Please enter at least {n, plural, =1 {1 character} other {# characters}}",
     "label--password": "Password",
@@ -323,14 +305,12 @@
     "markup--description": "{threema} can now be used on this computer <1/>(even when your iOS device is turned off or isn’t connected to the Internet)."
   },
   "dialog--linking-sync": {
-    "action--need-help": "Need help?",
     "label--title-encrypting": "Encrypting Data with Your Password",
     "label--title-loading": "Loading Data",
     "label--title-receiving": "Receiving Data",
     "label--title-restoring": "Restoring Messages"
   },
   "dialog--manual-app-update": {
-    "action--dismiss": "OK",
     "label--title": "Update Available: {current} → {latest}",
     "markup--linux-p1": "Please install the update through your system package manager or by running <1>flatpak update</1> in your terminal.",
     "markup--linux-p2": "For more information about this update, see <1 />.",
@@ -360,22 +340,16 @@
     "prose--empty-caption": "No caption"
   },
   "dialog--missing-work-credentials": {
-    "action--relink": "Relink Device",
     "label--title": "Missing Threema Work Credentials",
     "prose--description": "No Threema Work credentials could be found. To continue using the desktop app, you need to relink this device. Your message history will be restored after relinking."
   },
   "dialog--relink-profile": {
-    "action--cancel": "Cancel",
     "label--title": "Relink this Device",
     "prose--description-p1": "This device will be unlinked, and the application will restart.",
     "prose--description-p2": "Your messages will be kept if you relink with the same Threema ID as before.",
     "prose--failed": "Something went wrong when relinking your profile. Please check your connection and try again"
   },
   "dialog--server-alert": {
-    "action--confirm": "Retry",
-    "action--dismiss": "Continue Without Connection",
-    "action--ignore": "Ignore",
-    "action--relink": "Relink Device",
     "error--another-device-p1": "The server has detected a connection from a different device with the same Threema ID.",
     "error--another-device-p2": "If you haven't used your Threema ID on another device or with an older app version in the meantime, please contact the support and send a log file if possible.",
     "error--another-device-p3": "Otherwise, we recommend that you relink Threema Desktop. Your message history will be kept.",
@@ -383,7 +357,6 @@
     "label--title": "Message from Server"
   },
   "dialog--startup-unlock": {
-    "action--confirm": "Continue",
     "error--incorrect-password": "The entered password is incorrect. Please try again.",
     "label--password": "App Password",
     "label--save-password": "Save securely on device",
@@ -393,8 +366,6 @@
     "prose--save-password-tooltip-unavailable": "Threema for Desktop could not detect a default secure credential storage on your device."
   },
   "dialog--toggle-logger": {
-    "action--cancel": "Cancel",
-    "action--confirm": "Confirm and Restart",
     "label--application-log-path": "Application Log",
     "label--backend-worker-log-path": "Backend Worker Log",
     "label--title-disable": "Turn off Logging",
@@ -405,16 +376,12 @@
     "prose--warning-enable": "Turning on the logger will trigger a restart of the application."
   },
   "dialog--toggle-spellcheck": {
-    "action--cancel": "Cancel",
-    "action--confirm": "Confirm and Restart",
     "label--title-disable": "Turn off Spellcheck",
     "label--title-enable": "Turn on Spellcheck",
     "prose--warning-disable": "Turning off the spellcheck will trigger a restart of the application.",
     "prose--warning-enable": "Turning on the spellcheck will trigger a restart of the application."
   },
   "dialog--unrecoverable-state": {
-    "action--dismiss": "Ignore",
-    "action--relink": "Relink Device",
     "label--title": "Unrecoverable State Detected",
     "prose--description-p1": "We have detected that your local data is in an unrecoverable state. To prevent data loss, you currently can’t send or receive new messages. We apologize for the inconvenience.",
     "prose--description-p2": "To continue using Threema, you need to remove your local profile and relink the device.",
@@ -559,7 +526,7 @@
     "prose--no-results": "No results found."
   },
   "settings": {
-    "action--control-message-default-send": "Default (Send)",
+    "action--control-message-default": "Default {policy}",
     "action--control-message-do-not-send": "Don’t Send",
     "action--control-message-send": "Send",
     "action--do-not-disturb-default": "Off",

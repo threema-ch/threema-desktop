@@ -4,6 +4,7 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
+  import {globals} from '~/app/globals';
   import Timer from '~/app/ui/components/atoms/timer/Timer.svelte';
   import RadialExclusionMaskProvider from '~/app/ui/components/hocs/radial-exclusion-mask-provider/RadialExclusionMaskProvider.svelte';
   import type {CharmsProps} from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/charms/props';
@@ -11,6 +12,8 @@
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import ThreemaIcon from '~/app/ui/svelte-components/blocks/Icon/ThreemaIcon.svelte';
   import type {u53} from '~/common/types';
+
+  const {systemTime} = globals.unwrap();
 
   type $$Props = CharmsProps;
 
@@ -47,6 +50,10 @@
   }
 
   $: hasNotificationPolicy = notificationPolicy.type !== 'default' || notificationPolicy.isMuted;
+  $: notificationPolicyExpired =
+    (notificationPolicy.type === 'never' || notificationPolicy.type === 'mentioned') &&
+    notificationPolicy.expiresAt !== undefined &&
+    $systemTime.current > notificationPolicy.expiresAt;
 </script>
 
 <span class="container">
@@ -86,7 +93,7 @@
     </span>
   {/if}
 
-  {#if hasNotificationPolicy}
+  {#if hasNotificationPolicy && !notificationPolicyExpired}
     {@const hasNeighborLeft = call !== undefined || isBlocked}
 
     <span class="item">

@@ -206,8 +206,8 @@
 
       <CancelAndConfirm
         slot="footer"
-        cancelText={$i18n.t('dialog--change-password.action--cancel', 'Cancel')}
-        confirmText={$i18n.t('dialog--change-password.action--confirm', 'Confirm')}
+        cancelText={$i18n.t('dialog--common.action--cancel', 'Cancel')}
+        confirmText={$i18n.t('dialog--common.action--confirm', 'Confirm')}
         buttonsState={isAttemptingToChangePassword ? 'loading' : 'default'}
         let:modal
         {modal}
