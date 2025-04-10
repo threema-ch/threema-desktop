@@ -7,6 +7,7 @@
   import Avatar from '~/app/ui/components/atoms/avatar/Avatar.svelte';
   import type {MessageAvatarProviderProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-avatar-provider/props';
   import {i18n} from '~/app/ui/i18n';
+  import type {ProfilePictureBlobStoreValue} from '~/common/dom/ui/profile-picture';
   import {ReceiverType} from '~/common/enum';
   import {type IQueryableStore, ReadableStore} from '~/common/utils/store';
 
@@ -17,18 +18,16 @@
 
   export let conversation: $$Props['conversation'];
   export let direction: $$Props['direction'];
-  export let sender: $$Props['sender'] = undefined;
+  export let sender: $$Props['sender'];
   export let services: $$Props['services'];
 
   const {router} = services;
 
-  let profilePictureStore: IQueryableStore<Blob | undefined> = new ReadableStore(undefined);
+  let profilePictureStore: IQueryableStore<ProfilePictureBlobStoreValue> = new ReadableStore(
+    undefined,
+  );
 
   function handleClickAvatar(): void {
-    if (sender === undefined) {
-      log.error('Clicked avatar when sender was undefined');
-      return;
-    }
     if (sender.type === 'self') {
       log.error('Sender type is self of clicked avatar');
       return;
@@ -68,7 +67,6 @@
   ): void {
     if (
       conversationValue.receiver.type === 'group' &&
-      senderValue !== undefined &&
       directionValue === 'inbound' &&
       senderValue.type !== 'self'
     ) {
@@ -94,7 +92,7 @@
   $: updateProfilePictureStore(conversation, sender, direction);
 </script>
 
-{#if conversation.receiver.type === 'group' && sender !== undefined && direction === 'inbound'}
+{#if conversation.receiver.type === 'group' && direction === 'inbound'}
   <span class="avatar">
     <Avatar
       byteStore={profilePictureStore}

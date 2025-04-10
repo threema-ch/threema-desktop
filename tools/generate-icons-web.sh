@@ -15,12 +15,12 @@ ASSETS_PATH="src/public/res/icons"
 # available.
 if ! command -v convert -version &> /dev/null; then
     echo "Command \"convert\" could not be found! Is \"ImageMagick\" installed?"
-    exit
+    exit 1
 fi
 
 if ! command -v optipng &> /dev/null; then
     echo "Command \"optipng\" could not be found! Is it installed?"
-    exit
+    exit 1
 fi
 
 echo "Starting build"
@@ -34,7 +34,7 @@ for variant in "${variants[@]}"; do
     # Generate assets for every combination, except "consumer-onprem" (which doesn't exist).
     if ! [[ "$variant" == "consumer" && "$environment" == "onprem" ]]; then
       echo "Building \"$variant-$environment\""
-      
+
       OUTPUT_PATH="$ASSETS_PATH/$variant-$environment"
       mkdir -p "$OUTPUT_PATH";
 

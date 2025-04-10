@@ -30,7 +30,7 @@
         return [
           {
             isFocused: true,
-            label: $i18n.t('dialog--error-connection.action--dismiss', 'Ignore'),
+            label: $i18n.t('dialog--common.action--ignore', 'Ignore'),
             onClick: () => {
               onSelectAction?.('dismissed');
               modalComponent?.close();
@@ -43,7 +43,7 @@
       case 'device-slot-state-mismatch':
         return [
           {
-            label: $i18n.t('dialog--error-connection.action--dismiss'),
+            label: $i18n.t('dialog--common.action--ignore', 'Ignore'),
             onClick: () => {
               onSelectAction?.('dismissed');
               modalComponent?.close();
@@ -52,7 +52,7 @@
           },
           {
             isFocused: true,
-            label: $i18n.t('dialog--error-connection.action--confirm-relink', 'Relink Device'),
+            label: $i18n.t('dialog--common.action--relink', 'Relink Device'),
             onClick: () => {
               if (!services.isSet()) {
                 log.warn('Cannot unlink the profile because the app services are not yet ready');
@@ -67,7 +67,7 @@
       case 'mediator-update-required':
         return [
           {
-            label: $i18n.t('dialog--error-connection.action--dismiss'),
+            label: $i18n.t('dialog--common.action--ignore', 'Ignore'),
             onClick: () => {
               onSelectAction?.('dismissed');
               modalComponent?.close();

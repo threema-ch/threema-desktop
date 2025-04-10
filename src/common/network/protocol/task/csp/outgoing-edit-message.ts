@@ -73,24 +73,34 @@ export class OutgoingEditMessageTask<TReceiver extends AnyReceiver>
         });
 
         // Message properties that apply both to 1:1 and group edit messages
-        const commonMessageProperties = {
+        const sharedMessageProperties = {
             messageId: randomMessageId(this._services.crypto),
-            cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
             createdAt: this._editedMessage.lastEditedAt,
             allowUserProfileDistribution: false,
         };
+
+        const cspMessageFlags = CspMessageFlags.fromPartial({
+            sendPushNotification: true,
+        });
 
         // Note: Here, we assume that a feature mask check and a check whether edit has actually changed anything have already happened.
         let task;
         switch (this._receiverModel.type) {
             case ReceiverType.CONTACT: {
-                const messageProperties = {
-                    type: CspE2eMessageUpdateType.EDIT_MESSAGE,
-                    ...commonMessageProperties,
-                } as const;
-
                 task = new OutgoingCspMessagesTask(this._services, [
-                    {receiver: this._receiverModel, messageProperties, encoder: {default: encoder}},
+                    {
+                        receiver: this._receiverModel,
+                        sharedMessageProperties,
+                        specifics: {
+                            default: {
+                                encoder,
+                                messageProperties: {
+                                    cspMessageFlags,
+                                    type: CspE2eMessageUpdateType.EDIT_MESSAGE,
+                                },
+                            },
+                        },
+                    },
                 ]);
 
                 break;
@@ -109,16 +119,20 @@ export class OutgoingEditMessageTask<TReceiver extends AnyReceiver>
                         innerData: encoder,
                     },
                 );
-                const messageProperties = {
-                    type: CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE,
-                    ...commonMessageProperties,
-                } as const;
 
                 task = new OutgoingCspMessagesTask(this._services, [
                     {
                         receiver: this._receiverModel,
-                        messageProperties,
-                        encoder: {default: groupEncoder},
+                        sharedMessageProperties,
+                        specifics: {
+                            default: {
+                                encoder: groupEncoder,
+                                messageProperties: {
+                                    cspMessageFlags,
+                                    type: CspE2eGroupMessageUpdateType.GROUP_EDIT_MESSAGE,
+                                },
+                            },
+                        },
                     },
                 ]);
 

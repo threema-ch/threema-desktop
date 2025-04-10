@@ -56,7 +56,7 @@ export interface Config {
      * Blob server URLs.
      */
     readonly BLOB_SERVER_URLS: {
-        readonly upload: (dgpk: PublicKey) => URL;
+        readonly upload: (dgpk: PublicKey, shouldPersist: boolean) => URL;
         readonly download: (dgpk: PublicKey, blobId: BlobIdString) => URL;
         readonly done: (dgpk: PublicKey, blobId: BlobIdString) => URL;
     };
@@ -177,7 +177,7 @@ function createConfig(config: {
     readonly MEDIATOR_SERVER_URL: string;
     readonly DIRECTORY_SERVER_URL: BaseUrl;
     readonly BLOB_SERVER_URLS: {
-        readonly upload: (dgpk: PublicKey) => string;
+        readonly upload: (dgpk: PublicKey, shouldPersist: boolean) => string;
         readonly download: (dgpk: PublicKey) => string;
         readonly done: (dgpk: PublicKey) => string;
     };
@@ -201,10 +201,10 @@ function createConfig(config: {
         },
         DIRECTORY_SERVER_URL: config.DIRECTORY_SERVER_URL,
         BLOB_SERVER_URLS: {
-            upload: (dgpk) =>
-                validateUrl(config.BLOB_SERVER_URLS.upload(dgpk), {
+            upload: (dgpk, shouldPersist) =>
+                validateUrl(config.BLOB_SERVER_URLS.upload(dgpk, shouldPersist), {
                     protocol: 'https:',
-                    search: 'deny',
+                    search: 'allow',
                     hash: 'deny',
                 }),
             download: (dgpk, blobId) =>
@@ -256,7 +256,8 @@ export function createDefaultConfig(): Config {
         MEDIATOR_SERVER_URL: unwrap(import.meta.env.MEDIATOR_SERVER_URL),
         DIRECTORY_SERVER_URL: ensureBaseUrl(unwrap(import.meta.env.DIRECTORY_SERVER_URL), 'https:'),
         BLOB_SERVER_URLS: {
-            upload: (dgpk) => `${blobServerUrl(dgpk)}upload`,
+            upload: (dgpk, shouldPersist) =>
+                `${blobServerUrl(dgpk)}upload?persist=${shouldPersist ? 1 : 0}`,
             download: (dgpk) => `${blobServerUrl(dgpk)}{blobId}`,
             done: (dgpk) => `${blobServerUrl(dgpk)}{blobId}/done`,
         },

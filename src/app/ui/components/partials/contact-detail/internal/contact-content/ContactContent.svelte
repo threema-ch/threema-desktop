@@ -4,6 +4,7 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
+  import {globals} from '~/app/globals';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
   import type {ContactContentProps} from '~/app/ui/components/partials/contact-detail/internal/contact-content/props';
@@ -12,11 +13,12 @@
   import VerificationLevelInfoModal from '~/app/ui/components/partials/modals/verification-level-info-modal/VerificationLevelInfoModal.svelte';
   import ProfilePicture from '~/app/ui/components/partials/profile-picture/ProfilePicture.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import type {I18nType} from '~/app/ui/i18n-types';
   import VerificationDots from '~/app/ui/svelte-components/threema/VerificationDots/VerificationDots.svelte';
-  import {formatDateLocalized} from '~/app/ui/utils/timestamp';
+  import {getDoNotDisturbDuration} from '~/app/ui/utils/do-not-disturb';
+  import {ReadReceiptPolicy, TypingIndicatorPolicy} from '~/common/enum';
   import {unreachable} from '~/common/utils/assert';
-  import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
+
+  const {systemTime} = globals.unwrap();
 
   type $$Props = ContactContentProps;
 
@@ -25,7 +27,7 @@
 
   const {
     settings: {
-      views: {appearance},
+      views: {appearance, privacy},
     },
   } = services;
 
@@ -66,33 +68,6 @@
     modalState = {
       type: 'none',
     };
-  }
-
-  function getDoNotDisturbDuration(
-    currentAppearance: typeof $appearance,
-    currentI18n: I18nType,
-    currentNotificationPolicy: AnyReceiverData['notificationPolicy'],
-  ): string {
-    switch (currentNotificationPolicy.type) {
-      case 'default':
-        return currentI18n.t('settings.action--do-not-disturb-default', 'Off');
-
-      case 'mentioned':
-      case 'never':
-        return currentNotificationPolicy.expiresAt === undefined
-          ? currentI18n.t('settings.action--do-not-disturb-indefinite', 'Indefinitely')
-          : currentI18n.t('settings.action--do-not-disturb-until', 'Until {date}', {
-              date: formatDateLocalized(
-                currentNotificationPolicy.expiresAt,
-                currentI18n,
-                'auto',
-                currentAppearance.use24hTime,
-              ),
-            });
-
-      default:
-        return unreachable(currentNotificationPolicy);
-    }
   }
 </script>
 
@@ -177,16 +152,14 @@
       >
         <KeyValueList.Item key={$i18n.t('settings.label--do-not-disturb', 'Do Not Disturb')}>
           <Text
-            text={getDoNotDisturbDuration($appearance, $i18n, receiver.notificationPolicy)}
+            text={getDoNotDisturbDuration(
+              $appearance,
+              $i18n,
+              receiver.notificationPolicy,
+              $systemTime,
+            )}
             selectable
           />
-
-          {#if receiver.notificationPolicy.type === 'mentioned'}
-            <Text
-              text={$i18n.t('settings.action--do-not-disturb-mentioned', 'Notify When Mentioned')}
-              selectable
-            />
-          {/if}
         </KeyValueList.Item>
 
         {#if receiver.notificationPolicy.type === 'mentioned' || receiver.notificationPolicy.type === 'never'}
@@ -234,7 +207,13 @@
       <KeyValueList.Item key={$i18n.t('settings.label--read-receipts', 'Read Receipts')}>
         {#if receiver.readReceiptPolicy === 'default'}
           <Text
-            text={$i18n.t('settings.action--control-message-default-send', 'Default (Send)')}
+            text={$i18n.t('settings.action--control-message-default', 'Default {policy}', {
+              policy: `(${
+                $privacy.readReceiptPolicy === ReadReceiptPolicy.DONT_SEND_READ_RECEIPT
+                  ? $i18n.t('settings.action--control-message-do-not-send', "Don't Send")
+                  : $i18n.t('settings.action--control-message-send', 'Send')
+              })`,
+            })}
             selectable
           />
         {:else if receiver.readReceiptPolicy === 'do-not-send'}
@@ -252,7 +231,13 @@
       <KeyValueList.Item key={$i18n.t('settings.label--typing-indicator', 'Typing Indicator')}>
         {#if receiver.typingIndicatorPolicy === 'default'}
           <Text
-            text={$i18n.t('settings.action--control-message-default-send', 'Default (Send)')}
+            text={$i18n.t('settings.action--control-message-default', 'Default {policy}', {
+              policy: `(${
+                $privacy.typingIndicatorPolicy === TypingIndicatorPolicy.DONT_SEND_TYPING_INDICATOR
+                  ? $i18n.t('settings.action--control-message-do-not-send', "Don't Send")
+                  : $i18n.t('settings.action--control-message-send', 'Send')
+              })`,
+            })}
             selectable
           />
         {:else if receiver.typingIndicatorPolicy === 'do-not-send'}

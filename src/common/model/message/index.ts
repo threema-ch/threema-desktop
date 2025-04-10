@@ -985,11 +985,15 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
     ): void {
         const conversation = this.conversation().get();
         this._services.notification
-            .notifyMessageEdit(message, {
-                receiver: conversation.controller.receiver(),
-                view: conversation.view,
-            })
-
+            .notifyMessageEdit(
+                message,
+                {
+                    receiver: conversation.controller.receiver(),
+                    view: conversation.view,
+                },
+                this._services.model.user.profileSettings.get().view.nickname ??
+                    this._services.device.identity.string,
+            )
             .catch(assertUnreachable);
     }
 }

@@ -69,6 +69,10 @@ export interface AutoAppUpdatePromptDialogContext {
      * Name of the most recent available application version.
      */
     readonly latestVersion: string;
+    /**
+     * Details about the user's system.
+     */
+    readonly systemInfo: Pick<SystemInfo, 'os'>;
 }
 
 /**
@@ -141,9 +145,7 @@ export interface ManualAppUpdateDialogContext {
     /**
      * Details about the user's system.
      */
-    readonly systemInfo: Omit<SystemInfo, 'os' | 'isSafeStorageAvailable'> & {
-        readonly os: SystemInfo['os'];
-    };
+    readonly systemInfo: Pick<SystemInfo, 'os'>;
 }
 
 /**

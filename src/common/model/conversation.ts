@@ -290,10 +290,15 @@ export class ConversationModelController implements ConversationController {
                 // already been acknowledged or which are going to be acknowledged by another device within
                 // a small time period.
                 this._services.notification
-                    .notifyNewMessage(store, {
-                        receiver,
-                        view: handle.view(),
-                    })
+                    .notifyNewMessage(
+                        store,
+                        {
+                            receiver,
+                            view: handle.view(),
+                        },
+                        this._services.model.user.profileSettings.get().view.nickname ??
+                            this._services.device.identity.string,
+                    )
                     .catch(assertUnreachable);
             });
 

@@ -47,7 +47,7 @@
   export let onClickOpenEmojiPicker: $$Props['onClickOpenEmojiPicker'];
   export let options: NonNullable<$$Props['options']> = {};
   export let quote: $$Props['quote'] = undefined;
-  export let sender: $$Props['sender'] = undefined;
+  export let sender: $$Props['sender'];
   export let services: $$Props['services'];
   export let status: $$Props['status'];
   export let text: $$Props['text'] = undefined;

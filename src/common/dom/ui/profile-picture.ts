@@ -2,11 +2,18 @@ import type {DbReceiverLookup} from '~/common/db';
 import type {BackendController} from '~/common/dom/backend/controller';
 import {ReceiverType, ReceiverTypeUtils} from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import type {ReadonlyUint8Array} from '~/common/types';
-import {unreachable} from '~/common/utils/assert';
+import type {ProfilePictureView} from '~/common/model';
+import type {ProfilePictureModelStore} from '~/common/model/profile-picture';
+import type {Dimensions, ReadonlyUint8Array} from '~/common/types';
+import {assert, unreachable} from '~/common/utils/assert';
+import type {Remote} from '~/common/utils/endpoint';
 import {AsyncLock} from '~/common/utils/lock';
-import type {IQueryableStore} from '~/common/utils/store';
-import {derive} from '~/common/utils/store/derived-store';
+import {
+    WritableStore,
+    type IQueryableStore,
+    type IWritableStore,
+    type RemoteStore,
+} from '~/common/utils/store';
 
 /**
  * Transform profile picture to a blob (with media type "image/jpeg").
@@ -18,9 +25,13 @@ export function transformProfilePicture(bytes: ReadonlyUint8Array | undefined): 
     return new Blob([bytes], {type: 'image/jpeg'});
 }
 
-export type ProfilePictureBlobStore = IQueryableStore<Blob | undefined>;
+export type ProfilePictureBlobStoreValue =
+    | {readonly blob: Blob; readonly dimensions: Dimensions}
+    | undefined;
 
 type CacheKey = string;
+
+const USER_CACHE_KEY = 'me';
 
 /**
  * Return a cache key for the specified {@link receiverLookup} by concatenating type and UID.
@@ -33,8 +44,19 @@ function cacheKeyFor(receiverLookup: DbReceiverLookup): CacheKey {
  * The profile picture service fetches and caches profile pictures for contacts and groups.
  */
 export class ProfilePictureService {
-    private readonly _lock = new AsyncLock();
-    private readonly _cache = new Map<CacheKey, ProfilePictureBlobStore>();
+    private readonly _cacheLock = new AsyncLock();
+    private readonly _subscriberLock = new AsyncLock<'locked'>();
+    private readonly _cache = new Map<
+        CacheKey,
+        {
+            readonly blobStore: IWritableStore<ProfilePictureBlobStoreValue>;
+            // This needs to be held so that the references and subscribers are not garbage
+            // collected.
+            readonly sourceStore:
+                | Remote<ProfilePictureModelStore>
+                | RemoteStore<ProfilePictureView>;
+        }
+    >();
 
     public constructor(
         private readonly _backend: BackendController,
@@ -49,14 +71,15 @@ export class ProfilePictureService {
      */
     public async getProfilePictureForReceiver(
         receiverLookup: DbReceiverLookup,
-    ): Promise<ProfilePictureBlobStore | undefined> {
+    ): Promise<IQueryableStore<ProfilePictureBlobStoreValue> | undefined> {
         const {type, uid} = receiverLookup;
 
-        return await this._lock.with(async () => {
+        return await this._cacheLock.with(async () => {
+            const cacheKey = cacheKeyFor(receiverLookup);
             // Check the cache.
-            const cachedStore = this._cache.get(cacheKeyFor(receiverLookup));
+            const cachedStore = this._cache.get(cacheKey);
             if (cachedStore !== undefined) {
-                return cachedStore;
+                return cachedStore.blobStore;
             }
             this._log.debug(`Cache miss for ${ReceiverTypeUtils.nameOf(type)} with UID ${uid}`);
 
@@ -86,25 +109,25 @@ export class ProfilePictureService {
                     return unreachable(type);
             }
 
-            // Return a derived store which wraps the bytes in a `Blob`.
-            const blobStore = derive(
-                [profilePictureModelStore],
-                ([{currentValue: profilePictureModel}]) => {
-                    this._log.debug(
-                        `Re-deriving profile picture store for ${ReceiverTypeUtils.nameOf(
-                            type,
-                        )} with UID ${uid}`,
+            const blobStore = new WritableStore<ProfilePictureBlobStoreValue>(undefined);
+
+            this._cache.set(cacheKey, {
+                blobStore,
+                sourceStore: profilePictureModelStore,
+            });
+
+            profilePictureModelStore.subscribe((value): void => {
+                this._subscriberLock
+                    .with(async () => {
+                        await this._setBlobStore(value.view, blobStore);
+                    }, 'locked')
+                    .catch((error: unknown) =>
+                        this._log.error(
+                            `Failed to create bitmap for ${ReceiverTypeUtils.nameOf(type)} with UID ${uid} with reason: `,
+                            error,
+                        ),
                     );
-                    const bytes = profilePictureModel.view.picture;
-                    return bytes === undefined
-                        ? undefined
-                        : new Blob([bytes], {type: 'image/jpeg'});
-                },
-                {
-                    subscriptionMode: 'persistent',
-                },
-            );
-            this._cache.set(cacheKeyFor(receiverLookup), blobStore);
+            });
 
             return blobStore;
         });
@@ -113,29 +136,56 @@ export class ProfilePictureService {
     /**
      * Return the profile picture store for the user themself.
      */
-    public getProfilePictureForSelf(): ProfilePictureBlobStore {
+    public getProfilePictureForSelf(): IQueryableStore<ProfilePictureBlobStoreValue> {
         // Check the cache.
-        const cachedStore = this._cache.get('self');
+        const cachedStore = this._cache.get(USER_CACHE_KEY);
         if (cachedStore !== undefined) {
-            return cachedStore;
+            return cachedStore.blobStore;
         }
         this._log.debug(`Cache miss for the user's own profile picture`);
 
-        const blobStore = derive(
-            [this._backend.user.profilePicture],
-            ([{currentValue: profilePicture}]) => {
-                this._log.debug(
-                    `Re-deriving profile picture store of the user's own profile picture`,
-                );
-                const bytes = profilePicture.picture;
-                return bytes === undefined ? undefined : new Blob([bytes], {type: 'image/jpeg'});
-            },
-            {
-                subscriptionMode: 'persistent',
-            },
-        );
-        this._cache.set('self', blobStore);
+        const blobStore = new WritableStore<ProfilePictureBlobStoreValue>(undefined);
+
+        this._cache.set(USER_CACHE_KEY, {
+            blobStore,
+            sourceStore: this._backend.user.profilePicture,
+        });
+
+        this._backend.user.profilePicture.subscribe((view): void => {
+            this._subscriberLock
+                .with(async () => {
+                    await this._setBlobStore(view, blobStore);
+                }, 'locked')
+                .catch((error: unknown) => {
+                    this._log.error(
+                        'Failed to create bitmap for user profile picture with reason: ',
+                        error,
+                    );
+                });
+        });
 
         return blobStore;
+    }
+
+    private async _setBlobStore(
+        view: ProfilePictureView,
+        blobStore: WritableStore<ProfilePictureBlobStoreValue>,
+    ): Promise<void> {
+        assert(
+            this._subscriberLock.context === 'locked',
+            'Subscriber lock must be locked when setting the profile picture blob store',
+        );
+        const picture = view.picture;
+        if (picture === undefined) {
+            blobStore.set(undefined);
+            return;
+        }
+        const blob = new Blob([picture], {type: 'image/png'});
+        const bitmap = await createImageBitmap(blob);
+        blobStore.set({
+            blob,
+            dimensions: {height: bitmap.height, width: bitmap.width},
+        });
+        bitmap.close();
     }
 }

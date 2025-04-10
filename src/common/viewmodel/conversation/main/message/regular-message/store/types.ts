@@ -3,7 +3,7 @@ import type {Dimensions, f64, u53} from '~/common/types';
 import type {SingleUnicodeEmoji, UnsupportedEmoji} from '~/common/utils/emoji';
 import type {
     AnyConversationMessageViewModelBundle,
-    DeprecatedAnySenderData,
+    MessageSenderData,
     MessageStatusData,
 } from '~/common/viewmodel/conversation/main/message/helpers';
 import type {ConversationStatusMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message/status-message';
@@ -58,7 +58,7 @@ export interface ConversationRegularMessageViewModel {
         | 'not-found'
         | undefined;
 
-    readonly sender?: DeprecatedAnySenderData;
+    readonly sender: MessageSenderData;
     readonly status: MessageStatusData;
     readonly text?: {
         readonly mentions: readonly AnyMention[];

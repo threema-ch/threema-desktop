@@ -35,8 +35,8 @@ in standalone clients.-->
     buttons: [
       {
         label: $i18n.t(
-          'dialog--device-cookie-mismatch.action--dismiss',
-          'Continue without connection',
+          'dialog--common.action--continue-without-connection',
+          'Continue Without Connection',
         ),
         onClick: () => {
           onSelectAction?.('dismissed');
@@ -45,7 +45,7 @@ in standalone clients.-->
         type: 'naked',
       },
       {
-        label: $i18n.t('dialog--device-cookie-mismatch.action--relink', 'Relink Device'),
+        label: $i18n.t('dialog--common.action--relink', 'Relink Device'),
         onClick: () => {
           if (!services.isSet()) {
             log.warn('Cannot unlink the profile because the app services are not yet ready');

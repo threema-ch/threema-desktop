@@ -21,7 +21,7 @@
     type: 'card',
     buttons: [
       {
-        label: $i18n.t('dialog--linking-restoration-identity-mismatch.action--confirm', 'Retry'),
+        label: $i18n.t('dialog--common.action--retry', 'Retry'),
         type: 'naked',
         onClick: () => window.location.reload(),
       },

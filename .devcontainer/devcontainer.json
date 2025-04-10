@@ -1,24 +1,12 @@
 {
   "name": "threema-desktop",
+  "initializeCommand": ["./.devcontainer/env.sh", "--build-only"],
+  "image": "threema-desktop-env:debian-12-node-20.11.1-rust-1.82.0",
+  "mounts": [],
   "containerUser": "threema",
-  "mounts": [
-    "source=${localEnv:HOME}/.local/share/ThreemaDesktop,target=/home/threema/.local/share/ThreemaDesktop,type=bind,consistency=cached"
-  ],
-  "build": {
-    "dockerfile": "./Dockerfile",
-    "args": {
-      "NODE_VERSION": "20.11.1"
-    }
-  },
   "workspaceFolder": "/home/threema/threema-desktop",
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/threema/threema-desktop,type=bind,consistency=cached",
-  "runArgs": [
-    "--network=host",
-    "--env-file=./.devcontainer/.env",
-    "--env=DISPLAY=${localEnv:DISPLAY}",
-    "--device=/dev/dri:/dev/dri",
-    "--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw"
-  ],
+  "runArgs": [],
   "customizations": {
     "vscode": {
       "extensions": [

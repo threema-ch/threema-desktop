@@ -28,6 +28,7 @@ export function initCrashReportingInSandboxBuilds(log: Logger): void {
                 buildTarget: import.meta.env.BUILD_TARGET,
                 buildVariant: import.meta.env.BUILD_VARIANT,
                 buildEnvironment: import.meta.env.BUILD_ENVIRONMENT,
+                gitRevision: import.meta.env.GIT_REVISION,
             },
         },
 

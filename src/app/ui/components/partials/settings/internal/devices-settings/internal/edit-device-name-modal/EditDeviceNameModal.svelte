@@ -40,12 +40,12 @@
       ],
       buttons: [
         {
-          label: $i18n.t('dialog--edit-device-name.action--cancel', 'Cancel'),
+          label: $i18n.t('dialog--common.action--cancel', 'Cancel'),
           type: 'naked',
           onClick: 'close',
         },
         {
-          label: $i18n.t('dialog--edit-device-name.action--confirm', 'Confirm'),
+          label: $i18n.t('dialog--common.action--confirm', 'Confirm'),
           type: 'filled',
           onClick: handleClickConfirm,
         },

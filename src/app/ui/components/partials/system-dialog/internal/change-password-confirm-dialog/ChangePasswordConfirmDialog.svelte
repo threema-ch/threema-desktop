@@ -34,16 +34,13 @@
     buttons: [
       {
         isFocused: true,
-        label: $i18n.t('dialog--change-password-confirmation.action--back', 'Back'),
+        label: $i18n.t('dialog--common.action--back', 'Back'),
         onClick: handleClickDismiss,
         type: 'naked',
       },
       {
         isFocused: false,
-        label: $i18n.t(
-          'dialog--change-password-confirmation.action--confirm',
-          'Confirm and Relaunch',
-        ),
+        label: $i18n.t('dialog--common.action--confirm-and-restart', 'Confirm and Restart'),
         onClick: handleClickConfirm,
         type: 'filled',
       },

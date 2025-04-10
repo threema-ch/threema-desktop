@@ -50,25 +50,35 @@ export class OutgoingDeleteMessageTask<TReceiver extends AnyReceiver>
             messageId: intoUnsignedLong(messageModel.view.id),
         });
 
-        const commonMessageProperties = {
-            cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
+        const sharedMessageProperties = {
             messageId: randomMessageId(this._services.crypto),
             createdAt: this._deletedAt,
             allowUserProfileDistribution: false,
         };
+
+        const cspMessageFlags = CspMessageFlags.fromPartial({
+            sendPushNotification: true,
+        });
 
         // Note: Here, we assume that a feature mask check has actually changed anything have
         // already happened.
         let task;
         switch (this._receiverModel.type) {
             case ReceiverType.CONTACT: {
-                const messageProperties = {
-                    type: CspE2eMessageUpdateType.DELETE_MESSAGE,
-                    ...commonMessageProperties,
-                } as const;
-
                 task = new OutgoingCspMessagesTask(this._services, [
-                    {receiver: this._receiverModel, messageProperties, encoder: {default: encoder}},
+                    {
+                        receiver: this._receiverModel,
+                        sharedMessageProperties,
+                        specifics: {
+                            default: {
+                                encoder,
+                                messageProperties: {
+                                    cspMessageFlags,
+                                    type: CspE2eMessageUpdateType.DELETE_MESSAGE,
+                                },
+                            },
+                        },
+                    },
                 ]);
 
                 break;
@@ -87,16 +97,20 @@ export class OutgoingDeleteMessageTask<TReceiver extends AnyReceiver>
                         innerData: encoder,
                     },
                 );
-                const messageProperties = {
-                    type: CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE,
-                    ...commonMessageProperties,
-                } as const;
 
                 task = new OutgoingCspMessagesTask(this._services, [
                     {
                         receiver: this._receiverModel,
-                        messageProperties,
-                        encoder: {default: groupEncoder},
+                        sharedMessageProperties,
+                        specifics: {
+                            default: {
+                                encoder: groupEncoder,
+                                messageProperties: {
+                                    cspMessageFlags,
+                                    type: CspE2eGroupMessageUpdateType.GROUP_DELETE_MESSAGE,
+                                },
+                            },
+                        },
                     },
                 ]);
 

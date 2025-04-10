@@ -253,6 +253,10 @@
         height: var($-temp-vars, --c-t-size);
         top: 0;
         left: 0;
+
+        &:empty {
+          pointer-events: none;
+        }
       }
 
       .initials {

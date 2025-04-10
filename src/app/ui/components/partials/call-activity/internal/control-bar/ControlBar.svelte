@@ -101,6 +101,7 @@
     },
     icon: device.deviceId === currentVideoDeviceId ? {name: 'check'} : undefined,
     label: truncate(device.label, 24, 'end'),
+    labelOnHover: device.label,
   }));
 
   onMount(() => {

@@ -54,7 +54,7 @@
     buttons: [
       {
         isFocused: true,
-        label: $i18n.t('dialog--empty-conversation.action--cancel', 'Cancel'),
+        label: $i18n.t('dialog--common.action--cancel', 'Cancel'),
         onClick: 'close',
         type: 'naked',
       },

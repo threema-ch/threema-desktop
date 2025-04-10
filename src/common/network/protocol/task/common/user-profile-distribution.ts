@@ -111,7 +111,7 @@ export async function profilePictureDistributionSteps(
                 services,
                 currentProfilePicture.blob,
                 BLOB_FILE_NONCE,
-                'public',
+                'public-persistent',
             );
 
             blobId = blobInfo.id;

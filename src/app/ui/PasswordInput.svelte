@@ -137,7 +137,7 @@
         isLoading={isSubmitted}
         on:click={handleOnSubmit}
       >
-        {$i18n.t('dialog--startup-unlock.action--confirm', 'Continue')}
+        {$i18n.t('dialog--common.action--continue', 'Continue')}
       </Button>
       <span class="hint">
         <button type="button" on:click={handleClickForgotPassword}>

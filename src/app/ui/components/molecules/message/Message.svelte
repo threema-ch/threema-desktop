@@ -33,7 +33,7 @@
   export let onError: $$Props['onError'];
   export let options: NonNullable<$$Props['options']> = {};
   export let quote: $$Props['quote'] = undefined;
-  export let sender: $$Props['sender'] = undefined;
+  export let sender: $$Props['sender'];
   export let status: $$Props['status'];
   export let timestamp: $$Props['timestamp'];
 
@@ -88,7 +88,7 @@
   on:completehighlightanimation
 >
   <div class={`body ${direction}`} class:clickable>
-    {#if options.showSender !== false && sender !== undefined && direction !== 'outbound'}
+    {#if options.showSender !== false && direction !== 'outbound'}
       <span class="sender">
         <Sender name={sender.name} color={sender.color} />
       </span>

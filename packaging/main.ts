@@ -992,7 +992,7 @@ function buildFlatpaks(dirs: Directories, args: string[]): void {
             'flatpak-builder-tools.flatpak-cargo-generator',
             '-o',
             'generated-cargo-sources.json',
-            '../../src/launcher/Cargo.lock',
+            '../../src/rust/launcher/Cargo.lock',
         ],
         options,
     );

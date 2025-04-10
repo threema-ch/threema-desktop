@@ -70,7 +70,7 @@
           )}
 
           <li class={`preview ${message.direction}`}>
-            {#if message.direction === 'inbound' && message.sender?.type === 'contact'}
+            {#if message.direction === 'inbound' && message.sender.type === 'contact'}
               <span class="avatar">
                 {#await profilePicture.getProfilePictureForReceiver( {type: ReceiverType.CONTACT, uid: message.sender.uid}, ) then senderProfilePictureStore}
                   <Avatar

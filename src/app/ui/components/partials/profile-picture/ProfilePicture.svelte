@@ -9,6 +9,7 @@
   import type {ProfilePictureProps} from '~/app/ui/components/partials/profile-picture/props';
   import {i18n} from '~/app/ui/i18n';
   import type {DbReceiverLookup} from '~/common/db';
+  import type {ProfilePictureBlobStoreValue} from '~/common/dom/ui/profile-picture';
   import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
   import {type IQueryableStore, ReadableStore} from '~/common/utils/store';
@@ -26,7 +27,9 @@
   export let size: NonNullable<$$Props['size']> = 'md';
   export let unreadMessageCount: NonNullable<$$Props['unreadMessageCount']> = 0;
 
-  let profilePictureStore: IQueryableStore<Blob | undefined> = new ReadableStore(undefined);
+  let profilePictureStore: IQueryableStore<ProfilePictureBlobStoreValue> = new ReadableStore(
+    undefined,
+  );
 
   function updateProfilePictureStore(lookup: DbReceiverLookup | 'self'): void {
     if (lookup === 'self') {

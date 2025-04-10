@@ -155,10 +155,10 @@
 
     <footer>
       <a href={import.meta.env.URLS.overview.full} target="_blank" rel="noreferrer noopener"
-        >{$i18n.t('dialog--linking-set-password.action--need-help', 'Need help?')}</a
+        >{$i18n.t('dialog--common.action--need-help', 'Need help?')}</a
       >
       <Button flavor="filled" on:click={handleSubmit}
-        >{$i18n.t('dialog--linking-set-password.action--confirm', 'Next')}</Button
+        >{$i18n.t('dialog--common.action--next', 'Next')}</Button
       >
     </footer>
   </Step>

@@ -46,12 +46,12 @@
       "request": "launch",
       "name": "Launcher (env:consumer-sandbox)",
       "cargo": {
-        "args": ["build", "--manifest-path", "${workspaceFolder}/src/launcher/Cargo.toml"],
+        "args": ["build", "--manifest-path", "${workspaceFolder}/src/rust/launcher/Cargo.toml"],
         "env": {
           "THREEMA_BUILD_FLAVOR": "consumer-sandbox"
         }
       },
-      "cwd": "${workspaceFolder}/src/launcher/",
+      "cwd": "${workspaceFolder}/src/rust/launcher/",
       "args": []
     },
     {
@@ -59,12 +59,12 @@
       "request": "launch",
       "name": "Launcher (env:work-sandbox)",
       "cargo": {
-        "args": ["build", "--manifest-path", "${workspaceFolder}/src/launcher/Cargo.toml"],
+        "args": ["build", "--manifest-path", "${workspaceFolder}/src/rust/launcher/Cargo.toml"],
         "env": {
           "THREEMA_BUILD_FLAVOR": "work-sandbox"
         }
       },
-      "cwd": "${workspaceFolder}/src/launcher/",
+      "cwd": "${workspaceFolder}/src/rust/launcher/",
       "args": []
     }
   ]

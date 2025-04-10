@@ -36,12 +36,12 @@
     ],
     buttons: [
       {
-        label: $i18n.t('dialog--relink-profile.action--cancel', 'Cancel'),
+        label: $i18n.t('dialog--common.action--cancel', 'Cancel'),
         type: 'naked',
         onClick: 'close',
       },
       {
-        label: $i18n.t('dialog--relink-profile.label--title', 'Relink this Device'),
+        label: $i18n.t('dialog--common.action--relink', 'Relink Device'),
         type: 'filled',
         onClick: () => {
           handleClickConfirmAndRestart().catch(assertUnreachable);

@@ -1,11 +1,11 @@
 import type {AppServicesForSvelte} from '~/app/types';
 import type {ContextMenuProviderProps} from '~/app/ui/components/hocs/context-menu-provider/props';
 import type {MessageProps} from '~/app/ui/components/molecules/message/props';
+import type {MessageSender} from '~/app/ui/components/partials/conversation/internal/message-list/types';
 import type {CharmsProps} from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/charms/props';
 import type {IndicatorProps} from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/indicator/props';
 import type {ReceiverCardProps} from '~/app/ui/components/partials/receiver-card/props';
 import type {SanitizeAndParseTextToHtmlOptions} from '~/app/ui/utils/text';
-import type {DbContactUid} from '~/common/db';
 import type {u53} from '~/common/types';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
@@ -27,16 +27,7 @@ export interface ConversationPreviewProps {
     readonly lastMessage?: {
         readonly direction: 'inbound' | 'outbound';
         readonly file?: Pick<NonNullable<MessageProps['file']>, 'type'>;
-        readonly sender?: NonNullable<MessageProps['sender']> &
-            (
-                | {
-                      readonly type: 'self';
-                  }
-                | {
-                      readonly type: 'contact';
-                      readonly uid: DbContactUid;
-                  }
-            );
+        readonly sender: MessageSender;
         readonly status: IndicatorProps['status'];
         readonly text?: TextContent;
     };

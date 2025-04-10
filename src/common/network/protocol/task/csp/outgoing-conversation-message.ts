@@ -108,8 +108,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
         const cspMessageFlags = CspMessageFlags.forMessageType(messageType);
         cspMessageFlags.groupMessage = this._receiverModel.type === ReceiverType.GROUP;
         const {id: messageId, createdAt} = this._messageModelStore.get().view;
-        const commonMessageProperties = {
-            cspMessageFlags,
+        const sharedMessageProperties = {
             messageId,
             createdAt,
             allowUserProfileDistribution: true,
@@ -120,28 +119,37 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
             case ReceiverType.CONTACT:
                 outCspMessageTask = new OutgoingCspMessagesTask(this._services, [
                     {
-                        messageProperties: {
-                            ...commonMessageProperties,
-                            type: this._getCspE2eType() as ValidCspMessageTypeForReceiver<Contact>,
-                        },
+                        sharedMessageProperties,
                         receiver: this._receiverModel,
-                        encoder: {default: this._getCspEncoder()},
+                        specifics: {
+                            default: {
+                                encoder: this._getCspEncoder(),
+                                messageProperties: {
+                                    cspMessageFlags,
+                                    type: this._getCspE2eType() as ValidCspMessageTypeForReceiver<Contact>,
+                                },
+                            },
+                        },
                     },
                 ]);
                 break;
             case ReceiverType.GROUP:
                 outCspMessageTask = new OutgoingCspMessagesTask(this._services, [
                     {
-                        messageProperties: {
-                            ...commonMessageProperties,
-                            type: this._getCspE2eType() as ValidCspMessageTypeForReceiver<Group>,
-                        },
+                        sharedMessageProperties,
                         receiver: this._receiverModel,
-                        encoder: {
+                        specifics: {
                             default:
                                 // This cast is fine since the function will is bound to return a
                                 // `GroupMemberEncodable` encoder due to the switch here.
-                                this._getCspEncoder() as LayerEncoder<GroupMemberContainerEncodable>,
+                                {
+                                    encoder:
+                                        this._getCspEncoder() as LayerEncoder<GroupMemberContainerEncodable>,
+                                    messageProperties: {
+                                        cspMessageFlags,
+                                        type: this._getCspE2eType() as ValidCspMessageTypeForReceiver<Group>,
+                                    },
+                                },
                         },
                     },
                 ]);

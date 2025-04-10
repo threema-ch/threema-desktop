@@ -60,30 +60,26 @@ export class Updater {
             // Nothing to update.
             return;
         }
+        const context = {
+            currentVersion: import.meta.env.BUILD_VERSION,
+            latestVersion: updateInfo.version,
+            systemInfo: {
+                os: this._services.systemInfo.os,
+            },
+        };
 
         // Show an update system dialog for platforms which don't support auto-updating.
         if (forceManualUpdate || process.platform === 'linux') {
             await this._services.systemDialog.open({
                 type: 'manual-app-update',
-                context: {
-                    currentVersion: import.meta.env.BUILD_VERSION,
-                    latestVersion: updateInfo.version,
-                    systemInfo: {
-                        arch: this._services.systemInfo.arch,
-                        locale: this._services.systemInfo.locale,
-                        os: this._services.systemInfo.os,
-                    },
-                },
+                context,
             });
             return;
         }
 
         const promptDialogHandle = await this._services.systemDialog.open({
             type: 'auto-app-update-prompt',
-            context: {
-                currentVersion: import.meta.env.BUILD_VERSION,
-                latestVersion: updateInfo.version,
-            },
+            context,
         });
         const promptAction = await promptDialogHandle.closed;
         switch (promptAction) {

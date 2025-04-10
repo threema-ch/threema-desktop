@@ -301,7 +301,7 @@
       </p>
       <div class="action-button">
         <Button flavor="filled" disabled={deletingProfile} on:click={deleteProfileAndRestartApp}>
-          {$i18n.t('dialog--invalid-work-credentials.action--relink', 'Relink Device')}
+          {$i18n.t('dialog--common.action--relink', 'Relink Device')}
         </Button>
         {#if deletingProfile}
           <div class="loading">

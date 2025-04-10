@@ -34,6 +34,7 @@ import {
     type BlobScope,
     encryptAndUploadBlobWithEncryptionKey,
     type BlobId,
+    type BlobUploadScope,
 } from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE, BLOB_THUMBNAIL_NONCE} from '~/common/network/protocol/constants';
 import type {RawBlobKey} from '~/common/network/types/keys';
@@ -498,9 +499,16 @@ async function uploadFileAsBlob(
     nonce: Nonce,
     key: RawBlobKey,
     services: Pick<ServicesForModel, 'blob' | 'crypto' | 'file'>,
+    uploadScope: Exclude<BlobUploadScope, 'local'>,
 ): Promise<{bytes: ReadonlyUint8Array} & ({blobId: BlobId} | {thumbnailBlobId: BlobId})> {
     const bytes = await services.file.load(data);
-    const {id} = await encryptAndUploadBlobWithEncryptionKey(services, bytes, nonce, key, 'public');
+    const {id} = await encryptAndUploadBlobWithEncryptionKey(
+        services,
+        bytes,
+        nonce,
+        key,
+        uploadScope,
+    );
     switch (type) {
         case 'main':
             return {bytes, blobId: id};
@@ -522,7 +530,7 @@ export type UploadedBlobBytes = {readonly [k in BlobType]: ReadonlyUint8Array | 
 export async function uploadBlobs(
     messageType: AnyNonDeletedMessageType,
     messageUid: DbMessageUid,
-    conversationUid: DbConversationUid,
+    conversation: ConversationControllerHandle,
     services: Pick<ServicesForModel, 'blob' | 'crypto' | 'db' | 'file'>,
     lifetimeGuard: AnyFileBasedOutboundMessageModelLifetimeGuard,
 ): Promise<UploadedBlobBytes> {
@@ -553,6 +561,13 @@ export async function uploadBlobs(
         return {main: undefined, thumbnail: undefined};
     }
 
+    // Determine whether blob is persistent.
+    const receiverType: ReceiverType = conversation.getReceiver().type;
+    const uploadScope =
+        receiverType === ReceiverType.DISTRIBUTION_LIST || receiverType === ReceiverType.GROUP
+            ? 'public-persistent'
+            : 'public-volatile';
+
     // Upload all blobs concurrently
     const promises = [];
     if (fileDataToUpload.fileData !== undefined) {
@@ -564,6 +579,7 @@ export async function uploadBlobs(
                 BLOB_FILE_NONCE,
                 fileDataToUpload.encryptionKey,
                 services,
+                uploadScope,
             ),
         );
     }
@@ -575,6 +591,7 @@ export async function uploadBlobs(
                 BLOB_THUMBNAIL_NONCE,
                 fileDataToUpload.encryptionKey,
                 services,
+                uploadScope,
             ),
         );
     }
@@ -598,7 +615,7 @@ export async function uploadBlobs(
     lifetimeGuard.update(() => {
         // Note: updateMessage cannot return a list of deleted files in this case because we
         // only update the blob ids. Thus we can ignore the return value.
-        services.db.updateMessage(conversationUid, {
+        services.db.updateMessage(conversation.uid, {
             ...change,
             uid: messageUid,
             type: messageType,

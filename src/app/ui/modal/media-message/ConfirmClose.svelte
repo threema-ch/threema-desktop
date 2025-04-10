@@ -28,7 +28,7 @@
       </div>
       <CancelAndConfirm
         slot="footer"
-        cancelText={$i18n.t('dialog--discard-media-message.action--cancel', 'Cancel')}
+        cancelText={$i18n.t('dialog--common.action--cancel', 'Cancel')}
         confirmText={$i18n.t('dialog--discard-media-message.action--confirm', 'Discard')}
         focusOnMount="confirm"
         let:modal

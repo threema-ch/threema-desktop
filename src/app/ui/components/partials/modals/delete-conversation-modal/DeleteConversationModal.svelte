@@ -80,7 +80,7 @@
     ],
     buttons: [
       {
-        label: $i18n.t('dialog--delete-conversation.action--cancel', 'Cancel'),
+        label: $i18n.t('dialog--common.action--cancel', 'Cancel'),
         type: 'naked',
         onClick: 'close',
       },

@@ -1,7 +1,7 @@
 import {ReceiverType} from '~/common/enum';
 import type {AnyNonDeletedMessageModel} from '~/common/model/types/message';
-import {isIdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
+import {EVERYONE_IDENTITY_STRING, getMentionedIdentities} from '~/common/utils/mentions';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
 import {getRemovedContactData} from '~/common/viewmodel/utils/contact';
@@ -10,17 +10,6 @@ import type {
     SenderDataRemovedContact,
     SenderDataSelf,
 } from '~/common/viewmodel/utils/sender';
-
-/**
- * Regex to match user mentions.
- */
-// eslint-disable-next-line threema/ban-stateful-regex-flags
-export const REGEX_MATCH_MENTION = /@\[(?<identity>[A-Z0-9*]{1}[A-Z0-9]{7}|@{8})\]/gu;
-
-/**
- * Identity string that matches everyone.
- */
-export const EVERYONE_IDENTITY_STRING = '@@@@@@@@';
 
 /**
  * A mention that matches the user themself.
@@ -57,7 +46,7 @@ export type AnyMention = MentionSelf | MentionContact | MentionContactRemoved | 
  */
 function getMentionedIdentityStrings(
     messageModel: AnyNonDeletedMessageModel,
-): Set<AnyMention['identity']> {
+): ReadonlySet<AnyMention['identity']> {
     let text: string;
 
     switch (messageModel.type) {
@@ -75,16 +64,7 @@ function getMentionedIdentityStrings(
             unreachable(messageModel);
     }
 
-    const mentionedIdentities = new Set<AnyMention['identity']>();
-    for (const match of text.matchAll(REGEX_MATCH_MENTION)) {
-        const identity = match.groups?.identity;
-
-        if (isIdentityString(identity) || identity === EVERYONE_IDENTITY_STRING) {
-            mentionedIdentities.add(identity);
-        }
-    }
-
-    return mentionedIdentities;
+    return getMentionedIdentities(text);
 }
 
 /**

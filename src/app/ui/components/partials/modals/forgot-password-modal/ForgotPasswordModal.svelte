@@ -28,13 +28,13 @@
         ? [
             {
               isFocused: true,
-              label: $i18n.t('dialog--forgot-password.action--cancel', 'Cancel'),
+              label: $i18n.t('dialog--common.action--cancel', 'Cancel'),
               onClick: 'close',
               type: 'naked',
             },
             {
               isFocused: false,
-              label: $i18n.t('dialog--forgot-password.action--next', 'Next'),
+              label: $i18n.t('dialog--common.action--next', 'Next'),
               onClick: () => {
                 step = 2;
               },
@@ -43,7 +43,7 @@
           ]
         : [
             {
-              label: $i18n.t('dialog--forgot-password.action--back', 'Back'),
+              label: $i18n.t('dialog--common.action--back', 'Back'),
               onClick: () => {
                 step = 1;
               },
@@ -51,7 +51,7 @@
             },
             {
               isFocused: false,
-              label: $i18n.t('dialog--forgot-password.action--relink', 'Relink Device'),
+              label: $i18n.t('dialog--common.action--relink', 'Relink Device'),
               onClick: handleClickRelink,
               type: 'filled',
             },

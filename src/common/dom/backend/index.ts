@@ -442,6 +442,7 @@ export interface OldProfileRemover extends ProxyMarked {
  * Create an instance of the NotificationService, wrapping a remote endpoint.
  */
 function createNotificationService(
+    services: Pick<ServicesForBackend, 'device'>,
     endpoint: EndpointService,
     notificationCreator: ProxyEndpoint<NotificationCreator>,
     logging: LoggerFactory,
@@ -451,6 +452,7 @@ function createNotificationService(
         logging.logger('com.notification'),
     );
     return new NotificationService(
+        services,
         logging.logger('bw.backend.notification'),
         notificationCreatorEndpoint,
     );
@@ -485,11 +487,10 @@ function initEarlyBackendServicesWithoutConfig(
     backendInit: BackendInit,
 ): EarlyBackendServicesThatDontRequireConfig {
     const crypto = new TweetNaClBackend(randomBytes);
-    const {mediaEndpoint: frontendMediaServiceEndpoint, notificationEndpoint} = backendInit;
+    const {mediaEndpoint: frontendMediaServiceEndpoint} = backendInit;
     const compressor = factories.compressor();
     const launcher = endpoint.wrap(backendInit.launcherEndpoint, logging.logger('com.launcher'));
     const media = createMediaService(endpoint, frontendMediaServiceEndpoint, logging);
-    const notification = createNotificationService(endpoint, notificationEndpoint, logging);
     const systemDialog = endpoint.wrap(
         backendInit.systemDialogEndpoint,
         logging.logger('com.system-dialog'),
@@ -508,7 +509,6 @@ function initEarlyBackendServicesWithoutConfig(
         launcher,
         logging,
         media,
-        notification,
         systemDialog,
         systemInfo: backendInit.systemInfo,
         taskManager,
@@ -549,6 +549,7 @@ function initEarlyBackendServicesWithConfig(
  * Note: The {@link dgk} will be consumed and purged after initialization!
  */
 function initBackendServices(
+    backendInit: Pick<BackendInit, 'notificationEndpoint'>,
     earlyServices: EarlyBackendServices,
     db: DatabaseBackend,
     identityData: IdentityData,
@@ -566,7 +567,6 @@ function initBackendServices(
         file,
         logging,
         media,
-        notification,
         sfu,
         systemDialog,
         taskManager,
@@ -583,6 +583,14 @@ function initBackendServices(
         dgk,
         workData,
     );
+
+    const notification = createNotificationService(
+        {device},
+        endpoint,
+        backendInit.notificationEndpoint,
+        logging,
+    );
+
     const persistentProtocolState = new PersistentProtocolStateBackend({db, logging});
     const blob = new FetchBlobBackend({config, device, directory});
     const loadingInfo = new LoadingInfo(logging.logger('loading-info'));
@@ -631,6 +639,7 @@ function initBackendServices(
         loadingInfo,
         model,
         nonces,
+        notification,
         persistentProtocolState,
         viewModel,
         volatileProtocolState,
@@ -998,6 +1007,7 @@ export class Backend {
 
         // Create backend
         const backendServices = initBackendServices(
+            backendInit,
             {...phase1Services, ...phase2Services},
             db,
             identityData,
@@ -1562,6 +1572,7 @@ export class Backend {
 
         // Create backend
         const services = initBackendServices(
+            backendInit,
             {...phase1Services, ...phase2Services, ...phase3Services},
             db,
             identityData,

@@ -62,7 +62,7 @@ export function getModalButtons(
 ): ModalButton[] {
     return [
         {
-            label: i18n.t('dialog--delete-message.action--cancel', 'Cancel'),
+            label: i18n.t('dialog--common.action--cancel', 'Cancel'),
             type: 'naked',
             onClick: 'close',
         },

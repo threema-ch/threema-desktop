@@ -12,6 +12,7 @@
   type $$Props = AutoAppUpdatePromptDialogProps;
 
   export let onSelectAction: $$Props['onSelectAction'] = undefined;
+  export let systemInfo: $$Props['systemInfo'];
   export let target: $$Props['target'] = undefined;
 
   let modalComponent: SvelteNullableBinding<Modal> = null;
@@ -56,10 +57,17 @@
           )}
         </p>
         <p>
-          {$i18n.t(
-            'dialog--auto-app-update-prompt.prose--description-p2',
-            'After the download is complete, the application will restart automatically. This can take a couple of minutes.',
-          )}
+          {#if systemInfo.os === 'macos'}
+            {$i18n.t(
+              'dialog--auto-app-update-prompt.prose--description-p2-macos',
+              'If prompted, please approve installing the helper tool. This is required for automatic updates to work properly.',
+            )}
+          {:else}
+            {$i18n.t(
+              'dialog--auto-app-update-prompt.prose--description-p2-other-os',
+              'After the download is complete, the application will restart automatically. This can take a couple of minutes.',
+            )}
+          {/if}
         </p>
       </div>
       <div class="buttons">
@@ -79,7 +87,12 @@
             'dialog--auto-app-update-prompt.prose--description-p3',
             'If the automatic update fails, please download and install the update manually:',
           )}
-          <a href="https://three.ma/md" target="_blank">three.ma/md</a>
+          <a
+            href={import.meta.env.URLS.downloadAndInfo.full}
+            target="_blank"
+            rel="noreferrer noopener"
+            >{import.meta.env.URLS.downloadAndInfo.short}
+          </a>
         </small>
       </p>
     </div>

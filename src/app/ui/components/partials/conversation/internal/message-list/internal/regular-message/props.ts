@@ -2,8 +2,8 @@ import type {AppServicesForSvelte} from '~/app/types';
 import type {MessageProps} from '~/app/ui/components/molecules/message/props';
 import type {MessageContextMenuProviderProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-context-menu-provider/props';
 import type {EmojiReactionsStripProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/regular-message/internal/emoji-reactions-strip/props';
+import type {MessageSender} from '~/app/ui/components/partials/conversation/internal/message-list/types';
 import type {SanitizeAndParseTextToHtmlOptions} from '~/app/ui/utils/text';
-import type {DbContactUid} from '~/common/db';
 import type {MessageId} from '~/common/network/types';
 import type {SingleUnicodeEmoji, UnsupportedEmoji} from '~/common/utils/emoji';
 import type {FeatureSupport} from '~/common/viewmodel/conversation/main/store/types';
@@ -58,16 +58,7 @@ export interface RegularMessageProps {
         readonly alwaysShowCaret?: boolean;
     };
     readonly quote?: AnyQuotedMessage;
-    readonly sender?: NonNullable<MessageProps['sender']> &
-        (
-            | {
-                  readonly type: 'self';
-              }
-            | {
-                  readonly type: 'contact';
-                  readonly uid: DbContactUid;
-              }
-        );
+    readonly sender: MessageSender;
     readonly services: AppServicesForSvelte;
     readonly status: MessageProps['status'];
     readonly text?: TextContent;

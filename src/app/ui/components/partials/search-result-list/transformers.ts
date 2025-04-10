@@ -5,6 +5,7 @@ import type {
 } from '~/app/ui/components/partials/message-preview-list/props';
 import type {ReceiverPreviewListProps} from '~/app/ui/components/partials/receiver-preview-list/props';
 import type {I18nType} from '~/app/ui/i18n-types';
+import {transformMessageSenderProps} from '~/app/ui/utils/sender';
 import {ConversationCategory, ConversationVisibility} from '~/common/enum';
 import {conversationCompareFn} from '~/common/model/utils/conversation';
 import type {u53} from '~/common/types';
@@ -54,7 +55,7 @@ export function conversationSearchResultSetStoreToConversationPreviewListPropsSt
                         switch (lastMessageViewModel.type) {
                             case 'deleted-message':
                                 lastMessage = {
-                                    sender: lastMessageViewModel.sender,
+                                    sender: transformMessageSenderProps(lastMessageViewModel),
                                     status: lastMessageViewModel.status,
                                     direction: lastMessageViewModel.direction,
                                 };
@@ -63,7 +64,7 @@ export function conversationSearchResultSetStoreToConversationPreviewListPropsSt
                             case 'regular-message':
                                 lastMessage = {
                                     file: lastMessageViewModel.file,
-                                    sender: lastMessageViewModel.sender,
+                                    sender: transformMessageSenderProps(lastMessageViewModel),
                                     status: lastMessageViewModel.status,
                                     text: lastMessageViewModel.text,
                                     direction: lastMessageViewModel.direction,
@@ -213,7 +214,7 @@ function transformMessageProps(
         direction: viewModel.direction,
         file: transformMessageFileProps(viewModelController, viewModel),
         id: viewModel.id,
-        sender: viewModel.sender,
+        sender: transformMessageSenderProps(viewModel),
         status: viewModel.status,
         text: viewModel.text,
     };

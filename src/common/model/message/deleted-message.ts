@@ -35,7 +35,7 @@ export function getDeletedMessageModelStore<TMessageDirection extends MessageDir
                 ...common,
                 deletedAt: unwrap(common.deletedAt),
                 history: ensureEmptyArray(common.history),
-                reactions: ensureEmptyArray(common.history),
+                reactions: ensureEmptyArray(common.reactions),
                 lastEditedAt: ensureUndefined(common.lastEditedAt),
             };
 
@@ -51,7 +51,7 @@ export function getDeletedMessageModelStore<TMessageDirection extends MessageDir
                 ...common,
                 deletedAt: unwrap(common.deletedAt),
                 history: ensureEmptyArray(common.history),
-                reactions: ensureEmptyArray(common.history),
+                reactions: ensureEmptyArray(common.reactions),
                 lastEditedAt: ensureUndefined(common.lastEditedAt),
             };
             return new InboundDeletedMessageModelStore(services, view, uid, conversation, sender);

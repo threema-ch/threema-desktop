@@ -15,19 +15,19 @@ MACOS_ASSETS_PATH="packaging/assets/icons/mac"
 # available.
 if ! command -v convert -version &> /dev/null; then
     echo "Command \"convert\" could not be found! Is \"ImageMagick\" installed?"
-    exit
+    exit 1
 fi
 
 if ! command -v optipng &> /dev/null; then
     echo "Command \"optipng\" could not be found! Is it installed?"
-    exit
+    exit 1
 fi
 
 # This script needs to run on macOS (to be able to use the `iconutil` command), so check first if
 # it's available.
 if ! command -v iconutil &> /dev/null; then
     echo "Command \"iconutil\" could not be found! Please run this script on macOS and make sure to install Xcode Command Line Tools"
-    exit
+    exit 1
 fi
 
 echo "Starting build"

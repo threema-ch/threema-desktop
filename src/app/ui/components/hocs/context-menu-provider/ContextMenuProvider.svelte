@@ -120,11 +120,13 @@
                   >{item.icon.name}</MdIcon
                 >
               </span>
-              <span class="label">{item.label}</span>
+              <span class="label" title={item.labelOnHover}>{item.label}</span>
             </MenuItem>
           {:else}
             <MenuItem on:click={() => handleClickItem(item)} disabled={item.disabled}>
-              <span class="label" class:padded={hasAnyIcon}>{item.label}</span>
+              <span class="label" title={item.labelOnHover} class:padded={hasAnyIcon}
+                >{item.label}</span
+              >
             </MenuItem>
           {/if}
         {/each}

@@ -218,7 +218,7 @@ export class OutboundFileMessageModelController
         return await uploadBlobs(
             MessageType.FILE,
             this.uid,
-            this._conversation.uid,
+            this._conversation,
             this._services,
             this.lifetimeGuard,
         );

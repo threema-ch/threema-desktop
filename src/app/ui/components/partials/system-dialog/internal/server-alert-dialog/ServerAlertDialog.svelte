@@ -33,7 +33,10 @@
       case 'other-connection-for-same-identity':
         return [
           {
-            label: $i18n.t('dialog--server-alert.action--dismiss', 'Continue Without Connection'),
+            label: $i18n.t(
+              'dialog--common.action--continue-without-connection',
+              'Continue Without Connection',
+            ),
             onClick: () => {
               onSelectAction?.('dismissed');
               modalComponent?.close();
@@ -41,7 +44,7 @@
             type: 'naked',
           },
           {
-            label: $i18n.t('dialog--server-alert.action--confirm', 'Retry'),
+            label: $i18n.t('dialog--common.action--retry', 'Retry'),
             onClick: () => {
               onSelectAction?.('confirmed');
               modalComponent?.close();
@@ -49,7 +52,7 @@
             type: 'naked',
           },
           {
-            label: $i18n.t('dialog--server-alert.action--relink', 'Relink Device'),
+            label: $i18n.t('dialog--common.action--relink', 'Relink Device'),
             onClick: () => {
               if (!services.isSet()) {
                 log.warn('Cannot unlink the profile because the app services are not yet ready');
@@ -70,7 +73,7 @@
       case 'unknown':
         return [
           {
-            label: $i18n.t('dialog--server-alert.action--ignore', 'Ignore'),
+            label: $i18n.t('dialog--common.action--ignore', 'Ignore'),
             // This is a bit unintuitive but because the error is unknown, we tell the backend with
             // `confirmed` that it should try to reconnect.
             onClick: () => {

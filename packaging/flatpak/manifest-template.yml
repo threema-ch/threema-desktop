@@ -63,8 +63,8 @@ modules:
           - /app/main/ThreemaDesktopLauncher --launcher-target-bin /app/bin/zypak-wrapper.sh /app/main/ThreemaDesktop "$@"
     build-commands:
       # Build and install launcher binary
-      - cd src/launcher/ && cargo --offline fetch --manifest-path Cargo.toml --verbose
-      - cd src/launcher/ && THREEMA_BUILD_FLAVOR='{{flavor}}' cargo --offline build --release --features allow_path_override
+      - cd src/rust/launcher/ && cargo --offline fetch --manifest-path Cargo.toml --verbose
+      - cd src/rust/launcher/ && THREEMA_BUILD_FLAVOR='{{flavor}}' cargo --offline build --release --features allow_path_override
 
       # Install npm dependencies
       #
@@ -85,7 +85,7 @@ modules:
       - cp -a build/electron/packaged/Threema*-linux-* /app/main
       # Install app wrappers
       - install -Dm755 -t /app/bin/ run.sh
-      - install -Dm755 -t /app/main/ src/launcher/target/release/ThreemaDesktopLauncher
+      - install -Dm755 -t /app/main/ src/rust/launcher/target/release/ThreemaDesktopLauncher
       # Install metadata
       - install -Dm644 packaging/metadata/ch.threema.threema-desktop.metainfo.xml /app/share/metainfo/{{app-id}}.metainfo.xml
       - install -Dm644 packaging/metadata/ch.threema.threema-desktop.desktop /app/share/applications/{{app-id}}.desktop

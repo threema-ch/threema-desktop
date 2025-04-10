@@ -1,8 +1,9 @@
+use common::util::constants::BUILD_FLAVOR;
 use std::{env, path::PathBuf};
 
 use home::home_dir;
 
-use crate::{print_error, BUILD_FLAVOR};
+use crate::print_error;
 
 pub fn get_windows_appdata_dir() -> PathBuf {
     if env::consts::OS != "windows" {

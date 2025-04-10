@@ -26,7 +26,8 @@ import {
 import {legacyReactionMappingSteps} from '~/common/network/protocol/task/common/message-reaction';
 import {
     OutgoingCspMessagesTask,
-    type DynamicMessageEncoder,
+    type DynamicMessage,
+    type IndividualMessageProperties,
 } from '~/common/network/protocol/task/csp/outgoing-csp-messages';
 import type {
     CommonMessageProperties,
@@ -41,24 +42,24 @@ import {checkFeatureMaskSupportsFeature, supportsFeature} from '~/common/utils/f
 import {intoUnsignedLong, u64ToHexLe} from '~/common/utils/number';
 
 interface TypedEncoder<TType extends CspE2eType> {
-    readonly type: TType;
     readonly encoder: LayerEncoder<MessageTypeEncoders[TType]>;
+    readonly messageProperties: CommonMessageProperties<TType>;
 }
 
-// Create a factory to create an encoder with the required fallback mechanism
-function reactionEncoder<
+// Create an encoder with the required fallback mechanism
+function reactionSpecifics<
     TReceiverType extends ReceiverType,
     TDefaultType extends ValidCspMessageTypeForReceiver<ReceiverFor<TReceiverType>>,
     TDynamicType extends ValidCspMessageTypeForReceiver<ReceiverFor<TReceiverType>>,
->(encoder: {
+>(specifics: {
     readonly default: TypedEncoder<TDefaultType>;
     readonly legacy: TypedEncoder<TDynamicType> | 'omit';
-}): DynamicMessageEncoder<TReceiverType> {
+}): DynamicMessage<TReceiverType> {
     return (contact: Contact) => {
         if (!checkFeatureMaskSupportsFeature(contact.view.featureMask, 'EMOJI_REACTION_SUPPORT')) {
-            return encoder.legacy;
+            return specifics.legacy;
         }
-        return encoder.default;
+        return specifics.default;
     };
 }
 
@@ -136,9 +137,8 @@ export class OutgoingMessageReactionTask<TReceiver extends AnyReceiver>
         }
 
         // Message properties that apply both to 1:1 and group reaction messages
-        const commonMessageProperties = {
+        const sharedMessageProperties = {
             messageId: randomMessageId(this._services.crypto),
-            cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
             createdAt: new Date(),
             allowUserProfileDistribution: true,
         };
@@ -154,31 +154,33 @@ export class OutgoingMessageReactionTask<TReceiver extends AnyReceiver>
                 // If this is a one to one chat and the recipient does not support emoji reactions,
                 // we send and reflect a legacy reaction if this is a thumbs up / down.
                 if (featureSupport.supported === 'none' && legacyEncoder !== 'omit') {
-                    const messageProperties: CommonMessageProperties<CspE2eStatusUpdateType.DELIVERY_RECEIPT> =
-                        {
-                            ...commonMessageProperties,
-                            type: CspE2eStatusUpdateType.DELIVERY_RECEIPT,
-                        };
+                    const messageProperties: IndividualMessageProperties<
+                        ReceiverType.CONTACT,
+                        CspE2eStatusUpdateType.DELIVERY_RECEIPT
+                    > = {
+                        cspMessageFlags: CspMessageFlags.none(),
+                        type: CspE2eStatusUpdateType.DELIVERY_RECEIPT,
+                    };
                     task = new OutgoingCspMessagesTask(this._services, [
                         {
                             receiver: this._receiverModel,
-                            messageProperties,
-                            encoder: {default: legacyEncoder},
+                            sharedMessageProperties,
+                            specifics: {default: {encoder: legacyEncoder, messageProperties}},
                         },
                     ]);
                 } else {
                     // Otherwise, send and reflect a new reaction message.
                     const messageProperties = {
-                        ...commonMessageProperties,
+                        cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
                         type: CspE2eMessageReactionType.REACTION,
                     } as const;
 
                     task = new OutgoingCspMessagesTask(this._services, [
                         {
                             receiver: this._receiverModel,
-                            messageProperties,
-                            encoder: {
-                                default: defaultEncoder,
+                            sharedMessageProperties,
+                            specifics: {
+                                default: {encoder: defaultEncoder, messageProperties},
                             },
                         },
                     ]);
@@ -213,32 +215,46 @@ export class OutgoingMessageReactionTask<TReceiver extends AnyReceiver>
                               ),
                               innerData: legacyEncoder,
                           });
-                const messageProperties = {
+                const messageProperties: IndividualMessageProperties<
+                    ReceiverType.GROUP,
+                    CspE2eGroupMessageReactionType.GROUP_REACTION
+                > = {
                     type: CspE2eGroupMessageReactionType.GROUP_REACTION,
-                    ...commonMessageProperties,
-                } as const;
-
+                    cspMessageFlags: CspMessageFlags.fromPartial({
+                        sendPushNotification: true,
+                    }),
+                };
                 task = new OutgoingCspMessagesTask(this._services, [
                     {
                         receiver: this._receiverModel,
-                        messageProperties,
-                        encoder: {
-                            default: groupDefaultEncoder,
-                            dynamic: reactionEncoder<
+                        sharedMessageProperties,
+                        specifics: {
+                            default: {encoder: groupDefaultEncoder, messageProperties},
+                            dynamic: reactionSpecifics<
                                 ReceiverType.GROUP,
                                 CspE2eGroupMessageReactionType.GROUP_REACTION,
                                 CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT
                             >({
                                 default: {
                                     encoder: groupDefaultEncoder,
-                                    type: CspE2eGroupMessageReactionType.GROUP_REACTION,
+                                    messageProperties: {
+                                        ...sharedMessageProperties,
+                                        cspMessageFlags: CspMessageFlags.fromPartial({
+                                            sendPushNotification: true,
+                                        }),
+                                        type: CspE2eGroupMessageReactionType.GROUP_REACTION,
+                                    },
                                 },
                                 legacy:
                                     groupLegacyEncoder === 'omit'
                                         ? 'omit'
                                         : {
                                               encoder: groupLegacyEncoder,
-                                              type: CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT,
+                                              messageProperties: {
+                                                  ...sharedMessageProperties,
+                                                  cspMessageFlags: CspMessageFlags.none(),
+                                                  type: CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT,
+                                              },
                                           },
                             }),
                         },

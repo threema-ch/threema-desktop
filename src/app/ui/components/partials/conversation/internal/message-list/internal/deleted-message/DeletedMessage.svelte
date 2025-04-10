@@ -22,7 +22,7 @@
   export let direction: $$Props['direction'];
   export let highlighted: $$Props['highlighted'] = undefined;
   export let id: $$Props['id'];
-  export let sender: $$Props['sender'] = undefined;
+  export let sender: $$Props['sender'];
   export let services: $$Props['services'];
   export let status: $$Props['status'];
 
