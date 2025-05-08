@@ -81,13 +81,19 @@ in standalone clients.-->
     <p>
       {$i18n.t(
         'dialog--device-cookie-mismatch.prose--description-p1',
-        'The server has detected a connection from a different device with the same Threema ID. If you haven’t recently used your Threema ID on another device, please contact our support and send us the log file if possible.',
+        'The server has detected a connection from a different device with the same {shortAppName} ID. If you haven’t recently used your {shortAppName} ID on another device, please contact our support and send us the log file if possible.',
+        {
+          shortAppName: import.meta.env.SHORT_APP_NAME,
+        },
       )}
     </p>
     <p>
       {$i18n.t(
         'dialog--device-cookie-mismatch.prose--description-p2',
-        'If you have used your Threema ID on another device, we recommend relinking the desktop app with your mobile device. The message history can be restored after relinking.',
+        'If you have used your {shortAppName} ID on another device, we recommend relinking the desktop app with your mobile device. The message history can be restored after relinking.',
+        {
+          shortAppName: import.meta.env.SHORT_APP_NAME,
+        },
       )}
     </p>
     {#if errorMessage !== undefined}

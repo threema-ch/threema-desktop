@@ -15,7 +15,7 @@ export async function scrollIntoViewIfNeededAsync({
     options,
     timeoutMs = 3000,
 }: {
-    /* eslint-disable @typescript-eslint/ban-types */
+    /* eslint-disable @typescript-eslint/no-restricted-types */
     container: Element | null | undefined;
     element: Element | null | undefined;
     options?: ScrollIntoViewOptions;
@@ -24,7 +24,7 @@ export async function scrollIntoViewIfNeededAsync({
      * scroll failed. Defaults to `3000` milliseconds.
      */
     timeoutMs?: u53;
-    /* eslint-enable @typescript-eslint/ban-types */
+    /* eslint-enable @typescript-eslint/no-restricted-types */
 }): Promise<void> {
     if (isFullyVisibleVertical({container, element})) {
         return await Promise.resolve();
@@ -50,7 +50,7 @@ async function scrollIntoViewAsync({
     options,
     timeoutMs = 3000,
 }: {
-    /* eslint-disable @typescript-eslint/ban-types */
+    /* eslint-disable @typescript-eslint/no-restricted-types */
     container: Element | null | undefined;
     element: Element | null | undefined;
     options?: ScrollIntoViewOptions;
@@ -59,7 +59,7 @@ async function scrollIntoViewAsync({
      * scroll failed. Defaults to `3000` milliseconds.
      */
     timeoutMs?: u53;
-    /* eslint-enable @typescript-eslint/ban-types */
+    /* eslint-enable @typescript-eslint/no-restricted-types */
 }): Promise<void> {
     // TODO(DESK-1338): Timer usage can be simplified a lot here.
     return await new Promise((resolve, reject) => {

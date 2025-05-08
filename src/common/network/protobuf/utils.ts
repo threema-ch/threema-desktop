@@ -10,7 +10,6 @@ import type * as tag from './tag';
 type ProtobufProperty<T> = T extends
     | boolean
     | string
-    // eslint-disable-next-line no-restricted-syntax
     | number
     | Long
     | Uint8Array

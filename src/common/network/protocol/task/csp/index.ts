@@ -9,6 +9,7 @@ export function getTaskForIncomingCspMessage(
     message: InboundCspTaskMessage['payload'],
 ): RunnableTask<void> {
     switch (message.type) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         case CspPayloadType.INCOMING_MESSAGE:
             return new IncomingMessageTask(services, message.payload);
         default:

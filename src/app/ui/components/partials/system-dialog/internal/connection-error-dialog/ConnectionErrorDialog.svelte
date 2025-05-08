@@ -114,38 +114,52 @@
       <p>
         {$i18n.t(
           'dialog--error-connection.prose--mediator-update-required-p1',
-          'This version of Threema is not compatible with your mediator server. The server uses an outdated protocol version and must be updated first.',
+          'This version of {shortAppName} is not compatible with your mediator server. The server uses an outdated protocol version and must be updated first.',
+          {
+            shortAppName: import.meta.env.SHORT_APP_NAME,
+          },
         )}
       </p>
       <p>
         {$i18n.t(
           'dialog--error-connection.prose--mediator-update-required-p2',
-          'Please contact your Threema server administrator.',
+          'Please contact your {shortAppName} server administrator.',
+          {
+            shortAppName: import.meta.env.SHORT_APP_NAME,
+          },
         )}
       </p>
     {:else if error === 'client-update-required'}
       <p>
         {$i18n.t(
           'dialog--error-connection.markup--client-update-required-p1',
-          'This version of Threema is no longer supported (outdated protocol version).',
+          'This version of {shortAppName} is no longer supported (outdated protocol version).',
+          {
+            shortAppName: import.meta.env.SHORT_APP_NAME,
+          },
         )}
       </p>
-      <p>
-        <SubstitutableText
-          text={$i18n.t(
-            'dialog--error-connection.markup--client-update-required-p2',
-            'To continue using Threema, please <1>update to the latest version</1>.',
-          )}
-        >
-          <a
-            slot="1"
-            href={import.meta.env.URLS.downloadAndInfo.full}
-            target="_blank"
-            rel="noreferrer noopener"
-            let:text>{text}</a
+      {#if import.meta.env.BUILD_VARIANT !== 'custom' && import.meta.env.URLS.downloadAndInfo !== 'hidden'}
+        <p>
+          <SubstitutableText
+            text={$i18n.t(
+              'dialog--error-connection.markup--client-update-required-p2',
+              'To continue using {shortAppName}, please <1>update to the latest version</1>.',
+              {
+                shortAppName: import.meta.env.SHORT_APP_NAME,
+              },
+            )}
           >
-        </SubstitutableText>
-      </p>
+            <a
+              slot="1"
+              href={import.meta.env.URLS.downloadAndInfo.full}
+              target="_blank"
+              rel="noreferrer noopener"
+              let:text>{text}</a
+            >
+          </SubstitutableText>
+        </p>
+      {/if}
     {:else if error === 'client-was-dropped'}
       <p>
         {$i18n.t(
@@ -166,22 +180,24 @@
           'The message history will be restored after relinking.',
         )}
       </p>
-      <p>
-        <SubstitutableText
-          text={$i18n.t(
-            'dialog--error-connection.markup--see-faq',
-            'For more information, see the <1>FAQ</1>.',
-          )}
-        >
-          <a
-            slot="1"
-            href={import.meta.env.URLS.limitations.full}
-            target="_blank"
-            rel="noreferrer noopener"
-            let:text>{text}</a
+      {#if import.meta.env.BUILD_VARIANT !== 'custom' && import.meta.env.URLS.limitations !== 'hidden'}
+        <p>
+          <SubstitutableText
+            text={$i18n.t(
+              'dialog--error-connection.markup--see-faq',
+              'For more information, see the <1>FAQ</1>.',
+            )}
           >
-        </SubstitutableText>
-      </p>
+            <a
+              slot="1"
+              href={import.meta.env.URLS.limitations.full}
+              target="_blank"
+              rel="noreferrer noopener"
+              let:text>{text}</a
+            >
+          </SubstitutableText>
+        </p>
+      {/if}
     {:else if error === 'device-slot-state-mismatch'}
       <p>
         {$i18n.t(
@@ -189,22 +205,24 @@
           'Due to an unexpected error, this device must be re-linked with the server.',
         )}
       </p>
-      <p>
-        <SubstitutableText
-          text={$i18n.t(
-            'dialog--error-connection.markup--see-faq',
-            'For more information, see the <1>FAQ</1>.',
-          )}
-        >
-          <a
-            slot="1"
-            href={import.meta.env.URLS.limitations.full}
-            target="_blank"
-            rel="noreferrer noopener"
-            let:text>{text}</a
+      {#if import.meta.env.BUILD_VARIANT !== 'custom' && import.meta.env.URLS.limitations !== 'hidden'}
+        <p>
+          <SubstitutableText
+            text={$i18n.t(
+              'dialog--error-connection.markup--see-faq',
+              'For more information, see the <1>FAQ</1>.',
+            )}
           >
-        </SubstitutableText>
-      </p>
+            <a
+              slot="1"
+              href={import.meta.env.URLS.limitations.full}
+              target="_blank"
+              rel="noreferrer noopener"
+              let:text>{text}</a
+            >
+          </SubstitutableText>
+        </p>
+      {/if}
     {:else}
       {unreachable(error)}
     {/if}

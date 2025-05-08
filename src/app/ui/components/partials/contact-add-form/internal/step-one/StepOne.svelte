@@ -39,7 +39,10 @@
     <span class="note-enter"
       >{$i18n.t(
         'contacts.prose--add-contact-instructions',
-        'Please enter the Threema ID of the contact you would like to add:',
+        'Please enter the {shortAppName} ID of the contact you would like to add:',
+        {
+          shortAppName: import.meta.env.SHORT_APP_NAME,
+        },
       )}
     </span>
     <div class="threema-id">
@@ -47,7 +50,9 @@
         bind:this={threemaIdTextField}
         bind:value={identity}
         error={identityFieldError}
-        label={$i18n.t('contacts.label--threema-id')}
+        label={$i18n.t('contacts.label--threema-id', '{shortAppName} ID', {
+          shortAppName: import.meta.env.SHORT_APP_NAME,
+        })}
         spellcheck={false}
       />
     </div>
@@ -65,7 +70,7 @@
       <div slot="text" class="wip">Scan Threema ID</div>
     </IconText>
   </div> -->
-    {#if import.meta.env.BUILD_VARIANT === 'work'}
+    {#if import.meta.env.BUILD_VARIANT === 'work' || import.meta.env.BUILD_VARIANT === 'custom'}
       <hr />
       <span class="note-directory">
         {$i18n.t(

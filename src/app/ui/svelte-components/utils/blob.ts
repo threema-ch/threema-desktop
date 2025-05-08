@@ -13,7 +13,7 @@ export async function isBlobAccessible(blob: Blob): Promise<boolean> {
     try {
         await reader.read();
         await reader.cancel();
-    } catch (error) {
+    } catch {
         return false;
     }
 

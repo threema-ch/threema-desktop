@@ -50,6 +50,10 @@ export function applyThemeBranding(
             container.setAttribute('data-branding', 'onprem');
             break;
 
+        case 'custom-onprem':
+            container.setAttribute('data-branding', 'custom');
+            break;
+
         default:
             unreachable(buildFlavor);
     }

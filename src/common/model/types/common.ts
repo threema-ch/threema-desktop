@@ -142,7 +142,6 @@ export type RemoteModelStoreFor<T> =
         ? RemoteModelStore<TModel, TView, TModelController, TCtx, TType>
         : never;
 
-/* eslint-disable @typescript-eslint/no-invalid-void-type */
 export type ControllerUpdate<
     TParams extends readonly unknown[] = [],
     TReturn = void,
@@ -191,30 +190,25 @@ export type ControllerCustomUpdate<
 
 export type ControllerUpdateFromSource<
     TParams extends readonly unknown[] = [],
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
     TReturn = void,
 > = ProxyMarked & Pick<ControllerUpdate<TParams, TReturn>, 'fromLocal' | 'fromRemote' | 'fromSync'>;
 
 export type ControllerUpdateFromLocal<
     TParams extends readonly unknown[] = [],
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
     TReturn = void,
 > = ProxyMarked & Pick<ControllerUpdate<TParams, TReturn>, 'fromLocal'>;
 
 export type ControllerUpdateFromRemote<
     TParams extends readonly unknown[] = [],
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
     TReturn = void,
 > = ProxyMarked & Pick<ControllerUpdate<TParams, TReturn>, 'fromRemote'>;
 
 export type ControllerUpdateFromSync<
     TParams extends readonly unknown[] = [],
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
     TReturn = void,
 > = ProxyMarked & Pick<ControllerUpdate<TParams, TReturn>, 'fromSync'>;
 
 export type ControllerUpdateDirect<
     TParams extends readonly unknown[] = [],
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
     TReturn = void,
 > = ProxyMarked & Pick<ControllerUpdate<TParams, TReturn>, 'direct'>;

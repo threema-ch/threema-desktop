@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import initLibthreema, * as libthreema from 'libthreema';
+
 import {STATIC_CONFIG} from '~/common/config';
 import type {RawDatabaseKey, ServicesForDatabaseFactory} from '~/common/db';
 import type {ServicesForFileStorageFactory} from '~/common/file-storage';
@@ -39,7 +40,6 @@ export async function run(): Promise<void> {
 
             // We make sure that the data received is of the correct type by assertions, since
             // the types specified above could fool us here.
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             const validatedMessage = INITIAL_MESSAGE_SCHEME.parse(data);
             resolve({
                 appPath: validatedMessage.appPath,
@@ -85,12 +85,13 @@ export async function run(): Promise<void> {
     initLog.debug('Initializing WASM packages');
     await initLibthreema();
     const libthreemaLog = logging.logger('libthreema', createLoggerStyle('#5c2751', '#ffffff'));
-    libthreema.initLogging(
+    libthreema.init(
+        {handle: (info: string) => libthreemaLog.error('PANIC!', info)},
         {
-            debug: (message) => libthreemaLog.debug(message),
-            info: (message) => libthreemaLog.info(message),
-            warn: (message) => libthreemaLog.warn(message),
-            error: (message) => libthreemaLog.error(message),
+            debug: libthreemaLog.debug.bind(libthreemaLog),
+            info: libthreemaLog.info.bind(libthreemaLog),
+            warn: libthreemaLog.warn.bind(libthreemaLog),
+            error: libthreemaLog.error.bind(libthreemaLog),
         },
         import.meta.env.DEBUG ? 'debug' : 'info',
     );

@@ -49,11 +49,12 @@
     return timestamp.length - timestamp.split(':').length + 1;
   }
 
-  $: hasNotificationPolicy = notificationPolicy.type !== 'default' || notificationPolicy.isMuted;
   $: notificationPolicyExpired =
     (notificationPolicy.type === 'never' || notificationPolicy.type === 'mentioned') &&
     notificationPolicy.expiresAt !== undefined &&
     $systemTime.current > notificationPolicy.expiresAt;
+  $: hasNotificationPolicy = notificationPolicy.type !== 'default' || notificationPolicy.isMuted;
+  $: hasNonExpiredNotificationPolicy = hasNotificationPolicy && !notificationPolicyExpired;
 </script>
 
 <span class="container">
@@ -93,7 +94,7 @@
     </span>
   {/if}
 
-  {#if hasNotificationPolicy && !notificationPolicyExpired}
+  {#if hasNonExpiredNotificationPolicy}
     {@const hasNeighborLeft = call !== undefined || isBlocked}
 
     <span class="item">
@@ -112,7 +113,7 @@
   {/if}
 
   {#if isPrivate}
-    {@const hasNeighborLeft = call !== undefined || isBlocked || hasNotificationPolicy}
+    {@const hasNeighborLeft = call !== undefined || isBlocked || hasNonExpiredNotificationPolicy}
 
     <span class="item">
       <RadialExclusionMaskProvider cutouts={hasNeighborLeft ? [DEFAULT_CUTOUT] : []}>
@@ -124,7 +125,8 @@
   {/if}
 
   {#if isPinned}
-    {@const hasNeighborLeft = call !== undefined || isBlocked || hasNotificationPolicy || isPrivate}
+    {@const hasNeighborLeft =
+      call !== undefined || isBlocked || hasNonExpiredNotificationPolicy || isPrivate}
 
     <span class="item">
       <RadialExclusionMaskProvider cutouts={hasNeighborLeft ? [DEFAULT_CUTOUT] : []}>
@@ -137,7 +139,7 @@
 
   {#if isTyping}
     {@const hasNeighborLeft =
-      call !== undefined || isBlocked || hasNotificationPolicy || isPrivate || isPinned}
+      call !== undefined || isBlocked || hasNonExpiredNotificationPolicy || isPrivate || isPinned}
 
     <span class="item">
       <RadialExclusionMaskProvider cutouts={hasNeighborLeft ? [DEFAULT_CUTOUT] : []}>

@@ -9,18 +9,18 @@
     "action--group-members-show-less": "Weniger anzeigen",
     "error--add-contact": "Kontakt konnte nicht hinzugefügt werden. Bitte überprüfen Sie Ihre Internetverbindung.",
     "error--add-contact-exists-already": "Kontakt konnte nicht hinzugefügt werden. Bitte versuchen Sie es erneut.",
-    "error--add-contact-threema-id-already-added": "Diese Threema-ID ist bereits in Ihrer Kontaktliste vorhanden.",
-    "error--add-contact-threema-id-is-own": "Ihre eigene Threema-ID kann nicht als Kontakt hinzugefügt werden. Tipp: Erstellen Sie eine Gruppe mit Ihnen als einziges Mitglied, um diesen Chat für persönliche Notizen zu verwenden.",
-    "error--add-contact-threema-id-not-found": "Diese Threema-ID konnte nicht gefunden werden oder wurde gelöscht.",
+    "error--add-contact-threema-id-already-added": "Diese {shortAppName}-ID ist bereits in Ihrer Kontaktliste vorhanden.",
+    "error--add-contact-threema-id-is-own": "Ihre eigene {shortAppName}-ID kann nicht als Kontakt hinzugefügt werden. Tipp: Erstellen Sie eine Gruppe mit Ihnen als einziges Mitglied, um diesen Chat für persönliche Notizen zu verwenden.",
+    "error--add-contact-threema-id-not-found": "Diese {shortAppName}-ID konnte nicht gefunden werden oder wurde gelöscht.",
     "error--add-contact-threema-id-unable-to-validate": "Kontakt konnte nicht auf Gültigkeit überprüft werden. Ist Ihr Gerät mit dem Internet verbunden?",
     "error--contact-detail-load": "Details konnten nicht geladen werden",
     "error--contact-list-load": "Kontakte konnten nicht geladen werden",
-    "hint--badge-consumer": "Dieser Kontakt nutzt die Threema-Version für Privatanwender.",
-    "hint--badge-work": "Dieser Kontakt nutzt die Business-Lösung Threema Work.",
+    "hint--badge-consumer": "Dieser Kontakt nutzt die {shortAppName}-Version für Privatanwender.",
+    "hint--badge-work": "Dieser Kontakt nutzt die Business-Lösung {fullAppName}.",
     "hint--own-profile-picture": "Mein Profilbild",
     "hint--profile-picture": "Profilbild von {name}",
     "label--add-contact": "Neuer Kontakt",
-    "label--badge-work": "Threema Work-Kontakt",
+    "label--badge-work": "{fullAppName}-Kontakt",
     "label--blocked": "Blockiert",
     "label--contact-detail": "Kontaktdetails",
     "label--contacts": "Kontakte",
@@ -38,13 +38,13 @@
     "label--status-creator": "Admin",
     "label--status-inactive": "Inaktiv",
     "label--status-invalid": "Ungültig",
-    "label--threema-id": "Threema-ID",
+    "label--threema-id": "{shortAppName}-ID",
     "label--verification-level": "Vertrauensstufe",
-    "prose--add-contact-instructions": "Bitte geben Sie die Threema-ID des Kontaktes ein, den Sie hinzufügen möchten:",
+    "prose--add-contact-instructions": "Bitte geben Sie die {shortAppName}-ID des Kontaktes ein, den Sie hinzufügen möchten:",
     "prose--add-contact-instructions-work-directory": "Suchen Sie alternativ einen Kontakt im Unternehmensverzeichnis, um ihn zu Ihrer Kontaktliste hinzuzufügen:"
   },
   "dialog--auto-app-update-download": {
-    "prose--downloading": "Threema {version} für Desktop wird heruntergeladen…",
+    "prose--downloading": "{shortAppName} {version} für Desktop wird heruntergeladen…",
     "prose--restarting": "Installation wird vorbereitet…"
   },
   "dialog--auto-app-update-failed": {
@@ -70,12 +70,12 @@
     "label--new-password": "Neues Passwort",
     "label--repeat-new-password": "Neues Passwort wiederholen",
     "label--title": "Passwort ändern",
-    "prose--intro": "Das Passwort schützt Ihre Nachrichten, Threema-ID und weitere Daten auf diesem Computer. Es wird jedes Mal abgefragt, wenn Sie Threema für Desktop öffnen. Bitte beachten Sie, dass das Passwort nicht wiederhergestellt werden kann. Bei Verlust des Passworts muss dieses Gerät neu verknüpft werden."
+    "prose--intro": "Das Passwort schützt Ihre Nachrichten, {shortAppName}-ID und weitere Daten auf diesem Computer. Es wird jedes Mal abgefragt, wenn Sie {shortAppName} für Desktop öffnen. Bitte beachten Sie, dass das Passwort nicht wiederhergestellt werden kann. Bei Verlust des Passworts muss dieses Gerät neu verknüpft werden."
   },
   "dialog--change-password-confirmation": {
     "label--title": "Passwort ändern",
     "prose--description": "Bitte vergewissern Sie sich, dass Sie dieses neue Passwort zur Eingabe bereit haben. Bei der Anmeldung besteht die Option, das Passwort zu speichern.",
-    "prose--intro": "Threema für Desktop muss neu gestartet werden, um Ihre Änderungen zu speichern.",
+    "prose--intro": "{shortAppName} für Desktop muss neu gestartet werden, um Ihre Änderungen zu speichern.",
     "prose--note": "Achtung: Sie müssen sich mit Ihrem neuen Passwort authentifizieren."
   },
   "dialog--clear-logs": {
@@ -108,7 +108,7 @@
   "dialog--d2d-protocol-version-incompatible": {
     "error--no-connection": "Die Verknüpfung dieses Geräts konnte nicht aufgehoben werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
     "label--title": "Inkompatible App-Version auf Ihrem Mobilgerät",
-    "prose--description-p1": "Auf Ihrem Mobilgerät ist eine Threema-Version installiert, die nicht mit dieser Version von Threema für Desktop kompatibel ist. Um Synchronisationsfehler zu vermeiden, aktualisieren Sie bitte die App auf Ihrem Mobilgerät und verknüpfen sie das Gerät erneut mit Threema für Desktop.",
+    "prose--description-p1": "Auf Ihrem Mobilgerät ist eine {shortAppName}-Version installiert, die nicht mit dieser Version von {shortAppName} für Desktop kompatibel ist. Um Synchronisationsfehler zu vermeiden, aktualisieren Sie bitte die App auf Ihrem Mobilgerät und verknüpfen sie das Gerät erneut mit {shortAppName} für Desktop.",
     "prose--description-p2": "Die Chatverläufe können nach erneutem Verknüpfen wiederhergestellt werden."
   },
   "dialog--delete-conversation": {
@@ -128,18 +128,18 @@
     "action--delete-locally": "Auf diesem Gerät löschen",
     "label--title": "Nachricht löschen",
     "prose--delete-message": "Wollen Sie diese Nachricht wirklich löschen?",
-    "prose--delete-not-supported-partial": "Hinweis: Falls Sie «{buttonText}» wählen, wird die Nachricht bei folgenden Gruppenmitgliedern nicht gelöscht: {names}{n, plural, =0 {.} other { und {n} weitere.}} Um gelöschte Nachrichten zu unterstützen, müssen diese Kontakte Threema auf die neueste Version aktualisieren."
+    "prose--delete-not-supported-partial": "Hinweis: Falls Sie «{buttonText}» wählen, wird die Nachricht bei folgenden Gruppenmitgliedern nicht gelöscht: {names}{n, plural, =0 {.} other { und {n} weitere.}} Um gelöschte Nachrichten zu unterstützen, müssen diese Kontakte {shortAppName} auf die neueste Version aktualisieren."
   },
   "dialog--delete-profile": {
-    "label--title": "Threema-ID und Daten löschen",
-    "prose--description": "Diese Threema-ID und alle zugehörigen Daten werden von diesem Gerät gelöscht (nicht jedoch von den verknüpften Geräten).",
+    "label--title": "{shortAppName}-ID und Daten löschen",
+    "prose--description": "Diese {shortAppName}-ID und alle zugehörigen Daten werden von diesem Gerät gelöscht (nicht jedoch von den verknüpften Geräten).",
     "prose--failed": "Das Löschen Ihrer Daten von diesem Gerät ist fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut."
   },
   "dialog--device-cookie-mismatch": {
     "error--no-connection": "Die Verknüpfung dieses Geräts konnte nicht aufgehoben werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
     "label--title": "Verbindung von einem anderen Gerät erkannt",
-    "prose--description-p1": "Der Server hat eine Verbindung von einem anderen Gerät mit derselben Threema-ID erkannt. Falls Sie Ihre Threema-ID nicht kürzlich auf einem anderen Gerät verwendet haben, kontaktieren Sie bitte unseren Support und senden Sie wenn möglich die Logdatei mit.",
-    "prose--description-p2": "Falls Sie Ihre Threema-ID auf einem anderen Gerät verwendet haben, empfehlen wir, die Desktop-App erneut mit dem Mobilgerät zu verknüpfen. Die Chatverläufe können nach erneutem Verknüpfen wiederhergestellt werden."
+    "prose--description-p1": "Der Server hat eine Verbindung von einem anderen Gerät mit derselben {shortAppName}-ID erkannt. Falls Sie Ihre {shortAppName}-ID nicht kürzlich auf einem anderen Gerät verwendet haben, kontaktieren Sie bitte unseren Support und senden Sie wenn möglich die Logdatei mit.",
+    "prose--description-p2": "Falls Sie Ihre {shortAppName}-ID auf einem anderen Gerät verwendet haben, empfehlen wir, die Desktop-App erneut mit dem Mobilgerät zu verknüpfen. Die Chatverläufe können nach erneutem Verknüpfen wiederhergestellt werden."
   },
   "dialog--device-cookie-missing": {
     "error--no-connection": "Die Verknüpfung dieses Geräts konnte nicht aufgehoben werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
@@ -175,21 +175,21 @@
     "action--confirm-reconnect": "Erneut verbinden",
     "label--title": "Verbindung fehlgeschlagen",
     "markup--backup": "Die Chatverläufe werden nach erneutem Verknüpfen wiederhergestellt.",
-    "markup--client-update-required-p1": "Diese Version von Threema wird nicht mehr unterstützt (veraltete Protokollversion).",
-    "markup--client-update-required-p2": "Bitte <1>installieren Sie die neueste Version</1>, um Threema weiterhin zu nutzen.",
+    "markup--client-update-required-p1": "Diese Version von {shortAppName} wird nicht mehr unterstützt (veraltete Protokollversion).",
+    "markup--client-update-required-p2": "Bitte <1>installieren Sie die neueste Version</1>, um {shortAppName} weiterhin zu nutzen.",
     "markup--client-was-dropped-p1": "Die Verknüpfung mit diesem Gerät wurde aufgehoben, weshalb im Moment keine neuen Nachrichten mehr gesendet oder empfangen werden können.",
     "markup--client-was-dropped-p2": "Falls die Aufhebung der Verknüpfung nicht durch Sie veranlasst wurde, beachten Sie bitte, dass während der Beta-Phase technische Gründe dafür verantwortlich sein können. Wir bitten um Verständnis.",
     "markup--device-slot-mismatch-p1": "Aufgrund eines unerwarteten Fehlers muss dieses Gerät neu mit dem Server verknüpft werden.",
     "markup--see-faq": "Weitere Details finden Sie in <1>diesem FAQ-Eintrag</1>.",
-    "prose--mediator-update-required-p1": "Diese Version von Threema ist nicht mit Ihrem Mediator-Server kompatibel. Der Server verwendet eine veraltete Protokollversion und muss zuerst aktualisiert werden.",
+    "prose--mediator-update-required-p1": "Diese Version von {shortAppName} ist nicht mit Ihrem Mediator-Server kompatibel. Der Server verwendet eine veraltete Protokollversion und muss zuerst aktualisiert werden.",
     "prose--mediator-update-required-p2": "Bitte kontaktieren Sie Ihren Server-Administrator."
   },
   "dialog--forgot-password": {
     "label--title": "Passwort vergessen",
-    "prose--step-1-description-p1": "Aus Sicherheitsgründen lässt sich das Passwort von Threema für Desktop nicht wiederherstellen. Um die Desktop-App weiter nutzen zu können, müssen Sie sie erneut mit Ihrem Mobilgerät verknüpfen. Klicken Sie «Weiter» für die genauen Anweisungen.",
+    "prose--step-1-description-p1": "Aus Sicherheitsgründen lässt sich das Passwort von {shortAppName} für Desktop nicht wiederherstellen. Um die Desktop-App weiter nutzen zu können, müssen Sie sie erneut mit Ihrem Mobilgerät verknüpfen. Klicken Sie «Weiter» für die genauen Anweisungen.",
     "prose--step-2-description-p1": "Bitte führen Sie folgende Schritte aus, um Ihr Gerät neu zu verknüpfen:",
     "prose--step-2-description-p2": "Hinweis: Bei erneutem Verknüpfen gehen die Nachrichten auf diesem Gerät verloren (aber nicht auf Ihren anderen Geräten).",
-    "prose--step-2-list-step-1": "Entfernen Sie dieses Gerät auf Ihrem Mobiltelefon unter «Einstellungen > Threema 2.0 für Desktop (Beta)»",
+    "prose--step-2-list-step-1": "Entfernen Sie dieses Gerät auf Ihrem Mobiltelefon unter «Einstellungen > {shortAppName} 2.0 für Desktop (Beta)»",
     "prose--step-2-list-step-2": "Klicken Sie hier auf «Neu verknüpfen», um die Desktop-App erneut zu verknüpfen"
   },
   "dialog--forward-message": {
@@ -197,29 +197,29 @@
   },
   "dialog--id-information": {
     "label--public-key": "Öffentlicher Schlüssel",
-    "label--title": "Threema-ID",
-    "prose--threema-id-description-p1": "Bei der ersten Nutzung vom Threema wird jedem Nutzer eine zufällig erzeugte, achtstellige Threema-ID zugeteilt. Diese Threema-ID ist Ihre eindeutige Adresse bei Threema. Dadurch ist es möglich, Threema komplett anonym zu nutzen, ohne private Daten preisgeben zu müssen.",
-    "prose--threema-id-description-p2": "Ihre Threema-ID ist nur eine Komponente Ihrer Identität bei Threema. Die zweite Komponente ist das sogenannte Schlüsselpaar (bestehend aus einem privaten und einem öffentlichen Schlüssel), welches für die sichere Verschlüsselung benötigt wird. Ihre Threema-ID ist untrennbar mit Ihrem Schlüsselpaar verbunden. Der private Schlüssel verbleibt auf Ihrem Handy, während der öffentliche Schlüssel auf die Threema-Server hochgeladen wird, welche diesen an Ihre Gesprächspartner verteilen. Auf dem Handy Ihres Gesprächspartners werden Nachrichten an Sie mit Ihrem öffentlichen Schlüssel verschlüsselt. Diese Nachrichten können ausschliesslich mit Ihrem privaten Schlüssel wieder entschlüsselt werden."
+    "label--title": "{shortAppName}-ID",
+    "prose--threema-id-description-p1": "Bei der ersten Nutzung vom {shortAppName} wird jedem Nutzer eine zufällig erzeugte, achtstellige {shortAppName}-ID zugeteilt. Diese {shortAppName}-ID ist Ihre eindeutige Adresse bei {shortAppName}. Dadurch ist es möglich, {shortAppName} komplett anonym zu nutzen, ohne private Daten preisgeben zu müssen.",
+    "prose--threema-id-description-p2": "Ihre {shortAppName}-ID ist nur eine Komponente Ihrer Identität bei {shortAppName}. Die zweite Komponente ist das sogenannte Schlüsselpaar (bestehend aus einem privaten und einem öffentlichen Schlüssel), welches für die sichere Verschlüsselung benötigt wird. Ihre {shortAppName}-ID ist untrennbar mit Ihrem Schlüsselpaar verbunden. Der private Schlüssel verbleibt auf Ihrem Handy, während der öffentliche Schlüssel auf die {shortAppName}-Server hochgeladen wird, welche diesen an Ihre Gesprächspartner verteilen. Auf dem Handy Ihres Gesprächspartners werden Nachrichten an Sie mit Ihrem öffentlichen Schlüssel verschlüsselt. Diese Nachrichten können ausschliesslich mit Ihrem privaten Schlüssel wieder entschlüsselt werden."
   },
   "dialog--invalid-work-credentials": {
     "action--store-credentials": "Zugangsdaten speichern und schliessen",
     "error--incorrect-password": "Das eingegebene Passwort ist falsch. Bitte versuchen Sie es erneut.",
     "error--invalid-credentials": "Ungültige Zugangsdaten: {message}",
     "error--unlinking-failed": "Geräte-Verknüpfung konnte nicht aufgehoben werden. Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
-    "error--validation-failed": "Work-Zugangsdaten konnten nicht validiert werden. Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "error--validation-failed": "{fullAppName}-Zugangsdaten konnten nicht validiert werden. Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
     "label--app-password": "App-Passwort",
     "label--check-credentials": "Zugangsdaten prüfen",
     "label--password": "Passwort",
     "label--subtitle-option-1": "Option 1: Gültige Zugangsdaten eingeben",
     "label--subtitle-option-2": "Option 2: Gerät neu verknüpfen",
-    "label--title": "Ungültige Threema Work-Zugangsdaten",
+    "label--title": "Ungültige {fullAppName}-Zugangsdaten",
     "label--username": "Benutzername",
     "prose--credentials-valid": "Zugangsdaten sind gültig! Bitte geben Sie Ihr App-Passwort ein, um die aktualisierten Zugangsdaten zu speichern:",
-    "prose--description-enter-credentials": "Bitte geben Sie gültige Threema Work-Zugangsdaten ein. Wenn Sie die Zugangsdaten nicht kennen, kontaktieren Sie Ihren Threema Work-Administrator",
-    "prose--description-p1": "Die Zugangsdaten für Threema Work sind ungültig. Entweder wurden sie durch Ihren Threema Work-Administrator deaktiviert, oder die Lizenz von Threema Work ist abgelaufen.",
-    "prose--description-p2": "Um {appName} weiterhin zu verwenden, haben Sie zwei Möglichkeiten:",
-    "prose--description-relink": "Heben Sie die bestehende Verknüpfung auf und verknüpfen Sie {appName} für Desktop erneut mit Ihrem Mobilgerät. Die Chatverläufe werden nach erneutem Verknüpfen wiederhergestellt.",
-    "prose--update-success": "Threema Work-Zugangsdaten erfolgreich aktualisiert"
+    "prose--description-enter-credentials": "Bitte geben Sie gültige {fullAppName}-Zugangsdaten ein. Wenn Sie die Zugangsdaten nicht kennen, kontaktieren Sie Ihren {fullAppName}-Administrator",
+    "prose--description-p1": "Die Zugangsdaten für {fullAppName} sind ungültig. Entweder wurden sie durch Ihren {fullAppName}-Administrator deaktiviert, oder die Lizenz von {fullAppName} ist abgelaufen.",
+    "prose--description-p2": "Um {fullAppName} weiterhin zu verwenden, haben Sie zwei Möglichkeiten:",
+    "prose--description-relink": "Heben Sie die bestehende Verknüpfung auf und verknüpfen Sie {fullAppName} für Desktop erneut mit Ihrem Mobilgerät. Die Chatverläufe werden nach erneutem Verknüpfen wiederhergestellt.",
+    "prose--update-success": "{fullAppName}-Zugangsdaten erfolgreich aktualisiert"
   },
   "dialog--linking-confirm-emoji": {
     "label--title": "Bestätigen Sie die Bilder auf Ihrem Mobilgerät."
@@ -235,8 +235,8 @@
     "label--title-connection-error-protocol": "Protokollfehler",
     "label--title-connection-error-timeout": "Verknüpfungsvorgang abgelaufen",
     "label--title-generic": "Verknüpfung nicht erfolgreich",
-    "label--title-invalid-identity": "Widerrufene oder unbekannte Threema-ID",
-    "label--title-invalid-work-credentials": "Ungültige Threema Work-Zugangsdaten",
+    "label--title-invalid-identity": "Widerrufene oder unbekannte {shortAppName}-ID",
+    "label--title-invalid-work-credentials": "Ungültige {fullAppName}-Zugangsdaten",
     "label--title-rendezvous-error-timeout": "Verknüpfungsvorgang abgelaufen",
     "label--title-restoration-failed": "Wiederherstellung der alten Nachrichten fehlgeschlagen",
     "label--title-restore-error": "Datenwiederherstellung fehlgeschlagen",
@@ -244,10 +244,11 @@
     "prose--message-connection-error-generic": "Die Verbindung zum Server wurde unterbrochen, bevor die Verknüpfung abgeschlossen werden konnte. Bitte prüfen Sie Ihre Internetverbindung, und versuchen Sie es erneut.",
     "prose--message-connection-error-protocol": "Die Verknüpfung ist aufgrund eines Protokollfehlers fehlgeschlagen. Bitte versuchen Sie es erneut.",
     "prose--message-generic": "Während der Verknüpfung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-    "prose--message-invalid-identity": "Die Threema-ID, die beim Verknüpfen verwendet wurde, ist ungültig oder wurde widerrufen.",
-    "prose--message-invalid-work-credentials": "Die Zugangsdaten für Threema Work sind ungültig oder abgelaufen. Bitte starten Sie die App auf dem Mobilgerät neu und wiederholen Sie den Vorgang, oder kontaktieren Sie Ihren Threema Work-Administrator.",
-    "prose--message-wrong-app-variant-consumer-error": "Es ist nicht möglich, Ihre Threema-ID mit dieser App zu verknüpfen. Nutzen Sie auf dem Mobilgerät Threema Work, dann laden Sie die Desktop-App von <1 /> herunter.",
-    "prose--message-wrong-app-variant-work-error": "Es ist nicht möglich, Ihre Threema-ID mit dieser App zu verknüpfen. Nutzen Sie auf dem Mobilgerät Threema für Privatanwender, dann laden Sie die Desktop-App von <1 /> herunter.",
+    "prose--message-invalid-identity": "Die {shortAppName}-ID, die beim Verknüpfen verwendet wurde, ist ungültig oder wurde widerrufen.",
+    "prose--message-invalid-work-credentials": "Die Zugangsdaten für {fullAppName} sind ungültig oder abgelaufen. Bitte starten Sie die App auf dem Mobilgerät neu und wiederholen Sie den Vorgang, oder kontaktieren Sie Ihren {fullAppName}-Administrator.",
+    "prose--message-wrong-app-variant-consumer-error": "Es ist nicht möglich, Ihre {shortAppName}-ID mit dieser App zu verknüpfen. Nutzen Sie auf dem Mobilgerät {fullAppName}, dann laden Sie die Desktop-App von <1 /> herunter.",
+    "prose--message-wrong-app-variant-custom-error": "Es ist nicht möglich, Ihre {shortAppName}-ID mit dieser App zu verknüpfen.",
+    "prose--message-wrong-app-variant-work-error": "Es ist nicht möglich, Ihre {shortAppName}-ID mit dieser App zu verknüpfen. Nutzen Sie auf dem Mobilgerät {shortAppName} für Privatanwender, dann laden Sie die Desktop-App von <1 /> herunter.",
     "prose--restoration-failed": "Die Wiederherstellung bestehender Nachrichten ist fehlgeschlagen. Bitte versuchen Sie es erneut oder fahren Sie fort, ohne Ihre bestehenden Nachrichten wiederherzustellen."
   },
   "dialog--linking-old-profile-password": {
@@ -262,28 +263,30 @@
     "error--credentials-error": "Die angegebenen Zugangsdaten können nich verifiziert werden. Bitte stellen Sie sicher, dass die eingegebenen Zugangsdaten korrekt sind, oder kontaktieren Sie Ihren Administrator.",
     "error--fetch-error": "Die angegebene URL ist ungültig. Bitte stellen Sie sicher, dass URL und Zugangsdaten übereinstimmen, oder kontaktieren Sie Ihren Administrator.",
     "error--fetch-error-connection": "Die angegebene URL ist nicht erreichbar. Bitte prüfen Sie Ihre Netzwerkverbindung, oder kontaktieren Sie Ihren Administrator.",
-    "label--oppf-file": "Threema OnPrem",
+    "label--oppf-file": "{fullAppName}",
     "label--password": "Passwort",
     "label--url": "URL",
     "label--username": "Benutzername",
-    "prose--enter-config": "Threema OnPrem ist der selbstgehostete sichere Messenger für Unternehmen. Bitte geben Sie die Zugangsdaten ein, die Sie von Ihrem Unternehmen erhalten haben.",
-    "prose--forget-credentials": "Zugangsdaten vergessen? Bitte kontaktieren Sie Ihren Threema OnPrem-Administrator.",
-    "prose--private-user": "Falls Sie Privatanwender sind, laden Sie Threema von <1 /> herunter."
+    "prose--enter-config": "{fullAppName} ist der selbstgehostete sichere Messenger für Unternehmen. Bitte geben Sie die Zugangsdaten ein, die Sie von Ihrem Unternehmen erhalten haben.",
+    "prose--forget-credentials": "Zugangsdaten vergessen? Bitte kontaktieren Sie Ihren {fullAppName}-Administrator.",
+    "prose--private-user": "Falls Sie Privatanwender sind, laden Sie {shortAppName} von <1 /> herunter."
   },
   "dialog--linking-restoration-identity-mismatch": {
     "label--continue": "Ohne Chatverläufe verknüpfen",
     "label--title": "Nachrichten wiederherstellen",
-    "prose--intro": "Auf diesem Gerät wurde zuvor eine andere Threema-ID verwendet. Ihre Chatverläufe können nicht wiederhergestellt werden."
+    "prose--intro": "Auf diesem Gerät wurde zuvor eine andere {shortAppName}-ID verwendet. Ihre Chatverläufe können nicht wiederhergestellt werden."
   },
   "dialog--linking-scan": {
     "label--connecting": "Wird verbunden",
     "label--step-1": "Schritt 1:",
     "label--step-2": "Schritt 2:",
     "label--step-3": "Schritt 3:",
-    "label--title": "Verknüpfen Sie Ihr iOS-Gerät",
-    "markup--intro": "Diese Beta-Version kann zusammen mit {threema} für iOS verwendet werden. Bitte beachten Sie, dass noch nicht alle Funktionen verfügbar sind. <1>Mehr erfahren</1>",
-    "markup--step-1": "Öffnen Sie die {threema}-App auf Ihrem Mobilgerät",
-    "markup--step-2": "Navigieren Sie in der App zu «<1>Einstellungen</1> > <1>Threema 2.0 für Desktop (Beta)</1>», und tippen Sie auf «<1>Gerät hinzufügen</1>»",
+    "label--title": "Verknüpfen Sie Ihr Mobilgerät",
+    "markup--intro-s1": "Diese Beta-Version kann zusammen mit der {mobileAppName}-App verwendet werden. Bitte beachten Sie, dass noch nicht alle Funktionen verfügbar sind.",
+    "markup--intro-s2": "<1>Mehr erfahren</1>",
+    "markup--step-1": "Öffnen Sie die {mobileAppName}-App auf Ihrem Mobilgerät",
+    "markup--step-2-android": "Android: Öffnen Sie das Hauptmenü, navigieren Sie zu «<1>{shortAppName} 2.0 für Desktop (Beta)</1>», und tippen Sie auf «<1>Gerät hinzufügen</1>»",
+    "markup--step-2-ios": "iOS: Navigieren Sie zu «<1>Einstellungen</1> > <1>{shortAppName} 2.0 für Desktop (Beta)</1>», und tippen Sie auf «<1>Gerät hinzufügen</1>»",
     "markup--step-3": "Scannen Sie diesen QR-Code"
   },
   "dialog--linking-set-password": {
@@ -294,15 +297,15 @@
     "label--save-password": "Save securely on device",
     "label--title": "Passwort festlegen",
     "prose---save-password-hint-false": "Sie müssen beim Starten der Desktop-App jedes mal Ihr Passwort eingeben.",
-    "prose--intro": "Das Passwort schützt Ihre Nachrichten, Threema-ID und weitere Daten auf diesem Computer. Es wird jedes Mal abgefragt, wenn Sie Threema für Desktop öffnen.",
+    "prose--intro": "Das Passwort schützt Ihre Nachrichten, {shortAppName}-ID und weitere Daten auf diesem Computer. Es wird jedes Mal abgefragt, wenn Sie {shortAppName} für Desktop öffnen.",
     "prose--save-password--hint-true": "Sie werden automatisch angemeldet, wenn Sie die Desktop-App öffnen.",
     "prose--save-password-tooltip": "Ihr Passwort wird mithilfe Ihres System-Schlüsselbunds abgelegt.",
-    "prose--save-password-tooltip-unavailable": "Threema für Desktop konnte keinen System-Schlüsselbund auf Ihrem Gerät finden."
+    "prose--save-password-tooltip-unavailable": "{shortAppName} für Desktop konnte keinen System-Schlüsselbund auf Ihrem Gerät finden."
   },
   "dialog--linking-success": {
-    "action--confirm": "Threema jetzt verwenden",
+    "action--confirm": "{shortAppName} jetzt verwenden",
     "label--title": "Gerät erfolgreich verknüpft",
-    "markup--description": "{threema} lässt sich nun auf diesem Computer verwenden <1/>(auch wenn das iOS-Gerät ausgeschaltet oder nicht mit dem Internet verbunden ist)."
+    "markup--description": "{mobileAppName} lässt sich nun auf diesem Computer verwenden <1/>(auch wenn das Mobilgerät ausgeschaltet oder nicht mit dem Internet verbunden ist)."
   },
   "dialog--linking-sync": {
     "label--title-encrypting": "Daten werden mit Ihrem Passwort verschlüsselt",
@@ -317,7 +320,7 @@
     "markup--macos-p1": "Bitte laden Sie die neueste Version von <1 /> herunter und installieren Sie diese.",
     "markup--other-os-p1": "Bitte aktualisieren Sie {name}.",
     "markup--windows-p1": "Bitte laden Sie die neueste Version von <1 /> herunter und installieren Sie diese.",
-    "prose--intro": "Ein Update für Threema ist verfügbar!"
+    "prose--intro": "Ein Update für {shortAppName} ist verfügbar!"
   },
   "dialog--media-message-viewer": {
     "error--media-not-loaded": "Medium konnte nicht geladen werden.",
@@ -340,19 +343,19 @@
     "prose--empty-caption": "Kein Text"
   },
   "dialog--missing-work-credentials": {
-    "label--title": "Fehlende Threema Work-Zugangsdaten",
-    "prose--description": "Es wurden keine Zugangsdaten für Threema Work gefunden. Um die Desktop-App weiterhin nutzen zu können, müssen Sie dieses Gerät neu verknüpfen. Ihr Nachrichtenverlauf kann dabei wiederhergestellt werden."
+    "label--title": "Fehlende {fullAppName}-Zugangsdaten",
+    "prose--description": "Es wurden keine Zugangsdaten für {fullAppName} gefunden. Um die Desktop-App weiterhin nutzen zu können, müssen Sie dieses Gerät neu verknüpfen. Ihr Nachrichtenverlauf kann dabei wiederhergestellt werden."
   },
   "dialog--relink-profile": {
     "label--title": "Gerät neu verknüfpen",
     "prose--description-p1": "Dabei wird die Verknüpfung dieses Geräts aufgehoben, und die App wird neu gestartet.",
-    "prose--description-p2": "Ihr Nachrichtenverlauf kann wiederhergestellt werden, sofern Sie das Gerät mit derselben Threema-ID verknüpfen wie zuvor.",
+    "prose--description-p2": "Ihr Nachrichtenverlauf kann wiederhergestellt werden, sofern Sie das Gerät mit derselben {shortAppName}-ID verknüpfen wie zuvor.",
     "prose--failed": "Das Gerät konnte nicht neu verknüpft werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut."
   },
   "dialog--server-alert": {
-    "error--another-device-p1": "Der Server hat eine Verbindung von einem anderen Gerät mit derselben Threema-ID erkannt.",
-    "error--another-device-p2": "Wenn Sie Ihre Threema-ID in der Zwischenzeit nicht auf einem anderen Gerät oder mit einer älteren App-Version genutzt haben, kontaktieren Sie bitte den Support und senden Sie falls möglich die Logdatei mit.",
-    "error--another-device-p3": "Ansonsten empfehlen wir Ihnen, Threema Desktop neu zu verknüpfen. Ihr Nachrichtenverlauf kann dabei wiederhergestellt werden.",
+    "error--another-device-p1": "Der Server hat eine Verbindung von einem anderen Gerät mit derselben {shortAppName}-ID erkannt.",
+    "error--another-device-p2": "Wenn Sie Ihre {shortAppName}-ID in der Zwischenzeit nicht auf einem anderen Gerät oder mit einer älteren App-Version genutzt haben, kontaktieren Sie bitte den Support und senden Sie falls möglich die Logdatei mit.",
+    "error--another-device-p3": "Ansonsten empfehlen wir Ihnen, {shortAppName} Desktop neu zu verknüpfen. Ihr Nachrichtenverlauf kann dabei wiederhergestellt werden.",
     "error--no-connection": "Die Verknüpfung dieses Geräts konnte nicht aufgehoben werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
     "label--title": "Nachricht vom Server"
   },
@@ -363,7 +366,7 @@
     "label--title": "App-Passwort eingeben",
     "markup--password-hint": "Passwort vergessen?",
     "prose--save-password-tooltip": "Ihr Passwort wird mithilfe Ihres System-Schlüsselbunds abgelegt.",
-    "prose--save-password-tooltip-unavailable": "Threema für Desktop konnte keinen System-Schlüsselbund auf Ihrem Gerät finden."
+    "prose--save-password-tooltip-unavailable": "{shortAppName} für Desktop konnte keinen System-Schlüsselbund auf Ihrem Gerät finden."
   },
   "dialog--toggle-logger": {
     "label--application-log-path": "Applikations-Log",
@@ -384,8 +387,8 @@
   "dialog--unrecoverable-state": {
     "label--title": "Ungültiger Zustand",
     "prose--description-p1": "Die lokalen Daten befinden sich in einem ungültigen Zustand. Um Datenverlust zu vermeiden, können im Moment keine Nachrichten versendet oder empfangen werden. Wir bitten um Verständnis.",
-    "prose--description-p2": "Um Threema weiterhin zu nutzen, müssen Sie Ihr lokales Profil entfernen und das Gerät neu verknüpfen.",
-    "prose--description-p3": "Bitte melden Sie diesen Fehler dem Threema-Support über die App auf dem Mobilgerät («Einstellungen > Beta Feedback»). Hinweis: Speichern Sie Ihre Logs, bevor Sie das Gerät neu verknüpfen, da sie bei erneuter Verknüpfung gelöscht werden."
+    "prose--description-p2": "Um {shortAppName} weiterhin zu nutzen, müssen Sie Ihr lokales Profil entfernen und das Gerät neu verknüpfen.",
+    "prose--description-p3": "Bitte melden Sie diesen Fehler dem {shortAppName}-Support über die App auf dem Mobilgerät («Einstellungen > Beta Feedback»). Hinweis: Speichern Sie Ihre Logs, bevor Sie das Gerät neu verknüpfen, da sie bei erneuter Verknüpfung gelöscht werden."
   },
   "dialog--unsupported-feature-protected-conversation": {
     "label--title": "Privater Chat",
@@ -395,9 +398,9 @@
     "label--title": "Vertrauensstufen",
     "prose--intro": "Die Punkte geben die Vertrauensstufe eines Kontakts an. ",
     "prose--level-fully-verified-default": "Der öffentliche Schlüssel der Person wurde persönlich durch Scannen des QR-Codes verifiziert. Solange das Gerät dieser Person nicht gestohlen/gehackt wurde, ist es ausgeschlossen, dass ein Dritter Nachrichten von dieser Person fälschen oder Nachrichten an diese Person mitlesen kann.",
-    "prose--level-fully-verified-work": "Diese Vertrauensstufe ist nur in Threema Work verfügbar und zeigt an, dass Sie den öffentlichen Schlüssel dieses internen Kontakts durch Scannen des QR-Codes verifiziert haben.",
+    "prose--level-fully-verified-work": "Diese Vertrauensstufe ist nur in {fullAppName} verfügbar und zeigt an, dass Sie den öffentlichen Schlüssel dieses internen Kontakts durch Scannen des QR-Codes verifiziert haben.",
     "prose--level-server-verified-default": "Der Kontakt wurde im Adressbuch gefunden (mit Handynummer oder E-Mail-Adresse). Da der Server Handynummern und E-Mail-Adressen prüft (SMS bzw. E-Mail mit Aktivierungslink), kann man sich ohne zusätzliches Verifizieren relativ sicher sein, dass diese Person wirklich diejenige ist, die man meint.",
-    "prose--level-server-verified-work": "Diese Vertrauensstufe ist nur in Threema Work verfügbar und zeigt an, dass es sich um einen internen Firmenkontakt handelt.",
+    "prose--level-server-verified-work": "Diese Vertrauensstufe ist nur in {fullAppName} verfügbar und zeigt an, dass es sich um einen internen Firmenkontakt handelt.",
     "prose--level-unverified": "ID und öffentlicher Schlüssel wurden vom Server geholt, weil zum ersten Mal von diesem Kontakt eine Nachricht eingetroffen ist (oder der Kontakt manuell hinzugefügt wurde). Da kein passender Kontakt im Adressbuch gefunden wurde (mit Handynummer oder E-Mail-Adresse), kann man sich nicht sicher sein, ob die Person wirklich die ist, die sie in ihren Nachrichten vorgibt zu sein."
   },
   "emoji-picker": {
@@ -500,10 +503,10 @@
     "prose--edit-message": "Nachricht bearbeiten",
     "prose--edit-not-supported": "Diese Nachricht kann nicht bearbeitet werden, weil die App-Version des Empfängers diese Funktion nicht unterstützt.",
     "prose--edit-not-supported-group": "Diese Nachricht kann nicht bearbeitet werden, weil kein Gruppenmitglied eine App-Version hat, die diese Funktion unterstützt.",
-    "prose--edit-not-supported-partial": "Folgende Gruppenmitglieder werden Ihre Änderungen nicht sehen: {names}{n, plural, =0 {.} other { und {n} weitere.}} Um bearbeitete Nachrichten zu sehen, müssen diese Kontakte Threema auf die neueste Version aktualisieren.",
+    "prose--edit-not-supported-partial": "Folgende Gruppenmitglieder werden Ihre Änderungen nicht sehen: {names}{n, plural, =0 {.} other { und {n} weitere.}} Um bearbeitete Nachrichten zu sehen, müssen diese Kontakte {shortAppName} auf die neueste Version aktualisieren.",
     "prose--emoji-reaction-not-supported": "Auf diese Nachricht kann nicht reagiert werden, weil die App-Version des Empfängers diese Funktion nicht unterstützt.",
     "prose--emoji-reaction-not-supported-group": "Auf diese Nachricht kann nicht reagiert werden, weil kein Gruppenmitglied eine App-Version hat, die diese Funktion unterstützt.",
-    "prose--emoji-reaction-not-supported-partial": "Folgende Gruppenmitglieder werden Ihre Reaktion nicht sehen: {names}{n, plural, =0 {.} other { und {n} weitere.}} Um Reaktionen zu sehen, müssen diese Kontakte Threema auf die neueste Version aktualisieren.",
+    "prose--emoji-reaction-not-supported-partial": "Folgende Gruppenmitglieder werden Ihre Reaktion nicht sehen: {names}{n, plural, =0 {.} other { und {n} weitere.}} Um Reaktionen zu sehen, müssen diese Kontakte {shortAppName} auf die neueste Version aktualisieren.",
     "prose--message-deleted": "Diese Nachricht wurde gelöscht",
     "prose--message-edited": "Bearbeitet",
     "prose--notification-deleted-message": "Diese Nachricht wurde gelöscht",
@@ -538,7 +541,7 @@
     "action--toggle-debug-panel": "Debug-Panel toggeln",
     "error--settings-update": "Einstellungen konnten nicht angepasst werden. Bitte versuchen Sie es erneut.",
     "hint--own-profile-picture": "Mein Profilbild",
-    "label--about": "Über Threema",
+    "label--about": "Über {shortAppName}",
     "label--appearance": "Erscheinungsbild",
     "label--chat": "Chat",
     "label--devices": "Geräte",
@@ -551,8 +554,8 @@
     "label--profile": "Profil",
     "label--read-receipts": "Lesebestätigungen",
     "label--security": "Sicherheit",
-    "label--threema-onprem-username": "Threema OnPrem-Benutzername",
-    "label--threema-work-username": "Threema Work-Benutzername",
+    "label--threema-onprem-username": "{fullAppName}-Benutzername",
+    "label--threema-work-username": "{fullAppName}-Benutzername",
     "label--title": "Einstellungen",
     "label--typing-indicator": "Melden, wenn ich tippe",
     "prose--do-not-disturb-mentioned-off": "Sie werden keine Benachrichtigungen erhalten",
@@ -571,7 +574,7 @@
     "label--log-file-paths": "Pfade der Logdateien",
     "label--log-to-file": "Logging",
     "label--third-party-code": "Software-Bibliotheken",
-    "label--title": "Über Threema für Desktop",
+    "label--title": "Über {shortAppName} für Desktop",
     "label--troubleshooting": "Fehlerbehebung",
     "label--version-title": "Versionsinformationen",
     "prose--font-credits": "Die Schrift-Software <1/> ist Eigentum von <2/> und lizenziert an die Threema GmbH. Alle Rechte vorbehalten. Darf nicht von Dritten verwendet werden, ohne eine Lizenz von <3/> zu erwerben.",
@@ -624,17 +627,17 @@
     "prose--subtitle": "Kontakte, Chats und Listen"
   },
   "settings--profile": {
-    "label--delete-profile": "Threema-ID and Daten löschen",
+    "label--delete-profile": "{shortAppName}-ID and Daten löschen",
     "label--profile-picture-everyone": "Alle",
     "label--profile-picture-nobody": "Niemand",
     "label--profile-picture-selected": "Ausgewählte Kontakte",
     "label--profile-picture-visibility": "Wer kann Ihr Profilbild sehen?",
     "label--public-key": "Öffentlicher Schlüssel",
-    "label--threema-id": "Threema-ID",
+    "label--threema-id": "{shortAppName}-ID",
     "label--title": "Profileinstellungen",
-    "prose--copy-id-content": "Die Threema-ID wurde in die Zwischenablage kopiert.",
-    "prose--main-section-title": "Nickname, Avatar und Threema-ID",
-    "prose--subtitle": "Threema-ID"
+    "prose--copy-id-content": "Die {shortAppName}-ID wurde in die Zwischenablage kopiert.",
+    "prose--main-section-title": "Nickname, Avatar und {shortAppName}-ID",
+    "prose--subtitle": "{shortAppName}-ID"
   },
   "settings--security": {
     "label--app-protection": "App-Schutz",

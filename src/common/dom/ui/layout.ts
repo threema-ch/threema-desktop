@@ -38,7 +38,7 @@ export const DEFAULT_LAYOUT_MODE: LayoutMode = {
     large: 'nav-main-aside',
 } as const;
 
-type DisplayModeMediaQueries = {readonly [K in DisplayMode]: MediaQueryList};
+type DisplayModeMediaQueries = Readonly<Record<DisplayMode, MediaQueryList>>;
 
 /**
  * Observe changes to the display mode via media queries and write changes to

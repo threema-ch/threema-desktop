@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-restricted-types */
 /**
  * TypeScript types for {@link https://raw.githubusercontent.com/emilbayes/blake2b/1f63e02/index.js}.
  */

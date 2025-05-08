@@ -14,7 +14,7 @@ export async function getImageDimensions(image: Blob): Promise<Dimensions | unde
         const dimensions = {width: bitmap.width, height: bitmap.height};
         bitmap.close();
         return dimensions;
-    } catch (error) {
+    } catch {
         return undefined;
     }
 }

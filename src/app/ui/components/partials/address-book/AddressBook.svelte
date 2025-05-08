@@ -32,10 +32,6 @@
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.address-book');
 
-  // Generic parameters are not yet recognized by the linter.
-  // See https://github.com/sveltejs/eslint-plugin-svelte/issues/521
-  // and https://github.com/sveltejs/svelte-eslint-parser/issues/306
-  // eslint-disable-next-line no-undef
   type $$Props = AddressBookProps<THandlerProps>;
 
   export let actions: $$Props['actions'];
@@ -57,7 +53,6 @@
   let listElement: SvelteNullableBinding<HTMLElement> = null;
 
   const dispatch = createEventDispatcher<{
-    // eslint-disable-next-line no-undef
     clickedititem: THandlerProps;
   }>();
 
@@ -125,7 +120,7 @@
         icon: 'group',
         onClick: handleClickTab,
       },
-      ...(import.meta.env.BUILD_VARIANT === 'work'
+      ...(import.meta.env.BUILD_VARIANT === 'work' || import.meta.env.BUILD_VARIANT === 'custom'
         ? [
             {
               id: 'work-subscription-contact',
@@ -138,11 +133,9 @@
   }
 
   function getContextMenuItems(
-    // eslint-disable-next-line no-undef
     receiverPreviewListItem: ReceiverPreviewListItem<THandlerProps>,
     currentAllowReceiverEditing: boolean,
     t: I18nType['t'],
-    // eslint-disable-next-line no-undef
   ): ContextMenuItemWithHandlerProps<THandlerProps>[] {
     if (!currentAllowReceiverEditing) {
       // Don't show a context menu if editing is not allowed, as there are no other options at this time.

@@ -139,7 +139,6 @@ export class ReflectedOutgoingMessageTask
         super(services, unvalidatedMessage, senderDeviceId, 'outgoing', protocolVersion);
     }
 
-    // eslint-disable-next-line @typescript-eslint/require-await
     public async run(handle: PassiveTaskCodecHandle): Promise<void> {
         const {model, nonces} = this._services;
 

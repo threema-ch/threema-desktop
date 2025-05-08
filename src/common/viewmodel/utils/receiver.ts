@@ -324,6 +324,7 @@ function getContactNotificationPolicyData(contactModel: Contact): NotificationPo
     }
 
     switch (contactModel.view.notificationTriggerPolicyOverride.policy) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         case ContactNotificationTriggerPolicy.NEVER:
             return {
                 type: 'never',

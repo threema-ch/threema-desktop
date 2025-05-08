@@ -165,7 +165,7 @@ export class Layer4Decoder implements SyncTransformerCodec<InboundL3Message, Inb
                     this._showAlert(text).catch((error: unknown) => {
                         this._log.error(`Failed to show server alert system dialog: ${error}`);
                     });
-                } catch (error) {
+                } catch {
                     this._log.error(`Incoming server alert with invalid UTF-8`);
                 }
                 break;
@@ -177,7 +177,7 @@ export class Layer4Decoder implements SyncTransformerCodec<InboundL3Message, Inb
                 try {
                     text = UTF8.decode(payload.payload.message);
                     this._log.warn(`Incoming server alert: ${text}`);
-                } catch (error) {
+                } catch {
                     this._log.error(`Incoming server alert with invalid UTF-8`);
                     return;
                 }

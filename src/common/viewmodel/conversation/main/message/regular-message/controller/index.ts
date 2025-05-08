@@ -90,7 +90,6 @@ export class ConversationRegularMessageViewModelController
         return await this._applyEdit(newText, editedAt);
     }
 
-    // eslint-disable-next-line @typescript-eslint/require-await
     private async _applyEdit(newText: string, editedAt: Date): Promise<void> {
         const messageModel = this._message.get();
         if (messageModel.ctx !== MessageDirection.OUTBOUND) {

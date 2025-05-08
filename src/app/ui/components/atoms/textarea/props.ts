@@ -1,9 +1,12 @@
 import type {Readable} from 'svelte/store';
 
+import type {AppServicesForSvelte} from '~/app/types';
+
 /**
  * Props accepted by the `TextArea` component.
  */
 export interface TextAreaProps {
+    readonly services: Pick<AppServicesForSvelte, 'electron'>;
     /** The behavior when pressing the enter key. Defaults to `"submit"`. */
     readonly enterKeyMode: 'submit' | 'newline';
     /** Text to pre-fill when the `TextArea` is first rendered. */

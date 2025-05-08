@@ -52,7 +52,10 @@
       <Text
         text={$i18n.t(
           'dialog--linking-restoration-identity-mismatch.prose--intro',
-          'A different Threema ID was previously used on this device. Your chat history cannot be restored.',
+          'A different {shortAppName} ID was previously used on this device. Your chat history cannot be restored.',
+          {
+            shortAppName: import.meta.env.SHORT_APP_NAME,
+          },
         )}
       />
     </div>

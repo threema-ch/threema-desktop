@@ -30,7 +30,7 @@ export const MEDIA_CRYPTO_INIT_SCHEMA = v.object({
     initialLocalPcmk: v.object({
         epoch: v.number().map(ensureU8),
         ratchetCounter: v.number().map(ensureU8),
-        pcmk: instanceOf(Uint8Array),
+        pcmk: instanceOf(Uint8Array<ArrayBufferLike>),
     }),
 });
 export type MediaCryptoInit = Readonly<v.Infer<typeof MEDIA_CRYPTO_INIT_SCHEMA>>;

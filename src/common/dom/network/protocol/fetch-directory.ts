@@ -234,7 +234,11 @@ export class FetchDirectoryBackend implements DirectoryBackend {
             'identity/fetch_priv',
             {
                 identity,
-                appVariant: import.meta.env.BUILD_VARIANT === 'work' ? 'work' : 'consumer',
+                appVariant:
+                    import.meta.env.BUILD_VARIANT === 'work' ||
+                    import.meta.env.BUILD_VARIANT === 'custom'
+                        ? 'work'
+                        : 'consumer',
             },
             ck,
             IDENTITY_PRIVATE_DATA_SCHEMA,
@@ -497,7 +501,7 @@ export class FetchDirectoryBackend implements DirectoryBackend {
                 let errorPayload;
                 try {
                     errorPayload = ERROR_RESPONSE_SCHEMA.parse(body);
-                } catch (fallbackError) {
+                } catch {
                     // Not an error payload either
                     throw new DirectoryError(
                         'invalid-response',
@@ -515,7 +519,6 @@ export class FetchDirectoryBackend implements DirectoryBackend {
                         throw new DirectoryError('authentication', message);
                     case 'invalid-identity':
                     case 'unknown':
-                    case undefined:
                         throw new DirectoryError('invalid-response', message);
                     default:
                         return unreachable(errorPayload.errorType);
@@ -574,6 +577,7 @@ export class FetchDirectoryBackend implements DirectoryBackend {
             credentials: 'omit',
             referrerPolicy: 'no-referrer',
             headers: {
+                // eslint-disable-next-line @typescript-eslint/no-misused-spread
                 ...init.headers,
                 ...this._headers,
             },

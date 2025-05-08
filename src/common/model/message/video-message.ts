@@ -38,7 +38,6 @@ import type {
 import {ModelStore} from '~/common/model/utils/model-store';
 import {assert, unreachable} from '~/common/utils/assert';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
-import {AsyncLock} from '~/common/utils/lock';
 
 /**
  * Create and return an video message in the database.
@@ -121,19 +120,15 @@ export class InboundVideoMessageModelController
     extends InboundBaseMessageModelController<InboundVideoMessageBundle['view']>
     implements InboundVideoMessageController
 {
-    protected readonly _blobLock = new AsyncLock();
-    protected readonly _thumbnailBlobLock = new AsyncLock();
-
     /** @inheritdoc */
     public async blob(): Promise<FileBytesAndMediaType> {
         const blob = await loadOrDownloadBlob(
             'main',
             MessageType.VIDEO,
-            MessageDirection.INBOUND,
+            this._sender.ctx,
             this.uid,
             this._conversation,
             this._services,
-            this._blobLock,
             this.lifetimeGuard,
             this._log,
         );
@@ -157,11 +152,10 @@ export class InboundVideoMessageModelController
         const blob = await loadOrDownloadBlob(
             'thumbnail',
             MessageType.VIDEO,
-            MessageDirection.INBOUND,
+            this._sender.ctx,
             this.uid,
             this._conversation,
             this._services,
-            this._thumbnailBlobLock,
             this.lifetimeGuard,
             this._log,
         );
@@ -192,19 +186,15 @@ export class OutboundVideoMessageModelController
     extends OutboundBaseMessageModelController<OutboundVideoMessageBundle['view']>
     implements OutboundVideoMessageController
 {
-    protected readonly _blobLock = new AsyncLock();
-    protected readonly _thumbnailBlobLock = new AsyncLock();
-
     /** @inheritdoc */
     public async blob(): Promise<FileBytesAndMediaType> {
         const blob = await loadOrDownloadBlob(
             'main',
             MessageType.VIDEO,
-            MessageDirection.OUTBOUND,
+            'me',
             this.uid,
             this._conversation,
             this._services,
-            this._blobLock,
             this.lifetimeGuard,
             this._log,
         );
@@ -216,11 +206,10 @@ export class OutboundVideoMessageModelController
         const blob = await loadOrDownloadBlob(
             'thumbnail',
             MessageType.VIDEO,
-            MessageDirection.OUTBOUND,
+            'me',
             this.uid,
             this._conversation,
             this._services,
-            this._thumbnailBlobLock,
             this.lifetimeGuard,
             this._log,
         );

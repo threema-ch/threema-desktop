@@ -58,7 +58,6 @@ export function createTlsCertificateVerifier(
         }
     }
 
-    // eslint-disable-next-line no-restricted-syntax
     return (request: Request, callback: (verificationResult: number) => void) => {
         function valid(): void {
             log.debug(`Successfully validated certificate pin for ${request.hostname}`);

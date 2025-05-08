@@ -502,6 +502,7 @@
 
     // Start call
     try {
+      // eslint-disable-next-line svelte/infinite-reactive-loop
       call = await startCall(services, log, conversation, intent, stop_);
     } catch (error) {
       if (!stop_.aborted) {
@@ -597,8 +598,10 @@
       services.backend.viewModel
         .conversation(receiver)
         .then(async (conversation_) => {
+          /* eslint-disable svelte/infinite-reactive-loop */
           conversation = unwrap(conversation_);
           store = conversation.viewModelStore;
+          /* eslint-enable svelte/infinite-reactive-loop */
           return await start(conversation, intent);
         })
         .catch(assertUnreachable);
@@ -622,6 +625,7 @@
     !byteEquals(call.context.callId.bytes, $store.call.id.bytes)
   ) {
     log.debug('Switching to chosen group call');
+    // eslint-disable-next-line svelte/infinite-reactive-loop
     start(conversation, 'join').catch(assertUnreachable);
   }
 

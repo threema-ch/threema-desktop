@@ -37,7 +37,6 @@ export class ReflectedGroupProfilePictureTask
         this._groupDebugString = groupDebugString(_senderIdentity, _container.groupId);
     }
 
-    // eslint-disable-next-line @typescript-eslint/require-await
     public async run(handle: PassiveTaskCodecHandle): Promise<void> {
         const {model} = this._services;
         const action = this._profilePicture === undefined ? 'delete' : 'set';

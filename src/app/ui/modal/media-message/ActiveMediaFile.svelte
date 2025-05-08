@@ -26,6 +26,8 @@
         {mediaFile.sanitizedFilenameDetails.name} ({byteSizeToHumanReadable(mediaFile.file.size)})
       </span>
       {#if validationResult.status === 'error'}
+        <!-- Key not required because all values are derived from `reason`. -->
+        <!-- eslint-disable-next-line svelte/require-each-key -->
         {#each validationResult.reasons as reason}
           <span class="chip error">
             {#if reason === 'fileTooLarge'}
@@ -56,6 +58,7 @@
       <div class="left">
         <div class="send-option">
           {#if isSupportedImageType(mediaFile.file.type)}
+            <!-- eslint-disable-next-line svelte/no-reactive-reassign -->
             <Checkbox id="send-as-file-checkbox" bind:checked={$sendAsFile} />
             <label class="label" for="send-as-file-checkbox"
               >{$i18n.t(

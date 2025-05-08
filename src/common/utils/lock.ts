@@ -37,7 +37,6 @@ export class AsyncLock<TContext = undefined, TGuardedValue = undefined> {
      *
      * All enqueued executors are processed serially.
      */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public with<TResult>(
         executor: (value: TGuardedValue) => TResult,
         ...[context]: TContext extends undefined ? [] : readonly [context: TContext]

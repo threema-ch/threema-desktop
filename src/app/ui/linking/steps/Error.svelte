@@ -110,14 +110,31 @@
           case 'consumer':
             message = t(
               'dialog--linking-error.prose--message-wrong-app-variant-consumer-error',
-              'It is not possible to link your Threema ID with this app. If you use Threema Work, download the desktop app from <1 />.',
+              'It is not possible to link your {shortAppName} ID with this app. If you use {fullAppName}, download the desktop app from <1 />.',
+              {
+                fullAppName: import.meta.env.APP_NAME,
+                shortAppName: import.meta.env.SHORT_APP_NAME,
+              },
+            );
+            break;
+
+          case 'custom':
+            message = t(
+              'dialog--linking-error.prose--message-wrong-app-variant-custom-error',
+              'It is not possible to link your {shortAppName} ID with this app.',
+              {
+                shortAppName: import.meta.env.SHORT_APP_NAME,
+              },
             );
             break;
 
           case 'work':
             message = t(
               'dialog--linking-error.prose--message-wrong-app-variant-work-error',
-              'It is not possible to link your Threema ID with this app. If you use Threema privately, download the desktop app from <1 />.',
+              'It is not possible to link your {shortAppName} ID with this app. If you use {shortAppName} privately, download the desktop app from <1 />.',
+              {
+                shortAppName: import.meta.env.SHORT_APP_NAME,
+              },
             );
             break;
 
@@ -129,11 +146,11 @@
       case 'invalid-identity':
         title = t(
           'dialog--linking-error.label--title-invalid-identity',
-          'Revoked or Unknown Threema ID',
+          'Revoked or Unknown {shortAppName} ID',
         );
         message = t(
           'dialog--linking-error.prose--message-invalid-identity',
-          'The Threema ID used for linking is unknown to the server or has been revoked.',
+          'The {shortAppName} ID used for linking is unknown to the server or has been revoked.',
         );
         if (import.meta.env.DEBUG) {
           message += '<2/>🐞 Did you use a sandbox ID with a live app, or vice versa?';
@@ -143,11 +160,11 @@
       case 'invalid-work-credentials':
         title = t(
           'dialog--linking-error.label--title-invalid-work-credentials',
-          'Invalid Threema Work Credentials',
+          'Invalid {fullAppName} Credentials',
         );
         message = t(
           'dialog--linking-error.prose--message-invalid-work-credentials',
-          'The credentials for Threema Work are invalid or expired. Please restart the app on your mobile device and retry linking, or contact your Threema Work administrator.',
+          'The credentials for {fullAppName} are invalid or expired. Please restart the app on your mobile device and retry linking, or contact your {fullAppName} administrator.',
         );
         break;
 
@@ -213,15 +230,21 @@
       </h1>
 
       <p class="description">
-        <SubstitutableText text={errorText.message}>
-          <a
-            slot="1"
-            href={import.meta.env.URLS.downloadAndInfoForOtherVariant.full}
-            target="_blank"
-            rel="noreferrer noopener">{import.meta.env.URLS.downloadAndInfoForOtherVariant.short}</a
-          >
-          <br slot="2" />
-        </SubstitutableText>
+        {#if import.meta.env.BUILD_VARIANT === 'custom' || import.meta.env.URLS.downloadAndInfoForOtherVariant === 'hidden'}
+          {errorText.message}
+        {:else}
+          <SubstitutableText text={errorText.message}>
+            <a
+              slot="1"
+              href={import.meta.env.URLS.downloadAndInfoForOtherVariant.full}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              {import.meta.env.URLS.downloadAndInfoForOtherVariant.short}
+            </a>
+            <br slot="2" />
+          </SubstitutableText>
+        {/if}
       </p>
 
       {#if errorText.details !== undefined}

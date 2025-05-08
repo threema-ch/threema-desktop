@@ -431,7 +431,6 @@ export class GroupCallContextProvider implements GroupCallContext {
                     if (type === 'camera') {
                         const parameters = transceiver.sender.getParameters();
                         parameters.encodings = [...CAMERA_ENCODINGS];
-                        // eslint-disable-next-line no-await-in-loop
                         await transceiver.sender.setParameters(parameters);
                     }
 

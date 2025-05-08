@@ -8,13 +8,11 @@
  * - https://github.com/vitejs/vite/blob/main/packages/vite/types/importMeta.d.ts
  */
 
-/* eslint-disable jsdoc/no-bad-blocks */
 /* eslint-disable
    capitalized-comments,
    spaced-comment,
    @typescript-eslint/consistent-indexed-object-style,
    @typescript-eslint/consistent-type-definitions,
-   @typescript-eslint/prefer-function-type,
    @typescript-eslint/triple-slash-reference,
    import/no-default-export,
 */

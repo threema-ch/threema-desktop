@@ -68,7 +68,7 @@ export function deleteProfileDirectory(flavor: BuildFlavor, profile: string): vo
  * It must be built before calling this function.
  */
 export function getElectronAppInfo(flavor: BuildFlavor): ElectronAppInfo {
-    const appName = determineAppName(flavor);
+    const appName = determineAppName(flavor, 'Threema');
 
     const buildDir = path.join(
         'build',

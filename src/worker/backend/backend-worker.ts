@@ -5,8 +5,6 @@ import {
     type DeviceLinkingSetup,
     type FactoriesForBackend,
     type LoadingStateSetup,
-    type OldProfileRemover,
-    type PinForwarder,
 } from '~/common/dom/backend';
 import {createEndpointService, ensureEndpoint} from '~/common/dom/utils/endpoint';
 import {extractErrorTraceback} from '~/common/error';
@@ -47,7 +45,6 @@ export function main(factories: FactoriesForBackend): void {
         fromKeyStorage: async (
             init: BackendInit,
             keyStoragePassword: string,
-            pinForwarder: ProxyEndpoint<PinForwarder>,
             loadingStateSetup: ProxyEndpoint<LoadingStateSetup>,
         ) => {
             log.info('Creating backend from key storage');
@@ -56,15 +53,12 @@ export function main(factories: FactoriesForBackend): void {
                 factories,
                 services,
                 keyStoragePassword,
-                pinForwarder,
                 loadingStateSetup,
             );
         },
         fromDeviceJoin: async (
             init: BackendInit,
             deviceLinkingSetup: ProxyEndpoint<DeviceLinkingSetup>,
-            pinForwarder: ProxyEndpoint<PinForwarder>,
-            oldProfileRemover: ProxyEndpoint<OldProfileRemover>,
             shouldRestoreOldMessages: boolean,
         ) => {
             log.info('Creating backend from device join');
@@ -73,14 +67,11 @@ export function main(factories: FactoriesForBackend): void {
                 factories,
                 services,
                 deviceLinkingSetup,
-                pinForwarder,
-                oldProfileRemover,
                 shouldRestoreOldMessages,
             );
         },
         fromTestConfiguration: async (
             init: BackendInit,
-            pinForwarder: ProxyEndpoint<PinForwarder>,
             loadingStateSetup: ProxyEndpoint<LoadingStateSetup>,
             testData: TestDataJson,
         ) => {
@@ -89,7 +80,6 @@ export function main(factories: FactoriesForBackend): void {
                 init,
                 factories,
                 services,
-                pinForwarder,
                 loadingStateSetup,
                 testData,
             );

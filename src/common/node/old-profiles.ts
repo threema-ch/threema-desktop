@@ -37,7 +37,7 @@ function findOldProfiles(appPath: string, profile: string): string[] {
     // Find all profile directories where the directory name ends with a timestamp and where a key
     // storage file exists.
     for (const file of files) {
-        if (file.match(profileDirPattern)) {
+        if (file.match(profileDirPattern) !== null) {
             const profileDirPath = path.resolve(appPath, '..', file);
             const keyStoragePath = path.join(profileDirPath, 'data', 'keystorage.pb3');
             if (fs.lstatSync(keyStoragePath, {throwIfNoEntry: false})?.isFile() === true) {

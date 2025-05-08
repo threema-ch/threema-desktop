@@ -9,7 +9,7 @@ export type UnknownRecord = Record<PropertyKey, unknown>;
 export function hasProperty<TKey extends PropertyKey>(
     record: object,
     key: TKey,
-): record is object & {[key in TKey]: unknown} {
+): record is object & Record<TKey, unknown> {
     return Object.hasOwn(record, key);
 }
 

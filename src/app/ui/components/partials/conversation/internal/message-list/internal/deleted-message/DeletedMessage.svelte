@@ -71,7 +71,6 @@
           {highlighted}
           onError={(error) =>
             log.error(
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
               `An error occurred in a child component: ${extractErrorMessage(error, 'short')}`,
             )}
           options={{

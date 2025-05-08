@@ -23,7 +23,7 @@
 
   let oppfUrlInput: Input;
 
-  let oppfUrl = 'https://';
+  let oppfUrl = import.meta.env.URLS.presetOppfUrl?.full ?? 'https://';
   let password = '';
   let username = '';
 
@@ -84,12 +84,19 @@
 
 <Step>
   <header>
-    <h1>{$i18n.t('dialog--linking-oppf.label--oppf-file', 'Threema OnPrem')}</h1>
+    <h1>
+      {$i18n.t('dialog--linking-oppf.label--oppf-file', '{fullAppName}', {
+        fullAppName: import.meta.env.APP_NAME,
+      })}
+    </h1>
     <p class="intro">
       <Text
         text={$i18n.t(
           'dialog--linking-oppf.prose--enter-config',
-          'Threema OnPrem is the self-hosted messenger for companies. Please enter the credentials provided by your company',
+          '{fullAppName} is the self-hosted messenger for companies. Please enter the credentials provided by your company',
+          {
+            fullAppName: import.meta.env.APP_NAME,
+          },
         )}
       />
     </p>
@@ -112,6 +119,7 @@
       bind:this={oppfUrlInput}
       bind:value={oppfUrl}
       on:focus={() => oppfUrlInput.select()}
+      disabled={import.meta.env.URLS.presetOppfUrl !== undefined}
     />
     {#if submitError !== undefined}
       <div class="error">
@@ -123,27 +131,35 @@
       <Text
         text={$i18n.t(
           'dialog--linking-oppf.prose--forget-credentials',
-          'Forgot your credentials? Please contact your Threema OnPrem administrator.',
+          'Forgot your credentials? Please contact your {fullAppName} administrator.',
+          {
+            fullAppName: import.meta.env.APP_NAME,
+          },
         )}
       />
     </div>
-    <div class="info">
-      <SubstitutableText
-        text={$i18n.t(
-          'dialog--linking-oppf.prose--private-user',
-          'If you are a private user, please visit <1 /> to download Threema.',
-        )}
-      >
-        <a
-          slot="1"
-          href={import.meta.env.URLS.downloadAndInfoForOtherVariant.full}
-          target="_blank"
-          rel="noreferrer noopener"
+    {#if import.meta.env.BUILD_VARIANT !== 'custom' && import.meta.env.URLS.downloadAndInfoForOtherVariant !== 'hidden'}
+      <div class="info">
+        <SubstitutableText
+          text={$i18n.t(
+            'dialog--linking-oppf.prose--private-user',
+            'If you are a private user, please visit <1 /> to download {shortAppName}.',
+            {
+              shortAppName: import.meta.env.SHORT_APP_NAME,
+            },
+          )}
         >
-          {import.meta.env.URLS.downloadAndInfoForOtherVariant.short}
-        </a>
-      </SubstitutableText>
-    </div>
+          <a
+            slot="1"
+            href={import.meta.env.URLS.downloadAndInfoForOtherVariant.full}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            {import.meta.env.URLS.downloadAndInfoForOtherVariant.short}
+          </a>
+        </SubstitutableText>
+      </div>
+    {/if}
   </div>
   <div class="footer">
     <Button flavor="filled" on:click={handleClickConfirm}>

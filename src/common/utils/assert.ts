@@ -110,7 +110,7 @@ export function exhausted<T>(value: never, fallback?: T): T {
 /**
  * Expect that a value exists. Return it if it exists and throw if it doesn't.
  */
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-restricted-types
 export function unwrap<T>(value: T | null | undefined, message?: string): T {
     assert(value !== undefined && value !== null, message);
     return value;
@@ -145,6 +145,7 @@ function isUndefined<T>(val: T | undefined): val is undefined {
  */
 export function ensureUndefined(val: unknown): undefined {
     if (!isUndefined(val)) {
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
         throw new Error(`Value ${val} is not undefined`);
     }
     return val;

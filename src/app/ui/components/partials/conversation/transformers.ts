@@ -136,7 +136,7 @@ function getMessageProps(
         text: viewModel.text,
         history: viewModel.history.map((val) => ({
             at: val.editedAt,
-            text: getTextContent(val.text, undefined, i18n.t),
+            text: getTextContent(val.text, undefined, false, i18n.t),
         })),
     };
 }

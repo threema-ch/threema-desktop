@@ -56,7 +56,6 @@ export function group<K, V>(array: readonly V[], getKey: (value: V) => K): Reado
 export type Concatenate<
     Arr extends readonly Primitive[],
     Acc extends string = '',
-    // eslint-disable-next-line no-restricted-syntax
 > = Arr extends readonly [infer Head, ...infer Rest]
     ? Head extends NonNullable<Primitive>
         ? Rest extends readonly Primitive[]
@@ -81,7 +80,6 @@ export type Join<
     Arr extends readonly Primitive[],
     Separator extends string = ',',
     Acc extends string = '',
-    // eslint-disable-next-line no-restricted-syntax
 > = Arr extends readonly [infer Head, ...infer Rest]
     ? Rest extends readonly Primitive[]
         ? Join<
@@ -90,8 +88,7 @@ export type Join<
               Head extends Primitive
                   ? Acc extends ''
                       ? `${Head}`
-                      : // eslint-disable-next-line no-restricted-syntax
-                        Concatenate<readonly [Acc, Separator, Head]>
+                      : Concatenate<readonly [Acc, Separator, Head]>
                   : never
           >
         : never
@@ -151,7 +148,7 @@ export async function filterAsync<T>(
     const results = (await Promise.allSettled(array.map(predicate))).map((result) =>
         result.status === 'fulfilled' ? result.value : false,
     );
-    return array.filter((_, index) => results[index]);
+    return array.filter((_, index) => results[index] ?? false);
 }
 
 /**

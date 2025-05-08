@@ -81,9 +81,7 @@ export async function profilePictureDistributionSteps(
 
             // Add the receiver to the list of contacts that should receive a delete-profile-picture
             // message.
-            if (remove === undefined) {
-                remove = new Set<Contact>();
-            }
+            remove ??= new Set<Contact>();
             remove.add(receiver);
             continue;
         }
@@ -148,14 +146,12 @@ export async function profilePictureDistributionSteps(
             new Date(),
         );
 
-        if (set === undefined) {
-            set = {
-                contacts: new Set(),
-                blobId,
-                key,
-                size: currentProfilePicture.blob.byteLength,
-            };
-        }
+        set ??= {
+            contacts: new Set(),
+            blobId,
+            key,
+            size: currentProfilePicture.blob.byteLength,
+        };
         set.contacts.add(receiver);
     }
     return {set, remove};

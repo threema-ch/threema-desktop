@@ -188,6 +188,7 @@ def main():
     print(root_dir)
     convert('work', screenshots_dir, root_dir)
     convert('consumer', screenshots_dir, root_dir)
+    convert('onprem', screenshots_dir, root_dir)
     print('Done!')
 
 

@@ -39,7 +39,9 @@
    */
   export let isExpanded = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    readonly expand: TreeExpandEvent['detail'];
+  }>();
   let info: TreeItemInfo;
   let limiter: u53 = limit;
   let children: LimitedArray<[key: string, object: TreeItem]>;
@@ -91,6 +93,7 @@
 </div>
 {#if children.items.length > 0}
   <ul class:expanded={isExpanded}>
+    <!-- eslint-disable-next-line svelte/require-each-key -->
     {#each children.items as [itemKey, itemValue]}
       <li>
         <svelte:self

@@ -33,7 +33,6 @@ export class ReflectedIncomingGroupSetupTask extends GroupSetupTaskBase<PassiveT
     }
 
     /** @inheritdoc */
-    // eslint-disable-next-line @typescript-eslint/require-await
     protected async _reflectIncomingGroupSetup(handle: PassiveTaskCodecHandle): Promise<undefined> {
         // Nothing to reflect
     }

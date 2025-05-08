@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type {AppServicesForSvelte} from '~/app/types';
   import TextArea from '~/app/ui/components/atoms/textarea/TextArea.svelte';
   import type {TextAreaProps} from '~/app/ui/components/atoms/textarea/props';
   import {i18n} from '~/app/ui/i18n';
@@ -11,7 +12,7 @@
    * unexpected behavior otherwise, because only one element can be focused at a time.
    */
   export let autofocus: boolean = false;
-
+  export let services: Pick<AppServicesForSvelte, 'electron'>;
   export let initialText: string | undefined = undefined;
   export let enterKeyMode: TextAreaProps['enterKeyMode'] = 'submit';
 
@@ -57,6 +58,7 @@
 <template>
   <div>
     <TextArea
+      {services}
       {autofocus}
       bind:this={composeArea}
       {initialText}

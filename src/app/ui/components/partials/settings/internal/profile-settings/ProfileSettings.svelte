@@ -71,7 +71,9 @@
       .catch(() => log.error('Failed to copy Threema ID to clipboard'));
 
     toast.addSimpleSuccess(
-      $i18n.t('settings--profile.prose--copy-id-content', 'Threema ID copied to clipboard'),
+      $i18n.t('settings--profile.prose--copy-id-content', '{shortAppName} ID copied to clipboard', {
+        shortAppName: import.meta.env.SHORT_APP_NAME,
+      }),
     );
   }
 
@@ -101,7 +103,10 @@
       <KeyValueList.Section
         title={$i18n.t(
           'settings--profile.prose--main-section-title',
-          'Nickname, Avatar & Threema ID',
+          'Nickname, Avatar & {shortAppName} ID',
+          {
+            shortAppName: import.meta.env.SHORT_APP_NAME,
+          },
         )}
       >
         <KeyValueList.Item key="">
@@ -116,13 +121,17 @@
 
         {#if import.meta.env.BUILD_FLAVOR === 'work-onprem'}
           <KeyValueList.Item
-            key={$i18n.t('settings.label--threema-onprem-username', 'Threema OnPrem Username')}
+            key={$i18n.t('settings.label--threema-onprem-username', '{fullAppName} Username', {
+              fullAppName: import.meta.env.APP_NAME,
+            })}
           >
             <Text text={$profileViewModelStore.workUsername ?? '-'} selectable={true} />
           </KeyValueList.Item>
-        {:else if import.meta.env.BUILD_VARIANT === 'work'}
+        {:else if import.meta.env.BUILD_VARIANT === 'work' || import.meta.env.BUILD_VARIANT === 'custom'}
           <KeyValueList.Item
-            key={$i18n.t('settings.label--threema-work-username', 'Threema Work Username')}
+            key={$i18n.t('settings.label--threema-work-username', '{fullAppName} Username', {
+              fullAppName: import.meta.env.APP_NAME,
+            })}
           >
             <Text text={$profileViewModelStore.workUsername ?? '-'} selectable={true} />
           </KeyValueList.Item>
@@ -147,7 +156,9 @@
           </KeyValueList.ItemWithDropdown>
         {/if}
         <KeyValueList.ItemWithButton
-          key={$i18n.t('settings--profile.label--threema-id', 'Threema ID')}
+          key={$i18n.t('settings--profile.label--threema-id', '{shortAppName} ID', {
+            shortAppName: import.meta.env.SHORT_APP_NAME,
+          })}
           icon="content_copy"
           on:click={handleClickCopyThreemaId}
         >
@@ -164,11 +175,19 @@
       </KeyValueList.Section>
       <KeyValueList.Section title="">
         <KeyValueList.ItemWithButton
-          icon={'delete_forever'}
+          icon="delete_forever"
           key=""
           on:click={() => (modalState = 'delete-profile')}
         >
-          <Text text={$i18n.t('settings--profile.label--delete-profile', 'Remove ID and Data')} />
+          <Text
+            text={$i18n.t(
+              'settings--profile.label--delete-profile',
+              'Remove {shortAppName} ID and Data',
+              {
+                shortAppName: import.meta.env.SHORT_APP_NAME,
+              },
+            )}
+          />
         </KeyValueList.ItemWithButton>
       </KeyValueList.Section>
     </KeyValueList>

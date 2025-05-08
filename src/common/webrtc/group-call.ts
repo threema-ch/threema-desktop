@@ -2561,16 +2561,14 @@ export class GroupCall {
         // Note: We cannot distinguish intentional disconnects by the SFU (the 5m loner timeout)
         // from other disconnect events. To prevent bad UX (the UI reporting a disconnect), we'll
         // leave early ourselves.
-        if (this._cancelLingeringLonerTimer === undefined) {
-            this._cancelLingeringLonerTimer = TIMER.timeout(
-                () =>
-                    this._abort.raise({
-                        origin: 'backend-worker',
-                        cause: 'disconnected-due-to-inactivity',
-                    }),
-                180_000,
-            );
-        }
+        this._cancelLingeringLonerTimer ??= TIMER.timeout(
+            () =>
+                this._abort.raise({
+                    origin: 'backend-worker',
+                    cause: 'disconnected-due-to-inactivity',
+                }),
+            180_000,
+        );
     }
 }
 

@@ -27,7 +27,7 @@
 </script>
 
 <div class="settings-category-list">
-  {#each settingsNavItems as [category, props]}
+  {#each settingsNavItems as [category, props] (category)}
     {@const isActive =
       $router.main.id === 'settings' ? $router.main.params.category === category : false}
 

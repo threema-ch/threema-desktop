@@ -13,6 +13,7 @@
   } from '~/app/ui/components/molecules/emoji-picker/types';
   import SearchBar from '~/app/ui/components/molecules/search-bar/SearchBar.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import type {I18nType} from '~/app/ui/i18n-types';
   import {toast} from '~/app/ui/snackbar';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {reactive, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
@@ -265,8 +266,8 @@
   $: reactive(updateEmojiMap, [$viewModelStore?.sortedMostRecentEmojis, $emojisByGroupStore]);
 
   let emojiGroupTitles: Record<EmojiGroupId, string> | undefined = undefined;
-  $: {
-    getEmojiGroupTitle($i18n)
+  function updateEmojiGroupTitles(currentI18n: I18nType): void {
+    getEmojiGroupTitle(currentI18n)
       .then((value) => {
         emojiGroupTitles = value;
       })
@@ -274,6 +275,7 @@
         log.error(`Error fetching emoji group titles: ${error}`);
       });
   }
+  $: updateEmojiGroupTitles($i18n);
 
   $: normalizedSearchTerm = searchTerm.toLocaleLowerCase().trim();
 
@@ -334,7 +336,6 @@
           on:intersectionenter={(event) => {
             intersectingGroups = [
               ...intersectingGroups,
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               {groupId, ratio: event.detail.entry.intersectionRatio},
             ];
           }}
@@ -385,6 +386,9 @@
                       <!-- svelte-ignore a11y-click-events-have-key-events -->
                       <div class="backdrop" on:click={handleClickBackdrop} />
                       <div class="skins" style:position-anchor={anchorName}>
+                        <!-- Key not required because all values are derived from
+                        `customizerOptions`. -->
+                        <!-- eslint-disable-next-line svelte/require-each-key -->
                         {#each customizerOptions as [skinToneEmoji, { label: skinToneEmojiLabel }]}
                           <button
                             class="skin"

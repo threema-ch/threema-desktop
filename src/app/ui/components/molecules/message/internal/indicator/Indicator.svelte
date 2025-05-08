@@ -20,6 +20,8 @@
 <template>
   {#if elements.length > 0}
     <span class="elements">
+      <!-- Key not required because all values are derived from `elements`. -->
+      <!-- eslint-disable-next-line svelte/require-each-key -->
       {#each elements as element}
         <span class={`element ${element.color ?? 'default'}`}>
           <MdIcon title={element.title} theme={element.filled === true ? 'Filled' : 'Outlined'}>

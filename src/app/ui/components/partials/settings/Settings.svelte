@@ -124,6 +124,7 @@
         />
       {:else if currentCategory === 'chat'}
         <ChatSettings
+          {services}
           actions={{
             updateSettings: (update) => {
               handleUpdateSettings({update, type: 'chat'});

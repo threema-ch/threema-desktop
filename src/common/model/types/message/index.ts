@@ -53,7 +53,7 @@ import type {
     RemoteSetStore,
 } from '~/common/utils/store/set-store';
 
-export * from './common';
+export type * from './common';
 
 /**
  * Helper to return the appropriate bundle for the specified inbound message type.

@@ -36,6 +36,7 @@
   </span>
 
   <div class="profile-pictures">
+    <!-- eslint-disable-next-line svelte/require-each-key -->
     {#each receiversSample as receiver, index}
       {#if index === 0}
         <ProfilePicture

@@ -89,7 +89,6 @@ export class Queue<V, E extends Error = Error> {
         if (this._error.done) {
             return;
         }
-        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
         this._error.reject(reason);
     }
 }
@@ -135,7 +134,6 @@ export class UnboundedQueue<V, E extends Error = Error> {
     public prepend(queue: UnboundedQueue<V, E>): void {
         // Bubble any error
         if (this._error !== undefined) {
-            // eslint-disable-next-line @typescript-eslint/only-throw-error
             throw this._error;
         }
 
@@ -150,7 +148,6 @@ export class UnboundedQueue<V, E extends Error = Error> {
     public put(value: V): void {
         // Bubble any error
         if (this._error !== undefined) {
-            // eslint-disable-next-line @typescript-eslint/only-throw-error
             throw this._error;
         }
 
@@ -164,7 +161,7 @@ export class UnboundedQueue<V, E extends Error = Error> {
             // Await a value, bubble any error
             await Promise.race([this._waiters.error, this._waiters.get]);
             const [current] = this._values;
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
             if (current === undefined) {
                 continue;
             }
@@ -210,7 +207,7 @@ export class UnboundedQueue<V, E extends Error = Error> {
             return;
         }
         this._error = reason;
-        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+
         this._waiters.error.reject(reason);
     }
 }

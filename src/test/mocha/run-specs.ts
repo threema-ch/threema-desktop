@@ -11,7 +11,6 @@ for (const path of Object.keys(specs)) {
     console.log(`- ${path}`);
 }
 for (const spec of Object.values(specs)) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     spec.run();
 }
 

@@ -5,6 +5,15 @@
 /build/
 /export/
 
+# libthreema
+libs/libthreema/build
+libs/libthreema/node_modules
+libs/libthreema/target
+libs/libthreema/wasm/web/*.js
+libs/libthreema/wasm/web/*.wasm
+libs/libthreema/wasm/web/*.ts
+
+
 # Electron
 /electron.pid
 

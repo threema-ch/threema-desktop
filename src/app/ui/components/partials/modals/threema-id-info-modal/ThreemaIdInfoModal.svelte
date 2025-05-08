@@ -21,7 +21,9 @@
         onClick: 'close',
       },
     ],
-    title: $i18n.t('dialog--id-information.label--title', 'Threema ID'),
+    title: $i18n.t('dialog--id-information.label--title', '{shortAppName} ID', {
+      shortAppName: import.meta.env.SHORT_APP_NAME,
+    }),
     maxWidth: 520,
   }}
   on:close
@@ -30,13 +32,19 @@
     <p>
       {$i18n.t(
         'dialog--id-information.prose--threema-id-description-p1',
-        'Each Threema user gets a randomly generated, 8-digit Threema ID when starting the app for the first time. This ID is your unique address in Threema and makes it possible to use Threema completely anonymously, without disclosing any personal information.',
+        'Each {shortAppName} user gets a randomly generated, 8-digit {shortAppName} ID when starting the app for the first time. This ID is your unique address in {shortAppName} and makes it possible to use {shortAppName} completely anonymously, without disclosing any personal information.',
+        {
+          shortAppName: import.meta.env.SHORT_APP_NAME,
+        },
       )}
     </p>
     <p>
       {$i18n.t(
         'dialog--id-information.prose--threema-id-description-p2',
-        "Your Threema ID is just one of two components that make up your identity in Threema. The other one is the so called key pair (consisting of a public key and a private key) which is essential for the encryption. Your Threema ID is permanently tied to your public key. While the public key is sent to Threema's servers to be distributed to your chat partners, the private key remains on your device where it is securely stored. All messages directed to you will be individually encrypted with your public key on the sender's device. They can only be decrypted with your personal private key.",
+        "Your {shortAppName} ID is just one of two components that make up your identity in {shortAppName}. The other one is the so called key pair (consisting of a public key and a private key) which is essential for the encryption. Your {shortAppName} ID is permanently tied to your public key. While the public key is sent to {shortAppName}'s servers to be distributed to your chat partners, the private key remains on your device where it is securely stored. All messages directed to you will be individually encrypted with your public key on the sender's device. They can only be decrypted with your personal private key.",
+        {
+          shortAppName: import.meta.env.SHORT_APP_NAME,
+        },
       )}
     </p>
     {#if publicKey !== undefined}

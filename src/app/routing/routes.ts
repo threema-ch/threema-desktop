@@ -319,7 +319,7 @@ function parseU64IfDefined(value: string | undefined): u64 | undefined {
             return undefined;
         }
         return bigintValue;
-    } catch (error) {
+    } catch {
         return undefined;
     }
 }

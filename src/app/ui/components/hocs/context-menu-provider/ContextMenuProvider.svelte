@@ -17,10 +17,6 @@
   import MenuItemDivider from '~/app/ui/svelte-components/generic/Menu/MenuItemDivider.svelte';
   import {hasProperty} from '~/common/utils/object';
 
-  // Generic parameters are not yet recognized by the linter.
-  // See https://github.com/sveltejs/eslint-plugin-svelte/issues/521
-  // and https://github.com/sveltejs/svelte-eslint-parser/issues/306
-  // eslint-disable-next-line no-undef
   type $$Props = ContextMenuProviderProps<THandlerProps>;
 
   export let afterClose: $$Props['afterClose'] = undefined;
@@ -41,12 +37,10 @@
 
   const dispatch = createEventDispatcher<{
     // See comment for `$$Props`.
-    // eslint-disable-next-line no-undef
     clickitem: ContextMenuOption<THandlerProps>;
   }>();
 
   // See comment for `$$Props`.
-  // eslint-disable-next-line no-undef
   function handleClickItem(item: ContextMenuItem<THandlerProps>): void {
     if (item.type === 'divider' || item.type === 'heading') {
       return;
@@ -99,6 +93,8 @@
           {/if}
         </div>
 
+        <!-- Key not required because all values are derived from `items`. -->
+        <!-- eslint-disable-next-line svelte/require-each-key -->
         {#each items as item}
           {#if item.type === 'divider'}
             <MenuItemDivider />

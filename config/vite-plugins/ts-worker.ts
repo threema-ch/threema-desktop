@@ -100,6 +100,7 @@ export function tsWorkerPlugin(): WorkerPlugin {
                                     .digest('hex')
                                     .slice(0, 8);
                                 const fileName = `[name]-${hash}[extname]`;
+                                // eslint-disable-next-line @typescript-eslint/no-deprecated
                                 assets.set(unwrap(asset.name), fileName);
                                 return fileName;
                             },
@@ -130,10 +131,12 @@ export function tsWorkerPlugin(): WorkerPlugin {
         },
 
         synchronizeAsset(asset) {
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             const fileName = assets.get(unwrap(asset.name));
             if (fileName === undefined) {
                 return '[name]-[hash][extname]';
             }
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             log('synchronized asset', asset.name, '->', fileName);
             return fileName;
         },

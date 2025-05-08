@@ -85,13 +85,17 @@
 
     {#if receiver.badge === 'contact-work'}
       <div class="badge" data-badge={receiver.badge}>
-        <span>{$i18n.t('contacts.label--badge-work', 'Threema Work Contact')}</span>
+        <span
+          >{$i18n.t('contacts.label--badge-work', '{fullAppName} Contact', {
+            fullAppName: import.meta.env.APP_NAME,
+          })}</span
+        >
       </div>
     {/if}
 
     <div class="details">
       <Text
-        alignment={'center'}
+        alignment="center"
         color="mono-high"
         family="secondary"
         size="body-large"
@@ -111,7 +115,9 @@
   <KeyValueList>
     <KeyValueList.Section>
       <KeyValueList.Item
-        key={$i18n.t('contacts.label--threema-id', 'Threema ID')}
+        key={$i18n.t('contacts.label--threema-id', '{shortAppName} ID', {
+          shortAppName: import.meta.env.SHORT_APP_NAME,
+        })}
         options={{
           showInfoIcon: true,
         }}

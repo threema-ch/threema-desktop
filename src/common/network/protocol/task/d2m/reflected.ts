@@ -59,7 +59,7 @@ export class ReflectedTask implements PassiveTask<void> {
             validatedReflectedMessage = structbuf.validate.d2m.payload.Reflected.SCHEMA.parse(
                 this._message,
             );
-        } catch (error) {
+        } catch {
             this._log.error(`Discarding reflected message due to validation error.`);
             return await this._discard(handle, true);
         }
@@ -71,7 +71,7 @@ export class ReflectedTask implements PassiveTask<void> {
                 handle.controller.d2d.dgrk,
                 validatedReflectedMessage,
             );
-        } catch (error) {
+        } catch {
             this._log.error(`Discarding reflected message due to decryption error.`);
             return await this._discard(handle, true);
         }

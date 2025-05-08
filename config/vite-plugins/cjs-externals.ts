@@ -136,7 +136,6 @@ function transformEsm(
     return [
         rewrites,
         {
-            // eslint-disable-next-line @typescript-eslint/no-base-to-string
             code: magicString.toString(),
             map: magicString.generateMap(),
         },

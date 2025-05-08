@@ -67,7 +67,6 @@ class NoopLogger implements Logger {
     public readonly error = NoopLogger._noop;
     public readonly assert = NoopLogger._assert;
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     private static _noop(): void {}
     private static _assert(condition: boolean, ...data: readonly unknown[]): void {
         if (!condition) {

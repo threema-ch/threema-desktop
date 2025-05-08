@@ -234,7 +234,6 @@
   );
 
   afterUpdate(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     popover?.forceReposition();
   });
 </script>
@@ -275,7 +274,7 @@
 
     <div slot="before" class="reactions">
       {#if emojiReactions.enabled}
-        {#each defaultEmojiReactionsWithPreferredSkinTone as emoji, idx}
+        {#each defaultEmojiReactionsWithPreferredSkinTone as emoji, idx (emoji)}
           {@const active =
             emojiReactions.enabled &&
             emojiReactions.ownReactions.some((ownReaction) => ownReaction.emoji === emoji)}

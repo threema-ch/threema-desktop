@@ -2,9 +2,10 @@ import type {u53} from '~/common/types';
 
 const LANGUAGES = ['Deutsch', 'English'] as const;
 const MODES = ['Light', 'Dark'] as const;
-export const SEARCH_EXPRESSIONS: {
-    [key in (typeof LANGUAGES)[u53]]: {readonly searchName: string; readonly searchTerm: string};
-} = {
+export const SEARCH_EXPRESSIONS: Record<
+    (typeof LANGUAGES)[u53],
+    {readonly searchName: string; readonly searchTerm: string}
+> = {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     Deutsch: {
         searchName: 'Suchen...',

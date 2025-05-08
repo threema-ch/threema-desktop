@@ -87,7 +87,7 @@
           height: value.dimensions.height,
         },
       };
-    } catch (error) {
+    } catch {
       // Creating bitmap from blob failed, e.g., if the blob's media type didn't match its actual
       // content.
       log.warn(

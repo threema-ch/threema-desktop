@@ -63,11 +63,10 @@ export class FrontendMediaService implements IFrontendMediaService {
     }
 
     /** @inheritdoc */
-    // eslint-disable-next-line @typescript-eslint/require-await
-    public async refreshThumbnailCacheForMessage(
+    public refreshThumbnailCacheForMessage(
         messageId: MessageId,
         receiverLookup: DbReceiverLookup,
-    ): Promise<void> {
+    ): void {
         this._services.unwrap().blobCache.refreshCacheForMessage(messageId, receiverLookup);
     }
 }

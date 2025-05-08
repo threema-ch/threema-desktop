@@ -779,7 +779,7 @@ export class ConnectionManager implements ConnectionManagerHandle {
                 new DropDeviceTask(this._services.device.d2m.deviceId),
             );
             return undefined;
-        } catch (error) {
+        } catch {
             this._log.debug('Failed to drop device, falling back to D2M only pipeline');
             return await this._startD2mOnlyConnectionAndUnlink();
         }

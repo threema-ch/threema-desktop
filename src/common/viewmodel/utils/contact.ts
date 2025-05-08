@@ -82,6 +82,7 @@ export function getContactBadge(
         case 'consumer':
             return contact.identityType === IdentityType.WORK ? 'contact-work' : undefined;
 
+        case 'custom':
         case 'work':
             // If the contact is in the same subscription, never display a badge
             if (

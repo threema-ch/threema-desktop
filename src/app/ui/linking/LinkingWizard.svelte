@@ -2,6 +2,7 @@
   import {onMount} from 'svelte';
 
   import {globals} from '~/app/globals';
+  import type {AppServicesForSvelte} from '~/app/types';
   import OnPremConfigurationModal from '~/app/ui/components/partials/modals/onprem-configuration-modal/OnPremConfigurationModal.svelte';
   import type {
     LinkingParams,
@@ -32,6 +33,7 @@
    * The information needed to lead the user through the linking process.
    */
   export let params: LinkingParams;
+  export let services: Pick<AppServicesForSvelte, 'electron'>;
 
   /**
    * A mapping of linking wizard components to their respective component prop types.
@@ -134,6 +136,7 @@
           linkingWizardState = {
             component: 'oldProfilePassword',
             props: {
+              services,
               oldPassword: params.oldProfilePassword,
               previouslyEnteredPassword: state.previouslyEnteredPassword,
               state: state.type,

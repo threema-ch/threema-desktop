@@ -11,10 +11,6 @@
   import {reactive, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import type {DbReceiverLookup} from '~/common/db';
 
-  // Generic parameters are not yet recognized by the linter.
-  // See https://github.com/sveltejs/eslint-plugin-svelte/issues/521
-  // and https://github.com/sveltejs/svelte-eslint-parser/issues/306
-  // eslint-disable-next-line no-undef
   type $$Props = ReceiverPreviewListProps<THandlerProps>;
 
   export let contextMenuItems: $$Props['contextMenuItems'] = undefined;

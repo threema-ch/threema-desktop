@@ -137,6 +137,7 @@ export class Argon2Version {
      */
     public toProtobuf(): EncryptedKeyStorage_Argon2idParameters_Argon2Version {
         switch (this._versionByte) {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             case 0x13:
                 return EncryptedKeyStorage_Argon2idParameters_Argon2Version.VERSION_1_3;
             default:

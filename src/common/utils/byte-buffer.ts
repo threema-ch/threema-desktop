@@ -16,7 +16,7 @@ export class ByteBufferClaim {
      * Claimed byte buffer sub-array.
      */
     public get array(): Uint8Array {
-        if (!this._array) {
+        if (this._array === undefined) {
             throw new Error('Buffer claim already ended!');
         }
         return this._array;
@@ -62,7 +62,7 @@ export class ByteBuffer {
         }
 
         // End claim (if any)
-        if (this._claim) {
+        if (this._claim !== undefined) {
             this._claim.end(0);
         }
         this._claim = undefined;
@@ -82,7 +82,7 @@ export class ByteBuffer {
      */
     public claim(): ByteBufferClaim {
         // Ensure there is no claim
-        if (this._claim) {
+        if (this._claim !== undefined) {
             throw new Error('Cannot claim buffer as it is already claimed!');
         }
 
@@ -104,7 +104,7 @@ export class ByteBuffer {
      */
     public bytes(length: u53): Uint8Array {
         // Ensure there is no claim
-        if (this._claim) {
+        if (this._claim !== undefined) {
             throw new Error('Cannot create sub-array, buffer is claimed!');
         }
 
@@ -133,7 +133,7 @@ export class ByteBuffer {
      */
     public with(encoder: ByteEncoder): Uint8Array {
         // Ensure there is no claim
-        if (this._claim) {
+        if (this._claim !== undefined) {
             throw new Error('Cannot run consumer with sub-array, buffer is claimed!');
         }
 

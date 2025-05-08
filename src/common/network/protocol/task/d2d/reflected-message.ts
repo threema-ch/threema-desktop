@@ -121,7 +121,7 @@ export abstract class ReflectedMessageTaskBase<
             let messageIdHex;
             try {
                 messageIdHex = u64ToHexLe(intoU64(unvalidatedMessage.messageId));
-            } catch (innerError) {
+            } catch {
                 messageIdHex = 'unknown';
             }
             this._log.error(

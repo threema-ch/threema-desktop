@@ -20,6 +20,7 @@
 
   export let actionsElement: $$Props['actionsElement'] = undefined;
   export let element: $$Props['element'] = undefined;
+  export let onClick: $$Props['onClick'] = undefined;
   export let options: NonNullable<$$Props['options']> = {};
   export let target: $$Props['target'] = document.body.querySelector<HTMLElement>('#container');
   export let wrapper: $$Props['wrapper'];
@@ -165,12 +166,21 @@
       data-appearance={options.overlay ?? 'translucent'}
       on:close={handleClose}
     >
-      <div class={`wrapper type-${wrapper.type}`} class:padded={wrapper.type === 'card'}>
+      <!-- A11y is already covered by the "close" action button. -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <div
+        class={`wrapper type-${wrapper.type}`}
+        class:padded={wrapper.type === 'card'}
+        on:click={onClick}
+      >
         {#if wrapper.type === 'none'}
           {@const {actions = []} = wrapper}
 
           {#if actions.length > 0}
             <div bind:this={actionsElement} class="actions">
+              <!-- Key not required because all values are derived from `actions`. -->
+              <!-- eslint-disable-next-line svelte/require-each-key -->
               {#each actions as action}
                 <IconButton
                   flavor="naked"
@@ -209,6 +219,8 @@
 
                 {#if actions.length > 0}
                   <div bind:this={actionsElement} class="actions">
+                    <!-- Key not required because all values are derived from `actions`. -->
+                    <!-- eslint-disable-next-line svelte/require-each-key -->
                     {#each actions as action}
                       <IconButton
                         flavor="naked"
@@ -228,6 +240,8 @@
 
             {#if buttons.length > 0}
               <div class="footer">
+                <!-- Key not required because all values are derived from `buttons`. -->
+                <!-- eslint-disable-next-line svelte/require-each-key -->
                 {#each buttons as button, index}
                   <Button
                     autofocus={initiallyFocusedButtonIndex === index}

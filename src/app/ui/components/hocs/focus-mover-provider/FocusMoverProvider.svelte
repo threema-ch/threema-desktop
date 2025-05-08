@@ -120,11 +120,9 @@
   }
 
   onMount(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     element?.addEventListener('keydown', handleKeyDown);
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
   onDestroy(() => element?.removeEventListener('keydown', handleKeyDown));
 </script>
 

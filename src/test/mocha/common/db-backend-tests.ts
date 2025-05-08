@@ -1072,31 +1072,43 @@ export function backendTests(
             expect(message3.fileData).to.be.undefined;
 
             // Update text of first message
-            const updateInfo1 = db.updateMessage(conversation.uid, {
-                uid: message1.uid,
-                type: MessageType.TEXT,
-                text: 'Ccc',
-            });
+            const updateInfo1 = db.updateMessage(
+                conversation.uid,
+                {
+                    uid: message1.uid,
+                    type: MessageType.TEXT,
+                    text: 'Ccc',
+                },
+                undefined,
+            );
             expect(updateInfo1.deletedFileIds).to.be.empty;
 
             // Update `readAt` and `lastReaction` of the second message
             const readAt = new Date(1981);
-            const updateInfo2 = db.updateMessage(conversation.uid, {
-                uid: message2.uid,
-                type: MessageType.TEXT,
-                readAt,
-            });
+            const updateInfo2 = db.updateMessage(
+                conversation.uid,
+                {
+                    uid: message2.uid,
+                    type: MessageType.TEXT,
+                    readAt,
+                },
+                undefined,
+            );
             expect(updateInfo2.deletedFileIds).to.be.empty;
 
             // Update file data of the third message
             const fileData = makeFileData();
             const thumbnailFileData = makeFileData();
-            const updateInfo3 = db.updateMessage(conversation.uid, {
-                uid: message3.uid,
-                type: MessageType.FILE,
-                fileData,
-                thumbnailFileData,
-            });
+            const updateInfo3 = db.updateMessage(
+                conversation.uid,
+                {
+                    uid: message3.uid,
+                    type: MessageType.FILE,
+                    fileData,
+                    thumbnailFileData,
+                },
+                undefined,
+            );
             expect(updateInfo3.deletedFileIds).to.be.empty;
 
             // Refresh messages
@@ -1120,11 +1132,15 @@ export function backendTests(
             expect(message3.thumbnailFileData).to.deep.equal(thumbnailFileData);
 
             // Ensure `lastReaction` does not implicitly reset
-            db.updateMessage(conversation.uid, {
-                uid: message2.uid,
-                type: MessageType.TEXT,
-                readAt: new Date(),
-            });
+            db.updateMessage(
+                conversation.uid,
+                {
+                    uid: message2.uid,
+                    type: MessageType.TEXT,
+                    readAt: new Date(),
+                },
+                undefined,
+            );
 
             const lastReaction = {
                 reaction: tag<EmojiReaction>('🫕'),
@@ -1143,11 +1159,15 @@ export function backendTests(
 
             // Ensure that an update of the file data is processed
             const fileData2 = makeFileData();
-            const updateInfoAfterFileDataUpdate = db.updateMessage(conversation.uid, {
-                uid: message3.uid,
-                type: MessageType.FILE,
-                fileData: fileData2,
-            });
+            const updateInfoAfterFileDataUpdate = db.updateMessage(
+                conversation.uid,
+                {
+                    uid: message3.uid,
+                    type: MessageType.FILE,
+                    fileData: fileData2,
+                },
+                undefined,
+            );
             if (!features.doesNotImplementFileDataCleanup) {
                 expect(
                     updateInfoAfterFileDataUpdate.deletedFileIds,
@@ -1160,12 +1180,16 @@ export function backendTests(
             expect(message3.thumbnailFileData?.fileId).to.equal(thumbnailFileData.fileId);
 
             // Ensure that a removal of the file data is processed
-            const updateInfoAfterFileDataRemoval = db.updateMessage(conversation.uid, {
-                uid: message3.uid,
-                type: MessageType.FILE,
-                fileData: undefined,
-                thumbnailFileData: undefined,
-            });
+            const updateInfoAfterFileDataRemoval = db.updateMessage(
+                conversation.uid,
+                {
+                    uid: message3.uid,
+                    type: MessageType.FILE,
+                    fileData: undefined,
+                    thumbnailFileData: undefined,
+                },
+                undefined,
+            );
             message3 = db.getMessageByUid(message3.uid);
             assert(message3?.type === MessageType.FILE);
             expect(message3.fileData).to.be.undefined;
@@ -1844,6 +1868,72 @@ export function backendTests(
                     }).length,
                 ).to.eq(0);
             });
+        });
+
+        it('getFileDataByBlobIdAndSender', function () {
+            // And contact and get conversation
+            const contactUid = makeContact(db, {identity: 'TESTTEST'});
+            const conversation = db.getConversationOfReceiver({
+                type: ReceiverType.CONTACT,
+                uid: contactUid,
+            });
+            assert(conversation !== undefined);
+
+            // Create file message
+            const blobId = randomBlobId();
+            const thumbnailBlobId = randomBlobId() as ReadonlyUint8Array as Uint8Array;
+            const fileData = makeFileData();
+            const thumbnailFileData = makeFileData();
+            const messageUid = createFileMessage(db, {
+                id: 1000n,
+                conversationUid: conversation.uid,
+                blobId,
+                thumbnailBlobId,
+                fileData,
+                thumbnailFileData,
+            });
+
+            const dbMessage = db.getMessageByUid(messageUid);
+
+            assert(dbMessage?.type === 'file', 'Message must be of type file');
+
+            // Check that the function yields the correct file
+            const dbFileData = db.getFileDataByBlobIdAndSender(
+                'me',
+                MessageType.FILE,
+                blobId,
+                'main',
+            );
+
+            // Must be unique so this check is fine.
+            expect(dbFileData?.fileId, 'Function should yield the coresponding file data').to.equal(
+                dbMessage.fileData?.fileId,
+            );
+
+            // Check that nothing is found if looking for the thumbnail
+            const dbFileDataInexistent = db.getFileDataByBlobIdAndSender(
+                'me',
+                MessageType.FILE,
+                blobId,
+                'thumbnail',
+            );
+            expect(
+                dbFileDataInexistent,
+                'Function should need nothing when querying for the wrong image type',
+            ).to.eq(undefined);
+
+            // Check that the thumbnail is found
+            const dbThumbnailFileData = db.getFileDataByBlobIdAndSender(
+                'me',
+                MessageType.FILE,
+                tag<BlobId>(thumbnailBlobId),
+                'thumbnail',
+            );
+
+            expect(
+                dbThumbnailFileData?.fileId,
+                'Function should yield the corresponding thumbnail file data',
+            ).to.equal(thumbnailFileData.fileId);
         });
     });
 

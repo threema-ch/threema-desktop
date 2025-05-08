@@ -14,6 +14,7 @@ export interface ModalProps {
      * Reference to the {@link HTMLElement} of this modal.
      */
     readonly element?: SvelteNullableBinding<HTMLElement>;
+    readonly onClick?: (event: MouseEvent) => void;
     readonly options?: {
         /**
          * Whether the modal should be closable by pressing `Esc`. Defaults to `true`.

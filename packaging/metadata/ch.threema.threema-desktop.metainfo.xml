@@ -44,6 +44,51 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta51" date="2025-05-08">
+            <description>
+                <p>Features:</p>
+                <ul>
+                    <li>Emojis version 16</li>
+                </ul>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Quality of life improvements for building libthreema</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>Fixed a bug that caused URLs to be cut off in some cases</li>
+                    <li>Fixed a bug that caused some emojis to be displayed incorrectly</li>
+                </ul>
+                <p>…and various under-the-hood changes and improvements.</p>
+            </description>
+        </release>
+        <release version="2.0~publicbeta50" date="2025-04-22">
+            <description>
+                <p>Features:</p>
+                <ul>
+                    <li>Multi-device support for Android devices</li>
+                </ul>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Improved emoji reactions performance</li>
+                    <li>Included libthreema in the source code</li>
+                    <li>Close some dialogs when clicking outside of them</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>Fixed a bug that could cause the app to crash</li>
+                    <li>
+                        Fixed a UI bug in relation to the “Do not disturb” symbol in the chat
+                        overview
+                    </li>
+                    <li>
+                        Fixed a bug that could cause the placeholder in the text input area to
+                        disappear
+                    </li>
+                </ul>
+                <p>…and various under-the-hood changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta49" date="2025-04-02">
             <description>
                 <p>Features:</p>

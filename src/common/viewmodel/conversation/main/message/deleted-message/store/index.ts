@@ -23,7 +23,6 @@ export function getConversationDeletedMessageViewModelStore(
 ): ConversationDeletedMessageViewModelStore {
     const {endpoint} = services;
 
-    // eslint-disable-next-line arrow-body-style
     return derive([messageModelStore], ([{currentValue: messageModel}], getAndSubscribe) => {
         const viewModel: ConversationDeletedMessageViewModel =
             getConversationDeletedMessageViewModel(services, messageModel, getAndSubscribe);

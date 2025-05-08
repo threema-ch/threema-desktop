@@ -246,7 +246,7 @@ export async function selectInitialCaptureDevices(
                 device: options?.preferredDevices?.microphone ?? {type: 'default'},
                 state: state.microphone,
             });
-        } catch (error) {
+        } catch {
             log.debug('No microphone device to capture from');
         }
         let camera: CaptureDevices['camera'];
@@ -256,7 +256,7 @@ export async function selectInitialCaptureDevices(
                 facing: 'user',
                 state: state.camera,
             });
-        } catch (error) {
+        } catch {
             log.debug('No camera device to capture from');
         }
 

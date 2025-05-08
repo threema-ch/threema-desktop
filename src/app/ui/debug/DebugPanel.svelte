@@ -67,7 +67,7 @@
       <div class="title" title="Debug Panel">
         <MdIcon theme="Filled">bug_report</MdIcon>
       </div>
-      {#each Object.entries(TOOLS) as [name, tool]}
+      {#each Object.entries(TOOLS) as [name, tool] (tool)}
         <button class="tab" class:selected={selected === tool} on:click={() => (selected = tool)}>
           {name}
         </button>
