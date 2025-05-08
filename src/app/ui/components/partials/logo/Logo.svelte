@@ -72,23 +72,27 @@
     </defs>
 
     <g transform="translate(0, 5)">
-      <!-- Bubble shape -->
-      <path
-        class="bubble"
-        d="M48,0 C74.5098128,0 96,18.8608694 96,42.126891 C96,65.3929126 74.5098128,84.2537828 48,84.2537828 C40.4553672,84.2537828 33.31718,82.7259288 26.9649496,80.0039645 L2.91764,86 L8.056748,65.4969283 C2.9673672,58.8092946 0,50.7722168 0,42.126891 C0,18.8608694 21.4901872,0 48,0 Z M48,10 C30.8791728,10 17,23.8791728 17,41 C17,58.1208272 30.8791728,72 48,72 C65.1208272,72 79,58.1208272 79,41 C79,23.8791728 65.1208272,10 48,10 Z"
-        fill="currentColor"
-        fill-rule="nonzero"
-      />
+      <!-- Do not show the logo in custom builds -->
+      {#if import.meta.env.BUILD_VARIANT !== 'custom'}
+        <!-- Bubble shape -->
+        <path
+          class="bubble"
+          d="M48,0 C74.5098128,0 96,18.8608694 96,42.126891 C96,65.3929126 74.5098128,84.2537828 48,84.2537828 C40.4553672,84.2537828 33.31718,82.7259288 26.9649496,80.0039645 L2.91764,86 L8.056748,65.4969283 C2.9673672,58.8092946 0,50.7722168 0,42.126891 C0,18.8608694 21.4901872,0 48,0 Z M48,10 C30.8791728,10 17,23.8791728 17,41 C17,58.1208272 30.8791728,72 48,72 C65.1208272,72 79,58.1208272 79,41 C79,23.8791728 65.1208272,10 48,10 Z"
+          fill="currentColor"
+          fill-rule="nonzero"
+        />
 
-      <!-- Icon containers -->
-      <circle
-        class="lock"
-        fill="currentColor"
-        cx="48"
-        cy="41"
-        r="38"
-        mask="url(#threema-logo-lock-cutout-mask)"
-      />
+        <!-- Icon containers -->
+        <circle
+          class="lock"
+          fill="currentColor"
+          cx="48"
+          cy="41"
+          r="38"
+          mask="url(#threema-logo-lock-cutout-mask)"
+        />
+      {/if}
+
       <circle
         class="checkmark"
         fill="currentColor"

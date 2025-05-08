@@ -42,6 +42,7 @@
 
   type $$Props = TextAreaProps;
 
+  export let services: $$Props['services'];
   export let enterKeyMode: NonNullable<$$Props['enterKeyMode']> = 'submit';
   export let initialText: $$Props['initialText'] = undefined;
   export const isEmpty: NonNullable<$$Props['isEmpty']> = isEmptyStore;
@@ -76,7 +77,7 @@
 
   let isTyping: boolean = false;
 
-  window.app
+  services.electron
     .getSystemInfo()
     .then((systemInfo_) => (systemInfo = systemInfo_))
     .catch((error) => {
@@ -177,12 +178,19 @@
    */
   function handleInput(): void {
     self.queueMicrotask(() => {
+      // Workaround for placeholder text not showing up sometimes (DESK-1759)
+      if (areaElement.innerHTML.trim() === '<br>') {
+        // eslint-disable-next-line svelte/no-dom-manipulating
+        areaElement.innerHTML = '';
+      }
+
       // Workaround to avoid recursive access to compose area.
       //
       // TODO(https://github.com/threema-ch/compose-area/issues/97, https://github.com/threema-ch/compose-area/issues/98):
       // Fix this, see this discussion in MR !92 (#note_31788) for details.
       const currentIsEmpty = area.is_empty();
       isEmptyStore.set(currentIsEmpty);
+
       isTyping = !currentIsEmpty;
       dispatchIsTyping();
 

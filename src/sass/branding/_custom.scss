@@ -1,0 +1,17 @@
+@use 'sass:color';
+@use 'sass:map';
+
+$custom-primary-color: #ffffff;
+
+$custom: (
+  primary-color-50: #ffffff,
+  primary-color-100: #ffffff,
+  primary-color-200: #ffffff,
+  primary-color-300: #ffffff,
+  primary-color-400: #ffffff,
+  primary-color-500: #ffffff,
+  primary-color-600: #ffffff,
+  primary-color-700: #ffffff,
+  primary-color-800: #ffffff,
+  primary-color-900: #ffffff,
+);

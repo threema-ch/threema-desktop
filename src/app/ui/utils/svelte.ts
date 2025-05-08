@@ -7,7 +7,7 @@ import {unreachable} from '~/common/utils/assert';
  * reason this is necessary is because Svelte might set a binding to `null` if the referenced
  * element or component is not mounted.
  */
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-restricted-types
 export type SvelteNullableBinding<T> = T | null;
 
 /**

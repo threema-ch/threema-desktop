@@ -20,7 +20,7 @@ import type {ServicesForBackendController} from '~/common/backend';
 import type {LoadingState, LinkingState} from '~/common/dom/backend';
 import {BackendController} from '~/common/dom/backend/controller';
 import {randomBytes} from '~/common/dom/crypto/random';
-import {FrontendLauncherService} from '~/common/dom/launcher';
+import {ElectronIpcService} from '~/common/dom/electron-service';
 import {DOM_CONSOLE_LOGGER} from '~/common/dom/logging';
 import {BlobCacheService} from '~/common/dom/ui/blob-cache';
 import {EmojiService} from '~/common/dom/ui/emoji-service';
@@ -35,13 +35,13 @@ import {applyThemeBranding} from '~/common/dom/ui/theme';
 import {initCrashReportingInSandboxBuilds} from '~/common/dom/utils/crash-reporting';
 import {createEndpointService, ensureEndpoint} from '~/common/dom/utils/endpoint';
 import {WebRtcServiceProvider} from '~/common/dom/webrtc';
-import type {ElectronIpc, SystemInfo} from '~/common/electron-ipc';
+import type {SystemInfo} from '~/common/electron-ipc';
 import {extractErrorTraceback} from '~/common/error';
 import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import type {IGlobalPropertyModel} from '~/common/model/types/settings';
 import type {ModelStore} from '~/common/model/utils/model-store';
 import {parseTestData, type TestDataJson} from '~/common/test-data';
-import type {DomainCertificatePin, u53} from '~/common/types';
+import type {u53} from '~/common/types';
 import {assertUnreachable, setAssertFailLogger, unwrap} from '~/common/utils/assert';
 import {Delayed} from '~/common/utils/delayed';
 import type {Remote} from '~/common/utils/endpoint';
@@ -49,19 +49,6 @@ import type {ReusablePromise} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {type ReadableStore, WritableStore, type IQueryableStore} from '~/common/utils/store';
 import {TIMER} from '~/common/utils/timer';
-
-// Extend global APIs
-//
-// TODO(DESK-684): Consider using comlink/endpoint for IPC communication
-declare global {
-    interface Window {
-        /**
-         * The window.app property exposes the IPC interface towards the renderer thread. It is
-         * initialized in the preload script.
-         */
-        readonly app: ElectronIpc;
-    }
-}
 
 export interface Elements {
     readonly splash: HTMLElement;
@@ -88,11 +75,16 @@ function attachLoadingScreen(
 /**
  * Attach linking wizard.
  */
-function attachLinkingWizard(elements: Elements, params: LinkingParams): LinkingWizard {
+function attachLinkingWizard(
+    elements: Elements,
+    params: LinkingParams,
+    electron: ElectronIpcService,
+): LinkingWizard {
     elements.container.innerHTML = '';
     return new LinkingWizard({
         target: elements.container,
         props: {
+            services: {electron},
             params,
         },
     });
@@ -105,12 +97,14 @@ function attachPasswordInput(
     elements: Elements,
     shouldStorePassword: ResolvablePromise<boolean>,
     systemInfo: SystemInfo,
+    electron: ElectronIpcService,
     previouslyAttemptedPassword?: string,
 ): PasswordInput {
     elements.container.innerHTML = '';
     return new PasswordInput({
         target: elements.container,
         props: {
+            services: {electron},
             shouldStorePassword,
             systemInfo,
             previouslyAttemptedPassword,
@@ -121,10 +115,16 @@ function attachPasswordInput(
 /**
  * Show dialog to warn about missing Threema Work credentials.
  */
-function attachMissingWorkCredentialsModal(elements: Elements): MissingWorkCredentialsModal {
+function attachMissingWorkCredentialsModal(
+    elements: Elements,
+    electron: ElectronIpcService,
+): MissingWorkCredentialsModal {
     elements.container.innerHTML = '';
     return new MissingWorkCredentialsModal({
         target: elements.container,
+        props: {
+            services: {electron},
+        },
     });
 }
 
@@ -167,6 +167,8 @@ async function main(): Promise<() => void> {
         });
     });
 
+    const electron = new ElectronIpcService();
+
     // Promise that will be resolved when the identity is ready
     //
     // - When linking, this should be resolved when the user clicks the button in the success
@@ -187,7 +189,7 @@ async function main(): Promise<() => void> {
     initCrashReportingInSandboxBuilds(log);
 
     // Get system info
-    const systemInfo = await window.app.getSystemInfo();
+    const systemInfo = await electron.getSystemInfo();
     log.info(
         `System info: os=${systemInfo.os} (${systemInfo.arch}), locale=${systemInfo.locale}, isSafeStorageAvailable=${systemInfo.isSafeStorageAvailable}`,
     );
@@ -249,6 +251,7 @@ async function main(): Promise<() => void> {
                     const loadingScreen = attachLoadingScreen(elements, loadingStateStore);
 
                     // Wait for the loading screen to finish.
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     return await Promise.race([
                         loadingScreen.finishedLoading,
                         loadingScreen.cancelledLoading,
@@ -266,7 +269,7 @@ async function main(): Promise<() => void> {
     function handleErrorEvent(event: ErrorEvent, prefix: string): void {
         const stacktrace =
             event.error instanceof Error ? extractErrorTraceback(event.error) : undefined;
-        window.app.reportError({
+        electron.reportError({
             message: `${prefix}${event.message}`,
             location: {filename: event.filename, line: event.lineno},
             stacktrace,
@@ -282,7 +285,7 @@ async function main(): Promise<() => void> {
     self.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
         const stacktrace =
             event.reason instanceof Error ? extractErrorTraceback(event.reason) : undefined;
-        window.app.reportError({
+        electron.reportError({
             message: 'Unhandled promise rejection in app',
             stacktrace,
         });
@@ -333,8 +336,8 @@ async function main(): Promise<() => void> {
     // Send app path and the path of the latest old profile (if it exists) to backend worker and
     // wait for it to be ready.
     // Note: Comlink is not yet active at this point!
-    const appPath = window.app.getAppPath();
-    const oldProfilePath = window.app.getLatestProfilePath();
+    const appPath = electron.getAppPath();
+    const oldProfilePath = electron.getLatestProfilePath();
 
     await new Promise((resolve) => {
         function readyListener(): void {
@@ -370,16 +373,20 @@ async function main(): Promise<() => void> {
         await domContentLoaded;
         log.debug('Showing linking wizard');
         elements.splash.classList.add('hidden'); // Hide splash screen
-        attachLinkingWizard(elements, {
-            linkingState,
-            userPassword,
-            shouldStorePassword,
-            oldProfilePassword,
-            continueWithoutRestoring,
-            identityReady,
-            oppfConfig,
-            isSafeStorageAvailable: systemInfo.isSafeStorageAvailable,
-        });
+        attachLinkingWizard(
+            elements,
+            {
+                linkingState,
+                userPassword,
+                shouldStorePassword,
+                oldProfilePassword,
+                continueWithoutRestoring,
+                identityReady,
+                oppfConfig,
+                isSafeStorageAvailable: systemInfo.isSafeStorageAvailable,
+            },
+            electron,
+        );
     }
 
     // Define function that will request user to enter the password for the key storage
@@ -394,9 +401,11 @@ async function main(): Promise<() => void> {
             elements,
             shouldStorePassword,
             systemInfo,
+            electron,
             previouslyAttemptedPassword,
         );
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return await passwordInput.passwordPromise;
     }
 
@@ -405,20 +414,20 @@ async function main(): Promise<() => void> {
         await domContentLoaded;
         log.debug('Showing page to request missing work credentials');
         elements.splash.classList.add('hidden'); // Hide splash screen
-        const dialog = attachMissingWorkCredentialsModal(elements);
+        const dialog = attachMissingWorkCredentialsModal(elements, electron);
         await dialog.foreverPromise;
     }
 
     // Initialize early services and global dialog component
     const appServices: Delayed<AppServices> = Delayed.simple('AppServices');
     const endpoint = createEndpointService({logging});
-    const launcher = new FrontendLauncherService(window.app);
     const systemDialogComponent = attachSystemDialogs(elements.systemDialogs, appServices);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const systemDialog = new FrontendSystemDialogService(systemDialogComponent.setProgress);
     const webRtc = new WebRtcServiceProvider({endpoint, logging});
     const backendControllerServices: ServicesForBackendController = {
+        electron: electron.frontendHandle,
         endpoint,
-        launcher,
         logging,
         media: new FrontendMediaService(appServices),
         notification: new FrontendNotificationCreator(),
@@ -427,27 +436,15 @@ async function main(): Promise<() => void> {
         webRtc,
     };
 
-    // Function to send new public key pins to the electron process
-    function forwardPins(newPins: DomainCertificatePin[] | undefined): void {
-        if (newPins !== undefined) {
-            window.app.updatePublicKeyPins(newPins);
-        }
-    }
-
-    // Function to delete all old profiles
-    function removeOldProfiles(): void {
-        window.app.removeOldProfiles();
-    }
-
     // Parse test data if json file was provided via command line and BUILD_MODE is testing
     let testDataJson: TestDataJson | undefined = undefined;
     if (import.meta.env.BUILD_MODE === 'testing') {
-        const testDataString = await window.app.getTestData();
+        const testDataString = await electron.getTestData();
         testDataJson = testDataString !== undefined ? parseTestData(testDataString) : undefined;
     }
 
     // Load password from safeStorage
-    const passwordForExistingKeyStorage = await window.app.loadUserPassword();
+    const passwordForExistingKeyStorage = await electron.loadUserPassword();
     log.info('Instantiating Backend');
     // Instantiate backend
     const [backend, identityIsReady] = await BackendController.create(
@@ -459,9 +456,7 @@ async function main(): Promise<() => void> {
         passwordForExistingKeyStorage,
         showLinkingWizard,
         requestUserPassword,
-        window.app.storeUserPassword,
-        removeOldProfiles,
-        forwardPins,
+        async (password: string) => await electron.storeUserPassword(password),
         requestMissingWorkCredentialsModal,
     );
 
@@ -470,6 +465,7 @@ async function main(): Promise<() => void> {
     // Create app services
     const services: AppServices = {
         crypto: {randomBytes},
+        electron,
         logging,
         blobCache: new BlobCacheService(backend, logging.logger('blob-cache')),
         profilePicture: new ProfilePictureService(backend, logging.logger('profile-picture')),
@@ -500,7 +496,7 @@ async function main(): Promise<() => void> {
             title += ` (${count})`;
         }
         document.title = title;
-        window.app.updateAppBadge(count ?? 0);
+        electron.updateAppBadge(count ?? 0);
     }
     const totalUnreadMessageCountUnsubscriber = (
         await backend.model.conversations.totalUnreadMessageCount

@@ -127,7 +127,10 @@ export async function validContactsLookupSteps(
         // 6. If work build, let `work-directory-response` be the response of asynchronously looking up
         //     `unknown-identities` on the Work Contacts API endpoint.
         let workDirectoryResponse: WorkContacts | undefined = undefined;
-        if (import.meta.env.BUILD_VARIANT === 'work') {
+        if (
+            import.meta.env.BUILD_VARIANT === 'work' ||
+            import.meta.env.BUILD_VARIANT === 'custom'
+        ) {
             const workCredentials = unwrap(services.device.workData?.get().workCredentials);
             try {
                 workDirectoryResponse = await services.work.contacts(workCredentials, [

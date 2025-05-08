@@ -1,14 +1,19 @@
 <script lang="ts">
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
+  import type {ForgotPasswordModalProps} from '~/app/ui/components/partials/modals/forgot-password-modal/props';
   import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {unreachable} from '~/common/utils/assert';
 
+  type $$Props = ForgotPasswordModalProps;
+
+  export let services: $$Props['services'];
+
   let step: 1 | 2 = 1;
 
   function handleClickRelink(): void {
-    window.app.deleteProfileAndRestartApp({createBackup: false});
+    services.electron.deleteProfileAndRestartApp({createBackup: false});
   }
 </script>
 
@@ -68,7 +73,10 @@
         <Text
           text={$i18n.t(
             'dialog--forgot-password.prose--step-1-description-p1',
-            'For security reasons, there is no way to recover a lost password for the desktop app. To keep using Threema for desktop, you need to relink it with your mobile device. Click “Next” for the relink instructions.',
+            'For security reasons, there is no way to recover a lost password for the desktop app. To keep using {shortAppName} for desktop, you need to relink it with your mobile device. Click “Next” for the relink instructions.',
+            {
+              shortAppName: import.meta.env.SHORT_APP_NAME,
+            },
           )}
         />
       </p>
@@ -85,7 +93,10 @@
         <li>
           {$i18n.t(
             'dialog--forgot-password.prose--step-2-list-step-1',
-            'On your phone, remove this device in “Settings > Threema 2.0 for Desktop (Beta)”',
+            'On your phone, remove this device in “Settings > {shortAppName} 2.0 for Desktop (Beta)”',
+            {
+              shortAppName: import.meta.env.SHORT_APP_NAME,
+            },
           )}
         </li>
         <li>

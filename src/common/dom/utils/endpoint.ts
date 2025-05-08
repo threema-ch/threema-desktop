@@ -35,7 +35,7 @@ export function ensureEndpoint(
         !(
             endpoint instanceof MessagePort ||
             endpoint instanceof Worker ||
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment, @typescript-eslint/prefer-ts-expect-error
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore: We sometimes run this in a WebWorker context, sometimes in a DOM context
             // and it's our only proper way to check it
             (typeof WorkerGlobalScope !== 'undefined' && endpoint instanceof WorkerGlobalScope) ||

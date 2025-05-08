@@ -5,7 +5,6 @@
 import {S_IRGRP, S_IRUSR, S_IWUSR, S_IXGRP, S_IXUSR} from 'node:constants';
 import * as process from 'node:process';
 
-// eslint-disable-next-line no-restricted-syntax
 export type ModeOrEmpty = {mode: number} | Record<string, never>;
 
 /**
@@ -46,7 +45,7 @@ export function fileModeInternalObjectIfPosix(): ModeOrEmpty {
  * On a POSIX system, this will return {@link MODE_FILE_INTERNAL}.
  * On Windows, undefined is returned.
  */
-// eslint-disable-next-line no-restricted-syntax
+
 export function fileModeInternalIfPosix(): number | undefined {
     return process.platform === 'win32' ? undefined : MODE_FILE_INTERNAL;
 }

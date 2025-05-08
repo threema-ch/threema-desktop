@@ -193,6 +193,7 @@ export class FetchBlobBackend implements BlobBackend {
             ...init,
             cache: 'no-store',
             headers: {
+                // eslint-disable-next-line @typescript-eslint/no-misused-spread
                 ...init.headers,
                 'user-agent': this._services.config.USER_AGENT,
             },

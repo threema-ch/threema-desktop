@@ -42,7 +42,6 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
         );
     }
 
-    // eslint-disable-next-line @typescript-eslint/require-await
     public async run(handle: PassiveTaskCodecHandle): Promise<void> {
         const {model} = this._services;
 
@@ -119,6 +118,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
         if (deltaImage.updated !== undefined) {
             const image = deltaImage.updated;
             switch (image.type as common.Image.Type) {
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 case common.Image.Type.JPEG:
                     break;
                 default:

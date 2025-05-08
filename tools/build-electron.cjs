@@ -11,7 +11,9 @@ const ENTRIES = ['app', 'electron-preload', 'electron-main', 'cli'];
 // Parse arguments
 const [node, script, ...argv] = process.argv;
 if (argv.length < 2) {
-    console.error(`Usage: ${node} ${script} [--testing] (consumer|work) (sandbox|live|onprem)`);
+    console.error(
+        `Usage: ${node} ${script} [--testing] (consumer|work|custom) (sandbox|live|onprem)`,
+    );
     process.exit(1);
 }
 
@@ -73,6 +75,8 @@ for (const entry of ENTRIES) {
                     PATH: process.env.PATH,
                     SENTRY_DSN: process.env.SENTRY_DSN,
                     MINIDUMP_ENDPOINT: process.env.MINIDUMP_ENDPOINT,
+                    CUSTOM_CONFIG_PATH: process.env.CUSTOM_CONFIG_PATH,
+                    CUSTOM_CONFIG_INDEX: process.env.CUSTOM_CONFIG_INDEX,
                 },
                 stdio: 'pipe',
                 encoding: 'utf-8',

@@ -56,9 +56,13 @@
 >
   <div class="content">
     <p>
-      {$i18n.t('dialog--manual-app-update.prose--intro', 'An update for Threema is available!')}
+      {$i18n.t(
+        'dialog--manual-app-update.prose--intro',
+        'An update for {shortAppName} is available!',
+        {shortAppName: import.meta.env.SHORT_APP_NAME},
+      )}
     </p>
-    {#if systemInfo.os === 'linux'}
+    {#if systemInfo.os === 'linux' && import.meta.env.URLS.downloadAndInfo !== 'hidden'}
       <p>
         <SubstitutableText
           text={$i18n.t(
@@ -84,7 +88,7 @@
           >
         </SubstitutableText>
       </p>
-    {:else if systemInfo.os === 'macos'}
+    {:else if systemInfo.os === 'macos' && import.meta.env.URLS.downloadAndInfo !== 'hidden'}
       <p>
         <SubstitutableText
           text={$i18n.t(
@@ -100,7 +104,7 @@
           >
         </SubstitutableText>
       </p>
-    {:else if systemInfo.os === 'windows'}
+    {:else if systemInfo.os === 'windows' && import.meta.env.URLS.downloadAndInfo !== 'hidden'}
       <p>
         <SubstitutableText
           text={$i18n.t(

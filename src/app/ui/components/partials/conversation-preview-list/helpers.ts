@@ -165,13 +165,8 @@ function getLastMessagePreviewText(
                 return i18n.t('messaging.label--default-sender-self', 'Me: {text}', {
                     text,
                 }) as SanitizedHtml;
-
             case 'contact':
                 return `${lastMessage.sender.name}: ${text}` as SanitizedHtml;
-
-            case undefined:
-                break;
-
             default:
                 unreachable(lastMessage.sender);
         }

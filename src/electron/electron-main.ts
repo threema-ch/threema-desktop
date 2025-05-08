@@ -75,7 +75,7 @@ const RUN_PARAMETERS_SCHEMA = v.object({
         .string()
         .default('default')
         .chain((s) => {
-            if (s.match(/^[0-9a-z]+$/u)) {
+            if (s.match(/^[0-9a-z]+$/u) !== null) {
                 return v.ok(s);
             }
             return v.err('Profile name is only allowed to contain lower-case letters or numbers');
@@ -360,7 +360,7 @@ async function loadCompressedLogBytes(filePath: string): Promise<ReadonlyUint8Ar
 // IPC message handler validation
 //
 // See https://www.electronjs.org/docs/latest/tutorial/security#17-validate-the-sender-of-all-ipc-messages
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-restricted-types
 function validateSenderFrame(senderFrame: Electron.WebFrameMain | null): void {
     if (senderFrame === null) {
         throw new Error('Sender frame was null');
@@ -631,7 +631,7 @@ function main(
                 if (isSafe) {
                     try {
                         return await electron.net.fetch(pathToFileURL(pathToServe).toString());
-                    } catch (error) {
+                    } catch {
                         return errorResponse(req.url, 'Loading file path failed');
                     }
                 }
@@ -712,7 +712,7 @@ function main(
                 return testDataFileName !== undefined
                     ? fs.readFileSync(testDataFileName, 'utf8')
                     : undefined;
-            } catch (error) {
+            } catch {
                 throw new Error(`Failed to load test data file: ${testDataFileName}`);
             }
         });
@@ -729,7 +729,7 @@ function main(
                 try {
                     const encryptedPassword = fs.readFileSync(userPasswordFile);
                     return electron.safeStorage.decryptString(encryptedPassword);
-                } catch (error) {
+                } catch {
                     log.warn(`Failed to read or decrypt the password.`);
                 }
             } else {
@@ -749,7 +749,7 @@ function main(
                         const encryptedPassword = electron.safeStorage.encryptString(password);
                         fs.writeFileSync(userPasswordFile, encryptedPassword);
                         return true;
-                    } catch (error) {
+                    } catch {
                         log.error(`Failed to store or encrypt the password.`);
                     }
                 } else {

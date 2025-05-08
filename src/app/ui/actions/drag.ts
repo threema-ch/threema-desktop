@@ -19,10 +19,8 @@ interface SafeDragActionProperties {
  * action.
  */
 interface SafeDragActionAttributes {
-    /* eslint-disable @typescript-eslint/naming-convention */
     readonly 'on:safedragenter'?: (event: DragEvent) => void;
     readonly 'on:safedragleave'?: (event: DragEvent) => void;
-    /* eslint-enable @typescript-eslint/naming-convention */
 }
 
 /**

@@ -4,6 +4,8 @@
 @use './utils' as *;
 @use './conversion' as *;
 
+@use './../branding/custom' as *;
+
 // General
 $alert-red: #ff0000;
 $warning-orange: #ff8a00;
@@ -382,6 +384,15 @@ $brandings: (
     primary-background: $onprem-red-800,
     primary-background--hover: color.scale($onprem-red-800, $lightness: -6%),
     primary-background--active: color.scale($onprem-red-800, $lightness: -10%),
+    primary-outline--focus: #ffffff,
+    primary-text-e1: $primary-text-e1,
+    primary-text-e2: $primary-text-e2,
+    primary-text-e3: $primary-text-e3,
+  ),
+  custom: (
+    primary-background: $custom-primary-color,
+    primary-background--hover: color.scale($custom-primary-color, $lightness: -6%),
+    primary-background--active: color.scale($custom-primary-color, $lightness: -10%),
     primary-outline--focus: #ffffff,
     primary-text-e1: $primary-text-e1,
     primary-text-e2: $primary-text-e2,

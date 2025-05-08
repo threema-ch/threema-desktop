@@ -59,6 +59,7 @@ export const BUILD_FLAVORS = /** @type {const} */ ([
     'work-sandbox',
     'work-live',
     'work-onprem',
+    'custom-onprem',
 ]);
 
 /**
@@ -110,7 +111,7 @@ export const BUILD_TARGETS = /** @type {const} */ (['cli', 'electron']);
  * - consumer: The regular Threema application for private end users
  * - work: Application for Threema Work customers
  */
-export const BUILD_VARIANTS = /** @type {const} */ (['consumer', 'work']);
+export const BUILD_VARIANTS = /** @type {const} */ (['consumer', 'work', 'custom']);
 
 /**
  * See {@link BUILD_VARIANTS}.
@@ -122,19 +123,23 @@ export const BUILD_VARIANTS = /** @type {const} */ (['consumer', 'work']);
  * Determine the app identifier (used e.g. in filenames).
  *
  * @param {BuildFlavor} flavor Build flavor.
+ * @param {string} customAppName Name of the app.
  */
-export function determineAppIdentifier(flavor) {
+export function determineAppIdentifier(flavor, customAppName) {
+    const name = slugify(customAppName.toLowerCase());
     switch (flavor) {
         case 'consumer-live':
-            return 'threema-desktop';
+            return `${name}-desktop`;
         case 'consumer-sandbox':
-            return 'threema-green-desktop';
+            return `${name}-green-desktop`;
         case 'work-live':
-            return 'threema-work-desktop';
+            return `${name}-work-desktop`;
         case 'work-sandbox':
-            return 'threema-blue-desktop';
+            return `${name}-blue-desktop`;
         case 'work-onprem':
-            return 'threema-onprem-desktop';
+            return `${name}-onprem-desktop`;
+        case 'custom-onprem':
+            return `${name}-desktop`;
         default:
             return unreachable(flavor);
     }
@@ -146,10 +151,11 @@ export function determineAppIdentifier(flavor) {
  * Note: Keep this in sync with `determine_app_name` in `common` rust crate.
  *
  * @param {BuildFlavor} flavor Build flavor to determine the app name for.
+ * @param {string} customAppName Name of the app.
  * @returns {string} Pretty app name for the given `flavor`.
  */
-export function determineAppName(flavor) {
-    let name = 'Threema';
+export function determineAppName(flavor, customAppName) {
+    let name = customAppName;
     switch (flavor) {
         case 'consumer-live':
             break;
@@ -164,6 +170,9 @@ export function determineAppName(flavor) {
             break;
         case 'work-onprem':
             name += ' OnPrem';
+            break;
+        case 'custom-onprem':
+            // The full app name of custom builds is determined by their config.
             break;
         default:
             unreachable(flavor);
@@ -176,10 +185,11 @@ export function determineAppName(flavor) {
  * Determine the name of the mobile app corresponding to this build flavor.
  *
  * @param {BuildFlavor} flavor Build flavor to determine the mobile app name for.
+ * @param {string} customAppName Name of the app.
  * @returns {string} Pretty mobile app name for the given `flavor`.
  */
-export function determineMobileAppName(flavor) {
-    let name = 'Threema';
+export function determineMobileAppName(flavor, customAppName) {
+    let name = customAppName;
     switch (flavor) {
         case 'consumer-live':
             break;
@@ -194,6 +204,8 @@ export function determineMobileAppName(flavor) {
             break;
         case 'work-onprem':
             name += ' OnPrem';
+            break;
+        case 'custom-onprem':
             break;
         default:
             unreachable(flavor);
@@ -207,20 +219,24 @@ export function determineMobileAppName(flavor) {
  * Note: Keep this in sync with `determine_app_rdn` in `common` rust crate.
  *
  * @param {BuildFlavor} flavor Build flavor to determine the app's reverse domain name name for.
+ * @param {string} customAppName The name of the application.
  * @returns {string} Reverse domain name for the given `flavor`.
  */
-export function determineAppRdn(flavor) {
+export function determineAppRdn(flavor, customAppName) {
+    const name = slugify(customAppName.toLowerCase());
     switch (flavor) {
         case 'consumer-live':
-            return 'ch.threema.threema-desktop';
+            return `ch.${name}.${name}-desktop`;
         case 'consumer-sandbox':
-            return 'ch.threema.threema-green-desktop';
+            return `ch.${name}.${name}-green-desktop`;
         case 'work-live':
-            return 'ch.threema.threema-work-desktop';
+            return `ch.${name}.${name}-work-desktop`;
         case 'work-sandbox':
-            return 'ch.threema.threema-blue-desktop';
+            return `ch.${name}.${name}-blue-desktop`;
         case 'work-onprem':
-            return 'ch.threema.threema-onprem-desktop';
+            return `ch.${name}.${name}-onprem-desktop`;
+        case 'custom-onprem':
+            return `ch.${name}.${name}-desktop`;
         default:
             return unreachable(flavor);
     }
@@ -232,12 +248,13 @@ export function determineAppRdn(flavor) {
  *
  * @param {BuildFlavor} flavor The flavor to get the appropriate binary name for.
  * @param {BuildPlatform} platform The platform to get the appropriate binary name for.
+ * @param {string} customAppName The name of the application.
  * @returns {string} App binary name for the given `flavor` and `platform`.
  */
-export function determineBinaryName(flavor, platform) {
+export function determineBinaryName(flavor, platform, customAppName) {
     switch (platform) {
         case 'darwin':
-            return `${determineAppName(flavor)}.app`;
+            return `${determineAppName(flavor, customAppName)}.app`;
         case 'win32':
             return 'ThreemaDesktop.exe';
         default:
@@ -290,25 +307,30 @@ export function determineInstallerName(appId, arch, platform, version) {
  * Determine the name of the mobile app corresponding to this build flavor.
  *
  * @param {BuildFlavor} flavor Build flavor to determine the mobile app name for.
+ * @param {string} customAppName The name of the application.
  * @returns {string} Pretty mobile app name for the given `flavor`.
  */
-export function determineMsixApplicationId(flavor) {
+export function determineMsixApplicationId(flavor, customAppName) {
     let applicationId;
+    const slugifiedName = slugify(customAppName);
     switch (flavor) {
         case 'consumer-live':
-            applicationId = 'Threema.Desktop.Consumer';
+            applicationId = `${slugifiedName}.Desktop.Consumer`;
             break;
         case 'consumer-sandbox':
-            applicationId = 'Threema.Desktop.Green';
+            applicationId = `${slugifiedName}.Desktop.Green`;
             break;
         case 'work-live':
-            applicationId = 'Threema.Desktop.Work';
+            applicationId = `${slugifiedName}.Desktop.Work`;
             break;
         case 'work-sandbox':
-            applicationId = 'Threema.Desktop.Blue';
+            applicationId = `${slugifiedName}.Desktop.Blue`;
             break;
         case 'work-onprem':
-            applicationId = 'Threema.Desktop.OnPrem';
+            applicationId = `${slugifiedName}.Desktop.OnPrem`;
+            break;
+        case 'custom-onprem':
+            applicationId = slugifiedName;
             break;
         default:
             unreachable(flavor);
@@ -340,6 +362,17 @@ export function isBuildPlatform(platform) {
     // to `BuildPlatform`. However, it *might* be, which is the reason why this guard function
     // exists at all.
     return BUILD_PLATFORMS.includes(platform);
+}
+
+/**
+ * Bring name into a suitable format, i.e so that it can be used in the file system, in
+ * `appManifests` and in `plists`
+ *
+ * @param {string} name The string to be slugified.
+ * @returns {string} a version of the string that only contains `[a-zA-Z0-9]`.
+ */
+export function slugify(name) {
+    return name.replaceAll(/[^a-zA-Z0-9]/gu, '');
 }
 
 /**

@@ -67,7 +67,10 @@
     <p>
       {$i18n.t(
         'dialog--d2d-protocol-version-incompatible.prose--description-p1',
-        'The Threema version installed on your mobile device is not compatible with this version of Threema for desktop. To avoid synchronization problems, please update the app on your mobile device and relink it with Threema for desktop.',
+        'The {shortAppName} version installed on your mobile device is not compatible with this version of {shortAppName} for desktop. To avoid synchronization problems, please update the app on your mobile device and relink it with {shortAppName} for desktop.',
+        {
+          shortAppName: import.meta.env.SHORT_APP_NAME,
+        },
       )}
     </p>
     <p>

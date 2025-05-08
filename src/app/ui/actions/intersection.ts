@@ -29,10 +29,8 @@ interface IntersectionActionProperties {
  * action.
  */
 interface IntersectionActionAttributes {
-    /* eslint-disable @typescript-eslint/naming-convention */
     readonly 'on:intersectionenter'?: (event: CustomEvent<IntersectionEventDetail>) => void;
     readonly 'on:intersectionexit'?: (event: CustomEvent<IntersectionEventDetail>) => void;
-    /* eslint-enable @typescript-eslint/naming-convention */
 }
 
 /**

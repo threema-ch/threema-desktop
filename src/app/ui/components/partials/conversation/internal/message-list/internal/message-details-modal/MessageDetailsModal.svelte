@@ -149,6 +149,8 @@
           }}
         >
           <div class="history">
+            <!-- Key not required because existing history entries should not change. -->
+            <!-- eslint-disable-next-line svelte/require-each-key -->
             {#each sortedHistory as historyEntry, index}
               <div class="version">
                 <div class="badge">
@@ -166,7 +168,7 @@
                   >
                     {#if historyEntry.text === undefined}
                       <Text
-                        color={'mono-low'}
+                        color="mono-low"
                         text={$i18n.t('dialog--message-details.prose--empty-caption', 'No caption')}
                       />
                     {:else}

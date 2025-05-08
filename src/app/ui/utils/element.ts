@@ -10,15 +10,14 @@ export function isFullyVisibleVertical({
     container,
     element,
 }: {
-    /* eslint-disable @typescript-eslint/ban-types */
+    /* eslint-disable @typescript-eslint/no-restricted-types */
     container: Element | null | undefined;
     element: Element | null | undefined;
-    /* eslint-enable @typescript-eslint/ban-types */
+    /* eslint-enable @typescript-eslint/no-restricted-types */
 }): boolean {
     if (
         container === null ||
         container === undefined ||
-        // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
         element === null ||
         element === undefined
     ) {
@@ -46,7 +45,7 @@ export async function waitForPresenceOfElement({
     subtree = false,
     timeoutMs = 3000,
 }: {
-    /* eslint-disable @typescript-eslint/ban-types */
+    /* eslint-disable @typescript-eslint/no-restricted-types */
     /**
      * The container whose children to observe. Note: Only direct children are observed by default,
      * unless `subtree` is explicitly enabled.
@@ -63,7 +62,7 @@ export async function waitForPresenceOfElement({
      * failed. Defaults to `3000` milliseconds.
      */
     timeoutMs?: u53;
-    /* eslint-enable @typescript-eslint/ban-types */
+    /* eslint-enable @typescript-eslint/no-restricted-types */
 }): Promise<Element> {
     // TODO(DESK-1338): Timer usage can be simplified a lot here.
     return await new Promise((resolve, reject) => {
@@ -72,7 +71,7 @@ export async function waitForPresenceOfElement({
             return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/ban-types
+        // eslint-disable-next-line @typescript-eslint/no-restricted-types
         let element: Element | null = container.querySelector(selector);
         if (element !== null) {
             resolve(element);

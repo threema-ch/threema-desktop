@@ -76,7 +76,6 @@ export class ResolvablePromise<V, E extends Error = never>
         };
         const outer: PromiseFn<V, E> = {
             resolve: (value) => this.resolve(value),
-            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             reject: (reason) => this.reject(reason),
         };
         super(
@@ -140,7 +139,6 @@ export class ResolvablePromise<V, E extends Error = never>
                 promise.resolve(v);
             })
             .catch((error: unknown) => {
-                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                 promise.reject(ensureError(error) as E);
             });
         return promise;

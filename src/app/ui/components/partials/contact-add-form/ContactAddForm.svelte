@@ -44,7 +44,10 @@
       if (lookupContactResult.type === 'me') {
         identityFieldError = $i18n.t(
           'contacts.error--add-contact-threema-id-is-own',
-          'You cannot add your own Threema ID as contact. Hint: To keep private notes you can create a group with only yourself as member.',
+          'You cannot add your own {shortAppName} ID as contact. Hint: To keep private notes you can create a group with only yourself as member.',
+          {
+            shortAppName: import.meta.env.SHORT_APP_NAME,
+          },
         );
         return;
       }
@@ -52,7 +55,10 @@
       if (lookupContactResult.type === 'invalid') {
         identityFieldError = $i18n.t(
           'contacts.error--add-contact-threema-id-not-found',
-          'Threema ID was not found or has been revoked',
+          '{shortAppName} ID was not found or has been revoked',
+          {
+            shortAppName: import.meta.env.SHORT_APP_NAME,
+          },
         );
         return;
       }
@@ -60,7 +66,10 @@
       if (lookupContactResult.type === 'exists-direct') {
         identityFieldError = $i18n.t(
           'contacts.error--add-contact-threema-id-already-added',
-          'Threema ID is already part of your contact list',
+          '{shortAppName} ID is already part of your contact list',
+          {
+            shortAppName: import.meta.env.SHORT_APP_NAME,
+          },
         );
         return;
       }
@@ -75,7 +84,7 @@
         step: 'step-two',
         contact: {type: 'new', contactInit: lookupContactResult.contactInit},
       };
-    } catch (error) {
+    } catch {
       log.error('Cannot check contact validity. Are you connected to the internet?');
       identityFieldError = i18n
         .get()
@@ -120,7 +129,7 @@
         }
         uid = createContactResult;
       }
-    } catch (error) {
+    } catch {
       toast.addSimpleFailure(
         $i18n.t(
           'contacts.error--add-contact',

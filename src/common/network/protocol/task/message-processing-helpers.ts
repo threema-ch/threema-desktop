@@ -157,7 +157,7 @@ function getReferencedMessageIdsForMessage(
             default:
                 return undefined;
         }
-    } catch (error) {
+    } catch {
         return undefined;
     }
 }

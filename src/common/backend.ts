@@ -4,9 +4,9 @@ import type {CryptoBackend} from '~/common/crypto';
 import type {INonceService} from '~/common/crypto/nonce';
 import type {Device} from '~/common/device';
 import type {SystemInfo} from '~/common/electron-ipc';
+import type {IFrontendElectronService} from '~/common/electron-service';
 import type {FileStorage, TempFileStorage} from '~/common/file-storage';
 import type {KeyStorage} from '~/common/key-storage';
-import type {LauncherService} from '~/common/launcher';
 import type {LoadingInfo} from '~/common/loading';
 import type {LoggerFactory} from '~/common/logging';
 import type {BackendMediaService, IFrontendMediaService} from '~/common/media';
@@ -34,10 +34,10 @@ export interface ServicesForBackend {
     readonly device: Device;
     readonly directory: DirectoryBackend;
     readonly blob: BlobBackend;
+    readonly electron: Remote<IFrontendElectronService>;
     readonly endpoint: EndpointService;
     readonly file: FileStorage;
     readonly keyStorage: KeyStorage;
-    readonly launcher: Remote<LauncherService>;
     readonly logging: LoggerFactory;
     readonly media: BackendMediaService;
     readonly model: Repositories;
@@ -93,8 +93,8 @@ export type EarlyBackendServicesThatDontRequireConfig = Omit<
  * Services available in the backend controller.
  */
 export interface ServicesForBackendController {
+    readonly electron: IFrontendElectronService;
     readonly endpoint: EndpointService;
-    readonly launcher: LauncherService;
     readonly logging: LoggerFactory;
     readonly media: IFrontendMediaService;
     readonly notification: NotificationCreator;

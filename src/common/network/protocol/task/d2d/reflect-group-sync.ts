@@ -59,6 +59,7 @@ export class ReflectGroupSyncTask
 
         const conversation = this._group.controller.conversation();
         switch (variant.type) {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             case 'update':
                 groupSync = getD2dGroupSyncUpdate(
                     {

@@ -9,13 +9,11 @@
  */
 export function validator<
     TStruct,
-    TSchema extends {
-        [K in Exclude<
-            keyof TStruct,
-            'snapshot' | 'clone'
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        >]: any;
-    },
+    TSchema extends Record<
+        Exclude<keyof TStruct, 'snapshot' | 'clone'>,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        any
+    >,
 >(structbuf: TStruct, schema: TSchema): TSchema {
     return schema;
 }

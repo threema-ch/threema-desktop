@@ -100,7 +100,7 @@ export class FetchSfuHttpBackend implements SfuHttpBackend {
                     snapshot = protobuf.validate.group_call.CALL_STATE_SNAPSHOT_SCHEMA.parse(
                         protobuf.groupcall.CallState.decode(plainData),
                     );
-                } catch (error) {
+                } catch {
                     // Handle as if it was not present
                     log.warn(
                         `Unable to decrypt or decode call state (length=${peekResponse.encryptedCallState.byteLength}), continuing without it`,
@@ -233,6 +233,7 @@ export class FetchSfuHttpBackend implements SfuHttpBackend {
             credentials: 'omit',
             referrerPolicy: 'no-referrer',
             headers: {
+                // eslint-disable-next-line @typescript-eslint/no-misused-spread
                 ...init.headers,
                 ...this._headers,
                 authorization: `ThreemaSfuToken ${token.sfuToken}`,

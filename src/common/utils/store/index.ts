@@ -20,7 +20,6 @@ import type {AbortRaiser} from '~/common/utils/signal';
 /**
  * Symbol to mark a remote as a store.
  */
-// eslint-disable-next-line @typescript-eslint/no-inferrable-types
 export const STORE_REMOTE_MARKER: symbol = Symbol('store-remote-marker');
 
 /**

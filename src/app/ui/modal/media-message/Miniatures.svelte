@@ -24,6 +24,8 @@
 
 <template>
   <ul>
+    <!-- Key not required because all values are derived from `validatedMediaFiles`. -->
+    <!-- eslint-disable-next-line svelte/require-each-key -->
     {#each validatedMediaFiles as [mediaFile, validationResult]}
       <li>
         <Miniature

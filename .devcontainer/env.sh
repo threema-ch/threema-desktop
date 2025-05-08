@@ -9,12 +9,15 @@ _DEBIAN_VERSION="12"
 _NODE_VERSION=$(jq -e -r '.engines.node' package.json)
 
 # Extract from `src/launcher/rust-toolchain.toml`
-_RUST_VERSION=$(sed -n 's/.*channel = "\([^"]*\)".*/\1/p' ./src/launcher/rust-toolchain.toml)
+_RUST_VERSION=$(sed -n 's/.*channel = "\([^"]*\)".*/\1/p' ./src/rust/common/rust-toolchain.toml)
+
+# Set to the most recent binaryen release
+_BINARYEN_VERSION="121"
 
 # Commands to run inside the Docker container
 #
 # Note: `npm` is treated specially
-_COMMANDS=("cargo" "rustc" "rustdoc" "rustfmt" "rustup" "node")
+_COMMANDS=("cargo" "rustc" "rustdoc" "rustfmt" "rustup" "node" "wasm-bindgen" "wasm-opt")
 
 # ---
 
@@ -56,7 +59,7 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Determine Docker image name
-_image_name="threema-desktop-env:debian-${_DEBIAN_VERSION}-node-${_NODE_VERSION}-rust-${_RUST_VERSION}"
+_image_name="threema-desktop-env:debian-${_DEBIAN_VERSION}-node-${_NODE_VERSION}-rust-${_RUST_VERSION}-binaryen-${_BINARYEN_VERSION}"
 
 # Update the `devcontainer.json` with the correct Docker image name, if necessary
 if [[ "$(jq -e -r '.image' ./.devcontainer/devcontainer.json)" != "${_image_name}" ]]; then
@@ -75,6 +78,7 @@ if [[ "$(docker images -q ${_image_name} 2> /dev/null)" == "" ]] || [[ "$_force_
     --build-arg DEBIAN_VERSION="${_DEBIAN_VERSION}" \
     --build-arg NODE_VERSION="${_NODE_VERSION}" \
     --build-arg RUST_VERSION="${_RUST_VERSION}" \
+    --build-arg BINARYEN_VERSION="${_BINARYEN_VERSION}" \
     ./.devcontainer \
     -t ${_image_name}
 fi
@@ -104,7 +108,7 @@ if [[ "$_docker_container_running" == "" ]] || [[ "$_force_rebuild" -eq 1 ]]; th
 fi
 
 # Clean up
-unset -v _DEBIAN_VERSION _NODE_VERSION _RUST_VERSION
+unset -v _DEBIAN_VERSION _NODE_VERSION _RUST_VERSION _BINARYEN_VERSION
 unset -v _print_usage _force_rebuild _build_only
 unset -v _image_name
 unset -v _work_directory _run_args _mounts
@@ -132,7 +136,7 @@ function npm {
         return 0
     fi
     case $2 in
-        dev:* | generate-screenshots | test:karma | test:playwright:* | assets:generate:icons:macos | assets:generate:icons:windows)
+        assets:generate:icons:macos | assets:generate:icons:windows | dev:* | generate-screenshots | libthreema:include | test:karma | test:playwright:*)
             command npm "$@"
             ;;
         package)
@@ -160,7 +164,7 @@ function enter {
 
 # Stop the container and remove all variables and functions
 function deactivate {
-    if [[ "$1" != "--only-if-started" ]] || [[ "$_docker_container_running" == "" ]]; then
+    if [[ "${1-}" != "--only-if-started" ]] || [[ "$_docker_container_running" == "" ]]; then
         docker rm -f ${_docker_run_name} &> /dev/null
     fi
     unset -v _docker_run_name _docker_container_running

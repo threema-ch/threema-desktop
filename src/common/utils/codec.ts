@@ -195,7 +195,7 @@ export interface Utf8Codec {
 // The globals `TextEncoder` and `TextDecoder` exist in both DOM and Node, so
 // we'll just assume they're always available.
 //
-/* eslint-disable no-restricted-syntax,@typescript-eslint/method-signature-style,@typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/method-signature-style,@typescript-eslint/naming-convention */
 // Decoder
 interface TextDecoderCommon {
     readonly encoding: string;
@@ -232,7 +232,7 @@ declare const TextEncoder: {
     prototype: TextEncoder;
     new (): TextEncoder;
 };
-/* eslint-enable no-restricted-syntax,@typescript-eslint/method-signature-style,@typescript-eslint/naming-convention */
+/* eslint-enable @typescript-eslint/method-signature-style,@typescript-eslint/naming-convention */
 
 const ENCODING_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     EncodingError,

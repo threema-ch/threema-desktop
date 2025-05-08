@@ -1,4 +1,5 @@
 import * as libthreema from 'libthreema';
+
 import type {ServicesForBackend} from '~/common/backend';
 import {
     createWebSocketStream,
@@ -467,6 +468,7 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
         // Create protocol in libthreema
         let protocol;
         switch (setup.role) {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             case 'initiator':
                 try {
                     protocol = libthreema.RendezvousProtocol.newAsRid(

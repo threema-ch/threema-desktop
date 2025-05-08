@@ -1,2 +1,2 @@
 [toolchain]
-channel = "1.82.0" # Should be kept in sync with .gitlab-ci.yml
+channel = "1.85" # Should be kept in sync with .gitlab-ci.yml

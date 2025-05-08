@@ -69,7 +69,6 @@ class BaseAbortListener<TEvent = undefined> implements AbortListener<TEvent> {
     /**
      * Return a promise that resolves when the abort event is raised.
      */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public get promise(): QueryablePromise<TEvent> {
         return this._promise;
     }
@@ -96,7 +95,7 @@ class BaseAbortListener<TEvent = undefined> implements AbortListener<TEvent> {
                 } catch (error) {
                     this._log?.error('Uncaught error in abort subscriber', error);
                 }
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
+
                 return (): void => {};
             case 'rejected':
                 // Considered unreachable

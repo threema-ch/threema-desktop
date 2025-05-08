@@ -67,6 +67,7 @@ try {
         cwd: rootDir,
         env: process.env, // Pass through all env vars, e.g. for CHROMIUM_BIN or similar
         stdio: [0, 1, 2],
+        shell: IS_WINDOWS,
     });
 } catch (error) {
     console.warn(`Tests failed with exit code ${error.status}`);

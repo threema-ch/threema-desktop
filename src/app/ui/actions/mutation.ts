@@ -32,9 +32,7 @@ interface MutationActionProperties {
  * action.
  */
 interface MutationActionAttributes {
-    /* eslint-disable @typescript-eslint/naming-convention */
     readonly 'on:mutation'?: (event: CustomEvent<MutationEventDetail>) => void;
-    /* eslint-enable @typescript-eslint/naming-convention */
 }
 
 /**

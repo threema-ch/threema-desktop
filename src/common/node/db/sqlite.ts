@@ -71,12 +71,14 @@ import {
 import type {FileId} from '~/common/file-storage';
 import type {Logger} from '~/common/logging';
 import type {FavoriteEmojisSortMode} from '~/common/model/emoji-preferences';
+import type {BlobType} from '~/common/model/message/common';
 import type {FavoriteEmojis} from '~/common/model/types/emoji-preferences';
 import type {
     AnyNonDeletedMessageType,
     MediaBasedMessageType,
     TextBasedMessageType,
 } from '~/common/model/types/message';
+import type {BlobId} from '~/common/network/protocol/blob';
 import {
     statusMessageUidToStatusMessageId,
     type GroupId,
@@ -446,6 +448,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     colorIndex: tContact.colorIndex,
                 })
                 .where(tContact.uid.equals(uid))
+                // TODO(DESK-1780) Replace the deprecated function
+                // eslint-disable-next-line @typescript-eslint/no-deprecated
                 .guidedSplitOptional('notificationTriggerPolicyOverride', {
                     policy: 'notificationTriggerPolicyOverrideValue!',
                     expiresAt: 'notificationTriggerPolicyOverrideExpiresAt?',
@@ -607,6 +611,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     colorIndex: tGroup.colorIndex,
                 })
                 .where(tGroup.uid.equals(queryUid))
+                // TODO(DESK-1780) Replace the deprecated function
+                // eslint-disable-next-line @typescript-eslint/no-deprecated
                 .guidedSplitOptional('notificationTriggerPolicyOverride', {
                     policy: 'notificationTriggerPolicyOverrideValue!',
                     expiresAt: 'notificationTriggerPolicyOverrideExpiresAt?',
@@ -1415,7 +1421,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         } as const;
     }
 
-    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     private _getMessage<TType extends MessageType>(
         common: DbMessageCommon<TType>,
     ): DbGet<DbAnyMessage> {
@@ -2127,6 +2132,9 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     public updateMessage(
         conversationUid: DbConversationUid,
         message: DbUpdate<DbAnyNonDeletedMessage, 'type'>,
+        fileDataUidHint:
+            | {readonly uid: DbFileDataUid; readonly type: 'main' | 'thumbnail'}
+            | undefined,
     ): {deletedFileIds: FileId[]} {
         // Remove the subarrays from the message so that it may not be spread erroneously into the
         // database.
@@ -2194,14 +2202,29 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         'correlationId',
                     ]);
 
-                    // Add, update or remove associated file data entries
-                    const removedFileDataUids = this._processFileDataChanges(message, update);
+                    let removedFileDataUids: DbFileDataUid[] = [];
+                    let hintUpdate = {};
+                    if (fileDataUidHint === undefined) {
+                        // Add, update or remove associated file data entries
+                        removedFileDataUids = this._processFileDataChanges(message, update);
+                    } else {
+                        // Due to the hint, we can directly pass the linked uid to the message
+                        // table.
+                        hintUpdate =
+                            fileDataUidHint.type === 'main'
+                                ? {
+                                      fileDataUid: fileDataUidHint.uid,
+                                  }
+                                : {
+                                      thumbnailFileDataUid: fileDataUidHint.uid,
+                                  };
+                    }
 
                     // Update message file data
                     sync(
                         this._db
                             .update(tMessageFileData)
-                            .set(update)
+                            .set({...update, ...hintUpdate})
                             .where(tMessageFileData.messageUid.equals(message.uid))
                             .executeUpdate(),
                     );
@@ -2236,14 +2259,29 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         'dimensions',
                     ]);
 
-                    // Add, update or remove associated file data entries
-                    const removedFileDataUids = this._processFileDataChanges(message, update);
+                    let removedFileDataUids: DbFileDataUid[] = [];
+                    let hintUpdate = {};
+                    if (fileDataUidHint === undefined) {
+                        // Add, update or remove associated file data entries
+                        removedFileDataUids = this._processFileDataChanges(message, update);
+                    } else {
+                        // Due to the hint, we can directly pass the linked uid to the message
+                        // table.
+                        hintUpdate =
+                            fileDataUidHint.type === 'main'
+                                ? {
+                                      fileDataUid: fileDataUidHint.uid,
+                                  }
+                                : {
+                                      thumbnailFileDataUid: fileDataUidHint.uid,
+                                  };
+                    }
 
                     // Update message file data
                     sync(
                         this._db
                             .update(tMessageImageData)
-                            .set(update)
+                            .set({...update, ...hintUpdate})
                             .where(tMessageImageData.messageUid.equals(message.uid))
                             .executeUpdate(),
                     );
@@ -2277,14 +2315,29 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         'dimensions',
                     ]);
 
-                    // Add, update or remove associated file data entries
-                    const removedFileDataUids = this._processFileDataChanges(message, update);
+                    let removedFileDataUids: DbFileDataUid[] = [];
+                    let hintUpdate = {};
+                    if (fileDataUidHint === undefined) {
+                        // Add, update or remove associated file data entries
+                        removedFileDataUids = this._processFileDataChanges(message, update);
+                    } else {
+                        // Due to the hint, we can directly pass the linked uid to the message
+                        // table.
+                        hintUpdate =
+                            fileDataUidHint.type === 'main'
+                                ? {
+                                      fileDataUid: fileDataUidHint.uid,
+                                  }
+                                : {
+                                      thumbnailFileDataUid: fileDataUidHint.uid,
+                                  };
+                    }
 
                     // Update message file data
                     sync(
                         this._db
                             .update(tMessageVideoData)
-                            .set(update)
+                            .set({...update, ...hintUpdate})
                             .where(tMessageVideoData.messageUid.equals(message.uid))
                             .executeUpdate(),
                     );
@@ -2317,14 +2370,28 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         'duration',
                     ]);
 
-                    // Add, update or remove associated file data entries
-                    const removedFileDataUids = this._processFileDataChanges(message, update);
+                    let removedFileDataUids: DbFileDataUid[] = [];
+                    let hintUpdate = {};
+                    if (fileDataUidHint === undefined) {
+                        // Add, update or remove associated file data entries
+                        removedFileDataUids = this._processFileDataChanges(message, update);
+                    } else {
+                        // Due to the hint, we can directly pass the linked uid to the message
+                        // table.
+                        assert(
+                            fileDataUidHint.type !== 'thumbnail',
+                            'Audio files do not have a thumbnail',
+                        );
+                        hintUpdate = {
+                            fileDataUid: fileDataUidHint.uid,
+                        };
+                    }
 
                     // Update message file data
                     sync(
                         this._db
                             .update(tMessageAudioData)
-                            .set(update)
+                            .set({...update, ...hintUpdate})
                             .where(tMessageAudioData.messageUid.equals(message.uid))
                             .executeUpdate(),
                     );
@@ -3309,6 +3376,136 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .executeInsert(),
         );
         return uid;
+    }
+
+    /** @inheritdoc */
+    public getFileDataByBlobIdAndSender(
+        senderContactUid: 'me' | DbContactUid,
+        messageType: Exclude<AnyNonDeletedMessageType, MessageType.TEXT>,
+        blobId: BlobId,
+        type: BlobType,
+    ): (DbFileData & {readonly fileDataUid: DbFileDataUid}) | undefined {
+        const fileDataSelectFields = {
+            fileId: tFileData.fileId,
+            encryptionKey: tFileData.encryptionKey,
+            unencryptedByteCount: tFileData.unencryptedByteCount,
+            storageFormatVersion: tFileData.storageFormatVersion,
+            fileDataUid: tFileData.uid,
+        };
+        // We assume that blobIds are unique for a given sender. Because in distribution lists there
+        // can be an arbitrary number of recipients, the join below may lead to more than one
+        // result. Since they share the same file data, we can simply take any of the results.
+        switch (messageType) {
+            case 'file': {
+                return (
+                    sync(
+                        this._db
+                            .selectFrom(tFileData)
+                            .innerJoin(tMessageFileData)
+                            .on(
+                                type === 'main'
+                                    ? tFileData.uid.equals(tMessageFileData.fileDataUid)
+                                    : tFileData.uid.equals(tMessageFileData.thumbnailFileDataUid),
+                            )
+                            .innerJoin(tMessage)
+                            .on(tMessageFileData.messageUid.equals(tMessage.uid))
+                            .select(fileDataSelectFields)
+                            .where(
+                                type === 'main'
+                                    ? tMessageFileData.blobId.equals(blobId)
+                                    : tMessageFileData.thumbnailBlobId.equals(blobId),
+                            )
+                            .and(
+                                senderContactUid === 'me'
+                                    ? tMessage.senderContactUid.isNull()
+                                    : tMessage.senderContactUid.equals(senderContactUid),
+                            )
+                            .limit(1)
+                            .executeSelectNoneOrOne(),
+                    ) ?? undefined
+                );
+            }
+            case 'image': {
+                return (
+                    sync(
+                        this._db
+                            .selectFrom(tFileData)
+                            .innerJoin(tMessageImageData)
+                            .on(
+                                type === 'main'
+                                    ? tFileData.uid.equals(tMessageImageData.fileDataUid)
+                                    : tFileData.uid.equals(tMessageImageData.thumbnailFileDataUid),
+                            )
+                            .innerJoin(tMessage)
+                            .on(tMessageImageData.messageUid.equals(tMessage.uid))
+                            .select(fileDataSelectFields)
+                            .where(
+                                type === 'main'
+                                    ? tMessageImageData.blobId.equals(blobId)
+                                    : tMessageImageData.thumbnailBlobId.equals(blobId),
+                            )
+                            .and(
+                                senderContactUid === 'me'
+                                    ? tMessage.senderContactUid.isNull()
+                                    : tMessage.senderContactUid.equals(senderContactUid),
+                            )
+                            .limit(1)
+                            .executeSelectNoneOrOne(),
+                    ) ?? undefined
+                );
+            }
+            case 'video':
+                return (
+                    sync(
+                        this._db
+                            .selectFrom(tFileData)
+                            .innerJoin(tMessageVideoData)
+                            .on(
+                                type === 'main'
+                                    ? tFileData.uid.equals(tMessageVideoData.fileDataUid)
+                                    : tFileData.uid.equals(tMessageVideoData.thumbnailFileDataUid),
+                            )
+                            .innerJoin(tMessage)
+                            .on(tMessageVideoData.messageUid.equals(tMessage.uid))
+                            .select(fileDataSelectFields)
+                            .where(
+                                type === 'main'
+                                    ? tMessageVideoData.blobId.equals(blobId)
+                                    : tMessageVideoData.thumbnailBlobId.equals(blobId),
+                            )
+                            .and(
+                                senderContactUid === 'me'
+                                    ? tMessage.senderContactUid.isNull()
+                                    : tMessage.senderContactUid.equals(senderContactUid),
+                            )
+                            .limit(1)
+                            .executeSelectNoneOrOne(),
+                    ) ?? undefined
+                );
+            case 'audio':
+                assert(type !== 'thumbnail', 'AudioMessages do not have a thumbnail');
+                return (
+                    sync(
+                        this._db
+                            .selectFrom(tFileData)
+                            .innerJoin(tMessageAudioData)
+                            .on(tFileData.uid.equals(tMessageAudioData.fileDataUid))
+                            .innerJoin(tMessage)
+                            .on(tMessageAudioData.messageUid.equals(tMessage.uid))
+                            .select(fileDataSelectFields)
+                            .where(tMessageAudioData.blobId.equals(blobId))
+                            .and(
+                                senderContactUid === 'me'
+                                    ? tMessage.senderContactUid.isNull()
+                                    : tMessage.senderContactUid.equals(senderContactUid),
+                            )
+                            .limit(1)
+                            .executeSelectNoneOrOne(),
+                    ) ?? undefined
+                );
+            default:
+                return unreachable(messageType);
+        }
     }
 
     /** @inheritdoc */

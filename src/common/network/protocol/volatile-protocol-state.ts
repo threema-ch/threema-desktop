@@ -1,6 +1,10 @@
 import type {ContactInitFragment} from '~/common/model/types/contact';
+import type {BlobId} from '~/common/network/protocol/blob';
 import type {GroupId, IdentityString} from '~/common/network/types';
 import {tag, type WeakOpaque} from '~/common/types';
+import {u8aToBase64} from '~/common/utils/base64';
+import {AsyncLock} from '~/common/utils/lock';
+import {WeakValueMap} from '~/common/utils/map';
 
 // Lifetime constants as defined by the protocol.
 const GROUP_SYNC_REQUEST_CACHE_ENTRY_LIFETIME_MS = 3.6e6; // One hour
@@ -73,7 +77,16 @@ export interface VolatileProtocolState {
         lookup: ValidContactLookupCacheValue['lookup'],
         lookupTimestamp: Date,
     ) => void;
+
+    /**
+     * Get the {@link AsyncLock} for a given `blobId`.
+     *
+     * If the lock does not exist, one will be created and associated with the `blobId`
+     */
+    readonly getOrCreateBlobLock: (blobId: BlobId) => AsyncLock;
 }
+
+type StringifiedBlobId = WeakOpaque<string, {readonly StringifiedBlobId: unique symbol}>;
 
 export class VolatileProtocolStateBackend implements VolatileProtocolState {
     private readonly _lastGroupSyncRequests = new Map<GroupSyncRequestsCacheKey, Date>();
@@ -81,6 +94,7 @@ export class VolatileProtocolStateBackend implements VolatileProtocolState {
         ValidContactLookupCacheKey,
         ValidContactLookupCacheValue
     >();
+    private readonly _blobLockMap = new WeakValueMap<StringifiedBlobId, AsyncLock>();
 
     /** @inheritdoc */
     public getLastProcessedGroupSyncRequest(
@@ -144,6 +158,17 @@ export class VolatileProtocolStateBackend implements VolatileProtocolState {
         });
     }
 
+    /** @inheritdoc */
+    public getOrCreateBlobLock(blobId: BlobId): AsyncLock {
+        const lookup = this._blobLockMap.get(this._createStringifiedBlobId(blobId));
+        if (lookup !== undefined) {
+            return lookup;
+        }
+        const lock = new AsyncLock();
+        this._blobLockMap.set(this._createStringifiedBlobId(blobId), lock);
+        return lock;
+    }
+
     private _createGroupSyncRequestCacheKey(
         groupId: GroupId,
         creatorIdentity: IdentityString,
@@ -156,5 +181,9 @@ export class VolatileProtocolStateBackend implements VolatileProtocolState {
         contactIdentity: IdentityString,
     ): ValidContactLookupCacheKey {
         return tag<ValidContactLookupCacheKey>(contactIdentity);
+    }
+
+    private _createStringifiedBlobId(blobId: BlobId): StringifiedBlobId {
+        return tag<StringifiedBlobId>(u8aToBase64(blobId));
     }
 }

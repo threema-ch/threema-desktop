@@ -1,12 +1,17 @@
 <script lang="ts">
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
+  import type {MissingWorkCredentialsProps} from '~/app/ui/components/partials/modals/missing-work-credentials-modal/props';
   import {i18n} from '~/app/ui/i18n';
+
+  type $$Props = MissingWorkCredentialsProps;
+
+  export let services: $$Props['services'];
 
   export const foreverPromise: Promise<never> = new Promise<never>(() => {});
 
   function unlinkAndBackup(): void {
-    window.app.deleteProfileAndRestartApp({createBackup: true});
+    services.electron.deleteProfileAndRestartApp({createBackup: true});
   }
 </script>
 
@@ -15,7 +20,10 @@
     type: 'card',
     title: $i18n.t(
       'dialog--missing-work-credentials.label--title',
-      'Missing Threema Work Credentials',
+      'Missing {fullAppName} Credentials',
+      {
+        fullAppName: import.meta.env.APP_NAME,
+      },
     ),
     maxWidth: 460,
     buttons: [
@@ -37,7 +45,10 @@
       <Text
         text={$i18n.t(
           'dialog--missing-work-credentials.prose--description',
-          'No Threema Work credentials could be found. To continue using the desktop app, you need to relink this device. Your message history will be restored after relinking.',
+          'No {fullAppName} credentials could be found. To continue using the desktop app, you need to relink this device. Your message history will be restored after relinking.',
+          {
+            fullAppName: import.meta.env.APP_NAME,
+          },
         )}
       />
     </p>

@@ -128,6 +128,7 @@ export class PersistentProtocolStateBackend implements PersistentProtocolState {
         dbState: DbPersistentProtocolState<PersistentProtocolStateType>,
     ): void {
         switch (dbState.type) {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             case PersistentProtocolStateType.LAST_USER_PROFILE_DISTRIBUTION_STATE: {
                 if (
                     Date.now() - dbState.createdAt.getTime() >
@@ -173,6 +174,7 @@ export class PersistentProtocolStateBackend implements PersistentProtocolState {
         const toBeDeleted: DbPersistentProtocolStateUid[] = [];
 
         switch (type) {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             case PersistentProtocolStateType.LAST_USER_PROFILE_DISTRIBUTION_STATE: {
                 for (const [key, value] of this._userProfileDistributionCache.entries()) {
                     if (

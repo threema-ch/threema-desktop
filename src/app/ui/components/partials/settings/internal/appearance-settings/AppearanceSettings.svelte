@@ -67,11 +67,11 @@
       log.error('Spellcheck was toggled but its current status was unknown');
       return;
     }
-    window.app.setSpelleckEnabledAndRestart(!isSpellcheckEnabled);
+    services.electron.setSpelleckEnabledAndRestart(!isSpellcheckEnabled);
   }
 
   onMount(() => {
-    window.app
+    services.electron
       .isSpellcheckEnabled()
       .then((enabled) => {
         isSpellcheckEnabled = enabled;
@@ -88,7 +88,7 @@
   });
 
   $: themeDropdownItems = createDropdownItems(getThemeDropdown($i18n), updateTheme);
-  $: localeDropdownItems = createDropdownItems(getLocaleDropdown(), updateLocale);
+  const localeDropdownItems = createDropdownItems(getLocaleDropdown(), updateLocale);
 
   $: showInactiveContacts = settings.inactiveContactsPolicy === InactiveContactsPolicy.SHOW;
 </script>

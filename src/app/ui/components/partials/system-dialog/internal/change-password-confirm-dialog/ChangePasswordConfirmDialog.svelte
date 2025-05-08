@@ -57,7 +57,10 @@
       <Text
         text={$i18n.t(
           'dialog--change-password-confirmation.prose--intro',
-          'Threema for Desktop must be re-launched to save your changes.',
+          '{shortAppName} for Desktop must be re-launched to save your changes.',
+          {
+            shortAppName: import.meta.env.SHORT_APP_NAME,
+          },
         )}
       />
     </p>

@@ -1,4 +1,3 @@
-/* eslint-disable no-unreachable-loop */
 import type {Nonce} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';

@@ -104,11 +104,12 @@
           <Text
             text={$i18n.t(
               'dialog--delete-message.prose--delete-not-supported-partial',
-              'Note: If you select "{buttonText}", this message will not be deleted for the following group members: {names}{n, plural, =0 {.} other { and {n} others.}} To support deleted messages, they need to install the latest Threema version.',
+              'Note: If you select "{buttonText}", this message will not be deleted for the following group members: {names}{n, plural, =0 {.} other { and {n} others.}} To support deleted messages, they need to install the latest {shortAppName} version.',
               {
                 buttonText: $i18n.t('dialog--delete-message.action--delete-for-everyone'),
                 n: `${featureSupport.notSupportedNames.length > 5 ? featureSupport.notSupportedNames.length - 5 : 0}`,
                 names: featureSupport.notSupportedNames.slice(0, 5).join(', '),
+                shortAppName: import.meta.env.SHORT_APP_NAME,
               },
             )}
           />

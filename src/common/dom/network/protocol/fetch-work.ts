@@ -188,6 +188,7 @@ export class FetchWorkBackend implements WorkBackend {
             credentials: 'omit',
             referrerPolicy: 'no-referrer',
             headers: {
+                // eslint-disable-next-line @typescript-eslint/no-misused-spread
                 ...init.headers,
                 ...this._headers,
             },

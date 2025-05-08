@@ -1,6 +1,12 @@
 import {type Nonce, NONCE_UNGUARDED_SCOPE} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
-import type {DbBaseFileMessageFragment, DbConversationUid, DbMessageUid} from '~/common/db';
+import type {
+    DbBaseFileMessageFragment,
+    DbContactUid,
+    DbConversationUid,
+    DbFileDataUid,
+    DbMessageUid,
+} from '~/common/db';
 import {
     BlobDownloadState,
     MessageDirection,
@@ -39,10 +45,9 @@ import {
 import {BLOB_FILE_NONCE, BLOB_THUMBNAIL_NONCE} from '~/common/network/protocol/constants';
 import type {RawBlobKey} from '~/common/network/types/keys';
 import type {Mutable, ReadonlyUint8Array, StrictExtract} from '~/common/types';
-import {assert, ensureError, unreachable} from '~/common/utils/assert';
+import {assert, ensureError, unreachable, unwrap} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
-import type {AsyncLock} from '~/common/utils/lock';
 import {hasProperty} from '~/common/utils/object';
 
 export const NO_SENDER = Symbol('no-sender');
@@ -126,13 +131,18 @@ export function updateFileBasedMessage(
     conversationUid: DbConversationUid,
     messageUid: DbMessageUid,
     change: UpdateFileBasedMessage,
+    fileDataUidHint?: {readonly uid: DbFileDataUid; readonly type: 'main' | 'thumbnail'},
 ): void {
     const {db, file} = services;
-    const {deletedFileIds} = db.updateMessage(conversationUid, {
-        ...change,
-        type: messageType,
-        uid: messageUid,
-    });
+    const {deletedFileIds} = db.updateMessage(
+        conversationUid,
+        {
+            ...change,
+            type: messageType,
+            uid: messageUid,
+        },
+        fileDataUidHint,
+    );
     deleteFilesInBackground(file, log, deletedFileIds);
 }
 
@@ -152,23 +162,21 @@ export interface BlobLoadResult {
 
 export async function loadOrDownloadBlob(
     type: 'main',
-    messageType: AnyNonDeletedMessageType,
-    messageDirection: MessageDirection,
+    messageType: Exclude<AnyNonDeletedMessageType, MessageType.TEXT>,
+    sender: 'me' | DbContactUid,
     messageUid: DbMessageUid,
     conversation: ConversationControllerHandle,
     services: ServicesForModel,
-    lock: AsyncLock,
     lifetimeGuard: AnyFileBasedMessageModelLifetimeGuard,
     log: Logger,
 ): Promise<BlobLoadResult>;
 export async function loadOrDownloadBlob(
     type: 'thumbnail',
-    messageType: AnyNonDeletedMessageType,
-    messageDirection: MessageDirection,
+    messageType: Exclude<AnyNonDeletedMessageType, MessageType.TEXT>,
+    sender: 'me' | DbContactUid,
     messageUid: DbMessageUid,
     conversation: ConversationControllerHandle,
     services: ServicesForModel,
-    lock: AsyncLock,
     lifetimeGuard: AnyFileBasedMessageModelLifetimeGuard,
     log: Logger,
 ): Promise<BlobLoadResult | undefined>;
@@ -182,16 +190,15 @@ export async function loadOrDownloadBlob(
  */
 export async function loadOrDownloadBlob(
     type: BlobType,
-    messageType: AnyNonDeletedMessageType,
-    messageDirection: MessageDirection,
+    messageType: Exclude<AnyNonDeletedMessageType, MessageType.TEXT>,
+    sender: 'me' | DbContactUid,
     messageUid: DbMessageUid,
     conversation: ConversationControllerHandle,
     services: ServicesForModel,
-    lock: AsyncLock,
     lifetimeGuard: AnyFileBasedMessageModelLifetimeGuard,
     log: Logger,
 ): Promise<BlobLoadResult | undefined> {
-    const {blob, crypto, file} = services;
+    const {blob, crypto, file, volatileProtocolState} = services;
 
     /**
      * Properties of all file-based message views that are specific to file-based messages.
@@ -231,8 +238,57 @@ export async function loadOrDownloadBlob(
         });
     }
 
-    // Because the download logic is async and consists of multiple steps, we need a lock to
-    // avoid races where the same blob is downloaded multiple times.
+    // Get matching blob ID, mediaType, and nonce.
+    const [blobId, mediaType, nonce]:
+        | [blobId: BlobId, mediaType: string, nonce: Nonce]
+        | [blobId: undefined, mediaType: undefined, nonce: undefined] = lifetimeGuard.run(
+        (handle) => {
+            switch (type) {
+                case 'main': {
+                    const mainBlobId = handle.view().blobId;
+                    const mainMediaType = handle.view().mediaType;
+
+                    if (mainBlobId !== undefined) {
+                        return [mainBlobId, mainMediaType, BLOB_FILE_NONCE];
+                    }
+                    break;
+                }
+                case 'thumbnail': {
+                    const thumbnailBlobId = handle.view().thumbnailBlobId;
+                    const thumbnailMediaType = handle.view().thumbnailMediaType;
+
+                    if (thumbnailBlobId !== undefined && thumbnailMediaType !== undefined) {
+                        return [thumbnailBlobId, thumbnailMediaType, BLOB_THUMBNAIL_NONCE];
+                    }
+                    break;
+                }
+                default:
+                    return unreachable(type);
+            }
+
+            return [undefined, undefined, undefined];
+        },
+    );
+
+    // If there is no blob ID there is nothing and has never been anything to be downloaded.
+    if (blobId === undefined) {
+        switch (type) {
+            case 'main':
+                markDownloadAsPermanentlyFailed();
+                throw new BlobFetchError({kind: 'internal'}, 'BlobId is missing');
+            case 'thumbnail':
+                // No thumbnail available
+                return undefined;
+            default:
+                return unreachable(type);
+        }
+    }
+
+    // Get the lock of the blobId.
+    const lock = volatileProtocolState.getOrCreateBlobLock(blobId);
+
+    // Because the download logic is async and consists of multiple steps, we need a lock to avoid
+    // races where the same blob is downloaded multiple times.
     return await lock.with(async (): Promise<BlobLoadResult | undefined> => {
         // Load blob data from file system.
         //
@@ -318,54 +374,80 @@ export async function loadOrDownloadBlob(
             }
         }
 
-        // Get matching blob ID, mediaType, and nonce
-        const [blobId, mediaType, nonce]:
-            | [blobId: BlobId, mediaType: string, nonce: Nonce]
-            | [blobId: undefined, mediaType: undefined, nonce: undefined] = lifetimeGuard.run(
-            (handle) => {
-                switch (type) {
-                    case 'main': {
-                        const mainBlobId = handle.view().blobId;
-                        const mainMediaType = handle.view().mediaType;
-
-                        if (mainBlobId !== undefined) {
-                            return [mainBlobId, mainMediaType, BLOB_FILE_NONCE];
-                        }
-                        break;
-                    }
-                    case 'thumbnail': {
-                        const thumbnailBlobId = handle.view().thumbnailBlobId;
-                        const thumbnailMediaType = handle.view().thumbnailMediaType;
-
-                        if (thumbnailBlobId !== undefined && thumbnailMediaType !== undefined) {
-                            return [thumbnailBlobId, thumbnailMediaType, BLOB_THUMBNAIL_NONCE];
-                        }
-                        break;
-                    }
-                    default:
-                        return unreachable(type);
-                }
-
-                return [undefined, undefined, undefined];
-            },
+        // There may already be a blob with the same ID in the database. This can occur e.g. if we
+        // receive reflected file messages from distribution lists, or if a sender sends the same
+        // blobId twice for some reason.
+        const dbExistingFileData = services.db.getFileDataByBlobIdAndSender(
+            sender,
+            messageType,
+            blobId,
+            type,
         );
 
-        // If there is no blob ID and no file data, there's nothing to be downloaded
-        if (blobId === undefined) {
+        if (dbExistingFileData !== undefined) {
+            log.info(
+                'Found existing file with same blobId and same sender, loading directly from file system',
+            );
+            let dbChange: Partial<BaseFileMessageViewFragment>;
+            let viewChange: Partial<BaseFileMessageViewFragment>;
+            let hint;
             switch (type) {
                 case 'main':
-                    markDownloadAsPermanentlyFailed();
-                    throw new BlobFetchError(
-                        {kind: 'internal'},
-                        'Both file data and blob ID are missing',
-                    );
+                    dbChange = {fileData: dbExistingFileData};
+                    viewChange = {...dbChange, state: 'synced'};
+                    hint = {type: 'main' as const, uid: dbExistingFileData.fileDataUid};
+                    break;
                 case 'thumbnail':
-                    // No thumbnail available
-                    return undefined;
+                    dbChange = {thumbnailFileData: dbExistingFileData};
+                    viewChange = {...dbChange};
+                    hint = {type: 'thumbnail' as const, uid: dbExistingFileData.fileDataUid};
+                    break;
                 default:
-                    return unreachable(type);
+                    unreachable(type);
+            }
+            lifetimeGuard.update(() => {
+                updateFileBasedMessage(
+                    services,
+                    log,
+                    messageType,
+                    conversation.uid,
+                    messageUid,
+                    dbChange,
+                    hint,
+                );
+                return viewChange;
+            });
+            try {
+                // If we landed here and are handling a thumbnail, we know that the thumbnail media
+                // type must already exist.
+                return {
+                    data: {
+                        bytes: await file.load(dbExistingFileData),
+                        mediaType: lifetimeGuard.run((handle) =>
+                            type === 'thumbnail'
+                                ? unwrap(
+                                      handle.view().thumbnailMediaType,
+                                      'ThumbnailMediaType must be set',
+                                  )
+                                : handle.view().mediaType,
+                        ),
+                    },
+                    source: 'filesystem',
+                };
+            } catch (error) {
+                const message = `Could not fetch bytes from file system: ${error}`;
+                if (error instanceof FileStorageError) {
+                    throw new BlobFetchError(
+                        {kind: 'file-storage-error', cause: error.type},
+                        message,
+                    );
+                }
+                throw new BlobFetchError({kind: 'file-storage-error'}, message);
             }
         }
+
+        const messageDirection =
+            sender === 'me' ? MessageDirection.OUTBOUND : MessageDirection.INBOUND;
 
         // Otherwise, download blob from the blob mirror
         const blobDownloadScope = determineBlobDownloadScope(messageDirection);
@@ -519,7 +601,7 @@ async function uploadFileAsBlob(
     }
 }
 
-export type UploadedBlobBytes = {readonly [k in BlobType]: ReadonlyUint8Array | undefined};
+export type UploadedBlobBytes = Readonly<Record<BlobType, ReadonlyUint8Array | undefined>>;
 
 /**
  * Upload all message blobs that haven't yet been uploaded, and store the resulting blob IDs in the
@@ -615,11 +697,15 @@ export async function uploadBlobs(
     lifetimeGuard.update(() => {
         // Note: updateMessage cannot return a list of deleted files in this case because we
         // only update the blob ids. Thus we can ignore the return value.
-        services.db.updateMessage(conversation.uid, {
-            ...change,
-            uid: messageUid,
-            type: messageType,
-        });
+        services.db.updateMessage(
+            conversation.uid,
+            {
+                ...change,
+                uid: messageUid,
+                type: messageType,
+            },
+            undefined,
+        );
         return {...change, state: 'synced'};
     });
 

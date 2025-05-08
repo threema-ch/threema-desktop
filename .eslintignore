@@ -1,9 +1,0 @@
-docs/book/
-build/
-src/common/enum/index.ts
-src/common/network/protobuf/js
-src/common/crypto/blake2b/implementation.js
-node_modules/
-packaging/main.cjs
-libs/
-threema-protocols/

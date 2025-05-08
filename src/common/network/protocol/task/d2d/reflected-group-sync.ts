@@ -33,7 +33,6 @@ export class ReflectedGroupSyncTask implements PassiveTask<void> {
         this._log = _services.logging.logger(`network.protocol.task.in-group-sync`);
     }
 
-    // eslint-disable-next-line @typescript-eslint/require-await
     public async run(handle: PassiveTaskCodecHandle): Promise<void> {
         const {model} = this._services;
 

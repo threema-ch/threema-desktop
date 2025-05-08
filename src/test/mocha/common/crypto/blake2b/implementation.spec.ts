@@ -13,6 +13,7 @@ import {type Blake2bTestVector, testVectors} from '~/test/mocha/common/crypto/bl
 const {expect} = chai.use(chaiByteEqual);
 
 function failureMessage(testVector: Blake2bTestVector, error?: unknown): string {
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     const errorMessage = error === undefined ? '' : `Error: '${error}'\n     `;
 
     return (
@@ -171,7 +172,7 @@ function hexWrite(buf: Uint8Array, string: string): Uint8Array {
     }
 
     for (let i = 0; i < strLen / 2; ++i) {
-        const parsed = parseInt(string.substr(i * 2, 2), 16);
+        const parsed = parseInt(string.substring(i * 2, 2), 16);
         if (Number.isNaN(parsed)) {
             throw new Error('Invalid byte');
         }

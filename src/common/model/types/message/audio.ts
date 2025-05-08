@@ -41,14 +41,18 @@ type OutboundAudioMessageInit = CommonAudioMessageInit & OutboundBaseMessageInit
 /**
  * Controller for inbound audio messages.
  */
-export type InboundAudioMessageController =
-    InboundBaseFileMessageController<InboundAudioMessageView>;
+export type InboundAudioMessageController = Omit<
+    InboundBaseFileMessageController<InboundAudioMessageView>,
+    'thumbnailBlob'
+>;
 
 /**
  * Controller for outbound audio messages.
  */
-export type OutboundAudioMessageController =
-    OutboundBaseFileMessageController<OutboundAudioMessageView>;
+export type OutboundAudioMessageController = Omit<
+    OutboundBaseFileMessageController<OutboundAudioMessageView>,
+    'thumbnailBlob'
+>;
 
 // Model
 

@@ -21,10 +21,6 @@
   import {AsyncLock} from '~/common/utils/lock';
   import {TIMER} from '~/common/utils/timer';
 
-  // Generic parameters are not yet recognized by the linter.
-  // See https://github.com/sveltejs/eslint-plugin-svelte/issues/521
-  // and https://github.com/sveltejs/svelte-eslint-parser/issues/306
-  // eslint-disable-next-line no-undef
   type $$Props = LazyListProps<TProps>;
 
   export let items: $$Props['items'];
@@ -68,7 +64,6 @@
    * view will not scroll.
    */
   export async function scrollToItem(
-    // eslint-disable-next-line no-undef
     id: TProps['id'],
     options?: ScrollIntoViewOptions,
   ): Promise<void> {
@@ -109,7 +104,6 @@
       isGlobalAnchorEnabled = true;
       await tick();
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const item = items.find((i) => i.id === id);
       if (item !== undefined) {
         dispatch('itemanchored', item);
@@ -169,7 +163,6 @@
       isGlobalAnchorEnabled = true;
       await tick();
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const item = items.find((i) => i.id === visibleItemId);
       if (item !== undefined) {
         dispatch('itemanchored', item);

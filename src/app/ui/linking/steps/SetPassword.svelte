@@ -58,7 +58,6 @@
   };
 
   onMount(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     passwordComponent?.focus();
   });
 
@@ -80,7 +79,10 @@
       <p class="intro">
         {$i18n.t(
           'dialog--linking-set-password.prose--intro',
-          'The password will protect your messages, Threema ID and other data on this computer. You have to enter it when starting Threema for Desktop.',
+          'The password will protect your messages, {shortAppName} ID and other data on this computer. You have to enter it when starting {shortAppName} for Desktop.',
+          {
+            shortAppName: import.meta.env.SHORT_APP_NAME,
+          },
         )}
       </p>
     </header>
@@ -122,7 +124,7 @@
                   )
                 : $i18n.t(
                     'dialog--linking-set-password.prose--save-password-tooltip-unavailable',
-                    'Threema for Desktop could not detect a default secure credential storage on your device.',
+                    '{shortAppName} for Desktop could not detect a default secure credential storage on your device.',
                   )}
             />
             <label for="savePassword"
@@ -154,12 +156,14 @@
     </div>
 
     <footer>
-      <a href={import.meta.env.URLS.overview.full} target="_blank" rel="noreferrer noopener"
-        >{$i18n.t('dialog--common.action--need-help', 'Need help?')}</a
-      >
-      <Button flavor="filled" on:click={handleSubmit}
-        >{$i18n.t('dialog--common.action--next', 'Next')}</Button
-      >
+      {#if import.meta.env.URLS.overview !== 'hidden'}
+        <a href={import.meta.env.URLS.overview.full} target="_blank" rel="noreferrer noopener">
+          {$i18n.t('dialog--common.action--need-help', 'Need help?')}
+        </a>
+      {/if}
+      <Button flavor="filled" on:click={handleSubmit}>
+        {$i18n.t('dialog--common.action--next', 'Next')}
+      </Button>
     </footer>
   </Step>
 </template>

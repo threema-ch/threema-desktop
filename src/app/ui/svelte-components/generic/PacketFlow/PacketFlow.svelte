@@ -43,8 +43,10 @@
     <header>
       <span title="Direction (inbound or outbound)">IO</span>
       <span title="Time (in seconds)">Time</span>
+      <!-- eslint-disable-next-line svelte/require-each-key -->
       {#each layers as layer}<span title={layer}>{layer}</span>{/each}
     </header>
+    <!-- eslint-disable-next-line svelte/require-each-key -->
     {#each filtered as packet}
       <!-- Internal dev component, doesn't need to be accessible for now. -->
       <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -60,6 +62,7 @@
           </MdIcon></span
         >
         <span>{((packet.timestamp - (startMs ?? 0)) / 1000).toFixed(2)}</span>
+        <!-- eslint-disable-next-line svelte/require-each-key -->
         {#each layers as layer}
           {#if layer === packet.layer}<span>{packet.name}</span>{:else}<span />{/if}
         {/each}

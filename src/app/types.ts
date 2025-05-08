@@ -6,6 +6,7 @@
 import type {Router} from '~/app/routing/router';
 import type {CryptoBackend} from '~/common/crypto';
 import type {BackendController} from '~/common/dom/backend/controller';
+import type {ElectronIpcService} from '~/common/dom/electron-service';
 import type {BlobCacheService} from '~/common/dom/ui/blob-cache';
 import type {EmojiService} from '~/common/dom/ui/emoji-service';
 import type {LocalStorageController} from '~/common/dom/ui/local-storage';
@@ -23,6 +24,7 @@ export interface AppServices {
     readonly crypto: Pick<CryptoBackend, 'randomBytes'>;
     readonly logging: LoggerFactory;
     readonly blobCache: BlobCacheService;
+    readonly electron: ElectronIpcService;
     readonly profilePicture: ProfilePictureService;
     readonly storage: LocalStorageController;
     readonly backend: BackendController;

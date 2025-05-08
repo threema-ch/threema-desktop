@@ -15,8 +15,8 @@
   export let disabled = false;
 
   let thumbnail: Blob | undefined;
-  $: {
-    mediaFile.thumbnail
+  function updateThumbnail(currentMediaFile: MediaFile): void {
+    currentMediaFile.thumbnail
       .then((value) => {
         thumbnail = value;
       })
@@ -24,6 +24,7 @@
         log.error(`An error occurred while loading thumbnail: ${error}`);
       });
   }
+  $: updateThumbnail(mediaFile);
 
   const sendAsFile = mediaFile.sendAsFile;
 </script>

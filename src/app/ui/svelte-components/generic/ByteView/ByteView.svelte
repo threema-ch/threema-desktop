@@ -27,13 +27,16 @@
 
 <template>
   <article>
+    <!-- eslint-disable-next-line svelte/require-each-key -->
     {#each rows.items as [offset, byteRepresentations]}
       <section>
         <span class="offset">{offset}</span>
         <span class="hex">
+          <!-- eslint-disable-next-line svelte/require-each-key -->
           {#each byteRepresentations as [hex]}<span class="value">{hex}</span>{/each}
         </span>
         <span class="ascii">
+          <!-- eslint-disable-next-line svelte/require-each-key -->
           {#each byteRepresentations as [_, ascii]}{ascii}{/each}
         </span>
       </section>

@@ -7,11 +7,11 @@ import type {Logger} from '~/common/logging';
 import {ensureError} from '~/common/utils/assert';
 
 export async function collectLogsAndComposeMessageToSupport(
-    services: Pick<AppServicesForSvelte, 'backend' | 'router'>,
+    services: Pick<AppServicesForSvelte, 'backend' | 'electron' | 'router'>,
     log: Logger,
 ): Promise<void> {
     try {
-        const logFiles = await window.app.getGzippedLogFiles();
+        const logFiles = await services.electron.getGzippedLogFiles();
         const supportContact = await services.backend.viewModel
             .settings()
             .then(

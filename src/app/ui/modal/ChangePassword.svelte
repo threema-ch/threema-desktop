@@ -78,7 +78,7 @@
     });
     const promptAction = await promptDialogHandle.closed;
     if (promptAction === 'confirmed' && (await attemptPasswordChange())) {
-      window.app.restartApp();
+      services.electron.restartApp();
     }
   }
 
@@ -152,7 +152,10 @@
         <p class="intro">
           {$i18n.t(
             'dialog--change-password.prose--intro',
-            'The password protects your messages, Threema ID and other data on this computer. You have to enter it when starting Threema for Desktop. Please note that there is no way to recover this password. If you forget it, you will have to link this device again.',
+            'The password protects your messages, {shortAppName} ID and other data on this computer. You have to enter it when starting {shortAppName} for Desktop. Please note that there is no way to recover this password. If you forget it, you will have to link this device again.',
+            {
+              shortAppName: import.meta.env.SHORT_APP_NAME,
+            },
           )}
         </p>
 

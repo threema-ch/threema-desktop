@@ -28,6 +28,7 @@ import type {
 } from '~/common/enum';
 import type {FileEncryptionKey, FileId} from '~/common/file-storage';
 import type {FavoriteEmojisSortMode} from '~/common/model/emoji-preferences';
+import type {BlobType} from '~/common/model/message/common';
 import type {FavoriteEmojis} from '~/common/model/types/emoji-preferences';
 import type {
     AnyNonDeletedMessageType,
@@ -492,8 +493,8 @@ export interface DbBaseFileMessageFragment {
     readonly fileSize: u53;
     readonly caption?: string;
     readonly correlationId?: string;
-    fileData?: DbFileData;
-    thumbnailFileData?: DbFileData;
+    readonly fileData?: DbFileData;
+    readonly thumbnailFileData?: DbFileData;
 }
 
 /**
@@ -890,6 +891,16 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     ) => DbCreated<DbAnyStatusMessage>;
 
     /**
+     * Get the associated {@link FileData} by a `blobId` and sender, if any.
+     */
+    readonly getFileDataByBlobIdAndSender: (
+        senderContactUid: 'me' | DbContactUid,
+        messageType: Exclude<AnyNonDeletedMessageType, MessageType.TEXT>,
+        blobId: BlobId,
+        type: BlobType,
+    ) => (DbFileData & {readonly fileDataUid: DbFileDataUid}) | undefined;
+
+    /**
      * Create a new deleted message.
      *
      * Note: This function should only be used to restore messages from an old profile. It is the
@@ -976,6 +987,10 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     /**
      * Update the specified message. Fields that are missing will be ignored.
      *
+     * If you specify a `fileDataUidHint`, the function will not perform any action on `tFileData`.
+     * Hints must only be provided if you know that message is a media message and that the
+     * `fileDataUid` corresponds to the file data of given type of the input message.
+     *
      * When file messages are updated, it's possible that file message data is removed. If this
      * happens, the list of {@link FileId}s that can now be deleted from the storage is returned. It
      * is the responsibility of the caller to delete these files from the file storage.
@@ -990,6 +1005,9 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     readonly updateMessage: (
         conversationUid: DbConversationUid,
         message: DbUpdate<DbAnyNonDeletedMessage, 'type'>,
+        fileDataUidHint:
+            | {readonly uid: DbFileDataUid; readonly type: 'main' | 'thumbnail'}
+            | undefined,
     ) => {deletedFileIds: FileId[]};
 
     /**

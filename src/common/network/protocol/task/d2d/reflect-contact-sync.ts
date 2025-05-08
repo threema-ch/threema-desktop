@@ -24,25 +24,21 @@ const DEFAULT_POLICY_OVERRIDE = {
     policy: undefined,
 } as const;
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const DEFAULT_READ_RECEIPT_POLICY_OVERRIDE = protobuf.utils.creator(
     protobuf.sync.Contact.ReadReceiptPolicyOverride,
     DEFAULT_POLICY_OVERRIDE,
 );
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const DEFAULT_TYPING_INDICATOR_POLICY_OVERRIDE = protobuf.utils.creator(
     protobuf.sync.Contact.TypingIndicatorPolicyOverride,
     DEFAULT_POLICY_OVERRIDE,
 );
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const DEFAULT_NOTIFICATION_TRIGGER_POLICY_OVERRIDE = protobuf.utils.creator(
     protobuf.sync.Contact.NotificationTriggerPolicyOverride,
     DEFAULT_POLICY_OVERRIDE,
 );
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const DEFAULT_NOTIFICATION_SOUND_POLICY_OVERRIDE = protobuf.utils.creator(
     protobuf.sync.Contact.NotificationSoundPolicyOverride,
     DEFAULT_POLICY_OVERRIDE,

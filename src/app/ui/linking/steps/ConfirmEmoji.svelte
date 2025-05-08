@@ -29,11 +29,13 @@
       </div>
     </div>
 
-    <footer>
-      <a href={import.meta.env.URLS.overview.full} target="_blank" rel="noreferrer noopener"
-        >{$i18n.t('dialog--common.action--need-help', 'Need help?')}</a
-      >
-    </footer>
+    {#if import.meta.env.URLS.overview !== 'hidden'}
+      <footer>
+        <a href={import.meta.env.URLS.overview.full} target="_blank" rel="noreferrer noopener"
+          >{$i18n.t('dialog--common.action--need-help', 'Need help?')}</a
+        >
+      </footer>
+    {/if}
   </Step>
 </template>
 

@@ -1,3 +1,4 @@
+import type {AppServicesForSvelte} from '~/app/types';
 import type {LinkingState, LinkingStateErrorType, SyncingPhase} from '~/common/dom/backend';
 import type {ReadonlyUint8Array} from '~/common/types';
 import type {ReusablePromise} from '~/common/utils/promise';
@@ -67,6 +68,7 @@ export interface LinkingWizardConfirmEmojiProps {
 }
 
 export interface LinkingWizardOldProfilePasswordProps {
+    readonly services: Pick<AppServicesForSvelte, 'electron'>;
     readonly oldPassword: ReusablePromise<string | undefined>;
     readonly previouslyEnteredPassword?: string;
     readonly state: 'default' | 'skipped' | 'restoring';

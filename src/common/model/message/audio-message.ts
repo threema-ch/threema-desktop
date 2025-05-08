@@ -120,39 +120,19 @@ export class InboundAudioMessageModelController
     extends InboundBaseMessageModelController<InboundAudioMessageBundle['view']>
     implements InboundAudioMessageController
 {
-    protected readonly _blobLock = new AsyncLock();
-    protected readonly _thumbnailBlobLock = new AsyncLock();
-
     /** @inheritdoc */
     public async blob(): Promise<FileBytesAndMediaType> {
         const blob = await loadOrDownloadBlob(
             'main',
             MessageType.AUDIO,
-            MessageDirection.INBOUND,
+            this._sender.ctx,
             this.uid,
             this._conversation,
             this._services,
-            this._blobLock,
             this.lifetimeGuard,
             this._log,
         );
         return blob.data;
-    }
-
-    /** @inheritdoc */
-    public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
-        const blob = await loadOrDownloadBlob(
-            'thumbnail',
-            MessageType.AUDIO,
-            MessageDirection.INBOUND,
-            this.uid,
-            this._conversation,
-            this._services,
-            this._thumbnailBlobLock,
-            this.lifetimeGuard,
-            this._log,
-        );
-        return blob?.data;
     }
 
     /** @inheritdoc */
@@ -187,31 +167,14 @@ export class OutboundAudioMessageModelController
         const blob = await loadOrDownloadBlob(
             'main',
             MessageType.AUDIO,
-            MessageDirection.OUTBOUND,
+            'me',
             this.uid,
             this._conversation,
             this._services,
-            this._blobLock,
             this.lifetimeGuard,
             this._log,
         );
         return blob.data;
-    }
-
-    /** @inheritdoc */
-    public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
-        const blob = await loadOrDownloadBlob(
-            'thumbnail',
-            MessageType.AUDIO,
-            MessageDirection.OUTBOUND,
-            this.uid,
-            this._conversation,
-            this._services,
-            this._thumbnailBlobLock,
-            this.lifetimeGuard,
-            this._log,
-        );
-        return blob?.data;
     }
 
     /** @inheritdoc */

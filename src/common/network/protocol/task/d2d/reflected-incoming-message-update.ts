@@ -87,6 +87,7 @@ export class ReflectedIncomingMessageUpdateTask implements PassiveTask<void> {
             }
             // Apply update
             switch (update.update) {
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 case 'read':
                     this._log.debug(`Marking incoming message ${u64ToHexLe(messageId)} as read`);
                     message.controller.read.fromSync(handle, update.read.at);

@@ -10,6 +10,7 @@
 
   type $$Props = LinkingWizardOldProfilePasswordProps;
 
+  export let services: $$Props['services'];
   export let oldPassword: $$Props['oldPassword'];
   export let previouslyEnteredPassword: $$Props['previouslyEnteredPassword'] = undefined;
   export let state: $$Props['state'] = 'default';
@@ -38,7 +39,7 @@
   onMount(() => {
     // Sanity check. This component should not be mounted from the backend when no old profile is
     // present.
-    const oldProfile = window.app.getLatestProfilePath();
+    const oldProfile = services.electron.getLatestProfilePath();
     if (oldProfile === undefined) {
       oldPassword.resolve(undefined);
     }
@@ -95,6 +96,7 @@
         disabled={state !== 'default'}
         {error}
         on:input={() => {
+          // eslint-disable-next-line svelte/no-reactive-reassign
           error = undefined;
         }}
       />

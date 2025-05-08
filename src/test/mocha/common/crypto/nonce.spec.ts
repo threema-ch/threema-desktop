@@ -72,7 +72,7 @@ export function run(): void {
     function makeServices(): ServicesForNonceService {
         const partialServices = makeTestServices(me.identity.string);
 
-        const nonces: {[T in NonceScope]: Set<NonceHash>} = {
+        const nonces: Record<NonceScope, Set<NonceHash>> = {
             [NonceScope.CSP]: new Set(),
             [NonceScope.D2D]: new Set(),
         };
@@ -345,7 +345,6 @@ export function run(): void {
             it('returns a nonceguard with a random nonce.', function () {
                 services = makeServices();
                 const service = new NonceService(services, me.identity);
-                // eslint-disable-next-line @typescript-eslint/require-await
                 const nonce = service.getRandomNonce(NonceScope.D2D);
                 expect(isNonce(nonce.nonce), 'nonceguard holds a valid, unconsumed nonce');
                 nonce.commit();

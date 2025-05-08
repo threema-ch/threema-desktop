@@ -38,7 +38,6 @@ import type {
 import {ModelStore} from '~/common/model/utils/model-store';
 import {assert, unreachable} from '~/common/utils/assert';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
-import {AsyncLock} from '~/common/utils/lock';
 
 /**
  * Create and return a file message in the database.
@@ -119,19 +118,15 @@ export class InboundFileMessageModelController
     extends InboundBaseMessageModelController<InboundFileMessageBundle['view']>
     implements InboundFileMessageController
 {
-    protected readonly _blobLock = new AsyncLock();
-    protected readonly _thumbnailBlobLock = new AsyncLock();
-
     /** @inheritdoc */
     public async blob(): Promise<FileBytesAndMediaType> {
         const blob = await loadOrDownloadBlob(
             'main',
             MessageType.FILE,
-            MessageDirection.INBOUND,
+            this._sender.ctx,
             this.uid,
             this._conversation,
             this._services,
-            this._blobLock,
             this.lifetimeGuard,
             this._log,
         );
@@ -143,11 +138,10 @@ export class InboundFileMessageModelController
         const blob = await loadOrDownloadBlob(
             'thumbnail',
             MessageType.FILE,
-            MessageDirection.INBOUND,
+            this._sender.ctx,
             this.uid,
             this._conversation,
             this._services,
-            this._thumbnailBlobLock,
             this.lifetimeGuard,
             this._log,
         );
@@ -178,19 +172,15 @@ export class OutboundFileMessageModelController
     extends OutboundBaseMessageModelController<OutboundFileMessageBundle['view']>
     implements OutboundFileMessageController
 {
-    protected readonly _blobLock = new AsyncLock();
-    protected readonly _thumbnailBlobLock = new AsyncLock();
-
     /** @inheritdoc */
     public async blob(): Promise<FileBytesAndMediaType> {
         const blob = await loadOrDownloadBlob(
             'main',
             MessageType.FILE,
-            MessageDirection.OUTBOUND,
+            'me',
             this.uid,
             this._conversation,
             this._services,
-            this._blobLock,
             this.lifetimeGuard,
             this._log,
         );
@@ -202,11 +192,10 @@ export class OutboundFileMessageModelController
         const blob = await loadOrDownloadBlob(
             'thumbnail',
             MessageType.FILE,
-            MessageDirection.OUTBOUND,
+            'me',
             this.uid,
             this._conversation,
             this._services,
-            this._thumbnailBlobLock,
             this.lifetimeGuard,
             this._log,
         );

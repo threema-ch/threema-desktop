@@ -12,7 +12,9 @@ export function getSettingsNavItems(
         profile: {
             title: i18n.t('settings.label--profile', 'Profile'),
             iconName: 'account_circle',
-            subtitle: i18n.t('settings--profile.prose--subtitle', 'Threema ID'),
+            subtitle: i18n.t('settings--profile.prose--subtitle', '{shortAppName} ID', {
+                shortAppName: import.meta.env.SHORT_APP_NAME,
+            }),
         },
         // Will be added later.
         /*
@@ -24,7 +26,9 @@ export function getSettingsNavItems(
             iconName: 'call',
             subtitle: i18n.t(
                 'settings.prose--call-settings',
-                'Threema Calls, Video Calls, Group Calls',
+                '{shortAppName} Calls, Video Calls, Group Calls',             {
+              shortAppName: import.meta.env.SHORT_APP_NAME,
+            },
             ),
         },
         */
@@ -38,7 +42,10 @@ export function getSettingsNavItems(
             iconName: 'computer',
             subtitle: i18n.t(
                 'settings--devices.prose--subtitle',
-                'Devices linked to your Threema ID',
+                'Devices linked to your {shortAppName} ID',
+                {
+                    shortAppName: import.meta.env.SHORT_APP_NAME,
+                },
             ),
         },
         appearance: {
@@ -60,7 +67,9 @@ export function getSettingsNavItems(
             subtitle: i18n.t('settings--media.prose--subtitle', 'Automatically download media'),
         },
         about: {
-            title: i18n.t('settings.label--about', 'About'),
+            title: i18n.t('settings.label--about', 'About {shortAppName}', {
+                shortAppName: import.meta.env.SHORT_APP_NAME,
+            }),
             iconName: 'info',
             subtitle: '',
         },

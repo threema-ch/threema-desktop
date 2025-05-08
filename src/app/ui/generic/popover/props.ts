@@ -8,19 +8,19 @@ export interface PopoverProps {
      * The reference element the popover should attach to.
      * If this property is omitted, the `trigger` will be used as the reference.
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
+    // eslint-disable-next-line @typescript-eslint/no-restricted-types
     readonly reference?: HTMLElement | VirtualRect | null | undefined;
     /**
      * The HTML element representing this popover (i.e. its outermost container). Note: don't set this
      * value from outside, only bind to it.
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
+    // eslint-disable-next-line @typescript-eslint/no-restricted-types
     readonly element?: HTMLElement | null | undefined;
     /**
      * The container which the popover is constrained by. The popover will try to always appear inside
      * the bounds of its `container`.
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
+    // eslint-disable-next-line @typescript-eslint/no-restricted-types
     readonly container?: HTMLElement | null | undefined;
     /**
      * The point on the `reference` and `popover` where the two elements should attach to each other.

@@ -209,7 +209,7 @@ export class WebSocketEventWrapperStream implements WebSocketStream {
 
         // Resolve connection promise once open.
         // Reject promise on error, or prematurely close connection on abort.
-        if (options.signal) {
+        if (options.signal !== undefined) {
             options.signal.onabort = (event): void => {
                 if (connection.done) {
                     return;

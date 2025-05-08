@@ -68,6 +68,7 @@ export function getFragmentForRoute(route: RouterState['main'], log?: Logger): s
                 value = (value as Record<string, unknown>)[segment];
             }
             assert(value !== undefined, `Value for key ${key} must be defined`);
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
             fragment += `${value}`;
         } else {
             fragment += part;
@@ -299,7 +300,6 @@ export class Router extends ReadableStore<RouterState> {
                 `Unexpected state for panel ${panel} (expected=${ids.join(', ')}, got=${current?.id})`,
             );
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return current.params as RouteInstanceFor<TPanel, TIds>['params'];
     }
 

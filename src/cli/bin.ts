@@ -74,6 +74,7 @@ async function main(): Promise<void> {
     const command = parseArgs(process.argv);
 
     switch (command) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         case 'openSqlite':
             await runSqlite(process.argv.slice(3));
             break;

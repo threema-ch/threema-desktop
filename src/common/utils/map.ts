@@ -10,7 +10,16 @@ import type {u53} from '~/common/types';
  */
 export class WeakValueMap<TKey, TValue extends object> {
     private readonly _map = new Map<TKey, WeakRef<TValue>>();
-    private readonly _registry = new FinalizationRegistry((key: TKey) => this._map.delete(key));
+    private readonly _registry = new FinalizationRegistry((key: TKey) => {
+        const ref = this._map.get(key);
+        // The cleanup function needs to check whether an entry was re-added to the map between the
+        // time that a cached value was collected and the time the cleanup callback runs to prevent
+        // race conditions. See:
+        // https://github.com/tc39/proposal-weakrefs?tab=readme-ov-file#weak-caches
+        if (ref !== undefined && ref.deref() === undefined) {
+            this._map.delete(key);
+        }
+    });
 
     /**
      * The current amount of references in the map.

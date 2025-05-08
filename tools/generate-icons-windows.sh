@@ -37,30 +37,34 @@ WIN_ASSETS_PATH="packaging/assets/icons/win"
 echo "Starting ICO build"
 
 declare -a variants=("consumer" "work")
-declare -a environments=("live" "sandbox")
+declare -a environments=("live" "sandbox" "onprem")
 declare -a sizes=(16 32 64 128 256)
 
 for variant in "${variants[@]}"; do
   for environment in "${environments[@]}"; do
-    echo "Building \"$variant-$environment\""
 
-    TEMP_PATH="$WIN_ASSETS_PATH/$variant-$environment"
-    mkdir -p "$TEMP_PATH";
+    # Generate assets for every combination, except "consumer-onprem" (which doesn't exist).
+    if ! [[ "$variant" == "consumer" && "$environment" == "onprem" ]]; then
+        echo "Building \"$variant-$environment\""
 
-    # Build various sizes and write them to the temporary asset directory.
-    files=()
-    for size in "${sizes[@]}"; do
-      file="$TEMP_PATH/icon_${size}x${size}.png"
-      convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024.png" -resize x"$size" -strip "$file"
-      optipng -o7 "$file"
-      files+=("$file")
-    done
+        TEMP_PATH="$WIN_ASSETS_PATH/$variant-$environment"
+        mkdir -p "$TEMP_PATH";
 
-    # Convert each set of icons to an `ico` package.
-    icotool -c -o "$WIN_ASSETS_PATH/$variant-$environment.ico" "${files[@]}"
+        # Build various sizes and write them to the temporary asset directory.
+        files=()
+        for size in "${sizes[@]}"; do
+          file="$TEMP_PATH/icon_${size}x${size}.png"
+          convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024.png" -resize x"$size" -strip "$file"
+          optipng -o7 "$file"
+          files+=("$file")
+        done
 
-    # Remove temporary directory.
-    rm -r "$TEMP_PATH";
+        # Convert each set of icons to an `ico` package.
+        icotool -c -o "$WIN_ASSETS_PATH/$variant-$environment.ico" "${files[@]}"
+
+        # Remove temporary directory.
+        rm -r "$TEMP_PATH";
+        fi
   done
 done
 

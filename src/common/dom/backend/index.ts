@@ -46,6 +46,7 @@ import {
 } from '~/common/dom/network/protocol/rendezvous';
 import {Updater} from '~/common/dom/update';
 import type {SystemInfo} from '~/common/electron-ipc';
+import type {IFrontendElectronService} from '~/common/electron-service';
 import {CloseCodeUtils, ConnectionState, NonceScope, TransferTag} from '~/common/enum';
 import {
     BaseError,
@@ -65,7 +66,6 @@ import {
     type ServicesForKeyStorageFactory,
     type KeyStorageOppfConfig,
 } from '~/common/key-storage';
-import type {LauncherService} from '~/common/launcher';
 import {LoadingInfo} from '~/common/loading';
 import type {Logger, LoggerFactory} from '~/common/logging';
 import {BackendMediaService, type IFrontendMediaService} from '~/common/media';
@@ -98,7 +98,7 @@ import type {TempFileSystemFileStorage} from '~/common/node/file-storage/temp-sy
 import {type NotificationCreator, NotificationService} from '~/common/notification';
 import type {SystemDialogService} from '~/common/system-dialog';
 import type {TestDataJson} from '~/common/test-data';
-import type {DomainCertificatePin, ReadonlyUint8Array, u53} from '~/common/types';
+import type {ReadonlyUint8Array, u53} from '~/common/types';
 import {
     assertError,
     assertUnreachable,
@@ -127,7 +127,6 @@ import {
     WritableStore,
     type IQueryableStore,
     type IWritableStore,
-    type StoreUnsubscriber,
 } from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {ensureStoreValue} from '~/common/utils/store/helpers';
@@ -185,7 +184,7 @@ export class BackendCreationError extends BaseError {
  * Data required to be supplied to a backend worker for initialisation.
  */
 export interface BackendInit {
-    readonly launcherEndpoint: ProxyEndpoint<LauncherService>;
+    readonly electronEndpoint: ProxyEndpoint<IFrontendElectronService>;
     readonly mediaEndpoint: ProxyEndpoint<IFrontendMediaService>;
     readonly notificationEndpoint: ProxyEndpoint<NotificationCreator>;
     readonly systemDialogEndpoint: ProxyEndpoint<SystemDialogService>;
@@ -205,7 +204,6 @@ export interface BackendCreator extends ProxyMarked {
     readonly fromKeyStorage: (
         init: Remote<BackendInit>,
         userPassword: string,
-        pinForwarder: ProxyEndpoint<PinForwarder>,
         loadingStateSetup: ProxyEndpoint<LoadingStateSetup>,
     ) => Promise<ProxyEndpoint<BackendHandle>>;
 
@@ -213,15 +211,12 @@ export interface BackendCreator extends ProxyMarked {
     readonly fromDeviceJoin: (
         init: Remote<BackendInit>,
         deviceLinkingSetup: ProxyEndpoint<DeviceLinkingSetup>,
-        pinForwarder: ProxyEndpoint<PinForwarder>,
-        oldProfileRemover: ProxyEndpoint<OldProfileRemover>,
         shouldRestoreOldMessages: boolean,
     ) => Promise<ProxyEndpoint<BackendHandle>>;
 
     /** Instantiate backend from an existing test configuration. */
     readonly fromTestConfiguration: (
         init: Remote<BackendInit>,
-        pinForwarder: ProxyEndpoint<PinForwarder>,
         loadingStateSetup: ProxyEndpoint<LoadingStateSetup>,
         testData: TestDataJson,
     ) => Promise<ProxyEndpoint<BackendHandle>>;
@@ -430,14 +425,6 @@ export interface DeviceLinkingSetup extends ProxyMarked {
     readonly oppfConfig: Promise<OppfFetchConfig>;
 }
 
-export interface PinForwarder extends ProxyMarked {
-    readonly forward: (pins: DomainCertificatePin[] | undefined) => void;
-}
-
-export interface OldProfileRemover extends ProxyMarked {
-    readonly remove: () => void;
-}
-
 /**
  * Create an instance of the NotificationService, wrapping a remote endpoint.
  */
@@ -489,7 +476,7 @@ function initEarlyBackendServicesWithoutConfig(
     const crypto = new TweetNaClBackend(randomBytes);
     const {mediaEndpoint: frontendMediaServiceEndpoint} = backendInit;
     const compressor = factories.compressor();
-    const launcher = endpoint.wrap(backendInit.launcherEndpoint, logging.logger('com.launcher'));
+    const electron = endpoint.wrap(backendInit.electronEndpoint, logging.logger('com.electron'));
     const media = createMediaService(endpoint, frontendMediaServiceEndpoint, logging);
     const systemDialog = endpoint.wrap(
         backendInit.systemDialogEndpoint,
@@ -506,7 +493,7 @@ function initEarlyBackendServicesWithoutConfig(
         crypto,
         endpoint,
         keyStorage,
-        launcher,
+        electron,
         logging,
         media,
         systemDialog,
@@ -788,7 +775,6 @@ export class Backend {
         factories: FactoriesForBackend,
         {endpoint, logging}: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
         keyStoragePassword: string,
-        pinForwarder: ProxyEndpoint<PinForwarder>,
         loadingStateSetup: ProxyEndpoint<LoadingStateSetup>,
     ): Promise<ProxyEndpoint<BackendHandle>> {
         const log = logging.logger('backend.create.from-keystorage');
@@ -804,11 +790,6 @@ export class Backend {
         const {loadingState} = endpoint.wrap<LoadingStateSetup>(
             loadingStateSetup,
             logging.logger('com.loading-screen'),
-        );
-
-        const wrappedPinForwarder = endpoint.wrap<PinForwarder>(
-            pinForwarder,
-            logging.logger('com.pin-forwarding'),
         );
 
         // Try to read the credentials from the key storage.
@@ -924,9 +905,12 @@ export class Backend {
                     };
                 }
 
-                await wrappedPinForwarder.forward(oppfFile.parsed.publicKeyPinning);
+                await phase1Services.electron.updatePublicKeyPins(oppfFile.parsed.publicKeyPinning);
                 config = createConfigFromOppf(oppfFile.parsed);
-                checkForUpdates = oppfFile.parsed.updates?.desktop?.autoUpdate === true;
+                checkForUpdates =
+                    oppfFile.parsed.updates?.desktop?.autoUpdate === true &&
+                    // Turn off the auto updater in custom builds.
+                    import.meta.env.BUILD_VARIANT !== 'custom';
             } catch (error) {
                 throw new BackendCreationError(
                     'onprem-configuration-error',
@@ -952,12 +936,16 @@ export class Backend {
         }
 
         const workData =
-            import.meta.env.BUILD_VARIANT === 'work'
+            import.meta.env.BUILD_VARIANT === 'work' || import.meta.env.BUILD_VARIANT === 'custom'
                 ? phase1Services.keyStorage.workData
                 : undefined;
 
         // Check for unrecoverable problems
-        if (import.meta.env.BUILD_VARIANT === 'work' && workData?.get() === undefined) {
+        if (
+            (import.meta.env.BUILD_VARIANT === 'work' ||
+                import.meta.env.BUILD_VARIANT === 'custom') &&
+            workData?.get() === undefined
+        ) {
             // The work app requires work credentials. Older versions of the app did not yet sync
             // and store these fields. Thus, enforce this requirement here.
             throw new BackendCreationError(
@@ -971,7 +959,8 @@ export class Backend {
             ...initEarlyBackendServicesWithConfig(factories, {...phase1Services, config}, workData),
             config,
             work:
-                import.meta.env.BUILD_VARIANT === 'work'
+                import.meta.env.BUILD_VARIANT === 'work' ||
+                import.meta.env.BUILD_VARIANT === 'custom'
                     ? new FetchWorkBackend({config, logging, systemInfo: backendInit.systemInfo})
                     : new StubWorkBackend(),
         };
@@ -1017,7 +1006,7 @@ export class Backend {
                 : undefined,
             dgk,
             nonces,
-            import.meta.env.BUILD_VARIANT === 'work'
+            import.meta.env.BUILD_VARIANT === 'work' || import.meta.env.BUILD_VARIANT === 'custom'
                 ? ensureStoreValue(unwrap(workData))
                 : undefined,
         );
@@ -1027,21 +1016,6 @@ export class Backend {
             backendServices.systemDialog
                 .openOnce({type: 'missing-device-cookie'})
                 .catch(assertUnreachable);
-        }
-
-        // TODO(DESK-1739): Consider removing this subscription, as this is only needed to prevent
-        // `ContactModelStore` recreation error system dialogs from appearing during the reflection
-        // queue processing (loading screen). It's also possible to keep this, as it might speed up
-        // the reflection queue processing by preventing `ContactModelStore`s from being
-        // garbage-collected during loading.
-        let allContactsSetStoreUnsubscriber: StoreUnsubscriber | undefined = undefined;
-        if (import.meta.env.DEBUG || import.meta.env.BUILD_ENVIRONMENT === 'sandbox') {
-            allContactsSetStoreUnsubscriber = backendServices.model.contacts
-                .getAll()
-                .subscribe(() => {
-                    // Do nothing, as we just need the subscription to prevent any `ContactModelStore`s from
-                    // being garbage-collected during loading.
-                });
         }
 
         // Subscribe reflection queue to update loading screen.
@@ -1089,7 +1063,6 @@ export class Backend {
                             await loadingState.updateState({
                                 state: 'ready',
                             });
-                            allContactsSetStoreUnsubscriber?.();
                         })
                         .catch(assertUnreachable);
                     break;
@@ -1105,7 +1078,6 @@ export class Backend {
         // Expose the backend on a new channel
         const {local, remote} = endpoint.createEndpointPair<BackendHandle>();
         endpoint.exposeProxy(backend.handle, local, logging.logger('com.backend'));
-        // eslint-disable-next-line @typescript-eslint/return-await
         return endpoint.transfer(remote, [remote]);
     }
 
@@ -1113,7 +1085,6 @@ export class Backend {
         backendInit: BackendInit,
         factories: FactoriesForBackend,
         {endpoint, logging}: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
-        pinForwarder: ProxyEndpoint<PinForwarder>,
         loadingStateSetup: ProxyEndpoint<LoadingStateSetup>,
         {profile, serverGroup, deviceIds, deviceCookie, workData}: TestDataJson,
     ): Promise<ProxyEndpoint<BackendHandle>> {
@@ -1168,7 +1139,9 @@ export class Backend {
         );
 
         const workCredentials =
-            import.meta.env.BUILD_VARIANT === 'work' ? unwrap(workData) : undefined;
+            import.meta.env.BUILD_VARIANT === 'work' || import.meta.env.BUILD_VARIANT === 'custom'
+                ? unwrap(workData)
+                : undefined;
 
         await writeKeyStorage(
             phase1Services,
@@ -1187,7 +1160,6 @@ export class Backend {
             factories,
             {endpoint, logging},
             profile.keyStoragePassword,
-            pinForwarder,
             loadingStateSetup,
         );
     }
@@ -1201,8 +1173,6 @@ export class Backend {
      * @param factories {FactoriesForBackend} The factories needed in the backend.
      * @param services The services needed in the backend.
      * @param deviceLinkingSetup Information needed for the device linking flow.
-     * @param pinForwarder Function that forwards public key pins fetched from an .oppf file to electron through ipc (in onPrem builds).
-     * @param oldProfileRemover Function that signals electron to remove old profiles from the file system through ipc
      * @param shouldRestoreOldMessages Whether there is an old profile whose messages should be restored.
      * @returns A remote BackendHandle that can be used by the backend controller to access the
      *   backend worker.
@@ -1212,8 +1182,6 @@ export class Backend {
         factories: FactoriesForBackend,
         {endpoint, logging}: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
         deviceLinkingSetup: ProxyEndpoint<DeviceLinkingSetup>,
-        pinForwarder: ProxyEndpoint<PinForwarder>,
-        oldProfileRemover: ProxyEndpoint<OldProfileRemover>,
         shouldRestoreOldMessages: boolean,
     ): Promise<ProxyEndpoint<BackendHandle>> {
         const log = logging.logger('backend.create.from-join');
@@ -1234,18 +1202,8 @@ export class Backend {
 
         const {linkingState} = wrappedDeviceLinkingSetup;
 
-        const wrappedPinForwarder = endpoint.wrap<PinForwarder>(
-            pinForwarder,
-            logging.logger('com.pin-forwarding'),
-        );
-
-        const wrappedOldProfileRemover = endpoint.wrap<OldProfileRemover>(
-            oldProfileRemover,
-            logging.logger('com.profile-removal'),
-        );
-
         // Helper function for error handling
-        // eslint-disable-next-line no-inner-declarations
+
         async function throwLinkingError(
             message: string,
             type: LinkingStateErrorType,
@@ -1286,7 +1244,7 @@ export class Backend {
                 );
             }
 
-            await wrappedPinForwarder.forward(oppfFile.parsed.publicKeyPinning);
+            await phase1Services.electron.updatePublicKeyPins(oppfFile.parsed.publicKeyPinning);
             config = createConfigFromOppf(oppfFile.parsed);
         } else {
             config = createDefaultConfig();
@@ -1295,7 +1253,7 @@ export class Backend {
         // Set `workData` if `workCredentials` are already present (i.e., if this is an OnPrem build).
         // Note: In regular work builds the value will be set later.
         const workData: IWritableStore<ThreemaWorkData | undefined> | undefined =
-            import.meta.env.BUILD_VARIANT !== 'work'
+            import.meta.env.BUILD_VARIANT !== 'work' && import.meta.env.BUILD_VARIANT !== 'custom'
                 ? undefined
                 : new WritableStore(workCredentials === undefined ? undefined : {workCredentials});
 
@@ -1492,11 +1450,15 @@ export class Backend {
                 }
                 phase3Services = {work: new StubWorkBackend()};
                 break;
+            case 'custom':
             case 'work': {
-                const productName =
-                    import.meta.env.BUILD_FLAVOR === 'work-onprem'
-                        ? 'Threema Work (OnPrem)'
-                        : 'Threema Work';
+                let productName = 'Threema Work';
+                if (import.meta.env.BUILD_FLAVOR === 'work-onprem') {
+                    productName = 'Threema Work (OnPrem)';
+                }
+                if (import.meta.env.BUILD_FLAVOR === 'custom-onprem') {
+                    productName = import.meta.env.APP_NAME;
+                }
 
                 if (joinResult.workCredentials === undefined) {
                     return await throwLinkingError(
@@ -1580,7 +1542,7 @@ export class Backend {
             joinResult.cspDeviceCookie,
             dgk,
             nonces,
-            import.meta.env.BUILD_VARIANT === 'work'
+            import.meta.env.BUILD_VARIANT === 'work' || import.meta.env.BUILD_VARIANT === 'custom'
                 ? ensureStoreValue(unwrap(workData))
                 : undefined,
         );
@@ -1766,7 +1728,7 @@ export class Backend {
         let initialConnectionResult;
         try {
             initialConnectionResult = await backend._connectionManager.start();
-        } catch (error) {
+        } catch {
             return await throwLinkingError(
                 'Device join protocol was aborted while starting connection',
                 {kind: 'connection-error', cause: 'closed'},
@@ -1794,7 +1756,7 @@ export class Backend {
             try {
                 await joinProtocol.complete();
                 await linkingState.updateState({state: 'registered'});
-            } catch (error) {
+            } catch {
                 return await throwLinkingError(
                     'Device join protocol was aborted while completing the join protocol',
                     {kind: 'connection-error', cause: 'closed'},
@@ -1802,7 +1764,7 @@ export class Backend {
             }
 
             // Delete old versions of this profile from the file system (if any).
-            await wrappedOldProfileRemover.remove();
+            await phase1Services.electron.removeOldProfiles();
         } else {
             // Purge data and report error
             purgeSensitiveData();
@@ -1839,7 +1801,7 @@ export class Backend {
                     'user-agent': STATIC_CONFIG.USER_AGENT,
                 },
             });
-        } catch (error) {
+        } catch {
             throw new Error('Failed to fetch the config file');
         }
         const binary = await response.arrayBuffer();
@@ -1890,7 +1852,10 @@ export class Backend {
         this._log.info('Scheduling background jobs');
 
         // Schedule license check every 12h
-        if (import.meta.env.BUILD_VARIANT === 'work') {
+        if (
+            import.meta.env.BUILD_VARIANT === 'work' ||
+            import.meta.env.BUILD_VARIANT === 'custom'
+        ) {
             this._backgroundJobScheduler.scheduleRecurringJob(
                 (log) => workLicenseCheckJob(this._services, log),
                 {

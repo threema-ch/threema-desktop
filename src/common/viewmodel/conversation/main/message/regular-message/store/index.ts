@@ -35,7 +35,6 @@ export function getConversationRegularMessageViewModelStore(
 ): ConversationRegularMessageViewModelStore {
     const {endpoint} = services;
 
-    // eslint-disable-next-line arrow-body-style
     return derive([messageModelStore], ([{currentValue: messageModel}], getAndSubscribe) => {
         const viewModel: ConversationRegularMessageViewModel =
             getConversationRegularMessageViewModel(

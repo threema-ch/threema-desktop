@@ -1,6 +1,7 @@
 <script lang="ts">
   import {onMount} from 'svelte';
 
+  import type {AppServicesForSvelte} from '~/app/types';
   import Hint from '~/app/ui/components/atoms/hint/Hint.svelte';
   import Switch from '~/app/ui/components/atoms/switch/Switch.svelte';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
@@ -21,7 +22,7 @@
   export let previouslyAttemptedPassword: string | undefined;
   export let shouldStorePassword: ResolvablePromise<boolean>;
   export let systemInfo: SystemInfo;
-
+  export let services: Pick<AppServicesForSvelte, 'electron'>;
   /**
    * A promise that can be awaited. It will resolve once the password been entered by the user.
    */
@@ -113,7 +114,10 @@
               )
             : $i18n.t(
                 'dialog--startup-unlock.prose--save-password-tooltip-unavailable',
-                'Threema for Desktop could not detect a default secure credential storage on your device.',
+                '{shortAppName} for Desktop could not detect a default secure credential storage on your device.',
+                {
+                  shortAppName: import.meta.env.SHORT_APP_NAME,
+                },
               )}
         />
         <label for="savePassword"
@@ -152,7 +156,7 @@
 {#if modalState === 'none'}
   <!--No modal to display-->
 {:else if modalState === 'forgot-password'}
-  <ForgotPasswordModal on:close={handleCloseForgotPasswordModal} />
+  <ForgotPasswordModal {services} on:close={handleCloseForgotPasswordModal} />
 {:else}
   {unreachable(modalState)}
 {/if}

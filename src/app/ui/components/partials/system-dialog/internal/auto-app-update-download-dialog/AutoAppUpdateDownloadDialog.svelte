@@ -42,17 +42,20 @@
   on:close
 >
   <div class="content">
-    <div class="indicator">
-      <Logo animated={true} onCompletion={handleCompleteAnimation} {progress} />
-    </div>
+    {#if import.meta.env.BUILD_VARIANT !== 'custom'}
+      <div class="indicator">
+        <Logo animated={true} onCompletion={handleCompleteAnimation} {progress} />
+      </div>
+    {/if}
     <div class="status">
       <p>
         {#if progress < 0.99}
           {$i18n.t(
             'dialog--auto-app-update-download.prose--downloading',
-            'Downloading Threema {version} for desktop…',
+            'Downloading {shortAppName} {version} for desktop…',
             {
               version: latestVersion,
+              shortAppName: import.meta.env.SHORT_APP_NAME,
             },
           )}
         {:else}

@@ -12,11 +12,12 @@
   const log = globals.unwrap().uiLogging.logger('ui.component.chat-settings');
 
   export let actions: $$Props['actions'];
+  export let services: $$Props['services'];
   export let settings: $$Props['settings'];
 
   let systemInfo: SystemInfo | undefined = undefined;
 
-  window.app
+  services.electron
     .getSystemInfo()
     .then((systemInfo_) => (systemInfo = systemInfo_))
     .catch((error) => {
@@ -30,6 +31,7 @@
 
 <KeyValueList>
   <KeyValueList.Section title={$i18n.t('settings--chat.label--keyboard', 'Keyboard')}>
+    <!-- eslint-disable svelte/no-reactive-reassign -->
     <KeyValueList.ItemWithSwitch
       key={$i18n.t('settings--chat.label--on-enter-send', 'Enter to Send')}
       bind:checked={onEnterSubmitToggleState}
@@ -40,6 +42,7 @@
             : ComposeBarEnterMode.LINE_BREAK,
         })}
     >
+      <!-- eslint-enable svelte/no-reactive-reassign -->
       <Text
         text={onEnterSubmit
           ? $i18n.t(

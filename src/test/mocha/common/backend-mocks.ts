@@ -30,6 +30,7 @@ import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {type DatabaseBackend, type DbReceiverLookup, wrapRawDatabaseKey} from '~/common/db';
 import type {Device} from '~/common/device';
 import type {SystemInfo} from '~/common/electron-ipc';
+import type {IFrontendElectronService} from '~/common/electron-service';
 import {
     AcquaintanceLevel,
     ActivityState,
@@ -49,7 +50,6 @@ import {
 import {ConnectionClosed} from '~/common/error';
 import {InMemoryFileStorage, type TempFileStorage} from '~/common/file-storage';
 import {TRANSFER_HANDLER} from '~/common/index';
-import type {LauncherService} from '~/common/launcher';
 import {LoadingInfo} from '~/common/loading';
 import {type Logger, type LoggerFactory, NOOP_LOGGER, TagLogger} from '~/common/logging';
 import {BackendMediaService, type IFrontendMediaService} from '~/common/media';
@@ -587,9 +587,9 @@ const open = (async (dialog: SystemDialog) =>
         closed: new ResolvablePromise({uncaught: 'default'}),
     } as const)) as unknown as Remote<(dialog: SystemDialog) => SystemDialogHandle>;
 
-const TEST_LAUNCHER_SERVICE: Remote<LauncherService> = {
+const TEST_ELECTRON_SERVICE: Remote<IFrontendElectronService> = {
     open,
-} as unknown as Remote<LauncherService>;
+} as unknown as Remote<IFrontendElectronService>;
 
 const TEST_SYSTEM_DIALOG_SERVICE: Remote<SystemDialogService> = {
     open,
@@ -605,7 +605,6 @@ class TestBlobBackend implements BlobBackend {
     public async download(scope: BlobScope, id: BlobId): Promise<BlobDownloadResult> {
         return {
             data: nodeRandomBytes(42) as Uint8Array as EncryptedData,
-            // eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-empty-function
             done: async (doneScope: BlobScope) => {},
         };
     }
@@ -718,6 +717,7 @@ export function makeTestServices(identity: IdentityString): TestServices {
         crypto,
         device,
         directory: new TestDirectoryBackend(),
+        electron: TEST_ELECTRON_SERVICE,
         endpoint: {
             cache: () => endpointCache,
             exposeProperties: (object: unknown) => object,
@@ -725,7 +725,6 @@ export function makeTestServices(identity: IdentityString): TestServices {
         file,
         tempFile,
         keyStorage,
-        launcher: TEST_LAUNCHER_SERVICE,
         logging,
         media,
         nonces,
@@ -1054,7 +1053,6 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
     }
 
     /** @inheritdoc */
-    // eslint-disable-next-line @typescript-eslint/require-await
     public async transaction<S extends TransactionScope, T>(
         scope: S,
         precondition: () => boolean,

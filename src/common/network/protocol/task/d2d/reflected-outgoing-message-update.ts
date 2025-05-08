@@ -91,6 +91,7 @@ export class ReflectedOutgoingMessageUpdateTask implements PassiveTask<void> {
 
             // Apply update
             switch (update.update) {
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 case 'sent':
                     this._log.debug(`Marking outgoing message ${u64ToHexLe(messageId)} as sent`);
                     message.controller.sent(this._reflectedDate);

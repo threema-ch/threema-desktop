@@ -13,9 +13,9 @@
   async function handleClickConfirmAndRestart(): Promise<void> {
     try {
       await services.backend.connectionManager.selfKickFromMediator();
-      window.app.removeOldProfiles();
-      window.app.deleteProfileAndRestartApp({createBackup: false});
-    } catch (error) {
+      services.electron.removeOldProfiles();
+      services.electron.deleteProfileAndRestartApp({createBackup: false});
+    } catch {
       toast.addSimpleFailure(
         $i18n.t(
           'dialog--delete-profile.prose--failed',
@@ -42,14 +42,18 @@
         onClick: 'close',
       },
       {
-        label: $i18n.t('dialog--delete-profile.label--title', 'Remove Threema ID and Data'),
+        label: $i18n.t('dialog--delete-profile.label--title', 'Remove {shortAppName} ID and Data', {
+          shortAppName: import.meta.env.SHORT_APP_NAME,
+        }),
         type: 'filled',
         onClick: () => {
           handleClickConfirmAndRestart().catch(assertUnreachable);
         },
       },
     ],
-    title: $i18n.t('dialog--delete-profile.label--title', 'Remove Threema ID and Data'),
+    title: $i18n.t('dialog--delete-profile.label--title', 'Remove {shortAppName} ID and Data', {
+      shortAppName: import.meta.env.SHORT_APP_NAME,
+    }),
     maxWidth: 520,
   }}
   on:close
@@ -59,7 +63,10 @@
       <Text
         text={$i18n.t(
           'dialog--delete-profile.prose--description',
-          'This Threema ID and the corresponding data will be removed from this device (but not on your other devices).',
+          'This {shortAppName} ID and the corresponding data will be removed from this device (but not on your other devices).',
+          {
+            shortAppName: import.meta.env.SHORT_APP_NAME,
+          },
         )}
       />
     </div>

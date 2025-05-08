@@ -4,7 +4,7 @@ import * as process from 'node:process';
 
 import * as v from '@badrap/valita';
 import {svelte} from '@sveltejs/vite-plugin-svelte';
-import type {RollupOptions} from 'rollup';
+import type {InputOption, OutputOptions} from 'rollup';
 import type {ConfigEnv as ViteConfigEnv, UserConfig, LibraryOptions} from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
@@ -28,6 +28,7 @@ import {
     determineMobileAppName,
     isBuildFlavor,
 } from './base';
+import {readCustomConfig} from './custom-config.mjs';
 import cjsExternals from './vite-plugins/cjs-externals';
 import {subresourceIntegrityPlugin} from './vite-plugins/subresource-integrity';
 import {tsWorkerPlugin} from './vite-plugins/ts-worker';
@@ -156,7 +157,10 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
     }
 }
 
-function determineUrls(buildFlavor: BuildFlavor): ImportMeta['env']['URLS'] {
+function determineUrls(
+    buildFlavor: BuildFlavor,
+    presetOppfUrl: {readonly full: string} | undefined,
+): ImportMeta['env']['URLS'] {
     let downloadAndInfoShort;
     let downloadAndInfoForOtherVariantShort;
     let overviewFull;
@@ -181,6 +185,17 @@ function determineUrls(buildFlavor: BuildFlavor): ImportMeta['env']['URLS'] {
             overviewFull = 'https://threema.ch/work/support#onprem';
             break;
 
+        case 'custom-onprem':
+            return {
+                downloadAndInfo: 'hidden',
+                downloadAndInfoForOtherVariant: 'hidden',
+                overview: 'hidden',
+                limitations: 'hidden',
+                forgotPassword: 'hidden',
+                resetProfile: 'hidden',
+                presetOppfUrl,
+            };
+
         default:
             unreachable(buildFlavor);
     }
@@ -194,11 +209,35 @@ function determineUrls(buildFlavor: BuildFlavor): ImportMeta['env']['URLS'] {
         limitations: {full: 'https://threema.ch/faq/md_limit'},
         forgotPassword: {full: 'https://threema.ch/faq/md_password'},
         resetProfile: {full: 'https://threema.ch/faq/md_reset'},
+        presetOppfUrl: undefined,
     };
 }
 
 function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], 'BASE_URL'> {
     const buildFlavor = determineBuildFlavor(env.variant, env.environment);
+
+    let shortAppName;
+    let appName;
+    let presetOppfUrl: {readonly full: string} | undefined = undefined;
+    if (buildFlavor === 'custom-onprem') {
+        const currentConfigOrError = readCustomConfig();
+        if (currentConfigOrError instanceof Error) {
+            console.error('Failed to process `custom-onprem` config: ', currentConfigOrError);
+            process.exit(1);
+        }
+        const currentConfig = currentConfigOrError;
+
+        appName = currentConfig.appName;
+        shortAppName = currentConfig.localizedAppName ?? currentConfig.appName;
+        presetOppfUrl =
+            currentConfig.presetOppfUrl === undefined
+                ? undefined
+                : {full: currentConfig.presetOppfUrl};
+    } else {
+        shortAppName = 'Threema';
+        appName = determineAppName(buildFlavor, 'Threema');
+    }
+
     return {
         // Dev
         DEV_SERVER_PORT: env.devServerPort,
@@ -214,9 +253,10 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
         BUILD_VARIANT: env.variant,
         BUILD_ENVIRONMENT: env.environment,
         BUILD_FLAVOR: buildFlavor,
-        APP_NAME: determineAppName(buildFlavor),
-        MOBILE_APP_NAME: determineMobileAppName(buildFlavor),
-        URLS: determineUrls(buildFlavor),
+        SHORT_APP_NAME: shortAppName,
+        APP_NAME: appName,
+        MOBILE_APP_NAME: determineMobileAppName(buildFlavor, appName),
+        URLS: determineUrls(buildFlavor, presetOppfUrl),
 
         // Defaults
         /**
@@ -443,7 +483,10 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
 
     // Determine rollup options
     let lib: LibraryOptions | undefined;
-    const rollupOptions: RollupOptions = {};
+    const rollupOptions: {
+        input?: InputOption;
+        output?: OutputOptions;
+    } = {};
     switch (env.entry) {
         case 'cli':
             lib = {

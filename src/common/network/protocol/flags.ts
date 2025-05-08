@@ -96,14 +96,12 @@ export class CspMessageFlags implements CspMessageFlagsInterface {
      */
     public static fromPartial(init: Partial<CspMessageFlagsInterface>): CspMessageFlags {
         return new CspMessageFlags({
-            /* eslint-disable no-bitwise */
             sendPushNotification: init.sendPushNotification ?? false,
             dontQueue: init.dontQueue ?? false,
             dontAck: init.dontAck ?? false,
             groupMessage: init.groupMessage ?? false,
             immediateDeliveryRequired: init.immediateDeliveryRequired ?? false,
             dontSendDeliveryReceipts: init.dontSendDeliveryReceipts ?? false,
-            /* eslint-enable no-bitwise */
         });
     }
 
@@ -194,9 +192,7 @@ export class D2mMessageFlags implements D2mMessageFlagsInterface {
      */
     public static fromPartial(init: Partial<D2mMessageFlagsInterface>): D2mMessageFlags {
         return new D2mMessageFlags({
-            /* eslint-disable no-bitwise */
             ephemeral: init.ephemeral ?? false,
-            /* eslint-enable no-bitwise */
         });
     }
 
@@ -204,9 +200,6 @@ export class D2mMessageFlags implements D2mMessageFlagsInterface {
      * Create a 1-byte D2m bitmask from the flags.
      */
     public toBitmask(): u8 {
-        return (
-            // eslint-disable-next-line no-bitwise
-            this.ephemeral ? D2mMessageFlag.EPHEMERAL : 0
-        );
+        return this.ephemeral ? D2mMessageFlag.EPHEMERAL : 0;
     }
 }

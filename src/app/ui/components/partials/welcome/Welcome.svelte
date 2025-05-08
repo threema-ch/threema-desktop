@@ -9,9 +9,11 @@
 </script>
 
 <div class="welcome">
-  <span data-display={$display}>
-    <Logo />
-  </span>
+  {#if import.meta.env.BUILD_VARIANT !== 'custom'}
+    <span data-display={$display}>
+      <Logo />
+    </span>
+  {/if}
 </div>
 
 <style lang="scss">

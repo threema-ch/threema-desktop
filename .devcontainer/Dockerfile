@@ -12,6 +12,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     clang-format \
     curl \
     git \
+    jq \
     less \
     protobuf-compiler \
     python3 \
@@ -35,6 +36,14 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     imagemagick \
     optipng
+
+# Install wasm-opt directly from binaryen release
+ARG BINARYEN_VERSION
+RUN binaryen_archive="binaryen-version_${BINARYEN_VERSION}-$(uname -m)-linux.tar.gz" \
+ && curl --proto '=https' --tlsv1.3 -OLSsf \
+    "https://github.com/WebAssembly/binaryen/releases/download/version_${BINARYEN_VERSION}/${binaryen_archive}" \
+ && tar -zxf ${binaryen_archive} \
+ && mv binaryen-version_${BINARYEN_VERSION}/bin/wasm-opt /bin/
 
 # Add user
 ARG USER_UID=1000
@@ -60,6 +69,10 @@ ARG RUST_VERSION
 RUN curl --proto '=https' --tlsv1.3 -sSf "https://sh.rustup.rs" \
   | sh -s -- --default-toolchain ${RUST_VERSION} --component rust-src -y
 ENV PATH="/home/${USER_NAME}/.cargo/bin:${PATH}"
+
+# Install Rust WASM dependencies
+RUN rustup target add wasm32-unknown-unknown \
+ && cargo install wasm-bindgen-cli
 
 # Entrypoint
 CMD /bin/bash

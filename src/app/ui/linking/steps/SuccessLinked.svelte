@@ -15,7 +15,6 @@
   let buttonComponent: Button | null = null;
 
   onMount(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     buttonComponent?.focus();
   });
 </script>
@@ -34,8 +33,8 @@
         <SubstitutableText
           text={$i18n.t(
             'dialog--linking-success.markup--description',
-            '{threema} can now be used on this computer <1/>(even when your iOS device is turned off or isn’t connected to the Internet).',
-            {threema: import.meta.env.MOBILE_APP_NAME},
+            '{mobileAppName} can now be used on this computer <1/>(even when your mobile device is turned off or isn’t connected to the Internet).',
+            {mobileAppName: import.meta.env.MOBILE_APP_NAME},
           )}
         >
           <br slot="1" />
@@ -43,7 +42,9 @@
       </p>
       <div class="button">
         <Button bind:this={buttonComponent} flavor="filled" on:click={() => identityReady.resolve()}
-          >{$i18n.t('dialog--linking-success.action--confirm', 'Start using Threema')}</Button
+          >{$i18n.t('dialog--linking-success.action--confirm', 'Start using {shortAppName}', {
+            shortAppName: import.meta.env.SHORT_APP_NAME,
+          })}</Button
         >
       </div>
     </div>

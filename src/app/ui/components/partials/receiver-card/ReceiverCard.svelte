@@ -43,6 +43,8 @@
       <div class="top">
         {#if topLeft.length > 0}
           <div class="left items">
+            <!-- Key not required because all values are derived from `itemOptions`. -->
+            <!-- eslint-disable-next-line svelte/require-each-key -->
             {#each topLeft as itemOptions}
               <ContentItem options={itemOptions} />
             {/each}
@@ -51,6 +53,8 @@
 
         {#if topRight.length > 0}
           <div class="right items">
+            <!-- Key not required because all values are derived from `itemOptions`. -->
+            <!-- eslint-disable-next-line svelte/require-each-key -->
             {#each topRight as itemOptions}
               <ContentItem options={itemOptions} on:clickjoincall />
             {/each}
@@ -63,6 +67,8 @@
       <div class="bottom">
         {#if bottomLeft.length > 0}
           <div class="left items">
+            <!-- Key not required because all values are derived from `itemOptions`. -->
+            <!-- eslint-disable-next-line svelte/require-each-key -->
             {#each bottomLeft as itemOptions}
               <ContentItem options={itemOptions} />
             {/each}
@@ -71,6 +77,8 @@
 
         {#if bottomRight.length > 0}
           <div class="right items">
+            <!-- Key not required because all values are derived from `itemOptions`. -->
+            <!-- eslint-disable-next-line svelte/require-each-key -->
             {#each bottomRight as itemOptions}
               <ContentItem options={itemOptions} />
             {/each}

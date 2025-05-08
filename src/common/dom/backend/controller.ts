@@ -7,17 +7,15 @@ import {
     type BackendCreator,
     type DeviceLinkingSetup,
     type LinkingState,
-    type PinForwarder,
     type BackendHandle,
-    type OldProfileRemover,
     type BackendInit,
     type LoadingState,
     type LoadingStateSetup,
 } from '~/common/dom/backend';
+import type {IFrontendElectronService} from '~/common/electron-service';
 import type {ConnectionState, D2mLeaderState} from '~/common/enum';
 import {extractErrorMessage} from '~/common/error';
 import {RELEASE_PROXY, TRANSFER_HANDLER} from '~/common/index';
-import type {LauncherService} from '~/common/launcher';
 import type {Logger} from '~/common/logging';
 import type {IFrontendMediaService} from '~/common/media';
 import type {ProfilePictureView} from '~/common/model';
@@ -119,8 +117,6 @@ export class BackendController {
             previouslyAttemptedPassword?: string,
         ) => Promise<string>,
         storeUserPassword: (password: string) => Promise<boolean>,
-        removeOldProfiles: () => void,
-        forwardPins: PinForwarder['forward'],
         requestMissingWorkCredentialsModal: () => Promise<void>,
     ): Promise<[controller: BackendController, identityIsReady: boolean]> {
         const {endpoint, logging} = services;
@@ -131,12 +127,12 @@ export class BackendController {
          */
         function assembleBackendInit(): BackendInit {
             // Launcher
-            const {local: localLauncherEndpoint, remote: launcherEndpoint} =
-                endpoint.createEndpointPair<LauncherService>();
+            const {local: localElectronEndpoint, remote: electronEndpoint} =
+                endpoint.createEndpointPair<IFrontendElectronService>();
             endpoint.exposeProxy(
-                services.launcher,
-                localLauncherEndpoint,
-                logging.logger('com.launcher'),
+                services.electron,
+                localElectronEndpoint,
+                logging.logger('com.electron'),
             );
 
             // Media
@@ -174,7 +170,7 @@ export class BackendController {
             // Transfer
             return endpoint.transfer(
                 {
-                    launcherEndpoint,
+                    electronEndpoint,
                     mediaEndpoint,
                     notificationEndpoint,
                     systemDialogEndpoint,
@@ -182,7 +178,7 @@ export class BackendController {
                     systemInfo: services.systemInfo,
                 },
                 [
-                    launcherEndpoint,
+                    electronEndpoint,
                     mediaEndpoint,
                     notificationEndpoint,
                     systemDialogEndpoint,
@@ -247,36 +243,6 @@ export class BackendController {
             return endpoint.transfer(remote, [remote]);
         }
 
-        function assembleForwardPinCommunication(
-            forwardPin: PinForwarder['forward'],
-        ): ProxyEndpoint<PinForwarder> {
-            const {local, remote} = endpoint.createEndpointPair<PinForwarder>();
-            const forwardPinSetup: PinForwarder = {
-                [TRANSFER_HANDLER]: PROXY_HANDLER,
-                forward: forwardPin,
-            };
-
-            endpoint.exposeProxy(forwardPinSetup, local, logging.logger('com.forward-pins'));
-            return endpoint.transfer(remote, [remote]);
-        }
-
-        function assembleRemoveOldProfileCommunication(
-            removeOldProfile: OldProfileRemover['remove'],
-        ): ProxyEndpoint<OldProfileRemover> {
-            const {local, remote} = endpoint.createEndpointPair<OldProfileRemover>();
-            const removeOldProfileSetup: OldProfileRemover = {
-                [TRANSFER_HANDLER]: PROXY_HANDLER,
-                remove: removeOldProfile,
-            };
-
-            endpoint.exposeProxy(
-                removeOldProfileSetup,
-                local,
-                logging.logger('com.delete-profiles'),
-            );
-            return endpoint.transfer(remote, [remote]);
-        }
-
         // Create backend from existing key storage (if present).
         log.debug('Waiting for remote backend to be created');
         let shouldStorePassword = new ResolvablePromise<boolean>({uncaught: 'default'});
@@ -294,7 +260,6 @@ export class BackendController {
                     backendEndpoint = await creator.fromKeyStorage(
                         assembleBackendInit(),
                         password,
-                        assembleForwardPinCommunication(forwardPins),
                         assembleLoadingStateSetup(loadingStateStore),
                     );
                     identityIsReady = true;
@@ -363,7 +328,6 @@ export class BackendController {
             try {
                 backendEndpoint = await creator.fromTestConfiguration(
                     assembleBackendInit(),
-                    assembleForwardPinCommunication(forwardPins),
                     assembleLoadingStateSetup(loadingStateStore),
                     testData,
                 );
@@ -415,8 +379,6 @@ export class BackendController {
                         continueWithoutRestoring,
                         oppfConfig,
                     ),
-                    assembleForwardPinCommunication(forwardPins),
-                    assembleRemoveOldProfileCommunication(removeOldProfiles),
                     shouldRestoreOldMessages,
                 );
 
@@ -534,7 +496,6 @@ export class BackendController {
 
         // Add a no-op subscriber so the packets are gathered before the
         // packets are being displayed.
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
         const unsubscribe = store.subscribe(() => {});
         this.capturing = {
             packets: store,

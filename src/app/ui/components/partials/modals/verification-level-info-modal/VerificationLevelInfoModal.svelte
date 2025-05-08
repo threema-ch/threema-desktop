@@ -61,7 +61,11 @@
         {:else if colors === 'shared-work-subscription'}
           {$i18n.t(
             'dialog--verification-levels.prose--level-server-verified-work',
-            'This verification level is only available in Threema Work; it indicates that the Threema ID belongs to an internal company contact.',
+            'This verification level is only available in {fullAppName}; it indicates that the {shortAppName} ID belongs to an internal company contact.',
+            {
+              fullAppName: import.meta.env.APP_NAME,
+              shortAppName: import.meta.env.SHORT_APP_NAME,
+            },
           )}
         {/if}
       </span>
@@ -79,7 +83,11 @@
       {:else if colors === 'shared-work-subscription'}
         {$i18n.t(
           'dialog--verification-levels.prose--level-fully-verified-work',
-          'This verification level is only available in Threema Work; it indicates that the Threema ID belongs to an internal contact whose ID and public key you have verified by scanning their QR code.',
+          'This verification level is only available in {fullAppName}; it indicates that the {shortAppName} ID belongs to an internal contact whose ID and public key you have verified by scanning their QR code.',
+          {
+            fullAppName: import.meta.env.APP_NAME,
+            shortAppName: import.meta.env.SHORT_APP_NAME,
+          },
         )}
       {/if}
       <span />

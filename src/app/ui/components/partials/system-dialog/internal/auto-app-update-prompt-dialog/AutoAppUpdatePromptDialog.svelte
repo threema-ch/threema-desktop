@@ -46,9 +46,11 @@
 >
   <div class="content">
     <div class="main">
-      <div class="logo">
-        <Logo animated={false} />
-      </div>
+      {#if import.meta.env.BUILD_VARIANT !== 'custom'}
+        <div class="logo">
+          <Logo animated={false} />
+        </div>
+      {/if}
       <div class="text">
         <p>
           {$i18n.t(
@@ -80,22 +82,24 @@
         </Button>
       </div>
     </div>
-    <div class="footer">
-      <p class="hint">
-        <small>
-          {$i18n.t(
-            'dialog--auto-app-update-prompt.prose--description-p3',
-            'If the automatic update fails, please download and install the update manually:',
-          )}
-          <a
-            href={import.meta.env.URLS.downloadAndInfo.full}
-            target="_blank"
-            rel="noreferrer noopener"
-            >{import.meta.env.URLS.downloadAndInfo.short}
-          </a>
-        </small>
-      </p>
-    </div>
+    {#if import.meta.env.BUILD_VARIANT !== 'custom' && import.meta.env.URLS.downloadAndInfo !== 'hidden'}
+      <div class="footer">
+        <p class="hint">
+          <small>
+            {$i18n.t(
+              'dialog--auto-app-update-prompt.prose--description-p3',
+              'If the automatic update fails, please download and install the update manually:',
+            )}
+            <a
+              href={import.meta.env.URLS.downloadAndInfo.full}
+              target="_blank"
+              rel="noreferrer noopener"
+              >{import.meta.env.URLS.downloadAndInfo.short}
+            </a>
+          </small>
+        </p>
+      </div>
+    {/if}
   </div>
 </Modal>
 

@@ -94,7 +94,6 @@ class InboundDeletedMessageModelController
     extends CommonBaseMessageController<InboundDeletedMessageView>
     implements InboundDeletedMessageController
 {
-    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public override readonly lifetimeGuard = new ModelLifetimeGuard<InboundDeletedMessageView>();
 
     public readonly read: OutboundDeletedMessageController['read'] = {
@@ -149,7 +148,6 @@ class OutboundDeletedMessageModelController
     extends CommonBaseMessageController<OutboundDeletedMessageView>
     implements OutboundDeletedMessageController
 {
-    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public override readonly lifetimeGuard = new ModelLifetimeGuard<OutboundDeletedMessageView>();
 
     public readonly delivered: OutboundDeletedMessageController['delivered'] = {

@@ -9,6 +9,7 @@
 @use './branding/consumer' as *;
 @use './branding/work' as *;
 @use './branding/onprem' as *;
+@use './branding/custom' as *;
 @use './theme/light' as *;
 @use './theme/dark' as *;
 
@@ -16,6 +17,7 @@ $brandings: (
   consumer: $consumer,
   work: $work,
   onprem: $onprem,
+  custom: $custom,
 );
 
 @function -g($map, $key, $keys...) {

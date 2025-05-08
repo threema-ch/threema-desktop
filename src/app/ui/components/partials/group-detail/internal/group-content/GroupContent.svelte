@@ -73,7 +73,7 @@
 
     <div class="details">
       <Text
-        alignment={'center'}
+        alignment="center"
         color="mono-high"
         family="secondary"
         size="body-large"

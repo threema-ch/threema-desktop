@@ -6,19 +6,13 @@
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {u53} from '~/common/types';
 
-  // Generic parameters are not yet recognized by the linter.
-  // See https://github.com/sveltejs/eslint-plugin-svelte/issues/521
-  // and https://github.com/sveltejs/svelte-eslint-parser/issues/306
-  // eslint-disable-next-line no-undef
   type $$Props = TabBarProps<TId>;
 
   export let tabs: $$Props['tabs'];
 
-  // eslint-disable-next-line no-undef, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-redundant-type-constituents
   let activeId: TId | undefined = tabs.at(0)?.id;
 
   function handleClickTab(tab: (typeof tabs)[u53]): void {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     activeId = tab.id;
     tab.onClick?.(tab.id);
   }

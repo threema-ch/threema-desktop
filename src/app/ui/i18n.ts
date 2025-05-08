@@ -90,7 +90,7 @@ export const LOCALES = import.meta.env.DEBUG
 /**
  * Mapping from locale identifier to name in that language.
  */
-export const LOCALE_NAMES: {[Locale in keyof typeof resources]: string} & {
+export const LOCALE_NAMES: {[locales in keyof typeof resources]: string} & {
     readonly cimode: string;
 } = {
     cimode: 'Translation Mode',
@@ -125,7 +125,7 @@ function getClosestAvailableLocale(locale: string): Locale {
         if (isLocale(minimizedLocale)) {
             return minimizedLocale;
         }
-    } catch (error) {
+    } catch {
         // Unable to create an Intl.Locale object from locale.
         // Ignoring error.
     }

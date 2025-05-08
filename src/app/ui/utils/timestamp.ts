@@ -51,7 +51,7 @@ function dateForOutboundMessage(status: Status): Date {
         date = status.read.at;
     } else if (status.delivered !== undefined) {
         date = status.delivered.at;
-    } else if (status.sent) {
+    } else if (status.sent !== undefined) {
         date = status.sent.at;
     }
     return date;

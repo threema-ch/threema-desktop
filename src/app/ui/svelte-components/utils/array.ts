@@ -48,5 +48,5 @@ export async function asyncFilter<T>(
     const results = (await Promise.allSettled(array.map(predicate))).map((result) =>
         result.status === 'fulfilled' ? result.value : false,
     );
-    return array.filter((_, index) => results[index]);
+    return array.filter((_, index) => results[index] ?? false);
 }

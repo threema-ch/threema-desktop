@@ -85,7 +85,8 @@
               type: 'icon',
               description: $i18n.t(
                 'contacts.hint--badge-consumer',
-                "This contact uses Threema's private version.",
+                'This contact uses {shortAppName}’s consumer version.',
+                {shortAppName: import.meta.env.SHORT_APP_NAME},
               ),
               icon: 'threema_consumer_contact',
             },
@@ -106,7 +107,10 @@
               type: 'icon',
               description: $i18n.t(
                 'contacts.hint--badge-work',
-                'This contact uses the business app Threema Work.',
+                'This contact uses the business app {fullAppName}.',
+                {
+                  fullAppName: import.meta.env.APP_NAME,
+                },
               ),
               icon: 'threema_work_contact',
             },

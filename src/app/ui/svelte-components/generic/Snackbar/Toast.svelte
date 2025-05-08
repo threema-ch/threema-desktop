@@ -10,7 +10,9 @@
 
   export let action: AnyToastAction | undefined;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    readonly close: undefined;
+  }>();
 
   let clickHandler: () => void;
   $: {

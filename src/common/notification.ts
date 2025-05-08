@@ -461,7 +461,7 @@ export class NotificationService {
                 (member) => member.get().view.identity === mentionPair.identity,
             );
             // If we found the group member
-            if (correspondingGroupMember) {
+            if (correspondingGroupMember !== undefined) {
                 resultString = resultString.replace(
                     mentionPair.raw,
                     `@${correspondingGroupMember.get().view.displayName}`,

@@ -429,7 +429,6 @@ export class ConversationModelController implements ConversationController {
     /** @inheritdoc */
     public readonly removeAllMessages: ConversationController['removeAllMessages'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
-        // eslint-disable-next-line @typescript-eslint/require-await
         direct: () => {
             this.lifetimeGuard.update(() => {
                 message.removeAll(this._services, this._log, this.uid);
@@ -444,7 +443,6 @@ export class ConversationModelController implements ConversationController {
     /** @inheritdoc */
     public readonly removeStatusMessage: ConversationController['removeStatusMessage'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
-        // eslint-disable-next-line @typescript-eslint/require-await
         direct: (statusMessageId: StatusMessageId) => {
             this.lifetimeGuard.update(() => {
                 status.remove(
@@ -493,10 +491,7 @@ export class ConversationModelController implements ConversationController {
 
     public readonly updateVisibility: ConversationController['updateVisibility'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
-        fromLocal: async (
-            visibility: ConversationVisibility,
-            // eslint-disable-next-line @typescript-eslint/require-await
-        ) => {
+        fromLocal: async (visibility: ConversationVisibility) => {
             const conversationChange: ConversationUpdateFromToSync = {visibility};
 
             // No need for a precondition to archive or pin

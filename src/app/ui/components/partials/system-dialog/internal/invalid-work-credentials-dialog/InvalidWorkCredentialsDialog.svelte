@@ -27,7 +27,7 @@
   export let target: $$Props['target'] = undefined;
   export let workCredentials: $$Props['workCredentials'];
 
-  const {backend} = services.unwrap();
+  const {backend, electron} = services.unwrap();
 
   // To prevent user from viewing previous password, replace it with a placeholder.
   // When submitting the form, if the placeholder text is unchanged, submit the original password.
@@ -83,7 +83,10 @@
       checkingCredentials = false;
       credentialsValidity = $i18n.t(
         'dialog--invalid-work-credentials.error--validation-failed',
-        'Validation of Threema Work credentials failed. Please check your Internet connection and try again.',
+        'Validation of {fullAppName} credentials failed. Please check your Internet connection and try again.',
+        {
+          fullAppName: import.meta.env.APP_NAME,
+        },
       );
       return;
     }
@@ -112,7 +115,10 @@
         toast.addSimpleSuccess(
           $i18n.t(
             'dialog--invalid-work-credentials.prose--update-success',
-            'Threema Work credentials successfully updated',
+            '{fullAppName} credentials successfully updated',
+            {
+              fullAppName: import.meta.env.APP_NAME,
+            },
           ),
         );
         onSelectAction?.('confirmed');
@@ -130,7 +136,7 @@
     backend.connectionManager
       .selfKickFromMediator()
       .then(() => {
-        window.app.deleteProfileAndRestartApp({createBackup: true});
+        electron.deleteProfileAndRestartApp({createBackup: true});
       })
       .catch((error: unknown) => {
         // TODO(DESK-1228): Delete profile anyways if selfkick failed?
@@ -151,7 +157,10 @@
     type: 'card',
     title: $i18n.t(
       'dialog--invalid-work-credentials.label--title',
-      'Invalid Threema Work Credentials',
+      'Invalid {fullAppName} Credentials',
+      {
+        fullAppName: import.meta.env.APP_NAME,
+      },
     ),
     minWidth: 340,
     maxWidth: 460,
@@ -169,14 +178,17 @@
       <p>
         {$i18n.t(
           'dialog--invalid-work-credentials.prose--description-p1',
-          'The credentials for Threema Work are invalid. Either they were disabled by your Threema Work admin, or your Threema Work license expired.',
+          'The credentials for {fullAppName} are invalid. Either they were disabled by your {fullAppName} admin, or your {fullAppName} license expired.',
+          {
+            fullAppName: import.meta.env.APP_NAME,
+          },
         )}
       </p>
       <p>
         {$i18n.t(
           'dialog--invalid-work-credentials.prose--description-p2',
-          'To continue using {appName} for desktop, you have two options:',
-          {appName: import.meta.env.APP_NAME},
+          'To continue using {fullAppName} for desktop, you have two options:',
+          {fullAppName: import.meta.env.APP_NAME},
         )}
       </p>
     </section>
@@ -191,7 +203,8 @@
       <p>
         {$i18n.t(
           'dialog--invalid-work-credentials.prose--description-enter-credentials',
-          "Please enter valid Threema Work credentials. If you don't know the credentials, please contact your Threema Work administrator.",
+          'Please enter valid {fullAppName} credentials. If you don’t know the credentials, please contact your {fullAppName} administrator.',
+          {fullAppName: import.meta.env.APP_NAME},
         )}
       </p>
       <div class="form-fields">
@@ -295,8 +308,8 @@
       <p>
         {$i18n.t(
           'dialog--invalid-work-credentials.prose--description-relink',
-          'Remove the current link, and relink {appName} for desktop to your mobile device. The message history will be restored after relinking.',
-          {appName: import.meta.env.APP_NAME},
+          'Remove the current link, and relink {fullAppName} for desktop to your mobile device. The message history will be restored after relinking.',
+          {fullAppName: import.meta.env.APP_NAME},
         )}
       </p>
       <div class="action-button">

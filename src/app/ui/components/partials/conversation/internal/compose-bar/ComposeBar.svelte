@@ -209,6 +209,7 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="composearea" on:click={() => textAreaComponent?.focus()}>
       <TextArea
+        {services}
         bind:this={textAreaComponent}
         bind:isEmpty={isTextAreaEmpty}
         placeholder={$i18n.t('messaging.label--compose-area', 'Write a message...')}
@@ -251,7 +252,6 @@
       class="emoji-picker"
       data-is-visible={isEmojiPickerVisible}
       on:clickoutside={({detail: {event}}) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         handleClickOutsideEmojiPicker(event);
       }}
     >

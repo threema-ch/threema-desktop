@@ -364,7 +364,7 @@ function transformIndexHtml(
 
         // External stylesheet: get fingerprint from bundle asset.
         const assetKey = url.replace('./', '');
-        const stylesheet = stylesheets.find((asset) => asset.filename);
+        const stylesheet = stylesheets.find((asset) => asset.filename === assetKey);
         if (stylesheet === undefined) {
             throw new Error(
                 `Stylesheet "${assetKey}" not found in whitelisted assets! If this is a new file, make sure to whitelist it in the plugin options. Whitelisted stylesheets: ${stylesheets.map((asset) => asset.filename).join(', ')}`,
@@ -466,7 +466,7 @@ function readDirToBundle(dirPath: string): Bundle {
  *    self-closing and void tags).
  */
 function getTagRegexForType(type: string): RegExp {
-    // eslint-disable-next-line prefer-regex-literals, threema/ban-stateful-regex-flags
+    // eslint-disable-next-line threema/ban-stateful-regex-flags
     return new RegExp(
         `(?<opening_tag><${type}[\\s\\S]*?(?=\\w?(?:>|\\/>|<\\/${type}>)))(?:(?<opening_tag_self_terminator>\\w?\\/>)|(?:(?<opening_tag_terminator>>)(?:(?=\\s+<[^/])|(?<content>[\\s\\S]*?)(?<closing_tag><\\/\\w?${type}>))))`,
         'gmu',

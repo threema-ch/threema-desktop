@@ -12,6 +12,7 @@ import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 export function getTextContent(
     raw: string | undefined,
     mentions: readonly AnyMention[] | undefined,
+    isQuote: boolean,
     t: I18nType['t'],
     truncate?: u53,
 ): SanitizedHtml | undefined {
@@ -19,7 +20,7 @@ export function getTextContent(
         highlights: [],
         mentions,
         shouldLinkMentions: true,
-        shouldParseLinks: true,
+        shouldParseLinks: !isQuote,
         shouldParseMarkup: true,
         truncate,
     });

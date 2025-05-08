@@ -53,6 +53,7 @@ export function serialize(validatedMessage: Type): d2d.IncomingMessageUpdate {
             };
 
             switch (update.update) {
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 case 'read':
                     return {
                         ...commonProps,

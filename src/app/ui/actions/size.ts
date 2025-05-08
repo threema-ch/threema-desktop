@@ -31,9 +31,7 @@ interface ResizeActionProperties {
  * action.
  */
 interface ResizeActionAttributes {
-    /* eslint-disable @typescript-eslint/naming-convention */
     readonly 'on:changesize'?: (event: CustomEvent<ResizeEventDetail>) => void;
-    /* eslint-enable @typescript-eslint/naming-convention */
 }
 
 /**
@@ -63,10 +61,7 @@ function handleResizeChanges(entries: ResizeObserverEntry[]): void {
  * @returns A function to stop observation of the element.
  */
 function observe(element: Element, options: ResizeObserverOptions): () => void {
-    if (observer === undefined) {
-        observer = new ResizeObserver(handleResizeChanges);
-    }
-
+    observer ??= new ResizeObserver(handleResizeChanges);
     observer.observe(element, options);
 
     return () => {

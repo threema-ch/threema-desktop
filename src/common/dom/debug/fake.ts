@@ -525,7 +525,7 @@ export async function importScreenshotData(
             model.groups.getByGroupIdAndCreator(
                 group.id,
                 group.creator === 'me' ? device.identity.string : group.creator,
-            )
+            ) !== undefined
         ) {
             // Group already exists
             log.warn(`Skipping group ${groupName}, already exists`);

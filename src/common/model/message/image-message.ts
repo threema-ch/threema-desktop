@@ -124,19 +124,15 @@ export class InboundImageMessageModelController
     extends InboundBaseMessageModelController<InboundImageMessageBundle['view']>
     implements InboundImageMessageController
 {
-    protected readonly _blobLock = new AsyncLock();
-    protected readonly _thumbnailBlobLock = new AsyncLock();
-
     /** @inheritdoc */
     public async blob(): Promise<FileBytesAndMediaType> {
         const blob = await loadOrDownloadBlob(
             'main',
             MessageType.IMAGE,
-            MessageDirection.INBOUND,
+            this._sender.ctx,
             this.uid,
             this._conversation,
             this._services,
-            this._blobLock,
             this.lifetimeGuard,
             this._log,
         );
@@ -160,11 +156,10 @@ export class InboundImageMessageModelController
         const blob = await loadOrDownloadBlob(
             'thumbnail',
             MessageType.IMAGE,
-            MessageDirection.INBOUND,
+            this._sender.ctx,
             this.uid,
             this._conversation,
             this._services,
-            this._thumbnailBlobLock,
             this.lifetimeGuard,
             this._log,
         );
@@ -203,11 +198,10 @@ export class OutboundImageMessageModelController
         const blob = await loadOrDownloadBlob(
             'main',
             MessageType.IMAGE,
-            MessageDirection.OUTBOUND,
+            'me',
             this.uid,
             this._conversation,
             this._services,
-            this._blobLock,
             this.lifetimeGuard,
             this._log,
         );
@@ -219,11 +213,10 @@ export class OutboundImageMessageModelController
         const blob = await loadOrDownloadBlob(
             'thumbnail',
             MessageType.IMAGE,
-            MessageDirection.OUTBOUND,
+            'me',
             this.uid,
             this._conversation,
             this._services,
-            this._thumbnailBlobLock,
             this.lifetimeGuard,
             this._log,
         );

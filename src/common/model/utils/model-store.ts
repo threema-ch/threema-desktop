@@ -37,7 +37,6 @@ export const MODEL_MARKER = Symbol('model-marker');
 /**
  * Symbol to mark a remote as a model store.
  */
-// eslint-disable-next-line @typescript-eslint/no-inferrable-types
 export const MODEL_STORE_REMOTE_MARKER: symbol = Symbol('model-store-remote-marker');
 
 function defaultModelRepresentation<TView>({view}: {readonly view: TView}): string {

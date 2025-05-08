@@ -126,7 +126,7 @@ export class FileSystemKeyStorage implements KeyStorage {
         this._log.debug(`Key storage path: ${this._keyStoragePath}`);
 
         this._workData =
-            import.meta.env.BUILD_VARIANT === 'work'
+            import.meta.env.BUILD_VARIANT === 'work' || import.meta.env.BUILD_VARIANT === 'custom'
                 ? new WritableStore<ThreemaWorkData | undefined>(undefined)
                 : undefined;
     }
@@ -197,9 +197,7 @@ export class FileSystemKeyStorage implements KeyStorage {
             // Note: Reloading would not be strictly required here, but we do it to ensure that
             //       everything went right with the migration.
             if (hasDecryptedKeyStorageBeenMigrated) {
-                if (cachedKdfParams === undefined) {
-                    cachedKdfParams = await this._determineKdfParams();
-                }
+                cachedKdfParams ??= await this._determineKdfParams();
                 await this._write(password, keyStorageContents, cachedKdfParams);
                 continue;
             }
@@ -640,7 +638,7 @@ export class FileSystemKeyStorage implements KeyStorage {
         try {
             fs.unlinkSync(passwordFile);
             this._log.info(`Password file '${passwordFile}' deleted`);
-        } catch (error) {
+        } catch {
             this._log.info(`Password file '${passwordFile}' does NOT exist`);
         }
     }

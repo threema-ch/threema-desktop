@@ -3,8 +3,6 @@
   Renders a modal to view a profile picture in full size.
 -->
 <script lang="ts">
-  import {onDestroy, onMount} from 'svelte';
-
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import type {ProfilePictureModalProps} from '~/app/ui/components/partials/modals/profile-picture-modal/props';
   import ProfilePicture from '~/app/ui/svelte-components/threema/ProfilePicture/ProfilePicture.svelte';
@@ -25,7 +23,8 @@
   let modalElement: SvelteNullableBinding<HTMLElement> = null;
   let profilePictureElement: SvelteNullableBinding<HTMLElement> = null;
 
-  function handleOutsideClick(event: MouseEvent): void {
+  function handleClickModal(event: MouseEvent): void {
+    // Only close modal on backdrop clicks.
     if (
       !nodeIsOrContainsTarget(profilePictureElement, event.target) &&
       !nodeIsOrContainsTarget(actionsElement, event.target)
@@ -33,22 +32,13 @@
       modalComponent?.close();
     }
   }
-
-  onMount(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    modalElement?.addEventListener('click', handleOutsideClick);
-  });
-
-  onDestroy(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    modalElement?.removeEventListener('click', handleOutsideClick);
-  });
 </script>
 
 <Modal
   bind:this={modalComponent}
   bind:actionsElement
   bind:element={modalElement}
+  onClick={handleClickModal}
   wrapper={{
     type: 'none',
     actions: [

@@ -2,7 +2,6 @@ import type {ContextMenuItem} from '~/app/ui/components/hocs/context-menu-provid
 import type {SettingsDropdown} from '~/app/ui/components/partials/settings/types';
 import type {I18nType} from '~/app/ui/i18n-types';
 import type {SettingsCategory} from '~/common/settings';
-import type {u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 
 /**
@@ -21,9 +20,7 @@ export function createDropdownItems<
     dropdown: SettingsDropdown<TSettings, TSettingType, TUpdateKey>,
     handler: (newValue: TSettingType) => void,
 ): ContextMenuItem[] {
-    type DropdownItem = (typeof dropdown.items)[u53];
-
-    return Object.values<DropdownItem>({...dropdown.items}).map((item) => ({
+    return [...dropdown.items].map((item) => ({
         type: 'option',
         handler: () => handler(item.value),
         icon: item.options?.icon ?? undefined,
@@ -37,7 +34,9 @@ export function getCategoryTitle(
 ): string {
     switch (currentCategory) {
         case 'about':
-            return i18n.t('settings--about.label--title', 'About Threema');
+            return i18n.t('settings--about.label--title', 'About {shortAppName}', {
+                shortAppName: import.meta.env.SHORT_APP_NAME,
+            });
         case 'appearance':
             return i18n.t('settings--appearance.label--title', 'Appearance Settings');
         case 'chat':

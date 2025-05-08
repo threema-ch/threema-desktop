@@ -3,7 +3,7 @@
   Renders a modal to preview media contained in a message.
 -->
 <script lang="ts">
-  import {onDestroy, onMount} from 'svelte';
+  import {onDestroy} from 'svelte';
 
   import {globals} from '~/app/globals';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
@@ -73,7 +73,8 @@
     isPopoverOpen = true;
   }
 
-  function handleOutsideClick(event: MouseEvent): void {
+  function handleClickModal(event: MouseEvent): void {
+    // Only close modal on backdrop clicks.
     if (
       !nodeIsOrContainsTarget(previewElement, event.target) &&
       !nodeIsOrContainsTarget(actionsElement, event.target) &&
@@ -146,15 +147,8 @@
 
   $: updatePopoverState(popoverCoordinates, isPopoverOpen);
 
-  onMount(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    modalElement?.addEventListener('click', handleOutsideClick);
-  });
-
   onDestroy(() => {
     revokeLoadedMediaUrl();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    modalElement?.removeEventListener('click', handleOutsideClick);
   });
 </script>
 
@@ -162,6 +156,7 @@
   bind:this={modalComponent}
   bind:actionsElement
   bind:element={modalElement}
+  onClick={handleClickModal}
   wrapper={{
     type: 'none',
     actions: [

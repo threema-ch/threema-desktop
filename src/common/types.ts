@@ -3,7 +3,7 @@
  * project.
  */
 
-/* eslint-disable @typescript-eslint/naming-convention, no-restricted-syntax */
+/* eslint-disable @typescript-eslint/naming-convention */
 // Unsigned and signed integer hint types.
 //
 // Note: These do not require explicit casting as that would be annoying when
@@ -21,7 +21,7 @@ export type i64 = bigint;
 export type ubig = bigint;
 export type ibig = bigint;
 export type f64 = number;
-/* eslint-enable @typescript-eslint/naming-convention, no-restricted-syntax */
+/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Type guard for {@link u8}.
@@ -168,7 +168,7 @@ export type OpaquePick<T extends WeakOpaque<unknown, TagOf<T>>, K extends keyof 
  */
 export type Mutable<T, K extends keyof T = keyof T> = Omit<T, K> & {-readonly [P in K]: T[P]};
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-restricted-types
 export type Primitive = undefined | null | boolean | string | number | bigint;
 
 /**
@@ -253,9 +253,12 @@ export type ReadonlyUint8Array = {
         ReadonlyUint8Array
     >;
 } & {
-    /* eslint-disable no-restricted-syntax,@typescript-eslint/member-ordering */
+    /* eslint-disable @typescript-eslint/member-ordering */
     // From lib.es5.d.ts
     readonly [index: number]: number;
+    // Note: This is necessary for other types such as `BufferSource` to be assignable to `ReadonlyUint8Array`
+    // Only access this buffer if you know what you are doing.
+    readonly buffer: ArrayBufferLike;
     readonly valueOf: () => Uint8Array;
     reduce: <U>(
         callbackfn: (
@@ -279,7 +282,7 @@ export type ReadonlyUint8Array = {
     readonly [Symbol.iterator]: () => IterableIterator<u8>;
     // From lib.es2015.symbol.wellknown.d.ts
     readonly [Symbol.toStringTag]: 'Uint8Array';
-    /* eslint-enable no-restricted-syntax,@typescript-eslint/member-ordering */
+    /* eslint-enable @typescript-eslint/member-ordering */
 };
 
 /**
@@ -361,8 +364,7 @@ export type StrictOmit<T, U extends keyof T> = Omit<T, U>;
  */
 export type RepeatedTuple<T, N extends u53, R extends readonly T[] = []> = R['length'] extends N
     ? R
-    : // eslint-disable-next-line no-restricted-syntax
-      RepeatedTuple<T, N, readonly [T, ...R]>;
+    : RepeatedTuple<T, N, readonly [T, ...R]>;
 
 export interface DomainCertificatePin {
     /** The domain the certificates belong to (e.g. `*.example.com`). */

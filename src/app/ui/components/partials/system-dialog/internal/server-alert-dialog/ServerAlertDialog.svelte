@@ -126,7 +126,10 @@
         <Text
           text={$i18n.t(
             'dialog--server-alert.error--another-device-p1',
-            'The server has detected a connection from a different device with the same Threema ID.',
+            'The server has detected a connection from a different device with the same {shortAppName} ID.',
+            {
+              shortAppName: import.meta.env.SHORT_APP_NAME,
+            },
           )}
         />
       </p>
@@ -134,7 +137,10 @@
         <Text
           text={$i18n.t(
             'dialog--server-alert.error--another-device-p2',
-            "If you haven't used your Threema ID on another device or with an older app version in the meantime, please contact the support and send a log file if possible.",
+            "If you haven't used your {shortAppName} ID on another device or with an older app version in the meantime, please contact the support and send a log file if possible.",
+            {
+              shortAppName: import.meta.env.SHORT_APP_NAME,
+            },
           )}
         />
       </p>
@@ -142,7 +148,10 @@
         <Text
           text={$i18n.t(
             'dialog--server-alert.error--another-device-p3',
-            'Otherwise, we recommend that you relink Threema Desktop. Your message history will be kept.',
+            'Otherwise, we recommend that you relink {shortAppName} Desktop. Your message history will be kept.',
+            {
+              shortAppName: import.meta.env.SHORT_APP_NAME,
+            },
           )}
         />
       </p>

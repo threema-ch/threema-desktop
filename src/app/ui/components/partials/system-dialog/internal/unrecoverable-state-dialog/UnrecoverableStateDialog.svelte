@@ -70,13 +70,19 @@
     <p>
       {$i18n.t(
         'dialog--unrecoverable-state.prose--description-p2',
-        'To continue using Threema, you need to remove your local profile and relink the device.',
+        'To continue using {shortAppName}, you need to remove your local profile and relink the device.',
+        {
+          shortAppName: import.meta.env.SHORT_APP_NAME,
+        },
       )}
     </p>
     <p>
       {$i18n.t(
         'dialog--unrecoverable-state.prose--description-p3',
-        'Please report this error to Threema’s support from the app on your mobile device (“Settings > Beta Feedback”). Note: Remember to save your logs before relinking, as they will be cleared.',
+        'Please report this error to {shortAppName}’s support from the app on your mobile device (“Settings > Beta Feedback”). Note: Remember to save your logs before relinking, as they will be cleared.',
+        {
+          shortAppName: import.meta.env.SHORT_APP_NAME,
+        },
       )}
     </p>
   </div>

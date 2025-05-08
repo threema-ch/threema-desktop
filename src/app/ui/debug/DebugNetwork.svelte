@@ -18,7 +18,7 @@
   const {backend} = services;
 
   // Packets to be displayed
-  let packets: Readable<readonly Packet[]> | undefined = undefined;
+  const packets: Readable<readonly Packet[]> | undefined = backend.capturing?.packets;
   // Currently selected packet to be introspected
   let selected: Packet | undefined = undefined;
   // Currently selected packet's error, object and bytes to be displayed
@@ -41,9 +41,6 @@
   async function capture(): Promise<void> {
     await backend.capture();
   }
-
-  // Display packets, if capturing.
-  $: packets = backend.capturing?.packets;
 
   $: current = {
     // Display any error associated to the selected packet.
