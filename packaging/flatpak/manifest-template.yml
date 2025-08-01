@@ -30,6 +30,10 @@ finish-args:
   - --talk-name=org.freedesktop.Notifications
   # Allow writing to system secrets storage
   - --talk-name=org.freedesktop.secrets
+  # Since this is electron, we also need access to the actual keystore DBuses
+  - --talk-name=org.kde.kwalletd5
+  - --talk-name=org.kde.kwalletd6
+  - --talk-name=org.gnome.SessionManager
   # Use native Wayland if available
   - --env=ELECTRON_OZONE_PLATFORM_HINT=auto
 build-options:
