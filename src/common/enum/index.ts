@@ -3077,6 +3077,8 @@ export namespace ElectronIpcCommand {
     export type SCREEN_SHARING_PRESENT_PICKER = typeof SCREEN_SHARING_PRESENT_PICKER;
     export const SCREEN_SHARING_SCREEN_SELECTED = 'screenSharingScreenSelected';
     export type SCREEN_SHARING_SCREEN_SELECTED = typeof SCREEN_SHARING_SCREEN_SELECTED;
+    export const MACOS_WINDOW_CLOSE = 'macosWindowClose';
+    export type MACOS_WINDOW_CLOSE = typeof MACOS_WINDOW_CLOSE;
     export const SYSTEM_SUSPENDING = 'systemSuspending';
     export type SYSTEM_SUSPENDING = typeof SYSTEM_SUSPENDING;
 }

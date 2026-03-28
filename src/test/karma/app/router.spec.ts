@@ -186,6 +186,33 @@ export function run(): void {
             router.assertRouteIds({nav: 'conversationList', main: 'welcome'});
         });
 
+        it('goToWelcome closes aside and modal when leaving a conversation', function () {
+            const router = new TestRouter();
+            const receiverLookup = {type: ReceiverType.CONTACT, uid: 42n as DbContactUid};
+
+            router.go({
+                main: ROUTE_DEFINITIONS.main.conversation.withParams({receiverLookup}),
+                aside: ROUTE_DEFINITIONS.aside.contactDetails.withParams(receiverLookup),
+                modal: ROUTE_DEFINITIONS.modal.changePassword.withoutParams(),
+            });
+            router.assertRouteIds({
+                nav: 'conversationList',
+                main: 'conversation',
+                aside: 'contactDetails',
+                modal: 'changePassword',
+            });
+
+            router.goToWelcome();
+
+            router.assertRouteIds({
+                nav: 'conversationList',
+                main: 'welcome',
+                aside: undefined,
+                modal: undefined,
+                activity: undefined,
+            });
+        });
+
         describe('assert', function () {
             it('can successfully assert a route', function () {
                 const router = new TestRouter();

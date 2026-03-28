@@ -195,6 +195,11 @@ export class ElectronIpcService implements ElectronIpc {
     }
 
     /** @inheritdoc */
+    public registerOnMacosWindowCloseCallback(callback: () => void): void {
+        window.app.registerOnMacosWindowCloseCallback(callback);
+    }
+
+    /** @inheritdoc */
     public updateAppBadge(totalUnreadMessageCount: u53): void {
         window.app.updateAppBadge(totalUnreadMessageCount);
     }

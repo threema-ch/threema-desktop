@@ -88,6 +88,8 @@ const appApi: ElectronIpc = {
         ),
     registerOnScreenSharingStopCallback: (callback: () => void) =>
         ipcRenderer.on(ElectronIpcCommand.SCREEN_SHARING_STOP, () => callback()),
+    registerOnMacosWindowCloseCallback: (callback: () => void) =>
+        ipcRenderer.on(ElectronIpcCommand.MACOS_WINDOW_CLOSE, () => callback()),
     registerOnSuspendCallback: (callback: () => void) =>
         ipcRenderer.on(ElectronIpcCommand.SYSTEM_SUSPENDING, () => callback()),
 };

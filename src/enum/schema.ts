@@ -972,6 +972,7 @@ export enum ElectronIpcCommand {
     SCREEN_SHARING_STOP = 'screenSharingStop',
     SCREEN_SHARING_PRESENT_PICKER = 'screenSharingPresentPicker',
     SCREEN_SHARING_SCREEN_SELECTED = 'screenSharingScreenSelected',
+    MACOS_WINDOW_CLOSE = 'macosWindowClose',
     SYSTEM_SUSPENDING = 'systemSuspending',
 }
 

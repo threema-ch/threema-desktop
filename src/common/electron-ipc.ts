@@ -225,6 +225,11 @@ export interface ElectronIpc {
     readonly registerOnScreenSharingStopCallback: (callback: () => void) => void;
 
     /**
+     * Register a callback for the macOS window close action before the main window is hidden.
+     */
+    readonly registerOnMacosWindowCloseCallback: (callback: () => void) => void;
+
+    /**
      * Register a callback for `on-suspend` and `on-lock` events.
      */
     readonly registerOnSuspendCallback: (callback: () => Promise<void>) => void;

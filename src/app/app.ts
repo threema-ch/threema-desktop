@@ -527,6 +527,14 @@ async function main(): Promise<() => Promise<void>> {
     };
     appServices.set(services);
 
+    if (systemInfo.os === 'macos') {
+        electron.registerOnMacosWindowCloseCallback(() => {
+            if (services.router.get().main.id === 'conversation') {
+                services.router.goToWelcome();
+            }
+        });
+    }
+
     // If this identity is ready, resolve `identityReady` promise
     if (identityIsReady) {
         identityReady.resolve();

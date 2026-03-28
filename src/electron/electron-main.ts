@@ -1141,6 +1141,7 @@ function main(
         window.on('close', (event) => {
             const currentWindow = unwrap(window, 'Window is undefined in on:close');
             if (process.platform === 'darwin' && !forceQuit) {
+                currentWindow.webContents.send(ElectronIpcCommand.MACOS_WINDOW_CLOSE);
                 // On macOS don't quit app if window was closed
                 event.preventDefault();
                 currentWindow.hide();
