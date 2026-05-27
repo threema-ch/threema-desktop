@@ -1,4 +1,5 @@
 import type {u53} from '@threema/ts-utils/integer/u53';
+import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 
 import type {
     DbCreateMessage,
@@ -19,6 +20,7 @@ import {
     OutboundBaseMessageModelController,
 } from '~/common/model/message';
 import {NO_SENDER} from '~/common/model/message/common';
+import {sanitizePollChoices} from '~/common/model/message/poll-sanitize';
 import type {GuardedStoreHandle} from '~/common/model/types/common';
 import type {ConversationControllerHandle} from '~/common/model/types/conversation';
 import type {
@@ -135,8 +137,17 @@ export function getPollMessageModelStore<TModelStore extends AnyPollMessageModel
     common: BaseMessageView<TModelStore['ctx']>,
     sender: ModelStore<Contact> | typeof NO_SENDER,
 ): TModelStore {
+    const sanitized = sanitizePollChoices(message.choices, message.answerType);
+    if (sanitized.droppedSenders.length > 0) {
+        services.logging
+            .logger('model.message.poll.sanitize')
+            .warn(
+                `Discarding selected votes from senders [${sanitized.droppedSenders.join(', ')}] on single-choice poll ${u64ToHexLe(message.pollId)}: multiple choices selected per sender`,
+            );
+    }
     const data: Omit<CommonPollMessageView, keyof CommonBaseMessageView> = {
         ...message,
+        choices: sanitized.choices,
         pollMessageType: message.pollMessageType ?? PollMessageType.POLL_CREATED,
     };
 
@@ -213,7 +224,7 @@ export class InboundPollMessageModelController
             this.pollVote.direct(pollVoteFragments, senderIdentity);
         },
         direct: (pollVoteFragments: DbPollVoteFragment, senderIdentity: IdentityString) => {
-            this.lifetimeGuard.update(() => {
+            this.lifetimeGuard.update((view) => {
                 this._services.db.updatePollVotes(
                     this._conversation.uid,
                     pollVoteFragments,
@@ -231,7 +242,13 @@ export class InboundPollMessageModelController
                     'Poll is undefined during vote. This should never happen!',
                 );
 
-                return {choices: poll.choices};
+                const sanitized = sanitizePollChoices(poll.choices, view.answerType);
+                if (sanitized.droppedSenders.length > 0) {
+                    this._log.warn(
+                        `Discarding selected votes from senders [${sanitized.droppedSenders.join(', ')}] on single-choice poll ${u64ToHexLe(view.pollId)}: multiple choices selected per sender`,
+                    );
+                }
+                return {choices: sanitized.choices};
             });
         },
     };
@@ -266,8 +283,14 @@ export class InboundPollMessageModelController
                         participants: fragment.participants,
                     },
                 );
+                const sanitized = sanitizePollChoices(updatedPoll.choices, view.answerType);
+                if (sanitized.droppedSenders.length > 0) {
+                    this._log.warn(
+                        `Discarding selected votes from senders [${sanitized.droppedSenders.join(', ')}] on single-choice poll ${u64ToHexLe(view.pollId)}: multiple choices selected per sender`,
+                    );
+                }
                 return {
-                    choices: updatedPoll.choices,
+                    choices: sanitized.choices,
                     pollState: PollState.CLOSED,
                 };
             });
@@ -356,7 +379,17 @@ export class OutboundPollMessageModelController
                     pollVoteFragments.pollId,
                 );
 
-                return poll !== undefined ? {choices: poll.choices} : {};
+                if (poll === undefined) {
+                    return {};
+                }
+
+                const sanitized = sanitizePollChoices(poll.choices, view.answerType);
+                if (sanitized.droppedSenders.length > 0) {
+                    this._log.warn(
+                        `Discarding selected votes from senders [${sanitized.droppedSenders.join(', ')}] on single-choice poll ${u64ToHexLe(view.pollId)}: multiple choices selected per sender`,
+                    );
+                }
+                return {choices: sanitized.choices};
             });
         },
     };
@@ -381,8 +414,14 @@ export class OutboundPollMessageModelController
                         participants: fragment.participants,
                     },
                 );
+                const sanitized = sanitizePollChoices(updatedPoll.choices, view.answerType);
+                if (sanitized.droppedSenders.length > 0) {
+                    this._log.warn(
+                        `Discarding selected votes from senders [${sanitized.droppedSenders.join(', ')}] on single-choice poll ${u64ToHexLe(view.pollId)}: multiple choices selected per sender`,
+                    );
+                }
                 return {
-                    choices: updatedPoll.choices,
+                    choices: sanitized.choices,
                     pollState: PollState.CLOSED,
                 };
             });
@@ -414,8 +453,14 @@ export class OutboundPollMessageModelController
                         participants,
                     },
                 );
+                const sanitized = sanitizePollChoices(updatedPoll.choices, view.answerType);
+                if (sanitized.droppedSenders.length > 0) {
+                    this._log.warn(
+                        `Discarding selected votes from senders [${sanitized.droppedSenders.join(', ')}] on single-choice poll ${u64ToHexLe(view.pollId)}: multiple choices selected per sender`,
+                    );
+                }
                 return {
-                    choices: updatedPoll.choices,
+                    choices: sanitized.choices,
                     pollState: PollState.CLOSED,
                 };
             });
