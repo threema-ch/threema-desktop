@@ -1,7 +1,7 @@
 import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 
 import type {DbPollVoteFragment} from '~/common/db';
-import {PollAnnounceType, PollState, PollMessageType} from '~/common/enum';
+import {PollAnnounceType, PollAnswerType, PollState, PollMessageType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {
     IInboundPollMessageModelStore,
@@ -93,6 +93,19 @@ export abstract class PollUpdateTask<
         //    message and abort these steps.
         if (message.get().view.pollState === PollState.CLOSED) {
             this._log.warn(`Associated poll could be found or is already closed. Abort`);
+            return;
+        }
+
+        // Discard votes that select more than one choice on a single-choice poll.
+        if (
+            message.get().view.answerType === PollAnswerType.SINGLE_CHOICE &&
+            pollUpdateData.choices.filter((choice) => choice.selected).length > 1
+        ) {
+            this._log.warn(
+                `Discarding poll vote for single-choice poll ${u64ToHexLe(
+                    pollUpdateData.pollId,
+                )}: multiple choices selected`,
+            );
             return;
         }
 
