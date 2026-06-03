@@ -50,7 +50,6 @@ import {
     IdentityTypeUtils,
     ImageRenderingTypeUtils,
     MessageTypeUtils,
-    NotificationSoundPolicyUtils,
     PersistentProtocolStateTypeUtils,
     PollAnnounceTypeUtils,
     PollAnswerTypeUtils,
@@ -126,7 +125,6 @@ export const CUSTOM_TYPES = {
     IMAGE_RENDERING_TYPE: 'ImageRenderingType',
     EMOJI_REACTION: 'EmojiReaction',
     MESSAGE_TYPE: 'MessageType',
-    NOTIFICATION_SOUND_POLICY: 'NotificationSoundPolicy',
     READ_RECEIPT_POLICY: 'ReadReceiptPolicy',
     STATUS_MESSAGE_TYPE: 'StatusMessageType',
     PERSISTENT_PROTOCOL_STATE_TYPE: 'PersistentProtocolStateType',
@@ -351,8 +349,6 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return MessageTypeUtils.contains(value) ? value : fail();
             case CUSTOM_TYPES.GROUP_USER_STATE:
                 return u64ToU53(value, GroupUserStateUtils.contains);
-            case CUSTOM_TYPES.NOTIFICATION_SOUND_POLICY:
-                return u64ToU53(value, NotificationSoundPolicyUtils.contains);
             case CUSTOM_TYPES.READ_RECEIPT_POLICY:
                 return u64ToU53(value, ReadReceiptPolicyUtils.contains);
             case CUSTOM_TYPES.POLL_MESSAGE_TYPE:
@@ -525,7 +521,6 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.IMAGE_RENDERING_TYPE:
             case CUSTOM_TYPES.MESSAGE_TYPE:
             case CUSTOM_TYPES.EMOJI_REACTION:
-            case CUSTOM_TYPES.NOTIFICATION_SOUND_POLICY:
             case CUSTOM_TYPES.READ_RECEIPT_POLICY:
             case CUSTOM_TYPES.POLL_MESSAGE_TYPE:
             case CUSTOM_TYPES.POLL_STATE:

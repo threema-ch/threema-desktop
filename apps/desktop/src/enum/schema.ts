@@ -817,10 +817,6 @@ export enum IdentityType {
     WORK = 1,
 }
 /** @generate convert */
-export enum NotificationSoundPolicy {
-    MUTED = 0,
-}
-/** @generate convert */
 export enum ReadReceiptPolicy {
     SEND_READ_RECEIPT = 0,
     DONT_SEND_READ_RECEIPT = 1,

@@ -2285,36 +2285,6 @@ export namespace IdentityTypeUtils {
         return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
     }
 }
-export namespace NotificationSoundPolicy {
-    export const MUTED = 0;
-    export type MUTED = typeof MUTED;
-}
-/** @generate convert */
-export type NotificationSoundPolicy =
-    (typeof NotificationSoundPolicy)[keyof typeof NotificationSoundPolicy];
-export namespace NotificationSoundPolicyUtils {
-    export const ALL: ReadonlySet<NotificationSoundPolicy> = new Set([
-        NotificationSoundPolicy.MUTED,
-    ] as const);
-    export function fromNumber(
-        value: u53,
-        fallback?: NotificationSoundPolicy,
-    ): NotificationSoundPolicy {
-        if ((ALL as ReadonlySet<u53>).has(value)) {
-            return value as NotificationSoundPolicy;
-        }
-        if (fallback !== undefined) {
-            return fallback;
-        }
-        throw new Error(`${value} is not a valid NotificationSoundPolicy`);
-    }
-    export function containsNumber(value: u53): value is NotificationSoundPolicy {
-        return (ALL as ReadonlySet<u53>).has(value);
-    }
-    export function contains(value: unknown): value is NotificationSoundPolicy {
-        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
-    }
-}
 export namespace ReadReceiptPolicy {
     export const SEND_READ_RECEIPT = 0;
     export type SEND_READ_RECEIPT = typeof SEND_READ_RECEIPT;
