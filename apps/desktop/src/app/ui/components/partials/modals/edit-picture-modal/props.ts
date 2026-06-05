@@ -9,5 +9,5 @@ export interface EditPictureModalProps extends Pick<ModalProps, 'onclose'> {
         | {readonly type: 'initials'; readonly initials: string}
         | {readonly type: 'icon'; readonly name: string};
     readonly blob?: Blob;
-    readonly onsubmit: (img: Blob | undefined) => void;
+    readonly onsubmit: (img: Blob | undefined) => Promise<void>;
 }

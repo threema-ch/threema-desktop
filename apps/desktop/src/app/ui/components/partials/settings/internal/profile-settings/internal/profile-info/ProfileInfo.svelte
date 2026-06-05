@@ -53,9 +53,8 @@
             blob: transformProfilePicture(pictureBytes),
             color,
             placeholder: {type: 'initials', initials},
-            onsubmit: (img) => {
-              updateProfilePicture(img);
-              modalState = {type: 'none'};
+            onsubmit: async (img) => {
+              await updateProfilePicture(img);
             },
             onclose: () => {
               modalState = {type: 'none'};

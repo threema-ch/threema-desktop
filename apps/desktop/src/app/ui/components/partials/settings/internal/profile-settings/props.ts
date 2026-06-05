@@ -10,7 +10,9 @@ import type {WorkAvailabilityStatus} from '~/common/model/types/work-availabilit
 export interface ProfileSettingsProps {
     readonly actions: {
         readonly updateSettings: (update: ProfileSettingsUpdate) => void;
-        readonly updateProfilePicture: (profilePicture: ReadonlyUint8Array | undefined) => void;
+        readonly updateProfilePicture: (
+            profilePicture: ReadonlyUint8Array | undefined,
+        ) => Promise<void>;
         readonly updateWorkAvailabilityStatus: (
             workAvailabilityStatus: WorkAvailabilityStatus,
         ) => Promise<void>;

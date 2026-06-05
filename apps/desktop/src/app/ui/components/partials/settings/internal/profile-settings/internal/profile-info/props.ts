@@ -11,5 +11,5 @@ export interface ProfileInfoProps {
     readonly initials: string;
     readonly pictureBytes?: ReadonlyUint8Array;
     readonly onclickprofilepicture?: (event: MouseEvent) => void;
-    readonly updateProfilePicture: (img: Blob | undefined) => void;
+    readonly updateProfilePicture: (img: Blob | undefined) => Promise<void>;
 }

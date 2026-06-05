@@ -99,8 +99,7 @@
         ? (new Uint8Array(await blob.arrayBuffer()) as ReadonlyUint8Array)
         : undefined;
 
-    // TODO(DESK-2159): `await` this.
-    actions.updateProfilePicture(profilePicture);
+    await actions.updateProfilePicture(profilePicture);
   }
 
   async function handleSetAvailabilityStatus(
