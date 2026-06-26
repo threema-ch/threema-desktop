@@ -1,9 +1,9 @@
 <script lang="ts">
+  import {Switch} from '@threema/ui';
   import {onMount} from 'svelte';
 
   import {APP_CONFIG} from '~/app/config';
   import Hint from '~/app/ui/components/atoms/hint/Hint.svelte';
-  import Switch from '~/app/ui/components/atoms/switch/Switch.svelte';
   import {i18n} from '~/app/ui/i18n';
   import type {LinkingWizardSetPasswordProps} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
@@ -135,7 +135,6 @@
               bind:checked={shouldStorePasswordValue}
               disabled={!isSafeStorageAvailable}
               onclick={handleClickSwitch}
-              role="switch"
               onkeydown={(event: KeyboardEvent) => {
                 if (event.key === ' ') {
                   handleClickSwitch(event);

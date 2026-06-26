@@ -2,7 +2,8 @@
   @component Renders an item of a `KeyValueList` with a switch.
 -->
 <script lang="ts">
-  import Switch from '~/app/ui/components/atoms/switch/Switch.svelte';
+  import {Switch} from '@threema/ui';
+
   import type {ItemWithSwitchProps} from '~/app/ui/components/molecules/key-value-list/internal/item-with-switch/props';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
 
@@ -49,7 +50,7 @@
 
   <div class="right">
     <span class="switch">
-      <Switch bind:checked bind:disabled />
+      <Switch bind:checked {disabled} />
     </span>
   </div>
 </button>

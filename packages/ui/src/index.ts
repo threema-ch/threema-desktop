@@ -18,6 +18,12 @@ export {
     spinnerVariants,
 } from './components/spinner/Spinner.svelte';
 export {
+    default as Switch,
+    type SwitchProps,
+    type SwitchVariants,
+    switchVariants,
+} from './components/switch/Switch.svelte';
+export {
     default as VerticalNavigationStrip,
     type VerticalNavigationAvatar,
     type VerticalNavigationIconStyle,

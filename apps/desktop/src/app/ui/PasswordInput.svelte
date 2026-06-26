@@ -1,10 +1,10 @@
 <script lang="ts">
   import {ResolvablePromise} from '@threema/ts-utils/promise/resolvable-promise';
+  import {Switch} from '@threema/ui';
   import {onMount} from 'svelte';
 
   import type {AppServicesForSvelte} from '~/app/types';
   import Hint from '~/app/ui/components/atoms/hint/Hint.svelte';
-  import Switch from '~/app/ui/components/atoms/switch/Switch.svelte';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import ForgotPasswordModal from '~/app/ui/components/partials/modals/forgot-password-modal/ForgotPasswordModal.svelte';
   import {i18n} from '~/app/ui/i18n';
@@ -324,7 +324,6 @@
             {$i18n.t('dialog--startup-unlock.label--save-password', 'Save securely on device')}
           </label>
           <Switch
-            role="switch"
             disabled={!systemInfo.isSafeStorageAvailable}
             bind:checked={shouldStorePasswordValue}
             onclick={handleClickSwitch}
