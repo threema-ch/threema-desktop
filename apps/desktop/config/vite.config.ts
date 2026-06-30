@@ -302,6 +302,9 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
 
         // Debug
         DEBUG: env.mode === 'development',
+        // Debug-only override of the directory-provided SFU token, e.g. to authenticate against a
+        // local SFU whose shared secret does not match the directory's.
+        SFU_TOKEN: env.mode === 'development' ? process.env.SFU_TOKEN : undefined,
 
         // Build variables
         BUILD_PLATFORM: buildPlatform,

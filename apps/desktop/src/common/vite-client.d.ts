@@ -282,6 +282,8 @@ interface ImportMetaEnv extends ViteDefaultImportMetaEnv, BuildConfig {
 
     // Debug
     readonly DEBUG: boolean;
+    /** Debug-only override of the directory-provided SFU token (development mode only). */
+    readonly SFU_TOKEN: string | undefined;
 
     // Build variables
     readonly BUILD_PLATFORM: 'macos' | 'windows' | 'linux';

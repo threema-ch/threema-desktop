@@ -58,7 +58,7 @@
     },
     "dev": {
       "dependsOn": ["rebuild:electron"],
-      "env": ["GIT_REVISION", "TURBO_BUILD_ENVIRONMENT", "TURBO_BUILD_VARIANT"]
+      "env": ["GIT_REVISION", "SFU_TOKEN", "TURBO_BUILD_ENVIRONMENT", "TURBO_BUILD_VARIANT"]
     },
     "dev:cli": {
       "dependsOn": ["build:cli"],

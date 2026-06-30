@@ -284,6 +284,17 @@ export class FetchDirectoryBackend implements DirectoryBackend {
                     `SFU token fetch request returned status 404`,
                 );
             }
+            if (import.meta.env.DEBUG && import.meta.env.SFU_TOKEN !== undefined) {
+                this._services.logging
+                    .logger('directory-http.sfu-token')
+                    .warn(
+                        'Overriding directory-provided SFU token with SFU_TOKEN from environment',
+                    );
+                return this._cache.sfuToken.set(
+                    {...response, sfuToken: import.meta.env.SFU_TOKEN},
+                    response.expiration,
+                );
+            }
             return this._cache.sfuToken.set(response, response.expiration);
         });
     }
