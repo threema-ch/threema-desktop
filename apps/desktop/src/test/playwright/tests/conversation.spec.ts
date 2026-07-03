@@ -114,3 +114,55 @@ test('Send pre-recorded wav file as file instead of audio message', async () => 
     await expect(outbound.getByText('test.wav')).toBeVisible();
     await expect(outbound.locator('.audio')).not.toBeVisible();
 });
+
+test('Paste files into compose area and media message modal', async () => {
+    // Act: Paste a file into the compose area.
+    const composeArea = page.getByPlaceholder(/Write a message/u);
+    await conversationPage.pasteFile(
+        composeArea,
+        conversationPage.generateTestPng(),
+        'pasted-1.png',
+        'image/png',
+    );
+
+    // Assert: The media message modal opens, containing the pasted file.
+    const dialog = page.getByRole('dialog');
+    await expect(page.getByText('Send File to ECHOECHO')).toBeVisible();
+    const miniatures = dialog.locator('button.file:not(.add)');
+    await expect(miniatures).toHaveCount(1);
+
+    // Act: Paste another file while the caption text area is focused.
+    const caption = dialog.getByPlaceholder('Add a Caption');
+    await conversationPage.pasteFile(
+        caption,
+        conversationPage.generateTestPng(),
+        'pasted-2.png',
+        'image/png',
+    );
+
+    // Assert: The file was attached to the media message (exactly once).
+    await expect(miniatures).toHaveCount(2);
+
+    // Act: Paste another file while no text area is focused.
+    await conversationPage.pasteFile(
+        page.locator('body'),
+        conversationPage.generateTestPng(),
+        'pasted-3.png',
+        'image/png',
+    );
+
+    // Assert: The file was attached to the media message as well.
+    await expect(miniatures).toHaveCount(3);
+
+    // Act: Paste plain text while the caption text area is focused.
+    await conversationPage.pasteText(caption, 'Pasted caption');
+
+    // Assert: The text was inserted into the caption and no file was attached.
+    await expect(caption).toHaveText('Pasted caption');
+    await expect(miniatures).toHaveCount(3);
+
+    // Cleanup: Discard the media message draft.
+    await dialog.getByRole('button', {name: 'close'}).click();
+    await page.getByRole('button', {name: 'Discard'}).click();
+    await expect(dialog).toBeHidden();
+});

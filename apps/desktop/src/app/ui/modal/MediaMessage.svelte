@@ -34,10 +34,10 @@
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import TitleAndClose from '~/app/ui/svelte-components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
-  import type {FileLoadResult} from '~/app/ui/utils/file';
+  import {type FileLoadResult, validateFiles} from '~/app/ui/utils/file';
   import {reactive, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import type {Dimensions} from '~/common/types';
-  import {unreachable} from '~/common/utils/assert';
+  import {assertUnreachable, unreachable} from '~/common/utils/assert';
   import {isAudioFileType} from '~/common/utils/audio';
   import type {SingleUnicodeEmoji} from '~/common/utils/emoji';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
@@ -302,6 +302,36 @@
     attachMoreFiles(files);
   }
 
+  /**
+   * Handle files pasted from the clipboard by attaching them to the media message.
+   */
+  function handlePasteFiles(files: File[]): void {
+    if (!moreFilesAttachable || files.length === 0) {
+      return;
+    }
+
+    validateFiles(files)
+      .then((result) => attachMoreFiles(result))
+      .catch(assertUnreachable);
+  }
+
+  /**
+   * Handle paste events that were not already handled by the caption's text area (e.g., when
+   * another element of the modal is focused).
+   */
+  function handleWindowPaste(event: ClipboardEvent): void {
+    // Pastes into the caption are handled (and default-prevented) by its `TextArea` component.
+    if (event.defaultPrevented || confirmCloseDialogVisible) {
+      return;
+    }
+
+    const files = Array.from(event.clipboardData?.files ?? []);
+    if (files.length > 0) {
+      event.preventDefault();
+      handlePasteFiles(files);
+    }
+  }
+
   function handleSelectEmoji(emoji: SingleUnicodeEmoji): void {
     captionComponent?.insertText(emoji);
   }
@@ -364,10 +394,12 @@
   onMount(() => {
     captionComponent?.focus();
     hotkeyManager.registerHotkey({control: true, code: 'KeyE'}, handleHotkeyControlE);
+    window.addEventListener('paste', handleWindowPaste);
   });
 
   onDestroy(() => {
     hotkeyManager.unregisterHotkey(handleHotkeyControlE);
+    window.removeEventListener('paste', handleWindowPaste);
   });
 </script>
 
@@ -418,6 +450,7 @@
                 bind:this={captionComponent}
                 autofocus={true}
                 {enterKeyMode}
+                onpastefiles={handlePasteFiles}
                 onsubmit={sendMessages}
                 ontextbytelengthdidchange={handleTextChange}
                 initialText={activeMediaFile?.caption.get()}

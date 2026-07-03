@@ -17,6 +17,7 @@
     readonly autofocus?: boolean;
     readonly enterKeyMode?: TextAreaProps['enterKeyMode'];
     readonly initialText?: string | undefined;
+    readonly onpastefiles?: TextAreaProps['onpastefiles'];
     readonly onsubmit?: TextAreaProps['onsubmit'];
     readonly ontextbytelengthdidchange?: TextAreaProps['ontextbytelengthdidchange'];
     readonly services: Pick<AppServicesForSvelte, 'electron'>;
@@ -26,6 +27,7 @@
     autofocus = false,
     enterKeyMode = 'submit',
     initialText = undefined,
+    onpastefiles,
     onsubmit,
     ontextbytelengthdidchange,
     services,
@@ -76,11 +78,12 @@
     {autofocus}
     {enterKeyMode}
     {initialText}
+    {onpastefiles}
     {onsubmit}
     {ontextbytelengthdidchange}
     placeholder={$i18n.t(
       'dialog--compose-media-message.label--media-message-caption',
-      'Add a caption to this media format',
+      'Add a Caption',
     )}
     {services}
   />

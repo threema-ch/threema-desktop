@@ -1,4 +1,4 @@
-import {expect, type Page} from '@playwright/test';
+import {expect, type Locator, type Page} from '@playwright/test';
 
 import {rootUrl} from '~/test/playwright/config';
 
@@ -128,6 +128,74 @@ export class ConversationPage {
                 dropzone.dispatchEvent(new DragEvent('drop', {bubbles: true, dataTransfer}));
             },
             {buffer: Array.from(fileBuffer), name: fileName, type: mimeType},
+        );
+    }
+
+    /**
+     * Simulate pasting a file from the clipboard onto the given element.
+     *
+     * Dispatches a synthetic `ClipboardEvent('paste')` with a `DataTransfer` containing the file
+     * on the target element, as if the user had pressed Ctrl+V while it was focused.
+     *
+     * @param target The element to dispatch the paste event on.
+     * @param fileBuffer Buffer with the file contents.
+     * @param fileName Name to assign to the pasted file.
+     * @param mediaType Media type to assign to the file (e.g. `'image/png'`).
+     */
+    public async pasteFile(
+        target: Locator,
+        fileBuffer: Buffer,
+        fileName: string,
+        mediaType: string,
+    ): Promise<void> {
+        await target.evaluate(
+            (element, {buffer, name, type}) => {
+                const file = new File([new Uint8Array(buffer)], name, {type});
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+
+                element.dispatchEvent(
+                    new ClipboardEvent('paste', {
+                        bubbles: true,
+                        cancelable: true,
+                        clipboardData: dataTransfer,
+                    }),
+                );
+            },
+            {buffer: Array.from(fileBuffer), name: fileName, type: mediaType},
+        );
+    }
+
+    /**
+     * Simulate pasting plain text from the clipboard onto the given element.
+     *
+     * @param target The element to dispatch the paste event on.
+     * @param text The text to paste.
+     */
+    public async pasteText(target: Locator, text: string): Promise<void> {
+        await target.evaluate((element, value) => {
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/plain', value);
+
+            element.dispatchEvent(
+                new ClipboardEvent('paste', {
+                    bubbles: true,
+                    cancelable: true,
+                    clipboardData: dataTransfer,
+                }),
+            );
+        }, text);
+    }
+
+    /**
+     * Generates a valid 1x1 pixel PNG image.
+     *
+     * @returns A complete PNG file as a Node.js Buffer.
+     */
+    public generateTestPng(): Buffer {
+        return Buffer.from(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+            'base64',
         );
     }
 
