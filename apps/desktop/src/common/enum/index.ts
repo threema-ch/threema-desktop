@@ -3136,6 +3136,8 @@ export namespace ElectronIpcCommand {
     export type UPDATE_APP_BADGE = typeof UPDATE_APP_BADGE;
     export const UPDATE_PUBLIC_KEY_PINS = 'updatePublicKeyPins';
     export type UPDATE_PUBLIC_KEY_PINS = typeof UPDATE_PUBLIC_KEY_PINS;
+    export const OPEN_WEBRTC_INTERNALS = 'openWebRtcInternals';
+    export type OPEN_WEBRTC_INTERNALS = typeof OPEN_WEBRTC_INTERNALS;
 }
 /**
  * ELECTRON

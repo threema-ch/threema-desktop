@@ -629,6 +629,7 @@ function main(
     // Main app window.
     let window: electron.BrowserWindow | undefined;
     let screenSharingReminderWindow: electron.BrowserWindow | undefined;
+    let webRtcInternalsWindow: electron.BrowserWindow | undefined;
 
     function start(): void {
         // Ignore if window is still open
@@ -841,6 +842,27 @@ function main(
                 validateSenderFrame(event.senderFrame);
                 isSafeToRestartImmediately = false;
                 window?.webContents.send(ElectronIpcCommand.ON_FALLBACK_OPPF);
+            })
+            .on(ElectronIpcCommand.OPEN_WEBRTC_INTERNALS, (event: electron.IpcMainEvent) => {
+                validateSenderFrame(event.senderFrame);
+
+                // If the window is already open, just focus it
+                if (webRtcInternalsWindow !== undefined) {
+                    webRtcInternalsWindow.focus();
+                    return;
+                }
+
+                webRtcInternalsWindow = new electron.BrowserWindow({
+                    title: 'WebRTC Internals',
+                });
+                webRtcInternalsWindow.on('closed', () => {
+                    webRtcInternalsWindow = undefined;
+                });
+                webRtcInternalsWindow
+                    .loadURL('chrome://webrtc-internals')
+                    .catch((error: unknown) => {
+                        log.error(`Could not open WebRTC internals window: ${error}`);
+                    });
             })
 
             // Screen Sharing Reminder IPC

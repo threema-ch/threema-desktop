@@ -1002,6 +1002,7 @@ export enum ElectronIpcCommand {
     TRIGGER_INVALID_CERTIFICATE_PINS = 'triggerInvalidCertificatePins',
     UPDATE_APP_BADGE = 'updateAppBadge',
     UPDATE_PUBLIC_KEY_PINS = 'updatePublicKeyPins',
+    OPEN_WEBRTC_INTERNALS = 'openWebRtcInternals',
 }
 
 export enum ScreenSharingReminderIpcCommand {

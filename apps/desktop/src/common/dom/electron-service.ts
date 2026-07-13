@@ -294,4 +294,9 @@ export class ElectronIpcService implements ElectronIpc {
     public async signalRestartReady(): Promise<void> {
         return await this._api.signalRestartReady();
     }
+
+    /** @inheritdoc */
+    public openWebRtcInternals(): void {
+        return this._api.openWebRtcInternals();
+    }
 }

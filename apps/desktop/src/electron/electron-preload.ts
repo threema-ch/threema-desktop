@@ -132,6 +132,7 @@ contextBridge.exposeInMainWorld('consumeElectronApi', (): ElectronIpc | undefine
         triggerInvalidCertificatePins: () =>
             ipcRenderer.invoke(ElectronIpcCommand.TRIGGER_INVALID_CERTIFICATE_PINS),
         signalRestartReady: () => ipcRenderer.invoke(ElectronIpcCommand.SIGNAL_RESTART_READY),
+        openWebRtcInternals: () => ipcRenderer.send(ElectronIpcCommand.OPEN_WEBRTC_INTERNALS),
     };
 });
 /* eslint-enable @typescript-eslint/promise-function-async */

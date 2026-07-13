@@ -286,6 +286,11 @@ export interface ElectronIpc {
      * Fetch the OPPF in an isolated session.
      */
     readonly getFallbackOppFile: (oppfUrl: string, userAgent: string) => Promise<ArrayBuffer>;
+
+    /**
+     * Open (or focus, if already open) the WebRTC internals window.
+     */
+    readonly openWebRtcInternals: () => void;
 }
 
 export interface ScreenSharingReminderDetails {

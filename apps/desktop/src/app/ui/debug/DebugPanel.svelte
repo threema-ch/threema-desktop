@@ -8,6 +8,7 @@
   import DebugOnPrem from '~/app/ui/debug/DebugOnPrem.svelte';
   import DebugRedis from '~/app/ui/debug/DebugRedis.svelte';
   import DebugStorage from '~/app/ui/debug/DebugStorage.svelte';
+  import DebugWebRtc from '~/app/ui/debug/DebugWebRtc.svelte';
   import Threema from '~/app/ui/debug/Threema.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
@@ -20,6 +21,7 @@
     Redis: DebugRedis,
     Network: DebugNetwork,
     Storage: DebugStorage,
+    WebRTC: DebugWebRtc,
     OnPrem: DebugOnPrem,
     Threema,
   };
