@@ -347,12 +347,16 @@ function restoreSettings(
         chat: oldDb.getSettings('chat') ?? services.model.user.chatSettings.get().view,
         devices: oldDb.getSettings('devices') ?? services.model.user.devicesSettings.get().view,
         media: oldDb.getSettings('media') ?? services.model.user.mediaSettings.get().view,
+        troubleshooting:
+            oldDb.getSettings('troubleshooting') ??
+            services.model.user.troubleshootingSettings.get().view,
     };
 
     // We can directly update the settings through the model to directly see the effects.
     services.model.user.appearanceSettings.get().controller.update(settings.appearance);
     services.model.user.devicesSettings.get().controller.update(settings.devices);
     services.model.user.mediaSettings.get().controller.update(settings.media);
+    services.model.user.troubleshootingSettings.get().controller.update(settings.troubleshooting);
 }
 
 function restoreReactionsAndHistory(

@@ -771,10 +771,13 @@
   },
   "settings--about": {
     "action--clear-logs": "Clear Logs",
+    "action--delete-call-statistics": "Delete Call Statistics",
     "action--send-logs-to-support": "Send Logs to Support",
     "error--send-logs-to-support": "Failed to send log files.",
     "label--application-name": "Application Name",
     "label--application-version": "Application Version",
+    "label--call-statistics": "Call Statistics",
+    "label--call-statistics-recording": "Record Call Statistics",
     "label--copyright": "Copyright",
     "label--debug": "Debug",
     "label--git-revision": "Git Revision",
@@ -787,6 +790,9 @@
     "label--title": "About {shortAppName} for Desktop",
     "label--troubleshooting": "Troubleshooting",
     "label--version-title": "Version Information",
+    "prose--call-statistics-entries": "{n, plural, =1 {1 entry} other {# entries}}",
+    "prose--call-statistics-turned-off": "Call statistics recording is currently turned off",
+    "prose--call-statistics-turned-on": "WebRTC statistics of group calls are recorded into a local database. Nothing is sent automatically.",
     "prose--logging-turned-off": "Logging is currently turned off",
     "prose--logging-turned-on": "Logging is turned on",
     "prose--third-party-code": "<slot_1 /> contains code from open source libraries. Please check out the file <slot_2 /> for detailed license information."

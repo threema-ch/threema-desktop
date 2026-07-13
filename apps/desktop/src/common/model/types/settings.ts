@@ -3,6 +3,7 @@ import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-ar
 import type {
     O2oCallConnectionPolicy,
     O2oCallPolicy,
+    CallStatisticsPolicy,
     ContactSyncPolicy,
     GlobalPropertyKey,
     InactiveContactsPolicy,
@@ -188,7 +189,9 @@ export type AppearanceSettingsController = {
 } & ProxyMarked;
 export type AppearanceSettings = Model<AppearanceSettingsView, AppearanceSettingsController>;
 
-// Media settings
+// Media Settings
+
+// Note: Must be compatible with common.settings.MediaSettings
 export interface MediaSettingsView {
     readonly autoDownload: AutoDownload;
     readonly animatedImageMode: AnimatedImageMode;
@@ -204,7 +207,25 @@ export type MediaSettingsController = {
 } & ProxyMarked;
 export type MediaSettings = Model<MediaSettingsView, MediaSettingsController>;
 
+// Troubleshooting Settings
+
+// Note: Must be compatible with common.settings.TroubleshootingSettings
+export interface TroubleshootingSettingsView {
+    /** Policy for recording of WebRTC call statistics (rtcstats) on this device. */
+    readonly callStatisticsPolicy: CallStatisticsPolicy;
+}
+export type TroubleshootingSettingsUpdate = Partial<TroubleshootingSettingsView>;
+export type TroubleshootingSettingsController = {
+    readonly lifetimeGuard: ModelLifetimeGuard<TroubleshootingSettingsView>;
+    readonly update: (change: TroubleshootingSettingsUpdate) => void;
+} & ProxyMarked;
+export type TroubleshootingSettings = Model<
+    TroubleshootingSettingsView,
+    TroubleshootingSettingsController
+>;
+
 // Work Settings
+
 export interface WorkSettingsView {
     readonly logo: {
         readonly light?: {

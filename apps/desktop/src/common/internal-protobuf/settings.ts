@@ -430,6 +430,29 @@ export namespace ChatSettings_ComposeBarEnterMode {
   export type UNRECOGNIZED = typeof ChatSettings_ComposeBarEnterMode.UNRECOGNIZED;
 }
 
+/** Troubleshooting Settings */
+export interface TroubleshootingSettings {
+  callStatisticsPolicy?: TroubleshootingSettings_CallStatisticsPolicy | undefined;
+}
+
+/** Policy for recording of WebRTC call statistics (rtcstats) on this device */
+export const TroubleshootingSettings_CallStatisticsPolicy = {
+  /** DENY_RECORDING - Don't record call statistics */
+  DENY_RECORDING: 0,
+  /** RECORD_LOCALLY - Record call statistics into a local database */
+  RECORD_LOCALLY: 1,
+  UNRECOGNIZED: -1,
+} as const;
+
+export type TroubleshootingSettings_CallStatisticsPolicy =
+  typeof TroubleshootingSettings_CallStatisticsPolicy[keyof typeof TroubleshootingSettings_CallStatisticsPolicy];
+
+export namespace TroubleshootingSettings_CallStatisticsPolicy {
+  export type DENY_RECORDING = typeof TroubleshootingSettings_CallStatisticsPolicy.DENY_RECORDING;
+  export type RECORD_LOCALLY = typeof TroubleshootingSettings_CallStatisticsPolicy.RECORD_LOCALLY;
+  export type UNRECOGNIZED = typeof TroubleshootingSettings_CallStatisticsPolicy.UNRECOGNIZED;
+}
+
 /** Work Settings */
 export interface WorkSettings {
   /** Logos to be displayed in the app. */
@@ -1258,6 +1281,43 @@ export const ChatSettings: MessageFns<ChatSettings> = {
           }
 
           message.composeBarEnterMode = reader.int32() as any;
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseTroubleshootingSettings(): TroubleshootingSettings {
+  return { callStatisticsPolicy: undefined };
+}
+
+export const TroubleshootingSettings: MessageFns<TroubleshootingSettings> = {
+  encode(message: TroubleshootingSettings, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.callStatisticsPolicy !== undefined) {
+      writer.uint32(8).int32(message.callStatisticsPolicy);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TroubleshootingSettings {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTroubleshootingSettings();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.callStatisticsPolicy = reader.int32() as any;
           continue;
         }
       }

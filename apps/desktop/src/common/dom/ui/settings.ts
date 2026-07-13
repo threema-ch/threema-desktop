@@ -7,6 +7,7 @@ import type {
     MediaSettingsView,
     PrivacySettingsView,
     ProfileSettingsView,
+    TroubleshootingSettingsView,
     WorkSettingsView,
 } from '~/common/model/types/settings';
 import type {Settings} from '~/common/settings';
@@ -28,6 +29,7 @@ export interface SettingsServiceData extends Record<keyof Settings, unknown> {
     readonly media: IQueryableStore<MediaSettingsView>;
     readonly privacy: IQueryableStore<PrivacySettingsView>;
     readonly profile: IQueryableStore<Omit<ProfileSettingsView, 'profilePicture'>>;
+    readonly troubleshooting: IQueryableStore<TroubleshootingSettingsView>;
     readonly work: IQueryableStore<WorkSettingsView>;
 }
 
@@ -50,6 +52,7 @@ export class SettingsService {
             remoteMediaSettings,
             remotePrivacySettings,
             remoteProfileSettings,
+            remoteTroubleshootingSettings,
             remoteWorkSettings,
         ] = await Promise.all([
             backend.model.user.appearanceSettings,
@@ -59,6 +62,7 @@ export class SettingsService {
             backend.model.user.mediaSettings,
             backend.model.user.privacySettings,
             backend.model.user.profileSettings,
+            backend.model.user.troubleshootingSettings,
             backend.model.user.workSettings,
         ]);
 
@@ -73,6 +77,10 @@ export class SettingsService {
             media: derive([remoteMediaSettings], ([{currentValue: newValue}]) => newValue.view),
             privacy: derive([remotePrivacySettings], ([{currentValue: newValue}]) => newValue.view),
             profile: derive([remoteProfileSettings], ([{currentValue: newValue}]) => newValue.view),
+            troubleshooting: derive(
+                [remoteTroubleshootingSettings],
+                ([{currentValue: newValue}]) => newValue.view,
+            ),
             work: derive([remoteWorkSettings], ([{currentValue: newValue}]) => newValue.view),
         };
 
@@ -126,6 +134,12 @@ export class SettingsService {
                 (await user.profileSettings)
                     .get()
                     .controller.update.direct(settingsUpdate.update)
+                    .catch(assertUnreachable);
+                break;
+            case 'troubleshooting':
+                (await user.troubleshootingSettings)
+                    .get()
+                    .controller.update(settingsUpdate.update)
                     .catch(assertUnreachable);
                 break;
             case 'work':

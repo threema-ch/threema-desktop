@@ -7,7 +7,10 @@ import type {SettingsCategory} from '~/common/settings';
  */
 export function getSettingsNavItems(
     i18n: I18nType,
-): Record<Exclude<SettingsCategory, 'calls' | 'privacy' | 'work'>, SettingsNavItemProps> {
+): Record<
+    Exclude<SettingsCategory, 'calls' | 'privacy' | 'troubleshooting' | 'work'>,
+    SettingsNavItemProps
+> {
     return {
         profile: {
             title: i18n.t('settings.label--profile', 'Profile'),

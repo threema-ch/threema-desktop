@@ -8,6 +8,7 @@ import type {
     MediaSettings,
     PrivacySettings,
     ProfileSettings,
+    TroubleshootingSettings,
     WorkSettings,
 } from '~/common/model/types/settings';
 import type {ModelStore} from '~/common/model/utils/model-store';
@@ -42,8 +43,11 @@ export type User = {
     /** Profile picture color and image (derived from {@link User.profileSettings}). */
     readonly profilePicture: LocalStore<ProfilePictureView>;
 
-    /** Emoji preferences */
+    /** Emoji preferences. */
     readonly emojiPreferences: ModelStore<EmojiPreferences>;
+
+    /** Troubleshooting settings. */
+    readonly troubleshootingSettings: ModelStore<TroubleshootingSettings>;
 
     /** Synced work settings. */
     readonly workSettings: ModelStore<WorkSettings>;

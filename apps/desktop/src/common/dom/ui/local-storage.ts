@@ -22,7 +22,9 @@ const KEYS = {
 /**
  * Local storage controller.
  *
- * IMPORTANT: This storage is not encrypted!
+ * IMPORTANT: This storage is not encrypted! It should only be used for values that need to be
+ * available from the very start of the application, before the database can be decrypted. (This
+ * includes the theme for example.)
  */
 export class LocalStorageController {
     public readonly debugPanelState: IWritableStore<DebugPanelState>;

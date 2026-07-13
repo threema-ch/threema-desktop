@@ -248,7 +248,17 @@ message ChatSettings {
   optional ComposeBarEnterMode compose_bar_enter_mode = 1;
 }
 
-
+// Troubleshooting Settings
+message TroubleshootingSettings {
+  // Policy for recording of WebRTC call statistics (rtcstats) on this device
+  enum CallStatisticsPolicy {
+    // Don't record call statistics
+    DENY_RECORDING = 0;
+    // Record call statistics into a local database
+    RECORD_LOCALLY = 1;
+  }
+  optional CallStatisticsPolicy call_statistics_policy = 1;
+}
 
 // Work Settings
 message WorkSettings {

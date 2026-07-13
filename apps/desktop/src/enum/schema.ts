@@ -949,6 +949,12 @@ export enum AnimatedImageMode {
     LOOP = 0,
     DONT_LOOP = 1,
 }
+
+/** @generate convert */
+export enum CallStatisticsPolicy {
+    DENY_RECORDING = 0,
+    RECORD_LOCALLY = 1,
+}
 /**
  * ELECTRON
  * ========

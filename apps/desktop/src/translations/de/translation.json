@@ -771,10 +771,13 @@
   },
   "settings--about": {
     "action--clear-logs": "Logdateien leeren",
+    "action--delete-call-statistics": "Anrufstatistiken löschen",
     "action--send-logs-to-support": "Logs an den Support senden",
     "error--send-logs-to-support": "Senden der Logs fehlgeschlagen.",
     "label--application-name": "Applikationsname",
     "label--application-version": "Applikationsversion",
+    "label--call-statistics": "Anrufstatistiken",
+    "label--call-statistics-recording": "Anrufstatistiken aufzeichnen",
     "label--copyright": "Copyright",
     "label--debug": "Debug",
     "label--git-revision": "Git-Revision",
@@ -787,6 +790,9 @@
     "label--title": "Über {shortAppName} für Desktop",
     "label--troubleshooting": "Fehlerbehebung",
     "label--version-title": "Versionsinformationen",
+    "prose--call-statistics-entries": "{n, plural, =1 {1 Eintrag} other {# Einträge}}",
+    "prose--call-statistics-turned-off": "Die Aufzeichnung von Anrufstatistiken ist derzeit ausgeschaltet.",
+    "prose--call-statistics-turned-on": "WebRTC-Statistiken von Gruppenanrufen werden in eine lokale Datenbank aufgezeichnet. Es werden keine Daten automatisch versendet.",
     "prose--logging-turned-off": "Logging ist derzeit ausgeschaltet.",
     "prose--logging-turned-on": "Logging ist eingeschaltet.",
     "prose--third-party-code": "<slot_1 /> enthält Code aus Open-Source-Bibliotheken. Weitere Informationen finden Sie in der Datei <slot_2 />."

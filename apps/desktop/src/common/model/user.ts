@@ -10,6 +10,7 @@ import {DevicesSettingsModelStore} from '~/common/model/settings/devices';
 import {MediaSettingsModelStore} from '~/common/model/settings/media';
 import {PrivacySettingsModelStore} from '~/common/model/settings/privacy';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
+import {TroubleshootingSettingsModelStore} from '~/common/model/settings/troubleshooting';
 import {WorkSettingsModelStore} from '~/common/model/settings/work';
 import type {ServicesForModel} from '~/common/model/types/common';
 import type {EmojiPreferences} from '~/common/model/types/emoji-preferences';
@@ -22,6 +23,7 @@ import type {
     ProfileSettings,
     AppearanceSettings,
     ChatSettings,
+    TroubleshootingSettings,
     WorkSettings,
 } from '~/common/model/types/settings';
 import type {User} from '~/common/model/types/user';
@@ -51,6 +53,7 @@ export class UserModel implements User {
     public readonly privacySettings: ModelStore<PrivacySettings>;
     public readonly profileSettings: ModelStore<ProfileSettings>;
     public readonly emojiPreferences: ModelStore<EmojiPreferences>;
+    public readonly troubleshootingSettings: ModelStore<TroubleshootingSettings>;
     public readonly workSettings: ModelStore<WorkSettings>;
 
     public readonly profilePicture: LocalStore<ProfilePictureView>;
@@ -65,6 +68,7 @@ export class UserModel implements User {
         this.privacySettings = new PrivacySettingsModelStore(services);
         this.profileSettings = new ProfileSettingsModelStore(services);
         this.emojiPreferences = new EmojiPreferencesModelStore(services);
+        this.troubleshootingSettings = new TroubleshootingSettingsModelStore(services);
         this.workSettings = new WorkSettingsModelStore(services);
 
         // Derivations of above stores

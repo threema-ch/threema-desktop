@@ -3019,6 +3019,35 @@ export namespace AnimatedImageModeUtils {
         return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
     }
 }
+export namespace CallStatisticsPolicy {
+    export const DENY_RECORDING = 0;
+    export type DENY_RECORDING = typeof DENY_RECORDING;
+    export const RECORD_LOCALLY = 1;
+    export type RECORD_LOCALLY = typeof RECORD_LOCALLY;
+}
+/** @generate convert */
+export type CallStatisticsPolicy = (typeof CallStatisticsPolicy)[keyof typeof CallStatisticsPolicy];
+export namespace CallStatisticsPolicyUtils {
+    export const ALL: ReadonlySet<CallStatisticsPolicy> = new Set([
+        CallStatisticsPolicy.DENY_RECORDING,
+        CallStatisticsPolicy.RECORD_LOCALLY,
+    ] as const);
+    export function fromNumber(value: u53, fallback?: CallStatisticsPolicy): CallStatisticsPolicy {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as CallStatisticsPolicy;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid CallStatisticsPolicy`);
+    }
+    export function containsNumber(value: u53): value is CallStatisticsPolicy {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is CallStatisticsPolicy {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+}
 export namespace ElectronIpcCommand {
     export const BEFORE_RESTART = 'beforeRestart';
     export type BEFORE_RESTART = typeof BEFORE_RESTART;

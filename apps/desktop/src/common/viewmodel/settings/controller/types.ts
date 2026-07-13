@@ -6,6 +6,7 @@ import type {
     MediaSettingsUpdate,
     PrivacySettingsUpdate,
     ProfileSettingsUpdate,
+    TroubleshootingSettingsUpdate,
     WorkSettingsUpdate,
 } from '~/common/model/types/settings';
 import type {SettingsCategory} from '~/common/settings';
@@ -21,6 +22,7 @@ type SettingsUpdateOf<TCategory extends UpdateableSettingsCategory> = {
     readonly ['privacy']: PrivacySettingsUpdate;
     // The profile picture needs separate handling.
     readonly ['profile']: Omit<ProfileSettingsUpdate, 'profilePicture'>;
+    readonly ['troubleshooting']: TroubleshootingSettingsUpdate;
     readonly ['work']: WorkSettingsUpdate;
 }[TCategory];
 

@@ -44,7 +44,8 @@
   let viewModelController: Remote<SettingsViewModelBundle>['viewModelController'] | undefined =
     undefined;
 
-  let currentCategory = $state<Exclude<SettingsCategory, 'calls' | 'privacy' | 'work'>>('profile');
+  let currentCategory =
+    $state<Exclude<SettingsCategory, 'calls' | 'privacy' | 'troubleshooting' | 'work'>>('profile');
 
   services.backend.viewModel
     .settings()
@@ -72,6 +73,7 @@
     if (
       route.params.category === 'calls' ||
       route.params.category === 'privacy' ||
+      route.params.category === 'troubleshooting' ||
       route.params.category === 'work'
     ) {
       return;

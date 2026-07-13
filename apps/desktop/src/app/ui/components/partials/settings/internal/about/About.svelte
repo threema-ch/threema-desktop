@@ -19,6 +19,7 @@
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import {svelteUnreachable} from '~/app/ui/utils/svelte';
+  import {CallStatisticsPolicy} from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
   import type {LogInfo} from '~/common/node/file-storage/log-info';
 
@@ -29,6 +30,8 @@
   const {
     storage: {debugPanelState},
   } = services;
+
+  const troubleshootingSettings = services.settings.views.troubleshooting;
 
   let modalState = $state<'none' | 'toggle-logger' | 'clear-logs'>('none');
 
@@ -261,6 +264,34 @@
       {/if}
     {/if}
   </KeyValueList.Section>
+
+  {#if import.meta.env.BUILD_ENVIRONMENT === 'sandbox'}
+    <KeyValueList.Section
+      title={$i18n.t('settings--about.label--call-statistics', 'Call Statistics')}
+    >
+      <KeyValueList.ItemWithSwitch
+        checked={$troubleshootingSettings.callStatisticsPolicy ===
+          CallStatisticsPolicy.RECORD_LOCALLY}
+        key={$i18n.t('settings--about.label--call-statistics-recording', 'Record Call Statistics')}
+      >
+        {#if $troubleshootingSettings.callStatisticsPolicy === CallStatisticsPolicy.RECORD_LOCALLY}
+          <Text
+            text={$i18n.t(
+              'settings--about.prose--call-statistics-turned-on',
+              'WebRTC statistics of group calls are recorded into a local database. Nothing is sent automatically.',
+            )}
+          />
+        {:else}
+          <Text
+            text={$i18n.t(
+              'settings--about.prose--call-statistics-turned-off',
+              'Call statistics recording is currently turned off',
+            )}
+          />
+        {/if}
+      </KeyValueList.ItemWithSwitch>
+    </KeyValueList.Section>
+  {/if}
 
   {#if isDebugModeEnabled}
     <KeyValueList.Section title={$i18n.t('settings--about.label--debug', 'Debug')}>

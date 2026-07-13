@@ -29,7 +29,7 @@ export function createDropdownItems<
 }
 
 export function getCategoryTitle(
-    currentCategory: Exclude<SettingsCategory, 'calls' | 'privacy' | 'work'>,
+    currentCategory: Exclude<SettingsCategory, 'calls' | 'privacy' | 'troubleshooting' | 'work'>,
     i18n: I18nType,
 ): string {
     switch (currentCategory) {

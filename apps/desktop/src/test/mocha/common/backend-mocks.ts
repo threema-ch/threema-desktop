@@ -83,6 +83,7 @@ import {DevicesSettingsModelStore} from '~/common/model/settings/devices';
 import {MediaSettingsModelStore} from '~/common/model/settings/media';
 import {PrivacySettingsModelStore} from '~/common/model/settings/privacy';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
+import {TroubleshootingSettingsModelStore} from '~/common/model/settings/troubleshooting';
 import {WorkSettingsModelStore} from '~/common/model/settings/work';
 import type {ContactRepository} from '~/common/model/types/contact';
 import type {ConversationRepository} from '~/common/model/types/conversation';
@@ -98,6 +99,7 @@ import type {
     CallsSettings,
     MediaSettings,
     ChatSettings,
+    TroubleshootingSettings,
     WorkSettings,
 } from '~/common/model/types/settings';
 import type {User} from '~/common/model/types/user';
@@ -437,6 +439,7 @@ class UserRepository implements User {
     public mediaSettings: ModelStore<MediaSettings>;
     public chatSettings: ModelStore<ChatSettings>;
     public emojiPreferences: ModelStore<EmojiPreferences>;
+    public troubleshootingSettings: ModelStore<TroubleshootingSettings>;
     public workSettings: ModelStore<WorkSettings>;
 
     public constructor(userIdentity: IdentityString, services: ServicesForModel) {
@@ -449,6 +452,7 @@ class UserRepository implements User {
         this.mediaSettings = new MediaSettingsModelStore(services);
         this.chatSettings = new ChatSettingsModelStore(services);
         this.emojiPreferences = new EmojiPreferencesModelStore(services);
+        this.troubleshootingSettings = new TroubleshootingSettingsModelStore(services);
         this.workSettings = new WorkSettingsModelStore(services);
 
         this.displayName = derive(
