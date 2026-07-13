@@ -27,6 +27,7 @@ LICENSE_FILES=(
     'Open Sans' '.licenses/opensans'
     'protobufjs' 'apps/desktop/node_modules/protobufjs/LICENSE'
     'qrcode' 'apps/desktop/node_modules/qrcode/license'
+    'rtcstats' 'apps/desktop/node_modules/@rtcstats/rtcstats-js/LICENSE.md'
     'scrypt-js' 'apps/desktop/node_modules/scrypt-js/LICENSE.txt'
     'sqlcipher' '.licenses/sqlcipher'
     'svelte' 'apps/desktop/node_modules/svelte/LICENSE.md'

@@ -15,6 +15,7 @@
   "include": [
     "../common/dom/crypto.d.ts",
     "../common/dom/i18next.d.ts",
+    "../common/dom/rtcstats-js.d.ts",
     "../common/dom/vite-client.d.ts",
     "../common/dom/webrtc-patches.d.ts",
     "**/*.ts",

@@ -6,6 +6,7 @@
   },
   "include": [
     "../../../../common/dom/crypto.d.ts",
+    "../../../../common/dom/rtcstats-js.d.ts",
     "../../../../common/dom/vite-client.d.ts",
     "../../../../common/dom/webrtc-patches.d.ts",
     "../../../common/chai.d.ts",

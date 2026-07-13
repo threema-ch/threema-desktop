@@ -9,5 +9,12 @@
     // overridden (even though they are not actually built in-place anyway).
     "outDir": "../../../build/common/dom"
   },
-  "include": ["crypto.d.ts", "i18next.d.ts", "vite-client.d.ts", "webrtc-patches.d.ts", "**/*.ts"]
+  "include": [
+    "crypto.d.ts",
+    "i18next.d.ts",
+    "rtcstats-js.d.ts",
+    "vite-client.d.ts",
+    "webrtc-patches.d.ts",
+    "**/*.ts"
+  ]
 }

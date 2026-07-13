@@ -448,6 +448,9 @@ importers:
       '@mattiasbuelens/web-streams-adapter':
         specifier: 0.1.0
         version: 0.1.0
+      '@rtcstats/rtcstats-js':
+        specifier: 2.3.0
+        version: 2.3.0
       '@sentry/browser':
         specifier: 9.39.0
         version: 9.39.0
@@ -2000,6 +2003,12 @@ packages:
     resolution: {integrity: sha512-APwKy6YUhvZaEoHyM+9xqmTpviEI+9eL7LoCH+aLcvWYHJ663qG5zx7WzWZY+a9qkg5JtzcMyJ9z0WtQBMDmgA==}
     cpu: [x64]
     os: [win32]
+
+  '@rtcstats/rtcstats-js@2.3.0':
+    resolution: {integrity: sha512-DaA0Jgz4OaUtuNkNIr2M+1CNRLAZ/yNt+Ssf7TBYBOXgSCQn+n6bi4gCnqlGHM5RLIkuy6uStp6lnjPOg4xkPQ==}
+
+  '@rtcstats/rtcstats-shared@2.5.0':
+    resolution: {integrity: sha512-YBohf6QGzVrGGomL7HKQgkh+gkRnlZ2j5upfqt85sU951cCtgS2fAqBpcSD3rV97uqfaLHPUu6KcXqM/BPTjpQ==}
 
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
@@ -7351,6 +7360,12 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.50.2':
     optional: true
+
+  '@rtcstats/rtcstats-js@2.3.0':
+    dependencies:
+      '@rtcstats/rtcstats-shared': 2.5.0
+
+  '@rtcstats/rtcstats-shared@2.5.0': {}
 
   '@rtsao/scc@1.1.0': {}
 
