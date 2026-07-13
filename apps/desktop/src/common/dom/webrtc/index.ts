@@ -9,6 +9,7 @@ import {
     type GroupCallContextHandle,
 } from '~/common/dom/webrtc/group-call';
 import type {RtcStatsHandle} from '~/common/dom/webrtc/rtcstats';
+import {createRtcStatsSessionId} from '~/common/dom/webrtc/rtcstats/trace-indexeddb';
 import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import type {GroupCallIdValue, GroupCallId} from '~/common/network/protocol/call/group-call';
@@ -222,7 +223,7 @@ export class WebRtcServiceProvider implements WebRtcService {
         // Start a new rtcstats trace session for this call, so that one exported dump corresponds
         // to one group call. Starting the session here (and not once connecting) also captures the
         // certificate generation preceding the connection.
-        this._rtcStats?.startSession(`${new Date().toISOString()}_call-${callId.shortened}`);
+        this._rtcStats?.startSession(createRtcStatsSessionId(`call-${callId.shortened}`));
         abort.subscribe(() =>
             this._rtcStats?.trace('threemaGroupCallEnd', undefined, {callId: callId.id}),
         );

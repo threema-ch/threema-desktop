@@ -8,9 +8,18 @@ import {
     MAX_SESSIONS,
     removeRtcStatsSession,
     RTCSTATS_DATABASE_NAME,
+    type RtcStatsSessionId,
 } from '~/common/dom/webrtc/rtcstats/trace-indexeddb';
-import type {u53} from '~/common/types';
+import {tag, type u53} from '~/common/types';
 import {NoopLoggerFactory} from '~/test/common/logging';
+
+/**
+ * Tag a deterministic test session id (tests need fixed timestamps for ordering assertions, so
+ * they cannot use `createRtcStatsSessionId`).
+ */
+function asSessionId(id: string): RtcStatsSessionId {
+    return tag<RtcStatsSessionId>(id);
+}
 
 /**
  * Wait until the session with the specified id contains at least `entryCount` entries.
@@ -31,7 +40,7 @@ async function waitForEntries(sessionId: string, entryCount: u53): Promise<void>
 }
 
 /**
- * Wait until exactly the specified session ids (in order) are stored.
+ * Wait until exactly the specified session IDs (in order) are stored.
  */
 async function waitForSessions(sessionIds: readonly string[]): Promise<void> {
     for (let attempt = 0; attempt < 100; attempt++) {
@@ -76,7 +85,7 @@ export function run(): void {
 
         it('drops entries traced without a session', async function () {
             trace.trace('createOffer', 'PC_0', undefined);
-            trace.startSession('2024-01-01T00:00:00.000Z_test');
+            trace.startSession(asSessionId('2024-01-01T00:00:00.000Z_test'));
             await waitForEntries('2024-01-01T00:00:00.000Z_test', 1);
             const sessions = await listRtcStatsSessions();
             expect(sessions.map((s) => s.sessionId)).to.deep.equal([
@@ -85,7 +94,7 @@ export function run(): void {
         });
 
         it('exports a session as a valid RTCStatsDump', async function () {
-            const sessionId = '2024-01-01T00:00:00.000Z_test';
+            const sessionId = asSessionId('2024-01-01T00:00:00.000Z_test');
             const before = Date.now();
             trace.startSession(sessionId);
             trace.trace('createOffer', 'PC_0', {iceRestart: true}, 'co-0');
@@ -124,21 +133,21 @@ export function run(): void {
         });
 
         it('separates entries by session and supports removal', async function () {
-            trace.startSession('2024-01-01T00:00:00.000Z_a');
+            trace.startSession(asSessionId('2024-01-01T00:00:00.000Z_a'));
             trace.trace('first', 'PC_0', undefined);
-            trace.startSession('2024-01-01T00:00:01.000Z_b');
+            trace.startSession(asSessionId('2024-01-01T00:00:01.000Z_b'));
             trace.trace('second', 'PC_1', undefined);
             await waitForEntries('2024-01-01T00:00:00.000Z_a', 2);
             await waitForEntries('2024-01-01T00:00:01.000Z_b', 2);
 
-            const dump = await getRtcStatsSessionDump('2024-01-01T00:00:01.000Z_b');
+            const dump = await getRtcStatsSessionDump(asSessionId('2024-01-01T00:00:01.000Z_b'));
             const entries = (await dump.text())
                 .split('\n')
                 .slice(2)
                 .map((line) => JSON.parse(line) as unknown[]);
             expect(entries.map((entry) => entry[0])).to.deep.equal(['create', 'second']);
 
-            await removeRtcStatsSession('2024-01-01T00:00:00.000Z_a');
+            await removeRtcStatsSession(asSessionId('2024-01-01T00:00:00.000Z_a'));
             await waitForSessions(['2024-01-01T00:00:01.000Z_b']);
 
             await clearRtcStatsSessions();
@@ -146,8 +155,8 @@ export function run(): void {
         });
 
         it(`prunes to the newest ${MAX_SESSIONS} sessions`, async function () {
-            const sessionIds = [...Array(MAX_SESSIONS + 2).keys()].map(
-                (index) => `2024-01-01T00:00:0${index}.000Z_test`,
+            const sessionIds = [...Array(MAX_SESSIONS + 2).keys()].map((index) =>
+                asSessionId(`2024-01-01T00:00:0${index}.000Z_test`),
             );
             for (const sessionId of sessionIds) {
                 trace.startSession(sessionId);

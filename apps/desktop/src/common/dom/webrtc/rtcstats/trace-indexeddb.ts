@@ -11,7 +11,7 @@
  */
 
 import type {Logger} from '~/common/logging';
-import type {u53} from '~/common/types';
+import {tag, type u53, type WeakOpaque} from '~/common/types';
 
 /** Name of the IndexedDB database holding the rtcstats traces. */
 export const RTCSTATS_DATABASE_NAME = 'threema-rtcstats';
@@ -29,6 +29,22 @@ const SESSION_INDEX_NAME = 'sessionId';
 const MAX_CONSECUTIVE_WRITE_FAILURES: u53 = 20;
 
 /**
+ * Identifier of a trace session, see {@link IndexedDbTrace.startSession}.
+ *
+ * Session IDs must be created through {@link createRtcStatsSessionId}, which prefixes them with
+ * an ISO 8601 timestamp: Session pruning and (newest-first) listing rely on the lexicographic
+ * order of session IDs matching their chronological order.
+ */
+export type RtcStatsSessionId = WeakOpaque<string, {readonly RtcStatsSessionId: unique symbol}>;
+
+/**
+ * Create a new {@link RtcStatsSessionId} from the current timestamp and the specified label.
+ */
+export function createRtcStatsSessionId(label: string): RtcStatsSessionId {
+    return tag<RtcStatsSessionId>(`${new Date().toISOString()}_${label}`);
+}
+
+/**
  * A trace entry as stored in the database: The trace function arguments (method, peer connection
  * id, data, optional extras) plus the time delta to the preceding entry appended.
  *
@@ -41,7 +57,7 @@ type TraceEntry = readonly unknown[];
  * A trace record ties a {@link TraceEntry} to a session ID.
  */
 interface TraceRecord {
-    readonly sessionId: string;
+    readonly sessionId: RtcStatsSessionId;
     readonly entry: TraceEntry;
 }
 
@@ -49,7 +65,7 @@ interface TraceRecord {
  * Summary of a stored rtcstats session.
  */
 export interface RtcStatsSessionInfo {
-    readonly sessionId: string;
+    readonly sessionId: RtcStatsSessionId;
     readonly entryCount: u53;
 }
 
@@ -80,15 +96,15 @@ async function promisifyTransaction(transaction: IDBTransaction): Promise<void> 
 /**
  * Collect the distinct index key values (session IDs) without loading the entries.
  */
-async function collectIndexKeys(index: IDBIndex): Promise<string[]> {
+async function collectIndexKeys(index: IDBIndex): Promise<RtcStatsSessionId[]> {
     return await new Promise((resolve, reject) => {
-        const keys = new Set<string>();
+        const keys = new Set<RtcStatsSessionId>();
         const request = index.openKeyCursor();
         request.onsuccess = () => {
             const cursor = request.result;
             if (cursor !== null) {
                 if (typeof cursor.key === 'string') {
-                    keys.add(cursor.key);
+                    keys.add(tag<RtcStatsSessionId>(cursor.key));
                 }
                 cursor.continue();
             } else {
@@ -129,7 +145,7 @@ async function openDatabase(): Promise<IDBDatabase> {
  * failures, so that it can never interfere with the call itself.
  */
 export class IndexedDbTrace {
-    private _sessionId: string | undefined = undefined;
+    private _sessionId: RtcStatsSessionId | undefined = undefined;
     private _lastTimeMs: u53 = 0;
     private _enabled = true;
     private _closed = false;
@@ -178,7 +194,7 @@ export class IndexedDbTrace {
      * Writes a `create` entry with device/screen metadata (mirroring the upstream trace
      * backends), and prunes the oldest sessions if there are more than {@link MAX_SESSIONS}.
      */
-    public startSession(sessionId: string): void {
+    public startSession(sessionId: RtcStatsSessionId): void {
         this._sessionId = sessionId;
         // The first entry of a session must carry an absolute timestamp (the dump reader
         // accumulates time deltas starting from 0).
@@ -262,8 +278,9 @@ export class IndexedDbTrace {
         }
         const transaction = this._database.transaction(OBJECT_STORE_NAME, 'readwrite');
         const store = transaction.objectStore(OBJECT_STORE_NAME);
-        // Session ids are prefixed with an ISO 8601 timestamp, so the lexicographic order
-        // returned by `collectIndexKeys` is chronological.
+        // Session IDs are prefixed with an ISO 8601 timestamp (see
+        // {@link createRtcStatsSessionId}), so the lexicographic order returned by
+        // `collectIndexKeys` is chronological.
         const sessionIds = await collectIndexKeys(store.index(SESSION_INDEX_NAME));
         for (const sessionId of sessionIds.slice(
             0,
@@ -307,7 +324,7 @@ export async function listRtcStatsSessions(): Promise<RtcStatsSessionInfo[]> {
  * Export all entries of a session as an `RTCStatsDump` JSONL blob (readable by the rtcstats
  * tooling).
  */
-export async function getRtcStatsSessionDump(sessionId: string): Promise<Blob> {
+export async function getRtcStatsSessionDump(sessionId: RtcStatsSessionId): Promise<Blob> {
     const database = await openDatabase();
     let records: TraceRecord[];
     try {
@@ -339,7 +356,7 @@ export async function getRtcStatsSessionDump(sessionId: string): Promise<Blob> {
 /**
  * Remove all entries of the session with the specified id.
  */
-export async function removeRtcStatsSession(sessionId: string): Promise<void> {
+export async function removeRtcStatsSession(sessionId: RtcStatsSessionId): Promise<void> {
     const database = await openDatabase();
     try {
         const transaction = database.transaction(OBJECT_STORE_NAME, 'readwrite');

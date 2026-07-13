@@ -9,6 +9,7 @@ import {
     clearRtcStatsSessions,
     getRtcStatsSessionDump,
     listRtcStatsSessions,
+    type RtcStatsSessionId,
     type RtcStatsSessionInfo,
 } from '~/common/dom/webrtc/rtcstats/trace-indexeddb';
 import {ReceiverType} from '~/common/enum';
@@ -103,10 +104,13 @@ export async function loadRtcStatsSessions(log: Logger): Promise<readonly RtcSta
  * Export the rtcstats call statistics session with the specified id as an `RTCStatsDump` JSONL
  * file.
  */
-export async function exportRtcStatsSession(sessionId: string, log: Logger): Promise<void> {
+export async function exportRtcStatsSession(
+    sessionId: RtcStatsSessionId,
+    log: Logger,
+): Promise<void> {
     try {
         const dump = await getRtcStatsSessionDump(sessionId);
-        // Note: Legitimate session ids are machine-generated ASCII, but they are read back from
+        // Note: Legitimate session IDs are machine-generated ASCII, but they are read back from
         // the (unencrypted) trace database, so restrict the derived filename to a conservative
         // character set as defense in depth. This also replaces the colons of the ISO timestamp,
         // which are not valid in filenames on all platforms.

@@ -24,7 +24,10 @@
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import {svelteUnreachable} from '~/app/ui/utils/svelte';
-  import type {RtcStatsSessionInfo} from '~/common/dom/webrtc/rtcstats/trace-indexeddb';
+  import type {
+    RtcStatsSessionId,
+    RtcStatsSessionInfo,
+  } from '~/common/dom/webrtc/rtcstats/trace-indexeddb';
   import {CallStatisticsPolicy} from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
   import type {LogInfo} from '~/common/node/file-storage/log-info';
@@ -115,7 +118,7 @@
       });
   }
 
-  async function handleClickExportRtcStatsSession(sessionId: string): Promise<void> {
+  async function handleClickExportRtcStatsSession(sessionId: RtcStatsSessionId): Promise<void> {
     await exportRtcStatsSession(sessionId, log);
   }
 

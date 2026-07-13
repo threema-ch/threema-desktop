@@ -12,7 +12,11 @@
 
 import {wrapEnumerateDevices, wrapGetUserMedia, wrapRTCPeerConnection} from '@rtcstats/rtcstats-js';
 
-import {IndexedDbTrace} from '~/common/dom/webrtc/rtcstats/trace-indexeddb';
+import {
+    createRtcStatsSessionId,
+    IndexedDbTrace,
+    type RtcStatsSessionId,
+} from '~/common/dom/webrtc/rtcstats/trace-indexeddb';
 import type {LoggerFactory} from '~/common/logging';
 import type {u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
@@ -29,7 +33,7 @@ const GET_STATS_INTERVAL_MS: u53 = 2_000;
  */
 export interface RtcStatsHandle {
     /** Start a new trace session, see {@link IndexedDbTrace.startSession}. */
-    readonly startSession: (sessionId: string) => void;
+    readonly startSession: (sessionId: RtcStatsSessionId) => void;
     /** Record a custom trace entry (e.g. call end markers). */
     readonly trace: (event: string, peerConnectionId: string | undefined, data: unknown) => void;
     /** Enable or disable recording (the API wrappers stay installed until restart). */
@@ -68,7 +72,7 @@ export async function initRtcStats(logging: LoggerFactory): Promise<RtcStatsHand
             'rtcstats wrapper did not preserve RTCPeerConnection.generateCertificate',
         );
 
-        trace.startSession(`${new Date().toISOString()}_app-start`);
+        trace.startSession(createRtcStatsSessionId('app-start'));
         log.info('rtcstats tracing installed');
         return {
             startSession: (sessionId) => trace.startSession(sessionId),
