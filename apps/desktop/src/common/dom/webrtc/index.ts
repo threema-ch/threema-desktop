@@ -8,6 +8,7 @@ import {
     GroupCallContextProvider,
     type GroupCallContextHandle,
 } from '~/common/dom/webrtc/group-call';
+import type {RtcStatsHandle} from '~/common/dom/webrtc/rtcstats';
 import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import type {GroupCallIdValue, GroupCallId} from '~/common/network/protocol/call/group-call';
@@ -188,6 +189,11 @@ export class WebRtcServiceProvider implements WebRtcService {
 
     public constructor(
         private readonly _services: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
+        /**
+         * Handle to the rtcstats integration (recording of WebRTC API traces and stats into a local
+         * IndexedDB). When `undefined`, rtcstats recording is disabled.
+         */
+        private readonly _rtcStats: RtcStatsHandle | undefined = undefined,
     ) {
         this._log = _services.logging.logger('webrtc.service');
     }
@@ -212,6 +218,15 @@ export class WebRtcServiceProvider implements WebRtcService {
         remote.forward(abort);
 
         const context = new GroupCallContextProvider(this._services, callId, abort);
+
+        // Start a new rtcstats trace session for this call, so that one exported dump corresponds
+        // to one group call. Starting the session here (and not once connecting) also captures the
+        // certificate generation preceding the connection.
+        this._rtcStats?.startSession(`${new Date().toISOString()}_call-${callId.shortened}`);
+        abort.subscribe(() =>
+            this._rtcStats?.trace('threemaGroupCallEnd', undefined, {callId: callId.id}),
+        );
+
         this._groupCall.map.set(callId.id, context);
         this._groupCall.registry.register(context, {
             callId,

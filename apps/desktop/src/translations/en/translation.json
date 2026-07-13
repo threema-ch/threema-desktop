@@ -792,7 +792,7 @@
     "label--version-title": "Version Information",
     "prose--call-statistics-entries": "{n, plural, =1 {1 entry} other {# entries}}",
     "prose--call-statistics-turned-off": "Call statistics recording is currently turned off",
-    "prose--call-statistics-turned-on": "WebRTC statistics of group calls are recorded into a local database. Nothing is sent automatically.",
+    "prose--call-statistics-turned-on": "WebRTC statistics of Threema calls are recorded into a local database. Nothing is sent automatically.",
     "prose--logging-turned-off": "Logging is currently turned off",
     "prose--logging-turned-on": "Logging is turned on",
     "prose--third-party-code": "<slot_1 /> contains code from open source libraries. Please check out the file <slot_2 /> for detailed license information."

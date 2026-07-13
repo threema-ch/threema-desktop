@@ -159,15 +159,21 @@ function convertBlobFetchError(error: BlobFetchError, t: I18nType['t']): SyncFai
 }
 
 /**
- * Save the specified bytes as a file to the user's filesystem.
+ * Save the specified blob as a file to the user's filesystem.
  */
-function saveBytesAsFile(bytes: ReadonlyUint8Array, fileName: string, mediaType: string): void {
-    const blob = new Blob([ensureArrayBufferBackedView(bytes)], {type: mediaType});
+export function saveBlobAsFile(blob: Blob, fileName: string): void {
     const link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
     link.download = fileName;
     link.click();
     // TODO(DESK-949): Improved download UX.
+}
+
+/**
+ * Save the specified bytes as a file to the user's filesystem.
+ */
+function saveBytesAsFile(bytes: ReadonlyUint8Array, fileName: string, mediaType: string): void {
+    saveBlobAsFile(new Blob([ensureArrayBufferBackedView(bytes)], {type: mediaType}), fileName);
 }
 
 /**
