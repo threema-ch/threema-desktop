@@ -303,6 +303,8 @@ interface ImportMetaEnv extends ViteDefaultImportMetaEnv, BuildConfig {
     readonly APP_NAME: string;
     /** Name of the corresponding mobile app. */
     readonly MOBILE_APP_NAME: string;
+    /** Deeplink scheme of the desktop app. */
+    readonly DEEP_LINK_SCHEME: string;
 
     // URLs that can vary depending on build variant
     readonly URLS: {

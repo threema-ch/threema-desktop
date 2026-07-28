@@ -344,6 +344,32 @@ export function determineMsixApplicationId(flavor, baseAppName) {
 }
 
 /**
+ * Determine the deepLinkScheme corresponding to this build flavor.
+ *
+ * @param {BuildFlavor} flavor Build flavor to determine the deepLinkScheme for.
+ * @param {string} [customScheme] Optional scheme to use for white-label customers.
+ * @returns {string} Deeplink Scheme for the given `flavor`.
+ */
+export function determineDeepLinkScheme(flavor, customScheme) {
+    switch (flavor) {
+        case 'consumer-live':
+            return 'threema';
+        case 'work-live':
+            return 'threemawork';
+        case 'consumer-sandbox':
+            return 'threemagreen';
+        case 'work-sandbox':
+            return 'threemablue';
+        case 'work-onprem':
+            return 'threemaonprem';
+        case 'custom-onprem':
+            return customScheme ?? 'threemaonprem';
+        default:
+            return unreachable(flavor);
+    }
+}
+
+/**
  * Return whether or not the specified string is a valid {@link BuildFlavor}.
  *
  * @param {string} flavor The value to check.

@@ -11,6 +11,7 @@ export const CUSTOM_CONFIG_SCHEMA = v.array(
             appName: v.string(),
             localizedAppName: v.string().optional(),
             presetOppfUrl: v.string().optional(),
+            deepLinkScheme: v.string().optional(),
             assetPaths: v.union(
                 v.undefined(),
                 v.object({

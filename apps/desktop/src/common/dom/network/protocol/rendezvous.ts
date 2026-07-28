@@ -627,5 +627,6 @@ function getJoinUri(setup: RendezvousProtocolSetup): string {
     // Encode request into base64 bytes
     const bytes = protobuf.url.DeviceGroupJoinRequestOrOffer.encode(joinRequest).finish();
     const urlSafeBase64 = u8aToBase64(bytes, {urlSafe: true});
+    // TODO(DESK-2233): Update deeplink scheme to be flavorful.
     return `threema://device-group/join#${urlSafeBase64}`;
 }

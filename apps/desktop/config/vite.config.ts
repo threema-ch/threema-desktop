@@ -29,6 +29,7 @@ import {
     type BuildEnvironment,
     type BuildVariant,
     determineAppName,
+    determineDeepLinkScheme,
     determineMobileAppName,
     isBuildFlavor,
 } from './base';
@@ -248,6 +249,7 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
 
     let shortAppName;
     let appName;
+    let deepLink: string | undefined = undefined;
     let presetOppfUrl: {readonly full: string} | undefined = undefined;
     if (buildFlavor === 'custom-onprem') {
         const currentConfigOrError = readCustomConfig();
@@ -259,12 +261,14 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
 
         appName = currentConfig.appName;
         shortAppName = currentConfig.localizedAppName ?? currentConfig.appName;
+        deepLink = determineDeepLinkScheme(buildFlavor, currentConfig.deepLinkScheme);
         presetOppfUrl =
             currentConfig.presetOppfUrl === undefined
                 ? undefined
                 : {full: currentConfig.presetOppfUrl};
     } else {
         shortAppName = 'Threema';
+        deepLink = determineDeepLinkScheme(buildFlavor);
         appName = determineAppName(buildFlavor, 'Threema');
     }
 
@@ -318,6 +322,7 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
         SHORT_APP_NAME: shortAppName,
         APP_NAME: appName,
         MOBILE_APP_NAME: determineMobileAppName(buildFlavor, shortAppName),
+        DEEP_LINK_SCHEME: deepLink,
         URLS: determineUrls(buildFlavor, presetOppfUrl),
 
         // Defaults
