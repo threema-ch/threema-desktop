@@ -65,6 +65,8 @@
 
   let duration = $state<f64>(audioFile.duration ?? 0);
 
+  let currentAudioFileName: string | undefined;
+
   async function loadAudio(): Promise<void> {
     const fileInformation = await audioFile.fetchFileBytes().catch((error) => {
       log.debug(
@@ -238,7 +240,11 @@
 
   $effect(() => {
     reactive(() => {
-      loadAudio().catch(assertUnreachable);
+      if (currentAudioFileName !== audioFile.name.raw) {
+        currentAudioFileName = audioFile.name.raw;
+
+        loadAudio().catch(assertUnreachable);
+      }
     }, [audioFile]);
   });
 
