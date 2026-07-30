@@ -242,11 +242,7 @@
     }, [audioFile]);
   });
 
-  onDestroy(() => {
-    if (audio.state === 'loaded') {
-      URL.revokeObjectURL(audio.state);
-    }
-  });
+  onDestroy(() => revokeCurrentAudioUrl(audio));
 </script>
 
 <div class="audio-player" class:footer={snippetFooter !== undefined}>
