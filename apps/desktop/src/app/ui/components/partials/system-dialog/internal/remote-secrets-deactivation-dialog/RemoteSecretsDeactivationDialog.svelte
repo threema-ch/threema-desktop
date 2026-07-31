@@ -4,17 +4,22 @@
 <script lang="ts">
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
+  import ForgotPasswordModal from '~/app/ui/components/partials/modals/forgot-password-modal/ForgotPasswordModal.svelte';
   import type {RemoteSecretsDeactivationDialogProps} from '~/app/ui/components/partials/system-dialog/internal/remote-secrets-deactivation-dialog/props';
   import {i18n} from '~/app/ui/i18n';
   import Password from '~/app/ui/svelte-components/blocks/Input/Password.svelte';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
 
-  const {onselectaction, previouslyAttemptedPassword}: RemoteSecretsDeactivationDialogProps =
-    $props();
+  const {
+    onselectaction,
+    previouslyAttemptedPassword,
+    services,
+  }: RemoteSecretsDeactivationDialogProps = $props();
 
   let modalComponent = $state<SvelteNullableBinding<Modal>>(null);
   let passwordInputComponent = $state<SvelteNullableBinding<Password>>(null);
   let hasError = $state<boolean>(previouslyAttemptedPassword !== undefined);
+  let showPasswordForgottenModal = $state(false);
 
   let password = $state<string>('');
 
@@ -25,6 +30,14 @@
   function handleClickConfirm(): void {
     onselectaction?.({type: 'confirmed', value: password});
     modalComponent?.close();
+  }
+
+  function handleCloseForgotPasswordModal(): void {
+    showPasswordForgottenModal = false;
+  }
+
+  function handleClickForgotPassword(): void {
+    showPasswordForgottenModal = true;
   }
 </script>
 
@@ -53,6 +66,9 @@
     ],
   }}
 >
+  {#if showPasswordForgottenModal && services.isSet()}
+    <ForgotPasswordModal onclose={handleCloseForgotPasswordModal} services={services.unwrap()} />
+  {/if}
   <div class="content">
     <div class="description">
       <Text
@@ -79,6 +95,16 @@
         }
       }}
     />
+    {#if hasError}
+      <span class="forgot-password">
+        <button type="button" onclick={handleClickForgotPassword}>
+          <Text
+            verticalAlign="baseline"
+            text={$i18n.t('dialog--startup-unlock.markup--password-hint', 'Forgot password?')}
+          />
+        </button>
+      </span>
+    {/if}
   </div>
 </Modal>
 
@@ -90,6 +116,26 @@
 
     .description {
       padding-bottom: rem(24px);
+    }
+
+    .forgot-password {
+      padding: rem(16px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      button {
+        @extend %neutral-input;
+        @include clicktarget-link-rect;
+
+        & {
+          border: solid em(1px) transparent;
+          cursor: pointer;
+          color: var(--t-text-e2-color);
+          margin-top: rem(8px);
+          text-decoration: underline;
+        }
+      }
     }
   }
 </style>
