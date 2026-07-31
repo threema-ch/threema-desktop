@@ -58,6 +58,7 @@ export function conversationSearchResultSetStoreToConversationPreviewListPropsSt
                             receiver: result.receiver,
                             totalMessageCount: result.totalMessageCount,
                             unreadMessageCount: result.unreadMessageCount,
+                            call: result.call,
                         });
                     }
                     return derive(
@@ -105,6 +106,7 @@ export function conversationSearchResultSetStoreToConversationPreviewListPropsSt
                                 receiver: result.receiver,
                                 totalMessageCount: result.totalMessageCount,
                                 unreadMessageCount: result.unreadMessageCount,
+                                call: result.call,
                             };
                         },
                     );

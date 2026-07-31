@@ -14,6 +14,7 @@ import type {
     MessageSearchResult,
     SearchViewModel,
 } from '~/common/viewmodel/search/nav/store/types';
+import {getCallData} from '~/common/viewmodel/utils/call';
 import {
     getCommonReceiverData,
     getConversationReceiverData,
@@ -110,6 +111,8 @@ export function getConversationSearchResult(
         }
     }
 
+    const receiver = getAndSubscribe(conversationModel.controller.receiver());
+
     return endpoint.exposeProperties({
         category: conversationModel.view.category,
         id: conversationModel.ctx,
@@ -119,6 +122,7 @@ export function getConversationSearchResult(
         totalMessageCount: conversationModel.controller.getMessageCount(),
         unreadMessageCount: conversationModel.view.unreadMessageCount,
         visibility: conversationModel.view.visibility,
+        call: getCallData(services, receiver, getAndSubscribe),
     });
 }
 
