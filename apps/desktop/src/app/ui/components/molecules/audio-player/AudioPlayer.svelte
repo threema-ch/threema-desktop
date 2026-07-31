@@ -238,15 +238,24 @@
     duration = audioElement?.duration ?? audioFile.duration ?? 0;
   }
 
-  $effect(() => {
-    reactive(() => {
-      if (currentAudioFileName !== audioFile.name.raw) {
-        currentAudioFileName = audioFile.name.raw;
+  function resetPlayerUiState(): void {
+    isPaused = true;
+    currentSliderPosition = 0;
+    currentAudioPosition = 0;
+    duration = 0;
+    waveformData = [];
+  }
 
-        loadAudio().catch(assertUnreachable);
-      }
-    }, [audioFile]);
-  });
+  function handleAudioFileChange(): void {
+    if (currentAudioFileName !== audioFile.name.raw || audio.state === 'failed') {
+      currentAudioFileName = audioFile.name.raw;
+
+      resetPlayerUiState();
+      loadAudio().catch(assertUnreachable);
+    }
+  }
+
+  $effect(() => reactive(() => handleAudioFileChange(), [audioFile]));
 
   onDestroy(() => revokeCurrentAudioUrl(audio));
 </script>
