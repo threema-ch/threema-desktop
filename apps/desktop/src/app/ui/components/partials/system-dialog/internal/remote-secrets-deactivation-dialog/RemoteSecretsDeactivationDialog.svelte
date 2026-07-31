@@ -48,6 +48,7 @@
         label: $i18n.t('dialog--common.action--continue'),
         onclick: handleClickConfirm,
         type: 'filled',
+        disabled: password.length === 0,
       },
     ],
   }}
