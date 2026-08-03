@@ -76,7 +76,7 @@
       <p class="intro">
         {$i18n.t(
           'dialog--linking-set-password.prose--intro',
-          'The password will protect your messages, {shortAppName} ID and other data on this computer. You have to enter it when starting {shortAppName} for Desktop.',
+          'The password will protect your messages, {shortAppName} ID and other data on this computer.',
           {
             shortAppName: import.meta.env.SHORT_APP_NAME,
           },
@@ -128,7 +128,7 @@
             <label for="savePassword"
               >{$i18n.t(
                 'dialog--linking-set-password.label--save-password',
-                'Save securely on device',
+                'Save password and log me in automatically',
               )}</label
             >
             <Switch
@@ -141,17 +141,6 @@
                 }
               }}
             />
-          </div>
-          <div class="save">
-            {shouldStorePasswordValue
-              ? $i18n.t(
-                  'dialog--linking-set-password.prose--save-password--hint-true',
-                  'You will be logged in automatically when you open the Desktop app.',
-                )
-              : $i18n.t(
-                  'dialog--linking-set-password.prose---save-password-hint-false',
-                  'You will need to enter your password each time you open the Desktop app.',
-                )}
           </div>
         </div>
       </div>
