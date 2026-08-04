@@ -251,6 +251,7 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
     let appName;
     let deepLink: string | undefined = undefined;
     let presetOppfUrl: {readonly full: string} | undefined = undefined;
+    let appIdentifier: string | undefined = undefined;
     if (buildFlavor === 'custom-onprem') {
         const currentConfigOrError = readCustomConfig();
         if (currentConfigOrError instanceof Error) {
@@ -266,6 +267,7 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
             currentConfig.presetOppfUrl === undefined
                 ? undefined
                 : {full: currentConfig.presetOppfUrl};
+        appIdentifier = currentConfig.appIdentifier;
     } else {
         shortAppName = 'Threema';
         deepLink = determineDeepLinkScheme(buildFlavor);
@@ -355,6 +357,8 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
             env.mode === 'testing'
                 ? [...ONPREM_CONFIG_TRUSTED_PUBLIC_KEYS, ...ONPREM_CONFIG_TEST_PUBLIC_KEY]
                 : [...ONPREM_CONFIG_TRUSTED_PUBLIC_KEYS],
+
+        ONPREM_APP_IDENTIFIER: appIdentifier,
 
         // Public-key pins (HPKP)
         TLS_CERTIFICATE_PINS:

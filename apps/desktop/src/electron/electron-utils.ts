@@ -17,6 +17,18 @@ import {ensureSpkiValue} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {createTlsCertificateVerifier} from '~/electron/tls-cert-verifier';
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function getOnpremAppIdentifierHeader(): {'X-App-Identifier': string} | undefined {
+    const onpremAppIdentifier = import.meta.env.ONPREM_APP_IDENTIFIER;
+    const onpremAppIdentifierHeader =
+        onpremAppIdentifier !== undefined
+            ? {
+                  'X-App-Identifier': onpremAppIdentifier,
+              }
+            : undefined;
+    return onpremAppIdentifierHeader;
+}
+
 // IPC message handler validation
 //
 // See https://www.electronjs.org/docs/latest/tutorial/security#17-validate-the-sender-of-all-ipc-messages
@@ -153,6 +165,7 @@ export async function checkOppFile(
         headers: {
             'authorization': `Basic ${u8aToBase64(UTF8.encode(`${username}:${password}`))}`,
             'user-agent': userAgent,
+            ...getOnpremAppIdentifierHeader(),
         },
     });
 
@@ -176,6 +189,7 @@ export async function getOppFile(
             'authorization': `Basic ${u8aToBase64(UTF8.encode(`${username}:${password}`))}`,
             'accept': 'application/json',
             'user-agent': userAgent,
+            ...getOnpremAppIdentifierHeader(),
         },
     });
 

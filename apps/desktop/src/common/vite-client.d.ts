@@ -354,6 +354,9 @@ interface ImportMetaEnv extends ViteDefaultImportMetaEnv, BuildConfig {
     // Trusted OnPrem config public signature keys
     readonly ONPREM_CONFIG_TRUSTED_PUBLIC_KEYS: readonly string[];
 
+    // Pre-shared server key for white-labeled onprem builds
+    readonly ONPREM_APP_IDENTIFIER: readonly string | undefined;
+
     // Public-key pins (HPKP)
     readonly TLS_CERTIFICATE_PINS:
         | {
