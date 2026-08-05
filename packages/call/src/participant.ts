@@ -1,7 +1,7 @@
 import type {u16} from '@threema/ts-utils/integer/u16';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {assert} from '@threema/ts-utils/meta/assert';
-import type {WeakOpaque} from '@threema/ts-utils/meta/newtype';
+import {tag, type WeakOpaque} from '@threema/ts-utils/meta/newtype';
 import {unwrap} from '@threema/ts-utils/meta/unwrap';
 import {SDP_TOKEN_RANGE} from '@threema/webrtc/sdp';
 
@@ -25,6 +25,23 @@ export function ensureParticipantId(value: u53): ParticipantId {
         throw Error(`Not a valid participant id: '${value}'`);
     }
     return value;
+}
+
+/** Length (in bytes) of a participant UID. */
+export const PARTICIPANT_UID_LENGTH = 16;
+
+/**
+ * A participant UID: a 16-byte unique random id assigned by the SFU (since SFU v1.4.0). Distinct
+ * from the (small, MID-derived) {@link ParticipantId}. Used as the signed payload of conference join
+ * approvals (`GrantApproval`/`Approval`).
+ */
+export type ParticipantUid = WeakOpaque<Uint8Array, {readonly ParticipantUid: unique symbol}>;
+
+export function ensureParticipantUid(value: Uint8Array): ParticipantUid {
+    if (value.byteLength !== PARTICIPANT_UID_LENGTH) {
+        throw new Error(`Not a valid participant UID (length ${value.byteLength})`);
+    }
+    return tag<ParticipantUid>(value);
 }
 
 /**

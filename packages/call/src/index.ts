@@ -38,10 +38,13 @@ export {
 
 export {
     ensureParticipantId,
+    ensureParticipantUid,
     getMids,
     isParticipantId,
     MIDS_MAX,
+    PARTICIPANT_UID_LENGTH,
     type ParticipantId,
+    type ParticipantUid,
 } from './participant.js';
 
 export {

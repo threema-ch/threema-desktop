@@ -2,9 +2,11 @@ import {describe, expect, it} from 'vitest';
 
 import {
     ensureParticipantId,
+    ensureParticipantUid,
     getMids,
     isParticipantId,
     MIDS_MAX,
+    PARTICIPANT_UID_LENGTH,
     type ParticipantId,
 } from './participant.js';
 
@@ -38,6 +40,26 @@ describe('ensureParticipantId', () => {
         // Assert
         expect(() => ensureParticipantId(790)).toThrow("Not a valid participant id: '790'");
     });
+});
+
+describe('ensureParticipantUid', () => {
+    it('returns a participant UID of the expected length', () => {
+        // Arrange
+        const value = new Uint8Array(PARTICIPANT_UID_LENGTH).fill(0x2a);
+
+        // Assert
+        expect(ensureParticipantUid(value)).toBe(value);
+    });
+
+    it.each([0, PARTICIPANT_UID_LENGTH - 1, PARTICIPANT_UID_LENGTH + 1])(
+        'rejects a value of length %i',
+        (length) => {
+            // Assert
+            expect(() => ensureParticipantUid(new Uint8Array(length))).toThrow(
+                `Not a valid participant UID (length ${length})`,
+            );
+        },
+    );
 });
 
 describe('getMids', () => {
