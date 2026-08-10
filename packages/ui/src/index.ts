@@ -1,3 +1,5 @@
+// Components
+
 export {Avatar, type AvatarProps} from './components/avatar';
 export {
     default as AvatarSelectionSummary,
@@ -6,12 +8,10 @@ export {
 } from './components/avatar-selection-summary/AvatarSelectionSummary.svelte';
 export {
     default as Button,
-    type ButtonIconStyle,
     type ButtonProps,
-    type ButtonSize,
-    type ButtonVariant,
     buttonVariants,
 } from './components/button/Button.svelte';
+export {default as Icon, type IconProps, iconVariants} from './components/icon/Icon.svelte';
 export {
     default as Spinner,
     type SpinnerProps,
@@ -26,15 +26,20 @@ export {
 export {
     default as VerticalNavigationStrip,
     type VerticalNavigationAvatar,
-    type VerticalNavigationIconStyle,
     type VerticalNavigationItem,
     type VerticalNavigationStripProps,
     verticalNavigationStripVariants,
 } from './components/vertical-navigation-strip/VerticalNavigationStrip.svelte';
+
+// HOCs
+
 export {
     default as RadialExclusionMaskProvider,
     type RadialExclusionMaskProviderProps,
 } from './hocs/radial-exclusion-mask-provider/RadialExclusionMaskProvider.svelte';
+
+// Utils
+
 export {
     type ProfilePictureColor,
     PROFILE_PICTURE_BACKGROUND_COLOR_CLASS_MAP,

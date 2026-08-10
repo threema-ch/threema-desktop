@@ -18,13 +18,15 @@
   });
 
   const startItems: VerticalNavigationItem[] = [
-    {icon: 'chat_bubble', label: 'Chats', active: true, onclick: fn()},
-    {icon: 'person', label: 'Contacts', onclick: fn()},
-    {icon: 'calendar_add_on', label: 'Conference', onclick: fn()},
-    {icon: 'drive_folder_upload', label: 'SecureShare', onclick: fn()},
+    {icon: {glyph: 'chat_bubble'}, label: 'Chats', active: true, onclick: fn()},
+    {icon: {glyph: 'person'}, label: 'Contacts', onclick: fn()},
+    {icon: {glyph: 'calendar_add_on'}, label: 'Conference', onclick: fn()},
+    {icon: {glyph: 'drive_folder_upload'}, label: 'SecureShare', onclick: fn()},
   ];
 
-  const endItems: VerticalNavigationItem[] = [{icon: 'settings', label: 'Settings', onclick: fn()}];
+  const endItems: VerticalNavigationItem[] = [
+    {icon: {glyph: 'settings'}, label: 'Settings', onclick: fn()},
+  ];
 
   const avatar: VerticalNavigationAvatar = {initials: 'JD', label: 'Jane Doe', onclick: fn()};
 </script>

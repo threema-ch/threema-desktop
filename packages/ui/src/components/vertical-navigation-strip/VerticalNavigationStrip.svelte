@@ -9,10 +9,11 @@
   - `endItems` + `avatar`: A fixed group pinned to the bottom (e.g. Settings, then the user avatar).
 -->
 <script lang="ts" module>
-  import {type VariantProps, cn, tv} from 'tailwind-variants';
+  import {cn, tv} from 'tailwind-variants';
 
   import type {WithElementRef} from '../../utils/element';
   import {Avatar, type AvatarProps} from '../avatar';
+  import Icon, {type IconProps} from '../icon/Icon.svelte';
 
   export const verticalNavigationStripVariants = tv({
     slots: {
@@ -26,7 +27,6 @@
       item: 'group flex w-full flex-col items-center gap-1 rounded-md px-2 text-grey-900 outline-none hover:cursor-pointer dark:text-grey-50',
       iconBox:
         'flex items-center justify-center rounded-lg p-2 ring-black transition-colors ring-inset group-focus-visible:ring-1 dark:ring-white',
-      icon: 'inline-block text-2xl leading-none font-normal not-italic antialiased',
       label:
         'w-full overflow-hidden text-center text-[10px] leading-3.5 font-semibold tracking-[-0.2px] text-ellipsis whitespace-nowrap',
     },
@@ -34,7 +34,6 @@
       active: {
         true: {
           iconBox: 'bg-grey-200 dark:bg-grey-600',
-          icon: "[font-variation-settings:'FILL'_1]",
           item: 'dark:text-grey-50',
         },
         false: {
@@ -42,21 +41,11 @@
             'group-hover:bg-grey-100 active:bg-grey-200 dark:group-hover:bg-grey-700 dark:active:bg-grey-600',
         },
       },
-      iconStyle: {
-        'material-outlined': {icon: 'font-icon-material-outlined'},
-        'threema-filled': {icon: 'font-icon-threema-filled'},
-        'threema-outlined': {icon: 'font-icon-threema-outlined'},
-      },
     },
     defaultVariants: {
       active: false,
-      iconStyle: 'material-outlined',
     },
   });
-
-  export type VerticalNavigationIconStyle = VariantProps<
-    typeof verticalNavigationStripVariants
-  >['iconStyle'];
 
   interface NavTarget {
     /**
@@ -76,13 +65,14 @@
 
   export interface VerticalNavigationItem extends NavTarget {
     /**
-     * Icon glyph to render, e.g. `'chat_bubble'`.
+     * Icon to render above the label.
+     *
+     * Note: The font style is not configurable, because it conveys whether the item is `active`.
      */
-    readonly icon: string;
-    /**
-     * Icon font to use. Defaults to `'material-outlined'`.
-     */
-    readonly iconStyle?: VerticalNavigationIconStyle;
+    readonly icon: {
+      readonly font?: Pick<NonNullable<IconProps['font']>, 'family'>;
+      readonly glyph: IconProps['glyph'];
+    };
     /**
      * Short label rendered below the icon. Also used as the item's accessible name.
      */
@@ -139,13 +129,17 @@
     }
     target.onclick?.(event);
   }
+
+  /**
+   * Determine the icon font style of a nav item, which conveys whether the item is active.
+   */
+  function getIconFontStyle(item: VerticalNavigationItem): NonNullable<IconProps['font']>['style'] {
+    return (item.active ?? false) ? 'filled' : 'outlined';
+  }
 </script>
 
 {#snippet navItem(item: VerticalNavigationItem)}
-  {@const itemSlots = verticalNavigationStripVariants({
-    active: item.active ?? false,
-    iconStyle: item.iconStyle ?? 'material-outlined',
-  })}
+  {@const itemSlots = verticalNavigationStripVariants({active: item.active ?? false})}
   {@const ariaCurrent = (item.active ?? false) ? 'page' : undefined}
 
   <button
@@ -156,7 +150,11 @@
     onclick={(event) => handleClick(item, event)}
   >
     <span class={itemSlots.iconBox()}>
-      <span class={itemSlots.icon()} aria-hidden="true">{item.icon}</span>
+      <Icon
+        class="text-2xl"
+        font={{...item.icon.font, style: getIconFontStyle(item)}}
+        glyph={item.icon.glyph}
+      />
     </span>
     <span class={itemSlots.label()}>{item.label}</span>
   </button>

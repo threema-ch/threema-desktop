@@ -6,6 +6,7 @@
     type ProfilePictureColor,
   } from '../../utils/profile-picture-color';
   import {createTestImageBytes} from '../../utils/test/create-test-image-bytes';
+  import Icon from '../icon/Icon.svelte';
 
   import {Avatar} from './index';
 
@@ -134,9 +135,10 @@
     <Avatar {...args}>
       <Avatar.Charm position={{type: 'radial', degrees: 45}}>
         <button
-          class="flex size-4 cursor-pointer items-center justify-center rounded-full bg-grey-400 font-icon-material-outlined text-white"
+          class="flex size-4 cursor-pointer items-center justify-center rounded-full bg-grey-400 text-white"
+          aria-label="Remove"
         >
-          close
+          <Icon glyph="close" />
         </button>
       </Avatar.Charm>
     </Avatar>

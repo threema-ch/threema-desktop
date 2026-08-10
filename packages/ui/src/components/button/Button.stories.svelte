@@ -25,17 +25,9 @@
 
 <Story name="Secondary" args={{variant: 'secondary'}}>Lorem ipsum</Story>
 
-<Story
-  name="Primary with Icon"
-  args={{variant: 'primary', iconLeft: 'check', iconStyle: 'material-outlined'}}
->
-  Confirm
-</Story>
+<Story name="Primary with Icon" args={{variant: 'primary', icon: {glyph: 'check'}}}>Confirm</Story>
 
-<Story
-  name="Secondary with Icon"
-  args={{variant: 'secondary', iconLeft: 'close', iconStyle: 'material-outlined'}}
->
+<Story name="Secondary with Icon" args={{variant: 'secondary', icon: {glyph: 'close'}}}>
   Cancel
 </Story>
 
@@ -43,8 +35,7 @@
   name="Primary with Async Handler"
   args={{
     variant: 'primary',
-    iconLeft: 'check',
-    iconStyle: 'material-outlined',
+    icon: {glyph: 'check'},
     onclick: fn(exampleAsyncHandler),
   }}
 >
@@ -55,8 +46,7 @@
   name="Secondary with Async Handler"
   args={{
     variant: 'secondary',
-    iconLeft: 'close',
-    iconStyle: 'material-outlined',
+    icon: {glyph: 'close'},
     onclick: fn(exampleAsyncHandler),
   }}
 >

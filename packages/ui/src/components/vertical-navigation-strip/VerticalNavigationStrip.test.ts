@@ -8,10 +8,10 @@ describe('VerticalNavigationStrip.svelte', () => {
     it('renders start and end items as buttons labelled by their text', async () => {
         render(VerticalNavigationStrip, {
             startItems: [
-                {icon: 'chat_bubble', label: 'Chats', active: true},
-                {icon: 'person', label: 'Contacts'},
+                {icon: {glyph: 'chat_bubble'}, label: 'Chats', active: true},
+                {icon: {glyph: 'person'}, label: 'Contacts'},
             ],
-            endItems: [{icon: 'settings', label: 'Settings'}],
+            endItems: [{icon: {glyph: 'settings'}, label: 'Settings'}],
         });
 
         await expect.element(page.getByRole('button', {name: 'Chats'})).toBeInTheDocument();
@@ -22,8 +22,8 @@ describe('VerticalNavigationStrip.svelte', () => {
     it('marks the active item with `aria-current="page"`', async () => {
         render(VerticalNavigationStrip, {
             startItems: [
-                {icon: 'chat_bubble', label: 'Chats', active: true},
-                {icon: 'person', label: 'Contacts'},
+                {icon: {glyph: 'chat_bubble'}, label: 'Chats', active: true},
+                {icon: {glyph: 'person'}, label: 'Contacts'},
             ],
         });
 
@@ -38,7 +38,7 @@ describe('VerticalNavigationStrip.svelte', () => {
     it('invokes the `onclick` handler when an item is clicked', async () => {
         const onclick = vi.fn();
         render(VerticalNavigationStrip, {
-            startItems: [{icon: 'chat_bubble', label: 'Chats', onclick}],
+            startItems: [{icon: {glyph: 'chat_bubble'}, label: 'Chats', onclick}],
         });
 
         await page.getByRole('button', {name: 'Chats'}).click();
@@ -48,7 +48,7 @@ describe('VerticalNavigationStrip.svelte', () => {
     it('does not invoke the `onclick` handler when the active item is clicked', async () => {
         const onclick = vi.fn();
         render(VerticalNavigationStrip, {
-            startItems: [{icon: 'chat_bubble', label: 'Chats', active: true, onclick}],
+            startItems: [{icon: {glyph: 'chat_bubble'}, label: 'Chats', active: true, onclick}],
         });
 
         await page.getByRole('button', {name: 'Chats'}).click();
@@ -57,7 +57,7 @@ describe('VerticalNavigationStrip.svelte', () => {
 
     it('renders the avatar button with its label as accessible name', async () => {
         render(VerticalNavigationStrip, {
-            startItems: [{icon: 'chat_bubble', label: 'Chats'}],
+            startItems: [{icon: {glyph: 'chat_bubble'}, label: 'Chats'}],
             avatar: {initials: 'JD', label: 'Jane Doe'},
         });
 

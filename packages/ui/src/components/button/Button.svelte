@@ -4,22 +4,13 @@
 
   import type {WithChildren, WithoutChildren} from '../../utils/children';
   import type {WithElementRef} from '../../utils/element';
+  import Icon, {type IconProps} from '../icon/Icon.svelte';
 
   export const buttonVariants = tv({
     slots: {
       root: 'inline-flex shrink-0 items-center justify-center gap-2 rounded-lg text-base font-normal whitespace-nowrap transition-all outline-none select-none hover:cursor-pointer disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
-      /**
-       * Icon element rendered to the left of the button content. Includes base icon-font rendering
-       * utilities; the `iconStyle` variant adds the correct `font-family`.
-       */
-      icon: 'inline-block shrink-0 text-[1lh] leading-none font-normal not-italic antialiased',
     },
     variants: {
-      iconStyle: {
-        'material-outlined': {icon: 'font-icon-material-outlined'},
-        'threema-filled': {icon: 'font-icon-threema-filled'},
-        'threema-outlined': {icon: 'font-icon-threema-outlined'},
-      },
       size: {
         default: {
           root: 'px-6 py-2',
@@ -40,16 +31,16 @@
     },
   });
 
-  export type ButtonIconStyle = VariantProps<typeof buttonVariants>['iconStyle'];
-  export type ButtonSize = VariantProps<typeof buttonVariants>['size'];
-  export type ButtonVariant = VariantProps<typeof buttonVariants>['variant'];
+  type ButtonVariants = VariantProps<typeof buttonVariants>;
 
   type BaseProps = WithElementRef<
     WithChildren<{
-      readonly iconLeft?: string;
-      readonly iconStyle?: ButtonIconStyle;
-      readonly size?: ButtonSize;
-      readonly variant?: ButtonVariant;
+      /**
+       * An icon to render to the left of the button content.
+       */
+      readonly icon?: Pick<IconProps, 'font' | 'glyph'>;
+      readonly size?: ButtonVariants['size'];
+      readonly variant?: ButtonVariants['variant'];
     }>
   >;
 
@@ -99,8 +90,7 @@
     class: className,
     disabled = false,
     href,
-    iconLeft,
-    iconStyle,
+    icon,
     onclick,
     ref = $bindable(null),
     size = 'default',
@@ -114,7 +104,7 @@
   let isLoading = $state<boolean>(false);
   const isDisabled = $derived(disabled === true || isLoading);
 
-  const slots = $derived(buttonVariants({variant, size, iconStyle}));
+  const slots = $derived(buttonVariants({size, variant}));
 
   /**
    * Synchronous handler for click events on a `HTMLButtonElement`. If the `onclick` prop is an
@@ -156,7 +146,7 @@
   this={elementType}
   bind:this={ref}
   aria-disabled={elementType === 'a' ? isDisabled : undefined}
-  class={slots.root({class: cn(iconLeft !== undefined && 'pl-4', className)})}
+  class={slots.root({class: cn(icon !== undefined && 'pl-4', className)})}
   disabled={elementType === 'a' ? undefined : isDisabled}
   href={elementType === 'a' && !isDisabled ? href : undefined}
   onclick={elementType === 'a' ? undefined : handleOnClick}
@@ -165,7 +155,7 @@
   type={elementType === 'a' ? undefined : type}
   {...restProps}
 >
-  {#if iconLeft !== undefined}
+  {#if icon !== undefined}
     {#if isLoading}
       <!--
         Replace the icon with a same-size spinner during loading so the button layout does not
@@ -173,7 +163,7 @@
       -->
       <Spinner class="size-[1lh]" />
     {:else}
-      <span class={slots.icon()}>{iconLeft}</span>
+      <Icon {...icon} />
     {/if}
   {/if}
   {@render children?.()}

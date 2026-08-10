@@ -16,6 +16,7 @@ actions.
   import type {WithoutChildren} from '../../utils/children';
   import type {WithElementRef} from '../../utils/element';
   import {Avatar, type AvatarProps} from '../avatar';
+  import Icon from '../icon/Icon.svelte';
 
   export type AvatarSelectionSummaryItem = Pick<
     AvatarProps,
@@ -83,13 +84,7 @@ actions.
             onclick={actions.remove.onclick}
             type="button"
           >
-            <!-- The glyph is decorative, as the button is named by its `aria-label`. -->
-            <span
-              class="inline-block shrink-0 font-icon-material-outlined text-[1lh] leading-none not-italic antialiased dark:font-medium"
-              aria-hidden="true"
-            >
-              close
-            </span>
+            <Icon class="dark:font-medium" glyph="close" />
           </button>
         </Avatar.Charm>
       {/if}

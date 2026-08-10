@@ -76,14 +76,14 @@
   const startItems = $derived<VerticalNavigationItem[]>([
     {
       active: $router.nav.id === 'conversationList',
-      icon: 'chat_bubble',
+      icon: {glyph: 'chat_bubble'},
       label: $i18n.t('conversations.label--title-conversations', 'Chats'),
       onclick: handleClickChats,
       testId: 'nav-item-chats',
     },
     {
       active: $router.nav.id === 'receiverList',
-      icon: 'person',
+      icon: {glyph: 'person'},
       label: $i18n.t('contacts.label--contacts', 'Contacts'),
       onclick: handleClickContacts,
       testId: 'nav-item-contacts',
@@ -93,7 +93,7 @@
   const endItems = $derived<VerticalNavigationItem[]>([
     {
       active: $router.nav.id === 'settingsList',
-      icon: 'settings',
+      icon: {glyph: 'settings'},
       label: $i18n.t('settings.label--title', 'Settings'),
       onclick: handleClickSettings,
       testId: 'nav-item-settings',
