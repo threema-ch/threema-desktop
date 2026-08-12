@@ -16,22 +16,22 @@
     </description>
     <screenshots>
         <screenshot type="default" environment="gnome:dark">
-            <image type="source" width="1304" height="781">
+            <image type="source" width="1280" height="693">
                 https://releases.threema.ch/flatpak/threema-desktop/screenshot-1.jpg
             </image>
         </screenshot>
         <screenshot type="default" environment="gnome:light">
-            <image type="source" width="1304" height="781">
+            <image type="source" width="1280" height="693">
                 https://releases.threema.ch/flatpak/threema-desktop/screenshot-2.jpg
             </image>
         </screenshot>
         <screenshot type="default" environment="gnome:dark">
-            <image type="source" width="1304" height="781">
+            <image type="source" width="1280" height="693">
                 https://releases.threema.ch/flatpak/threema-desktop/screenshot-3.jpg
             </image>
         </screenshot>
         <screenshot type="default" environment="gnome:light">
-            <image type="source" width="1304" height="781">
+            <image type="source" width="1280" height="693">
                 https://releases.threema.ch/flatpak/threema-desktop/screenshot-4.jpg
             </image>
         </screenshot>
