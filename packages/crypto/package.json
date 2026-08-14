@@ -20,6 +20,7 @@
     "test:vitest": "vitest run --coverage"
   },
   "dependencies": {
+    "@threema/protocol": "workspace:*",
     "@threema/ts-utils": "workspace:*"
   },
   "devDependencies": {

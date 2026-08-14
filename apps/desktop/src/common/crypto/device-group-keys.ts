@@ -124,6 +124,7 @@ export function deriveDeviceGroupKeys(
             nonceService,
             NonceScope.D2D,
             deriveKeyWithSalt('dgpk', 'p'),
+            {debug: import.meta.env.DEBUG},
         ),
         dgrk: crypto.getSecretBox(deriveKeyWithSalt('dgrk', 'r'), NonceScope.D2D, nonceService),
         dgdik: crypto.getSecretBox(deriveKeyWithSalt('dgdik', 'di'), NonceScope.D2D, nonceService),

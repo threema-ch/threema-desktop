@@ -736,6 +736,9 @@ importers:
 
   packages/crypto:
     dependencies:
+      '@threema/protocol':
+        specifier: workspace:*
+        version: link:../protocol
       '@threema/ts-utils':
         specifier: workspace:*
         version: link:../ts-utils

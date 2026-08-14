@@ -1175,6 +1175,7 @@ export class Backend {
                 nonces,
                 NonceScope.CSP,
                 keyStorageContents.identityData.ck,
+                {debug: import.meta.env.DEBUG},
             ) as ClientKey,
             serverGroup: keyStorageContents.identityData.serverGroup,
         };
@@ -1295,6 +1296,7 @@ export class Backend {
                 nonces,
                 NonceScope.CSP,
                 rawClientKey,
+                {debug: import.meta.env.DEBUG},
             ) as ClientKey,
             serverGroup,
         };
@@ -1603,6 +1605,7 @@ export class Backend {
             nonces,
             NonceScope.CSP,
             joinResult.rawCk,
+            {debug: import.meta.env.DEBUG},
         ) as ClientKey;
 
         // Look up identity information and server group on directory server

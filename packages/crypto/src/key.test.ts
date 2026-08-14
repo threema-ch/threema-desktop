@@ -1,8 +1,8 @@
+import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
 import {describe, expect, it} from 'vitest';
 
-import {blake2bHash} from './blake2b/blake2b.js';
-
-import {CryptoError, deriveKey, isReadonlyRawKey, wrapRawKey} from './index.js';
+import {CryptoError} from './error.js';
+import {deriveKey, isReadonlyRawKey, wrapRawKey} from './key.js';
 
 describe('wrapRawKey', () => {
     it('wraps a 32-byte key which unwraps to the same bytes', () => {
@@ -31,6 +31,16 @@ describe('wrapRawKey', () => {
             'Expected key to be 32 bytes but has 31 bytes',
         );
     });
+
+    it('throws a CryptoError if the key is valid for the other supported length', () => {
+        // Assert
+        expect(() => wrapRawKey(new Uint8Array(32), 64)).toThrow(
+            'Expected key to be 64 bytes but has 32 bytes',
+        );
+        expect(() => wrapRawKey(new Uint8Array(64), 32)).toThrow(
+            'Expected key to be 32 bytes but has 64 bytes',
+        );
+    });
 });
 
 describe('deriveKey', () => {
@@ -42,10 +52,14 @@ describe('deriveKey', () => {
 
         // Act
         const derived = deriveKey(32, key, parameters);
-        const expected = blake2bHash(32, key, parameters).digest();
 
         // Assert
-        expect(derived.unwrap()).toEqual(expected);
+        expect(bytesToHex(derived.unwrap())).toBe(
+            // Note: The expected digest is hard-coded because computing it with the raw
+            // `blake2bHash` function would be the same as what `deriveKey` already does internally,
+            // which would be silly.
+            '06b44d3c94bf1d999b8badbca71ece85146683b2bf5d99d459a616b960a0d940',
+        );
     });
 
     it('applies the additional input, if provided', () => {
@@ -55,10 +69,14 @@ describe('deriveKey', () => {
 
         // Act
         const derived = deriveKey(32, key, {...parameters, input});
-        const expected = blake2bHash(32, key, parameters).update(input).digest();
 
         // Assert
-        expect(derived.unwrap()).toEqual(expected);
+        expect(bytesToHex(derived.unwrap())).toBe(
+            // Note: The expected digest is hard-coded because computing it with the raw
+            // `blake2bHash` function would be the same as what `deriveKey` already does internally,
+            // which would be silly.
+            'fd2f561ee99ad310b1d366086a09a5ce83b47c5528d63bf308bdb3f82aed83dc',
+        );
         expect(derived.unwrap()).not.toEqual(deriveKey(32, key, parameters).unwrap());
     });
 
@@ -185,17 +203,5 @@ describe('RawKey', () => {
 
         // Assert
         expect(() => a.equals(b)).toThrow('Cannot unwrap, key purged');
-    });
-});
-
-describe('CryptoError', () => {
-    it('is an Error named "CryptoError"', () => {
-        // Arrange
-        const error = new CryptoError('Lorem ipsum');
-
-        // Assert
-        expect(error).toBeInstanceOf(Error);
-        expect(error.name).toBe('CryptoError');
-        expect(error.message).toBe('Lorem ipsum');
     });
 });

@@ -1,3 +1,9 @@
+import {
+    type INonceGuard,
+    type INonceService,
+    NONCE_REUSED,
+    type NonceReused,
+} from '@threema/crypto';
 import type {NonceScope} from '@threema/protocol/enum';
 import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
 import * as sha256 from 'fast-sha256';
@@ -27,36 +33,11 @@ export type ServicesForNonceService = Pick<ServicesForBackend, 'crypto' | 'loggi
     readonly db: NonceDatabaseBackend;
 };
 
-/**
- * Wrapper around a nonce to provide helper functions to persist or discard the nonce.
- */
-export interface INonceGuard {
-    /**
-     * The nonce that is guarded. Never use this nonce twice!
-     *
-     * @throws Error if the nonce is accessed after beeing marked as {@link processed}.
-     */
-    readonly nonce: Nonce;
-
-    /**
-     * Whether this nonce was either discarded/commited or not.
-     */
-    readonly processed: ReadonlyValueObject<boolean>;
-
-    /**
-     * Discard the nonce: The nonce may be used again at a later time.
-     *
-     * @throws Error if nonce was already processed.
-     */
-    readonly discard: () => void;
-
-    /**
-     * Commit the nonce to the nonce database.
-     *
-     * @throws Error if nonce was already processed.
-     */
-    readonly commit: () => void;
-}
+// Note: `INonceGuard`, `INonceService` and `NONCE_REUSED` live in `@threema/crypto` because the
+// crypto box is typed on them. They are re-exported here to keep the existing import sites working.
+// TODO(DESK-2248): Remove re-exports in favor of updating the changed imports
+export {NONCE_REUSED};
+export type {INonceGuard, INonceService};
 
 /** See {@link INonceGuard} */
 export class NonceGuard implements INonceGuard {
@@ -220,40 +201,6 @@ export class NonceRegistry implements INonceRegistry {
         return nonceGuard;
     }
 }
-
-export interface INonceService {
-    /**
-     * Check whether a nonce was used before and register it so it must be processed and cannot be
-     * used again (or is discarded.)
-     *
-     * @returns the {@link NonceGuard} for the Nonce or {@link NONCE_REUSED} constant.
-     */
-    readonly checkAndRegisterNonce: (
-        scope: NonceScope,
-        nonce: Nonce,
-        debugToken?: string,
-    ) => INonceGuard | NonceReused;
-
-    /**
-     * Get a random nonce protected by a {@link NonceGuard}.
-     */
-    readonly getRandomNonce: (scope: NonceScope, debugToken?: string) => INonceGuard;
-
-    /**
-     * Get a snapshot of all nonces currently stored for a specific {@link NonceScope}
-     */
-    readonly getAllPersistedNonces: (scope: NonceScope) => ReadonlySet<NonceHash>;
-
-    /**
-     * Import a set of nonce hashes into the database.
-     *
-     * @throws Error if the import failed.
-     */
-    readonly importNonces: (scope: NonceScope, hashes: ReadonlySet<NonceHash>) => void;
-}
-
-export const NONCE_REUSED = Symbol('nonce-reused');
-export type NonceReused = typeof NONCE_REUSED;
 
 export class NonceService implements INonceService {
     public constructor(
