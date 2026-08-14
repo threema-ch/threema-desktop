@@ -112,6 +112,7 @@ import {
     ensureIdentityString,
     ensureMessageId,
     type GroupConversationId,
+    type GroupId,
     type IdentityString,
     isNickname,
     type MessageId,
@@ -637,17 +638,21 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         const messageTypeDebug = cspE2eTypeNameOf(type) ?? `<unknown> (0x${type.toString(16)})`;
         this._log.info(`Received incoming ${messageTypeDebug} message`);
 
+        const exemptFromBlocking = isCspE2eType(type)
+            ? MESSAGE_TYPE_PROPERTIES[type].exemptFromBlocking
+            : false;
+
         // Check if the message should be discarded due to the contact being
         // implicitly or explicitly blocked.
         if (model.user.privacySettings.get().controller.isContactBlocked(sender.string)) {
-            if (isCspE2eType(type) && MESSAGE_TYPE_PROPERTIES[type].exemptFromBlocking) {
-                this._log.debug(
-                    `Processing message from blocked contact ${sender.string}, because the type ${type} is exempt from blocking`,
-                );
-            } else {
+            if (exemptFromBlocking === false) {
                 this._log.info(`Discarding message from blocked contact ${sender.string}`);
                 return await this._discard(handle);
             }
+
+            this._log.debug(
+                `Processing message from blocked contact ${sender.string}, because the type ${type} is exempt from blocking or needs to be checked in a later step, exemptFromBlocking: ${exemptFromBlocking}`,
+            );
         }
         // Decode message and flags (default for the message) according to type
         this._log.debug(`Processing ${messageTypeDebug} message`);
@@ -671,6 +676,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 senderContactOrInit,
                 metadata,
                 containerNonceGuard,
+                exemptFromBlocking,
             );
         } catch (error) {
             this._log.info(`Discarding ${messageTypeDebug} message with invalid content: ${error}`);
@@ -1165,12 +1171,48 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         return nickname.trim();
     }
 
+    /**
+     * Checks if the sender of a message (group creator) should be blocked when sending
+     * `group_setup` messages. This blocks the message if the sender is implicitly or explicitly
+     * blocked AND the does not already exist.
+     */
+    private _isBlockedByDedicatedSteps(
+        senderIdentity: IdentityString,
+        groupId: GroupId,
+        exemptFromBlocking: (typeof MESSAGE_TYPE_PROPERTIES)[CspE2eGroupControlType.GROUP_SETUP]['exemptFromBlocking'],
+    ): boolean {
+        // In this case `exemptFromBlocking === 'dedicated_steps'` be true as it's defined by
+        // protocol, therefore we check it too
+        assert(
+            exemptFromBlocking === 'dedicated_steps',
+            `_isBlockedByDedicatedSteps called with exemptFromBlocking: ${exemptFromBlocking}} but should be 'dedicated_steps'`,
+        );
+
+        const {model} = this._services;
+
+        // 1. Look up the group.
+        if (model.groups.getByGroupIdAndCreator(groupId, senderIdentity) !== undefined) {
+            // 2. If the group could be found, return that the message passed the blocking check.
+            return false;
+        }
+
+        // 3. Run the _Identity Blocked Steps_ for the creator. If the result indicates that the
+        //    creator is not blocked, return that the message passed the blocking check. Otherwise,
+        //    return that the message needs to be discarded.
+        if (!model.user.privacySettings.get().controller.isContactBlocked(senderIdentity)) {
+            return false;
+        }
+
+        return true;
+    }
+
     private _getInstructionsForMessage(
         type: u53,
         cspMessageBody: ReadonlyUint8Array,
         senderContactOrInit: ContactOrInit,
         metadata: protobuf.validate.csp_e2e.MessageMetadata.Type | undefined,
         nonceGuard: INonceGuard,
+        exemptFromBlocking: (typeof MESSAGE_TYPE_PROPERTIES)[CspE2eGroupControlType.GROUP_SETUP]['exemptFromBlocking'],
     ): MessageProcessingInstructions | 'forward' | 'discard' {
         const message = this._message;
         const clampedCreatedAt = getClampedCreatedAt(
@@ -1463,9 +1505,22 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                             cspMessageBody as Uint8Array,
                         ),
                     );
+
+                // Check if `group_setup` message is blocked by dedicated steps
+                if (
+                    this._isBlockedByDedicatedSteps(
+                        senderIdentity,
+                        validatedContainer.groupId,
+                        exemptFromBlocking,
+                    )
+                ) {
+                    return 'discard';
+                }
+
                 const validatedGroupSetup = structbuf.validate.csp.e2e.GroupSetup.SCHEMA.parse(
                     structbuf.csp.e2e.GroupSetup.decode(validatedContainer.innerData),
                 );
+
                 // The group-setup message is a bit special, as it may need to create and reflect
                 // some contacts (of its members) _before_ the group-setup message itself is
                 // reflected. Thus, we set the `reflectFragment` below to `undefined`, but pass the

@@ -390,8 +390,10 @@ export interface MessageTypeProperties<TReceiverType extends ReceiverType> {
 
     /**
      * Should this message be sent or processed even if the sender or receiver is blocked?
+     *
+     * If set to 'dedicated_steps', then custom logic is needed depending on the message contents.
      */
-    readonly exemptFromBlocking: boolean;
+    readonly exemptFromBlocking: boolean | 'dedicated_steps';
 
     /**
      * Should this message be reflected to other devices and should this message reflect a `sent`
@@ -737,7 +739,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
     // Group control messages
     [CspE2eGroupControlType.GROUP_SETUP]: {
         userProfileDistribution: true,
-        exemptFromBlocking: true,
+        exemptFromBlocking: 'dedicated_steps',
         reflect: {
             incoming: true,
             outgoing: true,

@@ -268,7 +268,10 @@ export class OutgoingCspMessagesTask
                 // 2.1.3. If `message` is not exempted from blocking, run the _Identity Blocked Steps_
                 //    for `receiver`'s identity. If the result indicates that `receiver` is blocked,
                 //    remove `receiver` from `receivers` and abort these sub-steps.
-                if (!MESSAGE_TYPE_PROPERTIES[specificMessageProperties.type].exemptFromBlocking) {
+                if (
+                    MESSAGE_TYPE_PROPERTIES[specificMessageProperties.type].exemptFromBlocking !==
+                    true
+                ) {
                     if (
                         this._services.model.user.privacySettings
                             .get()
