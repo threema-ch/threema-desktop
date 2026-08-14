@@ -1,3 +1,5 @@
+import {getAssertFailLogger} from '../logging/assert-fail-logger.js';
+
 /**
  * Assert a condition.
  *
@@ -8,6 +10,8 @@
  */
 export function assert(condition: boolean, message?: string): asserts condition {
     if (!condition) {
-        throw new Error(`Assertion failed, message: ${message}`);
+        const error = new Error(`Assertion failed, message: ${message}`);
+        getAssertFailLogger()?.(error);
+        throw error;
     }
 }

@@ -1,29 +1,15 @@
-import {ensureError} from '@threema/ts-utils/meta/ensure-error';
+import {setAssertFailLogger} from '@threema/ts-utils/logging/assert-fail-logger';
+import {assert} from '@threema/ts-utils/meta/assert';
+import {assertError} from '@threema/ts-utils/meta/assert-error';
+import {assertUnreachable} from '@threema/ts-utils/meta/assert-unreachable';
+import {unreachable} from '@threema/ts-utils/meta/unreachable';
+import {unwrap} from '@threema/ts-utils/meta/unwrap';
 
-let assertFailLogger: ((error: Error) => void) | undefined;
-
-/**
- * Set a global trace error logger that is called when an assertion fails.
- */
-export function setAssertFailLogger(logger: (error: Error) => void): void {
-    assertFailLogger = logger;
-}
-
-/**
- * Assert a condition.
- *
- * @param condition The condition that must be `true` or otherwise this function will throw an
- *   error.
- * @param message Additional metadata that will be added to the error in case condition is `false`.
- * @throws {Error} If the condition is false.
- */
-export function assert(condition: boolean, message?: string): asserts condition {
-    if (!condition) {
-        const error = new Error(`Assertion failed, message: ${message}`);
-        assertFailLogger?.(error);
-        throw error;
-    }
-}
+// Note: These helpers were moved to `@threema/ts-utils`. They are re-exported here to keep the
+// existing import sites working.
+//
+// TODO(DESK-2248): Remove re-exports in favor of updating the changed imports.
+export {assert, assertError, assertUnreachable, setAssertFailLogger, unreachable, unwrap};
 
 /**
  * Like {@link assert}, but only run if we're in debug mode.
@@ -32,61 +18,6 @@ export function debugAssert(condition: boolean, message?: string): asserts condi
     if (import.meta.env.DEBUG) {
         assert(condition, message);
     }
-}
-
-/**
- * Assert a specific `Error` type instance. In case it doesn't match, throws with the original error
- * as cause.
- *
- * @param error The error value.
- * @param type The expected `Error` type.
- * @param message Optional message to use when throwing.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function assertError<TError extends abstract new (...args: any) => any>(
-    error: unknown,
-    type: TError,
-    message?: string,
-): asserts error is InstanceType<TError> {
-    if (!(error instanceof type)) {
-        throw new Error(message ?? `Assertion of specific error type failed`, {
-            cause: ensureError(error),
-        });
-    }
-}
-
-/**
- * Mark a section as asserted to be unreachable. This is not checked by the type system, so should
- * be avoided for matching.
- *
- * Use this in unreachable places without explicit matching, e.g. when chaining with the `??`
- * operator (`contacts.get('foo') ?? assert` in case the caller definitely knows that the contact
- * 'foo' exists).
- *
- * @throws {Error} Always.
- */
-export function assertUnreachable(message: unknown): never {
-    const options = message instanceof Error ? {cause: message} : {};
-    const error = new Error(`Asserted unreachable code section: ${message}`, options);
-    assertFailLogger?.(error);
-    throw error;
-}
-
-/**
- * Unreachable code section. This variant is safe because it is checked by the type system.
- *
- * Use this in unreachable places, e.g. the default branch of a switch that should be exhaustive.
- * Will raise a compile error if considered reachable.
- *
- * @throws {Error} Always.
- */
-export function unreachable(value: never, messageOrError?: string | Error): never {
-    const error =
-        messageOrError instanceof Error
-            ? messageOrError
-            : new Error(messageOrError ?? 'Unreachable code section!');
-    assertFailLogger?.(error);
-    throw error;
 }
 
 /**
@@ -107,15 +38,6 @@ export function exhausted<T>(value: never, fallback: T): T;
 export function exhausted<T>(value: never, fallback?: T): T {
     // Note: Ugly cast but it fits the above two signatures, so it's alright.
     return fallback as unknown as T;
-}
-
-/**
- * Expect that a value exists. Return it if it exists and throw if it doesn't.
- */
-// eslint-disable-next-line @typescript-eslint/no-restricted-types
-export function unwrap<T>(value: T | null | undefined, message?: string): T {
-    assert(value !== undefined && value !== null, message);
-    return value;
 }
 
 /**
