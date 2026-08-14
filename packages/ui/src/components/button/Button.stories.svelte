@@ -15,6 +15,8 @@
     title: 'Components/Button',
     component: Button,
     args: {
+      // Report log calls to the Storybook actions panel.
+      log: {trace: fn(), debug: fn(), info: fn(), warn: fn(), error: fn()},
       onclick: fn(),
     },
     tags: ['autodocs'],

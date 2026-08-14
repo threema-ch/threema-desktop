@@ -3,6 +3,7 @@ import {page, userEvent} from 'vitest/browser';
 import {render} from 'vitest-browser-svelte';
 
 import {createRawTextSnippet} from '../../utils/test/create-raw-text-snippet';
+import {createTestLogger} from '../../utils/test/create-test-logger';
 
 import Button from './Button.svelte';
 
@@ -12,6 +13,7 @@ describe('Button.svelte', () => {
         const {getByRole} = render(Button, {
             'children': createRawTextSnippet('Button'),
             'data-testid': 'button',
+            'log': createTestLogger(),
         });
 
         // Assert
@@ -20,7 +22,10 @@ describe('Button.svelte', () => {
 
     it('renders as a <button> element by default', async () => {
         // Arrange
-        const {getByRole} = render(Button, {children: createRawTextSnippet('Button')});
+        const {getByRole} = render(Button, {
+            children: createRawTextSnippet('Button'),
+            log: createTestLogger(),
+        });
 
         // Assert
         await expect.element(getByRole('button')).toBeInTheDocument();
@@ -31,6 +36,7 @@ describe('Button.svelte', () => {
         const {getByRole} = render(Button, {
             children: createRawTextSnippet('Button'),
             href: '/target',
+            log: createTestLogger(),
         });
         const element = getByRole('link');
 
@@ -41,7 +47,10 @@ describe('Button.svelte', () => {
 
     it('renders child content', async () => {
         // Arrange
-        const {getByRole} = render(Button, {children: createRawTextSnippet('Button')});
+        const {getByRole} = render(Button, {
+            children: createRawTextSnippet('Button'),
+            log: createTestLogger(),
+        });
 
         // Assert
         await expect.element(getByRole('button')).toHaveTextContent('Button');
@@ -52,6 +61,7 @@ describe('Button.svelte', () => {
         const {getByRole} = render(Button, {
             children: createRawTextSnippet('Button'),
             disabled: true,
+            log: createTestLogger(),
         });
 
         // Assert
@@ -64,6 +74,7 @@ describe('Button.svelte', () => {
             children: createRawTextSnippet('Button'),
             disabled: true,
             href: '/target',
+            log: createTestLogger(),
         });
         const element = getByRole('link');
 
@@ -74,9 +85,13 @@ describe('Button.svelte', () => {
 
     it('is skipped when trying to focus it via tabbing in disabled state (<button>)', async () => {
         // Arrange: Render three buttons, of which the second one is disabled.
-        render(Button, {children: createRawTextSnippet('First')});
-        render(Button, {children: createRawTextSnippet('Disabled'), disabled: true});
-        render(Button, {children: createRawTextSnippet('Third')});
+        render(Button, {children: createRawTextSnippet('First'), log: createTestLogger()});
+        render(Button, {
+            children: createRawTextSnippet('Disabled'),
+            disabled: true,
+            log: createTestLogger(),
+        });
+        render(Button, {children: createRawTextSnippet('Third'), log: createTestLogger()});
 
         // Act: Focus the first button, then tab once.
         page.getByRole('button', {name: 'First'}).element().focus();
@@ -88,13 +103,22 @@ describe('Button.svelte', () => {
 
     it('is skipped when trying to focus it via tabbing in disabled state (<a>)', async () => {
         // Arrange: Render three links, of which the second one is disabled.
-        render(Button, {children: createRawTextSnippet('First'), href: '/target'});
+        render(Button, {
+            children: createRawTextSnippet('First'),
+            href: '/target',
+            log: createTestLogger(),
+        });
         render(Button, {
             children: createRawTextSnippet('Disabled'),
             disabled: true,
             href: '/target',
+            log: createTestLogger(),
         });
-        render(Button, {children: createRawTextSnippet('Third'), href: '/target'});
+        render(Button, {
+            children: createRawTextSnippet('Third'),
+            href: '/target',
+            log: createTestLogger(),
+        });
 
         // Act: Focus the first link, then tab once.
         page.getByRole('link', {name: 'First'}).element().focus();
@@ -112,6 +136,7 @@ describe('Button.svelte', () => {
             children: createRawTextSnippet('Button'),
             disabled: true,
             href: '/target',
+            log: createTestLogger(),
         });
         const element = getByRole('link');
 
@@ -126,6 +151,7 @@ describe('Button.svelte', () => {
         const {getByRole} = render(Button, {
             children: createRawTextSnippet('Button'),
             href: '/target',
+            log: createTestLogger(),
             type: 'submit',
         } as Parameters<typeof render<typeof Button>>[1]);
 
@@ -139,7 +165,11 @@ describe('Button.svelte', () => {
         function onclick(): void {
             callCount++;
         }
-        const {getByRole} = render(Button, {children: createRawTextSnippet('Button'), onclick});
+        const {getByRole} = render(Button, {
+            children: createRawTextSnippet('Button'),
+            log: createTestLogger(),
+            onclick,
+        });
         const button = getByRole('button');
 
         // Act
@@ -158,7 +188,11 @@ describe('Button.svelte', () => {
                 resolveClick = resolve;
             });
         }
-        const {getByRole} = render(Button, {children: createRawTextSnippet('Button'), onclick});
+        const {getByRole} = render(Button, {
+            children: createRawTextSnippet('Button'),
+            log: createTestLogger(),
+            onclick,
+        });
         const button = getByRole('button');
 
         // Act: Click the button and let the promise hang.
@@ -182,16 +216,26 @@ describe('Button.svelte', () => {
                 rejectClick = reject;
             });
         }
-        const {getByRole} = render(Button, {children: createRawTextSnippet('Button'), onclick});
+        const log = createTestLogger();
+        const {getByRole} = render(Button, {
+            children: createRawTextSnippet('Button'),
+            log,
+            onclick,
+        });
         const button = getByRole('button');
 
         // Act
         await userEvent.click(button);
         await expect.element(button).toBeDisabled();
-        rejectClick(new Error('failed'));
+        const error = new Error('failed');
+        rejectClick(error);
 
         // Assert: Button becomes enabled again even when the promise rejects.
         await expect.element(button).not.toBeDisabled();
+
+        // Assert: The rejection is reported to the logger instead of being swallowed.
+        expect(log.error).toHaveBeenCalledOnce();
+        expect(log.error).toHaveBeenCalledWith(expect.any(String), error);
     });
 
     it('is disabled synchronously and discards clicks that arrive while an async onclick handler is still pending', async () => {
@@ -204,7 +248,11 @@ describe('Button.svelte', () => {
                 resolveClick = resolve;
             });
         }
-        const {getByRole} = render(Button, {children: createRawTextSnippet('Button'), onclick});
+        const {getByRole} = render(Button, {
+            children: createRawTextSnippet('Button'),
+            log: createTestLogger(),
+            onclick,
+        });
         const button = getByRole('button');
 
         // Act: Fire three clicks synchronously via native events, instead of clicks via the

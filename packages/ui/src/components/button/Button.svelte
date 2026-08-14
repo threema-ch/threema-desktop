@@ -1,4 +1,5 @@
 <script lang="ts" module>
+  import type {Logger} from '@threema/ts-utils/logging/logger';
   import type {HTMLAnchorAttributes, HTMLButtonAttributes} from 'svelte/elements';
   import {type VariantProps, cn, tv} from 'tailwind-variants';
 
@@ -39,6 +40,10 @@
        * An icon to render to the left of the button content.
        */
       readonly icon?: Pick<IconProps, 'font' | 'glyph'>;
+      /**
+       * Logger to report errors to, e.g. if an asynchronous `onclick` handler rejects.
+       */
+      readonly log: Logger;
       readonly size?: ButtonVariants['size'];
       readonly variant?: ButtonVariants['variant'];
     }>
@@ -91,6 +96,7 @@
     disabled = false,
     href,
     icon,
+    log,
     onclick,
     ref = $bindable(null),
     size = 'default',
@@ -132,8 +138,8 @@
     if (isPromise(result)) {
       isLoading = true;
       result
-        .catch((error) => {
-          // TODO(DESK-2092): Implement logging.
+        .catch((error: unknown) => {
+          log.error("An error occurred in Button 'onclick' handler: ", error);
         })
         .finally(() => {
           isLoading = false;

@@ -21,8 +21,8 @@
   <p class="text-neutral-600 max-w-md text-center">Welcome to Threema Conferencing.</p>
 
   <div class="flex flex-wrap justify-center gap-4">
-    <Button variant="primary">Join Call</Button>
-    <Button variant="secondary">Learn More</Button>
+    <Button log={console} variant="primary">Join Call</Button>
+    <Button log={console} variant="secondary">Learn More</Button>
   </div>
 
   <label>
