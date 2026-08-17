@@ -11,6 +11,12 @@ export {
     type ButtonProps,
     buttonVariants,
 } from './components/button/Button.svelte';
+export {
+    ContextMenu,
+    type ContextMenuGroupProps,
+    type ContextMenuItemProps,
+    type ContextMenuProps,
+} from './components/context-menu';
 export {default as Icon, type IconProps, iconVariants} from './components/icon/Icon.svelte';
 export {
     default as Spinner,

@@ -29,6 +29,7 @@
 
   import type {WithChildren, WithoutChildren} from '../../utils/children';
   import type {WithElementRef} from '../../utils/element';
+  import type {AwaitableMouseEventHandler} from '../../utils/mouse-event';
   import Icon, {type IconProps} from '../icon/Icon.svelte';
 
   export const buttonVariants = tv({
@@ -102,11 +103,6 @@
       readonly 'type'?: never;
     };
 
-  type AwaitableMouseEventHandler = (
-    event: MouseEvent & {readonly currentTarget: EventTarget & HTMLButtonElement},
-  ) => // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  any | Promise<any>;
-
   type ButtonElementProps = BaseProps &
     WithoutChildren<Omit<HTMLButtonAttributes, 'href' | 'onclick' | 'on:click' | 'type'>> & {
       readonly 'disabled'?: HTMLButtonAttributes['disabled'];
@@ -116,7 +112,7 @@
        * will be disabled and display a loading state until the promise is resolved as soon as it
        * has been triggered.
        */
-      readonly 'onclick'?: AwaitableMouseEventHandler;
+      readonly 'onclick'?: AwaitableMouseEventHandler<HTMLButtonElement>;
       // eslint-disable-next-line @typescript-eslint/naming-convention
       readonly 'on:click'?: never;
       readonly 'type'?: HTMLButtonAttributes['type'];
