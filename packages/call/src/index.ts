@@ -24,6 +24,17 @@ export {
 } from './key.js';
 
 export {
+    alignMediaKeyStateWith,
+    ensureMediaKeySuccessorState,
+    LocalParticipantCallMediaKey,
+    PCMK_LENGTH,
+    type ParticipantCallMediaKeyState,
+    type PendingParticipantCallMediaKeyState,
+    type RawParticipantCallMediaKey,
+    type RawParticipantCallMediaKeyState,
+} from './media-key.js';
+
+export {
     ensureParticipantId,
     getMids,
     isParticipantId,
