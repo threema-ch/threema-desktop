@@ -10,6 +10,8 @@ export {
     type GroupCallIdValue,
 } from './call-id.js';
 
+export {GroupCallError, type GroupCallErrorOptions, type GroupCallErrorType} from './error.js';
+
 export {
     CALL_PERSONAL,
     deriveGroupCallKeys,

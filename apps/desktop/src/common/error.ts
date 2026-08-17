@@ -1,3 +1,4 @@
+import {GroupCallError, type GroupCallErrorType} from '@threema/call';
 import {CryptoError} from '@threema/crypto';
 import {Utf8EncodingError} from '@threema/ts-utils/codec/utf8';
 import {DelayedError, type DelayedErrorType} from '@threema/ts-utils/delayed/delayed-error';
@@ -407,5 +408,22 @@ const UTF8_ENCODING_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
 // the comlink endpoint.
 Object.defineProperty(Utf8EncodingError.prototype, TRANSFER_HANDLER, {
     value: UTF8_ENCODING_ERROR_TRANSFER_HANDLER,
+    enumerable: false,
+});
+
+const GROUP_CALL_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
+    GroupCallError,
+    TransferTag.GROUP_CALL_ERROR,
+    [type: GroupCallErrorType]
+>({
+    tag: TransferTag.GROUP_CALL_ERROR,
+    serialize: (error) => [error.type],
+    deserialize: (message, cause, [type]) => new GroupCallError(type, message, {from: cause}),
+});
+
+// We patch the prototype of the GroupCallError here to avoid coupling the call package with the
+// comlink endpoint.
+Object.defineProperty(GroupCallError.prototype, TRANSFER_HANDLER, {
+    value: GROUP_CALL_ERROR_TRANSFER_HANDLER,
     enumerable: false,
 });

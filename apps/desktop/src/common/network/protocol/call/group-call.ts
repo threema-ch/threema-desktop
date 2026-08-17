@@ -1,4 +1,4 @@
-import type {GroupCallIdValue} from '@threema/call';
+import {GroupCallError, type GroupCallIdValue} from '@threema/call';
 import {byteEquals} from '@threema/ts-utils/byte/byte-equals';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {AsyncLock} from '@threema/ts-utils/lock/async-lock';
@@ -20,9 +20,7 @@ import {
     GroupUserState,
     GroupUserStateUtils,
     StatusMessageType,
-    TransferTag,
 } from '~/common/enum';
-import {BaseError, type BaseErrorOptions} from '~/common/error';
 import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import type {Contact, Group, ServicesForModel} from '~/common/model';
@@ -37,19 +35,25 @@ import {
 } from '~/common/network/protocol/directory';
 import {ensureBaseUrl, type BaseUrl, type IdentityString} from '~/common/network/types';
 import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
-import {PROXY_HANDLER, registerErrorTransferHandler} from '~/common/utils/endpoint';
+import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import {AbortRaiser, type AbortListener} from '~/common/utils/signal';
 import {type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {type AnyGroupCallContextAbort, GroupCall} from '~/common/webrtc/group-call';
 
-// Note: The Group Call ID and the Participant ID live in `@threema/call` so that they can be shared
-// with other apps. They are re-exported here to keep the existing import sites working.
+// Note: The Group Call ID, the Participant ID and the group call error live in `@threema/call` so
+// that they can be shared with other apps. They are re-exported here to keep the existing import
+// sites working.
+//
+// Note: The transfer handler of the `GroupCallError` is registered and patched onto its prototype
+// in `~/common/error`, so that `@threema/call` stays free of any RPC coupling.
 //
 // TODO(DESK-2248): Remove re-exports in favor of updating the changed imports.
 export {
     createGroupCallId,
     ensureParticipantId,
+    GroupCallError,
     isParticipantId,
+    type GroupCallErrorType,
     type GroupCallId,
     type GroupCallIdValue,
     type ParticipantId,
@@ -59,49 +63,6 @@ export type ServicesForGroupCall = Pick<
     ServicesForModel,
     'db' | 'crypto' | 'device' | 'directory' | 'endpoint' | 'logging' | 'model' | 'sfu' | 'webrtc'
 >;
-
-/**
- * Error types associated to a group call.
- *
- * - invalid-state: The call state machine is in a state that did not allow for the desired action.
- * - directory-error: Could not acquire an SFU token.
- * - sfu-timeout: The SFU endpoint did not respond in time.
- * - sfu-fetch: An error occurred when fetching data from the SFU (e.g. a network connectivity
- *   error).
- * - sfu-status-code: The SFU endpoint did not return an acceptable HTTP status code for the call.
- * - sfu-invalid-data: Data received from the SFU endpoint that is considered critical could not be
- *   decoded.
- * - webrtc-connect: Could not connect to the SFU via WebRTC.
- */
-export type GroupCallErrorType =
-    | {readonly kind: 'invalid-state'}
-    | {readonly kind: 'directory-error'; readonly type: DirectoryErrorType}
-    | {readonly kind: 'sfu-timeout'}
-    | {readonly kind: 'sfu-fetch'}
-    | {readonly kind: 'sfu-status-code'; readonly status: u53}
-    | {readonly kind: 'sfu-invalid-data'}
-    | {readonly kind: 'webrtc-connect'};
-
-const GROUP_CALL_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
-    GroupCallError,
-    TransferTag.GROUP_CALL_ERROR,
-    [type: GroupCallErrorType]
->({
-    tag: TransferTag.GROUP_CALL_ERROR,
-    serialize: (error) => [error.type],
-    deserialize: (message, cause, [type]) => new GroupCallError(type, message, {from: cause}),
-});
-
-export class GroupCallError extends BaseError {
-    public [TRANSFER_HANDLER] = GROUP_CALL_ERROR_TRANSFER_HANDLER;
-    public constructor(
-        public readonly type: GroupCallErrorType,
-        message: string,
-        options?: BaseErrorOptions,
-    ) {
-        super(message, options);
-    }
-}
 
 /**
  * Return the {@link ModelStore<Contact> | 'me'} and the associated {@link PublicKey} if the
