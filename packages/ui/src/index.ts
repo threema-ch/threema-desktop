@@ -34,6 +34,12 @@ export {
 // HOCs
 
 export {
+    default as PopoverProvider,
+    type PopoverAnchorProps,
+    type PopoverProviderProps,
+    popoverProviderVariants,
+} from './hocs/popover-provider/PopoverProvider.svelte';
+export {
     default as RadialExclusionMaskProvider,
     type RadialExclusionMaskProviderProps,
 } from './hocs/radial-exclusion-mask-provider/RadialExclusionMaskProvider.svelte';
