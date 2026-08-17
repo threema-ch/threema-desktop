@@ -73,4 +73,8 @@ export {
     type S2pHello,
 } from './schema.js';
 
-export {SfuSupportedFeatures, type SfuSupportedFeaturesInterface} from './sfu.js';
+export {
+    SfuSupportedFeatures,
+    type SfuPeekResult,
+    type SfuSupportedFeaturesInterface,
+} from './sfu.js';

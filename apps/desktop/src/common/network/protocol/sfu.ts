@@ -1,17 +1,15 @@
+import type {SfuPeekResult} from '@threema/call';
 import type {DtlsFingerprint} from '@threema/webrtc/sdp';
 
-import type {
-    JoinResponse,
-    PeekResponse as RawPeekResponse,
-} from '~/common/network/protobuf/validate/group-call';
+import type {JoinResponse} from '~/common/network/protobuf/validate/group-call';
 import type {GroupCallBaseData} from '~/common/network/protocol/call/group-call';
 import type {SfuToken} from '~/common/network/protocol/directory';
-import type {IdentityString} from '~/common/network/types';
 
-export type PeekResponse = Pick<RawPeekResponse, 'startedAt' | 'maxParticipants'> & {
-    /** IMPORTANT: This may include contacts more than once, including the user itself! */
-    readonly participants: readonly IdentityString[] | undefined;
-};
+// Note: The peek result lives in `@threema/call` because the shared SFU HTTP client returns it. It
+// is re-exported here to keep the existing import sites working.
+//
+// TODO(DESK-2248): Remove re-exports in favor of updating the changed imports.
+export type PeekResponse = SfuPeekResult;
 
 export interface SfuHttpBackend {
     /**
@@ -19,8 +17,7 @@ export interface SfuHttpBackend {
      *
      * @returns the current group call state (if known) or `undefined` (which still means the group
      *   call exists).
-     * @throws {GroupCallError} if something went wrong. See {@link SfuHttpErrorType} for a list of
-     *   possible error types.
+     * @throws {GroupCallError} if something went wrong.
      */
     peek: (data: GroupCallBaseData, token: SfuToken) => Promise<PeekResponse | undefined>;
 
@@ -31,8 +28,7 @@ export interface SfuHttpBackend {
      * created.
      *
      * @returns necessary information to connect to the group call via WebRTC.
-     * @throws {GroupCallError} if something went wrong. See {@link SfuHttpErrorType} for a list of
-     *   possible error types.
+     * @throws {GroupCallError} if something went wrong.
      */
     join: (
         data: GroupCallBaseData,
