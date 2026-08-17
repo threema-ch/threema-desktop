@@ -33,6 +33,7 @@
     "test:vitest": "vitest run --coverage"
   },
   "dependencies": {
+    "@badrap/valita": "catalog:",
     "long": "5.3.2"
   },
   "devDependencies": {

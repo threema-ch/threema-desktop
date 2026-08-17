@@ -5,62 +5,19 @@
 import * as v from '@badrap/valita';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
-import {intoU64} from '@threema/ts-utils/number/into-u64';
+import {nullEmptyStringOptional} from '@threema/ts-utils/null/null-empty-string-optional';
+import {nullOptional} from '@threema/ts-utils/null/null-optional';
 import {unixTimestampToDateMs} from '@threema/ts-utils/number/unix-timestamp-to-date-ms';
-import Long from 'long';
+import {unsignedLongAsU64} from '@threema/ts-utils/number/unsigned-long-as-u64';
 
 import * as Unit from '~/common/network/protobuf/validate/common/unit';
 import {NULL_OR_UNDEFINED_SCHEMA} from '~/common/network/protobuf/validate/helpers';
-import type {u64} from '~/common/types';
 
-/**
- * Ensure that a value is an instance of a certain type.
- *
- * Note: May not be used with `Long`! To check if a value is a `Long`, use {@link Long.isLong}. In
- * the context of Valita, use {@link unsignedLongAsU64}.
- *
- * Example:
- *
- *     const t = v.object({
- *       fourBytes: instanceOf(Uint8Array).assert((a) => a.length === 4),
- *       timestamp: instanceOf(Date),
- *       etcetera: instanceOf(Worker),
- *     });
- */
-export function instanceOf<T>(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    t: abstract new (...args: any) => T,
-): T extends Long ? never : v.Type<T> {
-    return v
-        .unknown()
-        .assert<T>(
-            (value) => value instanceof t,
-            `expected an instance of ${t.name !== '' ? t.name : 'an anonymous type'}`,
-        ) as T extends Long ? never : v.Type<T>;
-}
-
-/**
- * Expect a `Long` value (validated through `Long.isLong`), then convert it into an u64.
- */
-export function unsignedLongAsU64(): v.Type<u64> {
-    return v
-        .unknown()
-        .chain((value: unknown) => {
-            if (Long.isLong(value)) {
-                // When Protobuf falls back to the default value of 0, this is a signed `Long`
-                // value. Convert to unsigned.
-                if (value.isZero()) {
-                    return v.ok(Long.UZERO);
-                }
-
-                return v.ok(value);
-            }
-            return v.err(
-                `Expected a Long value, but "Long.isLong" returns false for value "${value}" with type "${typeof value}"`,
-            );
-        })
-        .map(intoU64);
-}
+// Re-exported for convenience, so that the many existing import sites of these generic helpers do
+// not need to be rewritten.
+// TODO(DESK-2248): Remove re-exports in favor of updating the changed imports
+export {instanceOf} from '@threema/ts-utils/meta/instance-of';
+export {nullEmptyStringOptional, nullOptional, unsignedLongAsU64};
 
 /**
  * Validate and cast a value with a `ensure`-function which throws an error if the validation fails.
@@ -76,29 +33,6 @@ export function validate<TIn, TOut>(
             return v.err(ensureError(error));
         }
     });
-}
-
-/**
- * Parse an optional parameter which also treats null as non-existent.
- */
-export function nullOptional<T>(schema: v.Type<T>): v.Optional<T | undefined> {
-    return (
-        schema
-            .nullable()
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            .map((value) => (value === null ? undefined : value))
-            .optional()
-    );
-}
-
-/**
- * Parse an optional parameter which also treats null and empty string as non-existent.
- */
-export function nullEmptyStringOptional<T>(schema: v.Type<T>): v.Optional<T | undefined> {
-    return v
-        .union(v.null(), v.literal(''), schema)
-        .map((value) => (value === null || value === '' ? undefined : value))
-        .optional();
 }
 
 export const VALITA_NULL = Symbol('valita-null');

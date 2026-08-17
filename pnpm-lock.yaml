@@ -979,6 +979,9 @@ importers:
 
   packages/ts-utils:
     dependencies:
+      '@badrap/valita':
+        specifier: 'catalog:'
+        version: 0.4.6
       long:
         specifier: 5.3.2
         version: 5.3.2
