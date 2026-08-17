@@ -710,14 +710,17 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             this._db
                 .selectFrom(tGroup)
                 .leftJoin(groupMemberLeftJoin)
-                .on(
-                    tGroup.uid
-                        .equals(groupMemberLeftJoin.groupUid)
-                        .and(tGroup.userState.equals(GroupUserState.MEMBER)),
-                )
+                .on(tGroup.uid.equals(groupMemberLeftJoin.groupUid))
                 .select({uid: tGroup.uid})
-                .where(groupMemberLeftJoin.contactUid.equals(contactUid))
-                .or(tGroup.creatorUid.equals(contactUid))
+                .where(
+                    tGroup.userState
+                        .equals(GroupUserState.MEMBER)
+                        .and(
+                            groupMemberLeftJoin.contactUid
+                                .equals(contactUid)
+                                .or(tGroup.creatorUid.equals(contactUid)),
+                        ),
+                )
                 .executeSelectMany(),
         );
     }
