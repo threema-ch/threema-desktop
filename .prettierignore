@@ -28,6 +28,9 @@ build
 # Forked code, keep differences to original minimal.
 /apps/desktop/src/common/node/db/query-runner.ts
 
+# Package: `packages/call`
+/packages/call/coverage/
+
 # Package: `packages/crypto`
 /packages/crypto/coverage/
 /packages/crypto/src/blake2b/implementation.js

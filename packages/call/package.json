@@ -1,0 +1,33 @@
+{
+  "name": "@threema/call",
+  "description": "Shared, platform-neutral implementation of the Threema call protocol",
+  "author": "Threema AG",
+  "license": "AGPL-3.0+",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./worker": "./src/worker/index.ts"
+  },
+  "scripts": {
+    "lint:eslint": "eslint .",
+    "lint:eslint:fix": "eslint . --fix",
+    "lint:tsc": "tsc --noEmit && tsc --noEmit -p src/worker/tsconfig.json",
+    "test:vitest": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@threema/crypto": "workspace:*",
+    "@threema/protocol": "workspace:*",
+    "@threema/ts-utils": "workspace:*",
+    "@threema/webrtc": "workspace:*"
+  },
+  "devDependencies": {
+    "@threema/eslint-config": "workspace:*",
+    "@threema/ts-config": "workspace:*",
+    "@vitest/coverage-istanbul": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
