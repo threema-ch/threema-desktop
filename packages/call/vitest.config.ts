@@ -13,6 +13,5 @@ export default defineConfig({
                 '100': true,
             },
         },
-        passWithNoTests: true,
     },
 });
