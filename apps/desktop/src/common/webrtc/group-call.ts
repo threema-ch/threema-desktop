@@ -760,6 +760,9 @@ interface BaseRemoteParticipant<TAuthentication extends RemoteParticipantAuthSta
     readonly sendLocalPcmks: (states: readonly ParticipantCallMediaKeyState[]) => void;
 }
 
+/**
+ * The participant-to-participant handshake state machine, from the local point of view.
+ */
 class UnauthenticatedRemoteParticipant
     implements BaseRemoteParticipant<Exclude<RemoteParticipantAuthState, 'done'>>
 {
@@ -933,7 +936,7 @@ class UnauthenticatedRemoteParticipant
                 // Derive the client key shared key and derive GCNHAK.
                 this._crypto.gcnhak.set(
                     deriveGroupCallNormalHandshakeAuthKey(
-                        this._services,
+                        this._services.crypto,
                         this._services.device.csp.ck,
                         this._call.data.derivations.gckh,
                         member.publicKey,

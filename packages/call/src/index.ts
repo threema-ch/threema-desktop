@@ -31,4 +31,17 @@ export {
     type ParticipantId,
 } from './participant.js';
 
+export {
+    deriveGroupCallNormalHandshakeAuthKey,
+    type GroupCallNormalHandshakeAuthBox,
+    type LocalParticipantCallKey,
+    type LocalParticipantCookie,
+    type LocalParticipantSequenceNumberValue,
+    type ParticipantCallBox,
+    type RemoteParticipantCallKey,
+    type RemoteParticipantCookie,
+    type RemoteParticipantSequenceNumberValue,
+    type SharedKeyDeriver,
+} from './participant-channel.js';
+
 export {SfuSupportedFeatures, type SfuSupportedFeaturesInterface} from './sfu.js';

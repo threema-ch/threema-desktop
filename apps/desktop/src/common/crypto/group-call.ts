@@ -4,7 +4,6 @@ import {
     deriveGroupCallKeys,
     type GroupCallId,
     type GroupCallKeys,
-    type RawGroupCallKeyHash,
 } from '@threema/call';
 import {wrapRawKey, type RawKey, type UnwrappedRawKey} from '@threema/crypto';
 import {createHash, SALTBYTES} from '@threema/crypto/blake2b/implementation';
@@ -13,20 +12,11 @@ import type {u8} from '@threema/ts-utils/integer/u8';
 import {tag, type WeakOpaque} from '@threema/ts-utils/meta/newtype';
 
 import type {ServicesForBackend} from '~/common/backend';
-import {
-    type CryptoBackend,
-    type CryptoBox,
-    NONCE_UNGUARDED_SCOPE,
-    type NonceUnguardedScope,
-    type PublicKey,
-    type Cookie,
-} from '~/common/crypto';
-import type {SharedBoxFactory} from '~/common/crypto/box';
+import type {CryptoBackend} from '~/common/crypto';
 import type {GroupView} from '~/common/model';
 import {getIdentityString} from '~/common/model/contact';
 import type {ParticipantId, GroupCallBaseData} from '~/common/network/protocol/call/group-call';
-import type {ClientKey} from '~/common/network/types/keys';
-import type {RepeatedTuple, u64} from '~/common/types';
+import type {RepeatedTuple} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import type {ProxyMarked} from '~/common/utils/endpoint';
 
@@ -37,6 +27,19 @@ export {
     wrapRawGroupCallKey,
     type RawGroupCallKey,
     type RawGroupCallKeyHash,
+} from '@threema/call';
+
+// TODO(DESK-2248): Remove re-exports in favor of updating the changed imports
+export {
+    deriveGroupCallNormalHandshakeAuthKey,
+    type GroupCallNormalHandshakeAuthBox,
+    type LocalParticipantCallKey,
+    type LocalParticipantCookie,
+    type LocalParticipantSequenceNumberValue,
+    type ParticipantCallBox,
+    type RemoteParticipantCallKey,
+    type RemoteParticipantCookie,
+    type RemoteParticipantSequenceNumberValue,
 } from '@threema/call';
 
 /**
@@ -65,101 +68,6 @@ export function deriveGroupCallProperties(
         ...deriveGroupCallKeys(services.crypto, data.gck),
     };
 }
-
-/**
- * Derive the Group Call Normal Handshake Authentication (`GCNHAK`) key.
- */
-export function deriveGroupCallNormalHandshakeAuthKey(
-    services: Pick<ServicesForBackend, 'crypto'>,
-    ck: ClientKey,
-    gckh: RawGroupCallKeyHash,
-    contactPublicKey: PublicKey,
-): GroupCallNormalHandshakeAuthBox {
-    // GCNHAK = Blake2b(key=<shared-secret>, salt='nha', personal='3ma-call', input=GCKH)
-    return tag<GroupCallNormalHandshakeAuthBox>(
-        services.crypto.getSecretBox(
-            ck
-                .deriveSharedKey(32, contactPublicKey, {
-                    personal: CALL_PERSONAL,
-                    salt: 'nha',
-                    input: gckh,
-                })
-                .asReadonly(),
-            NONCE_UNGUARDED_SCOPE,
-            undefined,
-        ),
-    );
-}
-
-/**
- * Group Call Normal Handshake Authentication (`GCNHAK`) key box.
- */
-export type GroupCallNormalHandshakeAuthBox = WeakOpaque<
-    CryptoBox<never, never, never, never, NonceUnguardedScope>,
-    {readonly GroupCallNormalHandshakeAuthBox: unique symbol}
->;
-
-/**
- * The user's group call cookie towards a specific remote participant.
- */
-export type LocalParticipantCookie = WeakOpaque<
-    Cookie,
-    {readonly LocalParticipantCookie: unique symbol}
->;
-
-/**
- * The remote participant's group call cookie.
- */
-export type RemoteParticipantCookie = WeakOpaque<
-    Cookie,
-    {readonly RemoteParticipantCookie: unique symbol}
->;
-
-/**
- * The user's sequence number counter value towards a specific remote participant.
- */
-export type LocalParticipantSequenceNumberValue = WeakOpaque<
-    u64,
-    {readonly ClientSequenceNumberValue: unique symbol}
->;
-
-/**
- * The remote participant's sequence number counter value.
- */
-export type RemoteParticipantSequenceNumberValue = WeakOpaque<
-    u64,
-    {readonly ServerSequenceNumberValue: unique symbol}
->;
-
-/**
- * Participant to participant call key box.
- */
-export type ParticipantCallBox = WeakOpaque<
-    CryptoBox<
-        RemoteParticipantCookie,
-        LocalParticipantCookie,
-        RemoteParticipantSequenceNumberValue,
-        LocalParticipantSequenceNumberValue,
-        NonceUnguardedScope
-    >,
-    {readonly ParticipantCallBox: unique symbol}
->;
-
-/**
- * A local Participant Call Key (PCK) (bytes).
- */
-export type LocalParticipantCallKey = WeakOpaque<
-    SharedBoxFactory<ParticipantCallBox>,
-    {readonly LocalParticipantCallKey: unique symbol}
->;
-
-/**
- * Raw public part of the remote Participant Call Key (PCK) (bytes). Must be exactly 32 bytes long.
- */
-export type RemoteParticipantCallKey = WeakOpaque<
-    PublicKey,
-    {readonly RemoteParticipantCallKey: unique symbol}
->;
 
 export const PCMK_LENGTH = 32;
 const PCMK_SALT = UTF8.encodeFullyInto("m'", new Uint8Array(SALTBYTES)).array;
