@@ -22,9 +22,10 @@ flexibility. Judge yourself on a case-by-case basis.
 
 - Components go into `src/components/`, wrappers which add behaviour to arbitrary content go into
   `src/hocs/`, and general helpers which do not belong to a specific component go into `src/utils/`.
-- One directory per component, named in `kebab-case`, containing the component, its stories and its
-  tests: `X.svelte`, `X.stories.svelte` and `X.test.ts`. Note: Stories and tests are optional, and
-  should primarily be used for complex components with configurable behavior and edge-cases.
+- One directory per component, named in `kebab-case`, containing the component, its stories, its
+  tests and, if its tests need one, its fixture: `X.svelte`, `X.stories.svelte`, `X.test.ts` and
+  `X.fixture.svelte`. Note: Stories and tests are optional, and should primarily be used for complex
+  components with configurable behavior and edge-cases.
 - Add an `index.ts` to a component's directory only if it exposes subcomponents. Otherwise, export
   the component from `src/index.ts` directly.
 - Every component, along with its `XYZProps` and variants types, is re-exported from `src/index.ts`.
@@ -115,5 +116,11 @@ flexibility. Judge yourself on a case-by-case basis.
 - Complex or particularly configurable components should have Stories and Tests.
 - Component tests should select elements by role and accessible name, rather than by class or
   position.
+- A component which can be tested on its own is rendered directly in its `X.test.ts`. Do not add a
+  fixture for it.
+- A component which only works as part of a tree, i.e. together with its subcomponents, gets a
+  fixture `X.fixture.svelte`, which composes that tree out of plain data so that the tests stay in
+  `X.test.ts`. Note: A fixture is test-only, so neither it nor its types are exported from
+  `src/index.ts`.
 - Comment the intent behind markup and class choices which are not self-evident, not their
   mechanics.
