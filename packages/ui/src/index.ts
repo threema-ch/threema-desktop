@@ -49,6 +49,11 @@ export {
     default as RadialExclusionMaskProvider,
     type RadialExclusionMaskProviderProps,
 } from './hocs/radial-exclusion-mask-provider/RadialExclusionMaskProvider.svelte';
+export {
+    default as TooltipProvider,
+    type TooltipAnchorProps,
+    type TooltipProviderProps,
+} from './hocs/tooltip-provider/TooltipProvider.svelte';
 
 // Utils
 
