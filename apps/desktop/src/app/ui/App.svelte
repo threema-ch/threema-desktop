@@ -186,7 +186,7 @@
     // Unmount cleanup callback.
     return () => {
       displayModeObserverUnsubscriber();
-      window.removeEventListener('keydown', handleKeydown);
+      document.body.removeEventListener('keydown', handleKeydown);
     };
   });
 </script>
