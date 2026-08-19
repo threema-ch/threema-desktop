@@ -11,7 +11,8 @@ import {ensureError} from '@threema/ts-utils/meta/ensure-error';
 import {clamp} from '@threema/ts-utils/number/clamp';
 import {ResolvablePromise} from '@threema/ts-utils/promise/resolvable-promise';
 import {TIMER} from '@threema/ts-utils/timer/global-timer';
-import type {IpcMainEvent, MenuItemConstructorOptions} from 'electron';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import {Menu, type IpcMainEvent, type MenuItemConstructorOptions} from 'electron';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import * as electron from 'electron';
 
@@ -1285,42 +1286,43 @@ function main(
         });
 
         window.webContents.on('context-menu', (event, params) => {
-            if (process.platform !== 'darwin') {
-                return;
-            }
-            const menu = new electron.Menu();
-
-            // Do nothing if we don't have a window
-            if (window === undefined) {
+            // Do nothing if we don't have a window / input frame or the element is not editable
+            if (window === undefined || params.frame === null || !params.isEditable) {
                 return;
             }
 
-            // Add each spelling suggestion
-            for (const suggestion of params.dictionarySuggestions) {
-                menu.append(
-                    new electron.MenuItem({
-                        label: suggestion,
-                        // eslint-disable-next-line @typescript-eslint/no-loop-func
-                        click: () => window?.webContents.replaceMisspelling(suggestion),
-                    }),
-                );
+            const menu = Menu.buildFromTemplate([{role: 'editMenu'}]);
+
+            if (process.platform === 'darwin') {
+                // Add each spelling suggestion
+                for (const suggestion of params.dictionarySuggestions) {
+                    menu.append(
+                        new electron.MenuItem({
+                            label: suggestion,
+                            // eslint-disable-next-line @typescript-eslint/no-loop-func
+                            click: () => window?.webContents.replaceMisspelling(suggestion),
+                        }),
+                    );
+                }
+
+                // Allow users to add the misspelled word to the dictionary
+                // TODO(DESK-1512) Add a mapping for different languages
+                if (params.misspelledWord.length !== 0) {
+                    menu.append(
+                        new electron.MenuItem({
+                            label: 'Add to dictionary',
+                            click: () =>
+                                window?.webContents.session.addWordToSpellCheckerDictionary(
+                                    params.misspelledWord,
+                                ),
+                        }),
+                    );
+                }
             }
 
-            // Allow users to add the misspelled word to the dictionary
-            // TODO(DESK-1512) Add a mapping for different languages
-            if (params.misspelledWord.length !== 0) {
-                menu.append(
-                    new electron.MenuItem({
-                        label: 'Add to dictionary',
-                        click: () =>
-                            window?.webContents.session.addWordToSpellCheckerDictionary(
-                                params.misspelledWord,
-                            ),
-                    }),
-                );
-            }
-
-            menu.popup();
+            menu.popup({
+                frame: params.frame,
+            });
         });
 
         if (import.meta.env.DEBUG) {
