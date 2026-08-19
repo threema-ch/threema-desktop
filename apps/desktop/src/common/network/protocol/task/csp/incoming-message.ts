@@ -711,9 +711,23 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             if (senderContactOrInit instanceof ModelStore) {
                 // Contact exists. Update the nickname if necessary.
                 const nicknameFromMessage = this._getSenderNickname(type, this._message, metadata);
+
+                const contactModel = senderContactOrInit.get();
+
+                // 2. If contact-or-init has an acquaintance level different to direct and
+                //    inner-type requires to create an implicit direct contact, set
+                //    change.acquaintance-level to direct.
+                if (
+                    contactModel.view.acquaintanceLevel !== AcquaintanceLevel.DIRECT &&
+                    instructions.missingContactHandling === 'create'
+                ) {
+                    await contactModel.controller.update.fromRemote(handle, {
+                        acquaintanceLevel: AcquaintanceLevel.DIRECT,
+                    });
+                }
+
                 if (nicknameFromMessage !== undefined) {
                     // 4. If `nickname` is present and `contact-or-init` contains an existing contact:
-                    const contactModel = senderContactOrInit.get();
                     if (
                         isNickname(nicknameFromMessage) &&
                         contactModel.view.nickname !== nicknameFromMessage
