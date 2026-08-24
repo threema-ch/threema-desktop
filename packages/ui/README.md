@@ -22,6 +22,9 @@ flexibility. Judge yourself on a case-by-case basis.
 
 - Components go into `src/components/`, wrappers which add behaviour to arbitrary content go into
   `src/hocs/`, and general helpers which do not belong to a specific component go into `src/utils/`.
+- Compositions of the above which serve one part of an app, rather than being reusable on their own,
+  go into `src/partials/<name>/`. A partial may compose components and hocs, but nothing may depend
+  on a partial.
 - One directory per component, named in `kebab-case`, containing the component, its stories, its
   tests and, if its tests need one, its fixture: `X.svelte`, `X.stories.svelte`, `X.test.ts` and
   `X.fixture.svelte`. Note: Stories and tests are optional, and should primarily be used for complex
