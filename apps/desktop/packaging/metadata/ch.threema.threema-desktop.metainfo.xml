@@ -3,41 +3,46 @@
     <metadata_license>CC-BY-SA-3.0</metadata_license>
     <id>ch.threema.threema-desktop</id>
     <name>Threema</name>
-    <project_license>AGPL-3.0</project_license>
-    <summary>Threema for desktop allows using Threema from your computer.</summary>
+    <project_license>AGPL-3.0-or-later</project_license>
+    <summary>Threema for desktop allows using Threema from your computer</summary>
     <url type="homepage">https://threema.ch/</url>
     <url type="help">https://threema.ch/support</url>
     <url type="contact">https://threema.ch/en/request/default?i_have_read_the_faq=1</url>
+    <url type="vcs-browser">https://github.com/threema-ch/threema-desktop</url>
     <description>
         <p>
             Threema for desktop is a desktop client for Threema, a privacy-focused end-to-end
             encrypted mobile messenger hosted and developed in Switzerland.
         </p>
     </description>
+    <!-- The environment attribute of screenshots have to match the following cases: -->
+    <!-- https://github.com/ximion/appstream/blob/d8d39685bdc36f416f74e14064d44997056271a9/src/as-desktop-env-data.h#L75-L76 -->
     <screenshots>
         <screenshot type="default" environment="gnome:dark">
             <image type="source" width="1304" height="781">
                 https://releases.threema.ch/flatpak/threema-desktop/screenshot-1.jpg
             </image>
+            <caption>Group chat in dark mode</caption>
         </screenshot>
-        <screenshot type="default" environment="gnome:light">
+        <screenshot environment="gnome">
             <image type="source" width="1304" height="781">
                 https://releases.threema.ch/flatpak/threema-desktop/screenshot-2.jpg
             </image>
+            <caption>Group chat in light mode</caption>
         </screenshot>
-        <screenshot type="default" environment="gnome:dark">
+        <screenshot environment="gnome:dark">
             <image type="source" width="1304" height="781">
                 https://releases.threema.ch/flatpak/threema-desktop/screenshot-3.jpg
             </image>
+            <caption>Appearance settings in dark mode</caption>
         </screenshot>
-        <screenshot type="default" environment="gnome:light">
+        <screenshot environment="gnome">
             <image type="source" width="1304" height="781">
                 https://releases.threema.ch/flatpak/threema-desktop/screenshot-4.jpg
             </image>
+            <caption>Appearance settings in light mode</caption>
         </screenshot>
     </screenshots>
-    <!-- Note: Deprecated since AppStream 1.0, remove after 2025 -->
-    <developer_name>Threema AG</developer_name>
     <developer id="ch.threema">
         <name translate="no">Threema AG</name>
     </developer>
@@ -1071,17 +1076,10 @@
             <description>
                 <p>Improvements:</p>
                 <ul>
+                    <li>New device linking based on QR-Code</li>
                     <li>
-                        New device linking based on QR-Code
-                        <br />
-                        <ul>
-                            <li>
-                                Please test this by unlinking and relinking the
-                                Threema desktop app with the latest iOS beta
-                                app. This will empty the chats in the desktop
-                                app.
-                            </li>
-                        </ul>
+                        Please test this by unlinking and relinking the Threema desktop app with the
+                        latest iOS beta app. This will empty the chats in the desktop app.
                     </li>
                     <li>Synchronization of profile pictures during linking</li>
                     <li>Allow changing password in user profile</li>
@@ -1161,16 +1159,9 @@
             <description>
                 <p>Improvements:</p>
                 <ul>
-                    <li>
-                        Add some simple keyboard shortcuts:
-                        <br />
-                        <ul>
-                            <li>Focus chat search with Ctrl+F (Windows, Linux) / Cmd+F (macOS)</li>
-                            <li>
-                                Toggle emoji picker with Ctrl+E (Windows, Linux) / Cmd+E (macOS)
-                            </li>
-                        </ul>
-                    </li>
+                    <li>Add some simple keyboard shortcuts:</li>
+                    <li>Focus chat search with Ctrl+F (Windows, Linux) / Cmd+F (macOS)</li>
+                    <li>Toggle emoji picker with Ctrl+E (Windows, Linux) / Cmd+E (macOS)</li>
                     <li>Show work/private contact indicator in contact details side panel</li>
                 </ul>
                 <p>Bugfixes:</p>
@@ -1399,6 +1390,17 @@
             </description>
         </release>
     </releases>
+    <branding>
+        <color type="primary" scheme_preference="light">#9cf2c6</color>
+        <color type="primary" scheme_preference="dark">#0b734e</color>
+    </branding>
+    <requires>
+        <display_length compare="ge">768</display_length>
+    </requires>
+    <supports>
+        <control>keyboard</control>
+        <control>pointing</control>
+    </supports>
     <launchable type="desktop-id">ch.threema.threema-desktop.desktop</launchable>
     <content_rating type="oars-1.1">
         <content_attribute id="social-chat">intense</content_attribute>
