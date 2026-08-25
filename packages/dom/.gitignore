@@ -1,2 +1,4 @@
 # Testing & code coverage
+__screenshots__
+.vitest-attachments
 /coverage/
