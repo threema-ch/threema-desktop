@@ -48,6 +48,7 @@
   import {conversationListEvent} from '~/app/ui/components/partials/conversation-nav/helpers';
   import CreatePollModal from '~/app/ui/components/partials/modals/create-poll-modal/CreatePollModal.svelte';
   import ReceiverPreviewList from '~/app/ui/components/partials/receiver-preview-list/ReceiverPreviewList.svelte';
+  import type {InteractionEvent} from '~/app/ui/components/partials/receiver-preview-list/types';
   import {i18n} from '~/app/ui/i18n';
   import MediaMessage from '~/app/ui/modal/MediaMessage.svelte';
   import {type MediaFile, generateThumbnail} from '~/app/ui/modal/media-message';
@@ -87,7 +88,11 @@
     TextMessageWithByteLength,
   } from '~/common/viewmodel/conversation/main/controller/types';
   import type {FeatureSupport} from '~/common/viewmodel/conversation/main/store/types';
-  import type {AnyReceiverData, ContactReceiverData} from '~/common/viewmodel/utils/receiver';
+  import {
+    isContactReceiverData,
+    type AnyReceiverData,
+    type ContactReceiverData,
+  } from '~/common/viewmodel/utils/receiver';
 
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.conversation-view');
@@ -760,7 +765,13 @@
     };
   }
 
-  function handleClickMentionReceiver(event: {lookup: DbReceiverLookup}): void {
+  function handleInteraction(event: InteractionEvent): void {
+    const receiverFromEvent = event.receiver;
+
+    if (event.type !== 'click' || !isContactReceiverData(receiverFromEvent)) {
+      return;
+    }
+
     if ($viewModelStore?.receiver.type !== 'group') {
       log.error('Mentioning is only allowed in groups');
       return;
@@ -772,8 +783,8 @@
       .find(
         (member): member is ContactReceiverData =>
           member.type === 'contact' &&
-          member.lookup.type === event.lookup.type &&
-          member.lookup.uid === event.lookup.uid,
+          member.lookup.type === receiverFromEvent.lookup.type &&
+          member.lookup.uid === receiverFromEvent.lookup.uid,
       );
     if (receiver === undefined) {
       log.error("Mentioned receiver couldn't be found in the current group");
@@ -1275,14 +1286,13 @@
                     receiver={$viewModelStore.receiver}
                     {services}
                   />
-                  <!-- TODO(DESK-2229) Unify state and callback interaction with ReceiverPreviewList, if possible -->
                   <ReceiverPreviewList
                     highlights={composeBarState.mentionString}
                     items={getFilteredMentionReceiverPreviewListItems(
                       $viewModelStore.receiver,
                       composeBarState.mentionString,
                     )}
-                    onclickitem={handleClickMentionReceiver}
+                    oninteraction={handleInteraction}
                     {services}
                   />
                 </FocusMoverProvider>

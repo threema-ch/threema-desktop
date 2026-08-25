@@ -21,6 +21,7 @@
   import type {ProfilePictureBlobStoreValue} from '~/common/dom/ui/profile-picture';
   import {assertUnreachable, unreachable} from '~/common/utils/assert';
   import {WritableStore} from '~/common/utils/store';
+  import {isContactReceiverData} from '~/common/viewmodel/utils/receiver';
 
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.group-create-form-step-two');
@@ -57,7 +58,7 @@
     contacts.filter((contactStore) => {
       const contact = contactStore.get();
       return (
-        contact.receiver.type === 'contact' && selectedMembers.has(contact.receiver.lookup.uid)
+        isContactReceiverData(contact.receiver) && selectedMembers.has(contact.receiver.lookup.uid)
       );
     }),
   );
@@ -161,7 +162,6 @@
         )}
       </div>
       {#if filteredContacts.length > 0}
-        <!-- TODO(DESK-2229) Unify state and callback interaction with ReceiverPreviewList, if possible -->
         <ReceiverPreviewList items={filteredContacts} {services} />
       {/if}
     </div>

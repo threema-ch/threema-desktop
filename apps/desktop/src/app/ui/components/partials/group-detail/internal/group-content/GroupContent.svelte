@@ -16,6 +16,7 @@
     ReceiverPreviewListItem,
     ContextMenuItemWithHandlerProps,
   } from '~/app/ui/components/partials/receiver-preview-list/props';
+  import type {InteractionEvent} from '~/app/ui/components/partials/receiver-preview-list/types';
   import {i18n} from '~/app/ui/i18n';
   import type {I18nType} from '~/app/ui/i18n-types';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
@@ -101,6 +102,14 @@
     currentLimit = DEFAULT_LIMIT;
   }
 
+  function handleInteraction(event: InteractionEvent): void {
+    if (event.type !== 'click') {
+      return;
+    }
+
+    onclickitem?.(event.receiver, event.active);
+  }
+
   const totalMemberCount = $derived(getGroupReceiverDataMemberCount(receiver));
 
   const currentReceiverId = $derived(receiver.id);
@@ -155,7 +164,6 @@
       )}
     </div>
     {#if contactPreviewList.length > 0}
-      <!-- TODO(DESK-2229) Unify state and callback interaction with ReceiverPreviewList, if possible -->
       <ReceiverPreviewList
         contextMenuItems={(receiverPreviewListItem) =>
           getContextMenuItems(
@@ -166,7 +174,7 @@
           )}
         items={limitedMemberList}
         options={{highlightActiveReceiver: true}}
-        {onclickitem}
+        oninteraction={handleInteraction}
         {services}
       />
       {#if totalMemberCount > DEFAULT_LIMIT}

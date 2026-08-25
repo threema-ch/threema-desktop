@@ -1,7 +1,7 @@
 import type {AppServicesForSvelte} from '~/app/types';
 import type {ContextMenuItemHandlerProps} from '~/app/ui/components/partials/group-detail/types';
 import type {ReceiverPreviewListProps} from '~/app/ui/components/partials/receiver-preview-list/props';
-import type {GroupReceiverData} from '~/common/viewmodel/utils/receiver';
+import type {AnyReceiverDataOrSelf, GroupReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
  * Props accepted by the `GroupContent` component.
@@ -11,7 +11,7 @@ export interface GroupContentProps {
     readonly onclickdeletegroup: () => void;
     readonly onclickeditmembers: () => void;
     readonly onclickeditname: () => void;
-    readonly onclickitem?: ReceiverPreviewListProps['onclickitem'];
+    readonly onclickitem?: (receiver: AnyReceiverDataOrSelf, active: boolean) => void;
     readonly onclickleavegroup: () => void;
     readonly onlclickleaveanddeletegroup: () => void;
     readonly onclickprofilepicture?: (event: MouseEvent) => void;

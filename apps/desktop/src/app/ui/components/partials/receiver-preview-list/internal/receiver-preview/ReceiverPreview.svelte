@@ -5,6 +5,7 @@
   import {contextmenu} from '~/app/ui/actions/contextmenu';
   import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
   import ReceiverCard from '~/app/ui/components/partials/receiver-card/ReceiverCard.svelte';
+  import {getTextContentItemOptionsFromTextAndHighlights} from '~/app/ui/components/partials/receiver-card/internal/content-item/helpers';
   import {
     getReceiverCardBottomLeftItemOptions,
     getReceiverCardTopRightItemOptions,
@@ -25,6 +26,7 @@
     options = {},
     services,
     store,
+    oninteraction,
   }: ReceiverPreviewProps = $props();
 
   const {receiver} = $derived($store);
@@ -48,7 +50,7 @@
 
     switch (interaction.mode) {
       case 'click':
-        interaction.onclick?.(event);
+        oninteraction?.({type: 'click', receiver, active});
         break;
 
       case 'none':
@@ -67,7 +69,7 @@
 
   function handleSelect(selected: boolean): void {
     if (interaction.mode === 'select') {
-      interaction.onselect?.(selected);
+      oninteraction?.({type: 'select', receiver, selected});
     }
   }
 
@@ -151,12 +153,11 @@
         />
       </span>
     {:else}
-      <!-- A11y is already covered by the checkbox. -->
-      <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <!-- svelte-ignore a11y_click_events_have_key_events -->
-      <span
+      <button
         class="item"
         class:active={active && highlightWhenActive}
+        disabled={interaction.mode === 'none'}
+        tabindex={interaction.mode === 'click' ? 0 : -1}
         onclick={handleClick}
         data-testid="contact-preview"
       >
@@ -169,13 +170,7 @@
             />
           </span>
         {/if}
-
-        <button
-          class="receiver"
-          disabled={interaction.mode === 'none'}
-          onclick={handleClick}
-          tabindex={interaction.mode === 'click' ? 0 : -1}
-        >
+        <span class="receiver">
           <ReceiverCard
             content={{
               topLeft: [
@@ -194,26 +189,20 @@
                         type: 'blocked-icon',
                         isBlocked: receiver.isBlocked,
                       },
-                      {
-                        type: 'text',
-                        text: {
-                          raw: receiver.identity,
-                        },
-                      },
+                      getTextContentItemOptionsFromTextAndHighlights(receiver.identity, highlights),
                     ]
                   : undefined,
             }}
-            onclick={handleClick}
             options={{
-              isClickable: interaction.mode !== 'none',
+              isClickable: true,
               isFocusable: false,
             }}
             {receiver}
             {services}
             size="md"
           />
-        </button>
-      </span>
+        </span>
+      </button>
     {/if}
   </ContextMenuProvider>
 </li>
@@ -229,7 +218,9 @@
     overflow-x: clip;
 
     .item {
-      flex: 1 1 auto;
+      @extend %neutral-input;
+
+      width: 100%;
 
       display: flex;
       flex-direction: row;
@@ -239,8 +230,6 @@
       padding: rem(10px) rem(16px);
 
       .receiver {
-        @extend %neutral-input;
-
         & {
           flex: 1 1 auto;
 

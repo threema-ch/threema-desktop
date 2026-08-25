@@ -5,9 +5,8 @@ import type {
 } from '~/app/ui/components/hocs/context-menu-provider/types';
 import type {ReceiverPreviewProps} from '~/app/ui/components/partials/receiver-preview-list/internal/receiver-preview/props';
 import type {ReceiverPreviewListId} from '~/app/ui/components/partials/receiver-preview-list/types';
-import type {DbReceiverLookup} from '~/common/db';
 import type {IQueryableStore} from '~/common/utils/store';
-import type {AnyReceiverData, AnyReceiverDataOrSelf} from '~/common/viewmodel/utils/receiver';
+import type {AnyReceiverDataOrSelf} from '~/common/viewmodel/utils/receiver';
 
 /**
  * Props accepted by the `ReceiverPreviewList` component.
@@ -24,20 +23,9 @@ export interface ReceiverPreviewListProps<THandlerProps = undefined> {
     readonly highlights?: string | readonly string[];
     readonly items: IQueryableStore<ReceiverPreviewListItem<THandlerProps>>[];
     readonly summaryItems?: IQueryableStore<ReceiverPreviewListItem<THandlerProps>>[];
-    /**
-     * Called when a list item in interaction mode `"click"` is clicked. Note: This is intended as a
-     * convenient alternative to setting an `onclick` handler for each clickable item separately.
-     */
-    readonly onclickitem?: (item: {
-        readonly lookup: DbReceiverLookup;
-        readonly active: boolean;
-    }) => void;
-    /**
-     * Called when a list item in interaction mode `"select"` is selected. Note: This is intended as
-     * a convenient alternative to setting an `onselect` handler for each selectable item
-     * separately.
-     */
-    readonly onselectitem?: (selected: boolean, lookup: AnyReceiverData) => void;
+
+    readonly oninteraction?: ReceiverPreviewProps['oninteraction'];
+
     /**
      * Called whenever a new item enters the viewport. Note: This is debounced because it could get
      * called a large number of times if the user is scrolling quickly.
@@ -54,7 +42,10 @@ export interface ReceiverPreviewListProps<THandlerProps = undefined> {
 }
 
 export interface ReceiverPreviewListItem<THandlerProps>
-    extends Omit<ReceiverPreviewProps, 'active' | 'contextMenuOptions' | 'services' | 'store'> {
+    extends Omit<
+        ReceiverPreviewProps,
+        'active' | 'contextMenuOptions' | 'services' | 'store' | 'oninteraction'
+    > {
     /**
      * Additional data belonging to a list item, which will be passed to to each context menu item
      * handler callback.

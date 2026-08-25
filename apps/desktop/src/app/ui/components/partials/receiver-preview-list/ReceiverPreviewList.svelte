@@ -1,7 +1,6 @@
 <!--
   @component Renders a list of preview cards for the given receivers.
 -->
-<!-- TODO(DESK-2229) Unify state and callback interaction with ReceiverPreviewList, if possible -->
 <script lang="ts" generics="THandlerProps = never">
   import {AsyncLock} from '@threema/ts-utils/lock/async-lock';
   import {TIMER} from '@threema/ts-utils/timer/global-timer';
@@ -32,9 +31,8 @@
     highlights = undefined,
     items = [],
     summaryItems,
-    onclickitem,
+    oninteraction,
     onitementereddebounced = () => {},
-    onselectitem,
     options = {},
     services,
   }: ReceiverPreviewListProps<THandlerProps> = $props();
@@ -92,7 +90,7 @@
                 actions: {
                   remove: {
                     label: $i18n.t('groups.action--remove-member', {name}),
-                    onclick: () => interaction?.onselect?.(false),
+                    onclick: () => oninteraction?.({type: 'select', receiver, selected: false}),
                   },
                 },
                 color,
@@ -198,28 +196,6 @@
     false,
   );
 
-  function handleClickItem(
-    event: MouseEvent,
-    active: boolean,
-    item: ReceiverPreviewListItem<THandlerProps>,
-  ): void {
-    event.preventDefault();
-
-    if (item.receiver.type === 'self') {
-      return;
-    }
-
-    onclickitem?.({lookup: item.receiver.lookup, active});
-  }
-
-  function handleSelectItem(selected: boolean, item: ReceiverPreviewListItem<THandlerProps>): void {
-    if (item.receiver.type === 'self') {
-      return;
-    }
-
-    onselectitem?.(selected, item.receiver);
-  }
-
   $effect(() => {
     reactive(handleChangeRouterState, [$router]);
   });
@@ -279,24 +255,8 @@
                 ...transformContextMenuItemsToContextMenuOptions(item, contextMenuItems),
               }}
           {highlights}
-          interaction={// eslint-disable-next-line no-nested-ternary
-          interaction?.mode === 'click'
-            ? {
-                ...interaction,
-                onclick: (event) => {
-                  interaction.onclick?.(event);
-                  handleClickItem(event, active, itemData);
-                },
-              }
-            : interaction?.mode === 'select'
-              ? {
-                  ...interaction,
-                  onselect: (selected) => {
-                    interaction.onselect?.(selected);
-                    handleSelectItem(selected, itemData);
-                  },
-                }
-              : {mode: 'none'}}
+          {interaction}
+          {oninteraction}
           options={{
             highlightWhenActive: options.highlightActiveReceiver,
           }}

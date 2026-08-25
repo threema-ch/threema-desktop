@@ -33,16 +33,25 @@ export function getTextContentItemOptionsFromReceiverNameContentItemOptions(
     }
 
     return {
+        ...getTextContentItemOptionsFromTextAndHighlights(receiver.name, highlights),
+        decoration,
+    };
+}
+
+export function getTextContentItemOptionsFromTextAndHighlights(
+    text: string,
+    highlights?: string | readonly string[],
+): TextContentItemOptions {
+    return {
         type: 'text',
         text:
             highlights === undefined
-                ? {raw: receiver.name}
+                ? {raw: text}
                 : {
                       html: parseHighlights(
-                          escapeHtmlUnsafeChars(receiver.name),
+                          escapeHtmlUnsafeChars(text),
                           typeof highlights === 'string' ? [highlights] : highlights,
                       ),
                   },
-        decoration,
     };
 }

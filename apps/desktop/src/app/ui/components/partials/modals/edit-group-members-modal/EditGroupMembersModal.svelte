@@ -1,8 +1,9 @@
 <script lang="ts">
+  import {SvelteMap} from 'svelte/reactivity';
+
   import {globals} from '~/app/globals';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import SearchBar from '~/app/ui/components/molecules/search-bar/SearchBar.svelte';
-  import {isReceiverMatchingSearchTerm} from '~/app/ui/components/partials/address-book/helpers';
   import type {EditGroupMembersModalProps} from '~/app/ui/components/partials/modals/edit-group-members-modal/props';
   import {groupEditViewModelStoreToContactList} from '~/app/ui/components/partials/modals/edit-group-members-modal/transformers';
   import type {
@@ -11,30 +12,20 @@
     RemoteGroupEditViewModelStoreValue,
   } from '~/app/ui/components/partials/modals/edit-group-members-modal/types';
   import ReceiverPreviewList from '~/app/ui/components/partials/receiver-preview-list/ReceiverPreviewList.svelte';
-  import type {
-    ReceiverPreviewListItem,
-    ReceiverPreviewListProps,
-  } from '~/app/ui/components/partials/receiver-preview-list/props';
+  import {buildFilteredAndSummaryItems} from '~/app/ui/components/partials/receiver-preview-list/helpers';
+  import type {InteractionEvent} from '~/app/ui/components/partials/receiver-preview-list/types';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import {reactive} from '~/app/ui/utils/svelte';
   import type {DbContactUid, DbGroupReceiverLookup} from '~/common/db';
-  import {assert, assertUnreachable} from '~/common/utils/assert';
-  import {difference} from '~/common/utils/set';
+  import {assertUnreachable} from '~/common/utils/assert';
   import {ReadableStore, type IQueryableStore} from '~/common/utils/store';
-  import {derive} from '~/common/utils/store/derived-store';
-  import type {AnyReceiverDataOrSelf} from '~/common/viewmodel/utils/receiver';
+  import {isContactReceiverData, isSelfReceiverData} from '~/common/viewmodel/utils/receiver';
 
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.edit-group-members-modal');
 
   const {services}: EditGroupMembersModalProps = $props();
-
-  // Represent the selection as done by the user in the frontend. Reactivity is skipped on purpose.
-  // eslint-disable-next-line svelte/prefer-svelte-reactivity
-  const addedMembers = new Set<DbContactUid>();
-  // eslint-disable-next-line svelte/prefer-svelte-reactivity
-  const removedMembers = new Set<DbContactUid>();
 
   const {
     backend,
@@ -43,6 +34,10 @@
       views: {appearance},
     },
   } = services;
+
+  // Explicit local overrides of the server-side membership, keyed by contact uid. A missing entry
+  // means "no local change", i.e. defer to `currentGroupMembers`.
+  const memberIntent = new SvelteMap<DbContactUid, 'added' | 'removed'>();
 
   let routeParams: EditGroupMembersRouteParams | undefined = $state<
     EditGroupMembersRouteParams | undefined
@@ -121,12 +116,11 @@
       return;
     }
 
-    // Evaluate the difference and return early if nothing changed.
-    const membersDiff = diffCurrentMembers();
-    const equalSetSize = membersDiff.size === currentGroupMembers.size;
+    // Return early if nothing changed.
+    const equalSetSize = selectedMembers.size === currentGroupMembers.size;
     let equalSets = equalSetSize;
     if (equalSetSize) {
-      for (const member of membersDiff) {
+      for (const member of selectedMembers) {
         if (!currentGroupMembers.has(member)) {
           equalSets = false;
           break;
@@ -138,97 +132,50 @@
       return;
     }
 
-    await viewModelController
-      .setMembers(diffCurrentMembers())
-      .then((success) => {
-        if (success) {
-          toast.addSimpleSuccess(
-            $i18n.t(
-              'dialog--edit-group.success--edit-group-members',
-              'Group members successfully edited',
-            ),
-          );
-          closeModal();
-          return;
-        }
+    try {
+      const success = await viewModelController.setMembers(selectedMembers);
+      if (!success) {
         toast.addSimpleFailure(
           $i18n.t('dialog--edit-group.error--edit-group-members', 'Failed to edit group members'),
         );
-      })
-      .catch((error) => {
-        log.error(`Failed to update group: ${error}`);
+        return;
+      }
 
-        toast.addSimpleFailure(
-          $i18n.t('dialog--edit-group.error--edit-group-members', 'Failed to edit group members'),
-        );
-      });
+      toast.addSimpleSuccess(
+        $i18n.t(
+          'dialog--edit-group.success--edit-group-members',
+          'Group members successfully edited',
+        ),
+      );
+      closeModal();
+    } catch (error) {
+      log.error(`Failed to update group: ${error}`);
+
+      toast.addSimpleFailure(
+        $i18n.t('dialog--edit-group.error--edit-group-members', 'Failed to edit group members'),
+      );
+    }
   }
 
-  function diffCurrentMembers(): Set<DbContactUid> {
-    return difference(new Set([...currentGroupMembers, ...addedMembers]), removedMembers);
-  }
+  function handleInteraction(event: InteractionEvent): void {
+    if (event.type !== 'select') {
+      return;
+    }
 
-  function handleSelect(selected: boolean, receiver: AnyReceiverDataOrSelf): void {
-    if (receiver.type !== 'contact') {
+    const {receiver, selected} = event;
+
+    if (!isContactReceiverData(receiver)) {
       log.debug('EditGroupMembers receiver list should only contain contacts');
       return;
     }
     const uid = receiver.lookup.uid;
 
-    if (selected) {
-      addedMembers.add(uid);
-      removedMembers.delete(uid);
+    if (selected === currentGroupMembers.has(uid)) {
+      // The new state matches the server truth, so there's no local change to track.
+      memberIntent.delete(uid);
     } else {
-      addedMembers.delete(uid);
-      removedMembers.add(uid);
+      memberIntent.set(uid, selected ? 'added' : 'removed');
     }
-
-    selectedMembers = difference(
-      new Set([...currentGroupMembers, ...addedMembers]),
-      removedMembers,
-    );
-  }
-
-  function filterCurrentMembers(
-    receiverPreviewList: ReceiverPreviewListProps<unknown>['items'] | undefined,
-    currentSearchTerm: string | undefined,
-    currentSelectedMembers: ReadonlySet<DbContactUid>,
-  ): ReceiverPreviewListProps<unknown>['items'] | undefined {
-    return receiverPreviewList
-      ?.filter((itemStore) => {
-        const item = itemStore.get();
-        // The viewmodel only delivers contacts anyway, but to be sure we filter all others out
-        // anyway.
-        if (item.receiver.type !== 'contact') {
-          return false;
-        }
-
-        // The contact should only be displayed if already added to the group
-        if (item.receiver.isInvalid && !currentGroupMembers.has(item.receiver.lookup.uid)) {
-          return false;
-        }
-
-        if (currentSearchTerm !== undefined && currentSearchTerm !== '') {
-          return isReceiverMatchingSearchTerm(item.receiver, currentSearchTerm);
-        }
-        return true;
-      })
-      .map((itemStore) =>
-        derive([itemStore], ([{currentValue: currentItem}]) => {
-          // Typescript cannot infer that we filtered out all non-contacts just above.
-          assert(currentItem.receiver.type === 'contact');
-          return {
-            ...currentItem,
-            interaction: {
-              mode: 'select',
-              isSelected: currentSelectedMembers.has(currentItem.receiver.lookup.uid),
-              onselect: (selected) => {
-                handleSelect(selected, currentItem.receiver);
-              },
-            },
-          } satisfies ReceiverPreviewListItem<unknown>;
-        }),
-      );
   }
 
   const currentGroupMembers = $derived(
@@ -236,7 +183,7 @@
       $viewModelStore?.groupReceiverData.members.flatMap((member) => {
         // This typecheck is necessary for us to extract the uid below. It should, however, never
         // happen in practice.
-        if (member.type === 'self') {
+        if (isSelfReceiverData(member)) {
           return [];
         }
         return member.lookup.uid;
@@ -249,22 +196,29 @@
     reactive(handleChangeRouteParams, [routeParams]).catch(assertUnreachable);
   });
 
-  let selectedMembers = $derived(reactive(diffCurrentMembers, [$viewModelStore]));
+  const selectedMembers = $derived.by(() => {
+    // `members` is a scratch value scoped to this derivation pass only; it is never held across
+    // renders, so reactivity on the Set itself is unnecessary.
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const members = new Set(currentGroupMembers);
+
+    memberIntent.forEach((intent, uid) =>
+      intent === 'added' ? members.add(uid) : members.delete(uid),
+    );
+
+    return members;
+  });
 
   const receiverPreviewListProps = $derived(
     groupEditViewModelStoreToContactList(viewModelStore, $appearance),
   );
 
-  const summaryReceiverList = $derived(
-    filterCurrentMembers($receiverPreviewListProps, undefined, selectedMembers),
-  );
-
-  const filteredReceiverList = $derived(
-    filterCurrentMembers($receiverPreviewListProps, searchTerm, selectedMembers),
+  const {filteredSelectableContacts, summaryContacts} = $derived(
+    buildFilteredAndSummaryItems($receiverPreviewListProps, selectedMembers, searchTerm),
   );
 </script>
 
-{#if filteredReceiverList !== undefined}
+{#if filteredSelectableContacts.length > 0}
   <Modal
     wrapper={{
       type: 'card',
@@ -301,12 +255,11 @@
     </div>
     <div class="content">
       <div class="list">
-        <!-- TODO(DESK-2229) Unify state and callback interaction with ReceiverPreviewList, if possible -->
         <ReceiverPreviewList
           highlights={searchTerm}
-          items={filteredReceiverList}
-          summaryItems={summaryReceiverList}
-          onselectitem={handleSelect}
+          items={filteredSelectableContacts}
+          summaryItems={summaryContacts}
+          oninteraction={handleInteraction}
           {services}
         />
       </div>

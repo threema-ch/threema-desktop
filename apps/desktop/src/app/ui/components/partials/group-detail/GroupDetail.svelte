@@ -25,12 +25,15 @@
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import {reactive, svelteUnreachable} from '~/app/ui/utils/svelte';
-  import type {DbGroupReceiverLookup, DbReceiverLookup} from '~/common/db';
-  import {ReceiverType, ReceiverTypeUtils} from '~/common/enum';
+  import type {DbGroupReceiverLookup} from '~/common/db';
   import type {DisbandGroupIntent, LeaveGroupIntent} from '~/common/model/types/group';
   import {assertUnreachable} from '~/common/utils/assert';
   import {ReadableStore, type IQueryableStore} from '~/common/utils/store';
-  import type {GroupReceiverData} from '~/common/viewmodel/utils/receiver';
+  import {
+    isContactReceiverData,
+    type AnyReceiverDataOrSelf,
+    type GroupReceiverData,
+  } from '~/common/viewmodel/utils/receiver';
 
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.group-detail');
@@ -214,20 +217,17 @@
     });
   }
 
-  async function handleClickItem(item: {
-    readonly lookup: DbReceiverLookup;
-    readonly active: boolean;
-  }): Promise<void> {
-    if (item.lookup.type !== ReceiverType.CONTACT) {
+  async function handleClickItem(receiver: AnyReceiverDataOrSelf, active: boolean): Promise<void> {
+    if (!isContactReceiverData(receiver)) {
       log.error(
-        `Called the clickGroupMember callback with lookup of type ${ReceiverTypeUtils.nameOf(item.lookup.type)} instead of contact`,
+        `Called the clickGroupMember callback with lookup of type ${receiver.type} instead of 'contact'`,
       );
       return;
     }
 
     if (viewModelController !== undefined) {
       try {
-        await viewModelController?.setAcquaintanceLevelDirect(item.lookup);
+        await viewModelController?.setAcquaintanceLevelDirect(receiver.lookup);
       } catch (error) {
         log.error(`Failed to set acquaintance level: ${error}`);
         // Prevent navigation.
@@ -238,10 +238,10 @@
       return;
     }
 
-    if (item.active) {
+    if (active) {
       router.goToWelcome();
     } else {
-      router.goToConversation({receiverLookup: item.lookup});
+      router.goToConversation({receiverLookup: receiver.lookup});
     }
   }
 

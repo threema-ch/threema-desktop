@@ -17,11 +17,11 @@ import type {GroupEditViewModel} from '~/common/viewmodel/receiver/edit/group/st
 export function groupEditViewModelStoreToContactList(
     groupEditViewModelstore: IQueryableStore<RemoteGroupEditViewModelStoreValue | undefined>,
     appearanceSettings: AppearanceSettingsView,
-): IQueryableStore<ReceiverPreviewListProps['items'] | undefined> {
+): IQueryableStore<ReceiverPreviewListProps['items']> {
     return derive(
         [groupEditViewModelstore],
         ([{currentValue: groupEditViewModel}], getAndSubscribe) =>
-            getSortedContactItems(groupEditViewModel, getAndSubscribe, appearanceSettings),
+            getSortedContactItems(groupEditViewModel, getAndSubscribe, appearanceSettings) ?? [],
     );
 }
 

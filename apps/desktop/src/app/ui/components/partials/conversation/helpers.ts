@@ -1,9 +1,12 @@
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {tag} from '@threema/ts-utils/meta/newtype';
 
-import {isReceiverMatchingSearchTerm} from '~/app/ui/components/partials/address-book/helpers';
 import type {MentionProps} from '~/app/ui/components/partials/mention/props';
-import type {ReceiverPreviewListProps} from '~/app/ui/components/partials/receiver-preview-list/props';
+import {isReceiverPreviewListItemRetained} from '~/app/ui/components/partials/receiver-preview-list/helpers';
+import type {
+    ReceiverPreviewListItem,
+    ReceiverPreviewListProps,
+} from '~/app/ui/components/partials/receiver-preview-list/props';
 import type {ReceiverPreviewListId} from '~/app/ui/components/partials/receiver-preview-list/types';
 import type {i18n as i18nStore} from '~/app/ui/i18n';
 import {toast} from '~/app/ui/snackbar';
@@ -12,7 +15,7 @@ import {type FileLoadResult, validateFiles} from '~/app/ui/utils/file';
 import type {Logger} from '~/common/logging';
 import {ensureIdentityString} from '~/common/network/types';
 import {assert, unreachable} from '~/common/utils/assert';
-import {ReadableStore} from '~/common/utils/store';
+import {ReadableStore, type IQueryableStore} from '~/common/utils/store';
 import type {
     AnyReceiverData,
     ContactReceiverData,
@@ -118,14 +121,9 @@ export function showFileResultErrorToast(
 export function getFilteredMentionReceiverPreviewListItems(
     group: GroupReceiverData,
     query: string,
-): ReceiverPreviewListProps['items'] {
+): ReceiverPreviewListProps<unknown>['items'] {
     return group.members
         .concat(group.creator)
-        .filter(
-            (receiver): receiver is ContactReceiverData =>
-                receiver.type === 'contact' &&
-                (isReceiverMatchingSearchTerm(receiver, query) || query === ''),
-        )
         .map(
             (receiver) =>
                 // We need to wrap it into a store here so that it fits the `ReceiverPreviewList`.
@@ -136,8 +134,9 @@ export function getFilteredMentionReceiverPreviewListItems(
                         mode: 'click',
                     },
                     receiver,
-                }),
-        );
+                }) satisfies IQueryableStore<ReceiverPreviewListItem<unknown>>,
+        )
+        .filter((item) => isReceiverPreviewListItemRetained(item, query, ['contact']));
 }
 
 type ParsedTextChunk =

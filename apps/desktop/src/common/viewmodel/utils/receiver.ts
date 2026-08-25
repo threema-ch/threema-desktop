@@ -57,6 +57,28 @@ export type ReceiverUpdateDataFor<TReceiver extends AnyReceiver> = {
     readonly [ReceiverType.GROUP]: GroupReceiverUpdateData;
 }[TReceiver['type']];
 
+export function isContactReceiverData(
+    receiver: AnyReceiverDataOrSelf,
+): receiver is ContactReceiverData {
+    return receiver.type === 'contact';
+}
+
+export function isGroupReceiverData(
+    receiver: AnyReceiverDataOrSelf,
+): receiver is GroupReceiverData {
+    return receiver.type === 'group';
+}
+
+export function isDistributionListReceiverUpdateData(
+    receiver: AnyReceiverDataOrSelf,
+): receiver is DistributionListReceiverData {
+    return receiver.type === 'distribution-list';
+}
+
+export function isSelfReceiverData(receiver: AnyReceiverDataOrSelf): receiver is SelfReceiverData {
+    return receiver.type === 'self';
+}
+
 /**
  * Extracts and returns data related to a conversation's receiver from the specified
  * {@link conversationModel}.

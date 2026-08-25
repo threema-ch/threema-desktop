@@ -9,22 +9,23 @@
   import SearchBar from '~/app/ui/components/molecules/search-bar/SearchBar.svelte';
   import TabBar from '~/app/ui/components/molecules/tab-bar/TabBar.svelte';
   import type {TabBarProps} from '~/app/ui/components/molecules/tab-bar/props';
-  import {
-    getSearchInputPlaceholderForTabState,
-    isReceiverMatchingSearchTerm,
-  } from '~/app/ui/components/partials/address-book/helpers';
+  import {getSearchInputPlaceholderForTabState} from '~/app/ui/components/partials/address-book/helpers';
   import type {AddressBookProps} from '~/app/ui/components/partials/address-book/props';
   import type {TabState} from '~/app/ui/components/partials/address-book/types';
   import ContactAddForm from '~/app/ui/components/partials/contact-add-form/ContactAddForm.svelte';
   import GroupAddForm from '~/app/ui/components/partials/group-add-form/GroupAddForm.svelte';
   import type {ContextMenuItemHandlerProps} from '~/app/ui/components/partials/receiver-nav/types';
   import ReceiverPreviewList from '~/app/ui/components/partials/receiver-preview-list/ReceiverPreviewList.svelte';
+  import {isReceiverPreviewListItemRetained} from '~/app/ui/components/partials/receiver-preview-list/helpers';
   import type {
     ReceiverPreviewListItem,
     ContextMenuItemWithHandlerProps,
     ReceiverPreviewListProps,
   } from '~/app/ui/components/partials/receiver-preview-list/props';
-  import type {ReceiverPreviewListId} from '~/app/ui/components/partials/receiver-preview-list/types';
+  import type {
+    InteractionEvent,
+    ReceiverPreviewListId,
+  } from '~/app/ui/components/partials/receiver-preview-list/types';
   import {i18n} from '~/app/ui/i18n';
   import type {I18nType} from '~/app/ui/i18n-types';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
@@ -33,11 +34,8 @@
   import {svelteUnreachable, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import type {DbReceiverLookup} from '~/common/db';
   import type {AnyReceiver} from '~/common/model';
-  import type {Contact} from '~/common/model/types/contact';
-  import type {Group} from '~/common/model/types/group';
   import {assertUnreachable, unreachable} from '~/common/utils/assert';
   import {hasProperty} from '~/common/utils/object';
-  import type {IQueryableStore} from '~/common/utils/store';
 
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.address-book');
@@ -48,6 +46,7 @@
     items = {contacts: [], groups: [], workSubscriptionContacts: []},
     onclickedititem,
     onclickitem,
+    onselectitem,
     options = {},
     services,
     snippetTopbar,
@@ -210,6 +209,19 @@
     searchTerm = '';
   }
 
+  function handleInteraction(event: InteractionEvent): void {
+    switch (event.type) {
+      case 'click':
+        onclickitem?.(event.receiver, event.active);
+        break;
+      case 'select':
+        onselectitem?.(event.receiver, event.selected);
+        break;
+      default:
+        unreachable(event);
+    }
+  }
+
   function getTabBarTabs(): TabBarProps<TabState>['tabs'] {
     return [
       {
@@ -274,31 +286,9 @@
     currentItems: typeof items,
     currentSearchTerm: typeof searchTerm,
   ): ReceiverPreviewListProps<ContextMenuItemHandlerProps<AnyReceiver>>['items'] {
-    function filterItems(
-      itemStore:
-        | IQueryableStore<ReceiverPreviewListItem<ContextMenuItemHandlerProps<Contact>>>
-        | IQueryableStore<ReceiverPreviewListItem<ContextMenuItemHandlerProps<Group>>>,
-      // TODO(DESK-236) Add distribution lists here.
-    ): boolean {
-      const item = itemStore.get();
-
-      // Receivers of type "self" don't make sense in the address book. In practice, this case
-      // should never happen, but if such items are provided, we'll filter them out.
-      if (item.receiver.type === 'self') {
-        return false;
-      }
-
-      // Filter items by `searchTerm`.
-      if (currentSearchTerm !== undefined && currentSearchTerm !== '') {
-        return isReceiverMatchingSearchTerm(item.receiver, currentSearchTerm);
-      }
-
-      return true;
-    }
-
-    return currentItems[currentTab].filter(filterItems) as ReceiverPreviewListProps<
-      ContextMenuItemHandlerProps<AnyReceiver>
-    >['items'];
+    return currentItems[currentTab].filter((item) =>
+      isReceiverPreviewListItemRetained(item, currentSearchTerm, ['contact', 'group']),
+    ) as ReceiverPreviewListProps<ContextMenuItemHandlerProps<AnyReceiver>>['items'];
   }
 
   function resetStateToDefault(tabState_: TabState): void {
@@ -362,14 +352,13 @@
     {/if}
     <div bind:this={listElement} class="list">
       {#if visiblePreviewListItems.length > 0}
-        <!-- TODO(DESK-2229) Unify state and callback interaction with ReceiverPreviewList, if possible -->
         <ReceiverPreviewList
           bind:this={receiverPreviewListComponent}
           contextMenuItems={(receiverPreviewListItem) =>
             getContextMenuItems(receiverPreviewListItem, allowReceiverEditing, $i18n.t)}
           highlights={searchTerm}
           items={visiblePreviewListItems}
-          {onclickitem}
+          oninteraction={handleInteraction}
           onitementereddebounced={handleItemEntered}
           options={{
             highlightActiveReceiver,

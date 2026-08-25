@@ -22,13 +22,18 @@
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import {reactive, svelteUnreachable, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
-  import type {DbContactUid, DbGroupUid, DbReceiverLookup} from '~/common/db';
+  import type {DbContactUid, DbGroupUid} from '~/common/db';
   import type {AnyReceiver, ContactInit, GroupInit} from '~/common/model';
   import type {IdentityString} from '~/common/network/types';
   import type {Remote} from '~/common/utils/endpoint';
   import {ReadableStore, type IQueryableStore} from '~/common/utils/store';
   import type {ReceiverListViewModelBundle} from '~/common/viewmodel/receiver/list';
   import type {ContactLookupResult} from '~/common/viewmodel/receiver/list/controller';
+  import {
+    isContactReceiverData,
+    isGroupReceiverData,
+    type AnyReceiverDataOrSelf,
+  } from '~/common/viewmodel/utils/receiver';
 
   const {uiLogging, hotkeyManager} = globals.unwrap();
   const log = uiLogging.logger('ui.component.receiver-nav');
@@ -84,14 +89,14 @@
     };
   }
 
-  function handleClickReceiverListItem(item: {
-    readonly lookup: DbReceiverLookup;
-    readonly active: boolean;
-  }): void {
-    if (item.active) {
+  function handleClickReceiverListItem(receiver: AnyReceiverDataOrSelf, active: boolean): void {
+    if (!isContactReceiverData(receiver) && !isGroupReceiverData(receiver)) {
+      return;
+    }
+    if (active) {
       router.goToWelcome();
     } else {
-      router.goToConversation({receiverLookup: item.lookup});
+      router.goToConversation({receiverLookup: receiver.lookup});
     }
   }
 

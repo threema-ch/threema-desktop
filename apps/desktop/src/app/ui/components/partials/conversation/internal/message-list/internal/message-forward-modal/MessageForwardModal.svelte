@@ -13,6 +13,7 @@
   import {receiverListViewModelStoreToReceiverPreviewListItemsStore} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-forward-modal/transformers';
   import {receiverListToGroupedAddressBookItems} from '~/app/ui/components/partials/receiver-nav/helpers';
   import type {RemoteReceiverListViewModelStoreValue} from '~/app/ui/components/partials/receiver-nav/types';
+  import type {ReceiverPreviewListItem} from '~/app/ui/components/partials/receiver-preview-list/props';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
@@ -26,7 +27,11 @@
   import {derive} from '~/common/utils/store/derived-store';
   import type {ReceiverListViewModelBundle} from '~/common/viewmodel/receiver/list';
   import type {ContactLookupResult} from '~/common/viewmodel/receiver/list/controller';
-  import type {AnyReceiverDataOrSelf} from '~/common/viewmodel/utils/receiver';
+  import {
+    isContactReceiverData,
+    isSelfReceiverData,
+    type AnyReceiverDataOrSelf,
+  } from '~/common/viewmodel/utils/receiver';
 
   const {uiLogging} = globals.unwrap();
   const log = uiLogging.logger('ui.component.message-forward-modal');
@@ -54,7 +59,7 @@
 
   let addressBookComponent = $state<SvelteNullableBinding<AddressBook>>(null);
 
-  function handleSelectReceiver(selected: boolean, receiver: AnyReceiverDataOrSelf): void {
+  function handleSelectReceiver(receiver: AnyReceiverDataOrSelf, selected: boolean): void {
     switch (receiver.type) {
       case 'self':
       case 'distribution-list':
@@ -226,28 +231,31 @@
       $receiverPreviewListItemsStore
         ?.filter((itemStore) => {
           const item = itemStore.get();
+          const {receiver} = item;
           // Exclude `self`.
-          if (item.receiver.type === 'self') {
+          if (isSelfReceiverData(receiver)) {
             return false;
           }
 
           // Filter blocked contacts.
-          if (item.receiver.type === 'contact' && item.receiver.isBlocked) {
+          if (isContactReceiverData(receiver) && receiver.isBlocked) {
             return false;
           }
 
           return true;
         })
         .map((itemStore) =>
-          derive([itemStore], ([{currentValue}]) => ({
-            ...currentValue,
-            interaction: {
-              mode: 'select',
-              isSelected: isReceiverSelected(currentValue.receiver),
-              onselect: (selected: boolean) =>
-                handleSelectReceiver(selected, currentValue.receiver),
-            },
-          })),
+          derive(
+            [itemStore],
+            ([{currentValue}]) =>
+              ({
+                ...currentValue,
+                interaction: {
+                  mode: 'select',
+                  isSelected: isReceiverSelected(currentValue.receiver),
+                },
+              }) satisfies ReceiverPreviewListItem<unknown>,
+          ),
         ),
       $appearance,
       log,
@@ -313,6 +321,7 @@
         lookupContact,
         updateContactAcquaintanceLevelAndName,
       }}
+      onselectitem={handleSelectReceiver}
     />
   </div>
 </Modal>

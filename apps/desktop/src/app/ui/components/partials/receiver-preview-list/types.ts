@@ -7,3 +7,5 @@ export type ReceiverPreviewListId = WeakOpaque<
     string,
     {readonly ReceiverPreviewListId: unique symbol}
 >;
+
+export type {InteractionEvent} from './internal/receiver-preview/props';

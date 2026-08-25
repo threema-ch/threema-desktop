@@ -8,8 +8,8 @@ import type {
 import type {ContactAddFormProps} from '~/app/ui/components/partials/contact-add-form/props';
 import type {GroupAddFormProps} from '~/app/ui/components/partials/group-add-form/props';
 import type {ContextMenuItemHandlerProps} from '~/app/ui/components/partials/receiver-nav/types';
-import type {ReceiverPreviewListProps} from '~/app/ui/components/partials/receiver-preview-list/props';
 import type {AnyReceiver} from '~/common/model';
+import type {AnyReceiverDataOrSelf} from '~/common/viewmodel/utils/receiver';
 /**
  * Props accepted by the `AddressBook` component.
  */
@@ -28,7 +28,8 @@ export interface AddressBookProps {
      */
     readonly items: GroupedReceivers;
     readonly onclickedititem?: (item: ContextMenuItemHandlerProps<AnyReceiver>) => void;
-    readonly onclickitem?: ReceiverPreviewListProps['onclickitem'];
+    readonly onclickitem?: (receiver: AnyReceiverDataOrSelf, active: boolean) => void;
+    readonly onselectitem?: (receiver: AnyReceiverDataOrSelf, selected: boolean) => void;
     readonly options?: {
         /**
          * Whether a button for creating new receivers is displayed. Defaults to `true`.
