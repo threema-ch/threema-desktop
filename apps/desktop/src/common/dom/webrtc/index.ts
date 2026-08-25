@@ -9,7 +9,7 @@ import {
     type GroupCallContextHandle,
 } from '~/common/dom/webrtc/group-call';
 import {TRANSFER_HANDLER} from '~/common/index';
-import type {Logger, LoggerFactory} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import type {GroupCallIdValue, GroupCallId} from '~/common/network/protocol/call/group-call';
 import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import {WeakValueMap} from '~/common/utils/map';
@@ -188,13 +188,6 @@ export class WebRtcServiceProvider implements WebRtcService {
 
     public constructor(
         private readonly _services: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
-        /**
-         * Logger factory for the dedicated WebRTC stats log file. When `undefined`, stats
-         * collection is disabled.
-         *
-         * Only used when the app is built with `VERBOSE_LOGGING.WEBRTC` enabled.
-         */
-        private readonly _statsLogging: LoggerFactory | undefined = undefined,
     ) {
         this._log = _services.logging.logger('webrtc.service');
     }
@@ -218,12 +211,7 @@ export class WebRtcServiceProvider implements WebRtcService {
         });
         remote.forward(abort);
 
-        // Create a scoped stats logger for this call if stats logging is active.
-        const statsLogger = import.meta.env.VERBOSE_LOGGING.WEBRTC
-            ? this._statsLogging?.logger(`call.stats.${callId.shortened}`)
-            : undefined;
-
-        const context = new GroupCallContextProvider(this._services, callId, abort, statsLogger);
+        const context = new GroupCallContextProvider(this._services, callId, abort);
         this._groupCall.map.set(callId.id, context);
         this._groupCall.registry.register(context, {
             callId,

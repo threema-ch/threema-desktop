@@ -977,7 +977,6 @@ export enum ElectronIpcCommand {
     IS_FILE_LOGGING_ENABLED = 'isFileLoggingEnabled',
     LOAD_USER_PASSWORD = 'loadUserPassword',
     LOG_TO_FILE = 'logToFile',
-    LOG_WEBRTC_STATS_TO_FILE = 'logWebrtcStatsToFile',
     ON_FALLBACK_OPPF = 'onFallbackOppf',
     REMOTE_SECRET_ERROR_RESTART_APP = 'remoteSecretErrorRestartApp',
     REMOTE_SECRET_SYSTEM_SUSPENSION_RESTART_APP = 'remoteSecretSystemSuspensionRestartApp',

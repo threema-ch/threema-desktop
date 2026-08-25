@@ -52,13 +52,7 @@ import {createEndpointService, ensureEndpoint} from '~/common/dom/utils/endpoint
 import {WebRtcServiceProvider} from '~/common/dom/webrtc';
 import type {SystemInfo} from '~/common/electron-ipc';
 import {extractErrorTraceback} from '~/common/error';
-import {
-    CONSOLE_LOGGER,
-    RemoteFileLogger,
-    TagLogger,
-    TeeLogger,
-    type LoggerFactory,
-} from '~/common/logging';
+import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import type {IGlobalPropertyModel} from '~/common/model/types/settings';
 import type {ModelStore} from '~/common/model/utils/model-store';
 import {DEFAULT_CATEGORY} from '~/common/settings';
@@ -261,17 +255,6 @@ async function main(): Promise<() => Promise<void>> {
         setAssertFailLogger((error) => assertFailLogger.error(extractErrorTraceback(error)));
     }
     initCrashReportingInSandboxBuilds(log);
-
-    // Set up WebRTC stats logging.
-    //
-    // The stats logger writes to debug-webrtc.log via a separate IPC channel.
-    let webrtcStatsLogging: LoggerFactory | undefined;
-    if (import.meta.env.VERBOSE_LOGGING.WEBRTC) {
-        const webrtcStatsFileLogger = new RemoteFileLogger(
-            electron.frontendHandle.logWebrtcStatsToFile,
-        );
-        webrtcStatsLogging = TagLogger.unstyled(webrtcStatsFileLogger, 'webrtc');
-    }
 
     // Get system info
     const systemInfo = await electron.getSystemInfo();
@@ -586,7 +569,7 @@ async function main(): Promise<() => Promise<void>> {
     const systemDialogComponent = attachSystemDialogs(elements.systemDialogs, appServices);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const systemDialog = new FrontendSystemDialogService(systemDialogComponent.setProgress);
-    const webRtc = new WebRtcServiceProvider({endpoint, logging}, webrtcStatsLogging);
+    const webRtc = new WebRtcServiceProvider({endpoint, logging});
     const backendControllerServices: ServicesForBackendController = {
         electron: electron.frontendHandle,
         endpoint,

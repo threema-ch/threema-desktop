@@ -15,7 +15,6 @@ import {
     UnboundedFlowControlledDataChannel,
     ReplaceableDataChannelMessageListener,
 } from '~/common/dom/webrtc';
-import {GroupCallStatsCollector} from '~/common/dom/webrtc/group-call-stats';
 import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
 import * as protobuf from '~/common/network/protobuf';
@@ -87,7 +86,6 @@ export class GroupCallContextProvider implements GroupCallContext {
         private readonly _services: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
         private readonly _callId: GroupCallId,
         private readonly _abort: AbortRaiser<AnyGroupCallContextAbort>,
-        private readonly _statsLogger: Logger | undefined = undefined,
     ) {
         this._log = _services.logging.logger(
             `group-call.context-provider.${this._callId.shortened}`,
@@ -552,16 +550,6 @@ export class GroupCallContextProvider implements GroupCallContext {
                 },
                 remote: new Map(),
             };
-
-            // Start periodic WebRTC stats collection
-            if (import.meta.env.VERBOSE_LOGGING.WEBRTC && this._statsLogger !== undefined) {
-                const statsCollector = new GroupCallStatsCollector(
-                    pc,
-                    this._statsLogger,
-                    this._abort,
-                );
-                statsCollector.start();
-            }
 
             return s2pHello;
         } catch (error) {

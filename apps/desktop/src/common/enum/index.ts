@@ -3067,8 +3067,6 @@ export namespace ElectronIpcCommand {
     export type LOAD_USER_PASSWORD = typeof LOAD_USER_PASSWORD;
     export const LOG_TO_FILE = 'logToFile';
     export type LOG_TO_FILE = typeof LOG_TO_FILE;
-    export const LOG_WEBRTC_STATS_TO_FILE = 'logWebrtcStatsToFile';
-    export type LOG_WEBRTC_STATS_TO_FILE = typeof LOG_WEBRTC_STATS_TO_FILE;
     export const ON_FALLBACK_OPPF = 'onFallbackOppf';
     export type ON_FALLBACK_OPPF = typeof ON_FALLBACK_OPPF;
     export const REMOTE_SECRET_ERROR_RESTART_APP = 'remoteSecretErrorRestartApp';

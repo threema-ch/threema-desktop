@@ -8,7 +8,6 @@ export interface LogInfo {
     readonly logFiles: {
         readonly mainApplication: LogFileInfo;
         readonly backendWorker: LogFileInfo;
-        readonly webrtcStats: LogFileInfo;
     };
 }
 

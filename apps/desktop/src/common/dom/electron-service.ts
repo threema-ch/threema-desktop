@@ -56,7 +56,6 @@ export class ElectronIpcService implements ElectronIpc {
             restartApp: this.restartApp.bind(this),
             getRemoteSecretLaunchParameter: this.getRemoteSecretLaunchParameter.bind(this),
             remoteSecretErrorRestartApp: this.remoteSecretErrorRestartApp.bind(this),
-            logWebrtcStatsToFile: this.logWebrtcStatsToFile.bind(this),
             logToFile: this.logToFile.bind(this),
             remoteSecretSystemSuspensionRestartApp:
                 this.remoteSecretSystemSuspensionRestartApp.bind(this),
@@ -97,7 +96,6 @@ export class ElectronIpcService implements ElectronIpc {
     public async getGzippedLogFiles(): Promise<{
         app?: ReadonlyUint8Array;
         bw?: ReadonlyUint8Array;
-        webrtc?: ReadonlyUint8Array;
     }> {
         return await this._api.getGzippedLogFiles();
     }
@@ -143,14 +141,6 @@ export class ElectronIpcService implements ElectronIpc {
         data: string,
     ): Promise<void> {
         await this._api.logToFile(level, data);
-    }
-
-    /** @inheritdoc */
-    public async logWebrtcStatsToFile(
-        level: 'trace' | 'debug' | 'info' | 'warn' | 'error',
-        data: string,
-    ): Promise<void> {
-        await this._api.logWebrtcStatsToFile(level, data);
     }
 
     /** @inheritdoc */

@@ -31,13 +31,6 @@ export interface IFrontendElectronService extends ProxyMarked {
     ) => Promise<void>;
 
     /**
-     * Log WebRTC call stats to a dedicated stats log file.
-     */
-    readonly logWebrtcStatsToFile: (
-        level: 'trace' | 'debug' | 'info' | 'warn' | 'error',
-        data: string,
-    ) => Promise<void>;
-    /**
      * Restart the app.
      */
     readonly restartApp: () => void;

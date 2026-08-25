@@ -333,7 +333,6 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
         LOG_PATH: {
             MAIN_AND_APP: ['data', 'debug-app.log'],
             BACKEND_WORKER: ['data', 'debug-bw.log'],
-            WEBRTC_STATS: ['data', 'debug-webrtc.log'],
         },
         DEPRECATED_KEY_STORAGE_PATH: ['data', 'keystorage.pb3'],
         KEY_STORAGE_PATH: ['data', 'keystorage.bin'],
@@ -421,7 +420,6 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
             NETWORK: false,
             ROUTER: false,
             STORES: false,
-            WEBRTC: env.environment === 'sandbox',
         },
 
         // Feature flags
