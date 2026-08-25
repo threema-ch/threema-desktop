@@ -1,0 +1,26 @@
+{
+  "name": "@threema/test-utils",
+  "description": "A collection of utilities for tests, to be used as a devDependency only",
+  "author": "Threema AG",
+  "license": "AGPL-3.0+",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint:eslint": "eslint .",
+    "lint:eslint:fix": "eslint . --fix",
+    "lint:tsc": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@threema/ts-utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@threema/eslint-config": "workspace:*",
+    "@threema/ts-config": "workspace:*",
+    "eslint": "catalog:",
+    "typescript": "catalog:"
+  }
+}
