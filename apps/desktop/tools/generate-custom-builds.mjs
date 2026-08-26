@@ -188,7 +188,7 @@ function main() {
         writeThemeFile(THEME_PATH, fillPalette(SCSS_PALETTE, config.colorPalette.shades));
         writeThemeFile(TAILWIND_THEME_PATH, fillPalette(CSS_PALETTE, config.colorPalette.shades));
 
-        childProcess.execSync('pnpm run package:desktop:custom-onprem', {
+        childProcess.execSync('pnpm run package:desktop', {
             cwd: monorepoRootDir,
             env: {
                 ...process.env,
