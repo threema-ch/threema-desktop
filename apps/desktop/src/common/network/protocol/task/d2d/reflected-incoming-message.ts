@@ -632,6 +632,7 @@ export class ReflectedIncomingMessageTask
                         {type: 'edit', newText: validatedBody.message.text},
                         createdAt,
                         MessageDirection.INBOUND,
+                        senderIdentity,
                         this._log,
                     ),
                 };
@@ -652,6 +653,7 @@ export class ReflectedIncomingMessageTask
                         {type: 'edit', newText: validatedBody.message.text},
                         createdAt,
                         MessageDirection.INBOUND,
+                        senderIdentity,
                         this._log,
                     ),
                 };
@@ -668,6 +670,7 @@ export class ReflectedIncomingMessageTask
                         {type: 'delete'},
                         createdAt,
                         MessageDirection.INBOUND,
+                        senderIdentity,
                         this._log,
                     ),
                 };
@@ -689,6 +692,7 @@ export class ReflectedIncomingMessageTask
                         {type: 'delete'},
                         createdAt,
                         MessageDirection.INBOUND,
+                        senderIdentity,
                         this._log,
                     ),
                 };

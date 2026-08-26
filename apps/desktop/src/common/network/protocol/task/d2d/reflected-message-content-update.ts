@@ -1,6 +1,6 @@
 import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 
-import {type MessageDirection, MessageType} from '~/common/enum';
+import {MessageDirection, MessageType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Conversation} from '~/common/model/types/conversation';
 import type {AnyNonDeletedMessageModelStore} from '~/common/model/types/message';
@@ -14,6 +14,7 @@ import {getConversationById} from '~/common/network/protocol/task/message-proces
 import type {
     ConversationId,
     DistributionListConversationId,
+    IdentityString,
     MessageId,
 } from '~/common/network/types';
 import {assert, unreachable} from '~/common/utils/assert';
@@ -28,6 +29,7 @@ export class ReflectedMessageContentUpdateTask
         private readonly _update: {type: 'edit'; newText: string} | {type: 'delete'},
         private readonly _timeStamp: Date,
         private readonly _expectedMessageDirection: MessageDirection,
+        private readonly _senderIdentity: IdentityString,
         private readonly _log: Logger,
     ) {}
 
@@ -55,6 +57,23 @@ export class ReflectedMessageContentUpdateTask
                 `Discarding message update of ${u64ToHexLe(
                     messageStore.get().view.id,
                 )} as the referenced message was already deleted.`,
+            );
+            return;
+        }
+
+        // If the sender is not the original sender of referred-message, discard the message and
+        // abort these steps.
+        const originalSenderIdentity =
+            messageStore.ctx === MessageDirection.INBOUND
+                ? messageStore.get().controller.sender().get().view.identity
+                : this._services.device.identity.string;
+        if (originalSenderIdentity !== this._senderIdentity) {
+            this._log.warn(
+                `Discarding message content update of type ${
+                    this._update.type
+                } for message ${u64ToHexLe(
+                    this._messageId,
+                )} as the original sender and the editor do not match`,
             );
             return;
         }

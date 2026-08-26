@@ -628,6 +628,7 @@ export class ReflectedOutgoingMessageTask
                         {type: 'edit', newText: validatedBody.message.text},
                         createdAt,
                         MessageDirection.OUTBOUND,
+                        this._services.device.identity.string,
                         this._log,
                     ),
                 };
@@ -647,6 +648,7 @@ export class ReflectedOutgoingMessageTask
                         {type: 'edit', newText: validatedBody.message.text},
                         createdAt,
                         MessageDirection.OUTBOUND,
+                        this._services.device.identity.string,
                         this._log,
                     ),
                 };
@@ -664,6 +666,7 @@ export class ReflectedOutgoingMessageTask
                         {type: 'delete'},
                         createdAt,
                         MessageDirection.OUTBOUND,
+                        this._services.device.identity.string,
                         this._log,
                     ),
                 };
@@ -685,6 +688,7 @@ export class ReflectedOutgoingMessageTask
                         {type: 'delete'},
                         createdAt,
                         MessageDirection.OUTBOUND,
+                        this._services.device.identity.string,
                         this._log,
                     ),
                 };
