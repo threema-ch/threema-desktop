@@ -2008,7 +2008,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 };
                 const instructions: MessageUpdateInstructions = {
                     messageCategory: 'message-content-update',
-                    conversationId: senderConversationId,
+                    conversationId: groupConversationId,
                     missingContactHandling: 'discard',
                     deliveryReceipt: false,
                     reflect: reflectFor(maybeCspE2eType),
