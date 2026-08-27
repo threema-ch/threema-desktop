@@ -16,6 +16,7 @@ import {NONCE_UNGUARDED_SCOPE, type PlainData} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';
 import {
+    AcquaintanceLevel,
     CspE2eConversationType,
     CspE2eDeliveryReceiptStatus,
     CspE2eGroupControlType,
@@ -51,6 +52,7 @@ import {
     ensureMessageId,
     ensureNickname,
     type EmojiReaction,
+    type GroupId,
     type IdentityString,
     type MessageId,
     type Nickname,
@@ -567,6 +569,83 @@ export function run(): void {
                     .not.to.be.undefined;
 
                 expect(expectations, 'Not all expectations consumed').to.be.empty;
+            });
+
+            it('upgrades acquaintanceLevel to DIRECT for an existing GROUP_OR_DELETED contact on an incoming text message', async function () {
+                const {model} = services;
+
+                // Add a contact that is only known through a shared group, not DIRECT
+                const user1Contact = addTestUserAsContact(model, {
+                    ...user1,
+                    acquaintanceLevel: AcquaintanceLevel.GROUP_OR_DELETED,
+                });
+                expect(user1Contact.get().view.acquaintanceLevel).to.equal(
+                    AcquaintanceLevel.GROUP_OR_DELETED,
+                );
+
+                // Create incoming text message with an unchanged nickname, so only the
+                // acquaintance level update is reflected (not an additional nickname update)
+                const task = createNewIncomingTextMessageTask(services, user1, me);
+
+                const handle = new TestHandle(services, [
+                    // Acquaintance level is upgraded to DIRECT and reflected
+                    ...reflectContactSync(user1, 'update'),
+
+                    // Reflect and ack incoming text message
+                    NetworkExpectationFactory.reflectSingle((payload) => {
+                        expect(payload.incomingMessage).not.to.be.undefined;
+                        const incomingMessage = unwrap(payload.incomingMessage);
+                        expect(incomingMessage.senderIdentity).to.equal(user1.identity.string);
+                        expect(incomingMessage.type).to.equal(
+                            protobuf.common.CspE2eMessageType.TEXT,
+                        );
+                    }),
+                    NetworkExpectationFactory.writeIncomingMessageAck(),
+
+                    // Reflect and send delivery receipt
+                    ...reflectAndSendDeliveryReceipt(
+                        services,
+                        user1,
+                        CspE2eDeliveryReceiptStatus.RECEIVED,
+                    ),
+                ]);
+                await task.run(handle);
+                handle.finish();
+
+                expect(user1Contact.get().view.acquaintanceLevel).to.equal(
+                    AcquaintanceLevel.DIRECT,
+                );
+            });
+
+            it('does not upgrade acquaintanceLevel when the message type does not create implicit direct contacts', async function () {
+                const {model} = services;
+
+                // Add a contact that is only known through a shared group, not DIRECT
+                const user1Contact = addTestUserAsContact(model, {
+                    ...user1,
+                    acquaintanceLevel: AcquaintanceLevel.GROUP_OR_DELETED,
+                });
+
+                // Delivery receipts use `missingContactHandling: 'discard'`, so they must not
+                // upgrade the acquaintance level of an existing contact
+                const task = createNewDeliveryReceiptMessageTask(
+                    services,
+                    user1,
+                    me,
+                    randomMessageId(services.crypto),
+                    CspE2eDeliveryReceiptStatus.RECEIVED,
+                );
+
+                const handle = new TestHandle(services, [
+                    NetworkExpectationFactory.reflectSingle(),
+                    NetworkExpectationFactory.writeIncomingMessageAck(),
+                ]);
+                await task.run(handle);
+                handle.finish();
+
+                expect(user1Contact.get().view.acquaintanceLevel).to.equal(
+                    AcquaintanceLevel.GROUP_OR_DELETED,
+                );
             });
         });
 
@@ -1380,6 +1459,170 @@ export function run(): void {
                 expect(messages.length).to.equal(0);
 
                 expect(expectations, 'Not all expectations consumed').to.be.empty;
+            });
+        });
+
+        describe('group setup blocking', function () {
+            function makeGroupSetupMessage(
+                creator: TestUser,
+                groupId: GroupId,
+                members: readonly IdentityString[],
+            ): structbuf.csp.payload.MessageWithMetadataBoxLike {
+                return createMessage(
+                    services,
+                    creator,
+                    me,
+                    CspE2eGroupControlType.GROUP_SETUP,
+                    structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
+                        groupId,
+                        innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupSetup, {
+                            members: members.map((identity) => UTF8.encode(identity)),
+                        }),
+                    }),
+                    CspMessageFlags.none(),
+                );
+            }
+
+            it('discards a group-setup message from a blocked creator when the group does not exist locally yet', async function () {
+                const {model} = services;
+
+                addTestUserAsContact(model, user1);
+
+                // Block creator
+                model.user.privacySettings.get().controller.update({
+                    blockedIdentities: {identities: [user1.identity.string]},
+                });
+
+                const groupId = randomGroupId(services.crypto);
+                const message = makeGroupSetupMessage(user1, groupId, [me]);
+                const task = new IncomingMessageTask(services, message);
+                const expectations: NetworkExpectation[] = [
+                    // Message is acked and dropped, since the group is unknown and the creator
+                    // is blocked
+                    NetworkExpectationFactory.writeIncomingMessageAck(),
+                ];
+                const handle = new TestHandle(services, expectations);
+                await task.run(handle);
+                handle.finish();
+
+                expect(expectations, 'Not all expectations consumed').to.be.empty;
+                expect(model.groups.getByGroupIdAndCreator(groupId, user1.identity.string)).to.be
+                    .undefined;
+            });
+
+            it('processes a group-setup message from a blocked creator when the group already exists locally', async function () {
+                const {model} = services;
+
+                const creatorContact = addTestUserAsContact(model, user1);
+                addTestUserAsContact(model, user2);
+
+                const groupId = randomGroupId(services.crypto);
+                const group = addTestGroup(model, {
+                    groupId,
+                    creator: creatorContact,
+                    members: [],
+                });
+
+                // Block creator only *after* the group was created locally
+                model.user.privacySettings.get().controller.update({
+                    blockedIdentities: {identities: [user1.identity.string]},
+                });
+
+                const message = makeGroupSetupMessage(user1, groupId, [user2.identity.string, me]);
+                const task = new IncomingMessageTask(services, message);
+                const expectations: NetworkExpectation[] = [
+                    NetworkExpectationFactory.startTransaction(0, TransactionScope.GROUP_SYNC),
+                    NetworkExpectationFactory.reflectSingle((payload) => {
+                        expect(payload.content).to.equal('groupSync');
+                    }),
+                    // Reflect the CSP message for backwards compatibility
+                    NetworkExpectationFactory.reflectSingle((payload) => {
+                        expect(payload.content).to.equal('incomingMessage');
+                        expect(payload.incomingMessage?.type).to.equal(
+                            CspE2eGroupControlType.GROUP_SETUP,
+                        );
+                    }),
+                    NetworkExpectationFactory.writeIncomingMessageAck(),
+                ];
+                const handle = new TestHandle(services, expectations);
+                await task.run(handle);
+                handle.finish();
+
+                expect(expectations, 'Not all expectations consumed').to.be.empty;
+
+                const view = group.get().view;
+                expect([...view.members].map((m) => m.get().view.identity)).to.have.members([
+                    user2.identity.string,
+                ]);
+            });
+
+            it('processes a group-setup message from a non-blocked creator, creating a new group', async function () {
+                const {model} = services;
+
+                addTestUserAsContact(model, user1);
+
+                const groupId = randomGroupId(services.crypto);
+                const message = makeGroupSetupMessage(user1, groupId, [me]);
+                const task = new IncomingMessageTask(services, message);
+                const expectations: NetworkExpectation[] = [
+                    NetworkExpectationFactory.startTransaction(0, TransactionScope.GROUP_SYNC),
+                    NetworkExpectationFactory.reflectSingle((payload) => {
+                        expect(payload.content).to.equal('groupSync');
+                        expect(payload.groupSync?.create?.group).not.to.be.undefined;
+                    }),
+                    NetworkExpectationFactory.reflectSingle((payload) => {
+                        expect(payload.content).to.equal('incomingMessage');
+                        expect(payload.incomingMessage?.type).to.equal(
+                            CspE2eGroupControlType.GROUP_SETUP,
+                        );
+                    }),
+                    NetworkExpectationFactory.writeIncomingMessageAck(),
+                ];
+                const handle = new TestHandle(services, expectations);
+                await task.run(handle);
+                handle.finish();
+
+                expect(expectations, 'Not all expectations consumed').to.be.empty;
+                expect(model.groups.getByGroupIdAndCreator(groupId, user1.identity.string)).not.to
+                    .be.undefined;
+            });
+
+            it('upgrades acquaintanceLevel to DIRECT for a GROUP_OR_DELETED creator sending a new group-setup message', async function () {
+                const {model} = services;
+
+                const creatorContact = addTestUserAsContact(model, {
+                    ...user1,
+                    acquaintanceLevel: AcquaintanceLevel.GROUP_OR_DELETED,
+                });
+
+                const groupId = randomGroupId(services.crypto);
+                const message = makeGroupSetupMessage(user1, groupId, [me]);
+                const task = new IncomingMessageTask(services, message);
+                const expectations: NetworkExpectation[] = [
+                    // Acquaintance level is upgraded to DIRECT and reflected
+                    ...reflectContactSync(user1, 'update'),
+
+                    NetworkExpectationFactory.startTransaction(0, TransactionScope.GROUP_SYNC),
+                    NetworkExpectationFactory.reflectSingle((payload) => {
+                        expect(payload.content).to.equal('groupSync');
+                        expect(payload.groupSync?.create?.group).not.to.be.undefined;
+                    }),
+                    NetworkExpectationFactory.reflectSingle((payload) => {
+                        expect(payload.content).to.equal('incomingMessage');
+                        expect(payload.incomingMessage?.type).to.equal(
+                            CspE2eGroupControlType.GROUP_SETUP,
+                        );
+                    }),
+                    NetworkExpectationFactory.writeIncomingMessageAck(),
+                ];
+                const handle = new TestHandle(services, expectations);
+                await task.run(handle);
+                handle.finish();
+
+                expect(expectations, 'Not all expectations consumed').to.be.empty;
+                expect(creatorContact.get().view.acquaintanceLevel).to.equal(
+                    AcquaintanceLevel.DIRECT,
+                );
             });
         });
 
