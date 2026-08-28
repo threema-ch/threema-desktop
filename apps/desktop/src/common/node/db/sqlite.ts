@@ -1909,19 +1909,25 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
 
     /** @inheritdoc */
     public getLastMessage(conversationUid: DbConversationUid): DbGet<DbAnyMessage> {
-        const common = sync(
-            this._getCommonMessageSelector()
+        // Note: The UID is determined with a separate query, which can be served entirely by the
+        //       index on `(conversationUid, ordinal)`. Ordering the query of
+        //       {@link _getCommonMessageSelector} directly would instead join, group and sort all
+        //       messages of the conversation, just to return a single row.
+        const uid = sync(
+            this._db
+                .selectFrom(tMessage)
+                .selectOneColumn(tMessage.uid)
                 .where(tMessage.conversationUid.equals(conversationUid))
                 // TODO(DESK-296): Order correctly
-                .orderBy('ordinal', 'desc')
+                .orderBy(tMessage.ordinal, 'desc')
                 .limit(1)
                 .executeSelectNoneOrOne(),
         );
-        if (common === null) {
+        if (uid === null) {
             return undefined;
         }
 
-        return this._getMessage(common);
+        return this.getMessageByUid(uid);
     }
 
     /** @inheritdoc */
@@ -1956,8 +1962,11 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
 
     /** @inheritdoc */
     public getFirstUnreadMessage(conversationUid: DbConversationUid): DbGet<DbAnyMessage> {
-        const common = sync(
-            this._getCommonMessageSelector()
+        // Note: See the note in {@link getLastMessage} on why the UID is determined separately.
+        const uid = sync(
+            this._db
+                .selectFrom(tMessage)
+                .selectOneColumn(tMessage.uid)
                 .where(
                     tMessage.conversationUid
                         .equals(conversationUid)
@@ -1965,15 +1974,15 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         .and(tMessage.readAt.isNull()),
                 )
                 // TODO(DESK-296): Order correctly
-                .orderBy('ordinal', 'asc')
+                .orderBy(tMessage.ordinal, 'asc')
                 .limit(1)
                 .executeSelectNoneOrOne(),
         );
-        if (common === null) {
+        if (uid === null) {
             return undefined;
         }
 
-        return this._getMessage(common);
+        return this.getMessageByUid(uid);
     }
 
     /** @inheritdoc */
