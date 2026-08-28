@@ -1383,8 +1383,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 type: tMessage.messageType,
                 threadId: tMessage.threadId,
                 lastEditedAt: tMessage.lastEditedAt,
-                // TODO(DESK-1445): Implement ordinal using virtual columns
-                ordinal: tMessage.processedAtTimestamp.valueWhenNull(tMessage.createdAtTimestamp),
+                ordinal: tMessage.ordinal,
                 deletedAt: tMessage.deletedAt,
 
                 reactions: this._db
@@ -1432,8 +1431,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 threadId: tMessage.threadId,
                 lastEditedAt: tMessage.lastEditedAt,
                 deletedAt: tMessage.deletedAt,
-                // TODO(DESK-1445): Implement ordinal using virtual columns
-                ordinal: tMessage.processedAtTimestamp.valueWhenNull(tMessage.createdAtTimestamp),
+                ordinal: tMessage.ordinal,
                 reactions: this._db
                     .aggregateAsArrayDistinct({
                         reaction: tMessageReactionLeftJoin.reaction,
@@ -1805,9 +1803,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .select({
                     conversationUid: tMessage.conversationUid,
                     id: tMessage.messageId,
-                    ordinal: tMessage.processedAtTimestamp.valueWhenNull(
-                        tMessage.createdAtTimestamp,
-                    ),
+                    ordinal: tMessage.ordinal,
                     uid: tMessage.uid,
                 })
                 .where(
@@ -3105,7 +3101,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         readAt: tMessage.readAt,
                         threadId: tMessage.threadId,
                         deletedAt: tMessage.deletedAt,
-                        ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt).getTime(),
+                        ordinal: tMessage.ordinal,
                         raw: tMessage.raw,
                     })
                     .executeUpdateNoneOrOne(),
@@ -3214,28 +3210,22 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         limit?: u53,
     ): DbList<DbAnyMessage, 'uid'> {
         // Determine ordering and dynamic WHERE clause: Filter by conversation
-        // and by processedAt timestamp.
-        let processedAtCondition;
+        // and by ordinal.
+        //
+        // Note: The plain range condition on the `ordinal` column (instead of e.g. an OR-condition
+        //       over `processedAt` and `createdAt`) is required so that the query can be served by
+        //       the index on `(conversationUid, ordinal)`.
+        let ordinalCondition;
         let orderByMode: 'asc' | 'desc';
         switch (direction) {
             case MessageQueryDirection.OLDER:
                 orderByMode = 'desc';
-                processedAtCondition = tMessage.processedAtTimestamp.lessOrEquals(ordinal).or(
-                    // Handle case that processedAt was not (yet) set (outbound messages)
-                    tMessage.processedAtTimestamp
-                        .isNull()
-                        .and(tMessage.createdAtTimestamp.lessOrEquals(ordinal)),
-                );
+                ordinalCondition = tMessage.ordinal.lessOrEquals(ordinal);
                 break;
 
             case MessageQueryDirection.NEWER:
                 orderByMode = 'asc';
-                processedAtCondition = tMessage.processedAtTimestamp.greaterOrEquals(ordinal).or(
-                    // Handle case that processedAt was not (yet) set (outbound messages)
-                    tMessage.processedAtTimestamp
-                        .isNull()
-                        .and(tMessage.createdAtTimestamp.greaterOrEquals(ordinal)),
-                );
+                ordinalCondition = tMessage.ordinal.greaterOrEquals(ordinal);
                 break;
 
             default:
@@ -3247,12 +3237,9 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .selectFrom(tMessage)
                 .select({
                     uid: tMessage.uid,
-                    // TODO(DESK-1445): Implement ordinal using virtual columns
-                    ordinal: tMessage.processedAtTimestamp.valueWhenNull(
-                        tMessage.createdAtTimestamp,
-                    ),
+                    ordinal: tMessage.ordinal,
                 })
-                .where(tMessage.conversationUid.equals(conversationUid).and(processedAtCondition))
+                .where(tMessage.conversationUid.equals(conversationUid).and(ordinalCondition))
                 // TODO(DESK-296): Order correctly
                 .orderBy('ordinal', orderByMode)
                 .limitIfValue(limit)
@@ -3312,7 +3299,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         // Fields to select
         const selectFields = {
             uid: tMessage.uid,
-            ordinal: tMessage.processedAtTimestamp.valueWhenNull(tMessage.createdAtTimestamp),
+            ordinal: tMessage.ordinal,
         };
 
         // If the reference UID is undefined, we start at the newest message.

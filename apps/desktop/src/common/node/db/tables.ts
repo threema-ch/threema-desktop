@@ -593,6 +593,17 @@ export const tMessage = new (class TMessage extends Table<DBConnection, 'TMessag
     );
 
     /**
+     * The ordinal used for ordering messages within a conversation (unix timestamp in
+     * milliseconds).
+     *
+     * This is a virtual generated column, defined as `COALESCE(processedAt, createdAt)` (see
+     * migration 39). It is covered by an index on `(conversationUid, ordinal)`, so
+     * conversation-scoped queries filtering or ordering by the ordinal can be served by the index
+     * instead of requiring a full table scan.
+     */
+    public ordinal = this.computedColumn<u53>('ordinal', 'customInt', CUSTOM_TYPES.U53);
+
+    /**
      * Optional timestamp for when the outbound message has been delivered to the recipient and the
      * 'received' delivery receipt was reflected to the mediator server.
      *
