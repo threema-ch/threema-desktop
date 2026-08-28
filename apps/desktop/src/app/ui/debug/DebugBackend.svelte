@@ -47,6 +47,15 @@
         Server group: {debugPanel.serverGroup}<br />
         Leader: {#if leaderState$ === D2mLeaderState.LEADER}yes{:else}no{/if}
       </p>
+
+      <Button
+        flavor="filled"
+        onclick={() => {
+          backend.debug.forceBackgroundJobsExecution().catch(assertUnreachable);
+        }}
+      >
+        Trigger all Background Jobs
+      </Button>
     {/await}
   </section>
 </template>

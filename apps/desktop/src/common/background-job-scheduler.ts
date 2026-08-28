@@ -17,8 +17,14 @@ export interface JobHandle {
     readonly update: JobIntervalUpdater;
 }
 
+interface InternalJobHandle extends JobHandle {
+    readonly job: Job;
+}
+
+type Job = (log: Logger, cancel: JobCanceller, update: JobIntervalUpdater) => void;
+
 export class BackgroundJobScheduler {
-    private readonly _handles = new Set<JobHandle>();
+    private readonly _handles = new Set<InternalJobHandle>();
     private readonly _log: Logger;
 
     public constructor(private readonly _logging: LoggerFactory) {
@@ -37,7 +43,7 @@ export class BackgroundJobScheduler {
      *   set to `0` the first run will be queued as a microtask.
      */
     public scheduleRecurringJob(
-        job: (log: Logger, cancel: JobCanceller, update: JobIntervalUpdater) => void,
+        job: Job,
         options: {
             readonly tag: string;
             readonly intervalS: u53;
@@ -76,7 +82,8 @@ export class BackgroundJobScheduler {
         };
 
         // Create and register job handle
-        const handle: JobHandle = {
+        const handle: InternalJobHandle = {
+            job,
             tag: options.tag,
             cancel,
             update,
@@ -110,6 +117,22 @@ export class BackgroundJobScheduler {
         }
 
         return handle;
+    }
+
+    /**
+     * This function should only used for debugging purposes, only call via Debug-Panel.
+     */
+    public forceJobExecution(): void {
+        const registeredJobsNames = [...this._handles].map(({tag}) => `'${tag}'`);
+
+        this._log.info(
+            `BackgroundJobScheduler.forceJobExecution() called, executing ${registeredJobsNames.length} jobs [${registeredJobsNames}]`,
+        );
+
+        this._handles.forEach(({job, update, cancel, tag}) => {
+            this._log.info(`Executing job with tag: "${tag}" by force`);
+            job(this._log, cancel, update);
+        });
     }
 
     /**

@@ -1,5 +1,6 @@
 import type {I18nLocales} from '~/app/ui/i18n-types';
 import type {ServicesForBackend} from '~/common/backend';
+import type {BackgroundJobScheduler} from '~/common/background-job-scheduler';
 import {
     generateFakeContactConversation,
     generateFakeGroupConversation,
@@ -17,7 +18,10 @@ export class DebugBackend implements ProxyMarked {
 
     private readonly _log: Logger;
 
-    public constructor(private readonly _services: ServicesForBackend) {
+    public constructor(
+        private readonly _services: ServicesForBackend,
+        private readonly _backgroundJobScheduler: BackgroundJobScheduler,
+    ) {
         this._log = _services.logging.logger('debug-backend');
     }
 
@@ -42,5 +46,9 @@ export class DebugBackend implements ProxyMarked {
      */
     public async importScreenshotData(locale: I18nLocales): Promise<void> {
         await importScreenshotData(this._services, this._log, locale);
+    }
+
+    public forceBackgroundJobsExecution(): void {
+        this._backgroundJobScheduler.forceJobExecution();
     }
 }

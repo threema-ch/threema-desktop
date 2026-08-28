@@ -814,7 +814,7 @@ export class Backend {
         this._log = _services.logging.logger('backend');
         this._backgroundJobScheduler = new BackgroundJobScheduler(_services.logging);
         this._connectionManager = new ConnectionManager(_services, () => this._capture);
-        this._debug = new DebugBackend(_services);
+        this._debug = new DebugBackend(_services, this._backgroundJobScheduler);
         this.handle = {
             [TRANSFER_HANDLER]: PROXY_HANDLER,
             capture: this.capture.bind(this),
