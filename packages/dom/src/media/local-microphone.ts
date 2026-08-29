@@ -1,0 +1,81 @@
+import type {u53} from '@threema/ts-utils/integer/u53';
+
+import type {EnumerableMediaDeviceRegistry} from './enumerable-media-device-registry';
+import {LocalCaptureSource} from './local-capture-source';
+import type {LocalSelectableCaptureState} from './local-devices-state';
+import type {EnumerableMediaDeviceSelection} from './media-device';
+
+export interface LocalMicrophoneInit {
+    readonly acquisitionTimeoutMs?: u53;
+    readonly onchange: () => void;
+    readonly registry: EnumerableMediaDeviceRegistry;
+}
+
+/**
+ * Manages local microphone devices.
+ *
+ * Note: Unlike the camera, this holds on to its device once it was opened, and only silences its
+ * track while it is off to improve unmute latency. The device is only let go of when the manager is
+ * closed.
+ */
+export class LocalMicrophone {
+    readonly #_source: LocalCaptureSource;
+
+    public constructor(init: LocalMicrophoneInit) {
+        this.#_source = new LocalCaptureSource({
+            acquisitionTimeoutMs: init.acquisitionTimeoutMs,
+            kind: 'microphone',
+            onchange: init.onchange,
+            registry: init.registry,
+        });
+    }
+
+    public get state(): LocalSelectableCaptureState {
+        return {
+            active: this.#_source.active,
+            capture: this.#_source.capture,
+            devices: this.#_source.devices,
+            isEnabled: this.#_source.isEnabled,
+            isPending: this.#_source.isPending,
+            selected: this.#_source.selected,
+        };
+    }
+
+    /**
+     * Opens the device without unmuting it, so that a later {@link enable} is instant.
+     *
+     * Note: Optional. {@link enable} opens the device by itself if this was not called before, so
+     * this is only useful to a consumer which knows it will want the microphone shortly.
+     */
+    public acquire(): void {
+        this.#_source.setIntent({isAcquired: true});
+    }
+
+    /**
+     * Unmutes, opening the device first if it is not open yet.
+     */
+    public enable(): void {
+        this.#_source.setIntent({isAcquired: true, isEnabled: true});
+    }
+
+    /**
+     * Mutes. Note: The device stays acquired.
+     */
+    public disable(): void {
+        this.#_source.setIntent({isEnabled: false});
+    }
+
+    /**
+     * Chooses which microphone to use.
+     */
+    public select(device: EnumerableMediaDeviceSelection): void {
+        this.#_source.select(device);
+    }
+
+    /**
+     * Releases the hardware and stops watching for changes. The source reports nothing afterwards.
+     */
+    public close(): void {
+        this.#_source.close();
+    }
+}

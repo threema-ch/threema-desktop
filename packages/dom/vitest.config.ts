@@ -21,6 +21,30 @@ export default defineConfig({
                     viewport: VIEWPORT,
                 },
                 launchOptions: {
+                    args: [
+                        /**
+                         * Arguments which give the browser a deterministic set of media devices, so
+                         * that tests can enumerate cameras, microphones and speakers without
+                         * depending on the machine they run on.
+                         *
+                         * Note: `device-count` applies to cameras only. The audio devices are a
+                         * fixed set of two, each with an additional entry aliasing the system
+                         * default. `--use-fake-ui-for-media-stream` bypasses permission dialogs and
+                         * directly grants the permission to use the devices.
+                         */
+                        '--use-fake-device-for-media-stream=device-count=3',
+                        '--use-fake-ui-for-media-stream',
+                        /**
+                         * Allows playback from a page nobody interacted with.
+                         */
+                        '--autoplay-policy=no-user-gesture-required',
+
+                        /**
+                         * Argument which exposes `globalThis.gc`, so that a test can ask for a
+                         * garbage collection explicitly.
+                         */
+                        '--js-flags=--expose-gc',
+                    ],
                     executablePath: process.env.CHROMIUM_BIN,
                 },
             }),
