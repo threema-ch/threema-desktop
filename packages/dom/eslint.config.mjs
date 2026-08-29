@@ -11,9 +11,9 @@ export default defineConfig(
 
     globalIgnores(['.turbo/', 'coverage/', 'node_modules/']),
 
-    // Allow devDependencies in test and config files.
+    // Allow devDependencies in test, test helper and config files.
     {
-        files: ['**/*.test.ts', 'vitest.config.ts'],
+        files: ['**/*.test.ts', 'src/utils/test/**/*.ts', 'vitest.config.ts'],
         rules: {
             'import/no-extraneous-dependencies': [
                 'error',

@@ -821,6 +821,10 @@ importers:
         version: 4.1.10(@types/node@22.17.2)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-istanbul@4.1.10)(vite@7.3.6(@types/node@22.17.2)(jiti@2.7.0)(lightningcss@1.31.1)(sass@1.77.8))
 
   packages/dom:
+    dependencies:
+      '@threema/ts-utils':
+        specifier: workspace:*
+        version: link:../ts-utils
     devDependencies:
       '@threema/domain':
         specifier: workspace:*
@@ -828,12 +832,12 @@ importers:
       '@threema/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@threema/test-utils':
+        specifier: workspace:*
+        version: link:../test-utils
       '@threema/ts-config':
         specifier: workspace:*
         version: link:../ts-config
-      '@threema/ts-utils':
-        specifier: workspace:*
-        version: link:../ts-utils
       '@types/node':
         specifier: 'catalog:'
         version: 22.17.2

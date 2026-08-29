@@ -12,12 +12,15 @@
     "lint:tsc": "tsc -b",
     "test:vitest": "vitest run --coverage"
   },
+  "dependencies": {
+    "@threema/ts-utils": "workspace:*"
+  },
   "devDependencies": {
     "@threema/domain": "workspace:*",
     "@threema/eslint-config": "workspace:*",
+    "@threema/test-utils": "workspace:*",
     "@threema/ts-config": "workspace:*",
     "@types/node": "catalog:",
-    "@threema/ts-utils": "workspace:*",
     "@vitest/browser-playwright": "catalog:",
     "@vitest/coverage-istanbul": "catalog:",
     "eslint": "catalog:",
