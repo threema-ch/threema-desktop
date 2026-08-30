@@ -47,29 +47,43 @@ export class LocalMicrophone {
      * Note: Optional. {@link enable} opens the device by itself if this was not called before, so
      * this is only useful to a consumer which knows it will want the microphone shortly.
      */
-    public acquire(): void {
-        this.#_source.setIntent({isAcquired: true});
+    public async acquire(): Promise<void> {
+        await this.#_source.setIntent({isAcquired: true});
     }
 
     /**
      * Unmutes, opening the device first if it is not open yet.
      */
-    public enable(): void {
-        this.#_source.setIntent({isAcquired: true, isEnabled: true});
+    public async enable(): Promise<void> {
+        await this.#_source.setIntent({isAcquired: true, isEnabled: true});
     }
 
     /**
      * Mutes. Note: The device stays acquired.
      */
-    public disable(): void {
-        this.#_source.setIntent({isEnabled: false});
+    public async disable(): Promise<void> {
+        await this.#_source.setIntent({isEnabled: false});
+    }
+
+    /**
+     * Unmutes if it is muted, and mutes if it is unmuted, opening the device first if needed.
+     */
+    public toggle(): void {
+        // Even though `enable` and `disable` are async, `isEnabled` is updated immediately, so
+        // simply toggling the state does not race. `LocalCaptureSource` will reconcile until the
+        // latest desired target state is reached.
+        const requested = this.#_source.isEnabled ? this.disable() : this.enable();
+        requested.catch(
+            /* istanbul ignore next -- @preserve: Unreachable, a failure is reported in the state. */
+            () => undefined,
+        );
     }
 
     /**
      * Chooses which microphone to use.
      */
-    public select(device: EnumerableMediaDeviceSelection): void {
-        this.#_source.select(device);
+    public async select(device: EnumerableMediaDeviceSelection): Promise<void> {
+        await this.#_source.select(device);
     }
 
     /**

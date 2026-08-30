@@ -1,5 +1,6 @@
 import {waitUntilStable} from '@threema/test-utils';
 import {unwrap} from '@threema/ts-utils/meta/unwrap';
+import {TIMER} from '@threema/ts-utils/timer/global-timer';
 import {afterEach, beforeEach, describe, expect, it} from 'vitest';
 
 import {type FakeMediaDevices, installFakeMediaDevices} from '../utils/test/fake-media-devices';
@@ -7,6 +8,7 @@ import {type FakeMediaDevices, installFakeMediaDevices} from '../utils/test/fake
 import {EnumerableMediaDeviceRegistry} from './enumerable-media-device-registry';
 import {LocalCamera} from './local-camera';
 import {
+    MediaDeviceInUseError,
     MediaDeviceNotFoundError,
     MediaDevicePermissionDeniedByUserError,
     MediaDeviceTimeoutError,
@@ -72,7 +74,7 @@ describe('LocalCamera', () => {
         const subject = await createCamera();
 
         // Act
-        subject.enable();
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert
@@ -104,7 +106,7 @@ describe('LocalCamera', () => {
         camera = subject;
 
         // Act
-        subject.enable();
+        await subject.enable();
 
         // Assert: Reported before the hardware caught up, so that a control can follow the
         // interaction immediately.
@@ -112,28 +114,28 @@ describe('LocalCamera', () => {
         await waitUntilStable(() => !subject.state.isPending);
     });
 
-    it('reports that it is opening the camera while it does', async () => {
+    it('reports that it is acquiring the camera while opening it is still in progress', async () => {
         // Arrange
         const subject = await createCamera();
 
         // Act
-        subject.enable();
+        const opening = subject.enable();
 
         // Assert
         expect(subject.state.capture.status).toBe('acquiring');
         expect(subject.state.isPending).toBe(true);
-        await waitUntilStable(() => !subject.state.isPending);
+        await opening;
     });
 
     it('lets go of the camera when it is turned off', async () => {
         // Arrange
         const subject = await createCamera();
-        subject.enable();
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
         const opened = subject.state.capture;
 
         // Act
-        subject.disable();
+        await subject.disable();
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert
@@ -147,16 +149,39 @@ describe('LocalCamera', () => {
         fake = installFakeMediaDevices(async () => await PLATFORM.enumerateDevices(), capture);
         const subject = await createCamera();
 
-        // Act: The second answer arrives long before the first one was acted on.
-        subject.enable();
-        subject.disable();
-        subject.enable();
-        subject.disable();
+        // The requests themselves are ordered and `isEnabled` updates immediately upon each
+        // request, and doesn't race.
+        const requests = [subject.enable(), subject.disable(), subject.enable(), subject.disable()];
+        await Promise.all(requests);
         await waitUntilStable(() => !subject.state.isPending);
 
-        // Assert: One attempt, and nothing is held afterwards.
+        // Assert: Only enabled once, because the second call to `enable` happens while the device
+        // is still reconciling.
         expect(captures).toBe(1);
         expect(subject.state.capture.status).toBe('inactive');
+    });
+
+    it('turns the camera on and off again when it is toggled', async () => {
+        // Arrange
+        fake = installFakeMediaDevices(async () => await PLATFORM.enumerateDevices(), capture);
+        const subject = await createCamera();
+
+        // Act
+        subject.toggle();
+
+        // Assert
+        expect(subject.state.isEnabled).toBe(true);
+        await waitUntilStable(() => !subject.state.isPending);
+        expect(subject.state.capture.status).toBe('acquired');
+
+        // Act
+        subject.toggle();
+
+        // Assert
+        expect(subject.state.isEnabled).toBe(false);
+        await waitUntilStable(() => !subject.state.isPending);
+        expect(subject.state.capture.status).toBe('inactive');
+        expect(captures).toBe(1);
     });
 
     it('remembers a camera chosen while it is off, and uses it once it is on', async () => {
@@ -166,7 +191,7 @@ describe('LocalCamera', () => {
         const subject = await createCamera();
 
         // Act
-        subject.select({type: 'id', id: wanted.deviceId as MediaDeviceId});
+        await subject.select({type: 'id', id: wanted.deviceId as MediaDeviceId});
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert: Choosing a camera does not open one.
@@ -174,7 +199,7 @@ describe('LocalCamera', () => {
         expect(subject.state.selected).toEqual({type: 'id', id: wanted.deviceId});
 
         // Act
-        subject.enable();
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert
@@ -187,13 +212,13 @@ describe('LocalCamera', () => {
         const first = unwrap(cameras[0], 'a camera');
         const second = unwrap(cameras[1], 'a second camera');
         const subject = await createCamera();
-        subject.select({type: 'id', id: first.deviceId as MediaDeviceId});
-        subject.enable();
+        await subject.select({type: 'id', id: first.deviceId as MediaDeviceId});
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
         const before = subject.state.capture;
 
         // Act
-        subject.select({type: 'id', id: second.deviceId as MediaDeviceId});
+        await subject.select({type: 'id', id: second.deviceId as MediaDeviceId});
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert
@@ -213,13 +238,13 @@ describe('LocalCamera', () => {
         const second = unwrap((await realCameras())[1], 'This test needs a second camera');
         fake = installFakeMediaDevices(async () => await PLATFORM.enumerateDevices(), capture);
         const subject = await createCamera();
-        subject.select({type: 'id', id: second.deviceId as MediaDeviceId});
-        subject.enable();
+        await subject.select({type: 'id', id: second.deviceId as MediaDeviceId});
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
         expect(subject.state.active).toBe(second.deviceId);
 
         // Act
-        subject.select({type: 'system-default'});
+        await subject.select({type: 'system-default'});
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert
@@ -237,8 +262,8 @@ describe('LocalCamera', () => {
         let attached = cameras;
         fake = installFakeMediaDevices(() => attached, capture);
         const subject = await createCamera();
-        subject.select({type: 'id', id: second.deviceId as MediaDeviceId});
-        subject.enable();
+        await subject.select({type: 'id', id: second.deviceId as MediaDeviceId});
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
         expect(subject.state.active).toBe(second.deviceId);
 
@@ -265,7 +290,7 @@ describe('LocalCamera', () => {
         // Arrange
         fake = installFakeMediaDevices(async () => await PLATFORM.enumerateDevices(), capture);
         const subject = await createCamera();
-        subject.enable();
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
         const opened = subject.state.capture;
 
@@ -281,6 +306,70 @@ describe('LocalCamera', () => {
         expect(subject.state.capture.status).toBe('acquired');
     });
 
+    it('gives up on a camera which keeps stopping, and tries again when it is asked to', async () => {
+        // Arrange
+        fake = installFakeMediaDevices(
+            async () => await PLATFORM.enumerateDevices(),
+            async (constraints) => {
+                const stream = await capture(constraints);
+                // Alive when handed over, dead a moment later, to simulate failing hardware.
+                setTimeout(() => {
+                    for (const track of stream.getTracks()) {
+                        track.stop();
+                        track.dispatchEvent(new Event('ended'));
+                    }
+                }, 20);
+                return stream;
+            },
+        );
+        const subject = await createCamera();
+
+        // Act
+        await subject.enable();
+        await waitUntilStable(() => subject.state.capture.status === 'failed');
+
+        // Assert: Opened again a few times, because a device which drops out once usually comes
+        // back. Give up after a number of retries, instead of retrying forever. Should be reported
+        // as off after giving up.
+        const failed = subject.state.capture;
+        expect(failed.status).toBe('failed');
+        expect(failed.status === 'failed' && failed.error).toBeInstanceOf(MediaDeviceInUseError);
+        expect(subject.state.isEnabled).toBe(false);
+        expect(captures).toBe(3);
+
+        // Act: The user turns it on again.
+        await subject.enable();
+        await waitUntilStable(() => subject.state.capture.status === 'failed');
+
+        // Assert
+        expect(captures).toBe(6);
+        expect(subject.state.capture.status).toBe('failed');
+    });
+
+    it('does not give up on a failing device if the threshold is not reached', async () => {
+        // Arrange: Two failures, then a request, then two more. The manual request starts the count
+        // over, so the failures never reach the threshold for giving up.
+        fake = installFakeMediaDevices(async () => await PLATFORM.enumerateDevices(), capture);
+        const subject = await createCamera();
+        await subject.enable();
+
+        // Act
+        for (const round of [0, 1, 2, 3]) {
+            if (round === 2) {
+                await subject.enable();
+            }
+            const opened = subject.state.capture;
+            expect(opened.status).toBe('acquired');
+            if (opened.status === 'acquired') {
+                opened.track.dispatchEvent(new Event('ended'));
+            }
+            await waitUntilStable(() => !subject.state.isPending);
+        }
+
+        // Assert
+        expect(subject.state.capture.status).toBe('acquired');
+    });
+
     it('reports a refused camera, and asks for it only once', async () => {
         // Arrange
         fake = installFakeMediaDevices(
@@ -293,7 +382,7 @@ describe('LocalCamera', () => {
         const subject = await createCamera();
 
         // Act
-        subject.enable();
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert: The failure is reported, and the camera reports as disabled as a result.
@@ -319,20 +408,20 @@ describe('LocalCamera', () => {
             },
         );
         const subject = await createCamera();
-        subject.enable();
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
         expect(subject.state.capture.status).toBe('failed');
 
         // Act
         isRefused = false;
-        subject.enable();
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert
         expect(subject.state.capture.status).toBe('acquired');
     });
 
-    it('asks again without naming the camera when it cannot deliver', async () => {
+    it('opens another camera when the chosen one cannot deliver', async () => {
         // Arrange
         const wanted = unwrap((await realCameras())[0], 'a camera');
         fake = installFakeMediaDevices(
@@ -349,13 +438,41 @@ describe('LocalCamera', () => {
         const subject = await createCamera();
 
         // Act
-        subject.select({type: 'id', id: wanted.deviceId as MediaDeviceId});
-        subject.enable();
+        await subject.select({type: 'id', id: wanted.deviceId as MediaDeviceId});
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert: Asked for twice, and capturing on whatever the system offered instead.
         expect(captures).toBe(2);
         expect(subject.state.capture.status).toBe('acquired');
+    });
+
+    it('opens another camera when the chosen one is held by something else', async () => {
+        // Arrange
+        const cameras = await realCameras();
+        const wanted = unwrap(cameras[1]);
+        fake = installFakeMediaDevices(
+            async () => await PLATFORM.enumerateDevices(),
+            async (constraints) => {
+                const video = constraints.video;
+                if (typeof video === 'object' && video.deviceId !== undefined) {
+                    throw new DOMException('Could not start video source', 'NotReadableError');
+                }
+                return await capture(constraints);
+            },
+        );
+        const subject = await createCamera();
+
+        // Act
+        await subject.select({type: 'id', id: wanted.deviceId as MediaDeviceId});
+        await subject.enable();
+
+        // Assert: Capturing from a camera, but a different one. The requested original choice is
+        // kept.
+        expect(subject.state.capture.status).toBe('acquired');
+        expect(subject.state.selected).toEqual({type: 'id', id: wanted.deviceId});
+        expect(subject.state.active).not.toBe(wanted.deviceId);
+        expect(captures).toBe(1);
     });
 
     it('reports a camera which cannot deliver when none was named', async () => {
@@ -370,7 +487,7 @@ describe('LocalCamera', () => {
         const subject = await createCamera();
 
         // Act
-        subject.enable();
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert: Nothing was named, so there is nothing to drop and ask again without.
@@ -387,13 +504,40 @@ describe('LocalCamera', () => {
         const subject = await createCamera();
 
         // Act
-        subject.enable();
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert
         const state = subject.state.capture;
         expect(state.status).toBe('failed');
         expect(state.status === 'failed' && state.error).toBeInstanceOf(MediaDeviceNotFoundError);
+    });
+
+    it('gives up on a camera which hands over a track that is already dead', async () => {
+        // Arrange
+        fake = installFakeMediaDevices(
+            async () => await PLATFORM.enumerateDevices(),
+            async (constraints) => {
+                const stream = await capture(constraints);
+                // The device answered, but what it handed over is dead on arrival, e.g. because it
+                // was detached while it was being opened.
+                for (const track of stream.getTracks()) {
+                    track.stop();
+                }
+                return stream;
+            },
+        );
+        const subject = await createCamera();
+
+        // Act
+        await subject.enable();
+        await waitUntilStable(() => !subject.state.isPending);
+
+        // Assert: Reported as a failure. Asking again would only ever hand over another dead track.
+        const state = subject.state.capture;
+        expect(state.status).toBe('failed');
+        expect(state.status === 'failed' && state.error).toBeInstanceOf(MediaDeviceInUseError);
+        expect(captures).toBe(1);
     });
 
     it('gives up on a camera which is never handed over, and lets go of it if it rearrives', async () => {
@@ -412,7 +556,7 @@ describe('LocalCamera', () => {
         const subject = await createCamera();
 
         // Act
-        subject.enable();
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert
@@ -442,7 +586,7 @@ describe('LocalCamera', () => {
         const subject = await createCamera();
 
         // Act
-        subject.enable();
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert
@@ -469,11 +613,10 @@ describe('LocalCamera', () => {
         const subject = await createCamera();
 
         // Act
-        subject.enable();
+        const opening = subject.enable();
         subject.close();
-        await new Promise((resolve) => {
-            setTimeout(resolve, 200);
-        });
+        await opening;
+        await TIMER.sleep(200);
 
         // Assert
         expect(opened).not.toBe(undefined);
@@ -488,7 +631,7 @@ describe('LocalCamera', () => {
         subject.close();
 
         // Act
-        subject.enable();
+        await subject.enable();
         await new Promise((resolve) => {
             setTimeout(resolve, 50);
         });
@@ -496,6 +639,38 @@ describe('LocalCamera', () => {
         // Assert
         expect(captures).toBe(0);
         expect(subject.state.capture.status).toBe('inactive');
+    });
+
+    it('promise settles once the camera is open, and once it is let go of again', async () => {
+        // Arrange
+        const subject = await createCamera();
+
+        // Act
+        await subject.enable();
+
+        // Assert
+        expect(subject.state.capture.status).toBe('acquired');
+        expect(subject.state.isPending).toBe(false);
+
+        // Act
+        await subject.disable();
+
+        // Assert
+        expect(subject.state.capture.status).toBe('inactive');
+    });
+
+    it('promise settles once the chosen camera is the one in use', async () => {
+        // Arrange
+        const cameras = await realCameras();
+        const second = unwrap(cameras[1]);
+        const subject = await createCamera();
+        await subject.enable();
+
+        // Act
+        await subject.select({type: 'id', id: second.deviceId as MediaDeviceId});
+
+        // Assert
+        expect(subject.state.active).toBe(second.deviceId);
     });
 
     it('reports the cameras of the machine', async () => {

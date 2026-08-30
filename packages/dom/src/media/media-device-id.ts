@@ -20,8 +20,8 @@ export type MediaDeviceId = WeakOpaque<string, {readonly MediaDeviceId: unique s
  * @param value Value to check.
  * @returns Whether the value is a {@link MediaDeviceId}.
  */
-export function isMediaDeviceId(value: string): value is MediaDeviceId {
-    return value !== '';
+export function isMediaDeviceId(value: unknown): value is MediaDeviceId {
+    return typeof value === 'string' && value !== '';
 }
 
 /**
@@ -31,9 +31,27 @@ export function isMediaDeviceId(value: string): value is MediaDeviceId {
  * @returns The value as a {@link MediaDeviceId}.
  * @throws {Error} If the platform withheld the identifier.
  */
-export function ensureMediaDeviceId(value: string): MediaDeviceId {
+export function ensureMediaDeviceId(value: unknown): MediaDeviceId {
     if (!isMediaDeviceId(value)) {
         throw new Error('Not a valid media device id: the identifier is empty');
     }
     return value;
+}
+
+/**
+ * Identifiers of entries which are not devices of their own, but are aliases for a real device.
+ * Included by Chromium in the list of enumerated devices, in addition to the real device itself, so
+ * some devices would appear twice if aliases are not filtered out.
+ */
+const ALIAS_MEDIA_DEVICE_IDS: readonly string[] = ['default', 'communications'];
+
+/**
+ * Checks whether the given `value` is a {@link MediaDeviceId} and belongs to a known alias (virtual
+ * media device).
+ *
+ * @param value Value to check.
+ * @returns Whether the value is an alias of the platform.
+ */
+export function isAliasMediaDeviceId(value: unknown): value is MediaDeviceId {
+    return isMediaDeviceId(value) && ALIAS_MEDIA_DEVICE_IDS.includes(value);
 }

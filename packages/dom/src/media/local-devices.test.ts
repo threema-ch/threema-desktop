@@ -39,7 +39,7 @@ describe('LocalDevices', () => {
         expect(localDevices.state.camera.capture.status).toBe('inactive');
 
         // Act
-        localDevices.camera.enable();
+        await localDevices.camera.enable();
         await waitUntilStable(() => localDevices?.state.camera.isPending === false);
 
         // Assert
@@ -55,7 +55,7 @@ describe('LocalDevices', () => {
         });
 
         // Act
-        localDevices.camera.enable();
+        await localDevices.camera.enable();
         await waitUntilStable(() => localDevices?.state.camera.isPending === false);
 
         // Assert
@@ -65,7 +65,7 @@ describe('LocalDevices', () => {
         // Act
         const before = seen.length;
         unsubscribe();
-        localDevices.camera.disable();
+        await localDevices.camera.disable();
         await waitUntilStable(() => localDevices?.state.camera.isPending === false);
 
         // Assert
@@ -84,7 +84,7 @@ describe('LocalDevices', () => {
         });
 
         // Act
-        localDevices.camera.enable();
+        await localDevices.camera.enable();
         await waitUntilStable(() => localDevices?.state.camera.isPending === false);
 
         // Assert
@@ -94,8 +94,8 @@ describe('LocalDevices', () => {
     it('lets go of all resources when it is closed', async () => {
         // Arrange
         localDevices = new LocalDevices({acquisitionTimeoutMs: 200, playbackTimeoutMs: 200});
-        localDevices.microphone.enable();
-        localDevices.camera.enable();
+        await localDevices.microphone.enable();
+        await localDevices.camera.enable();
         await waitUntilStable(() => {
             const state = localDevices?.state;
             return state?.camera.isPending === false && !state.microphone.isPending;

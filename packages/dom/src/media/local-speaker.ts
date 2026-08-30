@@ -79,6 +79,11 @@ export class LocalSpeaker {
     #_canSelect = false;
     #_isClosed = false;
     #_playback: LocalSelectableSinkState['playback'] = 'blocked';
+    /**
+     * Assigned when a new selection is applied, and resolved once the audio was directed at the
+     * device which is currently selected.
+     */
+    #_applied: Promise<void> = Promise.resolve();
     #_selected: EnumerableMediaDeviceSelection = {type: 'system-default'};
 
     public constructor(init: LocalSpeakerInit) {
@@ -137,11 +142,16 @@ export class LocalSpeaker {
 
     /**
      * Chooses which speaker to play through.
+     *
+     * @returns Once the audio plays through the chosen speaker, or the platform refused to direct
+     *   it there, in which case it keeps playing where it played before. Note: Never raises.
      */
-    public select(device: EnumerableMediaDeviceSelection): void {
+    public async select(device: EnumerableMediaDeviceSelection): Promise<void> {
         this.#_selected = device;
         this.#_apply();
+        const applied = this.#_applied;
         this.#_notify();
+        await applied;
     }
 
     /**
@@ -149,12 +159,11 @@ export class LocalSpeaker {
      *
      * Note: Must be called from something the user did, e.g. a click handler, because that is the
      * only thing the platform accepts as a reason to stop withholding playback.
+     *
+     * @returns Once the playback has started or failed. Note: Never raises.
      */
-    public resume(): void {
-        this.#_start().catch(
-            /* istanbul ignore next -- @preserve: Unreachable, see the method. */
-            () => undefined,
-        );
+    public async resume(): Promise<void> {
+        await this.#_start();
     }
 
     /**
@@ -230,7 +239,7 @@ export class LocalSpeaker {
         }
         // Note: An element told to use no device in particular follows the system on its own.
         const id = resolveMediaDevice(this.#_devices, this.#_selected);
-        this.#_element.setSinkId(id ?? SYSTEM_DEFAULT_SINK_ID).then(
+        this.#_applied = this.#_element.setSinkId(id ?? SYSTEM_DEFAULT_SINK_ID).then(
             () => {
                 const applied = this.#_element.sinkId;
                 this.#_active = isMediaDeviceId(applied) ? applied : undefined;

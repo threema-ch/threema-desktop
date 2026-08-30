@@ -40,23 +40,37 @@ export class LocalCamera {
     /**
      * Acquires the underlying device and starts capturing.
      */
-    public enable(): void {
-        this.#_source.setIntent({isAcquired: true, isEnabled: true});
+    public async enable(): Promise<void> {
+        await this.#_source.setIntent({isAcquired: true, isEnabled: true});
     }
 
     /**
      * Stops capturing and releases the underlying device.
      */
-    public disable(): void {
-        this.#_source.setIntent({isAcquired: false, isEnabled: false});
+    public async disable(): Promise<void> {
+        await this.#_source.setIntent({isAcquired: false, isEnabled: false});
+    }
+
+    /**
+     * Turns the camera on if it is off, and off if it is on.
+     */
+    public toggle(): void {
+        // Even though `enable` and `disable` are async, `isEnabled` is updated immediately, so
+        // simply toggling the state does not race. `LocalCaptureSource` will reconcile until the
+        // latest desired target state is reached.
+        const requested = this.#_source.isEnabled ? this.disable() : this.enable();
+        requested.catch(
+            /* istanbul ignore next -- @preserve: Unreachable, a failure is reported in the state. */
+            () => undefined,
+        );
     }
 
     /**
      * Chooses which underlying camera device to use. Note: A camera chosen while the camera is off
      * is remembered, and used the next time it is turned on.
      */
-    public select(device: EnumerableMediaDeviceSelection): void {
-        this.#_source.select(device);
+    public async select(device: EnumerableMediaDeviceSelection): Promise<void> {
+        await this.#_source.select(device);
     }
 
     /**

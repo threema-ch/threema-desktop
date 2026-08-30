@@ -13,12 +13,13 @@ import type {
 import {
     MediaDeviceConstraintsError,
     type MediaDeviceError,
+    MediaDeviceInUseError,
     MediaDeviceNotFoundError,
     MediaDevicePermissionDeniedByUserError,
     MediaDeviceTimeoutError,
     toMediaDeviceError,
 } from './media-device-error';
-import {isMediaDeviceId, type MediaDeviceId} from './media-device-id';
+import {isAliasMediaDeviceId, isMediaDeviceId, type MediaDeviceId} from './media-device-id';
 import {
     CAMERA_CONSTRAINTS,
     DISPLAY_CONSTRAINTS,
@@ -30,6 +31,12 @@ import {resolveMediaDevice} from './resolve-media-device';
  * How long the platform is given to hand over the hardware.
  */
 export const DEFAULT_ACQUISITION_TIMEOUT_MS = 60_000;
+
+/**
+ * How many times a device may stop consecutively without any interaction by the user, before we
+ * give up automatic retries.
+ */
+const MAX_CONSECUTIVE_FAILURES = 3;
 
 /**
  * Describes the intended target state for a local capture source.
@@ -108,7 +115,18 @@ export class LocalCaptureSource {
      */
     #_track: MediaStreamTrack | undefined = undefined;
 
+    /**
+     * Current count of consecutive automatic stops by the current capture source without any
+     * explicit state changes initiated by the consumer in between.
+     */
+    #_consecutiveFailures: u53 = 0;
+
     #_isClosed = false;
+    /**
+     * Resolves once the reconciliation which is underway has settled, so that a consumer can wait
+     * for what it asked for to have happened.
+     */
+    #_settled: Promise<void> = Promise.resolve();
     /**
      * Whether the `#_track` stopped delivering, according to the platform.
      *
@@ -133,8 +151,26 @@ export class LocalCaptureSource {
      * {@link MediaDeviceId} of the device whose track is currently in use.
      */
     public get active(): MediaDeviceId | undefined {
-        const id = this.#_track?.getSettings().deviceId;
-        return id !== undefined && isMediaDeviceId(id) ? id : undefined;
+        const settings = this.#_track?.getSettings();
+        if (settings === undefined) {
+            return undefined;
+        }
+        const {deviceId, groupId} = settings;
+
+        // If the device reported by the track is not an alias device, it's id is already the
+        // correct one.
+        if (isMediaDeviceId(deviceId) && !isAliasMediaDeviceId(deviceId)) {
+            return deviceId;
+        }
+
+        // Try to match the real device by looking up its. `groupId` in the registry.
+        //
+        // Note: If the `groupId` is missing or withheld, skip the match, because it would likely
+        // resolve to an incorrect device (any other whose `groupId` is also missing).
+        if (groupId === undefined || groupId === '') {
+            return undefined;
+        }
+        return this.devices.find((device) => device.groupId === groupId)?.id;
     }
 
     /**
@@ -193,22 +229,31 @@ export class LocalCaptureSource {
 
     /**
      * Sets a new target state for this source. Anything left out stays as it was.
+     *
+     * @returns Once the hardware has reconciled to the target (or failed) state. Note: Never
+     *   raises.
      */
-    public setIntent(intent: Partial<LocalCaptureIntent>): void {
+    public async setIntent(intent: Partial<LocalCaptureIntent>): Promise<void> {
         this.#_intent = {...this.#_intent, ...intent};
         this.#_error = undefined;
+        // Reset counter of unattended failures, as this is an explicit intent.
+        this.#_consecutiveFailures = 0;
         this.#_reconcile();
+        const settled = this.#_settled;
         // Note: While `#_reconcile` schedules its own notification after it's done, the intent has
         // changed right away, so we need to send an immediate notification to our listeners.
         this.#_notify();
+        await settled;
     }
 
     /**
      * Chooses which device to use. Takes effect immediately if the hardware is open, or applies as
      * soon as it is opened.
+     *
+     * @returns Once the device is in use, or selecting it failed.
      */
-    public select(device: EnumerableMediaDeviceSelection): void {
-        this.setIntent({device});
+    public async select(device: EnumerableMediaDeviceSelection): Promise<void> {
+        await this.setIntent({device});
     }
 
     /**
@@ -253,7 +298,7 @@ export class LocalCaptureSource {
             return;
         }
         this.#_isReconciling = true;
-        this.#_run().catch(
+        this.#_settled = this.#_run().catch(
             /* istanbul ignore next -- @preserve: Unreachable, does not raise. */
             () => undefined,
         );
@@ -323,6 +368,14 @@ export class LocalCaptureSource {
      * Opens the hardware and puts its track into the stream, replacing the current track.
      */
     async #_acquire(wanted: MediaDeviceId | undefined): Promise<void> {
+        if (this.#_consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+            // The device has failed too many times, so we give up trying to acquire it.
+            this.#_intent = {...this.#_intent, isAcquired: false, isEnabled: false};
+            this.#_error = new MediaDeviceInUseError('The device kept stopping by itself');
+            this.#_release();
+            return;
+        }
+
         // Let go of the outgoing device before asking for the incoming one, as some platforms
         // refuse to open a device while another one of the same kind is still held, and end the new
         // track right away. The outgoing track keeps being reported until the incoming one arrives,
@@ -337,12 +390,12 @@ export class LocalCaptureSource {
         let result = await this.#_open(wanted);
         if (
             result.type === 'failed' &&
-            result.error instanceof MediaDeviceConstraintsError &&
-            wanted !== undefined
+            wanted !== undefined &&
+            (result.error instanceof MediaDeviceConstraintsError ||
+                result.error instanceof MediaDeviceInUseError)
         ) {
-            // The device cannot deliver what was asked for, or is not there at all. Ask again
-            // without naming it, and let the system decide instead of leaving the consumer with
-            // nothing.
+            // The device cannot deliver what was asked for, is not there at all, or something else
+            // holds it. Retry without constraints, which lets the system decide which one to use.
             result = await this.#_open(undefined);
         }
         if (result.type !== 'track') {
@@ -466,6 +519,16 @@ export class LocalCaptureSource {
                 error: new MediaDeviceNotFoundError('The platform opened no device'),
             };
         }
+        if (track.readyState !== 'live') {
+            // The platform answered with a track which is already dead.
+            for (const each of stream.getTracks()) {
+                each.stop();
+            }
+            return {
+                type: 'failed',
+                error: new MediaDeviceInUseError('The device stopped delivering immediately'),
+            };
+        }
         return {type: 'track', track};
     }
 
@@ -490,6 +553,7 @@ export class LocalCaptureSource {
      */
     readonly #_handleTrackEnded = (): void => {
         this.#_isEnded = true;
+        this.#_consecutiveFailures += 1;
         if (this.#_init.kind === 'display') {
             // The user ended the screen capture through the platform's own control, which means the
             // same as asking this source to stop.

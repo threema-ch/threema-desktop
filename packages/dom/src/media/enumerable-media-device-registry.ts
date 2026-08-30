@@ -6,13 +6,7 @@ import {
     type MediaDeviceError,
     toMediaDeviceError,
 } from './media-device-error';
-import {isMediaDeviceId} from './media-device-id';
-
-/**
- * Identifiers of entries which are not devices of their own, but are aliases for a real device.
- * Included by Chromium in the list of enumerated devices, in addition to the real device itself.
- */
-const ALIAS_DEVICE_IDS: readonly string[] = ['default', 'communications'];
+import {isAliasMediaDeviceId, isMediaDeviceId} from './media-device-id';
 
 /**
  * Map from browser {@link MediaDeviceKind} naming to our own naming.
@@ -206,7 +200,7 @@ export class EnumerableMediaDeviceRegistry {
                 device === undefined ||
                 kind === undefined ||
                 // Ignore redundant virtual devices.
-                ALIAS_DEVICE_IDS.includes(device.id)
+                isAliasMediaDeviceId(device.id)
             ) {
                 continue;
             }

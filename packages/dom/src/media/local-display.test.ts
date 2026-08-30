@@ -64,7 +64,7 @@ describe('LocalDisplay', () => {
         const subject = createDisplay();
 
         // Act
-        subject.enable();
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert
@@ -72,6 +72,28 @@ describe('LocalDisplay', () => {
         expect(state.isEnabled).toBe(true);
         expect(state.capture.status).toBe('acquired');
         expect(state.capture.status === 'acquired' && state.capture.track.readyState).toBe('live');
+    });
+
+    it('starts and stops sharing when it is toggled', async () => {
+        // Arrange
+        installPicker(async () => await PLATFORM.getUserMedia({video: true}));
+        const subject = createDisplay();
+
+        // Act
+        subject.toggle();
+        await waitUntilStable(() => !subject.state.isPending);
+
+        // Assert
+        expect(subject.state.isEnabled).toBe(true);
+        expect(subject.state.capture.status).toBe('acquired');
+
+        // Act
+        subject.toggle();
+        await waitUntilStable(() => !subject.state.isPending);
+
+        // Assert
+        expect(subject.state.isEnabled).toBe(false);
+        expect(subject.state.capture.status).toBe('inactive');
     });
 
     it("offers nothing to choose from, because the user picks in the platform's own picker", () => {
@@ -90,7 +112,7 @@ describe('LocalDisplay', () => {
         const subject = createDisplay();
 
         // Act
-        subject.enable();
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert
@@ -106,7 +128,7 @@ describe('LocalDisplay', () => {
         const subject = createDisplay();
 
         // Act
-        subject.enable();
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert
@@ -125,7 +147,7 @@ describe('LocalDisplay', () => {
         const subject = createDisplay();
 
         // Act
-        subject.enable();
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert
@@ -138,7 +160,7 @@ describe('LocalDisplay', () => {
         // Arrange
         installPicker(async () => await PLATFORM.getUserMedia({video: true}));
         const subject = createDisplay();
-        subject.enable();
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
         const capturing = subject.state.capture;
         expect(capturing.status).toBe('acquired');
@@ -159,12 +181,12 @@ describe('LocalDisplay', () => {
         // Arrange
         installPicker(async () => await PLATFORM.getUserMedia({video: true}));
         const subject = createDisplay();
-        subject.enable();
+        await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
         const capturing = subject.state.capture;
 
         // Act
-        subject.disable();
+        await subject.disable();
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert

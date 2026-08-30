@@ -1,8 +1,12 @@
-import {waitUntilStable} from '@threema/test-utils';
+import {waitForGc, waitUntilStable} from '@threema/test-utils';
+import type {f64} from '@threema/ts-utils/float/f64';
+import type {u53} from '@threema/ts-utils/integer/u53';
 import {unwrap} from '@threema/ts-utils/meta/unwrap';
+import {TIMER} from '@threema/ts-utils/timer/global-timer';
 import {afterEach, describe, expect, it} from 'vitest';
 
 import {type FakeAudioOutput, installFakeAudioOutput} from '../utils/test/fake-audio-output';
+import {createLoopbackRtcPeerConnection} from '../utils/test/loopback-rtc-peer-connection';
 
 import {EnumerableMediaDeviceRegistry} from './enumerable-media-device-registry';
 import {LocalSpeaker} from './local-speaker';
@@ -45,6 +49,25 @@ async function track(): Promise<MediaStreamTrack> {
     return first;
 }
 
+/**
+ * The loudest sample the given node saw over the given duration.
+ *
+ * Note: Sampled repeatedly, because the platform's fake microphone beeps rather than plays
+ * continuously, so a single window of a few milliseconds usually lands in a silent stretch.
+ */
+async function peakOver(analyser: AnalyserNode, durationMs: u53): Promise<f64> {
+    const samples = new Float32Array(analyser.fftSize);
+    let peak = 0;
+    for (let elapsed = 0; elapsed < durationMs; elapsed += 50) {
+        await TIMER.sleep(50);
+        analyser.getFloatTimeDomainData(samples);
+        for (const sample of samples) {
+            peak = Math.max(peak, Math.abs(sample));
+        }
+    }
+    return peak;
+}
+
 afterEach(() => {
     speaker?.close();
     speaker = undefined;
@@ -76,7 +99,7 @@ describe('LocalSpeaker', () => {
         const wanted = unwrap(subject.state.devices[0], 'This test needs a speaker');
 
         // Act
-        subject.select({type: 'id', id: wanted.id});
+        await subject.select({type: 'id', id: wanted.id});
         await waitUntilStable(() => subject.state.active !== undefined);
 
         // Assert
@@ -93,7 +116,7 @@ describe('LocalSpeaker', () => {
         });
 
         // Act
-        subject.select({type: 'id', id: wanted.id});
+        await subject.select({type: 'id', id: wanted.id});
         await new Promise((resolve) => {
             setTimeout(resolve, 50);
         });
@@ -123,7 +146,7 @@ describe('LocalSpeaker', () => {
         expect(registry.devices.speakers.length).toBeGreaterThan(0);
 
         // Act: A consumer which asks for one anyway is not refused, it just changes nothing.
-        speaker.select({
+        await speaker.select({
             type: 'id',
             id: unwrap(registry.devices.speakers[0], 'a speaker').id,
         });
@@ -159,6 +182,41 @@ describe('LocalSpeaker', () => {
         expect(first.readyState).toBe('live');
     });
 
+    it('keeps a track which came in over a peer connection audible', async () => {
+        // Arrange
+        const context = new AudioContext();
+        const create = context.createMediaStreamDestination.bind(context);
+        let mix: MediaStreamAudioDestinationNode | undefined;
+        Object.defineProperty(context, 'createMediaStreamDestination', {
+            configurable: true,
+            value: () => {
+                mix = create();
+                return mix;
+            },
+        });
+        const subject = await createSpeaker({context});
+        const loopback = await createLoopbackRtcPeerConnection(await track());
+        const analyser = context.createAnalyser();
+
+        // Act
+        subject.state.sink.connect(loopback.remoteTrack);
+        context.createMediaStreamSource(unwrap(mix).stream).connect(analyser);
+
+        // Note: A remote track is only pulled if it's attached to an element. The `LocalSpeaker`
+        // manages this element internally, but it has to survive garbage collection, which is what
+        // we test here.
+        let isCollected = false;
+        const finalization = new FinalizationRegistry(() => {
+            isCollected = true;
+        });
+        finalization.register({}, undefined);
+        await waitForGc(() => isCollected);
+
+        // Assert
+        expect(await peakOver(analyser, 3_000)).toBeGreaterThan(0);
+        loopback.close();
+    });
+
     it('keeps the sink available whatever the platform does with playback', async () => {
         // Arrange
         const subject = await createSpeaker();
@@ -166,7 +224,7 @@ describe('LocalSpeaker', () => {
         // Assert: The same sink throughout, so a consumer can hold on to it.
         const {sink} = subject.state;
         expect(subject.state.sink).toBe(sink);
-        subject.select({type: 'system-default'});
+        await subject.select({type: 'system-default'});
         expect(subject.state.sink).toBe(sink);
     });
 
@@ -180,7 +238,7 @@ describe('LocalSpeaker', () => {
         expect(subject.state.playback).toBe('blocked');
 
         // Act
-        subject.resume();
+        await subject.resume();
         await new Promise((resolve) => {
             setTimeout(resolve, 50);
         });

@@ -24,6 +24,10 @@ export interface LocalDevicesInit {
  * speakers), and exposes them over a convenient API. Also handles errors and fallback logic, device
  * switching, as well as disappearing and reappearing devices.
  *
+ * Operations such as `enable` and `disable` are asynchronous and settle once the hardware caught up
+ * with the request. `state.<device>.isEnabled` will reflect the change immediately, so awaiting is
+ * optional if the duration until the change is settled is not of interest.
+ *
  * Note: Nothing in here raises. Failures are reported in the state, so a consumer decides whether
  * to display that, report it or ignore it.
  *
@@ -36,29 +40,34 @@ export interface LocalDevicesInit {
  * // The microphone keeps its device held once it was acquired, so unmuting is instant. `acquire`
  * // opens it explicitly, if it hasn't been acquired before, which can be useful to prepare it for
  * // the first unmute.
- * localDevices.microphone.acquire();
- * localDevices.microphone.enable(); // Unmutes, and acquires it first if needed.
- * localDevices.microphone.disable(); // Mutes, but keeps the device acquired.
+ * await localDevices.microphone.acquire();
+ * await localDevices.microphone.enable(); // Unmutes, and acquires it first if needed.
+ * await localDevices.microphone.disable(); // Mutes, but keeps the device acquired.
+ * localDevices.microphone.toggle(); // Synchronously toggle between enabled and disabled.
  *
  * // The camera lets go of its device whenever it is turned off, so that the system doesn't report
  * // it as in use. A device chosen while it is off is used the next time it is enabled.
- * localDevices.camera.select({type: 'label', label: 'FaceTime HD Camera'});
- * localDevices.camera.enable();
+ * await localDevices.camera.select({type: 'label', label: 'FaceTime HD Camera'});
+ * await localDevices.camera.enable();
+ * localDevices.camera.toggle(); // Synchronously toggle between enabled and disabled.
  *
  * // Screen capture has nothing to choose. What is shared is picked by the user in the platform's
  * // own picker, every time it is enabled.
- * localDevices.display.enable();
- * localDevices.display.disable();
+ * await localDevices.display.enable();
+ * await localDevices.display.disable();
+ * localDevices.display.toggle(); // Synchronously toggle between enabled and disabled.
  *
  * // The speakers expose a sink, which multiple tracks can be connected to.
- * localDevices.speaker.select({type: 'id', id: speakerId});
+ * await localDevices.speaker.select({type: 'id', id: speakerId});
  * localDevices.state.speaker.sink.connect(remoteTrack);
  * localDevices.state.speaker.sink.disconnect(remoteTrack);
  *
  * // The platform withholds playback until the user interacted with the page, so it has to be
  * // enabled from an user action handler.
  * if (localDevices.state.speaker.playback === 'blocked') {
- *     button.addEventListener('click', () => localDevices.speaker.resume());
+ *     button.addEventListener('click', async () => {
+ *         await localDevices.speaker.resume();
+ *     });
  * }
  *
  * // Clean up the local device manager.

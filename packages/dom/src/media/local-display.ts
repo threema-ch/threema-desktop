@@ -40,15 +40,29 @@ export class LocalDisplay {
     /**
      * Asks the user what to share, and starts sharing it.
      */
-    public enable(): void {
-        this.#_source.setIntent({isAcquired: true, isEnabled: true});
+    public async enable(): Promise<void> {
+        await this.#_source.setIntent({isAcquired: true, isEnabled: true});
     }
 
     /**
      * Stops sharing.
      */
-    public disable(): void {
-        this.#_source.setIntent({isAcquired: false, isEnabled: false});
+    public async disable(): Promise<void> {
+        await this.#_source.setIntent({isAcquired: false, isEnabled: false});
+    }
+
+    /**
+     * Starts sharing if nothing is shared, and stops sharing if something is.
+     */
+    public toggle(): void {
+        // Even though `enable` and `disable` are async, `isEnabled` is updated immediately, so
+        // simply toggling the state does not race. `LocalCaptureSource` will reconcile until the
+        // latest desired target state is reached.
+        const requested = this.#_source.isEnabled ? this.disable() : this.enable();
+        requested.catch(
+            /* istanbul ignore next -- @preserve: Unreachable, a failure is reported in the state. */
+            () => undefined,
+        );
     }
 
     /**
