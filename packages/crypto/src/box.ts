@@ -634,7 +634,7 @@ export class SecureSharedBoxFactory<
         nonceService: INonceService,
         nonceScope: TNonceScope,
         secret: RawKey<32>,
-        options: SecureSharedBoxFactoryOptions = {debug: false},
+        options: SecureSharedBoxFactoryOptions,
     ): SecureSharedBoxFactory<TBox> {
         return new SecureSharedBoxFactory(crypto, nonceService, nonceScope, secret, options);
     }

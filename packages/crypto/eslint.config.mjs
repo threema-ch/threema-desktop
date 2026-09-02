@@ -13,9 +13,27 @@ export default defineConfig(
     // adjacent declaration file.
     globalIgnores(['.turbo/', 'coverage/', 'node_modules/', 'src/blake2b/implementation.js']),
 
+    // The TweetNaCl backend is only pulled in by apps that import the `tweetnacl` subpath, so
+    // `tweetnacl` is an optional peer dependency of this package.
+    {
+        files: ['src/tweetnacl/**/*.ts'],
+        ignores: ['**/*.test.ts'],
+        rules: {
+            'import/no-extraneous-dependencies': [
+                'error',
+                {
+                    devDependencies: false,
+                    peerDependencies: true,
+                    bundledDependencies: false,
+                    packageDir: import.meta.dirname,
+                },
+            ],
+        },
+    },
+
     // Allow devDependencies in test and config files.
     {
-        files: ['**/*.test.ts', 'vitest.config.ts'],
+        files: ['**/*.test.ts', 'vitest.config.ts', 'src/utils/test/**'],
         rules: {
             'import/no-extraneous-dependencies': [
                 'error',

@@ -1,3 +1,4 @@
+import type {u53} from '@threema/ts-utils/integer/u53';
 import {describe, expect, it} from 'vitest';
 
 import {
@@ -19,7 +20,7 @@ import {
 } from './primitives.js';
 
 /** Create a byte array of `length` filled with a recognisable pattern. */
-function bytes(length: number): Uint8Array {
+function bytes(length: u53): Uint8Array {
     return new Uint8Array(length).fill(0x42);
 }
 

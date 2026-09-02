@@ -1,4 +1,5 @@
 import {CryptoError, wrapRawKey, type ReadonlyRawKey} from '@threema/crypto';
+import {TweetNaClBackend} from '@threema/crypto/tweetnacl';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
 import * as chai from 'chai';
 
@@ -13,7 +14,6 @@ import {
     type Ed25519PublicKey,
     type Ed25519Signature,
 } from '~/common/crypto';
-import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {unwrap} from '~/common/utils/assert';
 import chaiByteEqual from '~/test/common/plugins/byte-equal';
 import getSharedBoxTestVectors from '~/test/mocha/common/data/box.random';

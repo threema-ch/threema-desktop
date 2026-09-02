@@ -90,7 +90,7 @@
     "tailwind-variants": "catalog:",
     "ts-events": "3.4.1",
     "ts-sql-query": "1.67.0",
-    "tweetnacl": "1.0.3",
+    "tweetnacl": "catalog:",
     "web-streams-polyfill": "~4.3.0"
   },
   "electron": {

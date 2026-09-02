@@ -52,6 +52,7 @@ catalog:
   tailwind-merge: ~3.5.0
   tailwind-variants: ~3.2.2
   tailwindcss: 4.2.1
+  tweetnacl: 1.0.3
   typescript-eslint: ~8.42.0
   typescript: ~5.9.2
   vite-plugin-istanbul: 7.1.0

@@ -770,14 +770,14 @@ describe('SecureSharedBoxFactory', () => {
 
     function consume(
         secret: RawKey<32>,
-        options?: {readonly debug: boolean},
+        options: {readonly debug: boolean},
     ): SecureSharedBoxFactory<TestBox> {
         return SecureSharedBoxFactory.consume<TestBox, NonceScope>(
             crypto,
             nonces,
             NonceScope.CSP,
             secret,
-            ...(options === undefined ? [] : ([options] as const)),
+            options,
         );
     }
 
@@ -786,7 +786,7 @@ describe('SecureSharedBoxFactory', () => {
         const secret = rawSecret(0x03);
 
         // Act
-        const factory = consume(secret);
+        const factory = consume(secret, {debug: true});
 
         // Assert
         expect(factory.public.byteLength).toBe(NACL_CONSTANTS.KEY_LENGTH);
@@ -796,7 +796,7 @@ describe('SecureSharedBoxFactory', () => {
 
     it('yields the same shared secret on repeated calls', () => {
         // Arrange
-        const factory = consume(rawSecret(0x03));
+        const factory = consume(rawSecret(0x03), {debug: true});
         const peer = crypto.derivePublicKey(readonlyKey(0x09));
 
         // Act
@@ -809,7 +809,7 @@ describe('SecureSharedBoxFactory', () => {
 
     it('derives a subkey from the shared secret', () => {
         // Arrange
-        const factory = consume(rawSecret(0x03));
+        const factory = consume(rawSecret(0x03), {debug: true});
         const peer = crypto.derivePublicKey(readonlyKey(0x09));
 
         // Act
@@ -822,7 +822,7 @@ describe('SecureSharedBoxFactory', () => {
 
     it('produces a shared box bound to the configured nonce scope', () => {
         // Arrange
-        const factory = consume(rawSecret(0x03));
+        const factory = consume(rawSecret(0x03), {debug: true});
         const peer = crypto.derivePublicKey(readonlyKey(0x09));
 
         // Act
@@ -835,7 +835,7 @@ describe('SecureSharedBoxFactory', () => {
 
     it('exposes the secret key only for the lifetime of the executor', () => {
         // Arrange
-        const factory = consume(rawSecret(0x03));
+        const factory = consume(rawSecret(0x03), {debug: true});
 
         // Act
         let captured: RawKey<32> | undefined;
@@ -851,7 +851,7 @@ describe('SecureSharedBoxFactory', () => {
 
     it('recovers the original secret key through the obfuscation', () => {
         // Arrange
-        const factory = consume(rawSecret(0x03));
+        const factory = consume(rawSecret(0x03), {debug: true});
 
         // Act
         const recovered = factory.runWithKey((key) => Uint8Array.from(key.unwrap()));

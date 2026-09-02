@@ -11,7 +11,8 @@
     "./blake2b/implementation": {
       "types": "./src/blake2b/implementation.d.ts",
       "default": "./src/blake2b/implementation.js"
-    }
+    },
+    "./tweetnacl": "./src/tweetnacl/index.ts"
   },
   "scripts": {
     "lint:eslint": "eslint .",
@@ -23,11 +24,20 @@
     "@threema/protocol": "workspace:*",
     "@threema/ts-utils": "workspace:*"
   },
+  "peerDependencies": {
+    "tweetnacl": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "tweetnacl": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@threema/eslint-config": "workspace:*",
     "@threema/ts-config": "workspace:*",
     "@vitest/coverage-istanbul": "catalog:",
     "eslint": "catalog:",
+    "tweetnacl": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

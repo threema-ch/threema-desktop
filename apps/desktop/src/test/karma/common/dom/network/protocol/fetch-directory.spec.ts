@@ -1,4 +1,5 @@
 import {wrapRawKey} from '@threema/crypto';
+import {TweetNaClBackend} from '@threema/crypto/tweetnacl';
 import {NonceScope} from '@threema/protocol/enum';
 import {u8aToBase64} from '@threema/ts-utils/base64/u8a-to-base64';
 import type {u53} from '@threema/ts-utils/integer/u53';
@@ -8,7 +9,6 @@ import sinonChai from 'sinon-chai';
 import {ensureNonce, NACL_CONSTANTS, type Nonce, type NonceHash} from '~/common/crypto';
 import {SecureSharedBoxFactory} from '~/common/crypto/box';
 import type {INonceGuard, INonceService} from '~/common/crypto/nonce';
-import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {FetchDirectoryBackend} from '~/common/dom/network/protocol/fetch-directory';
 import {DirectoryError, type DirectoryErrorType} from '~/common/network/protocol/directory';
@@ -134,6 +134,7 @@ export function run(): void {
                 randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
                 NACL_CONSTANTS.KEY_LENGTH,
             ),
+            {debug: import.meta.env.DEBUG},
         ) as ClientKey;
 
         this.beforeEach(function () {

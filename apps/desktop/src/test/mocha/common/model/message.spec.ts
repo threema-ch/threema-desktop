@@ -1,6 +1,6 @@
+import {TweetNaClBackend} from '@threema/crypto/tweetnacl';
 import {expect} from 'chai';
 
-import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {BlobDownloadState, MessageDirection, MessageDirectionUtils} from '~/common/enum';
 import {randomFileEncryptionKey, randomFileId} from '~/common/file-storage';
 import type {Contact, Conversation} from '~/common/model';

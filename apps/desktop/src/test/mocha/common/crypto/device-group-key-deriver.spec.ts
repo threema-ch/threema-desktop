@@ -1,4 +1,5 @@
 import {wrapRawKey} from '@threema/crypto';
+import {TweetNaClBackend} from '@threema/crypto/tweetnacl';
 import {hexToBytes} from '@threema/ts-utils/byte/hex-to-bytes';
 import type {Bare} from '@threema/ts-utils/meta/newtype';
 import {expect} from 'chai';
@@ -13,7 +14,6 @@ import {
 } from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN, type CryptoBox} from '~/common/crypto/box';
 import {deriveDeviceGroupKeys, type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
-import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {wrapRawDeviceGroupKey} from '~/common/network/types/keys';
 import {TestNonceService} from '~/test/mocha/common/backend-mocks';
 import {

@@ -1,3 +1,4 @@
+import {TweetNaClBackend} from '@threema/crypto/tweetnacl';
 import type {ClientInfo} from '@threema/libthreema-wasm';
 import {NonceScope} from '@threema/protocol/enum';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
@@ -26,7 +27,6 @@ import {
 } from '~/common/config';
 import {SecureSharedBoxFactory} from '~/common/crypto/box';
 import {NonceService} from '~/common/crypto/nonce';
-import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {
     DATABASE_KEY_LENGTH,
     type DatabaseBackend,

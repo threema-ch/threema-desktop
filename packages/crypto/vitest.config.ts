@@ -7,6 +7,7 @@ export default defineConfig({
             include: ['src/**/*.{js,ts}'],
             exclude: [
                 '**/*.d.ts',
+                'src/utils/test/**',
                 // Note: The vendored Blake2b implementation is excluded from coverage because it
                 // contains unused code that is not exposed through our `.d.ts` definition (and it
                 // is covered behaviorally by the test vectors in `implementation.test.ts`).

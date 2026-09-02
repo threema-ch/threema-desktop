@@ -1,3 +1,4 @@
+import {TweetNaClBackend} from '@threema/crypto/tweetnacl';
 import {NonceScopeUtils} from '@threema/protocol/enum';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
 import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
@@ -8,7 +9,6 @@ import {expect} from 'chai';
 import {ensureNonce, NACL_CONSTANTS, type NonceHash, type PublicKey} from '~/common/crypto';
 import {hashNonce} from '~/common/crypto/nonce';
 import {randomString} from '~/common/crypto/random';
-import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import type {
     DatabaseBackend,
     DbContactUid,

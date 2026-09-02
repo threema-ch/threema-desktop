@@ -3,11 +3,11 @@ import * as path from 'node:path';
 import * as process from 'node:process';
 import * as readline from 'node:readline/promises';
 
+import {TweetNaClBackend} from '@threema/crypto/tweetnacl';
 import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
 import type {u53} from '@threema/ts-utils/integer/u53';
 
 import {cliStubServicesForKeyStorage} from 'cli/services';
-import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {extractErrorTraceback} from '~/common/error';
 import {CONSOLE_LOGGER} from '~/common/logging';
 import {randomBytes} from '~/common/node/crypto/random';

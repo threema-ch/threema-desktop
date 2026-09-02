@@ -1,29 +1,28 @@
-import {CryptoError, wrapRawKey, type RawKey, type ReadonlyRawKey} from '@threema/crypto';
 import type {NonceScope} from '@threema/protocol/enum';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
+import type {i53} from '@threema/ts-utils/integer/i53';
 import type {u53} from '@threema/ts-utils/integer/u53';
+import type {u64} from '@threema/ts-utils/integer/u64';
 import type {u8} from '@threema/ts-utils/integer/u8';
+import {assert} from '@threema/ts-utils/meta/assert';
 import type {WeakOpaque} from '@threema/ts-utils/meta/newtype';
 import * as tweetnacl from 'tweetnacl';
 
+import type {CryptoBackend, CryptoBoxBackend, CryptoPrng, NonceUnguardedScope} from '../backend.js';
+import {CryptoBox} from '../box.js';
+import {CryptoError} from '../error.js';
+import {type RawKey, type ReadonlyRawKey, wrapRawKey} from '../key.js';
+import type {INonceService} from '../nonce.js';
 import {
     type Cookie,
-    type CryptoBackend,
-    type CryptoBoxBackend,
+    type Ed25519PublicKey,
+    type Ed25519Signature,
     NACL_CONSTANTS,
     type Nonce,
-    type NonceUnguardedScope,
     type PublicKey,
     type RawEncryptedData,
     type RawPlainData,
-    type Ed25519PublicKey,
-    type Ed25519Signature,
-} from '~/common/crypto';
-import {CryptoBox} from '~/common/crypto/box';
-import type {INonceService} from '~/common/crypto/nonce';
-import type {CryptoPrng} from '~/common/crypto/random';
-import type {i53, u64} from '~/common/types';
-import {assert} from '~/common/utils/assert';
+} from '../primitives.js';
 
 /**
  * A secret key.

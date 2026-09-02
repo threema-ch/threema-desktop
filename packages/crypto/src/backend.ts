@@ -49,6 +49,14 @@ export interface CryptoBoxBackend {
 }
 
 /**
+ * Cryptographically strong random number generator.
+ *
+ * @param buffer Buffer to fill with random values.
+ * @returns The filled buffer for convenience.
+ */
+export type CryptoPrng = <T extends ArrayBufferView>(buffer: T) => T;
+
+/**
  * Token that allows to use a crypto backend with no nonce guard.
  */
 export const NONCE_UNGUARDED_SCOPE: unique symbol = Symbol('nonce-unguarded-scope');
@@ -80,7 +88,7 @@ export interface CryptoBackend {
      * @param array Buffer to fill with random values.
      * @returns the filled buffer for convenience.
      */
-    readonly randomBytes: <T extends ArrayBufferView>(buffer: T) => T;
+    readonly randomBytes: CryptoPrng;
 
     /**
      * Verify an ED25519 signed message.

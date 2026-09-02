@@ -5,14 +5,6 @@ import type {CryptoBackend} from '~/common/crypto';
 import type {u32, u64} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
 
-/**
- * Cryptographically strong random number generator.
- *
- * @param buffer Buffer to fill with random values.
- * @returns The filled buffer for convenience.
- */
-export type CryptoPrng = <T extends ArrayBufferView>(buffer: T) => T;
-
 // Buffer and views for cryptographically secure random number generation
 // IMPORTANT: These intentionally use the same buffer underneath!
 const BUFFER = new ArrayBuffer(8);

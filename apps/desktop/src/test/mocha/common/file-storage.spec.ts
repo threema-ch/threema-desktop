@@ -4,11 +4,11 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import {env} from 'node:process';
 
+import {TweetNaClBackend} from '@threema/crypto/tweetnacl';
 import {byteView} from '@threema/ts-utils/byte/byte-view';
 import {hexToBytes} from '@threema/ts-utils/byte/hex-to-bytes';
 import {expect} from 'chai';
 
-import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {
     byteToFileId,
     ensureFileId,
