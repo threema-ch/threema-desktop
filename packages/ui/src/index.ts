@@ -55,6 +55,17 @@ export {
     type TooltipProviderProps,
 } from './hocs/tooltip-provider/TooltipProvider.svelte';
 
+// Partials
+
+export {
+    CallView,
+    type CallViewFeed,
+    type CallViewProps,
+    type ControlProps,
+    type FeedLabels,
+    type FeedSize,
+} from './partials/call-view';
+
 // Utils
 
 export {
