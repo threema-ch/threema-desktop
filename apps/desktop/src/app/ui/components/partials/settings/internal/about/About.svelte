@@ -83,7 +83,7 @@
 
   // Call statistics (rtcstats) sessions. Only recorded (and shown) in sandbox builds.
   let rtcStatsSessions = $state<readonly RtcStatsSessionInfo[]>([]);
-  if (import.meta.env.BUILD_ENVIRONMENT === 'sandbox') {
+  if (import.meta.env.ALLOW_RTC_STATS_RECORDING) {
     loadRtcStatsSessions(log)
       .then((sessions) => {
         rtcStatsSessions = sessions;
@@ -320,7 +320,7 @@
     {/if}
   </KeyValueList.Section>
 
-  {#if import.meta.env.BUILD_ENVIRONMENT === 'sandbox'}
+  {#if import.meta.env.ALLOW_RTC_STATS_RECORDING}
     <KeyValueList.Section
       title={$i18n.t('settings--about.label--call-statistics', 'Call Statistics')}
     >

@@ -387,6 +387,8 @@ interface ImportMetaEnv extends ViteDefaultImportMetaEnv, BuildConfig {
     readonly FEATURES: {
         readonly CONFERENCE_CALLS: boolean;
     };
+
+    readonly ALLOW_RTC_STATS_RECORDING: boolean;
 }
 
 interface ImportMeta extends ViteDefaultImportMeta {

@@ -435,6 +435,8 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
             CONFERENCE_CALLS: env.environment === 'sandbox',
         },
 
+        ALLOW_RTC_STATS_RECORDING: env.environment === 'sandbox',
+
         // Build config
         ...makeBuildConfig(env.environment),
     };

@@ -656,7 +656,9 @@ async function main(): Promise<() => Promise<void>> {
     let rtcStatsInstall: Promise<void> | undefined;
     const rtcStatsUnsubscriber = settings.views.troubleshooting.subscribe(
         ({callStatisticsPolicy}) => {
-            const enabled = callStatisticsPolicy === CallStatisticsPolicy.RECORD_LOCALLY;
+            const enabled =
+                callStatisticsPolicy === CallStatisticsPolicy.RECORD_LOCALLY &&
+                import.meta.env.ALLOW_RTC_STATS_RECORDING;
             if (enabled) {
                 rtcStatsInstall ??= initRtcStats(logging).then((handle) => {
                     rtcStatsInstalled = handle;

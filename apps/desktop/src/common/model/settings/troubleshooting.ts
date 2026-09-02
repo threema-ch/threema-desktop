@@ -13,11 +13,10 @@ import {PROXY_HANDLER} from '~/common/utils/endpoint';
 import {filterUndefinedProperties} from '~/common/utils/object';
 
 export const DEFAULT_TROUBLESHOOTING_SETTINGS: TroubleshootingSettingsView = {
-    // By default, call statistics are recorded in sandbox builds only.
-    callStatisticsPolicy:
-        import.meta.env.BUILD_ENVIRONMENT === 'sandbox'
-            ? CallStatisticsPolicy.RECORD_LOCALLY
-            : CallStatisticsPolicy.DENY_RECORDING,
+    // Call statistics can only be recorded in builds that allow it.
+    callStatisticsPolicy: import.meta.env.ALLOW_RTC_STATS_RECORDING
+        ? CallStatisticsPolicy.RECORD_LOCALLY
+        : CallStatisticsPolicy.DENY_RECORDING,
 };
 
 export class TroubleshootingSettingsModelController implements TroubleshootingSettingsController {
