@@ -58,7 +58,7 @@
     "@badrap/valita": "catalog:",
     "@bufbuild/protobuf": "^2.0.0",
     "@mattiasbuelens/web-streams-adapter": "0.1.0",
-    "@rtcstats/rtcstats-js": "2.3.0",
+    "@rtcstats/rtcstats-js": "2.4.0",
     "@sentry/browser": "9.39.0",
     "@threema/branding": "workspace:*",
     "@threema/compose-area": "~0.4.6",

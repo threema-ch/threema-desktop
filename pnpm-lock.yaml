@@ -449,8 +449,8 @@ importers:
         specifier: 0.1.0
         version: 0.1.0
       '@rtcstats/rtcstats-js':
-        specifier: 2.3.0
-        version: 2.3.0
+        specifier: 2.4.0
+        version: 2.4.0
       '@sentry/browser':
         specifier: 9.39.0
         version: 9.39.0
@@ -2004,8 +2004,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@rtcstats/rtcstats-js@2.3.0':
-    resolution: {integrity: sha512-DaA0Jgz4OaUtuNkNIr2M+1CNRLAZ/yNt+Ssf7TBYBOXgSCQn+n6bi4gCnqlGHM5RLIkuy6uStp6lnjPOg4xkPQ==}
+  '@rtcstats/rtcstats-js@2.4.0':
+    resolution: {integrity: sha512-1R0zwVgQ5RkzCauOp/QyNmTSr9Z+VtoYA3736Nk7dsZSKfXPh6Q88C4m4MfVtcINtJAu2eUXl9kERtS/vjIt7Q==}
 
   '@rtcstats/rtcstats-shared@2.5.0':
     resolution: {integrity: sha512-YBohf6QGzVrGGomL7HKQgkh+gkRnlZ2j5upfqt85sU951cCtgS2fAqBpcSD3rV97uqfaLHPUu6KcXqM/BPTjpQ==}
@@ -7361,7 +7361,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.50.2':
     optional: true
 
-  '@rtcstats/rtcstats-js@2.3.0':
+  '@rtcstats/rtcstats-js@2.4.0':
     dependencies:
       '@rtcstats/rtcstats-shared': 2.5.0
 
