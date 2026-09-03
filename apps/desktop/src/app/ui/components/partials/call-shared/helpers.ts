@@ -364,8 +364,13 @@ export async function attachLocalDeviceAndAnnounceCaptureState(
     //
     // Note: If no current device exists, toggling is kinda stupid and therefore we'll set the state
     // to 'off'.
+    //
+    // Note: An 'ended' track can no longer be attached to a transceiver (e.g. because the device
+    // was unplugged, or because the track was stopped while the call was being set up). Treat it
+    // like a missing device, so that it is detached below and the capture state is announced as
+    // 'off', instead of claiming a device that cannot deliver any media.
     let target: CaptureDevice;
-    if (updated !== undefined) {
+    if (updated !== undefined && updated.track.readyState !== 'ended') {
         if (updated.state === 'toggle') {
             target = {track: updated.track, state: current?.state === 'off' ? 'on' : 'off'};
         } else {
@@ -378,7 +383,15 @@ export async function attachLocalDeviceAndAnnounceCaptureState(
         const track = target?.track ?? null;
         const transceivers = call?.state.get().local.transceivers;
         if (transceivers !== undefined && transceivers[kind].sender.track !== track) {
-            await transceivers[kind].sender.replaceTrack(track);
+            try {
+                await transceivers[kind].sender.replaceTrack(track);
+            } catch {
+                // The peer connection may have been closed in the meantime (e.g. because the call
+                // ended while we were acquiring the device), which rejects `replaceTrack`. This
+                // must not tear down the call, so continue with announcing the capture state.
+                //
+                // TODO(DESK-2092): Log warning.
+            }
         }
     }
 
