@@ -6,7 +6,7 @@
 
   import {globals} from '~/app/globals';
   import type {AppServicesForSvelte} from '~/app/types';
-  import GroupCallActivity from '~/app/ui/components/partials/call-activity/GroupCallActivity.svelte';
+  import CallActivity from '~/app/ui/components/partials/call-activity/CallActivity.svelte';
   import ContactDetail from '~/app/ui/components/partials/contact-detail/ContactDetail.svelte';
   import ConversationView from '~/app/ui/components/partials/conversation/ConversationView.svelte';
   import ConversationNav from '~/app/ui/components/partials/conversation-nav/ConversationNav.svelte';
@@ -226,7 +226,7 @@
     <!-- Activities panel -->
     {#if $router.activity?.id === 'call'}
       <aside class={`activity ${activityDisplayState}`}>
-        <GroupCallActivity
+        <CallActivity
           isExpanded={activityDisplayState === 'expanded'}
           ontoggleexpand={handleToggleExpandActivity}
           {services}
@@ -313,7 +313,6 @@
       display: grid;
       grid-template: 100% / minmax(0, 1fr);
 
-      container: activity / size;
       background-color: var(--t-aside-background-color);
       border-left: 1px solid var(--t-panel-gap-color);
     }
