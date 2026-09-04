@@ -180,10 +180,10 @@ export class EnumerableMediaDeviceRegistry {
         this.#_devicesKey = key;
 
         // Parse and map device info to our own shape.
-        const devices: Record<EnumerableMediaDeviceKind, EnumerableMediaDevice[]> = {
-            microphone: [],
-            camera: [],
-            speaker: [],
+        const devices: Record<EnumerableMediaDeviceKind, Map<string, EnumerableMediaDevice>> = {
+            microphone: new Map(),
+            camera: new Map(),
+            speaker: new Map(),
         };
         for (const entry of result) {
             const device = isMediaDeviceId(entry.deviceId)
@@ -204,12 +204,14 @@ export class EnumerableMediaDeviceRegistry {
             ) {
                 continue;
             }
-            devices[kind].push(device);
+            // Ignore duplicate device ids. The platform is expected to report each device at most
+            // once per kind, but some platforms/hardware combinations violate that.
+            devices[kind].set(device.id, device);
         }
         this.#_devices = {
-            microphones: devices.microphone,
-            cameras: devices.camera,
-            speakers: devices.speaker,
+            microphones: [...devices.microphone.values()],
+            cameras: [...devices.camera.values()],
+            speakers: [...devices.speaker.values()],
         };
 
         // Notify listeners with the new device list.
