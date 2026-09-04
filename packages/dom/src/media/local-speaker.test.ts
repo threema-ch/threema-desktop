@@ -89,7 +89,7 @@ describe('LocalSpeaker', () => {
 
         // Assert
         expect(subject.state.devices.length).toBeGreaterThan(0);
-        expect(subject.state.selected).toEqual({type: 'system-default'});
+        expect(subject.state.selection).toEqual({type: 'system-default'});
         expect(subject.state.playback).toBe('playing');
     });
 
@@ -100,11 +100,11 @@ describe('LocalSpeaker', () => {
 
         // Act
         await subject.select({type: 'id', id: wanted.id});
-        await waitUntilStable(() => subject.state.active !== undefined);
+        await waitUntilStable(() => subject.state.effective !== undefined);
 
         // Assert
-        expect(subject.state.selected).toEqual({type: 'id', id: wanted.id});
-        expect(subject.state.active).toBe(wanted.id);
+        expect(subject.state.selection).toEqual({type: 'id', id: wanted.id});
+        expect(subject.state.effective).toBe(wanted.id);
     });
 
     it('keeps playing where it played when a speaker refuses to take the audio', async () => {
@@ -122,8 +122,8 @@ describe('LocalSpeaker', () => {
         });
 
         // Assert: The choice is remembered, but the audio was not moved to it.
-        expect(subject.state.selected).toEqual({type: 'id', id: wanted.id});
-        expect(subject.state.active).toBe(undefined);
+        expect(subject.state.selection).toEqual({type: 'id', id: wanted.id});
+        expect(subject.state.effective).toBe(undefined);
     });
 
     it('offers no speakers when the platform cannot direct audio at a chosen one', async () => {
@@ -155,7 +155,7 @@ describe('LocalSpeaker', () => {
         });
 
         // Assert
-        expect(speaker.state.active).toBe(undefined);
+        expect(speaker.state.effective).toBe(undefined);
     });
 
     it('mixes every connected track into one', async () => {

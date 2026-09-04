@@ -32,12 +32,13 @@ export class LocalMicrophone {
 
     public get state(): LocalSelectableCaptureState {
         return {
-            active: this.#_source.active,
             capture: this.#_source.capture,
             devices: this.#_source.devices,
+            effective: this.#_source.effective,
             isEnabled: this.#_source.isEnabled,
             isPending: this.#_source.isPending,
             selected: this.#_source.selected,
+            selection: this.#_source.selection,
         };
     }
 

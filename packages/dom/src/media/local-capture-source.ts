@@ -150,7 +150,7 @@ export class LocalCaptureSource {
     /**
      * {@link MediaDeviceId} of the device whose track is currently in use.
      */
-    public get active(): MediaDeviceId | undefined {
+    public get effective(): MediaDeviceId | undefined {
         const settings = this.#_track?.getSettings();
         if (settings === undefined) {
             return undefined;
@@ -223,8 +223,16 @@ export class LocalCaptureSource {
     /**
      * The current constraints for selecting the specific device of this source.
      */
-    public get selected(): EnumerableMediaDeviceSelection {
+    public get selection(): EnumerableMediaDeviceSelection {
         return this.#_intent.device;
+    }
+
+    /**
+     * The device of {@link devices} the {@link selection} currently points at.
+     */
+    public get selected(): EnumerableMediaDevice | undefined {
+        const id = this.#_resolve();
+        return id === undefined ? undefined : this.devices.find((device) => device.id === id);
     }
 
     /**

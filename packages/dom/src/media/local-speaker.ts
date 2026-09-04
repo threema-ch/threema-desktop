@@ -72,7 +72,7 @@ export class LocalSpeaker {
     readonly #_sink: MediaSink;
     readonly #_unsubscribe: () => void;
 
-    #_active: MediaDeviceId | undefined = undefined;
+    #_effective: MediaDeviceId | undefined = undefined;
     /**
      * Whether the platform can direct audio at a chosen device.
      */
@@ -84,7 +84,7 @@ export class LocalSpeaker {
      * device which is currently selected.
      */
     #_applied: Promise<void> = Promise.resolve();
-    #_selected: EnumerableMediaDeviceSelection = {type: 'system-default'};
+    #_selection: EnumerableMediaDeviceSelection = {type: 'system-default'};
 
     public constructor(init: LocalSpeakerInit) {
         this.#_init = init;
@@ -125,13 +125,21 @@ export class LocalSpeaker {
     }
 
     public get state(): LocalSelectableSinkState {
+        // Note: Resolved against what is offered rather than against every speaker, so that nothing
+        // is reported as selected while the platform cannot play audio at all.
+        const offered = this.#_canSelect ? this.#_devices : [];
+        const selectedId = resolveMediaDevice(offered, this.#_selection);
         return {
             // Nothing is offered while the platform cannot direct audio at a chosen device: There
             // would be no way to honour the choice.
-            devices: this.#_canSelect ? this.#_devices : [],
-            selected: this.#_selected,
-            active: this.#_active,
+            devices: offered,
+            effective: this.#_effective,
             playback: this.#_playback,
+            selected:
+                selectedId === undefined
+                    ? undefined
+                    : offered.find((device) => device.id === selectedId),
+            selection: this.#_selection,
             sink: this.#_sink,
         };
     }
@@ -147,7 +155,7 @@ export class LocalSpeaker {
      *   it there, in which case it keeps playing where it played before. Note: Never raises.
      */
     public async select(device: EnumerableMediaDeviceSelection): Promise<void> {
-        this.#_selected = device;
+        this.#_selection = device;
         this.#_apply();
         const applied = this.#_applied;
         this.#_notify();
@@ -238,11 +246,11 @@ export class LocalSpeaker {
             return;
         }
         // Note: An element told to use no device in particular follows the system on its own.
-        const id = resolveMediaDevice(this.#_devices, this.#_selected);
+        const id = resolveMediaDevice(this.#_devices, this.#_selection);
         this.#_applied = this.#_element.setSinkId(id ?? SYSTEM_DEFAULT_SINK_ID).then(
             () => {
                 const applied = this.#_element.sinkId;
-                this.#_active = isMediaDeviceId(applied) ? applied : undefined;
+                this.#_effective = isMediaDeviceId(applied) ? applied : undefined;
                 this.#_notify();
             },
             () => {

@@ -165,7 +165,7 @@ describe('LocalMicrophone', () => {
 
         // Assert
         const state = subject.state.capture;
-        expect(subject.state.active).toBe(wanted.deviceId);
+        expect(subject.state.effective).toBe(wanted.deviceId);
         expect(state.status === 'acquired' && state.track.enabled).toBe(false);
     });
 
@@ -222,7 +222,7 @@ describe('LocalMicrophone', () => {
         // is deliberately excluded from our registry, so the active device is reported as
         // `undefined`.
         expect(subject.state.capture.status).toBe('acquired');
-        expect(subject.state.active).toBe(undefined);
+        expect(subject.state.effective).toBe(undefined);
         expect(subject.state.devices.map((device) => device.id)).not.toContain('default');
     });
 
@@ -263,7 +263,7 @@ describe('LocalMicrophone', () => {
 
         // Assert: Alias devices are excluded from the registry, so the system default resolves to
         // its real device.
-        expect(subject.state.active).toBe('mic-1');
+        expect(subject.state.effective).toBe('mic-1');
         expect(subject.state.devices.map((device) => device.id)).toEqual(['mic-1']);
     });
 
@@ -296,7 +296,7 @@ describe('LocalMicrophone', () => {
         await subject.enable();
 
         // Assert
-        expect(subject.state.active).toBe('mic-1');
+        expect(subject.state.effective).toBe('mic-1');
     });
 
     it("resolves the track's device to none if the platform has a default alias device whose group id is withheld", async () => {
@@ -327,7 +327,7 @@ describe('LocalMicrophone', () => {
         await subject.enable();
 
         // Assert: There is nothing to look the alias up by, so no device is reported as `active`.
-        expect(subject.state.active).toBe(undefined);
+        expect(subject.state.effective).toBe(undefined);
     });
 
     it("does not offer the platform's own alias as a device to choose", async () => {
@@ -346,6 +346,6 @@ describe('LocalMicrophone', () => {
 
         // Assert
         expect(subject.state.devices.length).toBeGreaterThan(0);
-        expect(subject.state.selected).toEqual({type: 'system-default'});
+        expect(subject.state.selection).toEqual({type: 'system-default'});
     });
 });

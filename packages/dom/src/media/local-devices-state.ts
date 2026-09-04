@@ -75,14 +75,20 @@ export interface LocalSelectableCaptureState extends LocalCaptureState {
     /**
      * The device selection request which is currently applied on this source.
      */
-    readonly selected: EnumerableMediaDeviceSelection;
+    readonly selection: EnumerableMediaDeviceSelection;
+    /**
+     * Which of the {@link devices} the {@link selection} points at, or `undefined` if the system
+     * decides, which is the case when the system default was asked for, and when the device the
+     * selection names is not present.
+     */
+    readonly selected: EnumerableMediaDevice | undefined;
     /**
      * Which device the platform actually opened, or `undefined` if none is open or the platform
      * withheld its identifier. Note: This can differ from {@link selected}, because a device can
-     * disappear between being chosen and being opened, in which case the active device falls back
-     * to the system default, while the selection persists.
+     * disappear between being chosen and being opened, in which case the capture falls back to the
+     * system default, while the selection persists.
      */
-    readonly active: MediaDeviceId | undefined;
+    readonly effective: MediaDeviceId | undefined;
 }
 
 /**
@@ -114,12 +120,18 @@ export interface LocalSelectableSinkState {
     /**
      * The device selection request which is currently applied on this destination.
      */
-    readonly selected: EnumerableMediaDeviceSelection;
+    readonly selection: EnumerableMediaDeviceSelection;
+    /**
+     * Which of the {@link devices} the {@link selection} points at, or `undefined` if the system
+     * decides, which is the case when the system default was asked for, and when the device the
+     * selection names is not present.
+     */
+    readonly selected: EnumerableMediaDevice | undefined;
     /**
      * Which underlying device the audio is currently directed at, or `undefined` if the system
      * decides.
      */
-    readonly active: MediaDeviceId | undefined;
+    readonly effective: MediaDeviceId | undefined;
     /**
      * Whether the platform lets the audio play. It withholds playback until the user interacted
      * with the page.

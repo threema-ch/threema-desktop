@@ -78,12 +78,12 @@ describe('LocalCamera', () => {
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert
-        const {isEnabled, capture: state, active} = subject.state;
+        const {isEnabled, capture: state, effective} = subject.state;
         expect(isEnabled).toBe(true);
         expect(state.status).toBe('acquired');
         expect(state.status === 'acquired' && state.track.readyState).toBe('live');
         expect(state.status === 'acquired' && state.track.enabled).toBe(true);
-        expect(active).not.toBe(undefined);
+        expect(effective).not.toBe(undefined);
     });
 
     it('notifies the consumer when it is enabled, before the device is open', async () => {
@@ -184,6 +184,56 @@ describe('LocalCamera', () => {
         expect(captures).toBe(1);
     });
 
+    it('reports no selected camera while the system decides', async () => {
+        // Arrange & Act
+        const subject = await createCamera();
+
+        // Assert: A source starts out letting the system decide, so no camera of the list is the
+        // chosen one.
+        expect(subject.state.selection).toEqual({type: 'system-default'});
+        expect(subject.state.selected).toBe(undefined);
+    });
+
+    it('reports which camera of the list is the chosen one, even while it is off', async () => {
+        // Arrange
+        const wanted = unwrap((await realCameras())[1], 'a second camera');
+        const subject = await createCamera();
+
+        // Act
+        await subject.select({type: 'id', id: wanted.deviceId as MediaDeviceId});
+
+        // Assert: The camera is not open, but which one is chosen is answered regardless, so that a
+        // menu can display it.
+        expect(subject.state.capture.status).toBe('inactive');
+        expect(subject.state.selected?.id).toBe(wanted.deviceId);
+        expect(subject.state.selected?.label).toBe(wanted.label);
+    });
+
+    it('reports no selected camera when the chosen one is not present', async () => {
+        // Arrange
+        const subject = await createCamera();
+
+        // Act
+        await subject.select({type: 'id', id: 'nonexistent' as MediaDeviceId});
+
+        // Assert: The selection is kept, while the system decides which camera is used, so no
+        // camera of the list is the chosen one.
+        expect(subject.state.selection).toEqual({type: 'id', id: 'nonexistent'});
+        expect(subject.state.selected).toBe(undefined);
+    });
+
+    it('reports a camera chosen by label once the platform reveals the labels', async () => {
+        // Arrange
+        const wanted = unwrap((await realCameras())[1], 'a second camera');
+        const subject = await createCamera();
+
+        // Act
+        await subject.select({type: 'label', label: wanted.label});
+
+        // Assert
+        expect(subject.state.selected?.id).toBe(wanted.deviceId);
+    });
+
     it('remembers a camera chosen while it is off, and uses it once it is on', async () => {
         // Arrange
         const wanted = unwrap((await realCameras())[1], 'a second camera');
@@ -196,14 +246,14 @@ describe('LocalCamera', () => {
 
         // Assert: Choosing a camera does not open one.
         expect(captures).toBe(0);
-        expect(subject.state.selected).toEqual({type: 'id', id: wanted.deviceId});
+        expect(subject.state.selection).toEqual({type: 'id', id: wanted.deviceId});
 
         // Act
         await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert
-        expect(subject.state.active).toBe(wanted.deviceId);
+        expect(subject.state.effective).toBe(wanted.deviceId);
     });
 
     it('replaces the track inside the same stream when another camera is chosen', async () => {
@@ -230,7 +280,7 @@ describe('LocalCamera', () => {
             expect(after.track).not.toBe(before.track);
             expect(after.stream.getVideoTracks()).toEqual([after.track]);
         }
-        expect(subject.state.active).toBe(second.deviceId);
+        expect(subject.state.effective).toBe(second.deviceId);
     });
 
     it('lets the system decide again when the system default is chosen after a camera', async () => {
@@ -241,7 +291,7 @@ describe('LocalCamera', () => {
         await subject.select({type: 'id', id: second.deviceId as MediaDeviceId});
         await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
-        expect(subject.state.active).toBe(second.deviceId);
+        expect(subject.state.effective).toBe(second.deviceId);
 
         // Act
         await subject.select({type: 'system-default'});
@@ -249,9 +299,9 @@ describe('LocalCamera', () => {
 
         // Assert
         expect(captures).toBe(2);
-        expect(subject.state.selected).toEqual({type: 'system-default'});
+        expect(subject.state.selection).toEqual({type: 'system-default'});
         expect(subject.state.capture.status).toBe('acquired');
-        expect(subject.state.active).not.toBe(undefined);
+        expect(subject.state.effective).not.toBe(undefined);
     });
 
     it('opens another camera when the one in use is detached', async () => {
@@ -265,7 +315,7 @@ describe('LocalCamera', () => {
         await subject.select({type: 'id', id: second.deviceId as MediaDeviceId});
         await subject.enable();
         await waitUntilStable(() => !subject.state.isPending);
-        expect(subject.state.active).toBe(second.deviceId);
+        expect(subject.state.effective).toBe(second.deviceId);
 
         // Act: The chosen camera goes away.
         attached = [first];
@@ -275,7 +325,7 @@ describe('LocalCamera', () => {
         // Assert: It stayed acquired, on whichever camera the system offers, while the original
         // choice is kept.
         expect(subject.state.capture.status).toBe('acquired');
-        expect(subject.state.selected).toEqual({type: 'id', id: second.deviceId});
+        expect(subject.state.selection).toEqual({type: 'id', id: second.deviceId});
 
         // Act: The chosen camera comes back.
         attached = cameras;
@@ -283,7 +333,7 @@ describe('LocalCamera', () => {
         await waitUntilStable(() => !subject.state.isPending);
 
         // Assert
-        expect(subject.state.active).toBe(second.deviceId);
+        expect(subject.state.effective).toBe(second.deviceId);
     });
 
     it('opens another camera when the track ends on its own', async () => {
@@ -470,8 +520,8 @@ describe('LocalCamera', () => {
         // Assert: Capturing from a camera, but a different one. The requested original choice is
         // kept.
         expect(subject.state.capture.status).toBe('acquired');
-        expect(subject.state.selected).toEqual({type: 'id', id: wanted.deviceId});
-        expect(subject.state.active).not.toBe(wanted.deviceId);
+        expect(subject.state.selection).toEqual({type: 'id', id: wanted.deviceId});
+        expect(subject.state.effective).not.toBe(wanted.deviceId);
         expect(captures).toBe(1);
     });
 
@@ -670,7 +720,7 @@ describe('LocalCamera', () => {
         await subject.select({type: 'id', id: second.deviceId as MediaDeviceId});
 
         // Assert
-        expect(subject.state.active).toBe(second.deviceId);
+        expect(subject.state.effective).toBe(second.deviceId);
     });
 
     it('reports the cameras of the machine', async () => {
@@ -679,6 +729,6 @@ describe('LocalCamera', () => {
 
         // Assert
         expect(subject.state.devices.length).toBeGreaterThan(0);
-        expect(subject.state.selected).toEqual({type: 'system-default'});
+        expect(subject.state.selection).toEqual({type: 'system-default'});
     });
 });
