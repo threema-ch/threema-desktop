@@ -34,6 +34,7 @@
     "generate:icons:web:custom": "tools/generate-icons-web-custom.sh",
     "generate:icons:windows": "tools/generate-icons-windows.sh",
     "generate:icons:windows:custom": "tools/generate-icons-windows-custom.sh",
+    "generate:licenses": "tools/gather-licenses.sh",
     "generate:protobuf": "node tools/generate-protobuf.mjs",
     "generate:safe-enums": "safe-enums src/enum/schema.ts src/common/enum/index.ts",
     "generate:translations": "i18next 'src/app/**/*.{ts,svelte}' 'src/common/dom/ui/**/*.ts' -o 'src/translations/$LOCALE/$NAMESPACE.json' -c config/i18next-parser.config.js",

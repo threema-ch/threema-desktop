@@ -93,6 +93,9 @@
     "generate:icons:windows:custom": {
       "cache": false
     },
+    "generate:licenses": {
+      "cache": false
+    },
     "generate:protobuf": {
       "cache": false
     },

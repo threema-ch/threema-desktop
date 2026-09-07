@@ -54,6 +54,7 @@
     "generate:desktop:icons:web:custom": "turbo run generate:icons:web:custom --filter=threema-desktop",
     "generate:desktop:icons:windows": "turbo run generate:icons:windows --filter=threema-desktop",
     "generate:desktop:icons:windows:custom": "turbo run generate:icons:windows:custom --filter=threema-desktop",
+    "generate:desktop:licenses": "turbo run generate:licenses --filter=threema-desktop",
     "generate:desktop:protobuf": "turbo run generate:protobuf --filter=threema-desktop",
     "generate:desktop:safe-enums": "turbo run generate:safe-enums --filter=threema-desktop",
     "generate:desktop:translations": "turbo run generate:translations --filter=threema-desktop",

@@ -618,6 +618,30 @@ coverage:desktop:consumer-sandbox:
       npm --prefix "${STRUCTBUF_TYPESCRIPT_DIR}" ci
     export STRUCTBUF_TYPESCRIPT_BIN="${STRUCTBUF_TYPESCRIPT_DIR}/structbuf-typescript-bin.js"
 
+# Regenerate the third party license file and fail if anything drifts.
+diff:desktop:licenses:
+  stage: test
+  needs: []
+  <<: *linux_nodejs_config
+  before_script:
+    - set -euo pipefail
+    - *linux_nodejs_before_script
+  script:
+    - set -euo pipefail
+    - bash scripts/run-with-retry.sh --retries 3 --delay 15 -- pnpm ci
+    # Regenerate `LICENSE-3RD-PARTY.txt`.
+    - pnpm run generate:desktop:licenses
+    # Ensure that there are no local changes to the generated file.
+    - |
+      DIFF="$(git diff)"
+      if [[ -n "$DIFF" ]]; then
+        echo -e "\e[31mFound local changes after running 'pnpm run generate:desktop:licenses'. Third party licenses out of sync?\e[0m"
+        echo -e "\n$ git diff:\n$DIFF"
+        exit 1
+      else
+        echo -e "\e[32mNo changes detected after running 'pnpm run generate:desktop:licenses'\e[0m"
+      fi
+
 # Regenerate the desktop-internal protobuf modules and fail if anything drifts.
 diff:desktop:protobuf:
   stage: test
