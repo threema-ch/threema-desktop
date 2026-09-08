@@ -8,6 +8,7 @@ import {createTestLogger} from '../../utils/test/create-test-logger';
 import {createTestVideoStream} from '../../utils/test/create-test-video-stream';
 
 import CallViewFixture from './CallView.fixture.svelte';
+import type {FeedPresentation} from './Feed.svelte';
 
 /**
  * A feed as the tests build it.
@@ -20,7 +21,7 @@ interface TestFeed {
     readonly isMuted: boolean;
     readonly kind: 'camera' | 'display';
     readonly label: string;
-    readonly onchangevisiblesize?: (size: {height: u53; width: u53} | undefined) => void;
+    readonly onchangepresentation?: (presentation: FeedPresentation) => void;
     readonly stream?: MediaStream;
 }
 
@@ -31,11 +32,11 @@ function feed(
     id: string,
     options: {
         readonly kind?: TestFeed['kind'];
-        readonly onchangevisiblesize?: TestFeed['onchangevisiblesize'];
+        readonly onchangepresentation?: TestFeed['onchangepresentation'];
         readonly withStream?: boolean;
     } = {},
 ): TestFeed {
-    const {kind = 'camera', onchangevisiblesize, withStream = false} = options;
+    const {kind = 'camera', onchangepresentation, withStream = false} = options;
 
     return {
         alt: `Video of ${id}`,
@@ -44,7 +45,7 @@ function feed(
         isMuted: false,
         kind,
         label: id,
-        onchangevisiblesize,
+        onchangepresentation,
         stream: withStream ? createTestVideoStream() : undefined,
     };
 }
@@ -256,36 +257,43 @@ describe('CallView.svelte', () => {
         expect(getExpandedFeedAlts(container)).toStrictEqual([]);
     });
 
-    it('reports the size of each feed to that feed itself', async () => {
+    it('reports how each feed is presented to that feed itself', async () => {
         // Arrange
-        const onchangevisiblesizeJane = vi.fn();
-        const onchangevisiblesizeJohn = vi.fn();
+        const onchangepresentationJane = vi.fn();
+        const onchangepresentationJohn = vi.fn();
         renderCallView({
             feeds: [
-                feed('jane', {onchangevisiblesize: onchangevisiblesizeJane}),
-                feed('john', {onchangevisiblesize: onchangevisiblesizeJohn}),
+                feed('jane', {onchangepresentation: onchangepresentationJane}),
+                feed('john', {onchangepresentation: onchangepresentationJohn}),
             ],
         });
 
         // Assert
         await vi.waitFor(() => {
-            for (const onchangevisiblesize of [onchangevisiblesizeJane, onchangevisiblesizeJohn]) {
-                const size: unknown = onchangevisiblesize.mock.calls.at(-1)?.at(0);
-                expect(size).toMatchObject({
-                    height: expect.any(Number) as unknown,
-                    width: expect.any(Number) as unknown,
+            for (const onchangepresentation of [
+                onchangepresentationJane,
+                onchangepresentationJohn,
+            ]) {
+                expect(onchangepresentation.mock.calls.at(-1)?.at(0)).toMatchObject({
+                    isExpanded: false,
+                    isFullscreen: false,
+                    isPictureInPicture: false,
+                    isVisible: true,
+                    size: {
+                        height: expect.any(Number) as unknown,
+                        width: expect.any(Number) as unknown,
+                    },
                 });
             }
         });
     });
 
-    // A feed nobody can see should not be subscribed to, which is what the `undefined` reports.
-    it('reports no size for a feed which is scrolled out of the stage', async () => {
+    it('reports a feed which is scrolled out of the stage as not visible', async () => {
         // Arrange
-        const onchangevisiblesize = vi.fn();
+        const onchangepresentation = vi.fn();
         const feeds = [
             ...Array.from({length: 11}, (_, index): TestFeed => feed(`participant-${index}`)),
-            feed('last', {onchangevisiblesize}),
+            feed('last', {onchangepresentation}),
         ];
         const {container} = renderCallView({feeds}, {height: 300, width: 500});
 
@@ -295,7 +303,9 @@ describe('CallView.svelte', () => {
         // Assert: The stage overflows, so the last feed is out of view.
         await vi.waitFor(() => {
             expect(stage.scrollHeight).toBeGreaterThan(stage.clientHeight);
-            expect(onchangevisiblesize.mock.calls.at(-1)?.at(0)).toBeUndefined();
+            expect(onchangepresentation.mock.calls.at(-1)?.at(0)).toMatchObject({
+                isVisible: false,
+            });
         });
 
         // Act
@@ -303,9 +313,36 @@ describe('CallView.svelte', () => {
 
         // Assert
         await vi.waitFor(() => {
-            expect(onchangevisiblesize.mock.calls.at(-1)?.at(0)).toMatchObject({
-                height: expect.any(Number) as unknown,
-                width: expect.any(Number) as unknown,
+            expect(onchangepresentation.mock.calls.at(-1)?.at(0)).toMatchObject({
+                isVisible: true,
+                size: {
+                    height: expect.any(Number) as unknown,
+                    width: expect.any(Number) as unknown,
+                },
+            });
+        });
+    });
+
+    it('reports a feed which the view expanded as expanded', async () => {
+        // Arrange
+        const onchangepresentation = vi.fn();
+        renderCallView({
+            feeds: [feed('jane', {onchangepresentation}), feed('john')],
+        });
+        await vi.waitFor(() => {
+            expect(onchangepresentation.mock.calls.at(-1)?.at(0)).toMatchObject({
+                isExpanded: false,
+            });
+        });
+
+        // Act
+        await userEvent.click(page.getByRole('button', {name: 'Video of jane'}));
+
+        // Assert
+        await vi.waitFor(() => {
+            expect(onchangepresentation.mock.calls.at(-1)?.at(0)).toMatchObject({
+                isExpanded: true,
+                isVisible: true,
             });
         });
     });

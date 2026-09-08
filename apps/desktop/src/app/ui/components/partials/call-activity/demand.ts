@@ -1,3 +1,5 @@
+import type {u53} from '@threema/ts-utils/integer/u53';
+import {isShallowEqual} from '@threema/ts-utils/object/is-shallow-equal';
 import {TIMER} from '@threema/ts-utils/timer/global-timer';
 
 import {
@@ -19,22 +21,41 @@ const BATCH_MS = 500;
 export type RemoteDemandKind = 'camera' | 'screen';
 
 /**
- * Aggregates how large each remote feed is currently displayed, and turns that into subscription
- * intents for the SFU.
+ * Properties of a feed which influence the {@link RemoteDemand}.
+ */
+interface RemoteFeedPresentation {
+    readonly isExpanded: boolean;
+    readonly isFullscreen: boolean;
+    readonly isPictureInPicture: boolean;
+    readonly isVisible: boolean;
+    readonly size: Dimensions | undefined;
+}
+
+/**
+ * The maximum width allowed to be requested, if the feed is not the primary feed (i.e., it's
+ * expanded, fullscreen, or similar).
+ */
+const MAX_SECONDARY_WIDTH_PX: Record<RemoteDemandKind, u53> = {
+    camera: 640,
+    screen: 480,
+};
+
+/**
+ * Aggregates how each remote feed is presented, and turns that into subscription intents for the
+ * SFU.
  */
 export interface RemoteDemand {
     /**
-     * Reports how large a remote feed is currently displayed, in CSS pixels, or `undefined` if it
-     * is not visible to the user at all.
+     * Reports how a remote feed is currently presented to the user.
      */
     readonly report: (
         kind: RemoteDemandKind,
         participantId: ParticipantId,
-        size: Dimensions | undefined,
+        presentation: RemoteFeedPresentation,
     ) => void;
     /**
-     * Forgets every reported size, e.g. because the call ended. Note: Does not unsubscribe, because
-     * there is nothing left to unsubscribe from.
+     * Forgets every report, e.g. because the call ended. Note: Does not unsubscribe, because there
+     * is nothing left to unsubscribe from.
      */
     readonly reset: () => void;
     /**
@@ -46,11 +67,7 @@ export interface RemoteDemand {
 interface Report {
     readonly kind: RemoteDemandKind;
     readonly participantId: ParticipantId;
-    /**
-     * The size in CSS pixels, kept so that the resolution can be recalculated when the device pixel
-     * ratio changes without the feed being resized.
-     */
-    readonly size: Dimensions;
+    readonly presentation: RemoteFeedPresentation;
 }
 
 /**
@@ -61,6 +78,34 @@ function cssSizeToDevicePixelSize(size: Dimensions): Dimensions {
     return {
         height: Math.round(size.height * ratio),
         width: Math.round(size.width * ratio),
+    };
+}
+
+/**
+ * Calculates the remote resolution to ask for, which may be lower than the actual size of the
+ * rendered feed. The primary feed's resolution is prioritized.
+ */
+function getResolutionRequest(
+    kind: RemoteDemandKind,
+    presentation: RemoteFeedPresentation,
+): Dimensions | undefined {
+    if (!presentation.isVisible || presentation.size === undefined) {
+        return undefined;
+    }
+    const resolution = cssSizeToDevicePixelSize(presentation.size);
+
+    if (presentation.isExpanded || presentation.isFullscreen || presentation.isPictureInPicture) {
+        return resolution;
+    }
+
+    const max = MAX_SECONDARY_WIDTH_PX[kind];
+    if (resolution.width <= max) {
+        return resolution;
+    }
+    // Maintain the original aspect ratio even if the size is clamped.
+    return {
+        height: Math.round((resolution.height * max) / resolution.width),
+        width: max,
     };
 }
 
@@ -79,7 +124,7 @@ export function createRemoteDemand(
     ) => void,
 ): RemoteDemand {
     /**
-     * The most recent report per feed, i.e. everything which is currently subscribed.
+     * The most recent report per feed.
      */
     const reports = new Map<string, Report>();
     /**
@@ -107,22 +152,18 @@ export function createRemoteDemand(
     function report(
         kind: RemoteDemandKind,
         participantId: ParticipantId,
-        size: Dimensions | undefined,
+        presentation: RemoteFeedPresentation,
     ): void {
         const key = `${kind}-${participantId}`;
 
-        // Skip the report if the size is still the same as in the last report.
-        const reported = reports.get(key)?.size;
-        if (size?.height === reported?.height && size?.width === reported?.width) {
+        // Skip the report if the feed is still presented the same as in the last report.
+        if (isShallowEqual(reports.get(key)?.presentation, presentation)) {
             return;
         }
 
-        if (size === undefined) {
-            reports.delete(key);
-        } else {
-            reports.set(key, {kind, participantId, size});
-        }
-        const resolution = size === undefined ? undefined : cssSizeToDevicePixelSize(size);
+        // Note: Kept even for a feed which is not to be subscribed.
+        reports.set(key, {kind, participantId, presentation});
+        const resolution = getResolutionRequest(kind, presentation);
 
         // A feed which nothing was asked for yet is one which just appeared or just became visible,
         // so it is subscribed right away rather than a batch window later. Waiting would mean the
@@ -138,7 +179,10 @@ export function createRemoteDemand(
         // Every subscribed resolution is now wrong by the same factor. Sent immediately, because a
         // ratio change is a rare, one-off event.
         for (const [key, current] of reports.entries()) {
-            emit(key, current.kind, current.participantId, cssSizeToDevicePixelSize(current.size));
+            const resolution = getResolutionRequest(current.kind, current.presentation);
+            if (resolution !== undefined) {
+                emit(key, current.kind, current.participantId, resolution);
+            }
         }
     });
 

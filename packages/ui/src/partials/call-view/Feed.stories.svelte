@@ -3,7 +3,7 @@
 
   import {createTestVideoStream} from '../../utils/test/create-test-video-stream';
 
-  import Feed from './Feed.svelte';
+  import Feed, {type FeedPresentation} from './Feed.svelte';
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const {Story} = defineMeta({
@@ -39,7 +39,13 @@
 
 <script lang="ts">
   let isExpanded = $state<boolean>(false);
-  let visibleSize = $state<string>('not measured yet');
+  let reportedPresentation = $state<string>('not measured yet');
+
+  function describePresentation(presentation: FeedPresentation): string {
+    const {size} = presentation;
+
+    return size === undefined ? 'not measured yet' : `${size.width} × ${size.height}`;
+  }
 </script>
 
 <!--
@@ -56,15 +62,15 @@
         isMuted
         {labels}
         {log}
-        onchangevisiblesize={(size) =>
-          (visibleSize = size === undefined ? 'not visible' : `${size.width} × ${size.height}`)}
+        onchangepresentation={(presentation: FeedPresentation) =>
+          (reportedPresentation = describePresentation(presentation))}
         onclick={() => log.info('Feed clicked')}
         onclickexpand={() => (isExpanded = !isExpanded)}
         {stream}
       />
     </div>
 
-    <p class="mt-2 text-sm text-grey-500">Reported size: {visibleSize}</p>
+    <p class="mt-2 text-sm text-grey-500">Reported presentation: {reportedPresentation}</p>
   {/snippet}
 </Story>
 

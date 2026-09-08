@@ -17,7 +17,7 @@
       pictureInPicture: 'Picture-in-Picture',
     }}
     {log}
-    onchangevisiblesize={(size) => claim.set(size)}
+    onchangepresentation={handleChangePresentation}
     onclick={handleClickFeed}
     onclickexpand={handleClickExpandFeed}
     stream={participant.stream}
@@ -42,11 +42,33 @@
   import {PROFILE_PICTURE_BACKGROUND_COLOR_CLASS_MAP} from '../../utils/profile-picture-color';
 
   /**
-   * Size of the video container in CSS pixels.
+   * A box the feed is displayed in CSS pixels.
    */
   export interface FeedSize {
     readonly height: u53;
     readonly width: u53;
+  }
+
+  /**
+   * How a feed is currently presented to the user.
+   */
+  export interface FeedPresentation {
+    /**
+     * Whether the feed is supposed to be expanded, i.e. rendered larger than the other feeds.
+     */
+    readonly isExpanded: boolean;
+    readonly isFullscreen: boolean;
+    readonly isPictureInPicture: boolean;
+    /**
+     * Whether the feed is currently visible in the viewport. Note: In fullscreen or
+     * picture-in-picture mode, this is always `true`.
+     */
+    readonly isVisible: boolean;
+    /**
+     * The dimensions the feed is currently rendered at. Note: This includes fullscreen or
+     * picture-in-picture mode.
+     */
+    readonly size: FeedSize | undefined;
   }
 
   /**
@@ -125,13 +147,9 @@
        */
       readonly stream?: MediaStream;
       /**
-       * Reports the size the rendered feed currently occupies in CSS pixels, or `undefined` while
-       * it is not visible to the user.
-       *
-       * Note: While the feed is presented in the platform's picture-in-picture window, the size of
-       * that window is reported instead, because that is what the user is looking at.
+       * Reports how the feed is presented to the user whenever a relevant property changes.
        */
-      readonly onchangevisiblesize?: (size: FeedSize | undefined) => void;
+      readonly onchangepresentation?: (presentation: FeedPresentation) => void;
       /**
        * Reports a click on the feed's surface. If `undefined`, the surface is not interactive.
        */
@@ -169,7 +187,7 @@
     label,
     labels,
     log,
-    onchangevisiblesize,
+    onchangepresentation,
     onclick,
     onclickexpand,
     ref = $bindable(null),
@@ -188,7 +206,7 @@
   let heightPx = $state<u53 | undefined>(undefined);
   let widthPx = $state<u53 | undefined>(undefined);
 
-  let isVisible = $state<boolean>(false);
+  let isIntersecting = $state<boolean>(false);
   let isFullscreen = $state<boolean>(false);
   let pictureInPictureSizePx = $state<FeedSize | undefined>(undefined);
 
@@ -199,24 +217,23 @@
       document.pictureInPictureEnabled &&
       !(videoElement?.disablePictureInPicture ?? false),
   );
-
-  const visibleSizePx = $derived.by<FeedSize | undefined>(() => {
-    // The platform's window is somewhere else on the screen, so neither this element's box nor its
-    // visibility says anything about what the user sees.
-    if (pictureInPictureSizePx !== undefined) {
-      return pictureInPictureSizePx;
-    }
-    // A fullscreen feed is the fullscreen element itself, so its own box is already the screen.
-    if (!isFullscreen && !isVisible) {
-      return undefined;
-    }
-    return heightPx === undefined || widthPx === undefined
+  const sizePx = $derived<FeedSize | undefined>(
+    heightPx === undefined || widthPx === undefined
       ? undefined
-      : {height: heightPx, width: widthPx};
+      : {height: heightPx, width: widthPx},
+  );
+  const presentation = $derived<FeedPresentation>({
+    isExpanded,
+    isFullscreen,
+    isPictureInPicture,
+    // Fullscreen and picture-in-picture take the feed out of the layout, so whether its own box
+    // intersects says nothing about whether the user sees it.
+    isVisible: isPictureInPicture || isFullscreen || isIntersecting,
+    size: pictureInPictureSizePx ?? sizePx,
   });
 
   $effect(() => {
-    onchangevisiblesize?.(visibleSizePx);
+    onchangepresentation?.(presentation);
   });
 
   // Attach the stream to the element, but only when it is not the one which is attached already, to
@@ -230,7 +247,7 @@
     element.srcObject = stream;
   });
 
-  // Report whether the feed is visible to the user.
+  // Track whether the feed's own box is within view.
   $effect(() => {
     const element = ref;
     if (element === null) {
@@ -241,7 +258,7 @@
       (entries) => {
         const entry = entries.at(-1);
         if (entry !== undefined) {
-          isVisible = entry.isIntersecting;
+          isIntersecting = entry.isIntersecting;
         }
       },
       {threshold: 0},
@@ -378,9 +395,14 @@
       });
     }
 
-    // A feed which is gone shows nothing, which is the same thing it reports while it is not
-    // visible.
-    onchangevisiblesize?.(undefined);
+    // Feed is gone.
+    onchangepresentation?.({
+      isExpanded: false,
+      isFullscreen: false,
+      isPictureInPicture: false,
+      isVisible: false,
+      size: undefined,
+    });
   });
 </script>
 

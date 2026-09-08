@@ -196,7 +196,7 @@
       isMuted: participant.capture.microphone.state === 'off',
       kind: kind === 'camera' ? 'camera' : 'display',
       label: receiver.name,
-      onchangevisiblesize: (size) => demand.report(kind, participant.id, size),
+      onchangepresentation: (presentation) => demand.report(kind, participant.id, presentation),
       stream: participant.capture[kind].state === 'on' ? getStream(track) : undefined,
     };
   }

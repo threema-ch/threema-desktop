@@ -2,7 +2,7 @@ import CallViewRoot from './CallView.svelte';
 import Control from './Control.svelte';
 
 export type {CallViewFeed, CallViewProps} from './CallView.svelte';
-export type {FeedLabels, FeedSize} from './Feed.svelte';
+export type {FeedLabels, FeedPresentation, FeedSize} from './Feed.svelte';
 export type {ControlProps} from './Control.svelte';
 
 /**

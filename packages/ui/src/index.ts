@@ -63,6 +63,7 @@ export {
     type CallViewProps,
     type ControlProps,
     type FeedLabels,
+    type FeedPresentation,
     type FeedSize,
 } from './partials/call-view';
 

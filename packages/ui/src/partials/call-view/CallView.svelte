@@ -54,7 +54,7 @@
       | 'isMirrored'
       | 'isMuted'
       | 'label'
-      | 'onchangevisiblesize'
+      | 'onchangepresentation'
       | 'stream'
     > {
     /**
@@ -261,7 +261,7 @@
             label={feed.label}
             {labels}
             {log}
-            onchangevisiblesize={feed.onchangevisiblesize}
+            onchangepresentation={feed.onchangepresentation}
             onclick={(event) => handleClickFeed(event, feed)}
             onclickexpand={(event) => toggleExpansion(event, feed)}
             stream={feed.stream}
