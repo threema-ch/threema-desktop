@@ -45,6 +45,27 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta65" date="2026-09-10">
+            <description>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Context menus can be accessed in text field to access OS-level features</li>
+                    <li>Additional media can be pasted in the media sharing dialog</li>
+                    <li>Performance improvements for large message databases</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>
+                        Fixed a bug where message edits could be applied on the secondary device
+                        even if the change was sent by a group member other than the author of the
+                        original message
+                    </li>
+                    <li>Handling of group invitations by blocked users</li>
+                    <li>Single-choice poll handling</li>
+                </ul>
+                <p>…and various under-the-hood changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta64" date="2026-08-25">
             <description>
                 <p>Improvements:</p>
