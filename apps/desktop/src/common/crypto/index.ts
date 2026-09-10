@@ -22,10 +22,7 @@ export {
 export type {
     Cookie,
     CryptoBackend,
-    RawEncryptedData,
-    RawPlainData,
     Ed25519PublicKey,
-    Ed25519Signature,
     EncryptedData,
     EncryptedDataWithNonceAhead,
     Nonce,

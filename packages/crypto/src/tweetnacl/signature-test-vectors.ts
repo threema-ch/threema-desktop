@@ -1,13 +1,27 @@
+/**
+ * Test vectors for Ed25519 signatures (`crypto_sign`).
+ *
+ * Note: Copied from https://github.com/dchest/tweetnacl-js/tree/master/test/data
+ */
+
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
 import {base64ToU8a} from '@threema/ts-utils/base64/base64-to-u8a';
-import * as tweetnacl from 'tweetnacl';
 
-import type {Ed25519PublicKey, Ed25519Signature} from '~/common/crypto';
+import {
+    type Ed25519PublicKey,
+    type Ed25519Signature,
+    ensureEd25519PublicKey,
+    ensureEd25519Signature,
+    NACL_CONSTANTS,
+} from '../primitives.js';
 
 /**
- * A few tests copied from https://github.com/dchest/tweetnacl-js/tree/master/test/data
+ * Return the Ed25519 signature test vectors.
+ *
+ * Note: The vectors provide the 64 byte secret key, whose trailing 32 bytes are the associated
+ * public key.
  */
-export default function (): [
+export function getEd25519SignatureTestVectors(): [
     publicKey: Ed25519PublicKey,
     message: ReadonlyUint8Array,
     signature: Ed25519Signature,
@@ -51,9 +65,8 @@ export default function (): [
             ],
         ] as const
     ).map(([secretKey, message, signature]) => [
-        tweetnacl.sign.keyPair.fromSecretKey(base64ToU8a(secretKey))
-            .publicKey as ReadonlyUint8Array as Ed25519PublicKey,
+        ensureEd25519PublicKey(base64ToU8a(secretKey).subarray(NACL_CONSTANTS.KEY_LENGTH)),
         base64ToU8a(message),
-        base64ToU8a(signature) as ReadonlyUint8Array as Ed25519Signature,
+        ensureEd25519Signature(base64ToU8a(signature)),
     ]);
 }

@@ -83,7 +83,11 @@ function computeTag(
  *
  * IMPORTANT: This is **not** a cipher. It exists so that the box logic (headroom arithmetic, nonce
  * construction, view slicing and error paths) can be tested without pulling a real crypto backend
- * into this package. Real cryptographic behaviour is covered by the app's backend test vectors.
+ * into this package. Real cryptographic behaviour is covered by `tweetnacl/crypto-box.test.ts`,
+ * which runs the box over the real NaCl backend against fixed test cases.
+ *
+ * Like the real backend, this one only requires input and output to be of the same size. It works
+ * whether they alias (which is what {@link CryptoBox} does) or are distinct buffers.
  */
 class StubBoxBackend implements CryptoBoxBackend {
     readonly #_key: ReadonlyRawKey<32>;
@@ -97,10 +101,13 @@ class StubBoxBackend implements CryptoBoxBackend {
             throw new CryptoError('box.encrypt with data length mismatch');
         }
         const key = this.#_key.unwrap();
-        const body = plain.subarray(PLAIN_HEADROOM);
-        const tag = computeTag(key, nonce, body);
-        for (let index = 0; index < body.byteLength; ++index) {
-            body[index] = ((body[index] ?? 0) ^ keystream(key, nonce, index)) & 0xff;
+        const plainBody = plain.subarray(PLAIN_HEADROOM);
+        const encryptedBody = encrypted.subarray(PLAIN_HEADROOM);
+        // Note: The tag must be computed before anything is written, since the two buffers may
+        // alias.
+        const tag = computeTag(key, nonce, plainBody);
+        for (let index = 0; index < plainBody.byteLength; ++index) {
+            encryptedBody[index] = ((plainBody[index] ?? 0) ^ keystream(key, nonce, index)) & 0xff;
         }
         encrypted.subarray(ENCRYPTED_HEADROOM, PLAIN_HEADROOM).set(tag);
     }
@@ -111,11 +118,12 @@ class StubBoxBackend implements CryptoBoxBackend {
         }
         const key = this.#_key.unwrap();
         const tag = Uint8Array.from(encrypted.subarray(ENCRYPTED_HEADROOM, PLAIN_HEADROOM));
-        const body = encrypted.subarray(PLAIN_HEADROOM);
-        for (let index = 0; index < body.byteLength; ++index) {
-            body[index] = ((body[index] ?? 0) ^ keystream(key, nonce, index)) & 0xff;
+        const encryptedBody = encrypted.subarray(PLAIN_HEADROOM);
+        const plainBody = plain.subarray(PLAIN_HEADROOM);
+        for (let index = 0; index < encryptedBody.byteLength; ++index) {
+            plainBody[index] = ((encryptedBody[index] ?? 0) ^ keystream(key, nonce, index)) & 0xff;
         }
-        if (!byteEquals(tag, computeTag(key, nonce, body))) {
+        if (!byteEquals(tag, computeTag(key, nonce, plainBody))) {
             throw new CryptoError('box.decrypt authentication failed');
         }
     }
@@ -294,6 +302,27 @@ function cookie(fill: u53): TestCookie {
 beforeEach(() => {
     crypto = new StubCryptoBackend();
     nonces = new StubNonceService(crypto);
+});
+
+describe('StubBoxBackend', () => {
+    it('round trips through separate input and output buffers', () => {
+        // Arrange
+        const backend = new StubBoxBackend(readonlyKey());
+        const nonce = new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH).fill(0x42) as Nonce;
+        const plain = new Uint8Array(PLAIN_HEADROOM + 3) as RawPlainData;
+        plain.set([1, 2, 3], PLAIN_HEADROOM);
+        const encrypted = new Uint8Array(plain.byteLength) as RawEncryptedData;
+        const decrypted = new Uint8Array(plain.byteLength) as RawPlainData;
+
+        // Act
+        backend.encrypt(encrypted, plain, nonce);
+        backend.decrypt(decrypted, encrypted, nonce);
+
+        // Assert
+        expect([...decrypted.subarray(PLAIN_HEADROOM)]).toStrictEqual([1, 2, 3]);
+        // The input buffer must be left untouched
+        expect([...plain.subarray(PLAIN_HEADROOM)]).toStrictEqual([1, 2, 3]);
+    });
 });
 
 describe('CryptoBox', () => {

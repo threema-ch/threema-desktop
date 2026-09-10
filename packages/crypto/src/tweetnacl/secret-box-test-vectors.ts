@@ -1,18 +1,25 @@
-import {wrapRawKey, type ReadonlyRawKey} from '@threema/crypto';
+/**
+ * Test vectors for the NaCl secret-key box (`crypto_secretbox`).
+ *
+ * Note: Copied from https://github.com/dchest/tweetnacl-js/tree/master/test/data
+ */
+
 import {base64ToU8a} from '@threema/ts-utils/base64/base64-to-u8a';
 import type {u53} from '@threema/ts-utils/integer/u53';
 
+import {type ReadonlyRawKey, wrapRawKey} from '../key.js';
 import {
     NACL_CONSTANTS,
     type Nonce,
     type RawEncryptedData,
     type RawPlainData,
-} from '~/common/crypto';
+} from '../primitives.js';
 
 /**
- * Tests copied from https://github.com/dchest/tweetnacl-js/tree/master/test/data
+ * Return the secret-key box test vectors, with the plain and the encrypted data 0-padded upfront by
+ * the respective headroom of the backend under test.
  */
-export default function (
+export function getSecretBoxTestVectors(
     plainHeadroom: u53,
     encryptedHeadroom: u53,
 ): [

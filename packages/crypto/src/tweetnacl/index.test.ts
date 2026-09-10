@@ -20,6 +20,10 @@ import {
 } from '../primitives.js';
 import {createTestCryptoPrng} from '../utils/test/create-test-crypto-prng.js';
 
+import {getSecretBoxTestVectors} from './secret-box-test-vectors.js';
+import {getSharedBoxTestVectors} from './shared-box-test-vectors.js';
+import {getEd25519SignatureTestVectors} from './signature-test-vectors.js';
+
 import {TweetNaClBackend} from './index.js';
 
 const prng = createTestCryptoPrng();
@@ -464,6 +468,116 @@ describe('TweetNaClBoxBackend', () => {
             expect(() => secretBoxBackend(SECRET_KEY_A).decrypt(plain, encrypted, nonce())).toThrow(
                 CryptoError,
             );
+        });
+    });
+});
+
+describe('NaCl test vectors', () => {
+    // Note: These vectors are upstream TweetNaCl test data, i.e. an external source of truth that
+    // does not itself run through the `tweetnacl` package the backend is built on. That makes them
+    // complementary to the cross-checks against TweetNaCl's high-level API above.
+    const {plainHeadroom, encryptedHeadroom} = crypto;
+
+    describe('secret-key box', () => {
+        it('encrypts and decrypts the `crypto_secretbox` vectors', () => {
+            // Arrange
+            const vectors = getSecretBoxTestVectors(plainHeadroom, encryptedHeadroom);
+            expect(vectors).not.toHaveLength(0);
+
+            for (const [secretKey, vectorNonce, plain, encrypted] of vectors) {
+                const box = crypto.getSecretBox(secretKey, NONCE_UNGUARDED_SCOPE, undefined).raw;
+                const buffer = new Uint8Array(encrypted.byteLength);
+
+                // Act
+                box.encrypt(buffer as RawEncryptedData, plain, vectorNonce);
+
+                // Assert
+                expectPadded(buffer, encryptedHeadroom, encrypted.subarray(encryptedHeadroom));
+
+                // Act
+                box.decrypt(buffer as RawPlainData, encrypted, vectorNonce);
+
+                // Assert
+                expectPadded(buffer, plainHeadroom, plain.subarray(plainHeadroom));
+            }
+        });
+    });
+
+    describe('Ed25519 signatures', () => {
+        it('verifies the `crypto_sign` vectors', () => {
+            // Arrange
+            const vectors = getEd25519SignatureTestVectors();
+            expect(vectors).not.toHaveLength(0);
+
+            for (const [publicKey, message, signature] of vectors) {
+                // Act & assert
+                crypto.verifyEd25519Signature(publicKey, message, signature);
+            }
+        });
+    });
+
+    describe('public-key box', () => {
+        // Note: The `crypto_box` vectors were generated with an all-zero nonce.
+        function zeroNonce(): Nonce {
+            return nonce(0x00);
+        }
+
+        it('encrypts and decrypts the `crypto_box` vectors', () => {
+            // Arrange
+            const vectors = getSharedBoxTestVectors(plainHeadroom, encryptedHeadroom);
+            expect(vectors).not.toHaveLength(0);
+
+            for (const [publicKey, secretKey, plain, encrypted] of vectors) {
+                expect(plain.byteLength).toBe(encrypted.byteLength);
+                const box = crypto.getSharedBox(
+                    publicKey,
+                    secretKey,
+                    NONCE_UNGUARDED_SCOPE,
+                    undefined,
+                ).raw;
+                const buffer = new Uint8Array(encrypted.byteLength);
+
+                // Act
+                box.encrypt(buffer as RawEncryptedData, plain, zeroNonce());
+
+                // Assert
+                expectPadded(buffer, encryptedHeadroom, encrypted.subarray(encryptedHeadroom));
+
+                // Act
+                box.decrypt(buffer as RawPlainData, encrypted, zeroNonce());
+
+                // Assert
+                expectPadded(buffer, plainHeadroom, plain.subarray(plainHeadroom));
+            }
+        });
+
+        it('encrypts and decrypts the `crypto_box` vectors in place', () => {
+            // Arrange
+            const vectors = getSharedBoxTestVectors(plainHeadroom, encryptedHeadroom);
+
+            for (const [publicKey, secretKey, plain, encrypted] of vectors) {
+                const box = crypto.getSharedBox(
+                    publicKey,
+                    secretKey,
+                    NONCE_UNGUARDED_SCOPE,
+                    undefined,
+                ).raw;
+                const buffer = new Uint8Array(encrypted.byteLength);
+
+                // Act
+                buffer.set(plain);
+                box.encrypt(buffer as RawEncryptedData, buffer as RawPlainData, zeroNonce());
+
+                // Assert
+                expectPadded(buffer, encryptedHeadroom, encrypted.subarray(encryptedHeadroom));
+
+                // Act
+                buffer.set(encrypted);
+                box.decrypt(buffer as RawPlainData, buffer as RawEncryptedData, zeroNonce());
+
+                // Assert
+                expectPadded(buffer, plainHeadroom, plain.subarray(plainHeadroom));
+            }
         });
     });
 });

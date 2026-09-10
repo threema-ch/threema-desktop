@@ -4,15 +4,6 @@ import {TIMER} from '@threema/ts-utils/timer/global-timer';
 import {AssertionError, expect} from 'chai';
 
 /**
- * Generate fake (non-)random values.
- */
-export function fakeRandomBytes<T extends ArrayBufferView>(buffer: T): T {
-    const array = byteView(Uint8Array, buffer);
-    array.fill(0x3e);
-    return buffer;
-}
-
-/**
  * Generate non-cryptographically secure random values.
  */
 export function pseudoRandomBytes<T extends ArrayBufferView>(buffer: T): T {
