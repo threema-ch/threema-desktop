@@ -471,7 +471,6 @@
                 }}
               >
                 <EmojiPicker
-                  id="media-message"
                   {services}
                   onselectemoji={handleSelectEmoji}
                   visible={isEmojiPickerVisible}

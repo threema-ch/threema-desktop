@@ -10,11 +10,6 @@ export interface EmojiPickerProps {
      * that have already been selected by the user, for example.
      */
     readonly highlighted?: SingleUnicodeEmoji[];
-    /**
-     * Unique id of an `EmojiPicker` instance. Note: This can be any `string`, but must be unique
-     * across all usages of the `EmojiPicker`.
-     */
-    readonly id: string;
     readonly onselectemoji?: (emoji: SingleUnicodeEmoji) => void;
     readonly services: Pick<AppServicesForSvelte, 'backend' | 'emojis'>;
     readonly visible: boolean;

@@ -36,7 +36,6 @@
 
   const {
     highlighted = [],
-    id,
     onselectemoji = undefined,
     services,
     visible = false,
@@ -153,12 +152,36 @@
 
     const customizerElement = emojiElement.querySelector('.customizer:not([open])');
     if (customizerElement instanceof HTMLDialogElement) {
+      positionCustomizer(emojiElement, customizerElement);
+
       // Note: `showModal` is kind of slow, because the entire `#document` gets recalculated to
       // render its descendants inert. This is was only partially improved in
       // https://issues.chromium.org/issues/40237638.
       customizerElement.showModal();
       currentlyCustomizingEmojiElement = emojiElement;
     }
+  }
+
+  /**
+   * Expose the viewport geometry of the given `anchorElement` to `customizerElement`, whose styles
+   * position themselves relative to it.
+   *
+   * Note: The geometry is measured manually instead of using CSS anchor positioning (i.e.
+   * `anchor-name` / `anchor()`), because the anchor button lives inside a scrollable container.
+   * When that container (or any other scrollable ancestor of the emoji picker) is scrolled,
+   * anchor-positioned `position: fixed` elements keep painting in the right place, but their
+   * hit-test area does not follow, making them unclickable.
+   */
+  function positionCustomizer(
+    anchorElement: HTMLElement,
+    customizerElement: HTMLDialogElement,
+  ): void {
+    const {top, left, width, height} = anchorElement.getBoundingClientRect();
+
+    customizerElement.style.setProperty('--c-t-customizer-anchor-top', `${top}px`);
+    customizerElement.style.setProperty('--c-t-customizer-anchor-left', `${left}px`);
+    customizerElement.style.setProperty('--c-t-customizer-anchor-width', `${width}px`);
+    customizerElement.style.setProperty('--c-t-customizer-anchor-height', `${height}px`);
   }
 
   /**
@@ -410,9 +433,8 @@
                     [emoji, details],
                     preferredSkinToneEmoji,
                   )}
-                  {@const anchorName = `--emoji-anchor-${id}-${preferredSkinToneEmoji}`}
 
-                  <li class="emoji" style:anchor-name={anchorName}>
+                  <li class="emoji">
                     <button
                       class="main"
                       class:active={highlighted.includes(preferredSkinToneEmoji) ||
@@ -432,7 +454,7 @@
                         <!-- svelte-ignore a11y_no_static_element_interactions -->
                         <!-- svelte-ignore a11y_click_events_have_key_events -->
                         <div class="backdrop" onclick={handleClickBackdrop}></div>
-                        <div class="skins" style:position-anchor={anchorName}>
+                        <div class="skins">
                           <!-- Key not required because all values are derived from
                         `customizerOptions`. -->
                           <!-- eslint-disable-next-line svelte/require-each-key -->
@@ -447,7 +469,7 @@
                             </button>
                           {/each}
                         </div>
-                        <div class="handle" style:position-anchor={anchorName}></div>
+                        <div class="handle"></div>
                       </dialog>
                     {/if}
                   </li>
@@ -463,6 +485,15 @@
 
 <style lang="scss">
   @use 'component' as *;
+
+  // Viewport geometry of the emoji button a customizer belongs to.
+  $-vars: (
+    customizer-anchor-top,
+    customizer-anchor-left,
+    customizer-anchor-width,
+    customizer-anchor-height
+  );
+  $-temp-vars: format-each($-vars, $prefix: --c-t-);
 
   .container {
     display: flex;
@@ -587,6 +618,15 @@
             }
 
             .customizer {
+              $-anchor-top: var($-temp-vars, --c-t-customizer-anchor-top);
+              $-anchor-left: var($-temp-vars, --c-t-customizer-anchor-left);
+              $-anchor-width: var($-temp-vars, --c-t-customizer-anchor-width);
+              $-anchor-height: var($-temp-vars, --c-t-customizer-anchor-height);
+              // Width the `.skins` row is allowed to grow to before it wraps, and the minimum
+              // distance it keeps from the viewport edges.
+              $-skins-max-width: rem(32px * 5 + 12px);
+              $-viewport-gap: rem(4px);
+
               // Reset popover user agent styling and fix anchoring quirks in `top-layer` context.
               // See: https://github.com/w3c/csswg-drafts/issues/10258.
               inset: auto;
@@ -609,11 +649,13 @@
 
               .skins {
                 position: fixed;
-
-                // Anchor positioning behavior.
-                bottom: anchor(top);
-                justify-self: anchor-center;
-                position-visibility: anchors-visible;
+                bottom: calc(100% - #{$-anchor-top});
+                left: clamp(
+                  calc(#{$-skins-max-width} / 2 + #{$-viewport-gap}),
+                  calc(#{$-anchor-left} + #{$-anchor-width} / 2),
+                  calc(100% - #{$-skins-max-width} / 2 - #{$-viewport-gap})
+                );
+                transform: translateX(-50%);
 
                 display: flex;
                 flex-direction: row;
@@ -622,8 +664,7 @@
                 flex-wrap: wrap;
 
                 height: auto;
-                max-width: rem(32px * 5 + 12px);
-                margin-inline: rem(4px);
+                max-width: $-skins-max-width;
                 padding: rem(3px) rem(6px);
                 background-color: var(--cc-emoji-picker-customizer-background-color);
                 box-shadow: var(--cc-emoji-picker-customizer-box-shadow);
@@ -634,15 +675,13 @@
                 $arc-size: 8;
                 $arc-size-px: $arc-size + 0px;
 
+                // Covers the anchor exactly, so it visually merges with the `.skins` row above.
                 position: fixed;
+                bottom: calc(100% - #{$-anchor-top} - #{$-anchor-height});
+                left: $-anchor-left;
 
-                // Anchor positioning behavior.
-                bottom: anchor(bottom);
-                left: anchor(left);
-                position-visibility: anchors-visible;
-
-                height: calc(anchor-size(height));
-                width: calc(anchor-size(width));
+                width: $-anchor-width;
+                height: $-anchor-height;
                 background: var(--cc-emoji-picker-customizer-background-color);
                 box-shadow: var(--cc-emoji-picker-customizer-handle-box-shadow);
                 border-radius: 0 0 rem(6px) rem(6px);

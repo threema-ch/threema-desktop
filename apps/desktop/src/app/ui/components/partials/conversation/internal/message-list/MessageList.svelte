@@ -753,7 +753,6 @@
           <EmojiPicker
             bind:this={emojiPickerComponent}
             highlighted={getHighlightedEmojis(currentEmojiPickerState)}
-            id="emoji-reactions-strip"
             onselectemoji={handleSelectEmoji}
             {services}
             visible={currentEmojiPickerState !== undefined}

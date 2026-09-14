@@ -386,7 +386,6 @@
     >
       <EmojiPicker
         bind:this={emojiPickerComponent}
-        id="compose-bar"
         onselectemoji={handleSelectEmoji}
         {services}
         visible={isEmojiPickerVisible}
