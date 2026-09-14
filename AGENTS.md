@@ -65,9 +65,15 @@ structure.
 
 ```
 ├── apps/
+│   ├── conferencing/                      # Threema Conferencing (Svelte single-page web app)
 │   └── desktop/                           # The main Electron app (Threema Desktop)
 ├── docs/                                  # Developer documentation (mdbook)
 ├── packages/                              # Shared packages
+│   ├── branding/                          # Threema brand assets and design tokens
+│   ├── crypto/                            # Platform-neutral crypto primitives (keys, boxes, NaCl backend)
+│   ├── dom/                               # Browser/DOM utilities
+│   ├── domain/                            # Threema domain logic and types (e.g. Threema ID)
+│   ├── electron/                          # Electron-specific utilities (@threema/electron-utils)
 │   ├── eslint-config/                     # Shared ESLint configuration
 │   ├── eslint-plugin-threema/             # Custom ESLint rules
 │   ├── libthreema-wasm/                   # Threema protocol implementation written in Rust
@@ -75,8 +81,11 @@ structure.
 │   ├── safe-enums/                        # Generator for safe enums (from a package's enum schema)
 │   ├── ts-config/                         # Shared TypeScript configuration
 │   ├── ts-utils/                          # Shared TypeScript utilities
+│   ├── ui/                                # Reusable UI components (Svelte 5, Tailwind CSS)
 │   ├── vite-plugin-commonjs-externals/
-│   └── vite-plugin-subresource-integrity/ # Custom SRI plugin for Vite
+│   ├── vite-plugin-subresource-integrity/ # Custom SRI plugin for Vite
+│   ├── webrtc/                            # Generic WebRTC primitives and utilities
+│   └── workers/                           # Worker utilities (@threema/worker-utils)
 ├── scripts/                               # Helper scripts used during development
 └── turbo.jsonc                            # Top-level Turborepo configuration
 ```
