@@ -1,4 +1,5 @@
 import * as v from '@badrap/valita';
+import type {DirectoryErrorType} from '@threema/domain';
 import {base64ToU8a} from '@threema/ts-utils/base64/base64-to-u8a';
 import {ensureU53, type u53} from '@threema/ts-utils/integer/u53';
 
@@ -157,27 +158,6 @@ export type DirectoryBackend = {
         minRemainingValidityMs?: u53,
     ) => Promise<SfuToken>;
 } & ProxyMarked;
-
-/**
- * Type of the {@link DirectoryError}.
- *
- * - timeout: Fetching data timed out.
- * - fetch: An error occurred when fetching data from the server (e.g. a network connectivity error)
- * - authentication: An error occurred during authenticating against the server
- * - identity-transfer-prohibited: The user tried to fetch information for a Work identity from a
- *   consumer app, or vice versa
- * - invalid-identity: The identity is unknown or was revoked
- * - invalid-response: We got an unexpected or invalid response from the server (e.g. an internal
- *   server error, an empty response or a response that does not validate against the schema)
- */
-export type DirectoryErrorType =
-    | 'timeout'
-    | 'fetch'
-    | 'authentication'
-    | 'identity-transfer-prohibited'
-    | 'invalid-identity'
-    | 'invalid-response'
-    | 'rate-limit-exceeded';
 
 const DIRECTORY_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     DirectoryError,

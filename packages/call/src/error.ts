@@ -1,3 +1,4 @@
+import type {DirectoryErrorType} from '@threema/domain';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
 
@@ -14,13 +15,14 @@ import {ensureError} from '@threema/ts-utils/meta/ensure-error';
  *   decoded.
  * - webrtc-connect: Could not connect to the SFU via WebRTC.
  *
- * Note: How an SFU token is acquired is up to the app (a group call obtains it from the directory
- * server, a conference guest will not), so the `type` of a `directory-error` is deliberately just
- * the app's own reason string rather than a shared enumeration.
+ * Note: A `directory-error` is by construction about the identity directory, so its `type` is the
+ * shared {@link DirectoryErrorType} enumeration and consumers can exhaustively switch over it. An
+ * app that acquires its SFU token from somewhere else (a conference guest, for example) does not
+ * widen that union, it gets its own `kind` instead.
  */
 export type GroupCallErrorType =
     | {readonly kind: 'invalid-state'}
-    | {readonly kind: 'directory-error'; readonly type: string}
+    | {readonly kind: 'directory-error'; readonly type: DirectoryErrorType}
     | {readonly kind: 'sfu-timeout'}
     | {readonly kind: 'sfu-fetch'}
     | {readonly kind: 'sfu-status-code'; readonly status: u53}

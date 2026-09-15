@@ -1,4 +1,5 @@
 import {GroupCallError, type GroupCallIdValue} from '@threema/call';
+import type {DirectoryErrorType} from '@threema/domain';
 import {byteEquals} from '@threema/ts-utils/byte/byte-equals';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {AsyncLock} from '@threema/ts-utils/lock/async-lock';
@@ -28,11 +29,7 @@ import {OngoingGroupCall} from '~/common/model/group-call';
 import type {ModelStore} from '~/common/model/utils/model-store';
 import type {JoinResponse} from '~/common/network/protobuf/validate/group-call';
 import type {AnyOngoingCall, CallType} from '~/common/network/protocol/call';
-import {
-    DirectoryError,
-    type DirectoryErrorType,
-    type SfuToken,
-} from '~/common/network/protocol/directory';
+import {DirectoryError, type SfuToken} from '~/common/network/protocol/directory';
 import {ensureBaseUrl, type BaseUrl, type IdentityString} from '~/common/network/types';
 import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER} from '~/common/utils/endpoint';
