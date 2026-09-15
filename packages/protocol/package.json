@@ -15,8 +15,9 @@
     "./enum": "./src/enum/index.ts",
     "./types": "./src/types.ts",
     "./types.js": "./src/types.ts",
-    "./protobuf": "./src/protobuf/index.js",
+    "./protobuf": "./src/protobuf/js/index.js",
     "./protobuf/tag": "./src/protobuf/tag.ts",
+    "./protobuf/utils": "./src/protobuf/utils.ts",
     "./structbuf/csp": "./src/structbuf/csp/index.ts",
     "./structbuf/extra": "./src/structbuf/extra/index.ts",
     "./structbuf/group-call": "./src/structbuf/group-call/index.ts",
@@ -29,18 +30,24 @@
     "generate:protobuf": "node scripts/generate-protobuf.mjs",
     "generate:safe-enums": "safe-enums src/enum/schema.ts src/enum/index.ts",
     "generate:structbuf": "node scripts/generate-structbuf.mjs",
+    "lint:eslint": "eslint .",
+    "lint:eslint:fix": "eslint . --fix",
     "lint:tsc": "tsc --noEmit && tsc -p tsconfig.scripts.json",
     "update": "node scripts/update.mjs"
   },
   "dependencies": {
+    "@badrap/valita": "catalog:",
     "@threema/ts-utils": "workspace:*",
     "long": "catalog:",
     "protobufjs": "catalog:"
   },
   "devDependencies": {
+    "@threema/eslint-config": "workspace:*",
     "@threema/safe-enums": "workspace:*",
     "@threema/ts-config": "workspace:*",
     "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "globals": "catalog:",
     "prettier": "catalog:",
     "protobufjs-cli": "1.1.3",
     "typescript": "catalog:"

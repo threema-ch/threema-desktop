@@ -854,8 +854,9 @@ export function getTypeScriptConfigMixin(
             {
                 allow: [
                     {
-                        from: 'file',
+                        from: 'package',
                         name: 'ProtobufInstanceOf',
+                        package: '@threema/protocol',
                     },
                     {
                         from: 'lib',

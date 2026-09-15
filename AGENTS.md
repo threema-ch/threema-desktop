@@ -291,7 +291,7 @@ Some code is generated and should NOT be modified manually (usually stated at th
 - `packages/protocol/src/enum/index.ts`: Generated from `packages/protocol/src/enum/schema.ts` via
   `pnpm run generate:protocol:safe-enums`. Exposed as `@threema/protocol/enum` and holds the enums
   whose values are defined by the Threema protocol or appear on the wire.
-- `packages/protocol/src/protobuf/`, `packages/protocol/src/structbuf/`: Generated from the
+- `packages/protocol/src/protobuf/js/`, `packages/protocol/src/structbuf/`: Generated from the
   `threema-protocols` repository via `pnpm run update:protocol`.
 
 Generating code should usually be done manually by the user. Always ask first before running any

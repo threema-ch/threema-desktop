@@ -21,7 +21,6 @@ build
 /apps/desktop/packaging/flatpak/.flatpak-builder
 /apps/desktop/packaging/flatpak/generated-*.json
 /apps/desktop/playwright-report/
-/apps/desktop/src/common/network/protobuf/js
 /apps/desktop/src/common/internal-protobuf/
 /apps/desktop/src/rust/
 /apps/desktop/build/playwright/test-results
@@ -65,4 +64,4 @@ build
 /packages/libthreema-wasm/libs/
 
 # Package: `packages/protocol`
-/packages/protocol/src/protobuf/
+/packages/protocol/src/protobuf/js/

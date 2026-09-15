@@ -1,4 +1,4 @@
-import type {ByteLengthEncoder} from '@threema/ts-utils/byte/byte-encoder';
+import type {LayerEncoder} from '@threema/protocol/types';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import type {WeakOpaque} from '@threema/ts-utils/meta/newtype';
 
@@ -41,10 +41,11 @@ import type * as structbuf from '~/common/network/structbuf';
 // Re-export enums
 export {D2mPayloadType, CspExtensionType, CspPayloadType, CspMessageFlag};
 
-/**
- * An idempotent encoder to encode into bytes.
- */
-export type LayerEncoder<T> = WeakOpaque<ByteLengthEncoder, {readonly Encoder: T}>;
+// Note: The layer encoder lives in `@threema/protocol` because the protobuf and structbuf encoders
+// are typed on it. It is re-exported here to keep the existing import sites working.
+//
+// TODO(DESK-2248): Remove re-exports in favor of updating the changed imports.
+export type {LayerEncoder};
 
 export interface D2mMessage<T extends D2mPayloadType, P> {
     type: T;

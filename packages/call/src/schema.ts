@@ -7,6 +7,7 @@ import {
 } from '@threema/crypto';
 import {ensureIdentityString, ensureNickname} from '@threema/domain';
 import {group_call} from '@threema/protocol/protobuf';
+import {NULL_OR_UNDEFINED_SCHEMA, UNIT_SCHEMA, validator} from '@threema/protocol/protobuf/utils';
 import {ensureU16} from '@threema/ts-utils/integer/u16';
 import {ensureU53} from '@threema/ts-utils/integer/u53';
 import {ensureU8} from '@threema/ts-utils/integer/u8';
@@ -31,7 +32,6 @@ import type {
     RemoteParticipantCookie,
 } from './participant-channel.js';
 import {ensureParticipantId} from './participant.js';
-import {NULL_OR_UNDEFINED_SCHEMA, UNIT_SCHEMA, validator} from './protobuf.js';
 import {SfuSupportedFeatures} from './sfu.js';
 
 export const CALL_STATE_SNAPSHOT_SCHEMA = validator(

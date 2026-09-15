@@ -1,10 +1,10 @@
 import {common, group_call} from '@threema/protocol/protobuf';
+import {creator, creatorForMap, type ProtobufInstanceOf} from '@threema/protocol/protobuf/utils';
 import type {u64} from '@threema/ts-utils/integer/u64';
 import {unwrap} from '@threema/ts-utils/meta/unwrap';
 import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {describe, expect, it} from 'vitest';
 
-import {creator, creatorForMap, type ProtobufInstanceOf} from './protobuf.js';
 import {
     CALL_STATE_SNAPSHOT_SCHEMA,
     JOIN_RESPONSE_SCHEMA,

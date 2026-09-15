@@ -1,4 +1,5 @@
 import {group_call} from '@threema/protocol/protobuf';
+import {creator, creatorForMap} from '@threema/protocol/protobuf/utils';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
 import type {u64} from '@threema/ts-utils/integer/u64';
 import {unwrap} from '@threema/ts-utils/meta/unwrap';
@@ -9,7 +10,6 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {createGroupCallId} from '../call-id.js';
 import {GroupCallError, type GroupCallErrorType} from '../error.js';
 import type {GroupCallStateKeyBox} from '../key.js';
-import {creator, creatorForMap} from '../protobuf.js';
 
 import {
     FetchSfuHttpClient,

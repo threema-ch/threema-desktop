@@ -1,12 +1,15 @@
-// Note: These helpers are protobuf-coupled, so `@threema/ts-utils` or
-// `@threema/protocol` are the wrong home for them. Until a second package
-// needs them, they are carried here as copies of the desktop originals.
+/**
+ * Construction, encoding and validation helpers for the generated protobuf bindings.
+ */
 
 import * as v from '@badrap/valita';
+import type {Bare, OpaquePick, TagOf, WeakOpaque} from '@threema/ts-utils/meta/newtype';
+import type Long from 'long';
+import {Writer} from 'protobufjs/minimal';
+
 import {common} from '@threema/protocol/protobuf';
 import type * as tag from '@threema/protocol/protobuf/tag';
-import type {Bare, TagOf, WeakOpaque} from '@threema/ts-utils/meta/newtype';
-import type Long from 'long';
+import type {LayerEncoder, u53} from '@threema/protocol/types';
 
 type ProtobufProperty<T> = T extends
     | boolean
@@ -29,10 +32,8 @@ type ProtobufProperties<T> = {
  * Protobuf-compatible constructor.
  */
 export interface ProtobufConstructor {
-    // Note: The writer parameter is widened compared to the desktop original so that this package
-    // does not have to depend on protobufjs for a type it never names.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    encode: (message: any, ...rest: any[]) => unknown;
+    encode: (message: any, writer?: Writer) => Writer;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     new (properties: any, ...rest: never[]): any;
 }
@@ -77,6 +78,93 @@ export type ProtobufMapInstanceOf<TProto extends ProtobufConstructor> = WeakOpaq
     Record<string, ProtobufInstanceOf<TProto>>,
     TagOf<ProtobufEncodableOf<TProto>>
 >;
+
+function createInPlaceWriter(array: Uint8Array): Writer {
+    class InPlaceWriter extends Writer {
+        /**
+         * Creates a view on top of the underlying array for the specified size.
+         *
+         * @param size Requested buffer size.
+         * @returns The underlying buffer view.
+         * @throws {Error} in case the underlying buffer is too small.
+         */
+        public static override alloc(size: u53): Uint8Array {
+            if (size > array.byteLength) {
+                throw new Error(
+                    `Underlying buffer too small for protobuf message of length ${size}`,
+                );
+            }
+            return array.subarray(0, size);
+        }
+    }
+    return new InPlaceWriter();
+}
+
+/**
+ * Creates an encoder for a protobuf message and binds the protobuf's message data.
+ *
+ * This encoder type allows to request the byte length of the resulting message. Note that even
+ * though the encoded data is cached, this **may** be an expensive operation. Encoding directly into
+ * a large buffer is preferred.
+ *
+ * @param protobuf Protobuf message to be encoded.
+ * @param data Protobuf message instance or property tuple.
+ * @returns An encoder.
+ */
+export function encoder<TProto extends ProtobufConstructor>(
+    protobuf: TProto,
+    data: ProtobufInstanceOf<TProto> | EntireProtobufPropertiesOf<TProto>,
+): LayerEncoder<ProtobufEncodableOf<TProto>> {
+    let encoded: Uint8Array | undefined;
+    function encode(array: Uint8Array | undefined): Uint8Array {
+        if (array === undefined) {
+            // Check if we calculcated the byte length before. If so, we just return the same
+            // temporary buffer again.
+            if (encoded !== undefined) {
+                return encoded;
+            }
+
+            // We never calculcated the byte length, so we encode the data into a temporary buffer.
+            encoded = protobuf.encode(data).finish();
+            return encoded;
+        }
+
+        // Check if we calculcated the byte length before. If so, we need to copy the data from
+        // the temporary buffer and return the written subarray.
+        if (encoded !== undefined) {
+            array.set(encoded);
+            return array.subarray(0, encoded.byteLength);
+        }
+
+        // We never calculcated the byte length, so we encode the data directly into the final
+        // buffer.
+        return protobuf.encode(data, createInPlaceWriter(array)).finish();
+    }
+
+    return {
+        byteLength: () => encode(undefined).byteLength,
+        encode,
+    } as LayerEncoder<ProtobufEncodableOf<TProto>>;
+}
+
+/**
+ * Creates a byte encoder for a protobuf message and binds the protobuf's message data.
+ *
+ * Prefer this over {@link encoder} if you just need a {@link ByteEncoder} and not a
+ * {@link ByteLengthEncoder}.
+ *
+ * @param protobuf Protobuf message to be encoded.
+ * @param data Protobuf message instance or property tuple.
+ * @returns A byte encoder.
+ */
+export function byteEncoder<TProto extends ProtobufConstructor>(
+    protobuf: TProto,
+    data: ProtobufInstanceOf<TProto> | EntireProtobufPropertiesOf<TProto>,
+): OpaquePick<LayerEncoder<ProtobufEncodableOf<TProto>>, 'encode'> {
+    return {
+        encode: (array) => protobuf.encode(data, createInPlaceWriter(array)).finish(),
+    } as OpaquePick<LayerEncoder<ProtobufEncodableOf<TProto>>, 'encode'>;
+}
 
 /**
  * Validate input data for a protobuf message and construct it.

@@ -4,6 +4,7 @@
 
 import {CREATE_BUFFER_TOKEN} from '@threema/crypto';
 import {group_call} from '@threema/protocol/protobuf';
+import {creator} from '@threema/protocol/protobuf/utils';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
 import {ensureArrayBufferBackedView} from '@threema/ts-utils/byte/array-buffer-backed-view';
 import type {u53} from '@threema/ts-utils/integer/u53';
@@ -16,7 +17,6 @@ import type {DtlsFingerprint} from '@threema/webrtc/sdp';
 import type {GroupCallId} from '../call-id.js';
 import {GroupCallError} from '../error.js';
 import type {GroupCallStateKeyBox} from '../key.js';
-import {creator} from '../protobuf.js';
 import {
     CALL_STATE_SNAPSHOT_SCHEMA,
     JOIN_RESPONSE_SCHEMA,

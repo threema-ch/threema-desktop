@@ -22,8 +22,7 @@
     "@threema/domain": "workspace:*",
     "@threema/protocol": "workspace:*",
     "@threema/ts-utils": "workspace:*",
-    "@threema/webrtc": "workspace:*",
-    "long": "catalog:"
+    "@threema/webrtc": "workspace:*"
   },
   "devDependencies": {
     "@threema/eslint-config": "workspace:*",

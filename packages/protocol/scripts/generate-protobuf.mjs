@@ -82,7 +82,7 @@ checkoutCommit(protocolsDir, commitHash);
 process.chdir(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'));
 
 // Protocol layer
-const outdir = 'src/protobuf';
+const outdir = 'src/protobuf/js';
 fs.mkdirSync(outdir, {recursive: true});
 const outfile = path.join(outdir, 'index.js');
 run('node_modules/.bin/pbjs', [
