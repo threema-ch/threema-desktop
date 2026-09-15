@@ -469,6 +469,9 @@ importers:
       '@threema/dom':
         specifier: workspace:*
         version: link:../../packages/dom
+      '@threema/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       '@threema/libthreema-wasm':
         specifier: workspace:*
         version: link:../../packages/libthreema-wasm
@@ -799,6 +802,10 @@ importers:
         version: 4.1.10(@types/node@24.12.4)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-istanbul@4.1.10)(vite@7.3.6(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.31.1)(sass@1.77.8))
 
   packages/domain:
+    dependencies:
+      '@threema/ts-utils':
+        specifier: workspace:*
+        version: link:../ts-utils
     devDependencies:
       '@threema/eslint-config':
         specifier: workspace:*
@@ -806,9 +813,9 @@ importers:
       '@threema/ts-config':
         specifier: workspace:*
         version: link:../ts-config
-      '@threema/ts-utils':
-        specifier: workspace:*
-        version: link:../ts-utils
+      '@vitest/coverage-istanbul':
+        specifier: 'catalog:'
+        version: 4.1.10(supports-color@8.1.1)(vitest@4.1.10)
       eslint:
         specifier: 'catalog:'
         version: 9.34.0(jiti@2.7.0)(supports-color@8.1.1)

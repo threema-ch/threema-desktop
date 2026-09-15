@@ -1,4 +1,5 @@
 import {wrapRawKey, type ReadonlyRawKey} from '@threema/crypto';
+import type {IdentityString} from '@threema/domain';
 import type {NonceScope} from '@threema/protocol/enum';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
 import {UTF8} from '@threema/ts-utils/codec/utf8';
@@ -83,60 +84,19 @@ export function ensureBaseUrl(
     return url as BaseUrl;
 }
 
-/**
- * The client's Threema ID as a string.
- *
- * See {@link IDENTITY_STRING_RE} for its pattern.
- *
- */
-export type IdentityString = WeakOpaque<string, {readonly IdentityString: unique symbol}>;
-
-/**
- * Regular expression for {@link IdentityString}.
- *
- * Note: This is not 100% accurate since some characters and numbers are disallowed. But it's
- *       accurate enough for our purposes.
- */
-const IDENTITY_STRING_RE = /^[A-Z0-9*]{1}[A-Z0-9]{7}$/u;
-
-/**
- * Type guard for {@link IdentityString}.
- */
-export function isIdentityString(identity: unknown): identity is IdentityString {
-    return typeof identity === 'string' && IDENTITY_STRING_RE.test(identity);
-}
-
-/**
- * Ensure input is a valid {@link IdentityString}.
- */
-export function ensureIdentityString(identity: unknown): IdentityString {
-    if (!isIdentityString(identity)) {
-        throw new Error(`Not a valid Threema ID: ${identity}`);
-    }
-    return identity;
-}
-
-/**
- * The nickname of a user, guaranteed to be non-empty.
- */
-export type Nickname = WeakOpaque<string, {readonly Nickname: unique symbol}>;
-
-/**
- * Type guard for {@link Nickname}.
- */
-export function isNickname(nickname: unknown): nickname is Nickname {
-    return typeof nickname === 'string' && nickname.length > 0;
-}
-
-/**
- * Ensure input is a valid {@link Nickname}.
- */
-export function ensureNickname(nickname: string): Nickname {
-    if (!isNickname(nickname)) {
-        throw new Error(`Not a valid nickname: '${nickname}'`);
-    }
-    return nickname;
-}
+// Note: The Threema ID and the nickname live in `@threema/domain` so that the shared call protocol
+// schemas can decode them without depending on this app. They are re-exported here to keep the
+// existing import sites working.
+//
+// TODO(DESK-2248): Remove re-exports in favor of updating the changed imports.
+export {
+    ensureIdentityString,
+    ensureNickname,
+    isIdentityString,
+    isNickname,
+    type IdentityString,
+    type Nickname,
+} from '@threema/domain';
 
 export type DeviceName = WeakOpaque<string, {readonly deviceName: unique symbol}>;
 

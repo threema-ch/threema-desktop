@@ -9,5 +9,20 @@ export default defineConfig(
         },
     }),
 
-    globalIgnores(['.turbo/', 'node_modules/']),
+    globalIgnores(['.turbo/', 'coverage/', 'node_modules/']),
+
+    // Allow devDependencies in test and config files.
+    {
+        files: ['**/*.test.ts', 'vitest.config.ts'],
+        rules: {
+            'import/no-extraneous-dependencies': [
+                'error',
+                {
+                    devDependencies: true,
+                    packageDir: import.meta.dirname,
+                },
+            ],
+            'import/no-unassigned-import': 'off',
+        },
+    },
 );

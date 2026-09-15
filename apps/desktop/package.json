@@ -64,6 +64,7 @@
     "@threema/compose-area": "~0.4.6",
     "@threema/crypto": "workspace:*",
     "@threema/dom": "workspace:*",
+    "@threema/domain": "workspace:*",
     "@threema/libthreema-wasm": "workspace:*",
     "@threema/protocol": "workspace:*",
     "@threema/threema-markup": "1.1.0",

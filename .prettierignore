@@ -35,6 +35,9 @@ build
 # Package: `packages/dom`
 /packages/dom/coverage/
 
+# Package: `packages/domain`
+/packages/domain/coverage/
+
 # Package: `packages/safe-enums`
 /packages/safe-enums/coverage/
 # Contains schema fixture whose import specifier is deliberately not a string literal, which
