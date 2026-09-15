@@ -70,6 +70,7 @@ structure.
 ├── docs/                                  # Developer documentation (mdbook)
 ├── packages/                              # Shared packages
 │   ├── branding/                          # Threema brand assets and design tokens
+│   ├── call/                              # Platform-neutral call logic and primitives
 │   ├── crypto/                            # Platform-neutral crypto primitives (keys, boxes, NaCl backend)
 │   ├── dom/                               # Browser/DOM utilities
 │   ├── domain/                            # Threema domain logic and types (e.g. Threema ID)
@@ -287,8 +288,6 @@ Some code is generated and should NOT be modified manually (usually stated at th
 
 - `src/common/enum/index.ts`: Generated from `src/enum/schema.ts` via
   `pnpm run generate:desktop:safe-enums`.
-- `src/common/network/protobuf/`: Generated from protobuf definitions.
-- `src/common/network/structbuf/`: Generated from structbuf definitions (except `utils.ts`).
 - `packages/protocol/src/enum/index.ts`: Generated from `packages/protocol/src/enum/schema.ts` via
   `pnpm run generate:protocol:safe-enums`. Exposed as `@threema/protocol/enum` and holds the enums
   whose values are defined by the Threema protocol or appear on the wire.
