@@ -3,9 +3,32 @@
 // that needs WebWorker APIs is available through the `@threema/call/worker` entry point.
 
 export {
+    createGroupCallId,
+    deriveGroupCallId,
+    type GroupCallId,
+    type GroupCallIdProperties,
+    type GroupCallIdValue,
+} from './call-id.js';
+
+export {
+    CALL_PERSONAL,
+    deriveGroupCallKeys,
+    ensureRawGroupCallKeyHash,
+    GROUP_CALL_KEY_LENGTH,
+    type GroupCallHandshakeKeyBox,
+    type GroupCallKeys,
+    type GroupCallStateKeyBox,
+    type RawGroupCallKey,
+    type RawGroupCallKeyHash,
+    wrapRawGroupCallKey,
+} from './key.js';
+
+export {
     ensureParticipantId,
     getMids,
     isParticipantId,
     MIDS_MAX,
     type ParticipantId,
 } from './participant.js';
+
+export {SfuSupportedFeatures, type SfuSupportedFeaturesInterface} from './sfu.js';

@@ -1,17 +1,16 @@
 import {
-    blake2bHash,
-    deriveKey,
-    wrapRawKey,
-    type RawKey,
-    type ReadonlyRawKey,
-    type UnwrappedRawKey,
-} from '@threema/crypto';
-import {createHash, PERSONALBYTES, SALTBYTES} from '@threema/crypto/blake2b/implementation';
-import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
+    CALL_PERSONAL,
+    deriveGroupCallId,
+    deriveGroupCallKeys,
+    type GroupCallId,
+    type GroupCallKeys,
+    type RawGroupCallKeyHash,
+} from '@threema/call';
+import {wrapRawKey, type RawKey, type UnwrappedRawKey} from '@threema/crypto';
+import {createHash, SALTBYTES} from '@threema/crypto/blake2b/implementation';
 import {UTF8} from '@threema/ts-utils/codec/utf8';
-import {type u8, ensureU8} from '@threema/ts-utils/integer/u8';
+import type {u8} from '@threema/ts-utils/integer/u8';
 import {tag, type WeakOpaque} from '@threema/ts-utils/meta/newtype';
-import {u64ToBytesLe} from '@threema/ts-utils/number/u64-to-bytes-le';
 
 import type {ServicesForBackend} from '~/common/backend';
 import {
@@ -21,75 +20,31 @@ import {
     type NonceUnguardedScope,
     type PublicKey,
     type Cookie,
-    NACL_CONSTANTS,
 } from '~/common/crypto';
 import type {SharedBoxFactory} from '~/common/crypto/box';
 import type {GroupView} from '~/common/model';
 import {getIdentityString} from '~/common/model/contact';
-import {
-    type GroupCallId,
-    type ParticipantId,
-    type GroupCallBaseData,
-    createGroupCallId,
-} from '~/common/network/protocol/call/group-call';
+import type {ParticipantId, GroupCallBaseData} from '~/common/network/protocol/call/group-call';
 import type {ClientKey} from '~/common/network/types/keys';
 import type {RepeatedTuple, u64} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import type {ProxyMarked} from '~/common/utils/endpoint';
 
-type SecretBoxWithRandomNonce = CryptoBox<never, never, never, never, NonceUnguardedScope>;
-
-/**
- * Key length of a Group Call Ley (GCK) in bytes.
- */
-export const GROUP_CALL_KEY_LENGTH = 32;
-
-/**
- * A Group Call Key (GCK) (bytes). Must be exactly 32 bytes long.
- */
-export type RawGroupCallKey = WeakOpaque<
-    ReadonlyRawKey<typeof GROUP_CALL_KEY_LENGTH>,
-    {readonly RawGroupCallKey: unique symbol}
->;
-
-/**
- * Wrap a key into a {@link RawGroupCallKey}.
- *
- * @throws {CryptoError} in case the key is not 32 bytes long.
- */
-export function wrapRawGroupCallKey(key: Uint8Array): RawGroupCallKey {
-    return tag<RawGroupCallKey>(wrapRawKey(key, GROUP_CALL_KEY_LENGTH).asReadonly());
-}
-
-/**
- * Group Call Key Hash (GCKH) (bytes). Must be exactly 32 long.
- */
-export type RawGroupCallKeyHash = WeakOpaque<
-    ReadonlyUint8Array,
-    {readonly RawGroupCallKeyHash: unique symbol}
->;
-
-export function ensureRawGroupCallKeyHash(value: unknown): RawGroupCallKeyHash {
-    if (!(value instanceof Uint8Array)) {
-        throw new Error(`Expected GCKH, got '${typeof value}'`);
-    }
-    if (value.byteLength !== 32) {
-        throw new Error(`Array of length ${value.byteLength} is not a valid GCKH`);
-    }
-    return tag<RawGroupCallKeyHash>(value);
-}
+// TODO(DESK-2248): Remove re-exports in favor of updating the changed imports
+export {
+    ensureRawGroupCallKeyHash,
+    GROUP_CALL_KEY_LENGTH,
+    wrapRawGroupCallKey,
+    type RawGroupCallKey,
+    type RawGroupCallKeyHash,
+} from '@threema/call';
 
 /**
  * Group call key derivation collection based on GCK.
  */
-export interface GroupCallKeyDerivations {
+export interface GroupCallKeyDerivations extends GroupCallKeys {
     readonly callId: GroupCallId;
-    readonly gckh: RawGroupCallKeyHash;
-    readonly gchk: WeakOpaque<SecretBoxWithRandomNonce, {readonly GchkBox: unique symbol}>;
-    readonly gcsk: WeakOpaque<SecretBoxWithRandomNonce, {readonly GcskBox: unique symbol}>;
 }
-
-const PERSONAL = UTF8.encodeFullyInto('3ma-call', new Uint8Array(PERSONALBYTES)).array;
 
 /**
  * Derive all group call properties.
@@ -99,41 +54,16 @@ export function deriveGroupCallProperties(
     group: GroupView,
     data: Omit<GroupCallBaseData, 'group' | 'derivations'>,
 ): GroupCallKeyDerivations {
-    const derivations: {[K in keyof GroupCallKeyDerivations]: GroupCallKeyDerivations[K]} = {
-        callId: createGroupCallId(
-            blake2bHash(32, undefined, {personal: PERSONAL, salt: 'i'})
-                .update(UTF8.encode(getIdentityString(services.device, group.creator)))
-                .update(u64ToBytesLe(group.groupId))
-                .update(Uint8Array.of(ensureU8(data.protocolVersion)))
-                .update(data.gck.unwrap())
-                .update(UTF8.encode(data.sfuBaseUrl.raw))
-                .digest(),
-        ),
-        gckh: tag<GroupCallKeyDerivations['gckh']>(
-            blake2bHash(32, data.gck, {personal: PERSONAL, salt: '#'}).digest(),
-        ),
-        gchk: tag<GroupCallKeyDerivations['gchk']>(
-            services.crypto.getSecretBox(
-                deriveKey(NACL_CONSTANTS.KEY_LENGTH, data.gck, {
-                    personal: PERSONAL,
-                    salt: 'h',
-                }).asReadonly(),
-                NONCE_UNGUARDED_SCOPE,
-                undefined,
-            ),
-        ),
-        gcsk: tag<GroupCallKeyDerivations['gcsk']>(
-            services.crypto.getSecretBox(
-                deriveKey(NACL_CONSTANTS.KEY_LENGTH, data.gck, {
-                    personal: PERSONAL,
-                    salt: 's',
-                }).asReadonly(),
-                NONCE_UNGUARDED_SCOPE,
-                undefined,
-            ),
-        ),
+    return {
+        callId: deriveGroupCallId({
+            creatorIdentity: getIdentityString(services.device, group.creator),
+            groupId: group.groupId,
+            protocolVersion: data.protocolVersion,
+            gck: data.gck,
+            sfuBaseUrl: data.sfuBaseUrl.raw,
+        }),
+        ...deriveGroupCallKeys(services.crypto, data.gck),
     };
-    return derivations;
 }
 
 /**
@@ -150,7 +80,7 @@ export function deriveGroupCallNormalHandshakeAuthKey(
         services.crypto.getSecretBox(
             ck
                 .deriveSharedKey(32, contactPublicKey, {
-                    personal: PERSONAL,
+                    personal: CALL_PERSONAL,
                     salt: 'nha',
                     input: gckh,
                 })
@@ -291,7 +221,7 @@ export function alignMediaKeyStateWith(
         // PCMK' = BLAKE2b(key=PCMK, salt="m'", personal='3ma-call')
         //
         // CAUTION: This overwrites the PCMK in-place.
-        createHash(PCMK_LENGTH, state.pcmk, PCMK_SALT, PERSONAL).digest(state.pcmk);
+        createHash(PCMK_LENGTH, state.pcmk, PCMK_SALT, CALL_PERSONAL).digest(state.pcmk);
     }
     return {
         epoch: current.epoch,

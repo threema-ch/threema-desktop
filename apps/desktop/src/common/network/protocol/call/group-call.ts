@@ -1,9 +1,7 @@
-import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
+import type {GroupCallIdValue} from '@threema/call';
 import {byteEquals} from '@threema/ts-utils/byte/byte-equals';
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {AsyncLock} from '@threema/ts-utils/lock/async-lock';
-import {tag, type WeakOpaque} from '@threema/ts-utils/meta/newtype';
 import {clamp} from '@threema/ts-utils/number/clamp';
 import {ResolvablePromise} from '@threema/ts-utils/promise/resolvable-promise';
 import {TIMER} from '@threema/ts-utils/timer/global-timer';
@@ -38,12 +36,24 @@ import {
     type SfuToken,
 } from '~/common/network/protocol/directory';
 import {ensureBaseUrl, type BaseUrl, type IdentityString} from '~/common/network/types';
-import type {u16} from '~/common/types';
 import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, registerErrorTransferHandler} from '~/common/utils/endpoint';
 import {AbortRaiser, type AbortListener} from '~/common/utils/signal';
 import {type IQueryableStore, WritableStore} from '~/common/utils/store';
-import {MIDS_MAX, type AnyGroupCallContextAbort, GroupCall} from '~/common/webrtc/group-call';
+import {type AnyGroupCallContextAbort, GroupCall} from '~/common/webrtc/group-call';
+
+// Note: The Group Call ID and the Participant ID live in `@threema/call` so that they can be shared
+// with other apps. They are re-exported here to keep the existing import sites working.
+//
+// TODO(DESK-2248): Remove re-exports in favor of updating the changed imports.
+export {
+    createGroupCallId,
+    ensureParticipantId,
+    isParticipantId,
+    type GroupCallId,
+    type GroupCallIdValue,
+    type ParticipantId,
+} from '@threema/call';
 
 export type ServicesForGroupCall = Pick<
     ServicesForModel,
@@ -91,39 +101,6 @@ export class GroupCallError extends BaseError {
     ) {
         super(message, options);
     }
-}
-
-/** Group Call ID value in hex. */
-export type GroupCallIdValue = WeakOpaque<string, {readonly GroupCallIdValue: unique symbol}>;
-
-/** A valid Group Call ID is the output of Blake2b hash with 32 bytes length. */
-export interface GroupCallId {
-    readonly bytes: ReadonlyUint8Array;
-    readonly id: GroupCallIdValue;
-    readonly shortened: string;
-}
-export function createGroupCallId(bytes: ReadonlyUint8Array): GroupCallId {
-    if (bytes.byteLength !== 32 || bytes.every((byte) => byte === 0)) {
-        throw Error('Not a valid group call id');
-    }
-    const id = tag<GroupCallIdValue>(bytesToHex(bytes, ''));
-    return {
-        bytes,
-        id,
-        shortened: `${id.slice(0, 4)}..${id.slice(-4)}`,
-    };
-}
-
-/** A valid Participant ID is [0, 790[ due to the way we map MIDs. */
-export type ParticipantId = WeakOpaque<u16, {readonly ParticipantId: unique symbol}>;
-export function isParticipantId(value: u53): value is ParticipantId {
-    return value >= 0 && value < MIDS_MAX;
-}
-export function ensureParticipantId(value: u53): ParticipantId {
-    if (!isParticipantId(value)) {
-        throw Error(`Not a valid participant id: '${value}'`);
-    }
-    return value;
 }
 
 /**

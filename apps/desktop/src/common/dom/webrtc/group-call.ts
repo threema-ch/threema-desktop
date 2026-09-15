@@ -1,3 +1,4 @@
+import {getMids} from '@threema/call';
 import {hexWithSeparatorToBytes} from '@threema/ts-utils/byte/hex-with-separator-to-bytes';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
@@ -32,7 +33,6 @@ import {
     type GroupCallContext,
     type AnyGroupCallContextAbort,
     DATA_CHANNEL_PARAMETERS,
-    getMids,
     CAMERA_ENCODINGS,
     type GroupCallConnectionHandle,
     SCREEN_ENCODINGS,

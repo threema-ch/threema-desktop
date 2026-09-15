@@ -460,6 +460,9 @@ importers:
       '@threema/branding':
         specifier: workspace:*
         version: link:../../packages/branding
+      '@threema/call':
+        specifier: workspace:*
+        version: link:../../packages/call
       '@threema/compose-area':
         specifier: ~0.4.6
         version: 0.4.6
@@ -745,6 +748,9 @@ importers:
       '@threema/crypto':
         specifier: workspace:*
         version: link:../crypto
+      '@threema/domain':
+        specifier: workspace:*
+        version: link:../domain
       '@threema/protocol':
         specifier: workspace:*
         version: link:../protocol

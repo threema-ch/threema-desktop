@@ -1,5 +1,5 @@
-import {group_call} from '~/common/network/protobuf';
-import type {u64} from '~/common/types';
+import {group_call} from '@threema/protocol/protobuf';
+import type {u64} from '@threema/ts-utils/integer/u64';
 
 /**
  * Supported group call features as defined in the group call protocol.

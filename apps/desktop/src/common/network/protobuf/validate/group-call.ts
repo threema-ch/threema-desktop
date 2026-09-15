@@ -1,4 +1,5 @@
 import * as v from '@badrap/valita';
+import {ensureParticipantId, SfuSupportedFeatures} from '@threema/call';
 import {wrapRawKey} from '@threema/crypto';
 import {group_call} from '@threema/protocol/protobuf';
 import {ensureU53} from '@threema/ts-utils/integer/u53';
@@ -23,8 +24,6 @@ import {
 import {validator} from '~/common/network/protobuf/utils';
 import * as Unit from '~/common/network/protobuf/validate/common/unit';
 import {NULL_OR_UNDEFINED_SCHEMA} from '~/common/network/protobuf/validate/helpers';
-import {SfuSupportedFeatures} from '~/common/network/protocol/call/flags';
-import {ensureParticipantId} from '~/common/network/protocol/call/group-call';
 import {ensureIdentityString, ensureNickname} from '~/common/network/types';
 import {ensureU16} from '~/common/types';
 import {assert} from '~/common/utils/assert';

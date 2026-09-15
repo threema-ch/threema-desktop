@@ -1,3 +1,4 @@
+import type {SfuSupportedFeatures} from '@threema/call';
 import type {u53} from '@threema/ts-utils/integer/u53';
 
 import type {DbGroupUid} from '~/common/db';
@@ -6,7 +7,6 @@ import type {Model} from '~/common/model/types/common';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {ModelStore} from '~/common/model/utils/model-store';
 import type {Call} from '~/common/network/protocol/call';
-import type {SfuSupportedFeatures} from '~/common/network/protocol/call/flags';
 import type {
     ServicesForGroupCall,
     GroupCallBaseData,

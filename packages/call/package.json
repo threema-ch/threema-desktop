@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@threema/crypto": "workspace:*",
+    "@threema/domain": "workspace:*",
     "@threema/protocol": "workspace:*",
     "@threema/ts-utils": "workspace:*",
     "@threema/webrtc": "workspace:*"

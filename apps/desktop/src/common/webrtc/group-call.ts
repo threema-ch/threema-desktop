@@ -1,3 +1,4 @@
+import {getMids} from '@threema/call';
 import {wrapRawKey} from '@threema/crypto';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
 import {u8aToBase64} from '@threema/ts-utils/base64/u8a-to-base64';
@@ -16,13 +17,12 @@ import {SequenceNumberU53} from '@threema/ts-utils/sequence-number/sequence-numb
 import {SequenceNumberU64} from '@threema/ts-utils/sequence-number/sequence-number-u64';
 import {TIMER} from '@threema/ts-utils/timer/global-timer';
 import type {TimerCanceller} from '@threema/ts-utils/timer/timer-canceller';
-import {
-    type DtlsFingerprint,
-    type IcePassword,
-    type IceUsernameFragment,
-    type RtpHeaderExtensionId,
-    type RtpHeaderExtensionIds,
-    SDP_TOKEN_RANGE,
+import type {
+    DtlsFingerprint,
+    IcePassword,
+    IceUsernameFragment,
+    RtpHeaderExtensionId,
+    RtpHeaderExtensionIds,
 } from '@threema/webrtc/sdp';
 
 import {
@@ -86,46 +86,6 @@ import {
 import {AbortRaiser, type AbortListener} from '~/common/utils/signal';
 import {WritableStore, type IQueryableStore, type ReadableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-
-const MIDS = [
-    ...SDP_TOKEN_RANGE,
-    ...SDP_TOKEN_RANGE.map((left) => SDP_TOKEN_RANGE.map((right) => `${left}${right}`)).flat(),
-] as const;
-const MIDS_STEP = 8;
-export const MIDS_MAX = MIDS.length / MIDS_STEP;
-assert(Number.isInteger(MIDS_MAX));
-
-/**
- * MIDs are technically transmitted as bytes but **THANKS TO SDP** we are actually limited to what
- * is accepted as an SDP token. This means that if we want to only transfer 1 byte, out of 256
- * possible MIDs we can only use 79. Considering that we need multiple media lines for each
- * participant, that won't be enough, so we need to expand to one and two bytes. This means we have
- * a total amount of 79 + 79^2 = 6320 MIDs. In order to leave some room for future media lines (e.g.
- * screenshare), we slice these MIDs into partitions of 8 MIDs per participant, so we can
- * theoretically serve 790 participants in a single call.
- *
- * The MID permutations **must** be generated in exactly the same order on all clients to get the
- * correct MIDs for a participant.
- */
-export function getMids(participantId: ParticipantId): {
-    readonly microphone: string;
-    readonly camera: string;
-    readonly screen: string;
-    readonly data: string;
-} {
-    const offset = participantId * MIDS_STEP;
-    const mids = MIDS.slice(offset, offset + MIDS_STEP);
-    if (mids.length !== MIDS_STEP) {
-        throw new Error(`Unable to infer MIDs from participant id '${participantId}'`);
-    }
-    const [microphone, camera, screen, , , , , data] = mids;
-    return {
-        microphone: unwrap(microphone),
-        camera: unwrap(camera),
-        screen: unwrap(screen),
-        data: unwrap(data),
-    };
-}
 
 /**
  * IMPORTANT: These parameters are hard-coded and MUST be kept in sync with the SFU.

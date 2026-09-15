@@ -1,4 +1,5 @@
 import * as v from '@badrap/valita';
+import {CALL_PERSONAL} from '@threema/call';
 import {deriveKey} from '@threema/crypto';
 import {PERSONALBYTES} from '@threema/crypto/blake2b/implementation';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
@@ -47,7 +48,6 @@ export type ImportedParticipantCallMediaFrameKey = WeakOpaque<
     {readonly ImportedParticipantCallMediaFrameKey: unique symbol}
 >;
 
-const PERSONAL = UTF8.encodeFullyInto('3ma-call', new Uint8Array(PERSONALBYTES)).array;
 const PCMFK_SALT = UTF8.encodeFullyInto('mf', new Uint8Array(PERSONALBYTES)).array;
 
 /**
@@ -110,7 +110,7 @@ export class WorkerParticipantCallMediaKey {
         if (state.pcmfk === undefined) {
             // PCMFK = BLAKE2b(key=PCMK, salt='mf', personal='3ma-call', input=GCKH)
             raw = deriveKey(32, state.state.pcmk.asReadonly(), {
-                personal: PERSONAL,
+                personal: CALL_PERSONAL,
                 salt: PCMFK_SALT,
                 input: this._gckh,
             });
