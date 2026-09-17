@@ -55,4 +55,20 @@ export {
     type SharedKeyDeriver,
 } from './participant-channel.js';
 
+export {
+    CALL_STATE_SNAPSHOT_SCHEMA,
+    JOIN_RESPONSE_SCHEMA,
+    P2P_ENVELOPE_SCHEMA,
+    P2P_HANDSHAKE_AUTH_ENVELOPE_SCHEMA,
+    P2P_HANDSHAKE_HELLO_ENVELOPE_SCHEMA,
+    PEEK_RESPONSE_SCHEMA,
+    S2P_ENVELOPE_SCHEMA,
+    type JoinResponse,
+    type P2pOuterEnvelope,
+    type PeekCallStateSnapshot,
+    type PeekResponse,
+    type S2pEnvelope,
+    type S2pHello,
+} from './schema.js';
+
 export {SfuSupportedFeatures, type SfuSupportedFeaturesInterface} from './sfu.js';

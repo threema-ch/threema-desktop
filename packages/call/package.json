@@ -17,11 +17,13 @@
     "test:vitest": "vitest run --coverage"
   },
   "dependencies": {
+    "@badrap/valita": "catalog:",
     "@threema/crypto": "workspace:*",
     "@threema/domain": "workspace:*",
     "@threema/protocol": "workspace:*",
     "@threema/ts-utils": "workspace:*",
-    "@threema/webrtc": "workspace:*"
+    "@threema/webrtc": "workspace:*",
+    "long": "catalog:"
   },
   "devDependencies": {
     "@threema/eslint-config": "workspace:*",

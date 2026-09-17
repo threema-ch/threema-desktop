@@ -1,0 +1,156 @@
+// Note: These helpers are protobuf-coupled, so `@threema/ts-utils` or
+// `@threema/protocol` are the wrong home for them. Until a second package
+// needs them, they are carried here as copies of the desktop originals.
+
+import * as v from '@badrap/valita';
+import {common} from '@threema/protocol/protobuf';
+import type * as tag from '@threema/protocol/protobuf/tag';
+import type {Bare, TagOf, WeakOpaque} from '@threema/ts-utils/meta/newtype';
+import type Long from 'long';
+
+type ProtobufProperty<T> = T extends
+    | boolean
+    | string
+    | number
+    | Long
+    | Uint8Array
+    | readonly unknown[]
+    ? T
+    : WeakOpaque<T, tag.ProtobufMessage> | undefined;
+
+/**
+ * Ensures that the provided properties shallowly matches the protobuf message interface.
+ */
+type ProtobufProperties<T> = {
+    [K in keyof Required<T>]: ProtobufProperty<T[K]>;
+};
+
+/**
+ * Protobuf-compatible constructor.
+ */
+export interface ProtobufConstructor {
+    // Note: The writer parameter is widened compared to the desktop original so that this package
+    // does not have to depend on protobufjs for a type it never names.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    encode: (message: any, ...rest: any[]) => unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    new (properties: any, ...rest: never[]): any;
+}
+
+/**
+ * Inferred encodable of a {@link ProtobufConstructor}.
+ */
+type ProtobufEncodableOf<T extends ProtobufConstructor> = Parameters<T['encode']>[0];
+
+/**
+ * Ensures that all properties of a protobuf message are declared explicitly, even if they may be
+ * undefined.
+ *
+ * Note: This intentionally does not match tagged protobuf message instances.
+ */
+type EntireProtobufPropertiesOf<TProto extends ProtobufConstructor> = ProtobufProperties<
+    Bare<ProtobufEncodableOf<TProto>>
+>;
+
+/**
+ * Tagged instance of a protobuf message where all properties have been explicitly defined.
+ */
+export type ProtobufInstanceOf<TProto extends ProtobufConstructor> = WeakOpaque<
+    InstanceType<TProto>,
+    TagOf<ProtobufEncodableOf<TProto>>
+>;
+
+/**
+ * Tagged instance of a protobuf repeated message where all items have been explicitly defined.
+ */
+export type ProtobufArrayInstanceOf<TProto extends ProtobufConstructor> = WeakOpaque<
+    InstanceType<TProto>[],
+    TagOf<ProtobufEncodableOf<TProto>>
+>;
+
+/**
+ * Tagged instance of a protobuf map where all properties have been explicitly defined.
+ *
+ * Note: Because protobufjs is a quality product, all keys are in a string representation.
+ */
+export type ProtobufMapInstanceOf<TProto extends ProtobufConstructor> = WeakOpaque<
+    Record<string, ProtobufInstanceOf<TProto>>,
+    TagOf<ProtobufEncodableOf<TProto>>
+>;
+
+/**
+ * Validate input data for a protobuf message and construct it.
+ *
+ * This prevents property mismatches due to typos or when a property has been renamed in the
+ * protocol.
+ *
+ * IMPORTANT: This only inspects the provided object on the first level!
+ */
+export function creator<TProto extends ProtobufConstructor>(
+    protobuf: TProto,
+    data: readonly EntireProtobufPropertiesOf<TProto>[],
+): ProtobufArrayInstanceOf<TProto>;
+export function creator<TProto extends ProtobufConstructor>(
+    protobuf: TProto,
+    data: EntireProtobufPropertiesOf<TProto>,
+): ProtobufInstanceOf<TProto>;
+export function creator<TProto extends ProtobufConstructor>(
+    protobuf: TProto,
+    data: unknown,
+): unknown {
+    return data;
+}
+
+/**
+ * Validate input data for a protobuf map and construct it.
+ *
+ * This prevents property mismatches due to typos or when a property has been renamed in the
+ * protocol.
+ *
+ * IMPORTANT: This only inspects the provided object on the first level!
+ */
+export function creatorForMap<TProto extends ProtobufConstructor>(
+    protobuf: TProto,
+    map:
+        | readonly [string, ProtobufInstanceOf<TProto>][]
+        | ReadonlyMap<string, ProtobufInstanceOf<TProto>>,
+): ProtobufMapInstanceOf<TProto> {
+    return Object.fromEntries(map) as ProtobufMapInstanceOf<TProto>;
+}
+
+/**
+ * Create a valita object schema for a protobuf message, guaranteeing that the schema parses all
+ * properties available on the protobuf message.
+ *
+ * This prevents property mismatches due to typos or when a property has been renamed in the
+ * protocol.
+ *
+ * IMPORTANT: This only inspects the provided object on the first level!
+ */
+export function validator<
+    TProto extends ProtobufConstructor,
+    TSchema extends
+        | v.ObjectType<{
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              [K in keyof Required<NonNullable<ConstructorParameters<TProto>[0]>>]: any;
+          }>
+        | v.Type<{
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              [K in keyof Required<NonNullable<ConstructorParameters<TProto>[0]>>]: any;
+          }>
+        | {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              [K in keyof Required<NonNullable<ConstructorParameters<TProto>[0]>>]: any;
+          },
+>(protobuf: TProto, schema: TSchema): TSchema {
+    return schema;
+}
+
+/**
+ * Matches a protobuf message that is absent, regardless of whether protobufjs represents it as
+ * `null` or as `undefined`.
+ */
+export const NULL_OR_UNDEFINED_SCHEMA = v.union(v.null(), v.undefined()).map(() => undefined);
+
+/** Validates {@link common.Unit}. */
+export const UNIT_SCHEMA = validator(common.Unit, v.object({}));

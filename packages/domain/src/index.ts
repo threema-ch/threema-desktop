@@ -9,4 +9,3 @@ export {
     type IdentityString,
     type Nickname,
 } from './types/identity.js';
-export type {ThreemaId} from './types/threema-id.js';

@@ -745,6 +745,9 @@ importers:
 
   packages/call:
     dependencies:
+      '@badrap/valita':
+        specifier: 'catalog:'
+        version: 0.4.6
       '@threema/crypto':
         specifier: workspace:*
         version: link:../crypto
@@ -760,6 +763,9 @@ importers:
       '@threema/webrtc':
         specifier: workspace:*
         version: link:../webrtc
+      long:
+        specifier: 'catalog:'
+        version: 5.3.2
     devDependencies:
       '@threema/eslint-config':
         specifier: workspace:*
