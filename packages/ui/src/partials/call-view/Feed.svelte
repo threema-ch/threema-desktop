@@ -533,7 +533,7 @@
     <!-- Footer -->
     <div class="row-span-1 row-start-3 flex items-center justify-between gap-2 p-2">
       <span
-        class="min-w-0 truncate rounded-full bg-black/50 px-2 py-1 text-xs/4.5 font-bold text-white"
+        class="flex min-w-0 items-center gap-1 rounded-full bg-black/50 px-2 py-1 text-xs/4.5 font-bold text-white"
         title={label}
       >
         {label}
