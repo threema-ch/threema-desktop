@@ -1,3 +1,4 @@
+import type {SfuPeekResult} from '@threema/call';
 import {FetchSfuHttpClient, type SfuCallData, type SfuHttpClient} from '@threema/call/worker';
 import type {DtlsFingerprint} from '@threema/webrtc/sdp';
 
@@ -5,7 +6,7 @@ import type {ServicesForBackend} from '~/common/backend';
 import type {JoinResponse} from '~/common/network/protobuf/validate/group-call';
 import type {GroupCallBaseData} from '~/common/network/protocol/call/group-call';
 import type {SfuToken} from '~/common/network/protocol/directory';
-import type {PeekResponse, SfuHttpBackend} from '~/common/network/protocol/sfu';
+import type {SfuHttpBackend} from '~/common/network/protocol/sfu';
 
 /**
  * Narrow a group call's base data down to the values the shared SFU HTTP client reads, i.e. drop the
@@ -31,7 +32,10 @@ export class FetchSfuHttpBackend implements SfuHttpBackend {
     }
 
     /** @inheritdoc */
-    public async peek(data: GroupCallBaseData, token: SfuToken): Promise<PeekResponse | undefined> {
+    public async peek(
+        data: GroupCallBaseData,
+        token: SfuToken,
+    ): Promise<SfuPeekResult | undefined> {
         return await this._client.peek(sfuCallData(data), token.sfuToken);
     }
 

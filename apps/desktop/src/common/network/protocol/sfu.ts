@@ -5,12 +5,6 @@ import type {JoinResponse} from '~/common/network/protobuf/validate/group-call';
 import type {GroupCallBaseData} from '~/common/network/protocol/call/group-call';
 import type {SfuToken} from '~/common/network/protocol/directory';
 
-// Note: The peek result lives in `@threema/call` because the shared SFU HTTP client returns it. It
-// is re-exported here to keep the existing import sites working.
-//
-// TODO(DESK-2248): Remove re-exports in favor of updating the changed imports.
-export type PeekResponse = SfuPeekResult;
-
 export interface SfuHttpBackend {
     /**
      * Peek a call on the SFU.
@@ -19,7 +13,7 @@ export interface SfuHttpBackend {
      *   call exists).
      * @throws {GroupCallError} if something went wrong.
      */
-    peek: (data: GroupCallBaseData, token: SfuToken) => Promise<PeekResponse | undefined>;
+    peek: (data: GroupCallBaseData, token: SfuToken) => Promise<SfuPeekResult | undefined>;
 
     /**
      * Join or create a call on the SFU.

@@ -6,6 +6,7 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
+import type {SfuPeekResult} from '@threema/call';
 import {wrapRawKey, type RawKey} from '@threema/crypto';
 import {TweetNaClBackend} from '@threema/crypto/tweetnacl';
 import {NonceScope} from '@threema/protocol/enum';
@@ -134,7 +135,7 @@ import {
 } from '~/common/network/protocol/directory';
 import type {D2mMessageFlags} from '~/common/network/protocol/flags';
 import {PersistentProtocolStateBackend} from '~/common/network/protocol/persistent-protocol-state';
-import type {PeekResponse, SfuHttpBackend} from '~/common/network/protocol/sfu';
+import type {SfuHttpBackend} from '~/common/network/protocol/sfu';
 import type {
     ActiveTaskCodecHandle,
     ServicesForTasks,
@@ -327,7 +328,10 @@ class TestDirectoryBackend implements DirectoryBackend {
 
 class TestSfuHttpBackend implements SfuHttpBackend {
     // eslint-disable-next-line @typescript-eslint/require-await
-    public async peek(data: GroupCallBaseData, token: SfuToken): Promise<PeekResponse | undefined> {
+    public async peek(
+        data: GroupCallBaseData,
+        token: SfuToken,
+    ): Promise<SfuPeekResult | undefined> {
         return {startedAt: new Date(), maxParticipants: 1337, participants: []};
     }
 
