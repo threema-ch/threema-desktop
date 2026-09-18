@@ -35,17 +35,23 @@ default:
           chown -R root:root "${CI_PROJECT_DIR}"
         fi
 
-# Workflow triggers:
-# - Run for tags, branches and merge requests.
-# - However, do not trigger a branch workflow when a MR is open. In that case, only run the MR
-#   workflow.
 workflow:
   rules:
-    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"
+    # Skip draft MR pipelines
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DRAFT == "true"
       when: never
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_TAG
+    # Always run on develop/stable (e.g. right after a merge lands there)
+    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "stable"
+    # Skip every other branch-triggered pipeline (push, web, schedule, api, etc.) -
+    # feature branches only run via their MR pipeline
     - if: $CI_COMMIT_BRANCH
+      when: never
+    # Non-draft MR pipeline
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    # Tags always run
+    - if: $CI_COMMIT_TAG
+    # Anything else don't run
+    - when: never
 
 # CI stages.
 stages:
