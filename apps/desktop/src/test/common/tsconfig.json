@@ -2,7 +2,7 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["esnext"],
-    "types": ["chai", "mocha"]
+    "types": ["@threema/ts-config/url", "chai", "mocha"]
   },
-  "include": ["../../common/url.d.ts", "../../common/vite-client.d.ts", "./chai.d.ts", "**/*.ts"]
+  "include": ["../../common/vite-client.d.ts", "./chai.d.ts", "**/*.ts"]
 }

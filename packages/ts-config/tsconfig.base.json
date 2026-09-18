@@ -5,7 +5,8 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "lib": ["ESNext"],
-    "types": [],
+    // Note: `URL` and `URLSearchParams` exist in every environment we target, so we add them here.
+    "types": ["@threema/ts-config/url"],
 
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

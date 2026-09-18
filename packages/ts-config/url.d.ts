@@ -3,8 +3,6 @@
 //
 // Subset of URL and URLSearchParams extracted from lib.dom.d.ts
 
-/* eslint-disable no-var, @typescript-eslint/no-restricted-types, @typescript-eslint/member-ordering, @typescript-eslint/naming-convention */
-
 /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/URLSearchParams) */
 interface URLSearchParams {
     /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/URLSearchParams/size) */
