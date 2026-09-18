@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import {ensureIdentityString, ensureNickname, isIdentityString, isNickname} from './identity.js';
+import {ensureIdentityString, isIdentityString} from './identity-string.js';
 
 describe('isIdentityString', () => {
     it.each(['ECHOECHO', '*THREEMA', '12345678', 'A1B2C3D4'])('accepts %o', (value) => {
@@ -31,29 +31,5 @@ describe('ensureIdentityString', () => {
     it('rejects an invalid Threema ID', () => {
         // Assert
         expect(() => ensureIdentityString('echoecho')).toThrow('Not a valid Threema ID: echoecho');
-    });
-});
-
-describe('isNickname', () => {
-    it('accepts a non-empty string', () => {
-        // Assert
-        expect(isNickname('Nick')).toBe(true);
-    });
-
-    it.each(['', 42, undefined])('rejects %o', (value) => {
-        // Assert
-        expect(isNickname(value)).toBe(false);
-    });
-});
-
-describe('ensureNickname', () => {
-    it('returns a valid nickname', () => {
-        // Assert
-        expect(ensureNickname('Nick')).toBe('Nick');
-    });
-
-    it('rejects an empty nickname', () => {
-        // Assert
-        expect(() => ensureNickname('')).toThrow("Not a valid nickname: ''");
     });
 });
