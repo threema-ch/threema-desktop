@@ -1,8 +1,9 @@
 // Note: This module lives below the package's worker entry point because the SFU HTTP client is
-// built on `fetch`, `AbortController` and `URL`, i.e. globals that only exist in a DOM or a
-// WebWorker context. The platform-neutral top-level entry point cannot even name them.
+// built on `fetch` and `AbortController`, i.e. globals that only exist in a DOM or a WebWorker
+// context. The platform-neutral top-level entry point cannot even name them.
 
 import {CREATE_BUFFER_TOKEN} from '@threema/crypto';
+import type {BaseUrl} from '@threema/domain';
 import {group_call} from '@threema/protocol/protobuf';
 import {creator} from '@threema/protocol/protobuf/utils';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
@@ -43,7 +44,7 @@ export interface SfuCallData {
     /** Call State Key box, used to decrypt the call state of a _peek_ response. */
     readonly gcsk: GroupCallStateKeyBox;
     /** SFU base URL to make _peek_ and _join_ calls to. */
-    readonly sfuBaseUrl: URL;
+    readonly sfuBaseUrl: BaseUrl;
     /** Protocol version used in the announcement. */
     readonly protocolVersion: u53;
 }
@@ -301,7 +302,7 @@ export class FetchSfuHttpClient implements SfuHttpClient {
 
     private async _fetch(
         path: string,
-        base: URL,
+        base: BaseUrl,
         token: string,
         init: RequestInit,
     ): Promise<Response> {

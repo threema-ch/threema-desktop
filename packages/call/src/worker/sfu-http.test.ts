@@ -1,3 +1,4 @@
+import {ensureBaseUrl} from '@threema/domain';
 import {group_call} from '@threema/protocol/protobuf';
 import {creator, creatorForMap} from '@threema/protocol/protobuf/utils';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
@@ -34,7 +35,7 @@ const PROTOCOL_VERSION = 1;
  * Note: The base URL deliberately carries a path prefix and a trailing slash, so that the tests pin
  * how a request path is resolved against it.
  */
-const SFU_BASE_URL = new URL('https://sfu.threema.test/sfu/');
+const SFU_BASE_URL = ensureBaseUrl('https://sfu.threema.test/sfu/', 'https:');
 
 /** The nonce-ahead guard demands at least a nonce plus a MAC. */
 const ENCRYPTED_CALL_STATE = bytes(24 + 16, 3);
