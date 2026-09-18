@@ -1,0 +1,13 @@
+{
+  // Note: The app runs in a browser, so it has access to DOM APIs.
+  "extends": "@threema/ts-config/tsconfig.dom.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["svelte"],
+    "paths": {
+      "~/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.svelte"],
+  "exclude": ["src/test/**"]
+}

@@ -1,0 +1,16 @@
+{
+  // Note: Config and test files run in a Node environment, unlike the runtime code.
+  "extends": "./tsconfig.src.json",
+  "compilerOptions": {
+    "types": ["svelte", "node", "@vitest/browser-playwright"]
+  },
+  "include": [
+    ".storybook/**/*.svelte",
+    ".storybook/**/*.ts",
+    "vitest.config.ts",
+    "vitest.setup.ts",
+    "src/**/*.svelte",
+    "src/**/*.ts"
+  ],
+  "exclude": []
+}

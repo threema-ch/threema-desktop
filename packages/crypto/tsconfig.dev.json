@@ -1,0 +1,9 @@
+{
+  // Note: Config and test files run in a Node environment, unlike the runtime code.
+  "extends": "./tsconfig.src.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["vitest.config.ts", "src/**/*.ts", "src/**/*.d.ts"],
+  "exclude": []
+}

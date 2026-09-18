@@ -12,7 +12,7 @@
     "dev:storybook": "storybook dev --ci -p 6006",
     "lint:eslint": "eslint .",
     "lint:eslint:fix": "eslint . --fix",
-    "lint:tsc": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
+    "lint:tsc": "svelte-check --tsconfig ./tsconfig.src.json --fail-on-warnings && svelte-check --tsconfig ./tsconfig.dev.json --fail-on-warnings",
     "test:vitest": "vitest run --coverage"
   },
   "dependencies": {
@@ -30,6 +30,7 @@
     "@tailwindcss/vite": "catalog:",
     "@threema/eslint-config": "workspace:*",
     "@threema/ts-config": "workspace:*",
+    "@types/node": "catalog:",
     "@vitest/browser-playwright": "catalog:",
     "@vitest/coverage-istanbul": "catalog:",
     "eslint": "catalog:",

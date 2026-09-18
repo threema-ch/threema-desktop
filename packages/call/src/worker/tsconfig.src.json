@@ -1,0 +1,10 @@
+{
+  // Note: The source files in this directory are intended to run in a Web Worker, so they have
+  // access to Web Worker APIs.
+  "extends": "@threema/ts-config/tsconfig.webworker.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["**/*.test.ts"]
+}

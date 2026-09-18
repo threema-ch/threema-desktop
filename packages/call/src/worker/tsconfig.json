@@ -1,10 +1,5 @@
 {
-  // Note: This is the platform boundary of `@threema/call`. Sources below this directory are
-  // checked with the `WebWorker` library, everything reachable from the package's top-level entry
-  // point is not (see `../../tsconfig.json`).
-  "extends": "@threema/ts-config/tsconfig.webworker.json",
-  "compilerOptions": {
-    "noEmit": true
-  },
-  "include": ["**/*.ts"]
+  // Note: Development- and runtime code runs in different environments.
+  "files": [],
+  "references": [{"path": "./tsconfig.src.json"}, {"path": "./tsconfig.dev.json"}]
 }

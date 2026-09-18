@@ -1,0 +1,10 @@
+{
+  // Note: Source files in this package are plain TypeScript. Code that needs Web Worker APIs lives
+  // in `src/worker/`.
+  "extends": "@threema/ts-config/tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts", "src/worker/**"]
+}

@@ -1,0 +1,9 @@
+{
+  // Note: Source files in this package are plain TypeScript.
+  "extends": "@threema/ts-config/tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts"]
+}

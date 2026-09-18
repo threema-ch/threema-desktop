@@ -9,7 +9,7 @@
     "dist": "node packaging/build-container-image.mjs",
     "lint:eslint": "eslint .",
     "lint:eslint:fix": "eslint . --fix",
-    "lint:tsc": "tsc --noEmit && tsc -p packaging/tsconfig.json",
+    "lint:tsc": "tsc -b && tsc -p packaging/tsconfig.json",
     "preview": "vite preview",
     "test:playwright": "pnpm exec playwright test",
     "test:vitest": "vitest run"

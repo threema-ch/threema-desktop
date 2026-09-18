@@ -1,8 +1,5 @@
 {
-  "extends": "@threema/ts-config/tsconfig.base.json",
-  "compilerOptions": {
-    "noEmit": true,
-    "allowJs": true
-  },
-  "include": ["vitest.config.ts", "src/**/*.ts", "src/**/*.d.ts"]
+  // Note: Development- and runtime code runs in different environments.
+  "files": [],
+  "references": [{"path": "./tsconfig.src.json"}, {"path": "./tsconfig.dev.json"}]
 }

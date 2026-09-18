@@ -17,7 +17,7 @@
   "scripts": {
     "lint:eslint": "eslint .",
     "lint:eslint:fix": "eslint . --fix",
-    "lint:tsc": "tsc --noEmit",
+    "lint:tsc": "tsc -b",
     "test:vitest": "vitest run --coverage"
   },
   "dependencies": {
@@ -35,6 +35,7 @@
   "devDependencies": {
     "@threema/eslint-config": "workspace:*",
     "@threema/ts-config": "workspace:*",
+    "@types/node": "catalog:",
     "@vitest/coverage-istanbul": "catalog:",
     "eslint": "catalog:",
     "tweetnacl": "catalog:",

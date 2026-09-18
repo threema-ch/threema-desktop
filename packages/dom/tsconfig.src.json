@@ -1,0 +1,10 @@
+{
+  // Note: Source files in this package are intended to run in a DOM context, so they have access to
+  // DOM APIs.
+  "extends": "@threema/ts-config/tsconfig.dom.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts"]
+}

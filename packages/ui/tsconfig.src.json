@@ -1,0 +1,12 @@
+{
+  // Note: Source files in this package are intended to run in a DOM context, so they have access to
+  // DOM APIs.
+  "extends": "@threema/ts-config/tsconfig.dom.json",
+  "compilerOptions": {
+    "allowArbitraryExtensions": true,
+    "noEmit": true,
+    "types": ["svelte"]
+  },
+  "include": [".storybook/**/*.svelte", "vitest.setup.ts", "src/**/*.svelte", "src/**/*.ts"],
+  "exclude": ["src/**/*.stories.svelte", "src/**/*.test.ts", "src/utils/test/**"]
+}

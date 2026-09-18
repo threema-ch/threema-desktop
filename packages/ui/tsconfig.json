@@ -1,16 +1,5 @@
 {
-  "extends": "@threema/ts-config/tsconfig.dom.json",
-  "compilerOptions": {
-    "allowArbitraryExtensions": true,
-    "noEmit": true,
-    "types": ["svelte"]
-  },
-  "include": [
-    ".storybook/**/*.svelte",
-    ".storybook/**/*.ts",
-    "vitest.config.ts",
-    "vitest.setup.ts",
-    "src/**/*.svelte",
-    "src/**/*.ts"
-  ]
+  // Note: Development- and runtime code runs in different environments.
+  "files": [],
+  "references": [{"path": "./tsconfig.src.json"}, {"path": "./tsconfig.dev.json"}]
 }

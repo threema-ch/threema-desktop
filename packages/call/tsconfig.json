@@ -1,11 +1,9 @@
 {
-  // Note: The top-level entry point of this package must remain usable outside of a browser worker,
-  // so it is deliberately checked without the `DOM` and `WebWorker` libraries. Code that needs
-  // either lives below `src/worker/`, which carries its own configuration.
-  "extends": "@threema/ts-config/tsconfig.base.json",
-  "compilerOptions": {
-    "noEmit": true
-  },
-  "include": ["vitest.config.ts", "src/**/*.ts"],
-  "exclude": ["src/worker/**"]
+  // Note: Development- and runtime code runs in different environments.
+  "files": [],
+  "references": [
+    {"path": "./tsconfig.src.json"},
+    {"path": "./tsconfig.dev.json"},
+    {"path": "./src/worker/tsconfig.json"}
+  ]
 }

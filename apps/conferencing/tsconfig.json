@@ -1,17 +1,16 @@
 {
-  "extends": "@threema/ts-config/tsconfig.dom.json",
+  // Note: Development- and runtime code runs in different environments.
+  "files": [],
+  "references": [
+    {"path": "./tsconfig.src.json"},
+    {"path": "./tsconfig.dev.json"},
+    {"path": "./src/test/playwright/tsconfig.json"}
+  ],
+  // Note: Only used by the ESLint import resolver, which reads this file rather than the individual
+  // projects.
   "compilerOptions": {
-    "noEmit": true,
-    "types": ["svelte"],
     "paths": {
       "~/*": ["./src/*"]
     }
-  },
-  "include": [
-    "playwright.config.ts",
-    "vite.config.ts",
-    "vitest.config.ts",
-    "src/**/*.ts",
-    "src/**/*.svelte"
-  ]
+  }
 }
