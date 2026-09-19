@@ -702,6 +702,11 @@ function buildMsix(dirs: Directories, appName: string, flavor: BuildFlavor, sign
 }
 
 /**
+ * Flathub repository, used to install the layer dependencies from.
+ */
+const FLATHUB_REPO_URL = 'https://flathub.org/repo/flathub.flatpakrepo';
+
+/**
  * Build a Linux Flatpak.
  *
  * Requirements:
@@ -765,6 +770,22 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
         options,
     );
 
+    // Determine installation source arg
+    //
+    // Unprivileged builds must use the per-user installation, because `flatpak build-init` copies
+    // the base app's files into the build dir and fails to copy its root-owned symlinks since
+    // Flatpak 18.1.1 (see https://gitlab.gnome.org/GNOME/libglnx/-/merge_requests/83). Root (i.e.
+    // CI) is not affected and keeps using the system installation.
+    const installation = process.getuid?.() === 0 ? 'system' : 'user';
+    const installationSourceArg = `--${installation}`;
+
+    // Ensure that the Flathub remote is configured for the target installation (no-op if it is).
+    execFileSync(
+        'flatpak',
+        ['remote-add', installationSourceArg, '--if-not-exists', 'flathub', FLATHUB_REPO_URL],
+        options,
+    );
+
     // Install dependencies
     let arch;
     switch (process.arch) {
@@ -774,11 +795,17 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
         default:
             fail(`Unsupported architecture: ${process.arch}`);
     }
-    log.minor('Installing layer dependencies');
+    log.minor(`Installing layer dependencies into the ${installation} installation`);
     for (const name of dependencies) {
         execFileSync(
             'flatpak',
-            ['install', '-y', '--noninteractive', `${name}/${arch}/${layerDependenciesVersion}`],
+            [
+                'install',
+                installationSourceArg,
+                '-y',
+                '--noninteractive',
+                `${name}/${arch}/${layerDependenciesVersion}`,
+            ],
             options,
         );
     }
@@ -822,16 +849,18 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
     log.minor(`The Flatpak repository is at ${repoPath}`);
     log.minor('To add the local repository as a source:');
     if (gpgKey === '') {
-        log.minor(`    flatpak remote-add threema-desktop-local --no-gpg-verify ${repoPath}`);
+        log.minor(
+            `    flatpak remote-add ${installationSourceArg} threema-desktop-local --no-gpg-verify ${repoPath}`,
+        );
     } else {
         const keypath = 'flatpak.pub';
         log.minor(`    gpg --export --armor ${gpgKey} > ${keypath}`);
         log.minor(
-            `    flatpak remote-add threema-desktop-local --gpg-import=${keypath} ${repoPath}`,
+            `    flatpak remote-add ${installationSourceArg} threema-desktop-local --gpg-import=${keypath} ${repoPath}`,
         );
     }
     log.minor(`To install the application from the local repository:`);
-    log.minor(`    flatpak install --reinstall ${appId}`);
+    log.minor(`    flatpak install ${installationSourceArg} --reinstall ${appId}`);
     log.minor(`To launch Threema from the command line:`);
     log.minor(`    flatpak run ${appId}`);
 }
