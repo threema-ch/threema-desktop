@@ -43,8 +43,11 @@ export interface CallDevices {
      *
      * Note: Needed in addition to being run on every device change, because establishing a call is
      * asynchronous and the user may have toggled something while it was in flight.
+     *
+     * @param options.isNewCall Whether the call was just established, in which case its own
+     *   decision on the initial capture state is adopted before anything is announced.
      */
-    readonly attach: () => void;
+    readonly attach: (options?: {readonly isNewCall?: boolean}) => void;
     readonly close: () => void;
     /**
      * Picks what a source captures from, and remembers it for the next call.
@@ -106,11 +109,15 @@ export function createCallDevices(args: CallDevicesArgs): CallDevices {
 
     // Whether the user is currently being reminded that they are sharing their screen.
     let isScreenSharingReminderVisible = false;
+    // Whether a call which was just established still has its decision on the initial capture
+    // state to be adopted, see `attach`.
+    let isInitialCaptureStatePending = false;
 
     /**
      * Hand a source's track to its transceiver, and announce whether it is delivering media.
      */
-    function attach(): void {
+    function attach(options?: {readonly isNewCall?: boolean}): void {
+        isInitialCaptureStatePending ||= options?.isNewCall ?? false;
         protocolLock
             .with(async () => {
                 const call = getCall();
@@ -118,6 +125,24 @@ export function createCallDevices(args: CallDevicesArgs): CallDevices {
                     return;
                 }
                 const {transceivers} = call.state.get().local;
+
+                // A call decides on its own whether it joins muted (it does when it already had
+                // several participants). Adopt that decision into the local devices once, so that
+                // both the announcement below and the microphone control follow it, while the user
+                // can still unmute right afterwards.
+                //
+                // Note: Waits for the default capture state first, so that the call's decision wins
+                // regardless of which of the two settled first.
+                if (isInitialCaptureStatePending) {
+                    isInitialCaptureStatePending = false;
+                    await defaultCaptureState;
+                    if (call.state.get().local.capture.microphone.state === 'off') {
+                        await devices.microphone.disable();
+                    }
+                }
+
+                // Note: Read after the initial capture state was adopted, because adopting it may
+                // have turned the microphone off.
                 const state = devices.state;
 
                 for (const [source, capture] of [
@@ -312,8 +337,11 @@ export function createCallDevices(args: CallDevicesArgs): CallDevices {
     electron.registerOnScreenSharingStopCallback(stopScreenSharing);
 
     // Restore the devices the user selected last time, then start with the microphone on and the
-    // camera off, as before. Note: The call may mute the microphone again right after joining.
-    (async (): Promise<void> => {
+    // camera off, as before. Note: The call may mute the microphone again right after joining, in
+    // which case `attach` adopts that decision.
+    //
+    // Note: Awaited by `attach`, so it must settle rather than reject.
+    const defaultCaptureState = (async (): Promise<void> => {
         const {lastSelectedCamera, lastSelectedMicrophone, lastSelectedSpeakers} =
             services.settings.views.calls.get();
         await Promise.all([

@@ -392,12 +392,12 @@
       }),
     );
 
-    // Hand the local tracks to the transceivers of the call which was just established, and
-    // announce their state.
+    // Hand the local tracks to the transceivers of the call which was just established, adopt the
+    // call's own decision on the initial capture state, and announce their state.
     //
     // Note: Needed in addition to being run whenever a device changes, because starting a call is
     // asynchronous and the user may have changed a device while it was in flight.
-    attachDevicesToCall();
+    attachDevicesToCall({isNewCall: true});
   }
 
   // Start call and switch whenever the receiver changes.
