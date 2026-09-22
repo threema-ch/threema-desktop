@@ -964,14 +964,11 @@ validate:rust-versions-in-sync:
           echo "Invalid build type: $BUILD_TYPE"
           exit 1
       esac
-    # Patch metadata for nightlies.
+    # Patch metadata for nightlies, so that they are distinguishable from the last stable release
+    # in software centers.
     - |
       if [ "$BUILD_TYPE" = "nightly" ]; then
-        VERSION=$(jq -r '.version' package.json)
-        GIT_REVISION=$(git rev-parse --short HEAD)
-        DATE=$(date +%Y-%m-%d)
-        # Metainfo file
-        sed -i "s/\(^.*version=\"$VERSION\".*\)/<release version=\"${VERSION}-nightly-${GIT_REVISION}\" date=\"$DATE\" \/>\n\1/" apps/desktop/packaging/metadata/ch.threema.threema-desktop.metainfo.xml
+        bash scripts/add-nightly-release-to-metainfo.sh apps/desktop/packaging/metadata/ch.threema.threema-desktop.metainfo.xml
       fi
     # Split flavors.
     - IFS=',' read -ra flavors <<< "$FLAVORS"
