@@ -18,6 +18,8 @@ variables:
   # requires this project to be on each repository's job token allowlist.
   STRUCTBUF_TYPESCRIPT_REPO: '${CI_SERVER_HOST}/clients/protocols/structbuf-typescript.git'
   THREEMA_PROTOCOLS_REPO: '${CI_SERVER_HOST}/clients/protocols/threema-protocols.git'
+  # Path to central image registry
+  THREEMA_REGISTRY_IMAGE: $CI_REGISTRY_THREEMA/$CI_PROJECT_NAME
 
 default:
   image: node:${NODE_VERSION}-bookworm
@@ -61,19 +63,19 @@ stages:
 
 .container-build-steps: &container-build-steps
   stage: build
-  image: $CI_REGISTRY_IMAGE/buildah:latest
+  image: $THREEMA_REGISTRY_IMAGE/buildah:latest
   before_script:
     - set -euo pipefail
     - buildah info
     - buildah login -u $DOCKERHUB_USER -p $DOCKERHUB_TOKEN docker.io
-    - buildah login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - buildah login -u $CI_REGISTRY_THREEMA_USER -p $CI_REGISTRY_THREEMA_TOKEN $CI_REGISTRY
   tags:
     - docker-privileged
   # Build image and push it to the registry
   script:
     # Determine image path
-    - export IMAGE_FULL=$CI_REGISTRY_IMAGE/$IMAGE
-    - export IMAGE_CACHE=$CI_REGISTRY_IMAGE/cache/$IMAGE
+    - export IMAGE_FULL=$THREEMA_REGISTRY_IMAGE/$IMAGE
+    - export IMAGE_CACHE=$THREEMA_REGISTRY_IMAGE/${IMAGE}-cache
     - 'echo "Image path: ${IMAGE_FULL}"'
     # Pull image from cache
     - buildah pull ${IMAGE_FULL}:latest || true
@@ -261,7 +263,7 @@ image:libthreema:
 libthreema:
   stage: build
   needs: [image:libthreema]
-  image: $CI_REGISTRY_IMAGE/libthreema:latest
+  image: $THREEMA_REGISTRY_IMAGE/libthreema:latest
   <<: *linux_nodejs_config
   artifacts:
     paths:
@@ -312,7 +314,7 @@ launcher:
 pages:
   stage: build
   needs: [image:mdbook]
-  image: ${CI_REGISTRY_IMAGE}/mdbook:latest
+  image: $THREEMA_REGISTRY_IMAGE/mdbook:latest
   rules:
     - if: $CI_COMMIT_BRANCH == 'develop'
   artifacts:
@@ -358,7 +360,7 @@ lint:
 test:vitest:
   stage: test
   needs: [libthreema, image:node-browsers]
-  image: $CI_REGISTRY_IMAGE/node-browsers:latest
+  image: $THREEMA_REGISTRY_IMAGE/node-browsers:latest
   <<: *linux_nodejs_config
   variables:
     <<: *linux_nodejs_variables
@@ -381,7 +383,7 @@ test:vitest:
 test:desktop:karma:consumer-sandbox:linux:
   stage: test
   needs: [libthreema, image:node-browsers]
-  image: $CI_REGISTRY_IMAGE/node-browsers:latest
+  image: $THREEMA_REGISTRY_IMAGE/node-browsers:latest
   <<: *linux_nodejs_config
   artifacts:
     when: always
