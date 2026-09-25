@@ -62,6 +62,7 @@
   "dialog--auto-app-update-failed": {
     "action--confirm": "Nochmals probieren",
     "action--dismiss": "Später probieren",
+    "prose--description-manual-download": "Wenn das automatische Update fehlschlägt, laden Sie das Update bitte manuell herunter und installieren Sie es:",
     "prose--info": "Download fehlgeschlagen!"
   },
   "dialog--auto-app-update-prompt": {

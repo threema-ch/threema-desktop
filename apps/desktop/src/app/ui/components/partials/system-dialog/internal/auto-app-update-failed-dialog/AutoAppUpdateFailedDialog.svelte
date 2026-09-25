@@ -62,6 +62,20 @@
         {$i18n.t('dialog--auto-app-update-failed.action--confirm', 'Retry now')}
       </Button>
     </div>
+    {#if import.meta.env.BUILD_VARIANT !== 'custom' && import.meta.env.URLS.downloadAndInfo !== 'hidden'}
+      <div class="download-link">
+        {$i18n.t(
+          'dialog--auto-app-update-failed.prose--description-manual-download',
+          'If the automatic update fails, please download and install the update manually:',
+        )}
+        <a
+          href={import.meta.env.URLS.downloadAndInfo.full}
+          target="_blank"
+          rel="noreferrer noopener"
+          >{import.meta.env.URLS.downloadAndInfo.short}
+        </a>
+      </div>
+    {/if}
   </div>
 </Modal>
 
@@ -77,7 +91,7 @@
 
     padding: rem(16px);
     min-width: rem(380px);
-    height: rem(380px);
+    height: rem(400px);
 
     .main {
       display: flex;
@@ -127,6 +141,11 @@
       padding: rem(16px);
 
       transform: opacity 0.25s ease-out;
+    }
+
+    .download-link {
+      color: var(--t-text-e2-color);
+      padding: 0 rem(16px);
     }
   }
 </style>

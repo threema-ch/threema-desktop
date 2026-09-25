@@ -62,6 +62,7 @@
   "dialog--auto-app-update-failed": {
     "action--confirm": "Retry now",
     "action--dismiss": "Retry later",
+    "prose--description-manual-download": "If the automatic update fails, please download and install the update manually:",
     "prose--info": "Download failed!"
   },
   "dialog--auto-app-update-prompt": {
