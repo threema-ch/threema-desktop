@@ -39,8 +39,12 @@ default:
 
 workflow:
   rules:
-    # Skip draft MR pipelines
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DRAFT == "true"
+    # Always run when manually triggered from the UI (Build > Pipelines > Run pipeline)
+    - if: $CI_PIPELINE_SOURCE =~ /^(web|api|trigger)$/
+    # Skip draft MR pipelines, unless the MR is labeled `workflow:ci`. Note: GitLab does not
+    # distinguish between automatic and manually triggered MR pipelines ("Run pipeline" button in
+    # the MR), so the label is used to opt in. With the label set, click "Run pipeline" in the MR.
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DRAFT == "true" && $CI_MERGE_REQUEST_LABELS !~ /(^|,)workflow::ci(,|$)/
       when: never
     # Always run on develop/stable (e.g. right after a merge lands there)
     - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "stable"
