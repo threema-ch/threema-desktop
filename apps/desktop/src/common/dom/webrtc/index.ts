@@ -225,7 +225,7 @@ export class WebRtcServiceProvider implements WebRtcService {
         // certificate generation preceding the connection.
         this._rtcStats?.startSession(createRtcStatsSessionId(`call-${callId.shortened}`));
         abort.subscribe(() =>
-            this._rtcStats?.trace('threemaGroupCallEnd', undefined, {callId: callId.id}),
+            this._rtcStats?.trace(':threemaGroupCallEnd', undefined, {callId: callId.id}),
         );
 
         this._groupCall.map.set(callId.id, context);
