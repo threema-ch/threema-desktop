@@ -6,6 +6,7 @@ import {
     createFakeMediaDeviceInfo,
     type FakeMediaDevices,
     installFakeMediaDevices,
+    TEST_ACQUISITION_TIMEOUT_MS,
 } from '../utils/test/fake-media-devices';
 
 import {EnumerableMediaDeviceRegistry} from './enumerable-media-device-registry';
@@ -28,7 +29,7 @@ async function createMicrophone(): Promise<LocalMicrophone> {
     microphone = new LocalMicrophone({
         registry,
         onchange: () => undefined,
-        acquisitionTimeoutMs: 200,
+        acquisitionTimeoutMs: TEST_ACQUISITION_TIMEOUT_MS,
     });
     return microphone;
 }

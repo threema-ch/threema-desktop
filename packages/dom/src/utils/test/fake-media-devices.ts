@@ -1,4 +1,13 @@
 /**
+ * How long tests give the platform to hand over a device.
+ *
+ * Note: Generous on purpose. The browser's fake devices usually answer within a few milliseconds,
+ * but the first acquisition in a page can take far longer on a busy machine, e.g. in CI. Tests
+ * which expect the acquisition to time out pass a short timeout of their own instead.
+ */
+export const TEST_ACQUISITION_TIMEOUT_MS = 2000;
+
+/**
  * Handle of a fake `navigator.mediaDevices`, as installed by {@link installFakeMediaDevices}.
  */
 export interface FakeMediaDevices {

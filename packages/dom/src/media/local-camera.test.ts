@@ -1,9 +1,14 @@
 import {waitUntilStable} from '@threema/test-utils';
+import type {u53} from '@threema/ts-utils/integer/u53';
 import {unwrap} from '@threema/ts-utils/meta/unwrap';
 import {TIMER} from '@threema/ts-utils/timer/global-timer';
 import {afterEach, beforeEach, describe, expect, it} from 'vitest';
 
-import {type FakeMediaDevices, installFakeMediaDevices} from '../utils/test/fake-media-devices';
+import {
+    type FakeMediaDevices,
+    installFakeMediaDevices,
+    TEST_ACQUISITION_TIMEOUT_MS,
+} from '../utils/test/fake-media-devices';
 
 import {EnumerableMediaDeviceRegistry} from './enumerable-media-device-registry';
 import {LocalCamera} from './local-camera';
@@ -27,14 +32,18 @@ let captures = 0;
 
 /**
  * Builds a camera on top of a registry, both of which are torn down after the test.
+ *
+ * @param acquisitionTimeoutMs How long the camera waits for the device to be handed over.
  */
-async function createCamera(): Promise<LocalCamera> {
+async function createCamera(
+    acquisitionTimeoutMs: u53 = TEST_ACQUISITION_TIMEOUT_MS,
+): Promise<LocalCamera> {
     registry = new EnumerableMediaDeviceRegistry();
     await registry.refresh();
     camera = new LocalCamera({
         registry,
         onchange: () => undefined,
-        acquisitionTimeoutMs: 200,
+        acquisitionTimeoutMs,
     });
     return camera;
 }
@@ -93,7 +102,7 @@ describe('LocalCamera', () => {
         const seen: {readonly isEnabled: boolean; readonly status: string}[] = [];
         const subject = new LocalCamera({
             registry,
-            acquisitionTimeoutMs: 200,
+            acquisitionTimeoutMs: TEST_ACQUISITION_TIMEOUT_MS,
             onchange: () => {
                 if (camera !== undefined) {
                     seen.push({
@@ -603,7 +612,7 @@ describe('LocalCamera', () => {
                 return late;
             },
         );
-        const subject = await createCamera();
+        const subject = await createCamera(200);
 
         // Act
         await subject.enable();
@@ -633,7 +642,7 @@ describe('LocalCamera', () => {
                 throw new DOMException('Permission denied', 'NotAllowedError');
             },
         );
-        const subject = await createCamera();
+        const subject = await createCamera(200);
 
         // Act
         await subject.enable();

@@ -1,6 +1,8 @@
 import {waitUntilStable} from '@threema/test-utils';
 import {afterEach, describe, expect, it} from 'vitest';
 
+import {TEST_ACQUISITION_TIMEOUT_MS} from '../utils/test/fake-media-devices';
+
 import {LocalDevices} from './local-devices';
 import type {LocalDevicesState} from './local-devices-state';
 
@@ -14,7 +16,10 @@ afterEach(() => {
 describe('LocalDevices', () => {
     it('reports every source of this machine', async () => {
         // Arrange
-        localDevices = new LocalDevices({acquisitionTimeoutMs: 200, playbackTimeoutMs: 200});
+        localDevices = new LocalDevices({
+            acquisitionTimeoutMs: TEST_ACQUISITION_TIMEOUT_MS,
+            playbackTimeoutMs: 200,
+        });
 
         // Act
         await waitUntilStable(() => (localDevices?.state.microphone.devices.length ?? 0) > 0);
@@ -48,7 +53,10 @@ describe('LocalDevices', () => {
 
     it('tells a subscriber about a change of any source', async () => {
         // Arrange
-        localDevices = new LocalDevices({acquisitionTimeoutMs: 200, playbackTimeoutMs: 200});
+        localDevices = new LocalDevices({
+            acquisitionTimeoutMs: TEST_ACQUISITION_TIMEOUT_MS,
+            playbackTimeoutMs: 200,
+        });
         const seen: LocalDevicesState[] = [];
         const unsubscribe = localDevices.subscribe((state) => {
             seen.push(state);
@@ -74,7 +82,10 @@ describe('LocalDevices', () => {
 
     it('does not let a failing subscriber break the others', async () => {
         // Arrange
-        localDevices = new LocalDevices({acquisitionTimeoutMs: 200, playbackTimeoutMs: 200});
+        localDevices = new LocalDevices({
+            acquisitionTimeoutMs: TEST_ACQUISITION_TIMEOUT_MS,
+            playbackTimeoutMs: 200,
+        });
         let reached = false;
         localDevices.subscribe(() => {
             throw new Error('This subscriber is broken');
@@ -93,7 +104,10 @@ describe('LocalDevices', () => {
 
     it('lets go of all resources when it is closed', async () => {
         // Arrange
-        localDevices = new LocalDevices({acquisitionTimeoutMs: 200, playbackTimeoutMs: 200});
+        localDevices = new LocalDevices({
+            acquisitionTimeoutMs: TEST_ACQUISITION_TIMEOUT_MS,
+            playbackTimeoutMs: 200,
+        });
         await localDevices.microphone.enable();
         await localDevices.camera.enable();
         await waitUntilStable(() => {
@@ -119,7 +133,10 @@ describe('LocalDevices', () => {
 
     it('makes the platform reveal the names it withholds', async () => {
         // Arrange
-        localDevices = new LocalDevices({acquisitionTimeoutMs: 200, playbackTimeoutMs: 200});
+        localDevices = new LocalDevices({
+            acquisitionTimeoutMs: TEST_ACQUISITION_TIMEOUT_MS,
+            playbackTimeoutMs: 200,
+        });
 
         // Act
         const failure = await localDevices.reveal();

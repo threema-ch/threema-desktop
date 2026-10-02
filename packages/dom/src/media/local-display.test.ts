@@ -1,7 +1,11 @@
 import {waitUntilStable} from '@threema/test-utils';
 import {afterEach, beforeEach, describe, expect, it} from 'vitest';
 
-import {type FakeMediaDevices, installFakeMediaDevices} from '../utils/test/fake-media-devices';
+import {
+    type FakeMediaDevices,
+    installFakeMediaDevices,
+    TEST_ACQUISITION_TIMEOUT_MS,
+} from '../utils/test/fake-media-devices';
 
 import {EnumerableMediaDeviceRegistry} from './enumerable-media-device-registry';
 import {LocalDisplay} from './local-display';
@@ -25,7 +29,7 @@ function createDisplay(): LocalDisplay {
     display = new LocalDisplay({
         registry,
         onchange: () => undefined,
-        acquisitionTimeoutMs: 200,
+        acquisitionTimeoutMs: TEST_ACQUISITION_TIMEOUT_MS,
     });
     return display;
 }
