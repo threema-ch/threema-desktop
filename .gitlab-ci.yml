@@ -1,3 +1,16 @@
+include:
+  # Dependency scanning using CycloneDX Software Bill of Materials (SBOM). See:
+  # https://docs.gitlab.com/user/application_security/dependency_scanning/dependency_scanning_sbom
+  - template: Jobs/Dependency-Scanning.v2.gitlab-ci.yml
+    inputs:
+      stage: test
+      # The `Cargo.lock` files live 4-5 levels deep (e.g. `apps/desktop/src/rust/launcher/`), so we
+      # need to increase the scan depth to more than the default of 2.
+      max_scan_depth: -1
+      # This repository contains no Maven/Gradle/Python manifests, so the `.pre` stage dependency
+      # resolution jobs that the template defines are never needed.
+      disabled_resolution_jobs: 'maven,gradle,python'
+
 variables:
   # Keep in sync with `libthreema`.
   BINARYEN_VERSION: '123'
@@ -348,6 +361,17 @@ audit:
     - set -euo pipefail
     - bash scripts/run-with-retry.sh --retries 3 --delay 15 -- pnpm ci
     - pnpm audit --audit-level moderate
+
+# Generates a CycloneDX SBOM per discovered lockfile (`pnpm-lock.yaml`, `Cargo.lock`, etc.) and
+# reports it to GitLab. Note: The job itself comes from the `Jobs/Dependency-Scanning.v2` template
+# included at the top of this file, only the scheduling is adjusted here.
+dependency-scanning:
+  needs: []
+  rules:
+    - if: $DEPENDENCY_SCANNING_DISABLED == 'true'
+      when: never
+    # Run in every pipeline that the `workflow:` rules above let through.
+    - when: on_success
 
 lint:
   stage: test
