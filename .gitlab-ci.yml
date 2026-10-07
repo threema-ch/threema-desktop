@@ -10,6 +10,9 @@ include:
       # This repository contains no Maven/Gradle/Python manifests, so the `.pre` stage dependency
       # resolution jobs that the template defines are never needed.
       disabled_resolution_jobs: 'maven,gradle,python'
+      # Only report dependencies that are actually shipped. Note: This is not supported for Cargo,
+      # so the `Cargo.lock` SBOMs still contain dev dependencies.
+      include_dev_dependencies: false
 
 variables:
   # Keep in sync with `libthreema`.
