@@ -21,6 +21,7 @@
   import ScreenSharingPickerDialog from '~/app/ui/components/partials/system-dialog/internal/screen-sharing-picker-dialog/ScreenSharingPickerDialog.svelte';
   import ServerAlertDialog from '~/app/ui/components/partials/system-dialog/internal/server-alert-dialog/ServerAlertDialog.svelte';
   import UnrecoverableStateDialog from '~/app/ui/components/partials/system-dialog/internal/unrecoverable-state-dialog/UnrecoverableStateDialog.svelte';
+  import Windows10MigrationDialog from '~/app/ui/components/partials/system-dialog/internal/windows-10-migration-dialog/Windows10MigrationDialog.svelte';
   import type {SystemDialogProps} from '~/app/ui/components/partials/system-dialog/props';
   import {svelteUnreachable} from '~/app/ui/utils/svelte';
   import {systemDialogStore} from '~/common/dom/ui/system-dialog';
@@ -143,6 +144,11 @@
     />
   {:else if systemDialog.dialog.type === 'remote-secrets-system-suspend'}
     <RemoteSecretsSystemSuspendDialog
+      onselectaction={(action) => handleSelectAction(action, systemDialog)}
+    />
+  {:else if systemDialog.dialog.type === 'windows-10-migration'}
+    <Windows10MigrationDialog
+      onclose={() => handleClose(systemDialog)}
       onselectaction={(action) => handleSelectAction(action, systemDialog)}
     />
   {:else}

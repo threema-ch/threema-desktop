@@ -533,6 +533,12 @@
     "prose--level-server-verified-work": "Diese Vertrauensstufe ist nur in {fullAppName} verfügbar und zeigt an, dass es sich um einen internen Firmenkontakt handelt.",
     "prose--level-unverified": "ID und öffentlicher Schlüssel wurden vom Server geholt, weil zum ersten Mal von diesem Kontakt eine Nachricht eingetroffen ist (oder der Kontakt manuell hinzugefügt wurde). Da kein passender Kontakt im Adressbuch gefunden wurde (mit Handynummer oder E-Mail-Adresse), kann man sich nicht sicher sein, ob die Person wirklich die ist, die sie in ihren Nachrichten vorgibt zu sein."
   },
+  "dialog--windows-10-migration": {
+    "label--title": "Veraltetes Betriebssystem",
+    "prose--description": "Sie verwenden Windows 10, das mittlerweile veraltet ist. Wenn möglich, aktualisieren Sie bitte auf Windows 11. Sollte ein Upgrade nicht möglich sein, befolgen Sie bitte nachstehende Anleitung, um zu gewährleisten, dass diese App vorerst weitere Updates erhält:",
+    "prose--faq-link": "https://threema.com/de/faq/desktop-installation-windows",
+    "prose--faq-link-text": "Threema für Desktop unter Windows 10 verwenden"
+  },
   "emoji-picker": {
     "error--emoji-picker-preferences": "Die gespeicherten Einstellungen des Emoji-Pickers konnten nicht geladen werden",
     "label--most-used": "Meist verwendet"

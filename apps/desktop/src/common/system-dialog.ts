@@ -24,7 +24,8 @@ export type SystemDialog =
     | ScreenSharingPickerDialog
     | RemoteSecretsActivationDialog
     | RemoteSecretsDeactivationDialog
-    | RemoteSecretsSystemSuspendDialog;
+    | RemoteSecretsSystemSuspendDialog
+    | Windows10MigrationDialog;
 
 /**
  * Base interface for all system dialogs.
@@ -228,6 +229,14 @@ export interface RemoteSecretsSystemSuspendDialog extends SystemDialogCommon {
 
 export interface RemoteSecretsDeactivationDialogContext {
     readonly previouslyAttemptedPassword: string | undefined;
+}
+
+/**
+ * Dialog informing the user that Windows 10 needs to migrate, and that they will therefore not
+ * receive any further app updates.
+ */
+export interface Windows10MigrationDialog extends SystemDialogCommon {
+    readonly type: 'windows-10-migration';
 }
 
 // Helper types & interfaces

@@ -533,6 +533,12 @@
     "prose--level-server-verified-work": "This verification level is only available in {fullAppName}; it indicates that the {shortAppName} ID belongs to an internal company contact.",
     "prose--level-unverified": "The ID and public key have been obtained from the server because you received a message from this contact for the first time or added the ID manually. No matching contact was found in your address book (by phone number or email), and therefore you cannot be sure that the person is who they claim to be in their messages."
   },
+  "dialog--windows-10-migration": {
+    "label--title": "Outdated Operating System",
+    "prose--description": "You are using Windows 10, which is outdated. If possible, please upgrade to Windows 11. If upgrading is not possible, please follow the instructions provided below to ensure that this app can continue to receive updates for the time being:",
+    "prose--faq-link": "https://threema.com/en/faq/desktop-installation-windows",
+    "prose--faq-link-text": "Using Threema for Desktop on Windows 10"
+  },
   "emoji-picker": {
     "error--emoji-picker-preferences": "Emoji picker preferences could not be loaded",
     "label--most-used": "Most used"
