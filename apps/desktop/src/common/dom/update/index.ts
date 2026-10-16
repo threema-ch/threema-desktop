@@ -60,6 +60,16 @@ export class Updater {
             // Nothing to update.
             return;
         }
+        // Windows 10 users need to migrate, so inform the user instead of offering the update.
+        const {os, osVersion} = this._services.systemInfo;
+        if (os === 'windows' && osVersion.toLowerCase().startsWith('windows 10')) {
+            this._log.info(
+                `Update ${updateInfo.version} is available, but Windows 10 is no longer supported`,
+            );
+            await this._services.systemDialog.open({type: 'windows-10-migration'});
+            return;
+        }
+
         const context = {
             currentVersion: import.meta.env.BUILD_VERSION,
             latestVersion: updateInfo.version,
