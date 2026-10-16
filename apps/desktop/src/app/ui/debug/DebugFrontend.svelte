@@ -3,7 +3,13 @@
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import type {ContextMenuItem} from '~/app/ui/components/hocs/context-menu-provider/types';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
+  import KeyStorageMigrationFailedModal from '~/app/ui/components/partials/modals/key-storage-migration-failed-modal/KeyStorageMigrationFailedModal.svelte';
+  import MissingCachedOnPremConfigModal from '~/app/ui/components/partials/modals/missing-cached-onprem-config-modal/MissingCachedOnPremConfigModal.svelte';
+  import MissingWorkCredentialsModal from '~/app/ui/components/partials/modals/missing-work-credentials-modal/MissingWorkCredentialsModal.svelte';
+  import ThreemaIdInfoModal from '~/app/ui/components/partials/modals/threema-id-info-modal/ThreemaIdInfoModal.svelte';
+  import VerificationLevelInfoModal from '~/app/ui/components/partials/modals/verification-level-info-modal/VerificationLevelInfoModal.svelte';
   import {getScreenSharingSources} from '~/app/ui/debug/ScreenSharingPickerUtils';
+  import type {ElectronIpcService} from '~/common/dom/electron-service';
   import type {ConnectionErrorDialog, SystemDialog} from '~/common/system-dialog';
   import {unreachable} from '~/common/utils/assert';
 
@@ -31,6 +37,7 @@
       'screen-sharing-picker',
       'server-alert',
       'unrecoverable-state',
+      'windows-10-migration',
     ] as const
   ).map((type: Exclude<SystemDialog['type'], 'connection-error'>) => {
     switch (type) {
@@ -225,6 +232,17 @@
           label: 'Remote Secrets System Suspension',
         };
 
+      case 'windows-10-migration':
+        return {
+          type: 'option',
+          handler: () => {
+            systemDialog.open({
+              type,
+            });
+          },
+          label: 'Windows 10 Migration',
+        };
+
       default:
         return unreachable(type);
     }
@@ -249,6 +267,49 @@
     },
     label: error,
   }));
+
+  type DebugModalType =
+    | 'key-storage-migration-failed'
+    | 'missing-cached-onprem-config'
+    | 'missing-work-credentials'
+    | 'threema-id-info'
+    | 'verification-level-info';
+
+  let openModal = $state<DebugModalType | undefined>(undefined);
+
+  function handleCloseModal(): void {
+    openModal = undefined;
+  }
+
+  /**
+   * Electron service for the startup modals, where actions that would close the app or delete the
+   * profile only close the modal instead.
+   */
+  const stubbedElectron: ElectronIpcService = new Proxy(services.electron, {
+    get(target, property) {
+      if (property === 'closeApp' || property === 'deleteProfileAndRestartApp') {
+        return handleCloseModal;
+      }
+      const value: unknown = Reflect.get(target, property, target);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+
+  const modalDropdownItems: ContextMenuItem[] = (
+    [
+      ['key-storage-migration-failed', 'Key Storage Migration Failed'],
+      ['missing-cached-onprem-config', 'Missing Cached OnPrem Config'],
+      ['missing-work-credentials', 'Missing Work Credentials'],
+      ['threema-id-info', 'Threema ID Info'],
+      ['verification-level-info', 'Verification Level Info'],
+    ] as const satisfies readonly (readonly [DebugModalType, string])[]
+  ).map(([type, label]) => ({
+    type: 'option',
+    handler: () => {
+      openModal = type;
+    },
+    label,
+  }));
 </script>
 
 <section class="container">
@@ -264,9 +325,25 @@
       >
         <Text text="Open Connection Error Dialog" />
       </KeyValueList.ItemWithDropdown>
+
+      <KeyValueList.ItemWithDropdown items={modalDropdownItems} key="Modal">
+        <Text text="Open Modal" />
+      </KeyValueList.ItemWithDropdown>
     </KeyValueList.Section>
   </KeyValueList>
 </section>
+
+{#if openModal === 'key-storage-migration-failed'}
+  <KeyStorageMigrationFailedModal services={{electron: stubbedElectron}} />
+{:else if openModal === 'missing-cached-onprem-config'}
+  <MissingCachedOnPremConfigModal services={{electron: stubbedElectron}} />
+{:else if openModal === 'missing-work-credentials'}
+  <MissingWorkCredentialsModal services={{electron: stubbedElectron}} />
+{:else if openModal === 'threema-id-info'}
+  <ThreemaIdInfoModal onclose={handleCloseModal} />
+{:else if openModal === 'verification-level-info'}
+  <VerificationLevelInfoModal colors="default" onclose={handleCloseModal} />
+{/if}
 
 <style lang="scss">
   @use 'component' as *;
