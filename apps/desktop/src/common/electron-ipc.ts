@@ -16,6 +16,8 @@ export interface ErrorDetails {
 
 export interface SystemInfo {
     readonly os: 'linux' | 'macos' | 'windows' | 'other';
+    readonly osVersion: string;
+    readonly osRelease: string;
     readonly arch: string;
     readonly locale: string;
     readonly isSafeStorageAvailable: boolean;

@@ -1,3 +1,5 @@
+import * as os from 'node:os';
+
 import type {SystemInfo} from '~/common/electron-ipc';
 import type {IFrontendElectronService} from '~/common/electron-service';
 import type {ServicesForKeyStorage} from '~/common/key-storage';
@@ -25,6 +27,8 @@ const logging: LoggerFactory = {
 const systemInfo: SystemInfo = {
     os: 'other',
     arch: process.arch,
+    osVersion: os.version(),
+    osRelease: os.release(),
     locale: 'de_CH.utf8',
     isSafeStorageAvailable: false,
 };

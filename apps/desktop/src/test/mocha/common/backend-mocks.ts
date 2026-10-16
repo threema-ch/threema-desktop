@@ -754,6 +754,8 @@ export function makeTestServicesWithoutIdentity(): TestServicesWithoutIdentity {
     };
     const systemInfo: SystemInfo = {
         os: 'other',
+        osVersion: 'unknown',
+        osRelease: 'unknown',
         arch: 'pentium386',
         locale: 'de_CH.utf8',
         isSafeStorageAvailable: true,

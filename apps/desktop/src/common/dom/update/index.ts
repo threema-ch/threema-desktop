@@ -4,6 +4,7 @@ import type {f64} from '@threema/ts-utils/float/f64';
 import type {EarlyBackendServicesThatDontRequireConfig} from '~/common/backend';
 import {STATIC_CONFIG} from '~/common/config';
 import {adapter, ReadableStream, TransformStream, type WritableStream} from '~/common/dom/streams';
+import type {SystemInfo} from '~/common/electron-ipc';
 import type {Logger} from '~/common/logging';
 import {isNodeError} from '~/common/node/utils';
 import {unreachable} from '~/common/utils/assert';
@@ -13,6 +14,16 @@ import {
     determineInstallerName,
     isBuildFlavor,
 } from '../../../../config/base';
+
+/**
+ * Builds a specific user agent used for the updater including OS version, release and architecture.
+ *
+ * Note: We need this information for sunsetting Windows 10 so the server responds with the right
+ * information for the different Windows versions.
+ */
+export function buildUpdaterUserAgent(info: SystemInfo): string {
+    return `${STATIC_CONFIG.USER_AGENT}; Updater (${info.os}, ${info.osVersion}, ${info.osRelease}, ${info.arch})`;
+}
 
 const UPDATE_INFO_SCHEMA = v
     .object({
@@ -32,6 +43,7 @@ export type UpdateInfo = Pick<
 
 export class Updater {
     protected readonly _log: Logger;
+    private readonly _updaterUserAgent: string;
 
     public constructor(
         protected readonly _services: Pick<
@@ -40,6 +52,7 @@ export class Updater {
         >,
     ) {
         this._log = _services.logging.logger(`updater`);
+        this._updaterUserAgent = buildUpdaterUserAgent(_services.systemInfo);
     }
 
     /**
@@ -175,7 +188,7 @@ export class Updater {
                     credentials: 'omit',
                     referrerPolicy: 'no-referrer',
                     headers: {
-                        'user-agent': STATIC_CONFIG.USER_AGENT,
+                        'user-agent': this._updaterUserAgent,
                         'accept': 'application/json',
                     },
                 },
@@ -287,7 +300,7 @@ export class Updater {
             credentials: 'omit',
             referrerPolicy: 'no-referrer',
             headers: {
-                'user-agent': STATIC_CONFIG.USER_AGENT,
+                'user-agent': this._updaterUserAgent,
                 'accept': 'application/octet-stream',
             },
         });

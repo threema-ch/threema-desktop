@@ -66,6 +66,8 @@ export function run(): void {
             logging: new NoopLoggerFactory(),
             systemInfo: {
                 os: 'other',
+                osVersion: 'unknown',
+                osRelease: 'unknown',
                 arch: 'pentium386',
                 locale: 'de_CH.utf8',
                 isSafeStorageAvailable: true,

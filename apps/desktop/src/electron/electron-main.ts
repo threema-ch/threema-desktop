@@ -1,4 +1,5 @@
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 import * as path from 'node:path';
 import * as process from 'node:process';
 import {pathToFileURL, URL} from 'node:url';
@@ -961,8 +962,11 @@ function main(
                         operatingSystem = 'other';
                         break;
                 }
+
                 return {
                     os: operatingSystem,
+                    osVersion: os.version(),
+                    osRelease: os.release(),
                     arch: process.arch,
                     // TODO(DESK-1122): Improve this
                     locale: electron.app.getLocale(),
