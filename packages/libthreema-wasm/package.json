@@ -6,6 +6,9 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "pins": {
+    "binaryen": "124"
+  },
   "exports": {
     ".": {
       "import": "./libs/libthreema/build/wasm/web/libthreema.js",

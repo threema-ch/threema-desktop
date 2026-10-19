@@ -17,6 +17,10 @@ Then, run flatpak builder tools to convert `pnpm-lock.yaml` and `Cargo.lock` to 
     python -m flatpak-builder-tools.flatpak_node_generator pnpm --electron-node-headers --no-playwright-browsers --pnpm-store-version v11 -o generated-pnpm-sources.json ../../../../pnpm-lock.yaml
     python -m flatpak-builder-tools.flatpak-cargo-generator -o generated-cargo-sources.json ../../src/rust/launcher/Cargo.lock
 
+Generate the sources for the build tools.
+
+    python generate-tool-sources.py -o generated-tool-sources.json
+
 Generate the flatpak yaml file(s):
 
     ./generate-manifest.sh
