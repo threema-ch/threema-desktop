@@ -11,10 +11,10 @@ Make sure that the runtimes are installed:
 (Note: Unless you build as root, the runtimes (in particular the base app) must come from the
 per-user installation.)
 
-Then, run flatpak builder tools to convert `package-lock.json` and `Cargo.lock` to a
+Then, run flatpak builder tools to convert `pnpm-lock.yaml` and `Cargo.lock` to a
 `generated-*-sources.json `file.
 
-    python -m flatpak-builder-tools.flatpak_node_generator npm --electron-node-headers -o generated-npm-sources.json ../../package-lock.json
+    python -m flatpak-builder-tools.flatpak_node_generator pnpm --electron-node-headers --no-playwright-browsers --pnpm-store-version v11 -o generated-pnpm-sources.json ../../../../pnpm-lock.yaml
     python -m flatpak-builder-tools.flatpak-cargo-generator -o generated-cargo-sources.json ../../src/rust/launcher/Cargo.lock
 
 Generate the flatpak yaml file(s):
@@ -39,5 +39,7 @@ To run:
 
 ## Flatpak Node Generator
 
-To update, get the current sources from
-https://github.com/flatpak/flatpak-builder-tools/tree/master/node
+The `flatpak-builder-tools/flatpak_node_generator` directory is vendored unchanged from
+https://github.com/flatpak/flatpak-builder-tools/tree/master/node. Do not modify it locally;
+contribute fixes upstream instead. The currently vendored commit is noted in
+`flatpak-builder-tools/README.md`.
