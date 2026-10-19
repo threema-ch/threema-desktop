@@ -735,7 +735,7 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
     requireCommand('python3');
 
     // Layer dependencies
-    const layerDependenciesVersion = '24.08';
+    const layerDependenciesVersion = '25.08';
     const dependencies = [
         'org.electronjs.Electron2.BaseApp',
         'org.freedesktop.Sdk',
@@ -749,6 +749,10 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
         encoding: 'utf8' as const,
         shell: false,
         stdio: [null, 1, 2], // Forward stdout/stderr
+        env: {
+            ...process.env,
+            RUNTIME_VERSION: layerDependenciesVersion,
+        },
     };
 
     // Generate manifest files

@@ -11,6 +11,7 @@ function generate {
     sed "s/{{app-id}}/$app_id/g" $TEMPLATE \
         | sed "s/{{flavor}}/$flavor/g" \
         | sed "s/{{app-name}}/$app_name/g" \
+        | sed "s/{{runtime-version}}/${RUNTIME_VERSION:?}/g" \
         > "$app_id.yml"
 }
 
