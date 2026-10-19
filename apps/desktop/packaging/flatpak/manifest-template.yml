@@ -23,8 +23,6 @@ finish-args:
   # Webcam access for video calls (portal doesn't yet seem to be supported)
   # https://github.com/electron/electron/issues/42608.
   - --device=all
-  # Access directories.
-  - --filesystem=home
   # Allow desktop notifications.
   - --talk-name=org.freedesktop.Notifications
   # Allow writing to system secrets storage.
