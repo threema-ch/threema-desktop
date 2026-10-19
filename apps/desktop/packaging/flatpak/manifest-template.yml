@@ -6,6 +6,7 @@ base: org.electronjs.Electron2.BaseApp
 base-version: '{{runtime-version}}'
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.node24
 command: run.sh
 separate-locales: false
 finish-args:
@@ -24,51 +25,72 @@ finish-args:
   # https://github.com/electron/electron/issues/42608.
   - --device=all
 build-options:
-  append-path: /usr/lib/sdk/rust-stable/bin
+  append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/node24/bin
   env:
+    NPM_CONFIG_LOGLEVEL: info
     CARGO_HOME: /run/build/threema-desktop/cargo
 modules:
   - name: threema-desktop
     buildsystem: simple
+    build-options:
+      prepend-path: /run/build/threema-desktop/rust/bin:/run/build/threema-desktop/pnpm/bin:/run/build/threema-desktop/wasm-bindgen:/run/build/threema-desktop/wasm-binaryen/bin:/run/build/threema-desktop/protoc/bin
+      env:
+        XDG_CACHE_HOME: /run/build/threema-desktop/flatpak-node/cache
+        CARGO_HOME: /run/build/threema-desktop/cargo
+        CARGO_NET_OFFLINE: 'true'
+        npm_config_cache: /run/build/threema-desktop/flatpak-node/npm-cache
+        # Path to the cached Electron headers. See `generated-pnpm-sources.json` and look for the
+        # `dest` directory of the
+        # https://www.electronjs.org/headers/v{VERSION}/node-v{VERSION}-headers.tar.gz source.
+        npm_config_nodedir: /run/build/threema-desktop/flatpak-node/cache/node-gyp/40.10.0
+        pnpm_config_offline: 'true'
+        # The release age is being verified when the lockfile is updated.
+        pnpm_config_minimum_release_age: '0'
+        SKIP_LAUNCHER_BINARY: 'true'
+        TURBO_TELEMETRY_DISABLED: '1'
+      secret-env: ['SENTRY_DSN', 'MINIDUMP_ENDPOINT']
     sources:
-      # Prebuilt Electron app.
-      - type: dir
-        path: ../../../../build/apps/desktop/packaged/{{app-name}}-linux-x64
-        dest: prebuilt
-      # Launcher source code.
-      - type: dir
-        path: ../../src
-        dest: src
-      # Rust dependencies for the launcher build.
+      # Project source code.
+      - type: git
+        path: ../../../..
+        commit: '{{git-commit}}'
+      # Node dependencies, updated with `flatpak_node_generator`.
+      - generated-pnpm-sources.json
+      # Rust dependencies for the launcher and libthreema, updated with `flatpak-cargo-generator`.
       - generated-cargo-sources.json
+      - generated-libthreema-cargo-sources.json
+      # Build tools, updated with `generate-tool-sources.py`.
+      - generated-tool-sources.json
       # Wrapper to launch the app.
       - type: file
         path: run-wrapper.sh
         dest-filename: run.sh
-      # Metadata files.
-      - type: file
-        path: ../../packaging/metadata/ch.threema.threema-desktop.metainfo.xml
-      - type: file
-        path: ../../packaging/metadata/ch.threema.threema-desktop.desktop
-      # Icon assets.
-      - type: dir
-        path: ../../packaging/assets/icons/flatpak
-        dest: icons
 
     build-commands:
       # Build launcher binary.
-      - cd src/rust/launcher/ && cargo --offline fetch --manifest-path Cargo.toml --verbose
-      - cd src/rust/launcher/ && THREEMA_BUILD_FLAVOR='{{flavor}}' cargo --offline build --release --features allow_path_override
-      # Copy prebuilt app to `/app/main`.
+      - cd apps/desktop/src/rust/launcher/ && cargo --offline fetch --manifest-path Cargo.toml --verbose
+      - cd apps/desktop/src/rust/launcher/ && THREEMA_BUILD_FLAVOR='{{flavor}}' cargo --offline build --release --features allow_path_override
+      # The Node.js version of the SDK extension does not exactly match the version pinned in
+      # `engines.node`, so the strict engine check has to be disabled.
+      - "sed -i 's/^engineStrict: true$/engineStrict: false/' pnpm-workspace.yaml"
+      # Install Node dependencies from the pnpm store populated by `generated-pnpm-sources.json`.
+      - pnpm install --offline --frozen-lockfile
+      # Let `electron-rebuild` find the cached Electron headers. See:
+      # https://github.com/flatpak/flatpak-builder-tools/pull/260#discussion_r822084602
+      - ln -s $XDG_CACHE_HOME/node-gyp $HOME/.electron-gyp
+      # Build Threema Desktop. Use the loose env mode, so that turbo passes the build environment
+      # (e.g. `CARGO_HOME`, `npm_config_*`) through to all tasks.
+      - pnpm run dist:desktop:{{flavor}} --env-mode=loose
+      # Copy built app to `/app/main`.
       - mkdir -p /app/main
-      - cp -a prebuilt/* /app/main/
+      - cp -a build/apps/desktop/packaged/*-linux-x64/. /app/main/
       # Install launcher binary.
-      - install -Dm755 src/rust/launcher/target/release/ThreemaDesktopLauncher /app/main/ThreemaDesktopLauncher
+      - install -Dm755 apps/desktop/src/rust/launcher/target/release/ThreemaDesktopLauncher /app/main/ThreemaDesktopLauncher
       # Install app wrapper.
       - install -Dm755 run.sh /app/bin/
       # Install metadata.
-      - install -Dm644 ch.threema.threema-desktop.metainfo.xml /app/share/metainfo/{{app-id}}.metainfo.xml
-      - install -Dm644 ch.threema.threema-desktop.desktop /app/share/applications/{{app-id}}.desktop
+      - install -Dm644 apps/desktop/packaging/metadata/ch.threema.threema-desktop.metainfo.xml /app/share/metainfo/{{app-id}}.metainfo.xml
+      - install -Dm644 apps/desktop/packaging/metadata/ch.threema.threema-desktop.desktop /app/share/applications/{{app-id}}.desktop
       - sed -i 's/ch.threema.threema-desktop/{{app-id}}/g' /app/share/metainfo/{{app-id}}.metainfo.xml
       - sed -i 's/ch.threema.threema-desktop/{{app-id}}/g' /app/share/applications/{{app-id}}.desktop
       - sed -i "s#name>Threema<#name>{{app-name}}<#" /app/share/metainfo/{{app-id}}.metainfo.xml
@@ -85,5 +107,5 @@ modules:
           work-onprem) icon_base=work-onprem ;;
           *) echo "Invalid flavor: {{flavor}}"; exit 1 ;;
         esac
-        install -Dm644 icons/${icon_base}.svg /app/share/icons/hicolor/scalable/apps/{{app-id}}.svg
-        install -Dm644 icons/${icon_base}.png /app/share/icons/hicolor/512x512/apps/{{app-id}}.png
+        install -Dm644 apps/desktop/packaging/assets/icons/flatpak/${icon_base}.svg /app/share/icons/hicolor/scalable/apps/{{app-id}}.svg
+        install -Dm644 apps/desktop/packaging/assets/icons/flatpak/${icon_base}.png /app/share/icons/hicolor/512x512/apps/{{app-id}}.png
