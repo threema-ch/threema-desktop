@@ -7,7 +7,6 @@ This configuration is used to build nightly versions of Threema Desktop from CI.
 Make sure that the runtimes are installed:
 
     flatpak install --user org.electronjs.Electron2.BaseApp
-    flatpak install --user org.freedesktop.Sdk.Extension.node22
 
 (Note: Unless you build as root, the runtimes (in particular the base app) must come from the
 per-user installation.)

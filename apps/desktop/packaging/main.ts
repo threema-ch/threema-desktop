@@ -739,7 +739,6 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
     const dependencies = [
         'org.electronjs.Electron2.BaseApp',
         'org.freedesktop.Sdk',
-        'org.freedesktop.Sdk.Extension.node22',
         'org.freedesktop.Sdk.Extension.rust-stable',
     ];
 
