@@ -806,6 +806,9 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
         case 'x64':
             arch = 'x86_64';
             break;
+        case 'arm64':
+            arch = 'aarch64';
+            break;
         default:
             fail(`Unsupported architecture: ${process.arch}`);
     }
