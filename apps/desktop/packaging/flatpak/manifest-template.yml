@@ -19,8 +19,6 @@ finish-args:
   - --socket=pulseaudio
   # Allow access to network.
   - --share=network
-  # OpenGL rendering.
-  - --device=dri
   # Webcam access for video calls (portal doesn't yet seem to be supported)
   # https://github.com/electron/electron/issues/42608.
   - --device=all
@@ -79,30 +77,13 @@ modules:
         # Path to the cached Electron headers. See `generated-pnpm-sources.json` and look for the
         # `dest` directory of the
         # https://www.electronjs.org/headers/v{VERSION}/node-v{VERSION}-headers.tar.gz source.
-        npm_config_nodedir: /run/build/threema-desktop/flatpak-node/cache/node-gyp/40.10.0
+        npm_config_nodedir: /run/build/threema-desktop/flatpak-node/cache/node-gyp/{{electron-version}}
         pnpm_config_offline: 'true'
         # The release age is being verified when the lockfile is updated.
         pnpm_config_minimum_release_age: '0'
         SKIP_LAUNCHER_BINARY: 'true'
         TURBO_TELEMETRY_DISABLED: '1'
       secret-env: ['SENTRY_DSN', 'MINIDUMP_ENDPOINT']
-    sources:
-      # Project source code.
-      - type: git
-        path: ../../../..
-        commit: '{{git-commit}}'
-      # Node dependencies, updated with `flatpak_node_generator`.
-      - generated-pnpm-sources.json
-      # Rust dependencies for the launcher and libthreema, updated with `flatpak-cargo-generator`.
-      - generated-cargo-sources.json
-      - generated-libthreema-cargo-sources.json
-      # Build tools, updated with `generate-tool-sources.py`.
-      - generated-tool-sources.json
-      # Wrapper to launch the app.
-      - type: file
-        path: run-wrapper.sh
-        dest-filename: run.sh
-
     build-commands:
       # Build launcher binary.
       - cd apps/desktop/src/rust/launcher/ && cargo --offline fetch --manifest-path Cargo.toml --verbose
@@ -120,7 +101,7 @@ modules:
       - pnpm run dist:desktop:{{flavor}} --env-mode=loose
       # Copy built app to `/app/main`.
       - mkdir -p /app/main
-      - cp -a build/apps/desktop/packaged/*-linux-x64/. /app/main/
+      - cp -a build/apps/desktop/packaged/*-linux-*/. /app/main/
       # Install launcher binary.
       - install -Dm755 apps/desktop/src/rust/launcher/target/release/ThreemaDesktopLauncher /app/main/ThreemaDesktopLauncher
       # Install app wrapper.
@@ -135,14 +116,21 @@ modules:
       - sed -i "s#StartupWMClass=Threema#StartupWMClass={{app-name}}#" /app/share/applications/{{app-id}}.desktop
       # Install Icons.
       - mkdir -p /app/share/icons/hicolor/{512x512,scalable}/apps/
-      - |
-        case {{flavor}} in
-          consumer-sandbox) icon_base=consumer-sandbox ;;
-          consumer-live) icon_base=consumer-live ;;
-          work-sandbox) icon_base=work-sandbox ;;
-          work-live) icon_base=work-live ;;
-          work-onprem) icon_base=work-onprem ;;
-          *) echo "Invalid flavor: {{flavor}}"; exit 1 ;;
-        esac
-        install -Dm644 apps/desktop/packaging/assets/icons/flatpak/${icon_base}.svg /app/share/icons/hicolor/scalable/apps/{{app-id}}.svg
-        install -Dm644 apps/desktop/packaging/assets/icons/flatpak/${icon_base}.png /app/share/icons/hicolor/512x512/apps/{{app-id}}.png
+      - install -Dm644 apps/desktop/packaging/assets/icons/flatpak/{{flavor}}.svg /app/share/icons/hicolor/scalable/apps/{{app-id}}.svg
+      - install -Dm644 apps/desktop/packaging/assets/icons/flatpak/{{flavor}}.png /app/share/icons/hicolor/512x512/apps/{{app-id}}.png
+    sources:
+      # Project source code.
+      - type: git
+        path: ../../../..
+        commit: '{{git-commit}}'
+      # Node dependencies, updated with `flatpak_node_generator`.
+      - generated-pnpm-sources.json
+      # Rust dependencies for the launcher and libthreema, updated with `flatpak-cargo-generator`.
+      - generated-cargo-sources.json
+      - generated-libthreema-cargo-sources.json
+      # Build tools, updated with `generate-tool-sources.py`.
+      - generated-tool-sources.json
+      # Wrapper to launch the app.
+      - type: file
+        path: run-wrapper.sh
+        dest-filename: run.sh
