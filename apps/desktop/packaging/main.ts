@@ -750,6 +750,7 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
     const dependencies = [
         'org.electronjs.Electron2.BaseApp',
         'org.freedesktop.Sdk',
+        'org.freedesktop.Sdk.Extension.node24',
         'org.freedesktop.Sdk.Extension.rust-stable',
     ];
 
@@ -771,6 +772,24 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
     execFileSync('bash', ['generate-manifest.sh'], options);
 
     // Run flatpak source generators
+    log.minor('Generate pnpm source JSON');
+    execFileSync(
+        'python3',
+        [
+            '-m',
+            'flatpak-builder-tools.flatpak_node_generator',
+            'pnpm',
+            '--electron-node-headers',
+            '--no-playwright-browsers',
+            '--pnpm-store-version',
+            'v11',
+            '-o',
+            'generated-pnpm-sources.json',
+            '../../../../pnpm-lock.yaml',
+        ],
+        options,
+    );
+
     log.minor('Generate cargo source JSON');
     execFileSync(
         'python3',
@@ -781,6 +800,34 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
             'generated-cargo-sources.json',
             '../../src/rust/launcher/Cargo.lock',
         ],
+        options,
+    );
+
+    const libthreemaCargoLockPath = path.join(
+        dirs.monorepoRoot,
+        'packages',
+        'libthreema-wasm',
+        'libs',
+        'libthreema',
+        'Cargo.lock',
+    );
+    log.minor('Generate libthreema cargo source JSON');
+    execFileSync(
+        'python3',
+        [
+            '-m',
+            'flatpak-builder-tools.flatpak-cargo-generator',
+            '-o',
+            'generated-libthreema-cargo-sources.json',
+            libthreemaCargoLockPath,
+        ],
+        options,
+    );
+
+    log.minor('Generate build tool source JSON');
+    execFileSync(
+        'python3',
+        ['generate-tool-sources.py', '-o', 'generated-tool-sources.json'],
         options,
     );
 
