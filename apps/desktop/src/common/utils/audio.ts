@@ -37,9 +37,7 @@ export async function calculateRootMeanSquare(
             return undefined;
         }
 
-        const audioContext = new AudioContext();
-        const arrayBuffer = await audioBlob.arrayBuffer();
-        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        const audioBuffer = await decodeAudio(audioBlob);
 
         // For simplicity, we just take the main channel.
         const channelData = audioBuffer.getChannelData(0);
@@ -70,14 +68,25 @@ export async function computeAudioDuration(
     log?: Logger,
 ): Promise<f64 | undefined> {
     try {
-        const audioContext = new AudioContext();
-        const arrayBuffer = await audioBlob.arrayBuffer();
-        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        const audioBuffer = await decodeAudio(audioBlob);
         return audioBuffer.duration;
     } catch (error) {
         log?.debug('Could not compute audio duration: ', error);
         return undefined;
     }
+}
+
+/**
+ * Decode the provided audio blob into an {@link AudioBuffer}.
+ *
+ * Note: This intentionally uses an `OfflineAudioContext`, which never opens an audio output device.
+ * A realtime `AudioContext` keeps an audio output stream running (and consuming CPU) until it is
+ * closed, and is not garbage collected before that.
+ */
+async function decodeAudio(audioBlob: Blob): Promise<AudioBuffer> {
+    const audioContext = new OfflineAudioContext({length: 1, sampleRate: 48_000});
+    const arrayBuffer = await audioBlob.arrayBuffer();
+    return await audioContext.decodeAudioData(arrayBuffer);
 }
 
 /**
