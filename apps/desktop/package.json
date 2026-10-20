@@ -15,6 +15,12 @@
   "private": true,
   "type": "module",
   "main": "build/electron/electron-main/electron-main.cjs",
+  "files": [
+    "build/electron/app",
+    "build/electron/electron-main",
+    "build/electron/electron-preload",
+    "build/electron/screenshare-preload"
+  ],
   "sideEffects": false,
   "scripts": {
     "build": "node tools/build-electron.mjs",
@@ -50,7 +56,7 @@
     "test:mocha": "nyc --nycrc-path .nycrc.mocha.json --temp-dir \".nyc_output_mocha/$TURBO_BUILD_VARIANT-$TURBO_BUILD_ENVIRONMENT\" --reporter=text node tools/run-tests.cjs mocha -- --reporter mocha-junit-reporter --reporter-options mochaFile=\"./junit/$TURBO_BUILD_VARIANT-$TURBO_BUILD_ENVIRONMENT/mocha.xml\"",
     "test:playwright": "pnpm exec playwright test"
   },
-  "packageManager": "pnpm@11.15.1",
+  "packageManager": "pnpm@11.26.0",
   "engines": {
     "node": "24.22.1"
   },

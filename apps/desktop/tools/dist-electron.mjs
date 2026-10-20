@@ -311,11 +311,9 @@ async function packageApp(baseAppName, environment, mode, variant) {
             '--filter',
             pkg.name,
             '--prod',
-            // Use `--legacy` to prevent having to use `inject-workspace-packages=true` in the
-            // entire repo. See: https://pnpm.io/cli/deploy#--legacy.
-            '--legacy',
             'deploy',
             deployedAppDir,
+            '--ignore-scripts',
         ],
         {
             cwd: monorepoRootDir,
@@ -332,11 +330,6 @@ async function packageApp(baseAppName, environment, mode, variant) {
         console.warn(deployResult);
         fail(`Packaging error: pnpm deploy failed, exit code ${deployResult.status}`);
     }
-
-    // `pnpm deploy` creates an additional, extraneous directory `apps/desktop/temp/...` in
-    // `--legacy` mode, see: https://github.com/pnpm/pnpm/issues/8835. We can simply remove this,
-    // even if it's a bit ugly.
-    fsExtra.removeSync(resolve(appDir, 'temp'));
 
     // Rebuild native modules in the `deployedAppDir` for the Electron version we package with.
     const electronVersion = JSON.parse(
