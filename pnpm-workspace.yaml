@@ -73,6 +73,7 @@ minimumReleaseAgeStrict: true
 
 overrides:
   "@electron/rebuild>node-abi": "4.17.0"
+  "macos-alias>nan": "2.30.0"
 
 pmOnFail: error
 
