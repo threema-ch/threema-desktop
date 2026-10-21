@@ -22,7 +22,19 @@ import {
  * information for the different Windows versions.
  */
 export function buildUpdaterUserAgent(info: SystemInfo): string {
-    return `${STATIC_CONFIG.USER_AGENT}; Updater (${info.os}, ${info.osVersion}, ${info.osRelease}, ${info.arch})`;
+    function clean(value: string): string {
+        return (
+            value
+                // eslint-disable-next-line threema/ban-stateful-regex-flags
+                .replaceAll(/[^\x20-\x7E]/gu, '?')
+                .replaceAll('"', "'")
+                .replaceAll('\\', '/')
+                .replaceAll('(', '[')
+                .replaceAll(')', ']')
+        );
+    }
+
+    return `${STATIC_CONFIG.USER_AGENT} Updater ("${clean(info.os)}"; "${clean(info.osRelease)}"; "${clean(info.arch)}")`;
 }
 
 const UPDATE_INFO_SCHEMA = v
