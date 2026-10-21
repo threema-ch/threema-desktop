@@ -9,8 +9,8 @@ import url from 'node:url';
 
 import * as v from '@badrap/valita';
 import {flipFuses, FuseVersion, FuseV1Options} from '@electron/fuses';
-import {GotDownloader} from '@electron/get';
-import packager from '@electron/packager';
+import {FetchDownloader} from '@electron/get';
+import {packager} from '@electron/packager';
 import {populateIgnoredPaths} from '@electron/packager/dist/copy-filter.js';
 import debug from 'debug';
 import fsExtra from 'fs-extra';
@@ -133,7 +133,7 @@ const LoggingDownloader = {
      * @param {string} sourceUrl URL of the file to download.
      * @param {string} targetFilePath Filesystem path to download the artifact to (including the
      *   file name.
-     * @param {Partial<import('@electron/get').GotDownloaderOptions>} options Filesystem path to
+     * @param {Partial<import('@electron/get').FetchDownloaderOptions>} options Filesystem path to
      *   download the artifact to (including the file name).
      * @returns {Promise<void>}
      */
@@ -142,7 +142,7 @@ const LoggingDownloader = {
             `dist-electron.cjs: @electron/get is downloading artifact: url=${sourceUrl}, path=${targetFilePath}`,
         );
 
-        return new GotDownloader().download(sourceUrl, targetFilePath, options);
+        return new FetchDownloader().download(sourceUrl, targetFilePath, options);
     },
 };
 
@@ -387,7 +387,7 @@ async function packageApp(baseAppName, environment, mode, variant) {
         return;
     }
 
-    // See: https://packages.electronjs.org/packager/v19.0.1/interfaces/Options.html#icon.
+    // See: https://packages.electronjs.org/packager/v20.3.0/interfaces/Options.html#icon.
     let icon;
     let platformSpecificOptions = {};
     switch (process.platform) {
@@ -434,7 +434,7 @@ async function packageApp(baseAppName, environment, mode, variant) {
                 // Will be used as `CFBundleIdentifier` in Info.plist.
                 appBundleId,
                 // Will be used as `LSApplicationCategoryType` in Info.plist. See:
-                // https://packages.electronjs.org/packager/v19.0.1/interfaces/Options.html#appCategoryType.
+                // https://packages.electronjs.org/packager/v20.3.0/interfaces/Options.html#appcategorytype.
                 appCategoryType: 'public.app-category.social-networking',
                 darwinDarkModeSupport: true,
                 extendInfo: {
@@ -456,7 +456,7 @@ async function packageApp(baseAppName, environment, mode, variant) {
                 `${variant}-${environment}.ico`,
             );
             platformSpecificOptions = {
-                // See: https://packages.electronjs.org/packager/v19.0.1/interfaces/Win32MetadataOptions.html.
+                // See: https://packages.electronjs.org/packager/v20.3.0/interfaces/Win32MetadataOptions.html.
                 win32metadata: {
                     'CompanyName': pkg.author,
                     'ProductName': appName,
@@ -474,7 +474,7 @@ async function packageApp(baseAppName, environment, mode, variant) {
 
     // Package app using `@electron/packager`.
     //
-    // See: https://packages.electronjs.org/packager/v19.0.1/interfaces/Options.html.
+    // See: https://packages.electronjs.org/packager/v20.3.0/interfaces/Options.html.
     console.info('📦 Packaging application with @electron/packager');
     const [outputPath] = await packager({
         appCopyright: '© Threema AG – Released under the AGPL-3.0 license',
@@ -527,6 +527,7 @@ async function packageApp(baseAppName, environment, mode, variant) {
                 ),
         ],
         derefSymlinks: true,
+        // When `ignore` is a function, `@electron/packager` default ignore rules aren't applied.
         ignore: (path) => {
             // Deny: Default rules from `@electron/packager`.
             if (!Array.isArray(options.ignore)) {
