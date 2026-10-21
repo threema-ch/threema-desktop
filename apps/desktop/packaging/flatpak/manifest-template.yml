@@ -32,8 +32,6 @@ finish-args:
   # Since this is electron, we also need access to the actual keystore DBuses.
   - --talk-name=org.kde.kwalletd5
   - --talk-name=org.kde.kwalletd6
-  # Use native Wayland if available.
-  - --env=ELECTRON_OZONE_PLATFORM_HINT=auto
 build-options:
   append-path: /usr/lib/sdk/rust-stable/bin
   env:
