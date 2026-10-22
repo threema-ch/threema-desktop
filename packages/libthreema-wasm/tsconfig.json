@@ -1,6 +1,6 @@
 {
   "$schema": "https://www.schemastore.org/tsconfig",
-  "extends": "@threema/ts-config/tsconfig.node22.json",
+  "extends": "@threema/ts-config/tsconfig.node24.json",
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
