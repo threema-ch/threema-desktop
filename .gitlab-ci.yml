@@ -22,7 +22,7 @@ variables:
   GIT_STRATEGY: clone
   # Clone git repository recursively.
   GIT_SUBMODULE_STRATEGY: recursive
-  NODE_VERSION: '22.17.0'
+  NODE_VERSION: '24.22.1'
   NVM_VERSION: '0.40.3'
   # Major.minor channel form of RUST_VERSION (e.g. 1.94). Used for rustup and Dockerfiles.
   RUST_CHANNEL: '1.94'

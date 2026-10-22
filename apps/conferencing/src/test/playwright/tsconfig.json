@@ -1,7 +1,7 @@
 {
   "$schema": "https://www.schemastore.org/tsconfig",
   // Playwright tests run in a Node environment, while some callbacks are executed in a DOM context.
-  "extends": "@threema/ts-config/tsconfig.node22.json",
+  "extends": "@threema/ts-config/tsconfig.node24.json",
   "compilerOptions": {
     "lib": ["DOM", "ESNext"],
     "module": "esnext",
