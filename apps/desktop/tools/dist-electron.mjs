@@ -171,7 +171,7 @@ function buildAndBundleExtraBinary(
 ) {
     // Build binary.
     console.log(`🦀 Building extra binary ${outputName} for ${flavor} through cargo`);
-    const buildResult = spawnSync('cargo', ['build', `--release`], {
+    const buildResult = spawnSync('cargo build --release', {
         cwd: resolve(...basePath),
         encoding: 'utf8',
         shell: true,

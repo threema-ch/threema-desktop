@@ -1,4 +1,4 @@
 {
   "$schema": "https://www.schemastore.org/tsconfig",
-  "extends": "./tsconfig.node22.json"
+  "extends": "./tsconfig.node24.json"
 }
