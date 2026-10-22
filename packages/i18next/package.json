@@ -1,0 +1,34 @@
+{
+  "name": "@threema/i18next",
+  "description": "i18next tooling shared between apps, e.g. an i18next-cli plugin for Svelte components",
+  "author": "Threema AG",
+  "license": "AGPL-3.0+",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint:eslint": "eslint .",
+    "lint:eslint:fix": "eslint . --fix",
+    "lint:tsc": "tsc --noEmit",
+    "test:vitest": "vitest run --coverage"
+  },
+  "dependencies": {
+    "svelte": "catalog:"
+  },
+  "peerDependencies": {
+    "i18next-cli": "catalog:"
+  },
+  "devDependencies": {
+    "@threema/eslint-config": "workspace:*",
+    "@threema/ts-config": "workspace:*",
+    "@types/node": "catalog:",
+    "@vitest/coverage-istanbul": "catalog:",
+    "eslint": "catalog:",
+    "i18next-cli": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

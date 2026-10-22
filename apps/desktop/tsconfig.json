@@ -6,5 +6,5 @@
 
     "noEmit": true
   },
-  "include": ["playwright.config.ts", "svelte.config.js"]
+  "include": ["i18next.config.ts", "playwright.config.ts", "svelte.config.js"]
 }

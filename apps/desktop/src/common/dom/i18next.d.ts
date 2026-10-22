@@ -11,6 +11,8 @@ declare module 'i18next' {
         //
         //  Source: https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz
         readonly returnNull: false;
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        readonly defaultNS: 'translation';
         readonly resources: (typeof resources)['en'];
     }
 }

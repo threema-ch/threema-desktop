@@ -1,0 +1,8 @@
+{
+  "$schema": "https://www.schemastore.org/tsconfig",
+  "extends": "@threema/ts-config/tsconfig.node24.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["vitest.config.ts", "src/**/*.ts"]
+}
