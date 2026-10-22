@@ -52,6 +52,7 @@ export default defineConfig(
                     devDependencies: [
                         '{config,packaging,test,tools}/**',
                         'eslint.config.mjs',
+                        'i18next.config.ts',
                         'playwright.config.ts',
                         'svelte.config.js',
                     ],
@@ -86,7 +87,13 @@ export default defineConfig(
 
     // Utility script rules
     {
-        files: ['config/**/*.ts', 'config/**/base.js', 'tools/**/*.ts', 'playwright.config.ts'],
+        files: [
+            'config/**/*.ts',
+            'config/**/base.js',
+            'tools/**/*.ts',
+            'i18next.config.ts',
+            'playwright.config.ts',
+        ],
         languageOptions: {
             globals: {
                 ...globals.node,

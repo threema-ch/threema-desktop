@@ -30,6 +30,9 @@ build
 # Package: `packages/call`
 /packages/call/coverage/
 
+# Package: `packages/i18next`
+/packages/i18next/coverage/
+
 # Package: `packages/crypto`
 /packages/crypto/coverage/
 /packages/crypto/src/blake2b/implementation.js
