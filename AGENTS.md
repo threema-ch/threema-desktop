@@ -77,6 +77,7 @@ structure.
 │   ├── electron/                          # Electron-specific utilities (@threema/electron-utils)
 │   ├── eslint-config/                     # Shared ESLint configuration
 │   ├── eslint-plugin-threema/             # Custom ESLint rules
+│   ├── i18next-cli-plugin-svelte/         # i18next-cli plugin to extract translation keys from Svelte components
 │   ├── libthreema-wasm/                   # Threema protocol implementation written in Rust
 │   ├── protocol/                          # Generated Threema protocol bindings and enums
 │   ├── safe-enums/                        # Generator for safe enums (from a package's enum schema)

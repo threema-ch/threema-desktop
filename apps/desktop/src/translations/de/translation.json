@@ -777,6 +777,7 @@
     "label--threema-work-username": "{fullAppName}-Benutzername",
     "label--title": "Einstellungen",
     "label--typing-indicator": "Melden, wenn ich tippe",
+    "prose--call-settings": "{shortAppName} Anrufe, Videoanrufe, Gruppenanrufe",
     "prose--do-not-disturb-mentioned-off": "Sie werden keine Benachrichtigungen erhalten",
     "prose--do-not-disturb-mentioned-on": "Sie werden nur Benachrichtigungen erhalten, falls Sie erwähnt werden"
   },

@@ -777,6 +777,7 @@
     "label--threema-work-username": "{fullAppName} Username",
     "label--title": "Settings",
     "label--typing-indicator": "Typing Indicator",
+    "prose--call-settings": "{shortAppName} Calls, Video Calls, Group Calls",
     "prose--do-not-disturb-mentioned-off": "You will not receive any notifications",
     "prose--do-not-disturb-mentioned-on": "You will only receive notifications when you are mentioned"
   },

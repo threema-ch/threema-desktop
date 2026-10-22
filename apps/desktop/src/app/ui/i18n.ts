@@ -71,7 +71,7 @@ const translationEn: BaseTranslationNamespace = translationEnJson;
 const translationDe: StrictPartial<typeof translationDeJson, BaseTranslationNamespace> =
     translationDeJson;
 
-// Consider keeping the locales in sync in the config/i18next-parser.config.js file.
+// Consider keeping the locales in sync in the i18next.config.ts file.
 export const resources = {
     de: {translation: translationDe},
     en: {translation: translationEn},

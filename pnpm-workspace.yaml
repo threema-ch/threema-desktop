@@ -3,6 +3,7 @@ packages:
   - packages/*
 
 allowBuilds:
+  '@swc/core': true
   '@threema/eslint-plugin-threema': true
   'argon2@https://codeload.github.com/threema-ch/node-argon2/tar.gz/d25269c471b3ece9831662fab366db531e9cfc90': true
   'better-sqlcipher@https://codeload.github.com/threema-ch/better-sqlcipher/tar.gz/e74f8b8d8fa5d000071f3e433adbd255fde84a4a': true
@@ -39,6 +40,7 @@ catalog:
   eslint-plugin-storybook: 10.3.4
   eslint: ~9.34.0
   globals: 16.3.0
+  i18next-cli: ~1.76.0
   long: 5.3.2
   playwright: 1.56.1
   prettier-plugin-svelte: 3.5.1
