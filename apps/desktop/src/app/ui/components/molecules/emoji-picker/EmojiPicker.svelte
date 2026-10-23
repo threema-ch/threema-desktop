@@ -275,12 +275,10 @@
       log.error(`Failed to load EmojiPickerViewModelBundle: ${ensureError(error)}`);
 
       toast.addSimpleFailure(
-        i18n
-          .get()
-          .t(
-            'emoji-picker.error--emoji-picker-preferences',
-            'Emoji picker preferences could not be loaded',
-          ),
+        $i18n.t(
+          'emoji-picker.error--emoji-picker-preferences',
+          'Emoji picker preferences could not be loaded',
+        ),
       );
     });
 

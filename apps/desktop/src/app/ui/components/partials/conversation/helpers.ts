@@ -81,32 +81,29 @@ export function showFileResultErrorToast(
     i18n: typeof i18nStore,
     log: Logger,
 ): void {
+    const {t} = i18n.get();
     switch (status) {
         case 'empty':
             log.warn('A file or list of files was added, but it was empty');
             toast.addSimpleFailure(
-                i18n.get().t('messaging.error--add-files-empty', "Files couldn't be added"),
+                t('messaging.error--add-files-empty', "Files couldn't be added"),
             );
             break;
 
         case 'inaccessible':
             log.warn('A file or list of files was added, but it could not be accessed');
             toast.addSimpleFailure(
-                i18n
-                    .get()
-                    .t('messaging.error--add-files-inaccessible', "Files couldn't be accessed"),
+                t('messaging.error--add-files-inaccessible', "Files couldn't be accessed"),
             );
             break;
 
         case 'partial':
             log.warn('A file or list of files was added, but some files could not be accessed');
             toast.addSimpleWarning(
-                i18n
-                    .get()
-                    .t(
-                        'messaging.error--add-files-partially-inaccessible',
-                        "Some files couldn't be accessed",
-                    ),
+                t(
+                    'messaging.error--add-files-partially-inaccessible',
+                    "Some files couldn't be accessed",
+                ),
             );
             break;
 

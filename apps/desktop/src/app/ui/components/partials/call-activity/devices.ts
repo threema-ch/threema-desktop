@@ -198,27 +198,21 @@ export function createCallDevices(args: CallDevicesArgs): CallDevices {
         }
         log.warn(`Capturing the ${source} failed`, error);
 
+        const {t} = i18n.get();
         switch (source) {
             case 'camera':
                 toast.addDismissable(
-                    i18n
-                        .get()
-                        .t(
-                            'messaging.error--call-camera-unavailable',
-                            'Camera could not be turned on',
-                        ),
+                    t('messaging.error--call-camera-unavailable', 'Camera could not be turned on'),
                     FAILURE_ICON,
                 );
                 break;
 
             case 'microphone':
                 toast.addDismissable(
-                    i18n
-                        .get()
-                        .t(
-                            'messaging.error--call-microphone-unavailable',
-                            'Microphone could not be turned on',
-                        ),
+                    t(
+                        'messaging.error--call-microphone-unavailable',
+                        'Microphone could not be turned on',
+                    ),
                     FAILURE_ICON,
                 );
                 break;
@@ -231,18 +225,14 @@ export function createCallDevices(args: CallDevicesArgs): CallDevices {
                 }
                 toast.addDismissable(
                     error instanceof MediaDeviceTimeoutError
-                        ? i18n
-                              .get()
-                              .t(
-                                  'messaging.error--picker-time-out',
-                                  'Screen sharing timed out. Please try again.',
-                              )
-                        : i18n
-                              .get()
-                              .t(
-                                  'messaging.error--call-screen-sharing-unavailable',
-                                  'Screen could not be shared',
-                              ),
+                        ? t(
+                              'messaging.error--picker-time-out',
+                              'Screen sharing timed out. Please try again.',
+                          )
+                        : t(
+                              'messaging.error--call-screen-sharing-unavailable',
+                              'Screen could not be shared',
+                          ),
                     FAILURE_ICON,
                 );
                 break;
@@ -269,11 +259,10 @@ export function createCallDevices(args: CallDevicesArgs): CallDevices {
             electron.closeScreenSharingReminder();
             return;
         }
+        const {t} = i18n.get();
         electron.showScreenSharingReminder(
-            i18n
-                .get()
-                .t('messaging.hint--call-screen-sharing-enabled', 'You are sharing your screen'),
-            i18n.get().t('messaging.label--call-screen-sharing-stop', 'Stop sharing'),
+            t('messaging.hint--call-screen-sharing-enabled', 'You are sharing your screen'),
+            t('messaging.label--call-screen-sharing-stop', 'Stop sharing'),
         );
     }
 
