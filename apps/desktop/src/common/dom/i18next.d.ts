@@ -11,6 +11,7 @@ declare module 'i18next' {
         //
         //  Source: https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz
         readonly returnNull: false;
+        readonly parseInterpolation: false;
         readonly resources: (typeof resources)['en'];
     }
 }
