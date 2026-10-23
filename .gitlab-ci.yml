@@ -16,8 +16,8 @@ variables:
   WASM_BINDGEN_VERSION: '0.2.114'
   # Repositories used by the protocol drift checks. They are cloned via `CI_JOB_TOKEN`, which
   # requires this project to be on each repository's job token allowlist.
-  STRUCTBUF_TYPESCRIPT_REPO: '${CI_SERVER_HOST}/clients/protocols/structbuf-typescript.git'
-  THREEMA_PROTOCOLS_REPO: '${CI_SERVER_HOST}/clients/protocols/threema-protocols.git'
+  STRUCTBUF_TYPESCRIPT_REPO: '${CI_SERVER_HOST}/technology-org/libraries/protocols/structbuf-typescript.git'
+  THREEMA_PROTOCOLS_REPO: '${CI_SERVER_HOST}/technology-org/libraries/protocols/threema-protocols.git'
   # Path to central image registry
   THREEMA_REGISTRY_IMAGE: $CI_REGISTRY_THREEMA/$CI_PROJECT_NAME
 

@@ -9,7 +9,7 @@ version, the webfont as well as the emoji picker component need to be updated.
 
 The webfont is stored in a so-called `.woff2` file. The updated version is generated as follows:
 
-1. Clone our [twemoji fork](https://git.threema.ch/clients/web/twemoji-colr)
+1. Clone our [twemoji fork](https://git.threema.ch/technology-org/libraries/twemoji-colr)
 2. Check the [network graph](https://github.com/mozilla/twemoji-colr/network) of the original repo
    for maintained forks (win98se or matrix are good choices).
 3. Inspect the commits of the forks, bumping the versions in our own project adequately. Chances are
