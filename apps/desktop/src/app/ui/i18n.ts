@@ -189,6 +189,7 @@ export async function initialize(config: LocaleConfig): Promise<void> {
             fallbackLng: FALLBACK_LOCALE,
             debug: import.meta.env.DEBUG,
             returnNull: false,
+            returnEmptyString: false,
         });
 
     log.info('Initialization complete', {
