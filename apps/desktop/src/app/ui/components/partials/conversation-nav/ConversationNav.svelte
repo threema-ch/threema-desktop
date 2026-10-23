@@ -309,8 +309,9 @@
       .catch((error: unknown) => {
         log.error(`Failed to load ConversationListViewModelBundle: ${ensureError(error)}`);
 
+        const {t} = i18n.get();
         toast.addSimpleFailure(
-          i18n.get().t('messaging.error--conversation-list-load', 'Chats could not be loaded'),
+          t('messaging.error--conversation-list-load', 'Chats could not be loaded'),
         );
       });
 

@@ -101,19 +101,20 @@
 
   function handleClickCopyLink(): void {
     popover?.close();
+    const {t} = i18n.get();
 
     if (selectedLink !== undefined) {
       navigator.clipboard
         .writeText(selectedLink)
         .then(() =>
           toast.addSimpleSuccess(
-            i18n.get().t('messaging.success--copy-message-link', 'Link copied to clipboard'),
+            t('messaging.success--copy-message-link', 'Link copied to clipboard'),
           ),
         )
         .catch((error: unknown) => {
           log.error('Could not copy link to clipboard', error);
           toast.addSimpleFailure(
-            i18n.get().t('messaging.error--copy-message-link', 'Could not copy link to clipboard'),
+            t('messaging.error--copy-message-link', 'Could not copy link to clipboard'),
           );
         });
     } else {
@@ -123,26 +124,20 @@
 
   function handleClickCopySelection(): void {
     popover?.close();
+    const {t} = i18n.get();
 
     if (selectedText !== undefined) {
       navigator.clipboard
         .writeText(selectedText)
         .then(() =>
           toast.addSimpleSuccess(
-            i18n
-              .get()
-              .t('messaging.success--copy-message-selection', 'Selected text copied to clipboard'),
+            t('messaging.success--copy-message-selection', 'Selected text copied to clipboard'),
           ),
         )
         .catch((error: unknown) => {
           log.error('Could not copy selected text to clipboard', error);
           toast.addSimpleFailure(
-            i18n
-              .get()
-              .t(
-                'messaging.error--copy-message-selection',
-                'Could not copy selection to clipboard',
-              ),
+            t('messaging.error--copy-message-selection', 'Could not copy selection to clipboard'),
           );
         });
     } else {

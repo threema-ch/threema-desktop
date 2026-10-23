@@ -68,33 +68,30 @@
   let quoteProps = $state<MessageProps['quote']>();
 
   function handleClickCopyOption(): void {
+    const {t} = i18n.get();
     if (text !== undefined) {
       navigator.clipboard
         .writeText(text.raw)
         .then(() =>
           toast.addSimpleSuccess(
-            i18n
-              .get()
-              .t('messaging.success--copy-message-content', 'Message content copied to clipboard'),
+            t('messaging.success--copy-message-content', 'Message content copied to clipboard'),
           ),
         )
         .catch((error: unknown) => {
           log.error('Could not copy message content to clipboard', error);
 
           toast.addSimpleFailure(
-            i18n
-              .get()
-              .t(
-                'messaging.error--copy-message-content',
-                'Could not copy message content to clipboard',
-              ),
+            t(
+              'messaging.error--copy-message-content',
+              'Could not copy message content to clipboard',
+            ),
           );
         });
     } else {
       log.warn('Attempting to copy undefined message content');
 
       toast.addSimpleFailure(
-        i18n.get().t('messaging.error--copy-undefined-message-content', 'Nothing to copy'),
+        t('messaging.error--copy-undefined-message-content', 'Nothing to copy'),
       );
     }
   }

@@ -510,15 +510,15 @@
       'acknowledge' | 'applyEmojiReaction' | 'decline' | 'withdrawEmojiReaction'
     >,
   ): void {
+    const {t} = i18n.get();
+
     // Return early if the emoji is not supported / is unknown.
     if (!isSingleUnicodeEmoji(emoji)) {
       toast.addSimpleFailure(
-        i18n
-          .get()
-          .t(
-            'messaging.error--reaction-unsupported-emoji',
-            'Could not react to message using an unsupported emoji',
-          ),
+        t(
+          'messaging.error--reaction-unsupported-emoji',
+          'Could not react to message using an unsupported emoji',
+        ),
       );
       return;
     }
@@ -527,12 +527,10 @@
     // If the recipient does not support emoji reactions, withdrawing is not allowed.
     if (!conversation.emojiReactionsFeatureSupport.supported && intent === 'withdraw') {
       toast.addSimpleFailure(
-        i18n
-          .get()
-          .t(
-            'messaging.error--reaction-withdrawal-disallowed',
-            'The recipient does not yet support removing emoji reactions. You can still replace 👍 with 👎 or vice versa.',
-          ),
+        t(
+          'messaging.error--reaction-withdrawal-disallowed',
+          'The recipient does not yet support removing emoji reactions. You can still replace 👍 with 👎 or vice versa.',
+        ),
       );
 
       return;
@@ -546,9 +544,7 @@
             `Could not apply legacy decline reaction to message: ${extractErrorMessage(ensureError(error), 'short')}`,
           );
 
-          toast.addSimpleFailure(
-            i18n.get().t('messaging.error--reaction', 'Could not react to message'),
-          );
+          toast.addSimpleFailure(t('messaging.error--reaction', 'Could not react to message'));
         });
         return;
       }
@@ -558,7 +554,7 @@
             `Could not apply legacy acknowledge reaction to message: ${extractErrorMessage(ensureError(error), 'short')}`,
           );
 
-          toast.addSimpleFailure(i18n.get().t('messaging.error--reaction'));
+          toast.addSimpleFailure(t('messaging.error--reaction'));
         });
         return;
       }
@@ -601,7 +597,7 @@
             `Error withdrawing emoji reaction: ${extractErrorMessage(ensureError(error), 'short')}`,
           );
 
-          toast.addSimpleFailure(i18n.get().t('messaging.error--reaction'));
+          toast.addSimpleFailure(t('messaging.error--reaction'));
         });
         break;
 
@@ -611,7 +607,7 @@
             `Error applying emoji reaction: ${extractErrorMessage(ensureError(error), 'short')}`,
           );
 
-          toast.addSimpleFailure(i18n.get().t('messaging.error--reaction'));
+          toast.addSimpleFailure(t('messaging.error--reaction'));
         });
         break;
 

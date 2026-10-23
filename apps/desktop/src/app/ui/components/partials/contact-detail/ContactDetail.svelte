@@ -165,8 +165,9 @@
           `Failed to load detail for contact with uid ${unproxiedReceiver.uid}: ${ensureError(error)}`,
         );
 
+        const {t} = i18n.get();
         toast.addSimpleFailure(
-          i18n.get().t('contacts.error--contact-detail-load', 'Details could not be loaded'),
+          t('contacts.error--contact-detail-load', 'Details could not be loaded'),
         );
 
         // Close aside pane.

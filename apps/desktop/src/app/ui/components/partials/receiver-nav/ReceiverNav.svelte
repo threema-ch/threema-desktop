@@ -167,8 +167,9 @@
       .catch((error: unknown) => {
         log.error(`Failed to load ReceiverListViewModelBundle: ${ensureError(error)}`);
 
+        const {t} = i18n.get();
         toast.addSimpleFailure(
-          i18n.get().t('contacts.error--contact-list-load', 'Contacts could not be loaded'),
+          t('contacts.error--contact-list-load', 'Contacts could not be loaded'),
         );
       });
   });

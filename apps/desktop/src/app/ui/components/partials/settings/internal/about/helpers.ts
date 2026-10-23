@@ -73,10 +73,9 @@ export async function collectLogsAndComposeMessageToSupport(
                 'short',
             )}`,
         );
+        const {t} = i18n.get();
         toast.addSimpleFailure(
-            i18n
-                .get()
-                .t('settings--about.error--send-logs-to-support', 'Failed to send log files.'),
+            t('settings--about.error--send-logs-to-support', 'Failed to send log files.'),
         );
     }
 }

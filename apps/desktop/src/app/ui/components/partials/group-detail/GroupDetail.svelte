@@ -153,9 +153,8 @@
           `Failed to load detail for group with uid ${unproxiedReceiver.uid}: ${ensureError(error)}`,
         );
 
-        toast.addSimpleFailure(
-          i18n.get().t('groups.error--group-detail-load', 'Details could not be loaded'),
-        );
+        const {t} = i18n.get();
+        toast.addSimpleFailure(t('groups.error--group-detail-load', 'Details could not be loaded'));
 
         // Close aside pane.
         router.go({aside: 'close'});
