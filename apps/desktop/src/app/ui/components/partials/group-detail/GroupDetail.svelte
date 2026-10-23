@@ -154,7 +154,7 @@
         );
 
         toast.addSimpleFailure(
-          i18n.get().t('groups.error--group-detail-load', 'Details could not be loaded'),
+          $i18n.t('groups.error--group-detail-load', 'Details could not be loaded'),
         );
 
         // Close aside pane.

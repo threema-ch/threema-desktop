@@ -126,12 +126,10 @@
   function handleAudioRecorderError(error: Error): void {
     if (error.name === 'NotAllowedError') {
       toast.addSimpleFailure(
-        i18n
-          .get()
-          .t(
-            'audio-recorder.error--microphone-permission-denied',
-            'Microphone access is denied. Please check permissions.',
-          ),
+        $i18n.t(
+          'audio-recorder.error--microphone-permission-denied',
+          'Microphone access is denied. Please check permissions.',
+        ),
       );
       onclickdeleterecording();
     }

@@ -176,12 +176,11 @@ export class FrontendNotificationCreator implements NotificationCreator {
                         notification.receiverConversation,
                         notification.senderName,
                     );
-                    const body: string = i18n
-                        .get()
-                        .t(
-                            'messaging.prose--notification-deleted-message',
-                            'This message was deleted.',
-                        );
+                    const {t} = i18n.get();
+                    const body: string = t(
+                        'messaging.prose--notification-deleted-message',
+                        'This message was deleted.',
+                    );
 
                     updatedNotification = new ProxyNotification(
                         title,
@@ -210,58 +209,53 @@ export class FrontendNotificationCreator implements NotificationCreator {
         // In the rare case that `unreadCount` is 0, we just display it as if it were a normal new
         // notification. This can happen when a sender edits/deletes a message that was already read
         // on mobile.
+        const {t} = i18n.get();
         if (senderName === undefined) {
-            return i18n
-                .get()
-                .t(
-                    'messaging.prose--notification-title-single',
-                    '{n, plural, =0 {New message} =1 {New message} other {{n} new messages}} from {recipientName}',
-                    {
-                        n: unreadCount.toString(),
-                        recipientName,
-                    },
-                );
-        }
-
-        return i18n
-            .get()
-            .t(
-                'messaging.prose--notification-title-group',
-                '{n, plural, =0 {New message from {senderName}} =1 {New message from {senderName}} other {{n} new messages}} in group {recipientName}',
+            return t(
+                'messaging.prose--notification-title-single',
+                '{n, plural, =0 {New message} =1 {New message} other {{n} new messages}} from {recipientName}',
                 {
                     n: unreadCount.toString(),
-                    senderName,
                     recipientName,
                 },
             );
+        }
+
+        return t(
+            'messaging.prose--notification-title-group',
+            '{n, plural, =0 {New message from {senderName}} =1 {New message from {senderName}} other {{n} new messages}} in group {recipientName}',
+            {
+                n: unreadCount.toString(),
+                senderName,
+                recipientName,
+            },
+        );
     }
 
     private _getGroupCallStartBody(startedByContactName: string | undefined): string {
+        const {t} = i18n.get();
         if (startedByContactName === undefined) {
-            return i18n
-                .get()
-                .t(
-                    'messaging.prose--notification-group-call-start-body-generic',
-                    'A group call started',
-                );
+            return t(
+                'messaging.prose--notification-group-call-start-body-generic',
+                'A group call started',
+            );
         }
 
-        return i18n
-            .get()
-            .t(
-                'messaging.prose--notification-group-call-start-body',
-                'A group call was started by {name}',
-                {
-                    name: startedByContactName,
-                },
-            );
+        return t(
+            'messaging.prose--notification-group-call-start-body',
+            'A group call was started by {name}',
+            {
+                name: startedByContactName,
+            },
+        );
     }
 
     private _replaceMentionAll(body: string | undefined): string | undefined {
         if (body === undefined) {
             return body;
         }
-        return body.replaceAll('@[@@@@@@@@]', `@${i18n.get().t('messaging.label--mention-all')}`);
+        const {t} = i18n.get();
+        return body.replaceAll('@[@@@@@@@@]', `@${t('messaging.label--mention-all')}`);
     }
 
     private _registerOnCloseEventHandler(notification: ProxyNotification): void {

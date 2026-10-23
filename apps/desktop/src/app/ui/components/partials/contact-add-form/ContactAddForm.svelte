@@ -111,12 +111,10 @@
       };
     } catch {
       log.error('Cannot check contact validity. Are you connected to the internet?');
-      identityFieldError = i18n
-        .get()
-        .t(
-          'contacts.error--add-contact-threema-id-unable-to-validate',
-          'Cannot check contact validity. Are you connected to the internet?',
-        );
+      identityFieldError = $i18n.t(
+        'contacts.error--add-contact-threema-id-unable-to-validate',
+        'Cannot check contact validity. Are you connected to the internet?',
+      );
     }
   }
 

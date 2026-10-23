@@ -73,28 +73,27 @@
         .writeText(text.raw)
         .then(() =>
           toast.addSimpleSuccess(
-            i18n
-              .get()
-              .t('messaging.success--copy-message-content', 'Message content copied to clipboard'),
+            $i18n.t(
+              'messaging.success--copy-message-content',
+              'Message content copied to clipboard',
+            ),
           ),
         )
         .catch((error: unknown) => {
           log.error('Could not copy message content to clipboard', error);
 
           toast.addSimpleFailure(
-            i18n
-              .get()
-              .t(
-                'messaging.error--copy-message-content',
-                'Could not copy message content to clipboard',
-              ),
+            $i18n.t(
+              'messaging.error--copy-message-content',
+              'Could not copy message content to clipboard',
+            ),
           );
         });
     } else {
       log.warn('Attempting to copy undefined message content');
 
       toast.addSimpleFailure(
-        i18n.get().t('messaging.error--copy-undefined-message-content', 'Nothing to copy'),
+        $i18n.t('messaging.error--copy-undefined-message-content', 'Nothing to copy'),
       );
     }
   }

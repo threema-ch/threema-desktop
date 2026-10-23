@@ -166,7 +166,7 @@
         );
 
         toast.addSimpleFailure(
-          i18n.get().t('contacts.error--contact-detail-load', 'Details could not be loaded'),
+          $i18n.t('contacts.error--contact-detail-load', 'Details could not be loaded'),
         );
 
         // Close aside pane.
