@@ -3,6 +3,7 @@ import banSanitizedHtmlCast from './ban-sanitized-html-cast.js';
 import banStatefulRegexFlags from './ban-stateful-regex-flags.js';
 import banTypedArrayEqualityComparison from './ban-typed-array-equality-comparison.js';
 import banTypedArrayLength from './ban-typed-array-length.js';
+import banUnextractableTranslationCall from './ban-unextractable-translation-call.js';
 import compareWorkAndCustom from './compare-work-and-custom.js';
 import noTodoCommentsWithoutIssue from './no-todo-comments-without-issue.js';
 
@@ -17,6 +18,7 @@ const plugin = {
         'ban-stateful-regex-flags': banStatefulRegexFlags,
         'ban-typed-array-equality-comparison': banTypedArrayEqualityComparison,
         'ban-typed-array-length': banTypedArrayLength,
+        'ban-unextractable-translation-call': banUnextractableTranslationCall,
         'compare-work-and-custom': compareWorkAndCustom,
         'no-todo-comments-without-issue': noTodoCommentsWithoutIssue,
     },
