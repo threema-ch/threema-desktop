@@ -45,6 +45,25 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta67" date="2026-10-23">
+            <description>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Clarified instructions displayed if automatic updates fail</li>
+                    <li>Improved bandwidth distribution for screen sharing</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>
+                        Fixed a bug that made it impossible to switch skin tones in emoji reactions
+                    </li>
+                    <li>
+                        Fixed a bug that caused incoming messages to stop voice message playback
+                    </li>
+                </ul>
+                <p>…and various under-the-hood changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta66" date="2026-09-14">
             <description>
                 <p>Features:</p>
