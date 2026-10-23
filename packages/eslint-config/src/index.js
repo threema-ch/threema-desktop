@@ -880,6 +880,8 @@ export function getTypeScriptConfigMixin(
         'threema/ban-stateful-regex-flags': 'error',
         'threema/ban-typed-array-length': 'error',
         'threema/ban-typed-array-equality-comparison': 'error',
+        // Keys of such calls would be silently missing from the extracted translation files.
+        'threema/ban-unextractable-translation-call': 'error',
         'threema/no-todo-comments-without-issue': 'error',
         'threema/ban-direct-electron-access': 'error',
         // Casting to SanitizedHtml bypasses sanitization checks; use sanitizeAndParseTextToHtml() instead.
