@@ -4,9 +4,9 @@
   import type {AppServicesForSvelte} from '~/app/types';
   import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
-  import {buildUpdaterUserAgent} from '~/common/dom/update';
   import {D2mLeaderState} from '~/common/enum';
   import {ConnectionState, ConnectionStateUtils} from '~/common/network/protocol/state';
+  import {buildUpdaterUserAgent} from '~/common/user-agent';
   import {assertUnreachable} from '~/common/utils/assert';
 
   interface Props {

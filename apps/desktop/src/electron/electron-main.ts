@@ -17,6 +17,7 @@ import {Menu, type IpcMainEvent, type MenuItemConstructorOptions} from 'electron
 // eslint-disable-next-line import/no-extraneous-dependencies
 import * as electron from 'electron';
 
+import {STATIC_CONFIG} from '~/common/config';
 import type {DeleteProfileOptions, ErrorDetails, SystemInfo} from '~/common/electron-ipc';
 import {ElectronIpcCommand, ScreenSharingReminderIpcCommand} from '~/common/enum';
 import {extractErrorTraceback} from '~/common/error';
@@ -44,6 +45,7 @@ import {
     type RemoteSecretErrorType,
 } from '~/common/remote-secret';
 import {ensureSpkiValue, type DomainCertificatePin, type i53} from '~/common/types';
+import {buildUpdaterUserAgent} from '~/common/user-agent';
 import {
     assert,
     assertUnreachable,
@@ -341,6 +343,19 @@ function buildElectronMenu(): electron.Menu {
             isMac ? undefined : helpMenu,
         ]),
     );
+}
+
+function getOperatingSystem(): SystemInfo['os'] {
+    switch (process.platform) {
+        case 'win32':
+            return 'windows';
+        case 'darwin':
+            return 'macos';
+        case 'linux':
+            return 'linux';
+        default:
+            return 'other';
+    }
 }
 
 function getMainAppLogPath(appPath: string): string {
@@ -947,24 +962,8 @@ function main(
             // eslint-disable-next-line @typescript-eslint/require-await
             async (event): Promise<SystemInfo> => {
                 validateSenderFrame(event.senderFrame);
-                let operatingSystem: SystemInfo['os'];
-                switch (process.platform) {
-                    case 'win32':
-                        operatingSystem = 'windows';
-                        break;
-                    case 'darwin':
-                        operatingSystem = 'macos';
-                        break;
-                    case 'linux':
-                        operatingSystem = 'linux';
-                        break;
-                    default:
-                        operatingSystem = 'other';
-                        break;
-                }
-
                 return {
-                    os: operatingSystem,
+                    os: getOperatingSystem(),
                     osVersion: os.version(),
                     osRelease: os.release(),
                     arch: process.arch,
@@ -1188,6 +1187,33 @@ function main(
             // Block everything else.
             log.warn(`Request to ${url} blocked`);
             return callback({cancel: true});
+        });
+
+        // Chromium ignores a `user-agent` header set via `fetch` and always sends the default
+        // Electron user agent instead, so we have to override it here. See
+        // https://bugs.chromium.org/p/chromium/issues/detail?id=571722
+        const updaterUserAgent = buildUpdaterUserAgent({
+            os: getOperatingSystem(),
+            osRelease: os.release(),
+            arch: process.arch,
+        });
+        session.webRequest.onBeforeSendHeaders((details, callback) => {
+            const url = new URL(details.url);
+
+            // Only override for network requests; internal schemes (threemadesktop:, devtools:, …)
+            // don't need a user agent.
+            if (!['http:', 'https:', 'ws:', 'wss:'].includes(url.protocol)) {
+                return callback({requestHeaders: details.requestHeaders});
+            }
+
+            return callback({
+                requestHeaders: {
+                    ...details.requestHeaders,
+                    'User-Agent': details.url.startsWith(STATIC_CONFIG.UPDATE_SERVER_URL.href)
+                        ? updaterUserAgent
+                        : STATIC_CONFIG.USER_AGENT,
+                },
+            });
         });
 
         const isMacOrWindows = process.platform === 'win32' || process.platform === 'darwin';
