@@ -1,6 +1,6 @@
 import {NonceScope, NonceScopeUtils} from '@threema/protocol/enum';
 import {byteEquals} from '@threema/ts-utils/byte/byte-equals';
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
 import {ResolvablePromise} from '@threema/ts-utils/promise/resolvable-promise';
 import {TIMER} from '@threema/ts-utils/timer/global-timer';
 import {expect} from 'chai';

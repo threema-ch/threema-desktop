@@ -1,6 +1,6 @@
 import {ensureIdentityString} from '@threema/domain';
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
-import {hexToBytes} from '@threema/ts-utils/byte/hex-to-bytes';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
+import {hexToBytes} from '@threema/ts-utils/conversion/hex-to-bytes';
 import {describe, expect, it} from 'vitest';
 
 import {createGroupCallId, deriveGroupCallId, type GroupCallIdProperties} from './call-id.js';

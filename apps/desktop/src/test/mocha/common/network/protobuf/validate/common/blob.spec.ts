@@ -1,5 +1,5 @@
-import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {unsignedLongToU64} from '@threema/ts-utils/number/into-u64';
+import {dateToUnixTimestampMs} from '@threema/ts-utils/conversion/date-to-unix-timestamp-ms';
+import {unsignedLongToU64} from '@threema/ts-utils/conversion/unsigned-long-to-u64';
 import {expect} from 'chai';
 
 import {ensureNonce, NACL_CONSTANTS} from '~/common/crypto';

@@ -2,7 +2,7 @@
   @component Renders a modal with details about a message.
 -->
 <script lang="ts">
-  import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
+  import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
 
   import Prose from '~/app/ui/components/atoms/prose/Prose.svelte';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';

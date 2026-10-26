@@ -1,8 +1,8 @@
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
 import {byteEquals} from '@threema/ts-utils/byte/byte-equals';
 import {UTF8} from '@threema/ts-utils/codec/utf8';
+import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
 import type {u53} from '@threema/ts-utils/integer/u53';
-import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 
 import {CspE2eGroupControlType, GroupUserState, type ReceiverType} from '~/common/enum';
 import type {Logger} from '~/common/logging';

@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import path from 'node:path';
 
-import {bytesLeToU16} from '@threema/ts-utils/number/bytes-le-to-u16';
+import {bytesLeToU16} from '@threema/ts-utils/conversion/bytes-le-to-u16';
 
 import {STATIC_CONFIG} from '~/common/config';
 import type {

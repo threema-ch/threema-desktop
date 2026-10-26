@@ -1,7 +1,7 @@
 import type {ProtobufMessage} from '@threema/protocol/protobuf/tag';
+import {dateToUnixTimestampMs} from '@threema/ts-utils/conversion/date-to-unix-timestamp-ms';
+import {u64ToUnsignedLong} from '@threema/ts-utils/conversion/u64-to-unsigned-long';
 import {tag, type WeakOpaque} from '@threema/ts-utils/meta/newtype';
-import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 
 import {
     ConversationCategory,

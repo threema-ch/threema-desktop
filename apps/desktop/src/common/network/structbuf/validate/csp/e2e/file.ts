@@ -1,7 +1,7 @@
 import * as v from '@badrap/valita';
 import * as csp from '@threema/protocol/structbuf/csp';
-import {hexToBytes} from '@threema/ts-utils/byte/hex-to-bytes';
 import {UTF8} from '@threema/ts-utils/codec/utf8';
+import {hexToBytes} from '@threema/ts-utils/conversion/hex-to-bytes';
 import {type u53, ensureU53} from '@threema/ts-utils/integer/u53';
 
 import {type BlobId, ensureBlobId} from '~/common/network/protocol/blob';

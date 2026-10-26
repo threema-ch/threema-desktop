@@ -1,6 +1,7 @@
 import {byteView} from '../byte/byte-view.js';
-import {bytesToHex} from '../byte/bytes-to-hex.js';
 import type {u64} from '../integer/u64.js';
+
+import {bytesToHex} from './bytes-to-hex.js';
 
 /**
  * Convert a u64 to a little endian hex string.

@@ -2,8 +2,8 @@ import * as fs from 'node:fs';
 
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
 import {byteJoin} from '@threema/ts-utils/byte/byte-join';
-import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
-import {u16ToBytesLe} from '@threema/ts-utils/number/u16-to-bytes-le';
+import {u16ToBytesLe} from '@threema/ts-utils/conversion/u16-to-bytes-le';
+import {u64ToUnsignedLong} from '@threema/ts-utils/conversion/u64-to-unsigned-long';
 import * as chai from 'chai';
 
 import {NACL_CONSTANTS} from '~/common/crypto';

@@ -1,7 +1,7 @@
 import Long from 'long';
 import {describe, expect, it} from 'vitest';
 
-import {unsignedLongToU64} from './into-u64.js';
+import {unsignedLongToU64} from './unsigned-long-to-u64.js';
 
 describe('unsignedLongToU64', () => {
     const testCases: [input: Long, output: bigint][] = [

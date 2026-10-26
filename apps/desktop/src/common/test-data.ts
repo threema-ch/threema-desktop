@@ -1,7 +1,7 @@
 import * as v from '@badrap/valita';
 import type {ClientInfo} from '@threema/libthreema-wasm';
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
-import {hexToBytes} from '@threema/ts-utils/byte/hex-to-bytes';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
+import {hexToBytes} from '@threema/ts-utils/conversion/hex-to-bytes';
 import {ensureU8} from '@threema/ts-utils/integer/u8';
 
 import type {LoggerFactory} from '~/common/logging';

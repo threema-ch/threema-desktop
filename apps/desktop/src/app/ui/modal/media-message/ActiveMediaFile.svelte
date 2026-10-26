@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {byteSizeToHumanReadable} from '@threema/ts-utils/number/byte-size-to-human-readable';
+  import {byteSizeToHumanReadable} from '@threema/ts-utils/conversion/byte-size-to-human-readable';
   import {onDestroy, untrack} from 'svelte';
 
   import VideoPreview from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-media-viewer-modal/internal/video-preview/VideoPreview.svelte';

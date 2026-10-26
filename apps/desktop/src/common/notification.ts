@@ -1,6 +1,6 @@
+import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import type {WeakOpaque} from '@threema/ts-utils/meta/newtype';
-import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 
 import type {ServicesForBackend} from '~/common/backend';
 import {

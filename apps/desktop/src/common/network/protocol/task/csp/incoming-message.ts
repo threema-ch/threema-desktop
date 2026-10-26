@@ -6,14 +6,14 @@ import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-ar
 import {byteWithoutPkcs7} from '@threema/ts-utils/byte/byte-without-pkcs7';
 import {byteWithoutZeroPadding} from '@threema/ts-utils/byte/byte-without-zero-padding';
 import {UTF8} from '@threema/ts-utils/codec/utf8';
+import {dateToUnixTimestampMs} from '@threema/ts-utils/conversion/date-to-unix-timestamp-ms';
+import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
+import {u64ToUnsignedLong} from '@threema/ts-utils/conversion/u64-to-unsigned-long';
+import {unixTimestampToDateS} from '@threema/ts-utils/conversion/unix-timestamp-to-date-s';
+import {unsignedLongToU64} from '@threema/ts-utils/conversion/unsigned-long-to-u64';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import type {u8} from '@threema/ts-utils/integer/u8';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
-import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {unsignedLongToU64} from '@threema/ts-utils/number/into-u64';
-import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
-import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
-import {unixTimestampToDateS} from '@threema/ts-utils/number/unix-timestamp-to-date-s';
 
 import type {EncryptedData, Nonce, PublicKey} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';

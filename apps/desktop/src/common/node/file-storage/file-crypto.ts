@@ -1,6 +1,6 @@
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
 import {byteView} from '@threema/ts-utils/byte/byte-view';
-import {hexToBytes} from '@threema/ts-utils/byte/hex-to-bytes';
+import {hexToBytes} from '@threema/ts-utils/conversion/hex-to-bytes';
 import type {u53} from '@threema/ts-utils/integer/u53';
 
 import type {FileId} from '~/common/file-storage';

@@ -1,8 +1,8 @@
+import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
+import {u64ToUnsignedLong} from '@threema/ts-utils/conversion/u64-to-unsigned-long';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
 import type {WeakOpaque} from '@threema/ts-utils/meta/newtype';
-import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
-import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 import {ResolvablePromise} from '@threema/ts-utils/promise/resolvable-promise';
 import {SequenceNumberU32} from '@threema/ts-utils/sequence-number/sequence-number-u32';
 import {SequenceNumberU53} from '@threema/ts-utils/sequence-number/sequence-number-u53';

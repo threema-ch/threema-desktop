@@ -1,8 +1,8 @@
 import * as v from '@badrap/valita';
 import {d2d} from '@threema/protocol/protobuf';
-import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
-import {unixTimestampToDateMs} from '@threema/ts-utils/number/unix-timestamp-to-date-ms';
+import {dateToUnixTimestampMs} from '@threema/ts-utils/conversion/date-to-unix-timestamp-ms';
+import {u64ToUnsignedLong} from '@threema/ts-utils/conversion/u64-to-unsigned-long';
+import {unixTimestampToDateMs} from '@threema/ts-utils/conversion/unix-timestamp-to-date-ms';
 
 import {creator, validator} from '~/common/network/protobuf/utils';
 import {MESSAGE_ID_SCHEMA, serializeMessageId} from '~/common/network/protobuf/validate/helpers';

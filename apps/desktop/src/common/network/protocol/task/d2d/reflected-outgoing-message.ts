@@ -1,6 +1,6 @@
 import {NonceScope} from '@threema/protocol/enum';
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
-import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
+import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
 
 import {NONCE_REUSED} from '~/common/crypto/nonce';
 import type {DbPollVoteFragment} from '~/common/db';

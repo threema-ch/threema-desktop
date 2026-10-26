@@ -1,13 +1,13 @@
 import {blake2bHash} from '@threema/crypto';
 import type {IdentityString} from '@threema/domain';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
 import {UTF8} from '@threema/ts-utils/codec/utf8';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
+import {u64ToBytesLe} from '@threema/ts-utils/conversion/u64-to-bytes-le';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import type {u64} from '@threema/ts-utils/integer/u64';
 import {ensureU8} from '@threema/ts-utils/integer/u8';
 import {tag, type WeakOpaque} from '@threema/ts-utils/meta/newtype';
-import {u64ToBytesLe} from '@threema/ts-utils/number/u64-to-bytes-le';
 
 import {CALL_PERSONAL, type RawGroupCallKey} from './key.js';
 

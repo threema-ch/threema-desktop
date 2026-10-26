@@ -5,8 +5,8 @@ import type {
     TextEncodable,
 } from '@threema/protocol/structbuf/csp/e2e';
 import {UTF8} from '@threema/ts-utils/codec/utf8';
+import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
-import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 
 import {
     CspE2eConversationType,

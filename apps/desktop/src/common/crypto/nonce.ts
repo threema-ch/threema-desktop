@@ -5,7 +5,7 @@ import {
     type NonceReused,
 } from '@threema/crypto';
 import type {NonceScope} from '@threema/protocol/enum';
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
 import * as sha256 from 'fast-sha256';
 
 import type {ServicesForBackend} from '~/common/backend';

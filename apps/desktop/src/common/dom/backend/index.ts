@@ -2,13 +2,13 @@ import {TweetNaClBackend} from '@threema/crypto/tweetnacl';
 import type {ClientInfo} from '@threema/libthreema-wasm';
 import {NonceScope} from '@threema/protocol/enum';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
-import {hexToBytes} from '@threema/ts-utils/byte/hex-to-bytes';
 import {UTF8} from '@threema/ts-utils/codec/utf8';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
+import {dateToUnixTimestampMs} from '@threema/ts-utils/conversion/date-to-unix-timestamp-ms';
+import {hexToBytes} from '@threema/ts-utils/conversion/hex-to-bytes';
+import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
-import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 import {ResolvablePromise} from '@threema/ts-utils/promise/resolvable-promise';
 
 import type {

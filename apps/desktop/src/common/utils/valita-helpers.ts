@@ -3,12 +3,12 @@
  */
 
 import * as v from '@badrap/valita';
+import {unixTimestampToDateMs} from '@threema/ts-utils/conversion/unix-timestamp-to-date-ms';
+import {unsignedLongAsU64} from '@threema/ts-utils/conversion/unsigned-long-as-u64';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
 import {nullEmptyStringOptional} from '@threema/ts-utils/null/null-empty-string-optional';
 import {nullOptional} from '@threema/ts-utils/null/null-optional';
-import {unixTimestampToDateMs} from '@threema/ts-utils/number/unix-timestamp-to-date-ms';
-import {unsignedLongAsU64} from '@threema/ts-utils/number/unsigned-long-as-u64';
 
 import * as Unit from '~/common/network/protobuf/validate/common/unit';
 import {NULL_OR_UNDEFINED_SCHEMA} from '~/common/network/protobuf/validate/helpers';

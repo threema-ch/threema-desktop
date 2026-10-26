@@ -1,6 +1,6 @@
 import {NonceScope} from '@threema/protocol/enum';
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
-import {hexToBytes} from '@threema/ts-utils/byte/hex-to-bytes';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
+import {hexToBytes} from '@threema/ts-utils/conversion/hex-to-bytes';
 import type {u64} from '@threema/ts-utils/integer/u64';
 import {ValueObject} from '@threema/ts-utils/object/value-object';
 import * as tweetnacl from 'tweetnacl';

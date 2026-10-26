@@ -1,6 +1,6 @@
 import type * as v from '@badrap/valita';
-import {unsignedLongToU64} from '@threema/ts-utils/number/into-u64';
-import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
+import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
+import {unsignedLongToU64} from '@threema/ts-utils/conversion/unsigned-long-to-u64';
 
 import {
     CspE2eContactControlType,

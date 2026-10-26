@@ -1,5 +1,5 @@
 import type {NonceScope} from '@threema/protocol/enum';
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import DatabaseConstructor, {type Database} from 'better-sqlcipher';
 import {SynchronousPromise} from 'synchronous-promise';

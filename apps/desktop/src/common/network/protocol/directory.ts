@@ -1,6 +1,6 @@
 import * as v from '@badrap/valita';
 import type {DirectoryErrorType} from '@threema/domain';
-import {base64ToU8a} from '@threema/ts-utils/base64/base64-to-u8a';
+import {base64ToU8a} from '@threema/ts-utils/conversion/base64-to-u8a';
 import {ensureU53, type u53} from '@threema/ts-utils/integer/u53';
 
 import {ensurePublicKey} from '~/common/crypto';

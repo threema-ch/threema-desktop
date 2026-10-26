@@ -1,6 +1,6 @@
 import {byteEquals} from '@threema/ts-utils/byte/byte-equals';
+import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
-import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 
 import {GroupUserState, StatusMessageType, TransactionScope} from '~/common/enum';
 import {extractErrorMessage} from '~/common/error';

@@ -1,4 +1,4 @@
-import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
+import {dateToUnixTimestampMs} from '@threema/ts-utils/conversion/date-to-unix-timestamp-ms';
 
 import type {EarlyBackendServicesThatDontRequireConfig} from '~/common/backend';
 import {STATIC_CONFIG} from '~/common/config';

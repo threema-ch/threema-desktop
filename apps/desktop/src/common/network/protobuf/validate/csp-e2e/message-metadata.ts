@@ -1,6 +1,6 @@
 import * as v from '@badrap/valita';
 import {csp_e2e} from '@threema/protocol/protobuf';
-import {unixTimestampToDateMs} from '@threema/ts-utils/number/unix-timestamp-to-date-ms';
+import {unixTimestampToDateMs} from '@threema/ts-utils/conversion/unix-timestamp-to-date-ms';
 
 import {validator} from '~/common/network/protobuf/utils';
 import {MESSAGE_ID_SCHEMA} from '~/common/network/protobuf/validate/helpers';

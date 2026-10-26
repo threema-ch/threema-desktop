@@ -1,5 +1,5 @@
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
 import type {WeakOpaque} from '@threema/ts-utils/meta/newtype';
 

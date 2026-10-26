@@ -1,5 +1,5 @@
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
 import {UTF8} from '@threema/ts-utils/codec/utf8';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
 import {describe, expect, it} from 'vitest';
 
 import {wrapRawKey} from '../index.js';

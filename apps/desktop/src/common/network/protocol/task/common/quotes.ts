@@ -1,6 +1,6 @@
+import {hexLeToU64} from '@threema/ts-utils/conversion/hex-le-to-u64';
+import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
-import {hexLeToU64} from '@threema/ts-utils/number/hex-le-to-u64';
-import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 
 import type {Logger} from '~/common/logging';
 import {ensureMessageId, type MessageId} from '~/common/network/types';

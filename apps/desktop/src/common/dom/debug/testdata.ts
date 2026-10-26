@@ -7,7 +7,7 @@
  *
  * - https://unsplash.com/photos/rLm4Wq96h_0
  */
-import {base64ToU8a} from '@threema/ts-utils/base64/base64-to-u8a';
+import {base64ToU8a} from '@threema/ts-utils/conversion/base64-to-u8a';
 
 // prettier-ignore
 export const TEST_IMAGE = base64ToU8a(`

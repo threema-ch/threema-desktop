@@ -1,7 +1,8 @@
 import {byteView} from '../byte/byte-view.js';
-import {hexToBytes} from '../byte/hex-to-bytes.js';
 import type {u64} from '../integer/u64.js';
 import {ensureError} from '../meta/ensure-error.js';
+
+import {hexToBytes} from './hex-to-bytes.js';
 
 /**
  * Convert a hex-encoded little-endian string to a u64.

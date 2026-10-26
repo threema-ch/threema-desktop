@@ -1,6 +1,6 @@
 import type * as v from '@badrap/valita';
 import {wrapRawKey} from '@threema/crypto';
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
 import type {u8} from '@threema/ts-utils/integer/u8';
 import {AsyncLock} from '@threema/ts-utils/lock/async-lock';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';

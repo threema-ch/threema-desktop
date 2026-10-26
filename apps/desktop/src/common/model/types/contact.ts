@@ -1,4 +1,4 @@
-import {hexToBytes} from '@threema/ts-utils/byte/hex-to-bytes';
+import {hexToBytes} from '@threema/ts-utils/conversion/hex-to-bytes';
 import type {u8} from '@threema/ts-utils/integer/u8';
 
 import {ensurePublicKey, type PublicKey} from '~/common/crypto';

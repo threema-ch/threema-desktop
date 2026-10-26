@@ -1,9 +1,9 @@
+import {byteSizeToHumanReadable} from '@threema/ts-utils/conversion/byte-size-to-human-readable';
+import {hexLeToU64} from '@threema/ts-utils/conversion/hex-le-to-u64';
+import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
+import {unsignedLongToU64} from '@threema/ts-utils/conversion/unsigned-long-to-u64';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {ensureU64, type u64} from '@threema/ts-utils/integer/u64';
-import {byteSizeToHumanReadable} from '@threema/ts-utils/number/byte-size-to-human-readable';
-import {hexLeToU64} from '@threema/ts-utils/number/hex-le-to-u64';
-import {unsignedLongToU64} from '@threema/ts-utils/number/into-u64';
-import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 import * as chai from 'chai';
 import Long from 'long';
 

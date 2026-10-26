@@ -2,7 +2,7 @@
   @component Renders file details as part of a message.
 -->
 <script lang="ts">
-  import {byteSizeToHumanReadable} from '@threema/ts-utils/number/byte-size-to-human-readable';
+  import {byteSizeToHumanReadable} from '@threema/ts-utils/conversion/byte-size-to-human-readable';
 
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import type {FileInfoProps} from '~/app/ui/components/molecules/message/internal/file-info/props';

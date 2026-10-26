@@ -1,8 +1,8 @@
 import * as v from '@badrap/valita';
 import {common, d2d_join, d2d_sync} from '@threema/protocol/protobuf';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
-import {unixTimestampToDateMs} from '@threema/ts-utils/number/unix-timestamp-to-date-ms';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
+import {unixTimestampToDateMs} from '@threema/ts-utils/conversion/unix-timestamp-to-date-ms';
 
 import {ensureNonceHash, type NonceHash} from '~/common/crypto';
 import {WorkAvailabilityStatusCategory} from '~/common/enum';

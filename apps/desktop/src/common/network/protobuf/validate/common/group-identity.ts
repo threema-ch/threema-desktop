@@ -1,6 +1,6 @@
 import * as v from '@badrap/valita';
 import {common} from '@threema/protocol/protobuf';
-import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/conversion/u64-to-unsigned-long';
 
 import {creator, type ProtobufInstanceOf, validator} from '~/common/network/protobuf/utils';
 import {ensureGroupId, ensureIdentityString} from '~/common/network/types';

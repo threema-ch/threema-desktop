@@ -1,4 +1,4 @@
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
 import {expect} from 'chai';
 
 import {ImageRenderingType, MessageDirection} from '~/common/enum';

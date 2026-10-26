@@ -1,5 +1,5 @@
-import {base64ToU8a} from '@threema/ts-utils/base64/base64-to-u8a';
 import {UTF8} from '@threema/ts-utils/codec/utf8';
+import {base64ToU8a} from '@threema/ts-utils/conversion/base64-to-u8a';
 import {expect} from 'chai';
 
 import {ensureEd25519PublicKey} from '~/common/crypto';

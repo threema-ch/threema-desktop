@@ -1,7 +1,7 @@
 import Long from 'long';
 import {describe, expect, it} from 'vitest';
 
-import {u64ToUnsignedLong} from './into-unsigned-long.js';
+import {u64ToUnsignedLong} from './u64-to-unsigned-long.js';
 
 describe('u64ToUnsignedLong', () => {
     it('converts 0n to an unsigned zero Long', () => {

@@ -1,5 +1,5 @@
 import {byteEquals} from '@threema/ts-utils/byte/byte-equals';
-import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
+import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
 
 import {StatusMessageType} from '~/common/enum';
 import {ProfilePictureChange} from '~/common/internal-protobuf/status-message';

@@ -12,15 +12,15 @@ import {byteEncodeSequence} from '@threema/ts-utils/byte/byte-encode-sequence';
 import type {ByteEncoder} from '@threema/ts-utils/byte/byte-encoder';
 import {byteEquals} from '@threema/ts-utils/byte/byte-equals';
 import {bytePadPkcs7} from '@threema/ts-utils/byte/byte-pad-pkcs7';
-import {byteToHex} from '@threema/ts-utils/byte/byte-to-hex';
 import type {SyncTransformerCodec} from '@threema/ts-utils/codec/sync-transformer-codec';
 import {UTF8} from '@threema/ts-utils/codec/utf8';
+import {byteToHex} from '@threema/ts-utils/conversion/byte-to-hex';
+import {u64ToUnsignedLong} from '@threema/ts-utils/conversion/u64-to-unsigned-long';
 import type {Delayed} from '@threema/ts-utils/delayed/delayed';
 import type {u32} from '@threema/ts-utils/integer/u32';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
 import type {WeakOpaque} from '@threema/ts-utils/meta/newtype';
-import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import type {ResolvablePromise} from '@threema/ts-utils/promise/resolvable-promise';
 
 import type {ServicesForBackend} from '~/common/backend';

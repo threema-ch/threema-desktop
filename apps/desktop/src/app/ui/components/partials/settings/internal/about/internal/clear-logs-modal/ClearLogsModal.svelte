@@ -2,7 +2,7 @@
   @component Renders a modal to toggle logging on or off.
 -->
 <script lang="ts">
-  import {byteSizeToHumanReadable} from '@threema/ts-utils/number/byte-size-to-human-readable';
+  import {byteSizeToHumanReadable} from '@threema/ts-utils/conversion/byte-size-to-human-readable';
 
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';

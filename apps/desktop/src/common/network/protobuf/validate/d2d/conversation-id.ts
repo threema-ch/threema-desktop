@@ -1,7 +1,7 @@
 import * as v from '@badrap/valita';
 import {d2d} from '@threema/protocol/protobuf';
-import {unsignedLongToU64} from '@threema/ts-utils/number/into-u64';
-import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/conversion/u64-to-unsigned-long';
+import {unsignedLongToU64} from '@threema/ts-utils/conversion/unsigned-long-to-u64';
 import Long from 'long';
 
 import {ReceiverType} from '~/common/enum';

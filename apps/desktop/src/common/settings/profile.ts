@@ -1,7 +1,7 @@
 import * as v from '@badrap/valita';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
-import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
-import {unixTimestampToDateMs} from '@threema/ts-utils/number/unix-timestamp-to-date-ms';
+import {u64ToUnsignedLong} from '@threema/ts-utils/conversion/u64-to-unsigned-long';
+import {unixTimestampToDateMs} from '@threema/ts-utils/conversion/unix-timestamp-to-date-ms';
 
 import {WorkAvailabilityStatusCategory, WorkAvailabilityStatusCategoryUtils} from '~/common/enum';
 import * as proto from '~/common/internal-protobuf/settings';

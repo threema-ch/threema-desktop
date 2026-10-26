@@ -1,7 +1,7 @@
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
 import type {AsyncTransformerCodec} from '@threema/ts-utils/codec/async-transformer-codec';
 import type {TransformerCodecController} from '@threema/ts-utils/codec/transformer-codec-controller';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
 import {ResolvablePromise} from '@threema/ts-utils/promise/resolvable-promise';
 
 import type {MediatorPipe, MediatorTransport} from '~/common/dom/network';

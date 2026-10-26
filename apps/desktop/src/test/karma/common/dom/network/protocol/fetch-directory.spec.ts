@@ -2,7 +2,7 @@ import {wrapRawKey} from '@threema/crypto';
 import {TweetNaClBackend} from '@threema/crypto/tweetnacl';
 import type {DirectoryErrorType} from '@threema/domain';
 import {NonceScope} from '@threema/protocol/enum';
-import {u8aToBase64} from '@threema/ts-utils/base64/u8a-to-base64';
+import {u8aToBase64} from '@threema/ts-utils/conversion/u8a-to-base64';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import * as sinon from 'sinon';
 import sinonChai from 'sinon-chai';

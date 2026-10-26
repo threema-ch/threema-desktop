@@ -1,6 +1,6 @@
 import * as v from '@badrap/valita';
+import {bytesLeToU16} from '@threema/ts-utils/conversion/bytes-le-to-u16';
 import type {WeakOpaque} from '@threema/ts-utils/meta/newtype';
-import {bytesLeToU16} from '@threema/ts-utils/number/bytes-le-to-u16';
 
 import type {EncryptedDataWithNonceAhead} from '~/common/crypto';
 import {wrapRawDatabaseKey} from '~/common/db';

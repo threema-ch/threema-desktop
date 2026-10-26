@@ -1,9 +1,9 @@
 import * as v from '@badrap/valita';
 import {blake2bHash} from '@threema/crypto';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
-import {base64ToU8a} from '@threema/ts-utils/base64/base64-to-u8a';
-import {u8aToBase64} from '@threema/ts-utils/base64/u8a-to-base64';
 import {UTF8} from '@threema/ts-utils/codec/utf8';
+import {base64ToU8a} from '@threema/ts-utils/conversion/base64-to-u8a';
+import {u8aToBase64} from '@threema/ts-utils/conversion/u8a-to-base64';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {AsyncLock} from '@threema/ts-utils/lock/async-lock';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';

@@ -3,7 +3,7 @@
  * them to the latest format.
  */
 
-import {bytesLeToU16} from '@threema/ts-utils/number/bytes-le-to-u16';
+import {bytesLeToU16} from '@threema/ts-utils/conversion/bytes-le-to-u16';
 
 import type {EncryptedDataWithNonceAhead} from '~/common/crypto';
 import {

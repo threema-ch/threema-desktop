@@ -1,7 +1,7 @@
 import * as v from '@badrap/valita';
-import {base64ToU8a} from '@threema/ts-utils/base64/base64-to-u8a';
-import {hexToBytes} from '@threema/ts-utils/byte/hex-to-bytes';
-import {hexLeToU64} from '@threema/ts-utils/number/hex-le-to-u64';
+import {base64ToU8a} from '@threema/ts-utils/conversion/base64-to-u8a';
+import {hexLeToU64} from '@threema/ts-utils/conversion/hex-le-to-u64';
+import {hexToBytes} from '@threema/ts-utils/conversion/hex-to-bytes';
 
 import type {I18nLocales} from '~/app/ui/i18n-types';
 import {ensurePublicKey} from '~/common/crypto';

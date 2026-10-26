@@ -1,5 +1,5 @@
 import * as v from '@badrap/valita';
-import {unixTimestampToDateMs} from '@threema/ts-utils/number/unix-timestamp-to-date-ms';
+import {unixTimestampToDateMs} from '@threema/ts-utils/conversion/unix-timestamp-to-date-ms';
 
 import {csp_e2e} from '~/common/network/protobuf';
 import {validator} from '~/common/network/protobuf/utils';

@@ -1,5 +1,5 @@
 import {getMids} from '@threema/call';
-import {hexWithSeparatorToBytes} from '@threema/ts-utils/byte/hex-with-separator-to-bytes';
+import {hexWithSeparatorToBytes} from '@threema/ts-utils/conversion/hex-with-separator-to-bytes';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
 import {ensureDtlsFingerprint, type DtlsFingerprint} from '@threema/webrtc/sdp';

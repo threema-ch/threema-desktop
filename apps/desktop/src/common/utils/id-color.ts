@@ -1,7 +1,7 @@
 import {UTF8} from '@threema/ts-utils/codec/utf8';
+import {u64ToBytesLe} from '@threema/ts-utils/conversion/u64-to-bytes-le';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import type {u8} from '@threema/ts-utils/integer/u8';
-import {u64ToBytesLe} from '@threema/ts-utils/number/u64-to-bytes-le';
 import * as sha256 from 'fast-sha256';
 
 import {ReceiverType} from '~/common/enum';

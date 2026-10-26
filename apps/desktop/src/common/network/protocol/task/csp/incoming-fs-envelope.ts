@@ -1,5 +1,5 @@
-import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
-import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
+import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
+import {u64ToUnsignedLong} from '@threema/ts-utils/conversion/u64-to-unsigned-long';
 
 import {CspE2eForwardSecurityType} from '~/common/enum';
 import type {Logger} from '~/common/logging';

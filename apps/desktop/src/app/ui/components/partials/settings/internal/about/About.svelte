@@ -2,9 +2,9 @@
   @component Renders a settings page that contains app information and settings.
 -->
 <script lang="ts">
+  import {byteSizeToHumanReadable} from '@threema/ts-utils/conversion/byte-size-to-human-readable';
   import type {u53} from '@threema/ts-utils/integer/u53';
   import {ensureError} from '@threema/ts-utils/meta/ensure-error';
-  import {byteSizeToHumanReadable} from '@threema/ts-utils/number/byte-size-to-human-readable';
   import {TIMER} from '@threema/ts-utils/timer/global-timer';
   import type {TimerCanceller} from '@threema/ts-utils/timer/timer-canceller';
 

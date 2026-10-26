@@ -7,8 +7,8 @@
  * - Encoding an outbound D2M message container to bytes.
  */
 import type {ByteLengthEncoder} from '@threema/ts-utils/byte/byte-encoder';
-import {byteToHex} from '@threema/ts-utils/byte/byte-to-hex';
 import type {SyncTransformerCodec} from '@threema/ts-utils/codec/sync-transformer-codec';
+import {byteToHex} from '@threema/ts-utils/conversion/byte-to-hex';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
 

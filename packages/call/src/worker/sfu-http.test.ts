@@ -2,9 +2,9 @@ import {ensureBaseUrl} from '@threema/domain';
 import {group_call} from '@threema/protocol/protobuf';
 import {creator, creatorForMap} from '@threema/protocol/protobuf/utils';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
+import {u64ToUnsignedLong} from '@threema/ts-utils/conversion/u64-to-unsigned-long';
 import type {u64} from '@threema/ts-utils/integer/u64';
 import {unwrap} from '@threema/ts-utils/meta/unwrap';
-import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {ensureDtlsFingerprint} from '@threema/webrtc/sdp';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 

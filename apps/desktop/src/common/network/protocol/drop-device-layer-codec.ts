@@ -2,7 +2,7 @@ import type {AsyncCodecSink} from '@threema/ts-utils/codec/async-codec-sink';
 import type {AsyncCodecSource} from '@threema/ts-utils/codec/async-codec-source';
 import type {SinkCodecController} from '@threema/ts-utils/codec/sink-codec-controller';
 import type {SourceCodecController} from '@threema/ts-utils/codec/source-codec-controller';
-import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/conversion/u64-to-unsigned-long';
 
 import * as protobuf from '~/common/network/protobuf';
 import {

@@ -1,10 +1,10 @@
 import {byteWithoutZeroPadding} from '@threema/ts-utils/byte/byte-without-zero-padding';
 import {UTF8} from '@threema/ts-utils/codec/utf8';
+import {u64ToUnsignedLong} from '@threema/ts-utils/conversion/u64-to-unsigned-long';
+import {unixTimestampToDateMs} from '@threema/ts-utils/conversion/unix-timestamp-to-date-ms';
+import {unsignedLongToU64} from '@threema/ts-utils/conversion/unsigned-long-to-u64';
 import {Delayed} from '@threema/ts-utils/delayed/delayed';
 import type {u53} from '@threema/ts-utils/integer/u53';
-import {unsignedLongToU64} from '@threema/ts-utils/number/into-u64';
-import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
-import {unixTimestampToDateMs} from '@threema/ts-utils/number/unix-timestamp-to-date-ms';
 import {expect} from 'chai';
 
 import {NACL_CONSTANTS} from '~/common/crypto';

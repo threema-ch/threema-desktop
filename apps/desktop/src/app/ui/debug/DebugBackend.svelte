@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
+  import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
 
   import type {AppServicesForSvelte} from '~/app/types';
   import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';

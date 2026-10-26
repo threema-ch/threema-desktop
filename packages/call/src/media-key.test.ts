@@ -1,6 +1,6 @@
 import {wrapRawKey, type CryptoBackend} from '@threema/crypto';
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
-import {hexToBytes} from '@threema/ts-utils/byte/hex-to-bytes';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
+import {hexToBytes} from '@threema/ts-utils/conversion/hex-to-bytes';
 import type {u8} from '@threema/ts-utils/integer/u8';
 import {tag} from '@threema/ts-utils/meta/newtype';
 import {describe, expect, it} from 'vitest';

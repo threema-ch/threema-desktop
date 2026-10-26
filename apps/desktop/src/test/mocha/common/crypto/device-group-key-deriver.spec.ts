@@ -1,6 +1,6 @@
 import {wrapRawKey} from '@threema/crypto';
 import {TweetNaClBackend} from '@threema/crypto/tweetnacl';
-import {hexToBytes} from '@threema/ts-utils/byte/hex-to-bytes';
+import {hexToBytes} from '@threema/ts-utils/conversion/hex-to-bytes';
 import type {Bare} from '@threema/ts-utils/meta/newtype';
 import {expect} from 'chai';
 

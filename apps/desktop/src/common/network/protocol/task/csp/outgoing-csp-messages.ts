@@ -2,10 +2,10 @@ import {NonceScope} from '@threema/protocol/enum';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
 import {byteEquals} from '@threema/ts-utils/byte/byte-equals';
 import {UTF8} from '@threema/ts-utils/codec/utf8';
+import {dateToUnixTimestampMs} from '@threema/ts-utils/conversion/date-to-unix-timestamp-ms';
+import {dateToUnixTimestampS} from '@threema/ts-utils/conversion/date-to-unix-timestamp-s';
+import {u64ToUnsignedLong} from '@threema/ts-utils/conversion/u64-to-unsigned-long';
 import type {u53} from '@threema/ts-utils/integer/u53';
-import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {dateToUnixTimestampS} from '@threema/ts-utils/number/date-to-unix-timestamp-s';
-import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 
 import type {Nonce} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';

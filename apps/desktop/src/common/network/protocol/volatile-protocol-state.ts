@@ -1,4 +1,4 @@
-import {u8aToBase64} from '@threema/ts-utils/base64/u8a-to-base64';
+import {u8aToBase64} from '@threema/ts-utils/conversion/u8a-to-base64';
 import {AsyncLock} from '@threema/ts-utils/lock/async-lock';
 import {tag, type WeakOpaque} from '@threema/ts-utils/meta/newtype';
 

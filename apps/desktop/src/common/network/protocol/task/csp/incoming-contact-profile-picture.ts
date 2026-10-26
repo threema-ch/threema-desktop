@@ -1,5 +1,5 @@
+import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
-import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 
 import {extractErrorMessage} from '~/common/error';
 import type {Logger} from '~/common/logging';

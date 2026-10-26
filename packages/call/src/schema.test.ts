@@ -1,8 +1,8 @@
 import {common, group_call} from '@threema/protocol/protobuf';
 import {creator, creatorForMap, type ProtobufInstanceOf} from '@threema/protocol/protobuf/utils';
+import {u64ToUnsignedLong} from '@threema/ts-utils/conversion/u64-to-unsigned-long';
 import type {u64} from '@threema/ts-utils/integer/u64';
 import {unwrap} from '@threema/ts-utils/meta/unwrap';
-import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {describe, expect, it} from 'vitest';
 
 import {

@@ -1,4 +1,4 @@
-import {hexLeToU64} from '@threema/ts-utils/number/hex-le-to-u64';
+import {hexLeToU64} from '@threema/ts-utils/conversion/hex-le-to-u64';
 import {expect} from 'chai';
 
 import {

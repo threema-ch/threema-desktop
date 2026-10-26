@@ -1,4 +1,4 @@
-import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
+import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
 
 import {MessageDirection, MessageReaction, MessageType, ReceiverType} from '~/common/enum';
 import type {AnyMessageModel, AnyOutboundMessageModel} from '~/common/model';

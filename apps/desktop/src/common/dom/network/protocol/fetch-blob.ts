@@ -1,7 +1,7 @@
 import {ensureArrayBufferBackedView} from '@threema/ts-utils/byte/array-buffer-backed-view';
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
-import {hexToBytes} from '@threema/ts-utils/byte/hex-to-bytes';
-import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
+import {hexToBytes} from '@threema/ts-utils/conversion/hex-to-bytes';
+import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
 
 import type {ServicesForBackend} from '~/common/backend';
 import type {EncryptedData, PublicKey} from '~/common/crypto';

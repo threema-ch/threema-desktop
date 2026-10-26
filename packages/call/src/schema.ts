@@ -8,6 +8,8 @@ import {
 import {ensureIdentityString, ensureNickname} from '@threema/domain';
 import {group_call} from '@threema/protocol/protobuf';
 import {NULL_OR_UNDEFINED_SCHEMA, UNIT_SCHEMA, validator} from '@threema/protocol/protobuf/utils';
+import {unixTimestampToDateMs} from '@threema/ts-utils/conversion/unix-timestamp-to-date-ms';
+import {unsignedLongAsU64} from '@threema/ts-utils/conversion/unsigned-long-as-u64';
 import {ensureU16} from '@threema/ts-utils/integer/u16';
 import {ensureU53} from '@threema/ts-utils/integer/u53';
 import {ensureU8} from '@threema/ts-utils/integer/u8';
@@ -16,8 +18,6 @@ import {instanceOf} from '@threema/ts-utils/meta/instance-of';
 import {tag} from '@threema/ts-utils/meta/newtype';
 import {nullEmptyStringOptional} from '@threema/ts-utils/null/null-empty-string-optional';
 import {nullOptional} from '@threema/ts-utils/null/null-optional';
-import {unixTimestampToDateMs} from '@threema/ts-utils/number/unix-timestamp-to-date-ms';
-import {unsignedLongAsU64} from '@threema/ts-utils/number/unsigned-long-as-u64';
 import {
     ensureDtlsFingerprint,
     ensureIcePassword,

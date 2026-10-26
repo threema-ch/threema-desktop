@@ -6,7 +6,7 @@ import {env} from 'node:process';
 
 import {TweetNaClBackend} from '@threema/crypto/tweetnacl';
 import {byteView} from '@threema/ts-utils/byte/byte-view';
-import {hexToBytes} from '@threema/ts-utils/byte/hex-to-bytes';
+import {hexToBytes} from '@threema/ts-utils/conversion/hex-to-bytes';
 import {expect} from 'chai';
 
 import {

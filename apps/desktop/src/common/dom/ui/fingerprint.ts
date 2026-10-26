@@ -1,4 +1,4 @@
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
 
 import type {PublicKey} from '~/common/crypto';
 /**

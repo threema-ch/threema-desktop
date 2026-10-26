@@ -1,8 +1,8 @@
 import * as v from '@badrap/valita';
 import {byteJoin} from '@threema/ts-utils/byte/byte-join';
+import {bytesLeToU16} from '@threema/ts-utils/conversion/bytes-le-to-u16';
+import {u16ToBytesLe} from '@threema/ts-utils/conversion/u16-to-bytes-le';
 import type {WeakOpaque} from '@threema/ts-utils/meta/newtype';
-import {bytesLeToU16} from '@threema/ts-utils/number/bytes-le-to-u16';
-import {u16ToBytesLe} from '@threema/ts-utils/number/u16-to-bytes-le';
 
 import {ensureEncryptedDataWithNonceAhead} from '~/common/crypto';
 import {

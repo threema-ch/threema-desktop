@@ -6,7 +6,7 @@ declare global {
 }
 
 import {expect} from '@playwright/test';
-import {base64ToU8a} from '@threema/ts-utils/base64/base64-to-u8a';
+import {base64ToU8a} from '@threema/ts-utils/conversion/base64-to-u8a';
 
 import {ensureSpkiValue} from '~/common/types';
 import {test} from '~/test/playwright/common/fixtures/base';

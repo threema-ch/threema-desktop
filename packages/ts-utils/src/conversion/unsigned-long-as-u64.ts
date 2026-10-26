@@ -3,7 +3,7 @@ import Long from 'long';
 
 import type {u64} from '../integer/u64.js';
 
-import {unsignedLongToU64} from './into-u64.js';
+import {unsignedLongToU64} from './unsigned-long-to-u64.js';
 
 /**
  * Expect a `Long` value (validated through `Long.isLong`), then convert it into an u64.

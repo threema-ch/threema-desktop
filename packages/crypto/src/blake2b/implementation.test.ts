@@ -1,5 +1,5 @@
-import {bytesToHex} from '@threema/ts-utils/byte/bytes-to-hex';
-import {hexToBytes} from '@threema/ts-utils/byte/hex-to-bytes';
+import {bytesToHex} from '@threema/ts-utils/conversion/bytes-to-hex';
+import {hexToBytes} from '@threema/ts-utils/conversion/hex-to-bytes';
 import {unwrap} from '@threema/ts-utils/meta/unwrap';
 import {describe, expect, it} from 'vitest';
 

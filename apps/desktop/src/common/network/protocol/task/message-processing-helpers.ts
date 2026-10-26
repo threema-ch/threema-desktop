@@ -2,7 +2,7 @@
  * Helpers for processing incoming messages.
  */
 
-import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
+import {u64ToHexLe} from '@threema/ts-utils/conversion/u64-to-hex-le';
 
 import {CspE2eStatusUpdateType, ReceiverType} from '~/common/enum';
 import type {Conversation} from '~/common/model';
