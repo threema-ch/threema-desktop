@@ -1,5 +1,5 @@
 import {UTF8} from '@threema/ts-utils/codec/utf8';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 
 import {
@@ -71,7 +71,7 @@ export class OutgoingEditMessageTask<TReceiver extends AnyReceiver>
         // Encode message
         const encoder = protobuf.utils.encoder(protobuf.csp_e2e.EditMessage, {
             text: this._editedMessage.newText,
-            messageId: intoUnsignedLong(messageModel.view.id),
+            messageId: u64ToUnsignedLong(messageModel.view.id),
         });
 
         // Message properties that apply both to 1:1 and group edit messages

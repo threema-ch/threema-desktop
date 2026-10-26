@@ -1,6 +1,6 @@
 import {UTF8} from '@threema/ts-utils/codec/utf8';
 import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 
 import type {DbPollVoteFragment} from '~/common/db';
@@ -114,9 +114,9 @@ export class OutgoingPollUpdateTask<TReceiver extends AnyReceiver>
         ) {
             const commonReflectProperties = {
                 conversation: this._getD2dConversationId(this._receiverModel),
-                messageId: intoUnsignedLong(this._messageId),
+                messageId: u64ToUnsignedLong(this._messageId),
                 threadMessageId: undefined, // TODO(DESK-296): Set thread message ID
-                createdAt: intoUnsignedLong(dateToUnixTimestampMs(new Date())),
+                createdAt: u64ToUnsignedLong(dateToUnixTimestampMs(new Date())),
                 nonces: [],
             };
 
@@ -262,7 +262,7 @@ export class OutgoingPollUpdateTask<TReceiver extends AnyReceiver>
                             this._services.device,
                             receiver.view.creator,
                         ),
-                        groupId: intoUnsignedLong(receiver.view.groupId),
+                        groupId: u64ToUnsignedLong(receiver.view.groupId),
                     }),
                     distributionList: undefined,
                 });

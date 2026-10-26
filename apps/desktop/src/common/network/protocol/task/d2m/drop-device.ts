@@ -1,5 +1,5 @@
-import {intoU64} from '@threema/ts-utils/number/into-u64';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {unsignedLongToU64} from '@threema/ts-utils/number/into-u64';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 
 import {MessageFilterInstruction} from '~/common/enum';
 import * as protobuf from '~/common/network/protobuf';
@@ -28,7 +28,7 @@ export class DropDeviceTask implements ActiveTask<void, 'volatile'> {
         await handle.write({
             type: D2mPayloadType.DROP_DEVICE,
             payload: protobuf.utils.encoder(protobuf.d2m.DropDevice, {
-                deviceId: intoUnsignedLong(this._deviceId),
+                deviceId: u64ToUnsignedLong(this._deviceId),
             }),
         });
 
@@ -53,7 +53,7 @@ export class DropDeviceTask implements ActiveTask<void, 'volatile'> {
                     );
 
                     // Check if the device ID matches
-                    const deviceId = intoU64(payload.deviceId) as D2mDeviceId;
+                    const deviceId = unsignedLongToU64(payload.deviceId) as D2mDeviceId;
                     if (deviceId !== this._deviceId) {
                         return MessageFilterInstruction.BACKLOG;
                     }

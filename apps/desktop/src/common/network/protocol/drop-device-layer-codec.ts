@@ -2,7 +2,7 @@ import type {AsyncCodecSink} from '@threema/ts-utils/codec/async-codec-sink';
 import type {AsyncCodecSource} from '@threema/ts-utils/codec/async-codec-source';
 import type {SinkCodecController} from '@threema/ts-utils/codec/sink-codec-controller';
 import type {SourceCodecController} from '@threema/ts-utils/codec/source-codec-controller';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 
 import * as protobuf from '~/common/network/protobuf';
 import {
@@ -64,7 +64,7 @@ export class DropDeviceLayerEncoder implements AsyncCodecSource<OutboundDropDevi
         const message: OutboundDropDeviceLayerMessage = {
             type: D2mPayloadType.DROP_DEVICE,
             payload: protobuf.utils.encoder(protobuf.d2m.DropDevice, {
-                deviceId: intoUnsignedLong(this._controller.d2m.deviceId),
+                deviceId: u64ToUnsignedLong(this._controller.d2m.deviceId),
             }),
         };
         this._capture?.(message, {info: 'Unknown (TODO)'});

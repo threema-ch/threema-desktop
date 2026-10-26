@@ -1,6 +1,6 @@
 import * as v from '@badrap/valita';
 import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import type Long from 'long';
 
 import {ensureIdentityString, ensureMessageId, type MessageId} from '~/common/network/types';
@@ -17,8 +17,8 @@ export {NULL_OR_UNDEFINED_SCHEMA} from '@threema/protocol/protobuf/utils';
 export const MESSAGE_ID_SCHEMA = unsignedLongAsU64().map(ensureMessageId);
 export const IDENTITY_STRING_LIST_SCHEMA = v.array(v.string().map(ensureIdentityString));
 export function serializeMessageId(id: MessageId): Long {
-    return intoUnsignedLong(id);
+    return u64ToUnsignedLong(id);
 }
 export function serializeDate(date: Date): Long {
-    return intoUnsignedLong(dateToUnixTimestampMs(date));
+    return u64ToUnsignedLong(dateToUnixTimestampMs(date));
 }

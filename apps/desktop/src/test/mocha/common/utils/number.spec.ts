@@ -2,7 +2,7 @@ import type {u53} from '@threema/ts-utils/integer/u53';
 import {ensureU64, type u64} from '@threema/ts-utils/integer/u64';
 import {byteSizeToHumanReadable} from '@threema/ts-utils/number/byte-size-to-human-readable';
 import {hexLeToU64} from '@threema/ts-utils/number/hex-le-to-u64';
-import {intoU64} from '@threema/ts-utils/number/into-u64';
+import {unsignedLongToU64} from '@threema/ts-utils/number/into-u64';
 import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 import * as chai from 'chai';
 import Long from 'long';
@@ -13,7 +13,7 @@ const {expect} = chai.use(chaiByteEqual);
 
 export function run(): void {
     describe('utils::number', function () {
-        describe('intoU64', function () {
+        describe('unsignedLongToU64', function () {
             const testCases: [input: Long, output: u64][] = [
                 [Long.fromNumber(0, true), 0n],
                 [Long.fromNumber(10, true), 10n],
@@ -25,13 +25,13 @@ export function run(): void {
             ];
             for (const [input, expectedOutput] of testCases) {
                 it(`should correctly convert '${expectedOutput}'`, function () {
-                    const output = intoU64(input);
+                    const output = unsignedLongToU64(input);
                     expect(output).to.equal(expectedOutput);
                 });
             }
 
             it('should throw an error if a signed long is used', function () {
-                expect(() => intoU64(Long.fromNumber(20, false))).to.throw(
+                expect(() => unsignedLongToU64(Long.fromNumber(20, false))).to.throw(
                     'Long value is not unsigned',
                 );
             });

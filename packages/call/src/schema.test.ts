@@ -2,7 +2,7 @@ import {common, group_call} from '@threema/protocol/protobuf';
 import {creator, creatorForMap, type ProtobufInstanceOf} from '@threema/protocol/protobuf/utils';
 import type {u64} from '@threema/ts-utils/integer/u64';
 import {unwrap} from '@threema/ts-utils/meta/unwrap';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {describe, expect, it} from 'vitest';
 
 import {
@@ -51,7 +51,7 @@ describe('CALL_STATE_SNAPSHOT_SCHEMA', () => {
                 creator(group_call.CallState, {
                     padding: NO_PADDING,
                     stateCreatedBy: 1,
-                    stateCreatedAt: intoUnsignedLong(1337n as u64),
+                    stateCreatedAt: u64ToUnsignedLong(1337n as u64),
                     participants: creatorForMap(group_call.CallState.Participant, participants),
                 }),
             ).finish(),
@@ -145,7 +145,7 @@ describe('PEEK_RESPONSE_SCHEMA', () => {
         return group_call.SfuHttpResponse.Peek.decode(
             group_call.SfuHttpResponse.Peek.encode(
                 creator(group_call.SfuHttpResponse.Peek, {
-                    startedAt: intoUnsignedLong(42n as u64),
+                    startedAt: u64ToUnsignedLong(42n as u64),
                     maxParticipants: 16,
                     encryptedCallState,
                 }),
@@ -205,7 +205,7 @@ describe('JOIN_RESPONSE_SCHEMA', () => {
         return group_call.SfuHttpResponse.Join.decode(
             group_call.SfuHttpResponse.Join.encode(
                 creator(group_call.SfuHttpResponse.Join, {
-                    startedAt: intoUnsignedLong(42n as u64),
+                    startedAt: u64ToUnsignedLong(42n as u64),
                     maxParticipants: 16,
                     participantId: 3,
                     addresses,
@@ -216,7 +216,7 @@ describe('JOIN_RESPONSE_SCHEMA', () => {
                     supportedFeatures:
                         supportedFeatures === undefined
                             ? undefined
-                            : intoUnsignedLong(supportedFeatures),
+                            : u64ToUnsignedLong(supportedFeatures),
                 }),
             ).finish(),
         );
@@ -449,7 +449,7 @@ describe('S2P_ENVELOPE_SCHEMA', () => {
         const envelope = S2P_ENVELOPE_SCHEMA.parse(
             encode({
                 timestampResponse: creator(group_call.SfuToParticipant.Timestamp, {
-                    ms: intoUnsignedLong(1337n as u64),
+                    ms: u64ToUnsignedLong(1337n as u64),
                 }),
             }),
         );
@@ -831,7 +831,7 @@ describe('P2P_ENVELOPE_SCHEMA', () => {
                 captureState: captureState({
                     screen: creator(group_call.ParticipantToParticipant.CaptureState.Screen, {
                         on: creator(group_call.ParticipantToParticipant.CaptureState.Screen.On, {
-                            startedAt: intoUnsignedLong(1337n as u64),
+                            startedAt: u64ToUnsignedLong(1337n as u64),
                         }),
                         off: undefined,
                     }),

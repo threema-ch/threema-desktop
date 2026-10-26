@@ -1,7 +1,7 @@
 import * as v from '@badrap/valita';
 import {d2d} from '@threema/protocol/protobuf';
-import {intoU64} from '@threema/ts-utils/number/into-u64';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {unsignedLongToU64} from '@threema/ts-utils/number/into-u64';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import Long from 'long';
 
 import {ReceiverType} from '~/common/enum';
@@ -41,7 +41,7 @@ export const SCHEMA = validator(
                 distributionList: v
                     .unknown()
                     .assert(Long.isLong)
-                    .map(intoU64)
+                    .map(unsignedLongToU64)
                     .map(ensureDistributionListId),
             })
             .rest(v.unknown()),
@@ -77,7 +77,7 @@ export function serialize(validatedMessage: Type): ProtobufInstanceOf<typeof d2d
         case 'distributionList':
             props = {
                 ...baseProps,
-                distributionList: intoUnsignedLong(validatedMessage.distributionList),
+                distributionList: u64ToUnsignedLong(validatedMessage.distributionList),
             };
             break;
         case 'group':

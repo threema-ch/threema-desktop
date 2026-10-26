@@ -20,7 +20,7 @@ import type {u32} from '@threema/ts-utils/integer/u32';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
 import type {WeakOpaque} from '@threema/ts-utils/meta/newtype';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import type {ResolvablePromise} from '@threema/ts-utils/promise/resolvable-promise';
 
 import type {ServicesForBackend} from '~/common/backend';
@@ -866,7 +866,7 @@ export class Layer3Decoder<TType extends 'full' | 'd2m-only'>
             payload: protobuf.utils.encoder(protobuf.d2m.ClientHello, {
                 version: chosenVersion,
                 response: challengeResponse,
-                deviceId: intoUnsignedLong(d2m.deviceId),
+                deviceId: u64ToUnsignedLong(d2m.deviceId),
                 deviceSlotsExhaustedPolicy,
                 deviceSlotExpirationPolicy,
                 expectedDeviceSlotState,

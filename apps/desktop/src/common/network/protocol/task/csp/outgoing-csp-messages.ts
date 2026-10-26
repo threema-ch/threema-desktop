@@ -5,7 +5,7 @@ import {UTF8} from '@threema/ts-utils/codec/utf8';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
 import {dateToUnixTimestampS} from '@threema/ts-utils/number/date-to-unix-timestamp-s';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 
 import type {Nonce} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
@@ -495,8 +495,8 @@ export class OutgoingCspMessagesTask
                         protobuf.utils.encoder(protobuf.csp_e2e.MessageMetadata, {
                             padding: metadataPadding,
                             nickname,
-                            messageId: intoUnsignedLong(properties.messageId),
-                            createdAt: intoUnsignedLong(
+                            messageId: u64ToUnsignedLong(properties.messageId),
+                            createdAt: u64ToUnsignedLong(
                                 dateToUnixTimestampMs(properties.createdAt),
                             ),
                         }),
@@ -625,9 +625,9 @@ export class OutgoingCspMessagesTask
                     envelope: {
                         outgoingMessage: protobuf.utils.creator(protobuf.d2d.OutgoingMessage, {
                             conversation: this._getD2dConversationId(message.receiver),
-                            messageId: intoUnsignedLong(message.properties.messageId),
+                            messageId: u64ToUnsignedLong(message.properties.messageId),
                             threadMessageId: undefined, // TODO(DESK-296): Set thread message ID
-                            createdAt: intoUnsignedLong(
+                            createdAt: u64ToUnsignedLong(
                                 dateToUnixTimestampMs(message.properties.createdAt),
                             ),
                             type: message.specifics.default.messageProperties.type,
@@ -664,7 +664,7 @@ export class OutgoingCspMessagesTask
                             this._services.device,
                             receiver.view.creator,
                         ),
-                        groupId: intoUnsignedLong(receiver.view.groupId),
+                        groupId: u64ToUnsignedLong(receiver.view.groupId),
                     }),
                     distributionList: undefined,
                 });

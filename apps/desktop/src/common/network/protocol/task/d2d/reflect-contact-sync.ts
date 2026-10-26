@@ -1,6 +1,6 @@
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
 import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 
 import {type TransactionScope, TriggerSource} from '~/common/enum';
 import type {Logger} from '~/common/logging';
@@ -70,7 +70,7 @@ export function getD2dContactSyncCreate(init: ContactInit): protobuf.d2d.Contact
             contact: protobuf.utils.creator(protobuf.d2d_sync.Contact, {
                 identity: init.identity,
                 publicKey: init.publicKey as ReadonlyUint8Array as Uint8Array,
-                createdAt: intoUnsignedLong(dateToUnixTimestampMs(init.createdAt)),
+                createdAt: u64ToUnsignedLong(dateToUnixTimestampMs(init.createdAt)),
                 firstName: init.firstName,
                 lastName: init.lastName,
                 nickname: init.nickname,
@@ -79,7 +79,7 @@ export function getD2dContactSyncCreate(init: ContactInit): protobuf.d2d.Contact
                 identityType: init.identityType,
                 acquaintanceLevel: init.acquaintanceLevel,
                 activityState: init.activityState,
-                featureMask: intoUnsignedLong(init.featureMask),
+                featureMask: u64ToUnsignedLong(init.featureMask),
                 syncState: init.syncState,
                 readReceiptPolicyOverride: DEFAULT_READ_RECEIPT_POLICY_OVERRIDE,
                 typingIndicatorPolicyOverride: DEFAULT_TYPING_INDICATOR_POLICY_OVERRIDE,
@@ -95,7 +95,7 @@ export function getD2dContactSyncCreate(init: ContactInit): protobuf.d2d.Contact
                 userDefinedProfilePicture: undefined,
                 workLastFullSyncAt:
                     init.workLastFullSyncAt !== undefined
-                        ? intoUnsignedLong(dateToUnixTimestampMs(init.workLastFullSyncAt))
+                        ? u64ToUnsignedLong(dateToUnixTimestampMs(init.workLastFullSyncAt))
                         : undefined,
                 workAvailabilityStatus:
                     init.workAvailabilityStatus !== undefined
@@ -158,7 +158,7 @@ function getD2dContactSyncUpdateData(
             // Specific policy
             let expiresAt;
             if (update.notificationTriggerPolicyOverride.expiresAt !== undefined) {
-                expiresAt = intoUnsignedLong(
+                expiresAt = u64ToUnsignedLong(
                     dateToUnixTimestampMs(update.notificationTriggerPolicyOverride.expiresAt),
                 );
             }
@@ -197,7 +197,7 @@ function getD2dContactSyncUpdateData(
                 publicKey: undefined,
                 createdAt:
                     update.createdAt !== undefined
-                        ? intoUnsignedLong(dateToUnixTimestampMs(update.createdAt))
+                        ? u64ToUnsignedLong(dateToUnixTimestampMs(update.createdAt))
                         : undefined,
                 firstName: update.firstName,
                 lastName: update.lastName,
@@ -209,7 +209,7 @@ function getD2dContactSyncUpdateData(
                 activityState: update.activityState,
                 featureMask:
                     update.featureMask !== undefined
-                        ? intoUnsignedLong(update.featureMask)
+                        ? u64ToUnsignedLong(update.featureMask)
                         : undefined,
                 syncState: update.syncState,
                 readReceiptPolicyOverride,
@@ -225,7 +225,7 @@ function getD2dContactSyncUpdateData(
                 userDefinedProfilePicture: undefined,
                 workLastFullSyncAt:
                     update.workLastFullSyncAt !== undefined
-                        ? intoUnsignedLong(dateToUnixTimestampMs(update.workLastFullSyncAt))
+                        ? u64ToUnsignedLong(dateToUnixTimestampMs(update.workLastFullSyncAt))
                         : undefined,
                 workAvailabilityStatus:
                     update.workAvailabilityStatus !== undefined

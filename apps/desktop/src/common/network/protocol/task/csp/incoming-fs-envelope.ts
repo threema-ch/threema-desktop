@@ -1,4 +1,4 @@
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 
 import {CspE2eForwardSecurityType} from '~/common/enum';
@@ -78,7 +78,7 @@ export class IncomingForwardSecurityEnvelopeTask
             init: undefined,
             accept: undefined,
             reject: protobuf.utils.creator(protobuf.csp_e2e_fs.Reject, {
-                messageId: intoUnsignedLong(this._messageId),
+                messageId: u64ToUnsignedLong(this._messageId),
                 groupIdentity: undefined,
                 cause: protobuf.csp_e2e_fs.Reject.Cause.DISABLED_BY_LOCAL,
             }),

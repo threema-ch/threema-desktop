@@ -1,5 +1,5 @@
 import type * as v from '@badrap/valita';
-import {intoU64} from '@threema/ts-utils/number/into-u64';
+import {unsignedLongToU64} from '@threema/ts-utils/number/into-u64';
 import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 
 import {
@@ -122,7 +122,7 @@ export abstract class ReflectedMessageTaskBase<
         } catch (error) {
             let messageIdHex;
             try {
-                messageIdHex = u64ToHexLe(intoU64(unvalidatedMessage.messageId));
+                messageIdHex = u64ToHexLe(unsignedLongToU64(unvalidatedMessage.messageId));
             } catch {
                 messageIdHex = 'unknown';
             }

@@ -1,6 +1,6 @@
 import {UTF8} from '@threema/ts-utils/codec/utf8';
 import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {expect} from 'chai';
 
 import {NACL_CONSTANTS} from '~/common/crypto';
@@ -103,8 +103,8 @@ export function run(): void {
                 });
                 const reflectedMessage: d2d.IncomingMessage = {
                     senderIdentity: user1.identity.string,
-                    messageId: intoUnsignedLong(messageId),
-                    createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
+                    messageId: u64ToUnsignedLong(messageId),
+                    createdAt: u64ToUnsignedLong(dateToUnixTimestampMs(createdAt)),
                     type: CspE2eConversationType.TEXT,
                     body: messageEncoder.encode(new Uint8Array(messageEncoder.byteLength())),
                     nonce: services.crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
@@ -153,8 +153,8 @@ export function run(): void {
 
                 const reflectedMessage: d2d.IncomingMessage = {
                     senderIdentity: user1.identity.string,
-                    messageId: intoUnsignedLong(messageId),
-                    createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
+                    messageId: u64ToUnsignedLong(messageId),
+                    createdAt: u64ToUnsignedLong(dateToUnixTimestampMs(createdAt)),
                     type: CspE2eGroupConversationType.GROUP_TEXT,
                     body: messageEncoder.encode(new Uint8Array(messageEncoder.byteLength())),
                     nonce: services.crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
@@ -197,8 +197,8 @@ export function run(): void {
                 });
                 const reflectedMessage: d2d.IncomingMessage = {
                     senderIdentity: user1.identity.string,
-                    messageId: intoUnsignedLong(messageId),
-                    createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
+                    messageId: u64ToUnsignedLong(messageId),
+                    createdAt: u64ToUnsignedLong(dateToUnixTimestampMs(createdAt)),
                     type: CspE2eConversationType.TEXT,
                     body: messageEncoder.encode(new Uint8Array(messageEncoder.byteLength())),
                     nonce: services.crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
@@ -217,15 +217,15 @@ export function run(): void {
                 const editText = 'Hallo Zueri';
                 const messageEditEncoder = proto.utils.encoder(proto.csp_e2e.EditMessage, {
                     text: editText,
-                    messageId: intoUnsignedLong(messageId),
+                    messageId: u64ToUnsignedLong(messageId),
                 });
 
                 const createdAtEdit = secondsAgo(7);
 
                 const reflectedEditMessage: d2d.IncomingMessage = {
                     senderIdentity: user1.identity.string,
-                    messageId: intoUnsignedLong(messageId),
-                    createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAtEdit)),
+                    messageId: u64ToUnsignedLong(messageId),
+                    createdAt: u64ToUnsignedLong(dateToUnixTimestampMs(createdAtEdit)),
                     type: CspE2eMessageUpdateType.EDIT_MESSAGE,
                     body: messageEditEncoder.encode(
                         new Uint8Array(messageEditEncoder.byteLength()),
@@ -269,8 +269,8 @@ export function run(): void {
                 });
                 const reflectedMessage: d2d.IncomingMessage = {
                     senderIdentity: user1.identity.string,
-                    messageId: intoUnsignedLong(messageId),
-                    createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
+                    messageId: u64ToUnsignedLong(messageId),
+                    createdAt: u64ToUnsignedLong(dateToUnixTimestampMs(createdAt)),
                     type: CspE2eConversationType.TEXT,
                     body: messageEncoder.encode(new Uint8Array(messageEncoder.byteLength())),
                     nonce: services.crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
@@ -287,15 +287,15 @@ export function run(): void {
                 handle.finish();
 
                 const messageDeleteEncoder = proto.utils.encoder(proto.csp_e2e.DeleteMessage, {
-                    messageId: intoUnsignedLong(messageId),
+                    messageId: u64ToUnsignedLong(messageId),
                 });
 
                 const createdAtDelete = secondsAgo(7);
 
                 const reflectedDeleteMessage: d2d.IncomingMessage = {
                     senderIdentity: user1.identity.string,
-                    messageId: intoUnsignedLong(messageId),
-                    createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAtDelete)),
+                    messageId: u64ToUnsignedLong(messageId),
+                    createdAt: u64ToUnsignedLong(dateToUnixTimestampMs(createdAtDelete)),
                     type: CspE2eMessageUpdateType.DELETE_MESSAGE,
                     body: messageDeleteEncoder.encode(
                         new Uint8Array(messageDeleteEncoder.byteLength()),
@@ -366,9 +366,9 @@ export function run(): void {
 
                 const reflectedMessage: d2d.OutgoingMessage = {
                     conversation: d2dConversationId,
-                    messageId: intoUnsignedLong(messageId),
+                    messageId: u64ToUnsignedLong(messageId),
                     threadMessageId: undefined,
-                    createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
+                    createdAt: u64ToUnsignedLong(dateToUnixTimestampMs(createdAt)),
                     type,
                     body: messageEncoder.encode(new Uint8Array(messageEncoder.byteLength())),
                     nonces: [
@@ -431,7 +431,7 @@ export function run(): void {
                             id: 'group',
                             contact: undefined,
                             group: {
-                                groupId: intoUnsignedLong(groupId),
+                                groupId: u64ToUnsignedLong(groupId),
                                 creatorIdentity: user1.identity.string,
                             },
                             distributionList: undefined,
@@ -475,7 +475,7 @@ export function run(): void {
                             id: 'group',
                             contact: undefined,
                             group: {
-                                groupId: intoUnsignedLong(groupId),
+                                groupId: u64ToUnsignedLong(groupId),
                                 creatorIdentity: user1.identity.string,
                             },
                             distributionList: undefined,
@@ -546,7 +546,7 @@ export function run(): void {
                             id: 'group',
                             contact: undefined,
                             group: {
-                                groupId: intoUnsignedLong(groupId),
+                                groupId: u64ToUnsignedLong(groupId),
                                 creatorIdentity: user1.identity.string,
                             },
                             distributionList: undefined,
@@ -633,7 +633,7 @@ export function run(): void {
                             contact: undefined,
                             group: {
                                 creatorIdentity: user1.identity.string,
-                                groupId: intoUnsignedLong(groupId),
+                                groupId: u64ToUnsignedLong(groupId),
                             },
                             distributionList: undefined,
                         },
@@ -683,20 +683,20 @@ export function run(): void {
                 const editText = 'Hallo Zueri';
                 const messageEditEncoder = proto.utils.encoder(proto.csp_e2e.EditMessage, {
                     text: editText,
-                    messageId: intoUnsignedLong(messageId),
+                    messageId: u64ToUnsignedLong(messageId),
                 });
 
                 const reflectedEditMessageCreatedAt = secondsAgo(7);
 
                 const reflectedEditMessage: d2d.OutgoingMessage = {
-                    messageId: intoUnsignedLong(messageId),
+                    messageId: u64ToUnsignedLong(messageId),
                     conversation: {
                         id: 'contact',
                         contact: user1.identity.string,
                         group: undefined,
                         distributionList: undefined,
                     },
-                    createdAt: intoUnsignedLong(
+                    createdAt: u64ToUnsignedLong(
                         dateToUnixTimestampMs(reflectedEditMessageCreatedAt),
                     ),
                     type: CspE2eMessageUpdateType.EDIT_MESSAGE,
@@ -758,20 +758,20 @@ export function run(): void {
                 handle.finish();
 
                 const messageDeleteEncoder = proto.utils.encoder(proto.csp_e2e.DeleteMessage, {
-                    messageId: intoUnsignedLong(messageId),
+                    messageId: u64ToUnsignedLong(messageId),
                 });
 
                 const reflectedDeleteCreatedAt = secondsAgo(7);
 
                 const reflectedDeleteMessage: d2d.OutgoingMessage = {
-                    messageId: intoUnsignedLong(messageId),
+                    messageId: u64ToUnsignedLong(messageId),
                     conversation: {
                         id: 'contact',
                         contact: user1.identity.string,
                         group: undefined,
                         distributionList: undefined,
                     },
-                    createdAt: intoUnsignedLong(dateToUnixTimestampMs(reflectedDeleteCreatedAt)),
+                    createdAt: u64ToUnsignedLong(dateToUnixTimestampMs(reflectedDeleteCreatedAt)),
                     type: CspE2eMessageUpdateType.DELETE_MESSAGE,
                     body: messageDeleteEncoder.encode(
                         new Uint8Array(messageDeleteEncoder.byteLength()),

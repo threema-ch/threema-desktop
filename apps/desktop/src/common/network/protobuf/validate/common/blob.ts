@@ -2,7 +2,7 @@ import * as v from '@badrap/valita';
 import {common} from '@threema/protocol/protobuf';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
 import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {unixTimestampToDateMs} from '@threema/ts-utils/number/unix-timestamp-to-date-ms';
 
 import {ensureNonce} from '~/common/crypto';
@@ -68,7 +68,7 @@ export function serialize(
         uploadedAt:
             uploadedAt === undefined
                 ? undefined
-                : intoUnsignedLong(dateToUnixTimestampMs(uploadedAt)),
+                : u64ToUnsignedLong(dateToUnixTimestampMs(uploadedAt)),
     });
 }
 

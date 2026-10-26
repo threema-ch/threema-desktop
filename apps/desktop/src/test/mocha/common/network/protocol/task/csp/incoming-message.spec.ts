@@ -8,7 +8,7 @@ import type {u8} from '@threema/ts-utils/integer/u8';
 import {tag} from '@threema/ts-utils/meta/newtype';
 import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
 import {dateToUnixTimestampS} from '@threema/ts-utils/number/date-to-unix-timestamp-s';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {expect} from 'chai';
 
 import type {ServicesForBackend} from '~/common/backend';
@@ -137,8 +137,8 @@ function createMessage(
             protobuf.utils.encoder(protobuf.csp_e2e.MessageMetadata, {
                 padding: new Uint8Array(0),
                 nickname: metadataNickname,
-                messageId: intoUnsignedLong(overrides?.metadata?.messageId ?? messageId),
-                createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
+                messageId: u64ToUnsignedLong(overrides?.metadata?.messageId ?? messageId),
+                createdAt: u64ToUnsignedLong(dateToUnixTimestampMs(createdAt)),
             }),
         )
         .encryptWithRandomNonce('incoming-message.spec.ts#createMessage');
@@ -217,14 +217,14 @@ function createNewIncomingEmojiReactionTask(
             messageEncoder = protobuf.utils.encoder(protobuf.csp_e2e.Reaction, {
                 withdraw: undefined,
                 apply: UTF8.encode(emojiReaction),
-                messageId: intoUnsignedLong(reactionMessageId),
+                messageId: u64ToUnsignedLong(reactionMessageId),
             });
             break;
         case 'withdraw':
             messageEncoder = protobuf.utils.encoder(protobuf.csp_e2e.Reaction, {
                 withdraw: UTF8.encode(emojiReaction),
                 apply: undefined,
-                messageId: intoUnsignedLong(reactionMessageId),
+                messageId: u64ToUnsignedLong(reactionMessageId),
             });
             break;
         default:
@@ -257,7 +257,7 @@ function createNewEditMessageTask(
         CspE2eMessageUpdateType.EDIT_MESSAGE,
         protobuf.utils.encoder(protobuf.csp_e2e.EditMessage, {
             text: messageText,
-            messageId: intoUnsignedLong(messageId),
+            messageId: u64ToUnsignedLong(messageId),
         }),
         CspMessageFlags.fromPartial({sendPushNotification: true}),
     );
@@ -277,7 +277,7 @@ function createNewDeleteMessageTask(
         me,
         CspE2eMessageUpdateType.DELETE_MESSAGE,
         protobuf.utils.encoder(protobuf.csp_e2e.DeleteMessage, {
-            messageId: intoUnsignedLong(messageId),
+            messageId: u64ToUnsignedLong(messageId),
         }),
         CspMessageFlags.fromPartial({sendPushNotification: true}),
     );

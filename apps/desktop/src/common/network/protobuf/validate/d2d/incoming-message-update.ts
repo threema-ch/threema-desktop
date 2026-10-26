@@ -1,7 +1,7 @@
 import * as v from '@badrap/valita';
 import {d2d} from '@threema/protocol/protobuf';
 import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {unixTimestampToDateMs} from '@threema/ts-utils/number/unix-timestamp-to-date-ms';
 
 import {creator, validator} from '~/common/network/protobuf/utils';
@@ -57,7 +57,7 @@ export function serialize(validatedMessage: Type): d2d.IncomingMessageUpdate {
                         ...commonProps,
                         update: 'read',
                         read: creator(d2d.IncomingMessageUpdate.Read, {
-                            at: intoUnsignedLong(dateToUnixTimestampMs(update.read.at)),
+                            at: u64ToUnsignedLong(dateToUnixTimestampMs(update.read.at)),
                         }),
                     };
                 default:

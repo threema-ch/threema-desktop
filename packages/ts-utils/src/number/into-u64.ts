@@ -7,7 +7,7 @@ import type {u64} from '../integer/u64.js';
  *
  * @throws {Error} if value is not unsigned
  */
-export function intoU64(value: Long): u64 {
+export function unsignedLongToU64(value: Long): u64 {
     if (!value.unsigned) {
         throw new Error(`Long value is not unsigned`);
     }

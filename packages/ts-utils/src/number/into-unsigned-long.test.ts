@@ -1,12 +1,12 @@
 import Long from 'long';
 import {describe, expect, it} from 'vitest';
 
-import {intoUnsignedLong} from './into-unsigned-long.js';
+import {u64ToUnsignedLong} from './into-unsigned-long.js';
 
-describe('intoUnsignedLong', () => {
+describe('u64ToUnsignedLong', () => {
     it('converts 0n to an unsigned zero Long', () => {
         // Act
-        const result = intoUnsignedLong(0n);
+        const result = u64ToUnsignedLong(0n);
 
         // Assert
         expect(result.unsigned).toBe(true);
@@ -15,7 +15,7 @@ describe('intoUnsignedLong', () => {
 
     it('converts a small u64 to an unsigned Long', () => {
         // Act
-        const result = intoUnsignedLong(42n);
+        const result = u64ToUnsignedLong(42n);
 
         // Assert
         expect(result.unsigned).toBe(true);
@@ -24,7 +24,7 @@ describe('intoUnsignedLong', () => {
 
     it('converts a value exceeding 32 bits', () => {
         // Act
-        const result = intoUnsignedLong(4294967297n);
+        const result = u64ToUnsignedLong(4294967297n);
 
         // Assert
         expect(result.unsigned).toBe(true);
@@ -33,7 +33,7 @@ describe('intoUnsignedLong', () => {
 
     it('converts the maximum u64 value', () => {
         // Act
-        const result = intoUnsignedLong(2n ** 64n - 1n);
+        const result = u64ToUnsignedLong(2n ** 64n - 1n);
 
         // Assert
         expect(result.unsigned).toBe(true);

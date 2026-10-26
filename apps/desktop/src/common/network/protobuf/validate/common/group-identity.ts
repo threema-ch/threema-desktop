@@ -1,6 +1,6 @@
 import * as v from '@badrap/valita';
 import {common} from '@threema/protocol/protobuf';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 
 import {creator, type ProtobufInstanceOf, validator} from '~/common/network/protobuf/utils';
 import {ensureGroupId, ensureIdentityString} from '~/common/network/types';
@@ -21,7 +21,7 @@ export function serialize(validatedMessage: Type): ProtobufInstanceOf<typeof com
     const {creatorIdentity, groupId} = validatedMessage;
     return creator(common.GroupIdentity, {
         creatorIdentity,
-        groupId: intoUnsignedLong(groupId),
+        groupId: u64ToUnsignedLong(groupId),
     });
 }
 

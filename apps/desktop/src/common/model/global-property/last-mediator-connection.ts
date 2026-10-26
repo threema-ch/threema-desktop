@@ -1,8 +1,8 @@
 import * as v from '@badrap/valita';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
 import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {intoU64} from '@threema/ts-utils/number/into-u64';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {unsignedLongToU64} from '@threema/ts-utils/number/into-u64';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {unixTimestampToDateMs} from '@threema/ts-utils/number/unix-timestamp-to-date-ms';
 import Long from 'long';
 
@@ -19,7 +19,12 @@ const LAST_MEDIATOR_CONNECTION_SCHEMA = v.object({
     /**
      * The last successfull mediator connection date.
      */
-    date: v.unknown().assert(Long.isLong).map(intoU64).map(unixTimestampToDateMs).optional(),
+    date: v
+        .unknown()
+        .assert(Long.isLong)
+        .map(unsignedLongToU64)
+        .map(unixTimestampToDateMs)
+        .optional(),
 });
 
 function serialize(
@@ -29,7 +34,7 @@ function serialize(
     if (validatedMessage.date === undefined) {
         date = undefined;
     } else {
-        date = intoUnsignedLong(dateToUnixTimestampMs(validatedMessage.date));
+        date = u64ToUnsignedLong(dateToUnixTimestampMs(validatedMessage.date));
     }
 
     return proto.LastMediatorConnection.encode({date}).finish();

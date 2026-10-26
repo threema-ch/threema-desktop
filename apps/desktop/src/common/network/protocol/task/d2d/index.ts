@@ -1,6 +1,6 @@
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
 import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 
 import type {Nonce} from '~/common/crypto';
 import * as protobuf from '~/common/network/protobuf';
@@ -115,7 +115,9 @@ export function getDeltaImageMessage(
             blob: protobuf.utils.creator(protobuf.common.Blob, {
                 id: profilePicture.blob.blobId as ReadonlyUint8Array as Uint8Array,
                 key: profilePicture.blob.key.unwrap(),
-                uploadedAt: intoUnsignedLong(dateToUnixTimestampMs(profilePicture.blob.uploadedAt)),
+                uploadedAt: u64ToUnsignedLong(
+                    dateToUnixTimestampMs(profilePicture.blob.uploadedAt),
+                ),
                 nonce: profilePicture.blob.nonce,
             }),
             type: protobuf.common.Image.Type.JPEG,

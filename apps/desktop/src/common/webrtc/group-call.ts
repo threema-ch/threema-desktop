@@ -10,7 +10,7 @@ import type {u53} from '@threema/ts-utils/integer/u53';
 import {AsyncLock} from '@threema/ts-utils/lock/async-lock';
 import {tag} from '@threema/ts-utils/meta/newtype';
 import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {u64ToBytesLe} from '@threema/ts-utils/number/u64-to-bytes-le';
 import {ResolvablePromise} from '@threema/ts-utils/promise/resolvable-promise';
 import {SequenceNumberU53} from '@threema/ts-utils/sequence-number/sequence-number-u53';
@@ -1486,7 +1486,7 @@ class AuthenticatedRemoteParticipant implements BaseRemoteParticipant<'done'> {
                                           protobuf.group_call.ParticipantToParticipant.CaptureState
                                               .Screen.On,
                                           {
-                                              startedAt: intoUnsignedLong(
+                                              startedAt: u64ToUnsignedLong(
                                                   newCaptureState.timestamp,
                                               ),
                                           },
@@ -2798,7 +2798,7 @@ export class GroupCall {
                 const callState = protobuf.utils.creator(protobuf.group_call.CallState, {
                     padding: new Uint8Array(randomU8(this._services.crypto)),
                     stateCreatedBy: this._local.id,
-                    stateCreatedAt: intoUnsignedLong(dateToUnixTimestampMs(new Date())),
+                    stateCreatedAt: u64ToUnsignedLong(dateToUnixTimestampMs(new Date())),
                     participants,
                 });
                 const encoded = tag<PlainData>(

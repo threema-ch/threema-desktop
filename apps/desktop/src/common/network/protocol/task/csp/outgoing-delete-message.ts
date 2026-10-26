@@ -1,5 +1,5 @@
 import {UTF8} from '@threema/ts-utils/codec/utf8';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 
 import {CspE2eGroupMessageUpdateType, CspE2eMessageUpdateType, ReceiverType} from '~/common/enum';
@@ -49,7 +49,7 @@ export class OutgoingDeleteMessageTask<TReceiver extends AnyReceiver>
         );
 
         const encoder = protobuf.utils.encoder(protobuf.csp_e2e.DeleteMessage, {
-            messageId: intoUnsignedLong(messageModel.view.id),
+            messageId: u64ToUnsignedLong(messageModel.view.id),
         });
 
         const sharedMessageProperties = {

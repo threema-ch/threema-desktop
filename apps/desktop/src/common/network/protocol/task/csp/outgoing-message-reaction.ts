@@ -1,5 +1,5 @@
 import {UTF8} from '@threema/ts-utils/codec/utf8';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 
 import {
@@ -282,13 +282,13 @@ export class OutgoingMessageReactionTask<TReceiver extends AnyReceiver>
                 return protobuf.utils.encoder(protobuf.csp_e2e.Reaction, {
                     withdraw: undefined,
                     apply: UTF8.encode(this._reaction),
-                    messageId: intoUnsignedLong(this._reactedMessageId),
+                    messageId: u64ToUnsignedLong(this._reactedMessageId),
                 });
             case 'withdraw':
                 return protobuf.utils.encoder(protobuf.csp_e2e.Reaction, {
                     apply: undefined,
                     withdraw: UTF8.encode(this._reaction),
-                    messageId: intoUnsignedLong(this._reactedMessageId),
+                    messageId: u64ToUnsignedLong(this._reactedMessageId),
                 });
             default:
                 return unreachable(this._variant);

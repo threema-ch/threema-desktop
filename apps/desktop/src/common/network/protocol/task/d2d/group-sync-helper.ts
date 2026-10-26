@@ -1,7 +1,7 @@
 import type {ProtobufMessage} from '@threema/protocol/protobuf/tag';
 import {tag, type WeakOpaque} from '@threema/ts-utils/meta/newtype';
 import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 
 import {
     ConversationCategory,
@@ -68,10 +68,10 @@ export function getD2dGroupSyncCreate(
             group: protobuf.utils.creator(protobuf.d2d_sync.Group, {
                 groupIdentity: protobuf.utils.creator(protobuf.common.GroupIdentity, {
                     creatorIdentity: groupIdentity.creatorIdentity,
-                    groupId: intoUnsignedLong(groupIdentity.groupId),
+                    groupId: u64ToUnsignedLong(groupIdentity.groupId),
                 }),
                 name,
-                createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
+                createdAt: u64ToUnsignedLong(dateToUnixTimestampMs(createdAt)),
                 userState,
                 profilePicture: getDeltaImageMessage(profilePicture),
                 memberIdentities: protobuf.utils.creator(protobuf.common.Identities, {
@@ -101,7 +101,7 @@ export function getD2dGroupSyncDelete(groupIdentity: {
         delete: protobuf.utils.creator(protobuf.d2d.GroupSync.Delete, {
             groupIdentity: protobuf.utils.creator(protobuf.common.GroupIdentity, {
                 creatorIdentity: groupIdentity.creatorIdentity,
-                groupId: intoUnsignedLong(groupIdentity.groupId),
+                groupId: u64ToUnsignedLong(groupIdentity.groupId),
             }),
         }),
         create: undefined,
@@ -176,7 +176,7 @@ export function getD2dGroupSyncUpdate(
             group: protobuf.utils.creator(protobuf.d2d_sync.Group, {
                 groupIdentity: protobuf.utils.creator(protobuf.common.GroupIdentity, {
                     creatorIdentity: groupIdentity.creatorIdentity,
-                    groupId: intoUnsignedLong(groupIdentity.groupId),
+                    groupId: u64ToUnsignedLong(groupIdentity.groupId),
                 }),
                 name: updatedGroupView?.name,
                 // `createdAt` is never updated
@@ -221,7 +221,7 @@ function getNotificationTriggerOverrideMessage(
                       expiresAt:
                           override.expiresAt === undefined
                               ? undefined
-                              : intoUnsignedLong(dateToUnixTimestampMs(override.expiresAt)),
+                              : u64ToUnsignedLong(dateToUnixTimestampMs(override.expiresAt)),
                   },
               );
 

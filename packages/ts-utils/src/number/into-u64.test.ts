@@ -1,9 +1,9 @@
 import Long from 'long';
 import {describe, expect, it} from 'vitest';
 
-import {intoU64} from './into-u64.js';
+import {unsignedLongToU64} from './into-u64.js';
 
-describe('intoU64', () => {
+describe('unsignedLongToU64', () => {
     const testCases: [input: Long, output: bigint][] = [
         [Long.fromNumber(0, true), 0n],
         [Long.fromNumber(10, true), 10n],
@@ -13,11 +13,13 @@ describe('intoU64', () => {
 
     for (const [input, expected] of testCases) {
         it(`converts ${input.toString()} to ${expected}n`, () => {
-            expect(intoU64(input)).toBe(expected);
+            expect(unsignedLongToU64(input)).toBe(expected);
         });
     }
 
     it('throws if a signed Long is passed', () => {
-        expect(() => intoU64(Long.fromNumber(20, false))).toThrow('Long value is not unsigned');
+        expect(() => unsignedLongToU64(Long.fromNumber(20, false))).toThrow(
+            'Long value is not unsigned',
+        );
     });
 });

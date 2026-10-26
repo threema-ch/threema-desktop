@@ -1,6 +1,6 @@
 import * as v from '@badrap/valita';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {unixTimestampToDateMs} from '@threema/ts-utils/number/unix-timestamp-to-date-ms';
 
 import {WorkAvailabilityStatusCategory, WorkAvailabilityStatusCategoryUtils} from '~/common/enum';
@@ -143,7 +143,7 @@ export const PROFILE_SETTINGS_CODEC: SettingsCategoryCodec<'profile'> = {
             profilePictureKey: profilePicture.key,
             profilePictureLastUploadedAt:
                 settings.profilePicture?.lastUploadedAt !== undefined
-                    ? intoUnsignedLong(BigInt(settings.profilePicture.lastUploadedAt.getTime()))
+                    ? u64ToUnsignedLong(BigInt(settings.profilePicture.lastUploadedAt.getTime()))
                     : undefined,
             profilePictureShareWith,
             workAvailabilityStatus: settings.workAvailabilityStatus,

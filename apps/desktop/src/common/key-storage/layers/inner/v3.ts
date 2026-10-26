@@ -3,7 +3,7 @@ import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-ar
 import {byteJoin} from '@threema/ts-utils/byte/byte-join';
 import type {WeakOpaque} from '@threema/ts-utils/meta/newtype';
 import {bytesLeToU16} from '@threema/ts-utils/number/bytes-le-to-u16';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {u16ToBytesLe} from '@threema/ts-utils/number/u16-to-bytes-le';
 
 import type {EncryptedDataWithNonceAhead} from '~/common/crypto';
@@ -170,8 +170,8 @@ export const INNER_KEY_STORAGE_V3_ENCODING_HELPERS: KeyStorageLayerEncodingHelpe
         dgk: validated.dgk.unwrap(),
         databaseKey: validated.databaseKey.unwrap(),
         deviceIds: {
-            d2mDeviceId: intoUnsignedLong(validated.deviceIds.d2mDeviceId),
-            cspDeviceId: intoUnsignedLong(validated.deviceIds.cspDeviceId),
+            d2mDeviceId: u64ToUnsignedLong(validated.deviceIds.d2mDeviceId),
+            cspDeviceId: u64ToUnsignedLong(validated.deviceIds.cspDeviceId),
         },
         deviceCookie: validated.deviceCookie as ReadonlyUint8Array as Uint8Array,
     }),

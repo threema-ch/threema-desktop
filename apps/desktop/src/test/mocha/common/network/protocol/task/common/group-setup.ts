@@ -1,6 +1,6 @@
 import {NonceScope} from '@threema/protocol/enum';
 import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {expect} from 'chai';
 
 import type {ServicesForBackend} from '~/common/backend';
@@ -516,10 +516,10 @@ async function runTask(
 
     const reflectIncomingGroupSetup = protobuf.utils.creator(protobuf.d2d.IncomingMessage, {
         type: CspE2eGroupControlType.GROUP_SETUP,
-        createdAt: intoUnsignedLong(dateToUnixTimestampMs(new Date())),
+        createdAt: u64ToUnsignedLong(dateToUnixTimestampMs(new Date())),
         body: new Uint8Array([0x42, 0x42, 0x42]), // Fake data is OK for testing
         senderIdentity,
-        messageId: intoUnsignedLong(randomMessageId(services.crypto)),
+        messageId: u64ToUnsignedLong(randomMessageId(services.crypto)),
         nonce: nonceGuard.nonce as Uint8Array,
     });
     nonceGuard.commit();

@@ -3,7 +3,7 @@ import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-ar
 import {byteJoin} from '@threema/ts-utils/byte/byte-join';
 import type {WeakOpaque} from '@threema/ts-utils/meta/newtype';
 import {bytesLeToU16} from '@threema/ts-utils/number/bytes-le-to-u16';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {u16ToBytesLe} from '@threema/ts-utils/number/u16-to-bytes-le';
 
 import {ensureEncryptedDataWithNonceAhead, type EncryptedDataWithNonceAhead} from '~/common/crypto';
@@ -236,7 +236,7 @@ export const INTERMEDIATE_KEY_STORAGE_V1_1_ENCODING_HELPERS: KeyStorageLayerEnco
                     : {
                           oppfUrl: validated.onPremConfig.oppfUrl,
                           oppfCachedConfig: validated.onPremConfig.oppfCachedConfig,
-                          lastUpdated: intoUnsignedLong(validated.onPremConfig.lastUpdated),
+                          lastUpdated: u64ToUnsignedLong(validated.onPremConfig.lastUpdated),
                       },
         };
     },

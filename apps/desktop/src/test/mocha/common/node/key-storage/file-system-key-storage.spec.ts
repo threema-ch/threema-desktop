@@ -2,7 +2,7 @@ import * as fs from 'node:fs';
 
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
 import {byteJoin} from '@threema/ts-utils/byte/byte-join';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {u16ToBytesLe} from '@threema/ts-utils/number/u16-to-bytes-le';
 import * as chai from 'chai';
 
@@ -148,8 +148,8 @@ async function buildDeprecatedV1FileBytes(
         dgk: innerContents.dgk.unwrap(),
         databaseKey: innerContents.databaseKey.unwrap(),
         deviceIds: {
-            d2mDeviceId: intoUnsignedLong(innerContents.deviceIds.d2mDeviceId),
-            cspDeviceId: intoUnsignedLong(innerContents.deviceIds.cspDeviceId),
+            d2mDeviceId: u64ToUnsignedLong(innerContents.deviceIds.d2mDeviceId),
+            cspDeviceId: u64ToUnsignedLong(innerContents.deviceIds.cspDeviceId),
         },
         deviceCookie: innerContents.deviceCookie as ReadonlyUint8Array as Uint8Array,
         workCredentials: undefined,
@@ -198,8 +198,8 @@ async function buildFileBytesWithInnerV2(
         dgk: innerContents.dgk.unwrap(),
         databaseKey: innerContents.databaseKey.unwrap(),
         deviceIds: {
-            d2mDeviceId: intoUnsignedLong(innerContents.deviceIds.d2mDeviceId),
-            cspDeviceId: intoUnsignedLong(innerContents.deviceIds.cspDeviceId),
+            d2mDeviceId: u64ToUnsignedLong(innerContents.deviceIds.d2mDeviceId),
+            cspDeviceId: u64ToUnsignedLong(innerContents.deviceIds.cspDeviceId),
         },
         deviceCookie: innerContents.deviceCookie as ReadonlyUint8Array as Uint8Array,
         workCredentials: undefined,

@@ -4,7 +4,7 @@ import {creator, creatorForMap} from '@threema/protocol/protobuf/utils';
 import type {ReadonlyUint8Array} from '@threema/ts-utils/array/readonly-uint8-array';
 import type {u64} from '@threema/ts-utils/integer/u64';
 import {unwrap} from '@threema/ts-utils/meta/unwrap';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {ensureDtlsFingerprint} from '@threema/webrtc/sdp';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
@@ -110,7 +110,7 @@ function encodeCallState(
             creator(group_call.CallState, {
                 padding: NO_PADDING,
                 stateCreatedBy: 1,
-                stateCreatedAt: intoUnsignedLong(1337n as u64),
+                stateCreatedAt: u64ToUnsignedLong(1337n as u64),
                 participants: creatorForMap(
                     group_call.CallState.Participant,
                     participants.map(([participantId, identity, nickname]) => [
@@ -133,7 +133,7 @@ function encodePeekResponse(encryptedCallState?: Uint8Array): Uint8Array<ArrayBu
     return Uint8Array.from(
         group_call.SfuHttpResponse.Peek.encode(
             creator(group_call.SfuHttpResponse.Peek, {
-                startedAt: intoUnsignedLong(42n as u64),
+                startedAt: u64ToUnsignedLong(42n as u64),
                 maxParticipants: 16,
                 encryptedCallState,
             }),
@@ -145,7 +145,7 @@ function encodeJoinResponse(dtlsFingerprint: Uint8Array = bytes(32)): Uint8Array
     return Uint8Array.from(
         group_call.SfuHttpResponse.Join.encode(
             creator(group_call.SfuHttpResponse.Join, {
-                startedAt: intoUnsignedLong(42n as u64),
+                startedAt: u64ToUnsignedLong(42n as u64),
                 maxParticipants: 16,
                 participantId: 3,
                 addresses: [

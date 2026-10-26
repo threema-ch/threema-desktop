@@ -8,7 +8,7 @@ import type {u64} from '../integer/u64.js';
  * @param value Unsigned 64-bit integer to be converted.
  * @returns the value as a Long instance.
  */
-export function intoUnsignedLong(value: u64): Long {
+export function u64ToUnsignedLong(value: u64): Long {
     return Long.fromBits(
         Number(BigInt.asUintN(32, value)),
         // eslint-disable-next-line no-bitwise

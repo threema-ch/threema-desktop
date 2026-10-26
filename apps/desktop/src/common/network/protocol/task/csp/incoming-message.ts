@@ -10,8 +10,8 @@ import type {u53} from '@threema/ts-utils/integer/u53';
 import type {u8} from '@threema/ts-utils/integer/u8';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
 import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {intoU64} from '@threema/ts-utils/number/into-u64';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {unsignedLongToU64} from '@threema/ts-utils/number/into-u64';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 import {unixTimestampToDateS} from '@threema/ts-utils/number/unix-timestamp-to-date-s';
 
@@ -339,7 +339,7 @@ function getD2dIncomingReflectFragment(
     createdAt: Date,
 ): D2dIncomingMessageFragment {
     return {
-        createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
+        createdAt: u64ToUnsignedLong(dateToUnixTimestampMs(createdAt)),
         type: d2dMessageType,
         body: cspMessageBody as Uint8Array,
         nonce: nonceGuard.nonce,
@@ -354,7 +354,7 @@ function getD2dIncomingMessage(
     return protobuf.utils.creator(protobuf.d2d.IncomingMessage, {
         ...fragment,
         senderIdentity: sender,
-        messageId: intoUnsignedLong(id),
+        messageId: u64ToUnsignedLong(id),
     });
 }
 
@@ -1896,7 +1896,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     reflect: reflectFor(maybeCspE2eType),
                     task: new IncomingMessageContentUpdateTask(
                         this._services,
-                        ensureMessageId(intoU64(updatedMessage.messageId)),
+                        ensureMessageId(unsignedLongToU64(updatedMessage.messageId)),
                         senderConversationId,
                         {type: 'edit', newText: updatedMessage.text},
                         clampedCreatedAt,
@@ -1958,7 +1958,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     reflect: reflectFor(maybeCspE2eType),
                     task: new IncomingMessageContentUpdateTask(
                         this._services,
-                        ensureMessageId(intoU64(updatedMessage.messageId)),
+                        ensureMessageId(unsignedLongToU64(updatedMessage.messageId)),
                         groupConversationId,
                         {type: 'edit', newText: updatedMessage.text},
                         clampedCreatedAt,
@@ -1982,7 +1982,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     reflect: reflectFor(maybeCspE2eType),
                     task: new IncomingMessageContentUpdateTask(
                         this._services,
-                        ensureMessageId(intoU64(deletedMessage.messageId)),
+                        ensureMessageId(unsignedLongToU64(deletedMessage.messageId)),
                         senderConversationId,
                         {type: 'delete'},
                         clampedCreatedAt,
@@ -2014,7 +2014,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     reflect: reflectFor(maybeCspE2eType),
                     task: new IncomingMessageContentUpdateTask(
                         this._services,
-                        ensureMessageId(intoU64(deletedMessage.messageId)),
+                        ensureMessageId(unsignedLongToU64(deletedMessage.messageId)),
                         groupConversationId,
                         {type: 'delete'},
                         clampedCreatedAt,

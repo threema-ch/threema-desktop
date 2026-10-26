@@ -2,8 +2,8 @@ import {byteWithoutZeroPadding} from '@threema/ts-utils/byte/byte-without-zero-p
 import {UTF8} from '@threema/ts-utils/codec/utf8';
 import {Delayed} from '@threema/ts-utils/delayed/delayed';
 import type {u53} from '@threema/ts-utils/integer/u53';
-import {intoU64} from '@threema/ts-utils/number/into-u64';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {unsignedLongToU64} from '@threema/ts-utils/number/into-u64';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {unixTimestampToDateMs} from '@threema/ts-utils/number/unix-timestamp-to-date-ms';
 import {expect} from 'chai';
 
@@ -209,11 +209,11 @@ export function run(): void {
                     message !== null && message !== undefined,
                     'payload.outgoingMessage is null or undefined',
                 );
-                const createdAt = unixTimestampToDateMs(intoU64(message.createdAt));
+                const createdAt = unixTimestampToDateMs(unsignedLongToU64(message.createdAt));
                 expect(createdAt).to.eql(messageProperties.createdAt);
                 expect(message.type).to.equal(messageProperties.type);
 
-                expect(intoU64(message.messageId)).to.equal(messageProperties.messageId);
+                expect(unsignedLongToU64(message.messageId)).to.equal(messageProperties.messageId);
 
                 let memberIdx = 1;
                 for (; memberIdx <= numMembers; memberIdx++) {
@@ -247,9 +247,11 @@ export function run(): void {
                         message !== null && message !== undefined,
                         'payload.outgoingMessage is null or undefined',
                     );
-                    const createdAt = unixTimestampToDateMs(intoU64(message.createdAt));
+                    const createdAt = unixTimestampToDateMs(unsignedLongToU64(message.createdAt));
                     expect(createdAt).to.eql(messageProperties.createdAt);
-                    expect(intoU64(message.messageId)).to.equal(messageProperties.messageId);
+                    expect(unsignedLongToU64(message.messageId)).to.equal(
+                        messageProperties.messageId,
+                    );
                     expect(message.type).to.equal(messageProperties.type);
                 }
                 const profilePictureMessagePayload = unwrap(
@@ -283,9 +285,11 @@ export function run(): void {
                         message !== null && message !== undefined,
                         'payload.outgoingMessage is null or undefined',
                     );
-                    const createdAt = unixTimestampToDateMs(intoU64(message.createdAt));
+                    const createdAt = unixTimestampToDateMs(unsignedLongToU64(message.createdAt));
                     expect(createdAt).to.eql(messageProperties.createdAt);
-                    expect(intoU64(message.messageId)).to.equal(messageProperties.messageId);
+                    expect(unsignedLongToU64(message.messageId)).to.equal(
+                        messageProperties.messageId,
+                    );
                     expect(message.type).to.equal(messageProperties.type);
                 }
 
@@ -320,9 +324,9 @@ export function run(): void {
                     message !== null && message !== undefined,
                     'payload.outgoingMessage is null or undefined',
                 );
-                const createdAt = unixTimestampToDateMs(intoU64(message.createdAt));
+                const createdAt = unixTimestampToDateMs(unsignedLongToU64(message.createdAt));
                 expect(createdAt).to.eql(messageProperties.createdAt);
-                expect(intoU64(message.messageId)).to.equal(messageProperties.messageId);
+                expect(unsignedLongToU64(message.messageId)).to.equal(messageProperties.messageId);
                 expect(message.type).to.equal(messageProperties.type);
 
                 const profilePictureMessagePayload = unwrap(payloads[1]);
@@ -342,9 +346,9 @@ export function run(): void {
                     message !== null && message !== undefined,
                     'payload.outgoingMessage is null or undefined',
                 );
-                const createdAt = unixTimestampToDateMs(intoU64(message.createdAt));
+                const createdAt = unixTimestampToDateMs(unsignedLongToU64(message.createdAt));
                 expect(createdAt).to.eql(messageProperties.createdAt);
-                expect(intoU64(message.messageId)).to.equal(messageProperties.messageId);
+                expect(unsignedLongToU64(message.messageId)).to.equal(messageProperties.messageId);
                 expect(message.type).to.equal(messageProperties.type);
             });
         }
@@ -392,7 +396,7 @@ export function run(): void {
                 const update = unwrap(message.updates[0]);
                 expect(update.conversation?.group).not.to.be.undefined;
                 expect(update.conversation?.group?.creatorIdentity).to.equal(creatorIdentity);
-                expect(update.conversation?.group?.groupId).to.eql(intoUnsignedLong(groupId));
+                expect(update.conversation?.group?.groupId).to.eql(u64ToUnsignedLong(groupId));
             });
         }
 
@@ -606,7 +610,7 @@ export function run(): void {
                         expect(message.updates).to.have.length(1);
                         const update = unwrap(message.updates[0]);
                         expect(update.conversation?.contact).to.equal(user1.identity.string);
-                        expect(ensureMessageId(intoU64(update.messageId))).to.equal(
+                        expect(ensureMessageId(unsignedLongToU64(update.messageId))).to.equal(
                             sharedMessageProperties.messageId,
                         );
                     }),
@@ -681,7 +685,7 @@ export function run(): void {
                         expect(message.updates).to.have.length(1);
                         const update = unwrap(message.updates[0]);
                         expect(update.conversation?.contact).to.equal(user1.identity.string);
-                        expect(ensureMessageId(intoU64(update.messageId))).to.equal(
+                        expect(ensureMessageId(unsignedLongToU64(update.messageId))).to.equal(
                             sharedMessageProperties.messageId,
                         );
                     }),
@@ -693,7 +697,7 @@ export function run(): void {
                 const newText = 'Hello Zueri';
                 const encoder = protobuf.utils.encoder(protobuf.csp_e2e.EditMessage, {
                     text: newText,
-                    messageId: intoUnsignedLong(messageId),
+                    messageId: u64ToUnsignedLong(messageId),
                 });
 
                 const editMessageProperties = {
@@ -745,7 +749,7 @@ export function run(): void {
                             'payload.outgoingMessageUpdate is null or undefined',
                         );
                         expect(message.conversation?.contact).to.equal(user1.identity.string);
-                        expect(ensureMessageId(intoU64(message.messageId))).to.equal(
+                        expect(ensureMessageId(unsignedLongToU64(message.messageId))).to.equal(
                             sharedMessageProperties.messageId,
                         );
                     }),
@@ -821,7 +825,7 @@ export function run(): void {
                         expect(message.updates).to.have.length(1);
                         const update = unwrap(message.updates[0]);
                         expect(update.conversation?.contact).to.equal(user1.identity.string);
-                        expect(ensureMessageId(intoU64(update.messageId))).to.equal(
+                        expect(ensureMessageId(unsignedLongToU64(update.messageId))).to.equal(
                             sharedTextMessageProperties.messageId,
                         );
                     }),
@@ -831,7 +835,7 @@ export function run(): void {
                 handle.finish();
 
                 const encoder = protobuf.utils.encoder(protobuf.csp_e2e.DeleteMessage, {
-                    messageId: intoUnsignedLong(messageId),
+                    messageId: u64ToUnsignedLong(messageId),
                 });
 
                 const sharedDeleteMessageProperties = {
@@ -883,7 +887,7 @@ export function run(): void {
                             'payload.outgoingMessageUpdate is null or undefined',
                         );
                         expect(message.conversation?.contact).to.equal(user1.identity.string);
-                        expect(ensureMessageId(intoU64(message.messageId))).to.equal(
+                        expect(ensureMessageId(unsignedLongToU64(message.messageId))).to.equal(
                             sharedDeleteMessageProperties.messageId,
                         );
                     }),
@@ -1330,7 +1334,7 @@ export function run(): void {
                         expect(message.updates).to.have.length(1);
                         const update = unwrap(message.updates[0]);
                         expect(update.conversation?.contact).to.equal(user1.identity.string);
-                        expect(ensureMessageId(intoU64(update.messageId))).to.equal(
+                        expect(ensureMessageId(unsignedLongToU64(update.messageId))).to.equal(
                             sharedMessageProperties.messageId,
                         );
                     }),
@@ -1620,7 +1624,7 @@ export function run(): void {
                         expect(message.updates).to.have.length(1);
                         const update = unwrap(message.updates[0]);
                         expect(update.conversation?.contact).to.equal(user1.identity.string);
-                        expect(ensureMessageId(intoU64(update.messageId))).to.equal(
+                        expect(ensureMessageId(unsignedLongToU64(update.messageId))).to.equal(
                             sharedMessageProperties.messageId,
                         );
                     }),
@@ -1635,7 +1639,7 @@ export function run(): void {
                         expect(message.updates).to.have.length(1);
                         const update = unwrap(message.updates[0]);
                         expect(update.conversation?.contact).to.equal(user1.identity.string);
-                        expect(ensureMessageId(intoU64(update.messageId))).to.equal(
+                        expect(ensureMessageId(unsignedLongToU64(update.messageId))).to.equal(
                             sharedMessageProperties2.messageId,
                         );
                     }),
@@ -1742,7 +1746,7 @@ export function run(): void {
                         expect(message.updates).to.have.length(1);
                         const update = unwrap(message.updates[0]);
                         expect(update.conversation?.contact).to.equal(user1.identity.string);
-                        expect(ensureMessageId(intoU64(update.messageId))).to.equal(
+                        expect(ensureMessageId(unsignedLongToU64(update.messageId))).to.equal(
                             sharedMessageProperties.messageId,
                         );
                     }),
@@ -1757,7 +1761,7 @@ export function run(): void {
                         expect(message.updates).to.have.length(1);
                         const update = unwrap(message.updates[0]);
                         expect(update.conversation?.contact).to.equal(user2.identity.string);
-                        expect(ensureMessageId(intoU64(update.messageId))).to.equal(
+                        expect(ensureMessageId(unsignedLongToU64(update.messageId))).to.equal(
                             sharedMessageProperties2.messageId,
                         );
                     }),
@@ -1832,7 +1836,7 @@ export function run(): void {
                         innerData: protobuf.utils.encoder(protobuf.csp_e2e.Reaction, {
                             withdraw: undefined,
                             apply: UTF8.encode('🤣'),
-                            messageId: intoUnsignedLong(messageId),
+                            messageId: u64ToUnsignedLong(messageId),
                         }),
                     },
                 );
@@ -1877,13 +1881,15 @@ export function run(): void {
                             message !== null && message !== undefined,
                             'payload.outgoingMessage is null or undefined',
                         );
-                        const createdAt = unixTimestampToDateMs(intoU64(message.createdAt));
+                        const createdAt = unixTimestampToDateMs(
+                            unsignedLongToU64(message.createdAt),
+                        );
                         expect(createdAt).to.eql(sharedMessageProperties.createdAt);
                         expect(message.type).to.equal(
                             CspE2eGroupMessageReactionType.GROUP_REACTION,
                         );
 
-                        expect(intoU64(message.messageId)).to.equal(reactionMessageId);
+                        expect(unsignedLongToU64(message.messageId)).to.equal(reactionMessageId);
                     }),
 
                     // Now, one CSP delivery receipt, and one emoji reaction

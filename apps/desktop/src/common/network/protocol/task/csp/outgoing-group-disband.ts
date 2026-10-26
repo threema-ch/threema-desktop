@@ -1,6 +1,6 @@
 import {UTF8} from '@threema/ts-utils/codec/utf8';
 import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 
 import {CspE2eGroupControlType, GroupUserState, TransactionScope} from '~/common/enum';
 import type {Logger} from '~/common/logging';
@@ -101,13 +101,13 @@ export class OutgoingGroupDisbandTask implements ActiveTask<void, 'persistent'> 
                                 contact: undefined,
                                 group: protobuf.utils.creator(protobuf.common.GroupIdentity, {
                                     creatorIdentity: this._services.device.identity.string,
-                                    groupId: intoUnsignedLong(this._group.view.groupId),
+                                    groupId: u64ToUnsignedLong(this._group.view.groupId),
                                 }),
                                 distributionList: undefined,
                             }),
-                            messageId: intoUnsignedLong(randomMessageId(this._services.crypto)),
+                            messageId: u64ToUnsignedLong(randomMessageId(this._services.crypto)),
                             threadMessageId: undefined, // TODO(DESK-296): Set thread message ID
-                            createdAt: intoUnsignedLong(dateToUnixTimestampMs(new Date())),
+                            createdAt: u64ToUnsignedLong(dateToUnixTimestampMs(new Date())),
                             type: CspE2eGroupControlType.GROUP_LEAVE,
                             body: encoder.encode(new Uint8Array(encoder.byteLength())),
                             nonces: [],

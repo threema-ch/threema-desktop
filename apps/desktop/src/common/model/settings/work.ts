@@ -1,5 +1,5 @@
-import {intoU64} from '@threema/ts-utils/number/into-u64';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {unsignedLongToU64} from '@threema/ts-utils/number/into-u64';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 
 import {TRANSFER_HANDLER} from '~/common/index';
 import type {Logger} from '~/common/logging';
@@ -29,7 +29,7 @@ function workSettingsToView(settings: ValitaWorkSettings): WorkSettingsView {
     for (const [name, mdmValue] of Object.entries(settings.threemaMdmParameters)) {
         switch (mdmValue.value.$case) {
             case 'integerValue':
-                mdmParameterMap.set(name, intoU64(mdmValue.value.integerValue));
+                mdmParameterMap.set(name, unsignedLongToU64(mdmValue.value.integerValue));
                 break;
             case 'booleanValue':
                 mdmParameterMap.set(name, mdmValue.value.booleanValue);
@@ -72,7 +72,7 @@ function workViewToSettings(view: WorkSettingsView): ValitaWorkSettings {
                 transformedMdmSettings[key] = {
                     value: {
                         $case: 'integerValue',
-                        integerValue: intoUnsignedLong(value),
+                        integerValue: u64ToUnsignedLong(value),
                     },
                 };
                 continue;

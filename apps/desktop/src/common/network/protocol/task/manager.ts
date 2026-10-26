@@ -1,7 +1,7 @@
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
 import type {WeakOpaque} from '@threema/ts-utils/meta/newtype';
-import {intoUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
+import {u64ToUnsignedLong} from '@threema/ts-utils/number/into-unsigned-long';
 import {u64ToHexLe} from '@threema/ts-utils/number/u64-to-hex-le';
 import {ResolvablePromise} from '@threema/ts-utils/promise/resolvable-promise';
 import {SequenceNumberU32} from '@threema/ts-utils/sequence-number/sequence-number-u32';
@@ -340,7 +340,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
                                     ...(payload as protobuf.utils.ProtobufInstanceOf<
                                         typeof protobuf.d2d.Envelope
                                     >),
-                                    deviceId: intoUnsignedLong(device.d2m.deviceId),
+                                    deviceId: u64ToUnsignedLong(device.d2m.deviceId),
                                     padding: new Uint8Array(randomU8(crypto)),
                                     protocolVersion: protobuf.d2d.ProtocolVersion.V0_2,
                                 }),

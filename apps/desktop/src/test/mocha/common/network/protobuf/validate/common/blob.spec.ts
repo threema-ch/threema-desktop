@@ -1,5 +1,5 @@
 import {dateToUnixTimestampMs} from '@threema/ts-utils/number/date-to-unix-timestamp-ms';
-import {intoU64} from '@threema/ts-utils/number/into-u64';
+import {unsignedLongToU64} from '@threema/ts-utils/number/into-u64';
 import {expect} from 'chai';
 
 import {ensureNonce, NACL_CONSTANTS} from '~/common/crypto';
@@ -40,7 +40,9 @@ export function run(): void {
                 expect(serialized.id).to.deep.equal(blobId);
                 expect(serialized.nonce).to.deep.equal(nonce);
                 expect(serialized.key).to.deep.equal(key.unwrap());
-                expect(intoU64(serialized.uploadedAt)).to.equal(dateToUnixTimestampMs(uploadedAt));
+                expect(unsignedLongToU64(serialized.uploadedAt)).to.equal(
+                    dateToUnixTimestampMs(uploadedAt),
+                );
             });
         });
     });
