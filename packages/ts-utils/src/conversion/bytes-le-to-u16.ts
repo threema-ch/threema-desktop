@@ -2,7 +2,7 @@ import {byteView} from '../byte/byte-view.js';
 import type {u16} from '../integer/u16.js';
 
 /**
- * Convert an 8-byte Uint8Array to a u16.
+ * Convert a 2-byte Uint8Array to a u16.
  *
  * @throws {Error} if array does not contain 2 bytes.
  */

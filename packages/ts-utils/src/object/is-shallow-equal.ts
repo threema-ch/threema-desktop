@@ -5,7 +5,7 @@ import {isObject} from './is-object.js';
  * of only by identity.
  *
  * Note: This is a primitive implementation, which only handles arrays and plain objects, and
- * compoares everything else by identity.
+ * compares everything else by identity.
  */
 export function isShallowEqual(left: unknown, right: unknown): boolean {
     if (Object.is(left, right)) {

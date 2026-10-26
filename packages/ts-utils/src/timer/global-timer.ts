@@ -32,7 +32,7 @@ class GlobalTimer {
     /**
      * Sleep asynchronously for the given timeout.
      *
-     * @param timeoutMs Amount of milliseconds to sleep.
+     * @param delayMs Amount of milliseconds to sleep.
      */
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     public sleep(delayMs: u53): Promise<void> {

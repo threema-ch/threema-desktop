@@ -11,6 +11,9 @@ export type Pkcs7Padding = WeakOpaque<Uint8Array, {readonly Pkcs7Padding: unique
 /**
  * Add a specific amount of PKCS#7 padding to a buffer or byte array.
  *
+ * Note: The `length` is not validated. A length of `0` is invalid PKCS#7 padding and results in
+ *       an empty padding.
+ *
  * @throws {Error} If the `destination` buffer is claimed.
  * @throws {Error} If the requested length is longer than the available `destination` size.
  */

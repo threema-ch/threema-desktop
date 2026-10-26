@@ -3,7 +3,7 @@
  *
  * @example
  * ```ts
- * const grouped = group([1.5, 2.5, 2.75, 3], (value) => Math.floor(value)); // Returns `{ 1: [1.5], 2: [2.5, 2.75], 3: [3] }`;
+ * const grouped = groupBy([1.5, 2.5, 2.75, 3], (value) => Math.floor(value)); // Returns `Map { 1 => [1.5], 2 => [2.5, 2.75], 3 => [3] }`;
  * ```
  */
 export function groupBy<K, V>(array: readonly V[], fn: (value: V) => K): ReadonlyMap<K, V[]> {

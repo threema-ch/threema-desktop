@@ -3,6 +3,8 @@ import type {u53} from '../integer/u53.js';
 
 /**
  * Split bytes into an array of byte views of a specific maximum chunk length.
+ *
+ * Important: `maxChunkLength` must be greater than `0`, otherwise this never terminates.
  */
 export function* byteSplit<T extends ReadonlyUint8Array>(
     array: T,

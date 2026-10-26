@@ -2,7 +2,7 @@
  * Controller for a source codec.
  *
  * Note: This must be compatible to {@link ReadableStreamDefaultController}.
- * Spec: https://streams.spec.whatwg.org/#ts-default-controller-class
+ * Spec: https://streams.spec.whatwg.org/#rs-default-controller-class
  */
 export interface SourceCodecController<I> {
     readonly close: () => void;

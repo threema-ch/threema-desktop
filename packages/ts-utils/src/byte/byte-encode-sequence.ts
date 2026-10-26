@@ -5,7 +5,7 @@ import type {ByteEncoder} from './byte-encoder.js';
  *
  * @param array The array to be encoded into.
  * @param encoders Sequence of encoders that will be called consecutively.
- * @returns The sub-array porition of the amount of bytes written into the array.
+ * @returns The sub-array portion of the amount of bytes written into the array.
  */
 export function byteEncodeSequence(
     array: Uint8Array,

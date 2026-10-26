@@ -1,7 +1,7 @@
 /**
  * Writer for a codec.
  *
- * Note: This must be compatible to {@link ReadableStreamDefaultWriter}
+ * Note: This must be compatible to {@link WritableStreamDefaultWriter}
  * Spec: https://streams.spec.whatwg.org/#default-writer-class
  */
 export interface CodecWriter<O> {
