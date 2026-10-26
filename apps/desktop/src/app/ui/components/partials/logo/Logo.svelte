@@ -2,8 +2,8 @@
   @component Renders the Threema logo.
 -->
 <script lang="ts">
+  import {clamp} from '@threema/ts-utils/integer/clamp';
   import type {u53} from '@threema/ts-utils/integer/u53';
-  import {clamp} from '@threema/ts-utils/number/clamp';
 
   import type {LogoProps} from '~/app/ui/components/partials/logo/props';
 

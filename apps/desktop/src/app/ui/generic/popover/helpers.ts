@@ -1,4 +1,4 @@
-import {clamp} from '@threema/ts-utils/number/clamp';
+import {clamp} from '@threema/ts-utils/integer/clamp';
 
 import type {
     AnchorPoint,

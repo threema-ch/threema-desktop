@@ -1,5 +1,5 @@
+import {clamp} from '../integer/clamp.js';
 import type {u53} from '../integer/u53.js';
-import {clamp} from '../number/clamp.js';
 
 /**
  * Cache for a value that expires at a specific date.

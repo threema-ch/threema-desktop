@@ -1,6 +1,6 @@
 <script lang="ts">
+  import {clamp} from '@threema/ts-utils/integer/clamp';
   import type {u53} from '@threema/ts-utils/integer/u53';
-  import {clamp} from '@threema/ts-utils/number/clamp';
   import {ResolvablePromise} from '@threema/ts-utils/promise/resolvable-promise';
   import {TIMER} from '@threema/ts-utils/timer/global-timer';
 

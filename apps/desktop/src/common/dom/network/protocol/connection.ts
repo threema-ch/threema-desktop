@@ -1,8 +1,8 @@
 import {wrapRawKey} from '@threema/crypto';
 import {Delayed} from '@threema/ts-utils/delayed/delayed';
+import {clamp} from '@threema/ts-utils/integer/clamp';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
-import {clamp} from '@threema/ts-utils/number/clamp';
 import {ResolvablePromise} from '@threema/ts-utils/promise/resolvable-promise';
 import {TIMER} from '@threema/ts-utils/timer/global-timer';
 

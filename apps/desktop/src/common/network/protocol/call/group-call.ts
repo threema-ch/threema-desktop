@@ -1,9 +1,9 @@
 import {GroupCallError, type GroupCallIdValue} from '@threema/call';
 import type {DirectoryErrorType} from '@threema/domain';
 import {byteEquals} from '@threema/ts-utils/byte/byte-equals';
+import {clamp} from '@threema/ts-utils/integer/clamp';
 import type {u53} from '@threema/ts-utils/integer/u53';
 import {AsyncLock} from '@threema/ts-utils/lock/async-lock';
-import {clamp} from '@threema/ts-utils/number/clamp';
 import {ResolvablePromise} from '@threema/ts-utils/promise/resolvable-promise';
 import {TIMER} from '@threema/ts-utils/timer/global-timer';
 import type {TimerCanceller} from '@threema/ts-utils/timer/timer-canceller';

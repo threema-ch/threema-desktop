@@ -1,5 +1,6 @@
-import type {i53} from '../integer/i53.js';
 import {assert} from '../meta/assert.js';
+
+import type {i53} from './i53.js';
 
 /**
  * Limits the supplied value to the given range. `min` and `max` values are optional, so that the
