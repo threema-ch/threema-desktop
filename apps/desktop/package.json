@@ -114,7 +114,7 @@
         ]
       },
       "include": {
-        "/": "^(LICENSE|package.json|pnpm-lock.yaml|README.md)$",
+        "/": "^(LICENSE|package.json|README.md)$",
         "/build/electron/": "^(app($|\\/)|electron-main($|\\/)|electron-preload($|\\/)|screenshare-preload($|\\/))",
         "/node_modules/@phc/format/": "^(index.js|package.json)$",
         "/node_modules/argon2/": "^(argon2.cjs|package.json)$",
