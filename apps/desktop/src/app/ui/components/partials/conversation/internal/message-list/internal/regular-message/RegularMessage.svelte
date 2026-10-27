@@ -314,17 +314,19 @@
 
                   <button class="sync-button" onclick={handleClickSync}>
                     {#if sync.state === 'unsynced'}
-                      <MdIcon theme="Filled" title={getTranslatedSyncButtonTitle(file, $i18n.t)}>
-                        {#if sync.direction === 'download'}
-                          file_download
-                        {:else if sync.direction === 'upload'}
-                          file_upload
-                        {:else if sync.direction === undefined}
-                          help
-                        {:else}
-                          {svelteUnreachable(sync.direction)}
-                        {/if}
-                      </MdIcon>
+                      {#if sync.direction === 'upload'}
+                        <IconButtonProgressBarOverlay />
+                      {:else}
+                        <MdIcon theme="Filled" title={getTranslatedSyncButtonTitle(file, $i18n.t)}>
+                          {#if sync.direction === 'download'}
+                            file_download
+                          {:else if sync.direction === undefined}
+                            help
+                          {:else}
+                            {svelteUnreachable(sync.direction)}
+                          {/if}
+                        </MdIcon>
+                      {/if}
                     {:else if sync.state === 'syncing'}
                       <!-- TODO(DESK-948): Cancellation <MdIcon theme="Filled">close</MdIcon>. -->
                       <IconButtonProgressBarOverlay />
