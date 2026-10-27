@@ -6,7 +6,7 @@ allowBuilds:
   '@swc/core': true
   '@threema/eslint-plugin-threema': true
   'argon2@https://codeload.github.com/threema-ch/node-argon2/tar.gz/d25269c471b3ece9831662fab366db531e9cfc90': true
-  'better-sqlcipher@https://codeload.github.com/threema-ch/better-sqlcipher/tar.gz/e74f8b8d8fa5d000071f3e433adbd255fde84a4a': true
+  better-sqlcipher@https://codeload.github.com/threema-ch/better-sqlcipher/tar.gz/30325a3bfd8901035ef9a76d80f7545afa6e7d74: true
   electron: true
   esbuild: true
   eslint-plugin-threema: true
