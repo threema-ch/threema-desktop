@@ -11,7 +11,6 @@ import * as v from '@badrap/valita';
 import {flipFuses, FuseVersion, FuseV1Options} from '@electron/fuses';
 import {FetchDownloader} from '@electron/get';
 import {packager} from '@electron/packager';
-import {populateIgnoredPaths} from '@electron/packager/dist/copy-filter.js';
 import debug from 'debug';
 import fsExtra from 'fs-extra';
 
@@ -120,6 +119,8 @@ async function setElectronFuses(binaryPath, buildMode) {
         // Changes whether pages loaded from the `file://` protocol are given privileges beyond what
         // they would receive in a traditional web browser.
         [FuseV1Options.GrantFileProtocolExtraPrivileges]: false,
+        // Controls whether V8 will use signal handlers to trap OOB memory access from WASM.
+        [FuseV1Options.WasmTrapHandlers]: true,
     });
 }
 
@@ -371,11 +372,6 @@ async function packageApp(baseAppName, environment, mode, variant) {
         fail(`Packaging error: electron-rebuild failed, exit code ${rebuildResult.status}`);
     }
 
-    const options = /** @type {import('@electron/packager').Options} */ ({
-        dir: deployedAppDir,
-    });
-    populateIgnoredPaths(options);
-
     // Build allow-list
     const allowances = Object.entries(pkg.electron.dist.include || {}).map(([directory, pattern]) =>
         allow(directory, new RegExp(pattern, 'u')),
@@ -529,17 +525,6 @@ async function packageApp(baseAppName, environment, mode, variant) {
         derefSymlinks: true,
         // When `ignore` is a function, `@electron/packager` default ignore rules aren't applied.
         ignore: (path) => {
-            // Deny: Default rules from `@electron/packager`.
-            if (!Array.isArray(options.ignore)) {
-                // `throw` is only used for type narrowing here, as `fail` will cause the script to
-                // abort anyway.
-                throw fail('Expected default ignore paths to be an array');
-            }
-            if (options.ignore?.some((rule) => path.match(rule))) {
-                log(' !', path);
-                return true;
-            }
-
             // Deny: dotfiles.
             if (path.match(/\/\..+$/u)) {
                 log(' !', path);
