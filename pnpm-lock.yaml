@@ -504,8 +504,8 @@ importers:
         specifier: 4.1.5
         version: 4.1.5
       better-sqlcipher:
-        specifier: threema-ch/better-sqlcipher#12.10.0-sqlcipher4.16.0-bearssl0.6
-        version: https://codeload.github.com/threema-ch/better-sqlcipher/tar.gz/e74f8b8d8fa5d000071f3e433adbd255fde84a4a
+        specifier: threema-ch/better-sqlcipher#13.0.3-sqlcipher4.19.0-bearssl0.6
+        version: https://codeload.github.com/threema-ch/better-sqlcipher/tar.gz/30325a3bfd8901035ef9a76d80f7545afa6e7d74
       debug:
         specifier: 'catalog:'
         version: 4.4.3(supports-color@8.1.1)
@@ -3183,10 +3183,10 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  better-sqlcipher@https://codeload.github.com/threema-ch/better-sqlcipher/tar.gz/e74f8b8d8fa5d000071f3e433adbd255fde84a4a:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/threema-ch/better-sqlcipher/tar.gz/e74f8b8d8fa5d000071f3e433adbd255fde84a4a}
-    version: 12.10.0-sqlcipher4.16.0-bearssl0.6
-    engines: {node: 20.x || 22.x || 23.x || 24.x || 25.x || 26.x}
+  better-sqlcipher@https://codeload.github.com/threema-ch/better-sqlcipher/tar.gz/30325a3bfd8901035ef9a76d80f7545afa6e7d74:
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/threema-ch/better-sqlcipher/tar.gz/30325a3bfd8901035ef9a76d80f7545afa6e7d74}
+    version: 13.0.3-sqlcipher4.19.0-bearssl0.6
+    engines: {node: '>=22'}
 
   binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
@@ -8370,8 +8370,9 @@ snapshots:
 
   baseline-browser-mapping@2.10.32: {}
 
-  better-sqlcipher@https://codeload.github.com/threema-ch/better-sqlcipher/tar.gz/e74f8b8d8fa5d000071f3e433adbd255fde84a4a:
+  better-sqlcipher@https://codeload.github.com/threema-ch/better-sqlcipher/tar.gz/30325a3bfd8901035ef9a76d80f7545afa6e7d74:
     dependencies:
+      node-addon-api: 8.3.1
       tar: 7.5.21
 
   binary-extensions@2.3.0: {}
