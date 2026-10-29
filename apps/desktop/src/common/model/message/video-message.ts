@@ -240,7 +240,14 @@ export class OutboundVideoMessageModelController
             this._conversation,
             this._services,
             this.lifetimeGuard,
+            this._log,
         );
+
+        // The message may have been removed during the upload, in which case there is no thumbnail
+        // to refresh.
+        if (!this.lifetimeGuard.active.get()) {
+            return uploadedBlob;
+        }
 
         // We need to refresh the thumbnail here to circumvent timing issues where the thumbnail is
         // fetched too early in the frontend.

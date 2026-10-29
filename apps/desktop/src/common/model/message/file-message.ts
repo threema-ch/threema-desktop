@@ -223,6 +223,7 @@ export class OutboundFileMessageModelController
             this._conversation,
             this._services,
             this.lifetimeGuard,
+            this._log,
         );
 
         return uploadedBlobs;

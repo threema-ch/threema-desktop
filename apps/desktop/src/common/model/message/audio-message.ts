@@ -190,6 +190,7 @@ export class OutboundAudioMessageModelController
             this._conversation,
             this._services,
             this.lifetimeGuard,
+            this._log,
         );
 
         return uploadedBlob;

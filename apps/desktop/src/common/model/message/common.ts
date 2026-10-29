@@ -55,6 +55,7 @@ import type {Mutable, StrictExtract} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 import {hasProperty} from '~/common/utils/object';
+import {AbortRaiser, type AbortListener} from '~/common/utils/signal';
 
 export const NO_SENDER = Symbol('no-sender');
 
@@ -618,6 +619,7 @@ async function uploadFileAsBlob(
     key: RawBlobKey,
     services: Pick<ServicesForModel, 'blob' | 'crypto' | 'file'>,
     uploadScope: BlobUploadScope,
+    abort: AbortListener,
 ): Promise<
     {bytes: ReadonlyUint8Array} & ({readonly blobId: BlobId} | {readonly thumbnailBlobId: BlobId})
 > {
@@ -628,6 +630,7 @@ async function uploadFileAsBlob(
         nonce,
         key,
         uploadScope,
+        abort,
     );
     switch (type) {
         case 'main':
@@ -653,6 +656,7 @@ export async function uploadBlobs(
     conversation: ConversationControllerHandle,
     services: Pick<ServicesForModel, 'blob' | 'crypto' | 'db' | 'file'>,
     lifetimeGuard: AnyFileBasedOutboundMessageModelLifetimeGuard,
+    log: Logger,
 ): Promise<UploadedBlobBytes> {
     type FileDataToUpload = Pick<
         CommonBaseFileMessageView,
@@ -685,6 +689,15 @@ export async function uploadBlobs(
     const receiver = conversation.getReceiver();
     const uploadScope = getBlobUploadScope(receiver.get());
 
+    // Abort the uploads if the message is removed in the meantime (e.g. by emptying the
+    // conversation)
+    const abort = new AbortRaiser();
+    const unsubscribeActive = lifetimeGuard.active.subscribe((active) => {
+        if (!active) {
+            abort.raise(undefined);
+        }
+    });
+
     // Upload all blobs concurrently
     const promises = [];
     if (fileDataToUpload.fileData !== undefined) {
@@ -697,6 +710,7 @@ export async function uploadBlobs(
                 fileDataToUpload.encryptionKey,
                 services,
                 uploadScope,
+                abort,
             ),
         );
     }
@@ -709,10 +723,30 @@ export async function uploadBlobs(
                 fileDataToUpload.encryptionKey,
                 services,
                 uploadScope,
+                abort,
             ),
         );
     }
-    const blobIdPromiseResults = await Promise.all(promises);
+    let blobIdPromiseResults;
+    try {
+        blobIdPromiseResults = await Promise.all(promises);
+    } catch (error) {
+        // An aborted upload is expected when the message has been removed.
+        if (abort.aborted) {
+            log.debug(
+                `Blob upload discarded because the message has been removed: ${ensureError(error).message}`,
+            );
+            return {main: undefined, thumbnail: undefined};
+        }
+        throw error;
+    } finally {
+        unsubscribeActive();
+    }
+
+    // In case the message has been removed after the upload finished
+    if (!lifetimeGuard.active.get()) {
+        return {main: undefined, thumbnail: undefined};
+    }
 
     // Process promise results and determine database change
     const change: Mutable<Pick<OutboundBaseFileMessageView, 'blobId' | 'thumbnailBlobId'>> = {};

@@ -20,6 +20,7 @@ import type {ServicesForTasks} from '~/common/network/protocol/task';
 import {type RawBlobKey, wrapRawBlobKey} from '~/common/network/types/keys';
 import {registerErrorTransferHandler} from '~/common/utils/endpoint';
 import {isNotesGroup} from '~/common/utils/group';
+import type {AbortListener} from '~/common/utils/signal';
 
 /**
  * Byte length of a Threema Blob ID.
@@ -163,9 +164,14 @@ export interface BlobBackend {
     /**
      * Upload a blob and set the persistance flag.
      *
-     * @throws {BlobBackendError} if uploading the blob fails.
+     * @param abort Optional abort listener to cancel the upload.
+     * @throws {BlobBackendError} if uploading the blob fails or has been aborted.
      */
-    upload: (blobUploadScope: BlobUploadScope, data: EncryptedData) => Promise<BlobId>;
+    upload: (
+        blobUploadScope: BlobUploadScope,
+        data: EncryptedData,
+        abort?: AbortListener,
+    ) => Promise<BlobId>;
 
     /**
      * Download a blob.
@@ -258,7 +264,7 @@ export interface BlobInfo {
 /**
  * Encrypt the blob with a given key and upload the encrypted bytes.
  *
- * @throws {BlobBackendError} if uploading the blob fails.
+ * @throws {BlobBackendError} if uploading the blob fails or has been aborted.
  * @throws {CryptoError} if encryption fails.
  */
 export async function encryptAndUploadBlobWithEncryptionKey(
@@ -267,6 +273,7 @@ export async function encryptAndUploadBlobWithEncryptionKey(
     nonce: Nonce,
     key: RawBlobKey,
     uploadScope: BlobUploadScope,
+    abort?: AbortListener,
 ): Promise<BlobInfo> {
     const {blob, crypto} = services;
 
@@ -277,7 +284,7 @@ export async function encryptAndUploadBlobWithEncryptionKey(
         .encryptWithDangerousUnguardedNonce(nonce);
 
     // Upload encrypted data
-    const blobId = await blob.upload(uploadScope, encryptedBytes);
+    const blobId = await blob.upload(uploadScope, encryptedBytes, abort);
 
     // Return blob info
     return {

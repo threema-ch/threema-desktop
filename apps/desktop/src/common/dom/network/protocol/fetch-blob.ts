@@ -17,6 +17,7 @@ import {
 } from '~/common/network/protocol/blob';
 import type {DirectoryBackend} from '~/common/network/protocol/directory';
 import {unreachable} from '~/common/utils/assert';
+import type {AbortListener} from '~/common/utils/signal';
 
 type ServicesForBlobBackend = Pick<ServicesForBackend, 'config' | 'device' | 'directory'>;
 
@@ -42,7 +43,11 @@ export class FetchBlobBackend implements BlobBackend {
     }
 
     /** @inheritdoc */
-    public async upload(blobUploadScope: BlobUploadScope, data: EncryptedData): Promise<BlobId> {
+    public async upload(
+        blobUploadScope: BlobUploadScope,
+        data: EncryptedData,
+        abort?: AbortListener,
+    ): Promise<BlobId> {
         const blob = new Blob([ensureArrayBufferBackedView(data)]);
         const formData = new FormData();
         formData.append('blob', blob);
@@ -83,6 +88,7 @@ export class FetchBlobBackend implements BlobBackend {
                         accept: 'text/plain',
                     },
                     body: formData,
+                    signal: abort?.attach(new AbortController()),
                 },
             );
         } catch (error) {
@@ -95,7 +101,14 @@ export class FetchBlobBackend implements BlobBackend {
             );
         }
 
-        const blobId = hexToBytes((await response.text()).trim());
+        let responseText: string;
+        try {
+            responseText = await response.text();
+        } catch (error) {
+            throw new BlobBackendError('fetch', 'Reading upload response errored', {from: error});
+        }
+
+        const blobId = hexToBytes(responseText.trim());
         if (!isBlobId(blobId)) {
             throw new BlobBackendError(
                 'invalid-blob-id',

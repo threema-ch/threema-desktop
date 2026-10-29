@@ -85,9 +85,23 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
             case 'file':
             case 'image':
             case 'video':
-            case 'audio':
-                uploadedBlobBytes = await this._messageModelStore.get().controller.uploadBlobs();
+            case 'audio': {
+                const {controller} = this._messageModelStore.get();
+
+                // In case the message has been removed before upload started
+                if (!controller.lifetimeGuard.active.get()) {
+                    this._log.info('Discarding because message has been removed');
+                    return;
+                }
+                uploadedBlobBytes = await controller.uploadBlobs();
+
+                // In case the message has been removed after upload finished
+                if (!controller.lifetimeGuard.active.get()) {
+                    this._log.info('Discarding because message has been removed during upload');
+                    return;
+                }
                 break;
+            }
             case 'poll':
             case 'text':
                 // Nothing to upload
