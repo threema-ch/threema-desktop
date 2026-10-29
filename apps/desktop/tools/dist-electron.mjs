@@ -5,7 +5,6 @@ import fs from 'node:fs';
 import {createRequire} from 'node:module';
 import {join, resolve} from 'node:path';
 import process from 'node:process';
-import url from 'node:url';
 
 import * as v from '@badrap/valita';
 import {flipFuses, FuseVersion, FuseV1Options} from '@electron/fuses';
@@ -613,8 +612,7 @@ const TURBO_BUILD_ENV_SCHEMA = v
     })
     .rest(v.union(v.string(), v.undefined()));
 
-// TODO(DESK-2041): Replace with `import.meta.main` after upgrading to NodeJS 22.18.0 or higher.
-if (process.argv[1] === url.fileURLToPath(import.meta.url)) {
+if (import.meta.main) {
     // Parse dist build environment switches.
     const config = TURBO_BUILD_ENV_SCHEMA.try(process.env, {mode: 'passthrough'});
     if (!config.ok) {
