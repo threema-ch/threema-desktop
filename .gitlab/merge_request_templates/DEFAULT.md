@@ -9,18 +9,20 @@
 
 <!-- More details here if necessary -->
 
-- Closes DESK-XXX <!-- If this MR does not close the given ticket, please use "Related to" instead of "Closes" -->
+- Closes # <!-- If this MR does not close the given ticket, please use "Related to" instead of "Closes" -->
 - Pair-programmed with @Name <!-- Potentially mark commits with `Co-authored-by:`. Delete if this was not the case. -->
 
-## Merge Request Checklist
-
+### Implementation
 - [ ] 👌 Implemented according to issue scope
-- [ ] 🧪 Added e2e or unit tests for added or changed lines of code
-- [ ] ✅ All `TODO(DESK-XXX)` comments for *this issue* resolved and deleted
-- [ ] 🐞 Any tech-debt/bugs tracked as issues, and optionally as `TODO(DESK-YYY)` comments:
-  - DESK-YYY: Issue Title
 - [ ] 📝 Commit messages [are meaningful](https://cbea.ms/git-commit/), *WIP* and *fixup* commits have been amended
 - [ ] 📖 If new interfaces were added, all properties are marked as `readonly` if possible
+
+### Tech debt
+- [ ] ✅ All `TODO(#)` comments for *this issue* resolved and deleted
+- [ ] 🐞 Any tech-debt/bugs tracked as issues, and optionally as `TODO(#)` comments
+
+### Tests
+- [ ] 🧪 Added e2e or unit tests for added or changed lines of code
 - [ ] <details><summary>🚭 Initial smoke tests passed (only check ones that were tested, skip the ones that don't make sense for this MR)</summary>
   - **Tested with flavor(s):**
     - [ ] consumer-live
