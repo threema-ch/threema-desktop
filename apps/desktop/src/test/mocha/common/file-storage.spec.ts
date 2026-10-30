@@ -199,6 +199,9 @@ export function run(): void {
             });
 
             this.afterEach(function () {
+                // Some tests lock the storage directory. Unlock it again, otherwise it cannot be
+                // cleaned up (since Node.js 23.0.0).
+                fs.chmodSync(storageDirPath, 0o700);
                 fs.rmSync(appPath, {recursive: true});
             });
 
