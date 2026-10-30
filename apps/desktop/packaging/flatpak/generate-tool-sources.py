@@ -41,16 +41,30 @@ def rust_sources() -> list[Source]:
             'dest': dest,
         }
 
+    sources = []
+    for arch in ARCHES:
+        target = f'{arch}-unknown-linux-gnu'
+        sources.append(
+            {
+                **archive('rust', target, 'rust-dist'),
+                'only-arches': [arch],
+            }
+        )
+        sources.append(
+            {
+                'type': 'shell',
+                'commands': [
+                    f'./rust-dist/install.sh --prefix=$PWD/rust --components=rustc,cargo,rust-std-{target} --disable-ldconfig',
+                ],
+                'only-arches': [arch],
+            }
+        )
     return [
-        {
-            **archive('rust', 'x86_64-unknown-linux-gnu', 'rust-dist'),
-            'only-arches': ['x86_64'],
-        },
+        *sources,
         archive('rust-std', 'wasm32-unknown-unknown', 'rust-std-wasm32'),
         {
             'type': 'shell',
             'commands': [
-                './rust-dist/install.sh --prefix=$PWD/rust --components=rustc,cargo,rust-std-x86_64-unknown-linux-gnu --disable-ldconfig',
                 './rust-std-wasm32/install.sh --prefix=$PWD/rust --disable-ldconfig',
                 'rm -rf rust-dist rust-std-wasm32',
             ],
@@ -113,20 +127,25 @@ def protoc_sources() -> list[Source]:
     version = json.loads(package_json.read_text())['pins']['protoc']
     print(f'protoc: {version}')
 
-    url = (
-        f'https://github.com/protocolbuffers/protobuf/releases/download/v{version}/'
-        f'protoc-{version}-linux-x86_64.zip'
-    )
-    return [
-        {
-            'type': 'archive',
-            'url': url,
-            'sha256': hashlib.sha256(fetch(url)).hexdigest(),
-            'dest': 'protoc',
-            'strip-components': 0,
-            'only-arches': ['x86_64'],
-        }
-    ]
+    protoc_arches = {'aarch64': 'aarch_64', 'x86_64': 'x86_64'}
+
+    sources = []
+    for arch in ARCHES:
+        url = (
+            f'https://github.com/protocolbuffers/protobuf/releases/download/v{version}/'
+            f'protoc-{version}-linux-{protoc_arches[arch]}.zip'
+        )
+        sources.append(
+            {
+                'type': 'archive',
+                'url': url,
+                'sha256': hashlib.sha256(fetch(url)).hexdigest(),
+                'dest': 'protoc',
+                'strip-components': 0,
+                'only-arches': [arch],
+            }
+        )
+    return sources
 
 def pnpm_sources() -> list[Source]:
     package_manager = json.loads((MONOREPO_ROOT / 'package.json').read_text())['packageManager']
