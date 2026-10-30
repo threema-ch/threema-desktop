@@ -431,6 +431,13 @@ async function buildDmg(
             process.env.APPLE_TEAM_NAME,
             'Missing APPLE_TEAM_NAME env var',
         );
+        // The bundle's main executable is the launcher binary, which spawns the actual Electron
+        // binary. By default, the Electron binary would therefore be signed with an identifier
+        // derived from its filename. However, macOS requires the process that uses the
+        // `UNUserNotification` API (used by Electron >= 42) to be identifiable as the signed app,
+        // so we sign the Electron binary with the bundle identifier as well.
+        const electronBinaryPath = path.join(appPath, 'Contents', 'MacOS', 'ThreemaDesktop');
+        const appBundleId = determineAppRdn(flavor, appName);
         await signAsync({
             app: appPath,
             identity: `Developer ID Application: ${appleTeamName} (${appleTeamId})`,
@@ -438,6 +445,10 @@ async function buildDmg(
             optionsForFile: (filePath: string) => {
                 log.minor(`Determine signing options for file ${filePath}`);
                 return {
+                    additionalArguments:
+                        path.resolve(filePath) === path.resolve(electronBinaryPath)
+                            ? ['--identifier', appBundleId]
+                            : [],
                     // For list of entitlements, see https://developer.apple.com/documentation/security/hardened_runtime
                     entitlements: [
                         // Allow execution of JIT-compiled code, required by Electron
