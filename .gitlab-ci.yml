@@ -909,7 +909,7 @@ validate:rust-versions-in-sync:
     - set -euo pipefail
     # Base dependencies.
     - apt-get update
-    - apt-get install -y flatpak jq lftp elfutils libyaml-dev libglib2.0-dev libcurl4-gnutls-dev libxml2-dev libxslt1-dev python3-aiohttp python3-toml
+    - apt-get install -y flatpak jq lftp elfutils libyaml-dev libglib2.0-dev libcurl4-gnutls-dev libxml2-dev libxslt1-dev python3-aiohttp python3-tomlkit
     # Set up Rust (Cargo) environment.
     - *linux_rust_before_script
     # Set up NodeJS environment.
