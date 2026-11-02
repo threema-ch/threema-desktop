@@ -27,6 +27,7 @@ export default defineConfig(
         'junit/',
         'node_modules/',
         'packaging/build/',
+        'packaging/flatpak/flatpak-builder-tools/',
         'playwright-report/',
         'src/common/crypto/blake2b/implementation.js',
         'src/common/enum/index.ts',
