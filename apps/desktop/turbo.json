@@ -114,6 +114,7 @@
         "APPLE_TEAM_ID",
         "APPLE_TEAM_NAME",
         "CUSTOM_CONFIG_*",
+        "FLATHUB_DEPLOYMENT",
         "GIT_REVISION",
         "GITLAB_CI",
         "MINIDUMP_ENDPOINT",

@@ -5,31 +5,29 @@ TEMPLATE=manifest-template.yml
 GIT_COMMIT=$(git rev-parse HEAD)
 ELECTRON_VERSION=$(node -p "require('../../package.json').devDependencies.electron")
 
-# Parameters: <app-id> <flavor> <app-name>
-function generate {
-    local app_id=$1
-    local flavor=$2
-    local app_name=$3
-    sed "s/{{app-id}}/$app_id/g" $TEMPLATE \
-        | sed "s/{{flavor}}/$flavor/g" \
-        | sed "s/{{app-name}}/$app_name/g" \
-        | sed "s/{{runtime-version}}/${RUNTIME_VERSION:?}/g" \
-        | sed "s/{{git-commit}}/$GIT_COMMIT/g" \
-        | sed "s/{{electron-version}}/$ELECTRON_VERSION/g" \
-        > "$app_id.yml"
-}
+GITHUB_URL=https://github.com/threema-ch/threema-desktop.git
 
-# Consumer live
-generate 'ch.threema.threema-desktop' 'consumer-live' 'Threema Beta'
+# Parameters: <app-id> <flavor> <app-name> [<tag>]
+#
+# If FLATHUB_DEPLOYMENT is set, the project source is fetched from GitHub at the given <tag> instead
+# of from the local repository path.
+app_id=$1
+flavor=$2
+app_name=$3
 
-# Consumer sandbox
-generate 'ch.threema.threema-green-desktop' 'consumer-sandbox' 'Threema Green Beta'
+sed "s/{{app-id}}/$app_id/g" $TEMPLATE \
+    | sed "s/{{flavor}}/$flavor/g" \
+    | sed "s/{{app-name}}/$app_name/g" \
+    | sed "s/{{runtime-version}}/${RUNTIME_VERSION:?}/g" \
+    | sed "s/{{git-commit}}/$GIT_COMMIT/g" \
+    | sed "s/{{electron-version}}/$ELECTRON_VERSION/g" \
+    > "$app_id.yml"
 
-# Work live
-generate 'ch.threema.threema-work-desktop' 'work-live' 'Threema Work Beta'
+if [[ -n "${FLATHUB_DEPLOYMENT:-}" ]]; then
+    tag=${4:?A tag must be provided as the fourth argument when FLATHUB_DEPLOYMENT is set}
+    sed -i \
+        -e "s|path: ../../../..|url: $GITHUB_URL|" \
+        -e "/commit: '$GIT_COMMIT'/a\        tag: $tag" \
+        "$app_id.yml"
+fi
 
-# Work sandbox
-generate 'ch.threema.threema-blue-desktop' 'work-sandbox' 'Threema Blue Beta'
-
-# Work onprem
-generate 'ch.threema.threema-onprem-desktop' 'work-onprem' 'Threema OnPrem Beta'

@@ -4,3 +4,4 @@ repo/
 generated-*-sources.json
 ch.threema.*.yml
 __pycache__/
+flathub/

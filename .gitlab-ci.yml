@@ -1081,23 +1081,38 @@ package:desktop:flatpak:publish:internal:
     REPO_BASE_URL: $FLATPAK_INTERNAL_REPO_BASE_URL
     REPO: repo
 
-# Note: Public builds are also pushed to the internal fileserver, and are then published using a
-# separate script.
-package:desktop:flatpak:publish:public:
-  <<: *linux_flatpak_config
+# Prepare the files for a Flathub submission (manifest, generated sources, screenshots and run
+# wrapper). Note: This does not build the Flatpak, that is done by Flathub itself.
+package:desktop:flatpak:flathub:
+  stage: package
+  needs: []
+  <<: *linux_nodejs_config
   rules:
     - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
+      when: manual
+  allow_failure: true # Job is optional.
   variables:
     <<: *linux_nodejs_variables
+    FLATHUB_DEPLOYMENT: 'true'
     FLAVORS: consumer-live,work-live
-    FTP_HOST: $FLATPAK_PUBLIC_FTP_HOST
-    FTP_PASS: $FLATPAK_PUBLIC_FTP_PASS
-    FTP_USER: flatpak-internal
-    GPG_ID: 8BC90B39A3DEA043F88607CA74463EA2AF62F4C6
-    PUBLISH: 'true'
-    REMOTE: threema-desktop
-    REPO_BASE_URL: $FLATPAK_PUBLIC_REPO_BASE_URL
-    REPO: threema-desktop
+  artifacts:
+    paths:
+      - apps/desktop/packaging/flatpak/flathub/
+    expire_in: 1 day
+  before_script:
+    - set -euo pipefail
+    # Dependencies of the Flatpak source generators.
+    - apt-get update
+    - apt-get install -y python3-aiohttp python3-tomlkit
+    - *linux_nodejs_before_script
+  script:
+    - set -euo pipefail
+    - bash scripts/run-with-retry.sh --retries 3 --delay 15 -- pnpm ci
+    - IFS=',' read -ra flavors <<< "$FLAVORS"
+    - |
+      for flavor in "${flavors[@]}"; do
+        pnpm run "package:desktop:$flavor"
+      done
 
 # Package stage: macOS
 

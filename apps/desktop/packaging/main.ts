@@ -721,6 +721,9 @@ const FLATHUB_REPO_URL = 'https://flathub.org/repo/flathub.flatpakrepo';
  * - `THREEMADESKTOP_FLATPAK_GPG_KEY`: ID of the GPG Key used for Flatpak signing.
  * - `THREEMADESKTOP_FLATPAK_BRANCH`: The branch to use for flatpak. Defaults
  *   to "master" if not specified.
+ * - `FLATHUB_DEPLOYMENT`: If set, only generate the manifest and sources and
+ *   collect the files required for a Flathub submission in
+ *   `packaging/flatpak/flathub/<flavor>/`, without building the Flatpak.
  */
 function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor): void {
     log.major('Building Linux Flatpaks');
@@ -729,10 +732,14 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
     const appId = determineAppRdn(flavor, appName);
     log.minor(`Building app: ${appId}`);
 
+    const isFlathubDeployment = Boolean(process.env.FLATHUB_DEPLOYMENT);
+
     requireCommand('bash');
-    requireCommand('flatpak');
-    requireCommand('flatpak-builder');
     requireCommand('python3');
+    if (!isFlathubDeployment) {
+        requireCommand('flatpak');
+        requireCommand('flatpak-builder');
+    }
 
     // Layer dependencies
     const layerDependenciesVersion = '26.08';
@@ -758,7 +765,8 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
 
     // Generate manifest files
     log.minor('Generating manifest files');
-    execFileSync('bash', ['generate-manifest.sh'], options);
+    const gitTag = `v${readPackageJson(dirs).version}`;
+    execFileSync('bash', ['generate-manifest.sh', appId, flavor, appName, gitTag], options);
 
     // Run flatpak source generators
     log.minor('Generate pnpm source JSON');
@@ -819,6 +827,29 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
         ['generate-tool-sources.py', '-o', 'generated-tool-sources.json'],
         options,
     );
+
+    // For Flathub, only collect the files required for a submission into a separate directory.
+    // The Flatpak itself is built by Flathub.
+    if (isFlathubDeployment) {
+        const flathubDir = path.join(flatpakDir, 'flathub', flavor);
+        log.minor(`Collecting Flathub files in ${flathubDir}`);
+        fs.rmSync(flathubDir, {recursive: true, force: true});
+        ensureDirSync(flathubDir);
+        const flathubFiles = fs
+            .readdirSync(flatpakDir)
+            .filter(
+                (filename) =>
+                    /^screenshot-.*\.jpg$/u.test(filename) ||
+                    /^generated-.*-sources\.json$/u.test(filename) ||
+                    filename === `${appId}.yml` ||
+                    filename === 'run-wrapper.sh',
+            );
+        for (const filename of flathubFiles) {
+            fs.copyFileSync(path.join(flatpakDir, filename), path.join(flathubDir, filename));
+        }
+        log.major(`Done, Flathub files are in ${flathubDir}`);
+        return;
+    }
 
     // Determine installation source arg
     //
