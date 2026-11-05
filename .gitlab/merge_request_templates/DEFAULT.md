@@ -16,6 +16,7 @@
 - [ ] 👌 Implemented according to issue scope
 - [ ] 📝 Commit messages [are meaningful](https://cbea.ms/git-commit/), *WIP* and *fixup* commits have been amended
 - [ ] 📖 If new interfaces were added, all properties are marked as `readonly` if possible
+- [ ] ⬅ If UI components were added or changed, they were tested for right to left language support.
 
 ### Tech debt
 - [ ] ✅ All `TODO(#)` comments for *this issue* resolved and deleted
