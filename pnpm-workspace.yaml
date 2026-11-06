@@ -68,12 +68,12 @@ minimumReleaseAge: 10080
 
 minimumReleaseAgeExclude:
   - '@threema/*'
-  - electron@42.11.16
+  - electron@45.2.3
 
 minimumReleaseAgeStrict: true
 
 overrides:
-  "@electron/rebuild>node-abi": "4.28.0"
+  "@electron/rebuild>node-abi": "4.35.0"
   "macos-alias>nan": "2.30.0"
 
 pmOnFail: error
