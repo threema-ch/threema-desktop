@@ -21,6 +21,7 @@ build
 /apps/desktop/packaging/flatpak/.flatpak-builder
 /apps/desktop/packaging/flatpak/flatpak-builder-tools
 /apps/desktop/packaging/flatpak/generated-*.json
+/apps/desktop/packaging/flatpak/flathub
 /apps/desktop/playwright-report/
 /apps/desktop/src/common/internal-protobuf/
 /apps/desktop/src/rust/

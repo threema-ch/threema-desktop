@@ -3,4 +3,7 @@ build/
 repo/
 generated-*-sources.json
 ch.threema.*.yml
+ch.threema.*.metainfo.xml
+ch.threema.*.desktop
 __pycache__/
+flathub/

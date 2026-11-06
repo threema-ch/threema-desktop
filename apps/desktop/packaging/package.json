@@ -4,6 +4,7 @@
   "main": "./build/packaging/packaging/main.js",
   "sideEffects": false,
   "scripts": {
+    "generate:flathub": "tsc -p ./tsconfig.json && node . flathub",
     "package": "tsc -p ./tsconfig.json && node ."
   }
 }
