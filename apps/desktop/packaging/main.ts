@@ -12,6 +12,7 @@ import * as path from 'node:path';
 import * as process from 'node:process';
 
 import * as v from '@badrap/valita';
+import {TIMER} from '@threema/ts-utils/timer/global-timer';
 import type {ElectronInstallerDMGOptions} from 'electron-installer-dmg';
 import {ensureDirSync} from 'fs-extra/esm';
 
@@ -86,6 +87,32 @@ function unwrap<T>(value: T | null | undefined, message?: string): T {
         fail(message ?? 'Unwrap failed');
     }
     return value;
+}
+
+/**
+ * Run {@link execFileSync} and retry it up to `retries` times (with a fixed `delayMs` in between)
+ * if it fails, e.g. due to transient network errors. Throws the last error if all attempts fail.
+ */
+function execFileSyncWithRetry(
+    file: string,
+    args: readonly string[],
+    options: Parameters<typeof execFileSync>[2],
+    {retries, delayMs}: {readonly retries: number; readonly delayMs: number},
+): void {
+    for (let attempt = 1; ; attempt++) {
+        try {
+            execFileSync(file, args, options);
+            return;
+        } catch (error) {
+            if (attempt > retries) {
+                throw error;
+            }
+            log.warning(
+                `Command "${file} ${args.join(' ')}" failed (attempt ${attempt}/${retries + 1}), retrying in ${delayMs / 1000}s`,
+            );
+            TIMER.sleepSync(delayMs);
+        }
+    }
 }
 
 /**
@@ -1105,7 +1132,7 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
     }
     log.minor(`Installing layer dependencies into the ${installation} installation`);
     for (const name of dependencies) {
-        execFileSync(
+        execFileSyncWithRetry(
             'flatpak',
             [
                 'install',
@@ -1115,6 +1142,7 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
                 `${name}/${arch}/${FLATPAK_RUNTIME_VERSION}`,
             ],
             options,
+            {retries: 3, delayMs: 15_000},
         );
     }
 

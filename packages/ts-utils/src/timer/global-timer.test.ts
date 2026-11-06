@@ -46,6 +46,25 @@ describe('GlobalTimer', () => {
         });
     });
 
+    describe('sleepSync', () => {
+        it('blocks synchronously via `Atomics.wait` for the requested delay', () => {
+            // Arrange: `Atomics.wait` is not affected by fake timers, so spy on it instead of
+            // actually blocking the test thread.
+            const waitSpy = vi.spyOn(Atomics, 'wait').mockReturnValue('timed-out');
+
+            try {
+                // Act
+                TIMER.sleepSync(100);
+
+                // Assert
+                expect(waitSpy).toHaveBeenCalledTimes(1);
+                expect(waitSpy).toHaveBeenCalledWith(expect.any(Int32Array), 0, 0, 100);
+            } finally {
+                waitSpy.mockRestore();
+            }
+        });
+    });
+
     describe('timeout', () => {
         it('fires the callback after the requested delay', () => {
             // Arrange
