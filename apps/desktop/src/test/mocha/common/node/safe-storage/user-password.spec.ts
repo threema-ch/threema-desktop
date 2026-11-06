@@ -116,18 +116,78 @@ export function run(): void {
                 expect(await isSecureStorageAvailable(makeContext(safeStorage))).to.be.false;
             });
 
-            for (const backend of ['basic_text', 'unknown']) {
-                it(`is false on Linux with the ${backend} backend`, async function () {
-                    const safeStorage = makeFakeSafeStorage({backend});
-                    expect(await isSecureStorageAvailable(makeContext(safeStorage, 'linux'))).to.be
-                        .false;
+            it('is false on Linux with the unknown backend', async function () {
+                const safeStorage = makeFakeSafeStorage({backend: 'unknown'});
+                expect(await isSecureStorageAvailable(makeContext(safeStorage, 'linux'))).to.be
+                    .false;
+                expect(safeStorage.calls.encrypt).to.equal(0);
+            });
+
+            it('is true on Linux with the basic_text backend if the probe uses the Secret portal', async function () {
+                // Flatpak sandbox without access to the host keyring, but with a Secret portal
+                const safeStorage = makeFakeSafeStorage({
+                    backend: 'basic_text',
+                    encryptPrefix: 'v12',
                 });
-            }
+                expect(await isSecureStorageAvailable(makeContext(safeStorage, 'linux'))).to.be
+                    .true;
+            });
+
+            it('is false on Linux with the basic_text backend if the probe uses the insecure fallback', async function () {
+                const safeStorage = makeFakeSafeStorage({
+                    backend: 'basic_text',
+                    encryptPrefix: 'v10',
+                });
+                expect(await isSecureStorageAvailable(makeContext(safeStorage, 'linux'))).to.be
+                    .false;
+            });
 
             it('ignores the backend on other platforms', async function () {
                 const safeStorage = makeFakeSafeStorage({backend: 'basic_text'});
                 expect(await isSecureStorageAvailable(makeContext(safeStorage, 'darwin'))).to.be
                     .true;
+            });
+
+            it('is false on Linux if the probe uses the insecure fallback', async function () {
+                // The backend claims a secret service, but the fallback key is used
+                const safeStorage = makeFakeSafeStorage({
+                    backend: 'gnome_libsecret',
+                    encryptPrefix: 'v10',
+                });
+                expect(await isSecureStorageAvailable(makeContext(safeStorage, 'linux'))).to.be
+                    .false;
+                expect(safeStorage.calls.encrypt).to.equal(1);
+            });
+
+            for (const prefix of ['v11', 'v12']) {
+                it(`is true on Linux if the probe uses prefix ${prefix}`, async function () {
+                    const safeStorage = makeFakeSafeStorage({encryptPrefix: prefix});
+                    expect(await isSecureStorageAvailable(makeContext(safeStorage, 'linux'))).to.be
+                        .true;
+                });
+            }
+
+            it('is false on Linux if the probe fails, and retries', async function () {
+                const safeStorage = makeFakeSafeStorage({failEncrypt: true});
+                const context = makeContext(safeStorage, 'linux');
+                expect(await isSecureStorageAvailable(context)).to.be.false;
+                expect(await isSecureStorageAvailable(context)).to.be.false;
+                expect(safeStorage.calls.encrypt).to.equal(2);
+            });
+
+            it('caches the probe result', async function () {
+                const safeStorage = makeFakeSafeStorage({encryptPrefix: 'v12'});
+                const context = makeContext(safeStorage, 'linux');
+                expect(await isSecureStorageAvailable(context)).to.be.true;
+                expect(await isSecureStorageAvailable(context)).to.be.true;
+                expect(safeStorage.calls.encrypt).to.equal(1);
+            });
+
+            it('does not probe on other platforms', async function () {
+                const safeStorage = makeFakeSafeStorage({encryptPrefix: 'v10'});
+                expect(await isSecureStorageAvailable(makeContext(safeStorage, 'darwin'))).to.be
+                    .true;
+                expect(safeStorage.calls.encrypt).to.equal(0);
             });
         });
 
@@ -242,11 +302,23 @@ export function run(): void {
                 expect(fs.existsSync(passwordFilePath)).to.be.false;
             });
 
-            it('does not store on Linux with the basic_text backend', async function () {
-                const safeStorage = makeFakeSafeStorage({backend: 'basic_text'});
+            it('stores on Linux with the basic_text backend via the Secret portal', async function () {
+                const safeStorage = makeFakeSafeStorage({
+                    backend: 'basic_text',
+                    encryptPrefix: 'v12',
+                });
+                expect(await storeUserPassword(makeContext(safeStorage, 'linux'), 'secret')).to.be
+                    .true;
+                expect(readPasswordFile()).to.equal('v12secret');
+            });
+
+            it('does not store on Linux with the basic_text backend and the insecure fallback', async function () {
+                const safeStorage = makeFakeSafeStorage({
+                    backend: 'basic_text',
+                    encryptPrefix: 'v10',
+                });
                 expect(await storeUserPassword(makeContext(safeStorage, 'linux'), 'secret')).to.be
                     .false;
-                expect(safeStorage.calls.encrypt).to.equal(0);
                 expect(fs.existsSync(passwordFilePath)).to.be.false;
             });
 
@@ -255,6 +327,8 @@ export function run(): void {
                 const safeStorage = makeFakeSafeStorage({encryptPrefix: 'v10'});
                 expect(await storeUserPassword(makeContext(safeStorage, 'linux'), 'new')).to.be
                     .false;
+                // Refused by the probe, the password itself is never encrypted
+                expect(safeStorage.calls.encrypt).to.equal(1);
                 expect(readPasswordFile()).to.equal('v11old');
                 expectNoTemporaryFile();
             });

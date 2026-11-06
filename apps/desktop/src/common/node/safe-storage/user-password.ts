@@ -80,6 +80,51 @@ async function isAsyncEncryptionAvailable(context: UserPasswordContext): Promise
 }
 
 /**
+ * Constant plain text encrypted by {@link probeEncryption}. Not a secret.
+ */
+const PROBE_PLAIN_TEXT = 'threema-safe-storage-probe';
+
+/**
+ * Cached probe results per `safeStorage` instance. The key used for encryption is selected once
+ * when the async encryptor is initialized, so the result does not change during the lifetime of
+ * the process. Only definitive results are cached, a failed probe is retried on the next call.
+ */
+const PROBE_RESULTS = new WeakMap<UserPasswordSafeStorage, boolean>();
+
+/**
+ * Encrypts a constant probe and checks that the ciphertext does not use the insecure fallback.
+ *
+ * This is needed because `getSelectedStorageBackend` can report e.g. `gnome_libsecret` even though
+ * no key could be obtained from the secret service and the fallback key (`v10`) is used.
+ */
+async function probeEncryption(context: UserPasswordContext): Promise<boolean> {
+    const cached = PROBE_RESULTS.get(context.safeStorage);
+    if (cached !== undefined) {
+        return cached;
+    }
+
+    let encrypted: Buffer;
+    try {
+        encrypted = await context.safeStorage.encryptStringAsync(PROBE_PLAIN_TEXT);
+    } catch (error) {
+        context.log.warn(
+            `safeStorage encryption probe failed${describeBackend(context)}: ${describeError(error)}`,
+        );
+        return false;
+    }
+
+    const secure = !hasInsecurePrefix(context, encrypted);
+    const message = `safeStorage encryption probe (prefix ${describePrefix(encrypted)}${describeBackend(context)})`;
+    if (secure) {
+        context.log.info(message);
+    } else {
+        context.log.warn(`${message} uses the insecure fallback, storing the password is disabled`);
+    }
+    PROBE_RESULTS.set(context.safeStorage, secure);
+    return secure;
+}
+
+/**
  * Returns whether the password can be stored securely, i.e. whether async encryption is available
  * and does not use the insecure fallback with a hardcoded key.
  */
@@ -88,22 +133,24 @@ export async function isSecureStorageAvailable(context: UserPasswordContext): Pr
         return false;
     }
 
-    // TODO(#82): `getSelectedStorageBackend` describes the legacy backend
-    // selection. Once the `org.freedesktop.secrets` talk-name is removed from the Flatpak manifest,
-    // it may report `basic_text` even though the secret portal encrypts securely. Re-evaluate this
-    // check then (the ciphertext prefix check in `writeEncryptedPassword` may be the more robust
-    // criterion).
-    //
-    // `basic_text` encrypts with a hardcoded key. `unknown` is only reported before the app is
-    // ready, so refuse it defensively.
-    if (context.platform === 'linux') {
-        const backend = context.safeStorage.getSelectedStorageBackend();
-        if (backend === 'basic_text' || backend === 'unknown') {
-            return false;
-        }
+    // Note: The insecure fallback prefix can only be distinguished on Linux, see
+    // `LINUX_INSECURE_PREFIX`.
+    if (context.platform !== 'linux') {
+        return true;
     }
 
-    return true;
+    // `unknown` is only reported before the app is ready, so refuse it defensively.
+    //
+    // Note: `basic_text` is intentionally not refused here. `getSelectedStorageBackend` only
+    // describes the legacy backend selection, and reports `basic_text` in the Flatpak sandbox
+    // (without access to the host keyring) even though the Secret portal encrypts securely. Also,
+    // it can report e.g. `gnome_libsecret` although the insecure fallback key is used. Only the
+    // encryption probe can tell these cases apart.
+    if (context.safeStorage.getSelectedStorageBackend() === 'unknown') {
+        return false;
+    }
+
+    return await probeEncryption(context);
 }
 
 /**
@@ -191,6 +238,10 @@ export async function loadUserPassword(context: UserPasswordContext): Promise<st
         );
         return undefined;
     }
+
+    log.info(
+        `Password loaded (prefix ${prefix}${describeBackend(context)}, shouldReEncrypt=${decrypted.shouldReEncrypt})`,
+    );
 
     if (decrypted.shouldReEncrypt) {
         log.info(`Password should be re-encrypted (prefix ${prefix}), re-encrypting`);
