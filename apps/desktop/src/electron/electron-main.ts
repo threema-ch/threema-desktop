@@ -36,10 +36,16 @@ import {
     DEFAULT_ELECTRON_SETTINGS,
 } from '~/common/node/electron-settings';
 import type {LogFileInfo, LogInfo} from '~/common/node/file-storage/log-info';
-import {directoryModeInternalObjectIfPosix, fileModeInternalObjectIfPosix} from '~/common/node/fs';
+import {directoryModeInternalObjectIfPosix} from '~/common/node/fs';
 import {FileLogger} from '~/common/node/logging';
 import {removeOldProfiles, getLatestProfilePath} from '~/common/node/old-profiles';
 import {getSafeStoragePasswordPath} from '~/common/node/safe-storage/helpers';
+import {
+    isSecureStorageAvailable,
+    loadUserPassword,
+    storeUserPassword,
+    type UserPasswordContext,
+} from '~/common/node/safe-storage/user-password';
 import {
     ensureRemoteSecretMonitorErrorType,
     type RemoteSecretErrorType,
@@ -642,6 +648,15 @@ function main(
         }
     }
 
+    function userPasswordContext(): UserPasswordContext {
+        return {
+            safeStorage: electron.safeStorage,
+            platform: process.platform,
+            passwordFilePath: getSafeStoragePasswordPath(appPath),
+            log,
+        };
+    }
+
     // Main app window.
     let window: electron.BrowserWindow | undefined;
     let screenSharingReminderWindow: electron.BrowserWindow | undefined;
@@ -911,55 +926,19 @@ function main(
                 throw new Error(`Failed to load test data file: ${testDataFileName}`);
             }
         });
-        electron.ipcMain.handle(ElectronIpcCommand.LOAD_USER_PASSWORD, (event) => {
+        electron.ipcMain.handle(ElectronIpcCommand.LOAD_USER_PASSWORD, async (event) => {
             validateSenderFrame(event.senderFrame);
-
-            const safeStoragePasswordPath = getSafeStoragePasswordPath(appPath);
-            if (!fs.existsSync(safeStoragePasswordPath)) {
-                log.info('Password file not found, loading password skipped.');
-                return undefined;
-            }
-
-            if (electron.safeStorage.isEncryptionAvailable()) {
-                try {
-                    const encryptedPassword = fs.readFileSync(safeStoragePasswordPath);
-                    return electron.safeStorage.decryptString(encryptedPassword);
-                } catch {
-                    log.warn(`Failed to read or decrypt the password.`);
-                }
-            } else {
-                log.warn(
-                    'Electron safeStorage is not available (no password manager?), loading password skipped.',
-                );
-            }
-            return undefined;
+            return await loadUserPassword(userPasswordContext());
         });
         electron.ipcMain.handle(
             ElectronIpcCommand.STORE_USER_PASSWORD,
-            (event, password: string) => {
+            async (event, password: string) => {
                 validateSenderFrame(event.senderFrame);
-
-                if (electron.safeStorage.isEncryptionAvailable()) {
-                    const safeStoragePasswordPath = getSafeStoragePasswordPath(appPath);
-                    try {
-                        const encryptedPassword = electron.safeStorage.encryptString(password);
-                        const options = {...fileModeInternalObjectIfPosix()};
-                        fs.writeFileSync(safeStoragePasswordPath, encryptedPassword, options);
-                        return true;
-                    } catch {
-                        log.error(`Failed to store or encrypt the password.`);
-                    }
-                } else {
-                    log.warn(
-                        'Electron safeStorage is not available (no password manager?), storing password skipped.',
-                    );
-                }
-                return false;
+                return await storeUserPassword(userPasswordContext(), password);
             },
         );
         electron.ipcMain.handle(
             ElectronIpcCommand.GET_SYSTEM_INFO,
-            // eslint-disable-next-line @typescript-eslint/require-await
             async (event): Promise<SystemInfo> => {
                 validateSenderFrame(event.senderFrame);
                 return {
@@ -969,7 +948,7 @@ function main(
                     arch: process.arch,
                     // TODO(DESK-1122): Improve this
                     locale: electron.app.getLocale(),
-                    isSafeStorageAvailable: electron.safeStorage.isEncryptionAvailable(),
+                    isSafeStorageAvailable: await isSecureStorageAvailable(userPasswordContext()),
                 };
             },
         );
