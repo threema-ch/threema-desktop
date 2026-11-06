@@ -45,8 +45,17 @@ if [[ $has_password_store_override -eq 0 ]]; then
   fi
 fi
 
+# Encrypt new safeStorage data with the key from the Secret portal (`org.freedesktop.portal.Secret`,
+# ciphertext prefix `v12`) instead of the legacy keyring key (`v11`). Existing `v11` data is still
+# decrypted via the detected password store above and re-encrypted on load (`shouldReEncrypt`).
+#
+# Note: Chromium only honors the last `--enable-features` switch. If the user passes their own
+# `--enable-features` (which comes later via "$@"), this feature is no longer enabled.
+portal_features=(--enable-features=SecretPortalKeyProviderUseForEncryption)
+
 exec /app/main/ThreemaDesktopLauncher \
   --launcher-target-bin /app/bin/zypak-wrapper.sh \
   /app/main/ThreemaDesktop \
   "${detected_password_store[@]}" \
+  "${portal_features[@]}" \
   "$@"
