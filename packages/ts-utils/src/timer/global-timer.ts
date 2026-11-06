@@ -41,6 +41,15 @@ class GlobalTimer {
     }
 
     /**
+     * Sleep synchronously for the given timeout.
+     *
+     * @param delayMs Amount of milliseconds to sleep.
+     */
+    public sleepSync(delayMs: u53): void {
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, delayMs);
+    }
+
+    /**
      * Calls the given callback once the given delay elapsed until the canceller function has been
      * invoked.
      *

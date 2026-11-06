@@ -936,7 +936,7 @@ validate:rust-versions-in-sync:
     - set -euo pipefail
     # Base dependencies.
     - apt-get update
-    - apt-get install -y flatpak jq lftp elfutils libyaml-dev libglib2.0-dev libcurl4-gnutls-dev libxml2-dev libxslt1-dev python3-aiohttp python3-tomlkit
+    - apt-get install -y flatpak jq lftp elfutils libyaml-dev libglib2.0-dev libcurl4-gnutls-dev libxml2-dev libxslt1-dev python3-aiohttp python3-tomlkit python3-yaml
     # Set up Rust (Cargo) environment.
     - *linux_rust_before_script
     # Set up NodeJS environment.
@@ -967,7 +967,10 @@ validate:rust-versions-in-sync:
     # Handle ref.
     - |
       echo "\$CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME"
-      if [[ "$CI_COMMIT_REF_NAME" = "develop" ]]; then
+      if [[ -n "${BUILD_TYPE:-}" ]]; then
+        # Build type explicitly set by the job (e.g. `flathub`).
+        export BUILD_TYPE
+      elif [[ "$CI_COMMIT_REF_NAME" = "develop" ]]; then
         export BUILD_TYPE=nightly
       elif [[ "$CI_COMMIT_REF_NAME" = v* ]]; then
         export BUILD_TYPE=release
@@ -990,6 +993,11 @@ validate:rust-versions-in-sync:
           ;;
         release)
           BRANCH=master
+          ;;
+        flathub)
+          BRANCH=master
+          REPO="$REPO-flathub"
+          REMOTE="$REMOTE-flathub"
           ;;
         *)
           echo "Invalid build type: $BUILD_TYPE"
@@ -1125,6 +1133,29 @@ package:desktop:flatpak:publish:public:
     REMOTE: threema-desktop
     REPO_BASE_URL: $FLATPAK_PUBLIC_REPO_BASE_URL
     REPO: threema-desktop
+
+# Build the Flatpak packages of the flavors published on Flathub and publish them to the separate
+# `repo-flathub` repository on the internal Flatpak server. Triggered manually from an MR pipeline,
+# e.g. to test the Flathub flavors before submitting them. Install with:
+# `flatpak install $FLATPAK_INTERNAL_REPO_BASE_URL/repo-flathub/<app-id>.flatpakref`.
+package:desktop:flatpak:publish:internal-flathub:
+  <<: *linux_flatpak_config
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+  allow_failure: true # Job is optional.
+  variables:
+    <<: *linux_nodejs_variables
+    BUILD_TYPE: flathub
+    FLAVORS: consumer-sandbox,consumer-live,work-sandbox,work-live
+    FTP_HOST: $FLATPAK_INTERNAL_FTP_HOST
+    FTP_PASS: $FLATPAK_INTERNAL_FTP_PASS
+    FTP_USER: flatpak-internal
+    GPG_ID: BF7BBB57363D6233178AC7CCE4D4F1B275BB5D72
+    PUBLISH: 'true'
+    REMOTE: threema-internal
+    REPO_BASE_URL: $FLATPAK_INTERNAL_REPO_BASE_URL
+    REPO: repo
 
 # Package stage: macOS
 

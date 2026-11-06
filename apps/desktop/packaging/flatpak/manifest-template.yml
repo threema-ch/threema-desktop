@@ -53,7 +53,7 @@ modules:
       - cd apps/desktop/src/rust/launcher/ && THREEMA_BUILD_FLAVOR='{{flavor}}' cargo --offline build --release --features allow_path_override
       # The Node.js version of the SDK extension does not exactly match the version pinned in
       # `engines.node`, so the strict engine check has to be disabled.
-      - "sed -i 's/^engineStrict: true$/engineStrict: false/' pnpm-workspace.yaml"
+      - patch -i apps/desktop/packaging/flatpak/patches/engine-strict.diff pnpm-workspace.yaml
       # Install Node dependencies from the pnpm store populated by `generated-pnpm-sources.json`.
       - pnpm install --offline --frozen-lockfile
       # Let `electron-rebuild` find the cached Electron headers. See:
