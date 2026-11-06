@@ -1459,12 +1459,14 @@ function main(
             //
             // - fullscreen: For video playback
             // - media: For microphone/camera access in a call
+            // - display-capture: For screen sharing access in a call
             if (
                 [
                     'notifications',
                     'clipboard-sanitized-write',
                     'fullscreen',
                     'media',
+                    'display-capture',
                     'speaker-selection',
                 ].includes(permission)
             ) {
