@@ -46,6 +46,7 @@
     "dist:desktop:work-onprem": "TURBO_BUILD_ENVIRONMENT=onprem TURBO_BUILD_VARIANT=work turbo run dist --filter=threema-desktop",
     "dist:desktop:work-sandbox": "TURBO_BUILD_ENVIRONMENT=sandbox TURBO_BUILD_VARIANT=work turbo run dist --filter=threema-desktop",
     "generate:desktop:custom-builds": "pnpm --filter ./apps/desktop run generate:custom-builds",
+    "generate:desktop:flathub": "pnpm --filter ./apps/desktop run generate:flathub",
     "generate:desktop:icons": "turbo run generate:icons --filter=threema-desktop",
     "generate:desktop:icons:flatpak": "turbo run generate:icons:flatpak --filter=threema-desktop",
     "generate:desktop:icons:macos": "turbo run generate:icons:macos --filter=threema-desktop",

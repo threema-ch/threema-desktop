@@ -2,7 +2,11 @@
  * Prepare distribution packages.
  */
 
-import {execFileSync, spawnSync} from 'node:child_process';
+import {
+    type ExecFileSyncOptionsWithStringEncoding,
+    execFileSync,
+    spawnSync,
+} from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as process from 'node:process';
@@ -122,6 +126,11 @@ const PACKAGE_JSON_SCHEMA = v
     .object({
         version: v.string(),
         versionCode: v.number(),
+        devDependencies: v
+            .object({
+                electron: v.string(),
+            })
+            .rest(v.unknown()),
     })
     .rest(v.unknown());
 
@@ -153,7 +162,11 @@ function printUsage(errormsg?: string): void {
     if (errormsg !== undefined) {
         log.error(`Error: ${errormsg}`);
     }
-    console.info('Available environment variables:');
+    console.info('Usage: node . [flathub]');
+    console.info('  (no command)    Build a package for the current platform');
+    console.info('  flathub         Generate the files for a Flathub submission');
+    console.info('');
+    console.info('Available environment variables (when building a package):');
     console.info('  TURBO_BUILD_ENVIRONMENT=live|onprem|sandbox    Required');
     console.info('  TURBO_BUILD_VARIANT=consumer|custom|work       Required');
     console.info(
@@ -169,6 +182,27 @@ function cleanup(dirs: Directories): void {
 }
 
 function main(args: string[]): void {
+    const rootDir = fs.realpathSync(path.join('..', '..', '..'));
+    const dirs: Directories = {
+        monorepoRoot: rootDir,
+        packageRoot: path.join(rootDir, 'apps', 'desktop'),
+        temp: path.join(rootDir, 'temp'),
+        out: path.join(rootDir, 'build', 'out'),
+    };
+
+    // Subcommands that do not build a package.
+    const [command] = args;
+    switch (command) {
+        case undefined:
+            break;
+        case 'flathub':
+            generateFlathubFiles(dirs);
+            return;
+        default:
+            printUsage(`Unknown command: ${command}`);
+            process.exit(1);
+    }
+
     // Parse build environment switches.
     const config = TURBO_PACKAGE_ENV_SCHEMA.try(process.env, {mode: 'strip'});
     if (!config.ok) {
@@ -177,13 +211,6 @@ function main(args: string[]): void {
     }
 
     // Prepare build and output directories.
-    const rootDir = fs.realpathSync(path.join('..', '..', '..'));
-    const dirs: Directories = {
-        monorepoRoot: rootDir,
-        packageRoot: path.join(rootDir, 'apps', 'desktop'),
-        temp: path.join(rootDir, 'temp'),
-        out: path.join(rootDir, 'build', 'out'),
-    };
     if (fs.existsSync(dirs.temp)) {
         if (!fs.lstatSync(dirs.temp).isDirectory()) {
             fail(
@@ -713,65 +740,170 @@ function buildMsix(dirs: Directories, appName: string, flavor: BuildFlavor, sign
 }
 
 /**
+ * App ID used in the metadata templates in `packaging/metadata/`.
+ */
+const METADATA_TEMPLATE_APP_ID = 'ch.threema.threema-desktop';
+
+/**
+ * Replace all occurrences of {@link search} in {@link content}. Fails if there is no occurrence, so
+ * that changes to the template cannot silently break the generated output.
+ */
+function replaceAllOrFail(content: string, search: string, replacement: string): string {
+    if (!content.includes(search)) {
+        fail(`Could not find "${search}" in template`);
+    }
+    return content.replaceAll(search, replacement);
+}
+
+/**
+ * Git repository of the project, used as the source in the Flatpak manifest for Flathub
+ * deployments.
+ */
+const GITHUB_URL = 'https://github.com/threema-ch/threema-desktop.git';
+
+/**
+ * Determine the hash of the commit that {@link tag} points to in the remote repository at
+ * {@link url}, or `undefined` if the tag does not exist.
+ */
+function resolveRemoteTagCommit(url: string, tag: string): string | undefined {
+    const output = execFileSync('git', ['ls-remote', '--tags', url, tag], {
+        encoding: 'utf8',
+        shell: false,
+    });
+    const commit = output.split('\t')[0]?.trim();
+    return commit === '' ? undefined : commit;
+}
+
+/**
+ * Generate the Flatpak manifest for the given app ID from `packaging/flatpak/manifest-template.yml`
+ * and write it into {@link outDir}.
+ *
+ * If {@link flathubTag} is set, the project source is fetched from GitHub at the given tag instead
+ * of from the local repository path, and the commit is resolved from the tag on GitHub instead of
+ * using the local `HEAD`.
+ */
+function generateFlatpakManifest(
+    dirs: Directories,
+    outDir: string,
+    appId: string,
+    flavor: BuildFlavor,
+    runtimeVersion: string,
+    flathubTag: string | undefined,
+): {readonly manifestFilename: string} {
+    const manifestFilename = `${appId}.yml`;
+    const gitCommit =
+        flathubTag === undefined
+            ? execFileSync('git', ['rev-parse', 'HEAD'], {
+                  cwd: dirs.monorepoRoot,
+                  encoding: 'utf8',
+                  shell: false,
+              }).trim()
+            : unwrap(
+                  resolveRemoteTagCommit(GITHUB_URL, flathubTag),
+                  `Could not find tag "${flathubTag}" in remote repository ${GITHUB_URL}`,
+              );
+    const electronVersion = readPackageJson(dirs).devDependencies.electron;
+
+    let manifest = fs.readFileSync(
+        path.join(dirs.packageRoot, 'packaging', 'flatpak', 'manifest-template.yml'),
+        {encoding: 'utf8'},
+    );
+    if (flathubTag !== undefined) {
+        manifest = replaceAllOrFail(manifest, 'path: ../../../..', `url: ${GITHUB_URL}`);
+        manifest = replaceAllOrFail(
+            manifest,
+            "        commit: '{{git-commit}}'\n",
+            `        commit: '{{git-commit}}'\n        tag: ${flathubTag}\n`,
+        );
+    }
+    manifest = replaceAllOrFail(manifest, '{{app-id}}', appId);
+    manifest = replaceAllOrFail(manifest, '{{flavor}}', flavor);
+    manifest = replaceAllOrFail(manifest, '{{runtime-version}}', runtimeVersion);
+    manifest = replaceAllOrFail(manifest, '{{git-commit}}', gitCommit);
+    manifest = replaceAllOrFail(manifest, '{{electron-version}}', electronVersion);
+    const unknownPlaceholder = /\{\{[^}]*\}\}/u.exec(manifest);
+    if (unknownPlaceholder !== null) {
+        fail(`Unknown placeholder "${unknownPlaceholder[0]}" in manifest template`);
+    }
+    fs.writeFileSync(path.join(outDir, manifestFilename), manifest, {encoding: 'utf8'});
+
+    return {manifestFilename};
+}
+
+/**
+ * Generate the AppStream metainfo and the desktop entry file for the given app ID from the
+ * templates in `packaging/metadata/`, and write them into {@link outDir}.
+ */
+function generateFlatpakMetadata(
+    dirs: Directories,
+    outDir: string,
+    appId: string,
+    displayName: string,
+): {readonly metainfoFilename: string; readonly desktopFilename: string} {
+    const metadataDir = path.join(dirs.packageRoot, 'packaging', 'metadata');
+    const metainfoFilename = `${appId}.metainfo.xml`;
+    const desktopFilename = `${appId}.desktop`;
+
+    let metainfo = fs.readFileSync(
+        path.join(metadataDir, `${METADATA_TEMPLATE_APP_ID}.metainfo.xml`),
+        {encoding: 'utf8'},
+    );
+    metainfo = replaceAllOrFail(metainfo, METADATA_TEMPLATE_APP_ID, appId);
+    metainfo = replaceAllOrFail(metainfo, '<name>Threema</name>', `<name>${displayName}</name>`);
+    fs.writeFileSync(path.join(outDir, metainfoFilename), metainfo, {encoding: 'utf8'});
+
+    let desktop = fs.readFileSync(path.join(metadataDir, `${METADATA_TEMPLATE_APP_ID}.desktop`), {
+        encoding: 'utf8',
+    });
+    desktop = replaceAllOrFail(desktop, METADATA_TEMPLATE_APP_ID, appId);
+    desktop = replaceAllOrFail(desktop, 'Name=Threema', `Name=${displayName}`);
+    desktop = replaceAllOrFail(desktop, 'StartupWMClass=Threema', `StartupWMClass=${displayName}`);
+    fs.writeFileSync(path.join(outDir, desktopFilename), desktop, {encoding: 'utf8'});
+
+    return {metainfoFilename, desktopFilename};
+}
+
+/**
  * Flathub repository, used to install the layer dependencies from.
  */
 const FLATHUB_REPO_URL = 'https://flathub.org/repo/flathub.flatpakrepo';
 
 /**
- * Build a Linux Flatpak.
- *
- * Requirements:
- *
- * - bash
- *
- * Note: By default, this will build into a local repository without any GPG
- * verification. To customize this process, the following env vars can be used:
- *
- * - `THREEMADESKTOP_FLATPAK_REPO_PATH`: Path to flatpak repository, relative
- *   to `packaging/flatpak` or absolute.
- * - `THREEMADESKTOP_FLATPAK_GPG_KEY`: ID of the GPG Key used for Flatpak signing.
- * - `THREEMADESKTOP_FLATPAK_BRANCH`: The branch to use for flatpak. Defaults
- *   to "master" if not specified.
+ * Version of the Flatpak runtime and layer dependencies.
  */
-function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor): void {
-    log.major('Building Linux Flatpaks');
+const FLATPAK_RUNTIME_VERSION = '26.08';
 
-    // Parse flavor
-    const appId = determineAppRdn(flavor, appName);
-    log.minor(`Building app: ${appId}`);
+/**
+ * Flavors that are published on Flathub.
+ */
+const FLATHUB_FLAVORS = ['consumer-live', 'work-live'] as const satisfies readonly BuildFlavor[];
 
-    requireCommand('bash');
-    requireCommand('flatpak');
-    requireCommand('flatpak-builder');
-    requireCommand('python3');
-
-    // Layer dependencies
-    const layerDependenciesVersion = '26.08';
-    const dependencies = [
-        'org.electronjs.Electron2.BaseApp',
-        'org.freedesktop.Sdk',
-        'org.freedesktop.Sdk.Extension.node24',
-        'org.freedesktop.Sdk.Extension.rust-stable',
-    ];
-
-    // Child process options
+/**
+ * Return the Flatpak packaging directory and the options to run child processes in it.
+ */
+function flatpakDirAndOptions(dirs: Directories): {
+    readonly flatpakDir: string;
+    readonly options: ExecFileSyncOptionsWithStringEncoding;
+} {
     const flatpakDir = path.join(dirs.packageRoot, 'packaging', 'flatpak');
-    const options = {
-        cwd: flatpakDir,
-        encoding: 'utf8' as const,
-        shell: false,
-        stdio: [null, 1, 2], // Forward stdout/stderr
-        env: {
-            ...process.env,
-            RUNTIME_VERSION: layerDependenciesVersion,
+    return {
+        flatpakDir,
+        options: {
+            cwd: flatpakDir,
+            encoding: 'utf8',
+            shell: false,
+            stdio: [null, 1, 2], // Forward stdout/stderr
         },
     };
+}
 
-    // Generate manifest files
-    log.minor('Generating manifest files');
-    execFileSync('bash', ['generate-manifest.sh'], options);
+/**
+ * Run the Flatpak source generators, which write the `generated-*-sources.json` files to the
+ * Flatpak packaging directory. These files are independent of the flavor.
+ */
+function generateFlatpakSources(dirs: Directories): void {
+    const {options} = flatpakDirAndOptions(dirs);
 
-    // Run flatpak source generators
     log.minor('Generate pnpm source JSON');
     execFileSync(
         'python3',
@@ -830,6 +962,118 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
         ['generate-tool-sources.py', '-o', 'generated-tool-sources.json'],
         options,
     );
+}
+
+/**
+ * Generate the files required for a Flathub submission (manifest, metadata, generated sources,
+ * screenshots and run wrapper) into `packaging/flatpak/flathub/<flavor>/`, for all flavors
+ * published on Flathub.
+ *
+ * The manifests fetch the project source from GitHub at the tag of the current version.
+ *
+ * Note: This does not build the Flatpak, that is done by Flathub itself.
+ *
+ * Requirements:
+ *
+ * - git
+ * - python3 (with `aiohttp`, `tomlkit` and `yaml`)
+ */
+function generateFlathubFiles(dirs: Directories): void {
+    log.major('Generating Flathub files');
+
+    requireCommand('git');
+    requireCommand('python3');
+
+    const {flatpakDir} = flatpakDirAndOptions(dirs);
+    const flathubRootDir = path.join(flatpakDir, 'flathub');
+    fs.rmSync(flathubRootDir, {recursive: true, force: true});
+
+    generateFlatpakSources(dirs);
+    const sharedFiles = fs
+        .readdirSync(flatpakDir)
+        .filter(
+            (filename) =>
+                /^screenshot-.*\.jpg$/u.test(filename) ||
+                /^generated-.*-sources\.json$/u.test(filename) ||
+                filename === 'run-wrapper.sh',
+        );
+
+    const appName = 'Threema';
+    const gitTag = `v${readPackageJson(dirs).version}`;
+    for (const flavor of FLATHUB_FLAVORS) {
+        const appId = determineAppRdn(flavor, appName);
+        const flathubDir = path.join(flathubRootDir, flavor);
+        log.minor(`Generating Flathub files for ${appId} in ${flathubDir}`);
+        ensureDirSync(flathubDir);
+
+        generateFlatpakManifest(dirs, flathubDir, appId, flavor, FLATPAK_RUNTIME_VERSION, gitTag);
+        generateFlatpakMetadata(dirs, flathubDir, appId, determineAppName(flavor, appName));
+        for (const filename of sharedFiles) {
+            fs.copyFileSync(path.join(flatpakDir, filename), path.join(flathubDir, filename));
+        }
+    }
+
+    log.major(`Done, Flathub files are in ${flathubRootDir}`);
+}
+
+/**
+ * Build a Linux Flatpak.
+ *
+ * Requirements:
+ *
+ * - flatpak
+ * - flatpak-builder
+ * - git
+ * - python3
+ *
+ * Note: By default, this will build into a local repository without any GPG
+ * verification. To customize this process, the following env vars can be used:
+ *
+ * - `THREEMADESKTOP_FLATPAK_REPO_PATH`: Path to flatpak repository, relative
+ *   to `packaging/flatpak` or absolute.
+ * - `THREEMADESKTOP_FLATPAK_GPG_KEY`: ID of the GPG Key used for Flatpak signing.
+ * - `THREEMADESKTOP_FLATPAK_BRANCH`: The branch to use for flatpak. Defaults
+ *   to "master" if not specified.
+ */
+function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor): void {
+    log.major('Building Linux Flatpaks');
+
+    // Parse flavor
+    const appId = determineAppRdn(flavor, appName);
+    log.minor(`Building app: ${appId}`);
+
+    requireCommand('flatpak');
+    requireCommand('flatpak-builder');
+    requireCommand('git');
+    requireCommand('python3');
+
+    // Layer dependencies
+    const dependencies = [
+        'org.electronjs.Electron2.BaseApp',
+        'org.freedesktop.Sdk',
+        'org.freedesktop.Sdk.Extension.node24',
+        'org.freedesktop.Sdk.Extension.rust-stable',
+    ];
+
+    const {flatpakDir, options} = flatpakDirAndOptions(dirs);
+
+    // Generate manifest file
+    log.minor('Generating manifest file');
+    const {manifestFilename} = generateFlatpakManifest(
+        dirs,
+        flatpakDir,
+        appId,
+        flavor,
+        FLATPAK_RUNTIME_VERSION,
+        undefined,
+    );
+
+    // Generate metadata files (referenced as sources in the manifest)
+    log.minor('Generating metadata files');
+    generateFlatpakMetadata(dirs, flatpakDir, appId, determineAppName(flavor, appName));
+
+    // Run flatpak source generators
+    generateFlatpakSources(dirs);
 
     // Determine installation source arg
     //
@@ -868,7 +1112,7 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
                 installationSourceArg,
                 '-y',
                 '--noninteractive',
-                `${name}/${arch}/${layerDependenciesVersion}`,
+                `${name}/${arch}/${FLATPAK_RUNTIME_VERSION}`,
             ],
             options,
         );
@@ -897,7 +1141,7 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
     log.minor(`Building app ${appId}`);
     execFileSync(
         'flatpak-builder',
-        [...buildArgs, 'build', path.join(flatpakDir, `${appId}.yml`)],
+        [...buildArgs, 'build', path.join(flatpakDir, manifestFilename)],
         options,
     );
 

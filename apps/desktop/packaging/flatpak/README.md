@@ -22,9 +22,12 @@ Generate the sources for the build tools.
 
     python generate-tool-sources.py -o generated-tool-sources.json
 
-Generate the flatpak yaml file(s):
+Generate the flatpak manifest (as well as the metainfo and desktop files) from
+`manifest-template.yml` and the templates in `../metadata/`. This is done by the packaging script
+(`packaging/main.ts`), which runs all of the steps above and builds the Flatpak:
 
-    ./generate-manifest.sh
+    # In `apps/desktop`, after building the app
+    TURBO_BUILD_ENVIRONMENT=sandbox TURBO_BUILD_VARIANT=consumer pnpm run package
 
 Build the flatpak yaml file into a local repo:
 
@@ -41,6 +44,18 @@ Finally, install the local flatpak:
 To run:
 
     flatpak run ch.threema.threema-desktop
+
+## Flathub
+
+To generate the files required for a Flathub submission for all flavors published on Flathub, run
+from the repository root:
+
+    pnpm run generate:desktop:flathub
+
+The files are written to `flathub/<flavor>/`. The manifests fetch the project source from GitHub at
+the tag of the current version (`v<version>` from `apps/desktop/package.json`), so the tag must
+already have been pushed to GitHub. The source generators need the Python packages `aiohttp`,
+`tomlkit` and `yaml`.
 
 ## Flatpak Node Generator
 
