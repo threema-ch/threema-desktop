@@ -120,7 +120,9 @@
     "action--save": "Speichern",
     "action--send": "Senden",
     "label--locked-due-to-system-suspend": "Inaktivität des Systems erkannt",
-    "prose--locked-due-to-system-suspend": "{fullAppName} wurde gesperrt um Ihre Daten zu schützen während Ihr System inaktiv war."
+    "markup--safe-storage-secret-portal-missing": "Ihr Passwort kann nicht sicher gespeichert werden, da Ihre Desktop-Umgebung kein Secret-Portal bereitstellt. Installieren Sie einen System-Schlüsselbund (z. B. GNOME Keyring oder KWallet), richten Sie ihn als Secret-Portal für Ihre Desktop-Umgebung ein und starten Sie {shortAppName} neu. <slot_1>Mehr erfahren</slot_1>",
+    "prose--locked-due-to-system-suspend": "{fullAppName} wurde gesperrt um Ihre Daten zu schützen während Ihr System inaktiv war.",
+    "prose--safe-storage-secret-portal-backend-failed": "Ihr Passwort kann nicht sicher gespeichert werden, da Ihr System-Schlüsselbund keinen Schlüssel bereitgestellt hat. Stellen Sie sicher, dass Ihr Schlüsselbund entsperrt und als Standard festgelegt ist, und starten Sie {shortAppName} neu."
   },
   "dialog--compose-media-message": {
     "error--failed-to-send": "Senden der Dateien fehlgeschlagen",

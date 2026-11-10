@@ -323,6 +323,8 @@ interface ImportMetaEnv extends ViteDefaultImportMetaEnv, BuildConfig {
         readonly forgotPassword: {full: string} | 'hidden';
         /** URL to the "reset profile" FAQ page */
         readonly resetProfile: {full: string} | 'hidden';
+        /** URL to the "Secret portal on Linux" FAQ page */
+        readonly secretPortal: {full: string} | 'hidden';
         /** URL that is fixed in the oppf dialog */
         readonly presetOppfUrl: {full: string} | undefined;
         /** URL of the Threema support */

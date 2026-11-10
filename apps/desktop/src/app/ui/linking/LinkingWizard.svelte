@@ -127,6 +127,7 @@
               userPassword: params.userPassword,
               shouldStorePassword: params.shouldStorePassword,
               isSafeStorageAvailable: params.isSafeStorageAvailable,
+              safeStorageUnavailableReason: params.safeStorageUnavailableReason,
             },
           };
           break;

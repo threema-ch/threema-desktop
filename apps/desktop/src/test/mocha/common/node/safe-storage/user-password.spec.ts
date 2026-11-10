@@ -6,8 +6,10 @@ import {expect} from 'chai';
 
 import {NOOP_LOGGER} from '~/common/logging';
 import {
+    getSecureStorageStatus,
     isSecureStorageAvailable,
     loadUserPassword,
+    type SafeStorageDiagnostics,
     storeUserPassword,
     type UserPasswordContext,
     type UserPasswordSafeStorage,
@@ -188,6 +190,134 @@ export function run(): void {
                 expect(await isSecureStorageAvailable(makeContext(safeStorage, 'darwin'))).to.be
                     .true;
                 expect(safeStorage.calls.encrypt).to.equal(0);
+            });
+        });
+
+        describe('getSecureStorageStatus', function () {
+            interface FakeDiagnostics extends SafeStorageDiagnostics {
+                readonly calls: {portal: number};
+            }
+
+            function makeDiagnostics(options: {
+                isFlatpak?: boolean;
+                feature?: boolean;
+                portal?: boolean | 'throw';
+            }): FakeDiagnostics {
+                const calls = {portal: 0};
+                return {
+                    calls,
+                    isFlatpak: options.isFlatpak ?? true,
+                    isSecretPortalEncryptionFeatureEnabled: () => options.feature ?? true,
+                    isSecretPortalAvailable: async () => {
+                        calls.portal++;
+                        if (options.portal === 'throw') {
+                            throw new Error('gdbus failed');
+                        }
+                        return await Promise.resolve(options.portal ?? true);
+                    },
+                };
+            }
+
+            function makeDiagnosedContext(
+                safeStorage: UserPasswordSafeStorage,
+                diagnostics: SafeStorageDiagnostics | undefined,
+            ): UserPasswordContext {
+                return {...makeContext(safeStorage, 'linux'), diagnostics};
+            }
+
+            it('is available without diagnosis if the probe uses the Secret portal', async function () {
+                const diagnostics = makeDiagnostics({portal: false});
+                const safeStorage = makeFakeSafeStorage({encryptPrefix: 'v12'});
+                expect(
+                    await getSecureStorageStatus(makeDiagnosedContext(safeStorage, diagnostics)),
+                ).to.deep.equal({available: true});
+                expect(diagnostics.calls.portal).to.equal(0);
+            });
+
+            it('reports a missing Secret portal', async function () {
+                const diagnostics = makeDiagnostics({portal: false});
+                const safeStorage = makeFakeSafeStorage({
+                    backend: 'basic_text',
+                    encryptPrefix: 'v10',
+                });
+                expect(
+                    await getSecureStorageStatus(makeDiagnosedContext(safeStorage, diagnostics)),
+                ).to.deep.equal({available: false, reason: 'secret-portal-missing'});
+            });
+
+            it('reports a missing Secret portal if the check throws', async function () {
+                const diagnostics = makeDiagnostics({portal: 'throw'});
+                const safeStorage = makeFakeSafeStorage({encryptPrefix: 'v10'});
+                expect(
+                    await getSecureStorageStatus(makeDiagnosedContext(safeStorage, diagnostics)),
+                ).to.deep.equal({available: false, reason: 'secret-portal-missing'});
+            });
+
+            it('reports a failing backend if the Secret portal is available', async function () {
+                const diagnostics = makeDiagnostics({portal: true});
+                const safeStorage = makeFakeSafeStorage({encryptPrefix: 'v10'});
+                expect(
+                    await getSecureStorageStatus(makeDiagnosedContext(safeStorage, diagnostics)),
+                ).to.deep.equal({available: false, reason: 'secret-portal-backend-failed'});
+            });
+
+            it('reports no reason if the feature flag is missing', async function () {
+                const diagnostics = makeDiagnostics({feature: false, portal: false});
+                const safeStorage = makeFakeSafeStorage({encryptPrefix: 'v10'});
+                expect(
+                    await getSecureStorageStatus(makeDiagnosedContext(safeStorage, diagnostics)),
+                ).to.deep.equal({available: false, reason: undefined});
+                expect(diagnostics.calls.portal).to.equal(0);
+            });
+
+            it('reports no reason outside of Flatpak', async function () {
+                const diagnostics = makeDiagnostics({isFlatpak: false, portal: false});
+                const safeStorage = makeFakeSafeStorage({encryptPrefix: 'v10'});
+                expect(
+                    await getSecureStorageStatus(makeDiagnosedContext(safeStorage, diagnostics)),
+                ).to.deep.equal({available: false, reason: undefined});
+                expect(diagnostics.calls.portal).to.equal(0);
+            });
+
+            it('reports no reason without diagnostics', async function () {
+                const safeStorage = makeFakeSafeStorage({encryptPrefix: 'v10'});
+                expect(
+                    await getSecureStorageStatus(makeDiagnosedContext(safeStorage, undefined)),
+                ).to.deep.equal({available: false, reason: undefined});
+            });
+
+            it('reports no reason if the probe fails', async function () {
+                const diagnostics = makeDiagnostics({portal: false});
+                const safeStorage = makeFakeSafeStorage({failEncrypt: true});
+                expect(
+                    await getSecureStorageStatus(makeDiagnosedContext(safeStorage, diagnostics)),
+                ).to.deep.equal({available: false, reason: undefined});
+                expect(diagnostics.calls.portal).to.equal(0);
+            });
+
+            it('caches the diagnosis', async function () {
+                const diagnostics = makeDiagnostics({portal: false});
+                const safeStorage = makeFakeSafeStorage({encryptPrefix: 'v10'});
+                const context = makeDiagnosedContext(safeStorage, diagnostics);
+                await getSecureStorageStatus(context);
+                expect(await getSecureStorageStatus(context)).to.deep.equal({
+                    available: false,
+                    reason: 'secret-portal-missing',
+                });
+                expect(diagnostics.calls.portal).to.equal(1);
+                expect(safeStorage.calls.encrypt).to.equal(1);
+            });
+
+            it('does not diagnose on other platforms', async function () {
+                const diagnostics = makeDiagnostics({portal: false});
+                const safeStorage = makeFakeSafeStorage({encryptPrefix: 'v10'});
+                expect(
+                    await getSecureStorageStatus({
+                        ...makeContext(safeStorage, 'darwin'),
+                        diagnostics,
+                    }),
+                ).to.deep.equal({available: true});
+                expect(diagnostics.calls.portal).to.equal(0);
             });
         });
 

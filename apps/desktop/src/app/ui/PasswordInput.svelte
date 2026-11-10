@@ -6,6 +6,7 @@
   import type {AppServicesForSvelte} from '~/app/types';
   import Hint from '~/app/ui/components/atoms/hint/Hint.svelte';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
+  import SafeStorageUnavailableNote from '~/app/ui/components/molecules/safe-storage-unavailable-note/SafeStorageUnavailableNote.svelte';
   import ForgotPasswordModal from '~/app/ui/components/partials/modals/forgot-password-modal/ForgotPasswordModal.svelte';
   import {i18n} from '~/app/ui/i18n';
   import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
@@ -45,6 +46,7 @@
   let password = $state<string>(previouslyAttemptedPassword ?? '');
   let shouldStorePasswordValue = $state<boolean>(false);
   let isSubmitting = $state<boolean>(false);
+  let isSafeStorageUnavailableNoteVisible = $state<boolean>(false);
 
   let passwordInputComponent = $state<SvelteNullableBinding<Password>>(null);
 
@@ -76,6 +78,7 @@
     event.preventDefault();
 
     if (!systemInfo.isSafeStorageAvailable) {
+      isSafeStorageUnavailableNoteVisible = true;
       return;
     }
 
@@ -324,7 +327,8 @@
             {$i18n.t('dialog--startup-unlock.label--save-password', 'Save securely on device')}
           </label>
           <Switch
-            disabled={!systemInfo.isSafeStorageAvailable}
+            disabled={!systemInfo.isSafeStorageAvailable &&
+              systemInfo.safeStorageUnavailableReason === undefined}
             bind:checked={shouldStorePasswordValue}
             onclick={handleClickSwitch}
             onkeydown={(event: KeyboardEvent) => {
@@ -334,6 +338,11 @@
             }}
           />
         </div>
+        {#if isSafeStorageUnavailableNoteVisible && systemInfo.safeStorageUnavailableReason !== undefined}
+          <div class="safe-storage-note">
+            <SafeStorageUnavailableNote reason={systemInfo.safeStorageUnavailableReason} />
+          </div>
+        {/if}
       </div>
     {/snippet}
     {#snippet snippetFooter()}
@@ -420,6 +429,10 @@
       gap: rem(8px);
       margin-top: rem(16px);
       color: var(--t-text-e2-color);
+    }
+
+    .safe-storage-note {
+      margin-top: rem(8px);
     }
   }
 

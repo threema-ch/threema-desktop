@@ -120,7 +120,9 @@
     "action--save": "Save",
     "action--send": "Send",
     "label--locked-due-to-system-suspend": "System Suspension Detected",
-    "prose--locked-due-to-system-suspend": "{fullAppName} was locked to protect your data while your device was suspended."
+    "markup--safe-storage-secret-portal-missing": "Your password cannot be saved securely, because your desktop does not provide a Secret portal. Install a secret service (e.g. GNOME Keyring or KWallet), enable it as the Secret portal for your desktop, and restart {shortAppName}. <slot_1>Learn more</slot_1>",
+    "prose--locked-due-to-system-suspend": "{fullAppName} was locked to protect your data while your device was suspended.",
+    "prose--safe-storage-secret-portal-backend-failed": "Your password cannot be saved securely, because the secret service did not provide a key. Make sure your keyring is unlocked and set as default, and restart {shortAppName}."
   },
   "dialog--compose-media-message": {
     "error--failed-to-send": "Failed to send media files",

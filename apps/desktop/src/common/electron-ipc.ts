@@ -21,7 +21,22 @@ export interface SystemInfo {
     readonly arch: string;
     readonly locale: string;
     readonly isSafeStorageAvailable: boolean;
+    /**
+     * Why secure storage is unavailable, if the cause is known and actionable by the user. Only set
+     * when {@link isSafeStorageAvailable} is `false`. If `undefined`, a generic hint is shown.
+     */
+    readonly safeStorageUnavailableReason?: SafeStorageUnavailableReason;
 }
+
+/**
+ * Actionable reasons why `safeStorage` cannot store the password securely (Linux Flatpak only).
+ *
+ * - `secret-portal-missing`: The host does not provide the Secret portal
+ *   (`org.freedesktop.portal.Secret`), e.g. no backend is installed or assigned to the desktop.
+ * - `secret-portal-backend-failed`: The Secret portal is available, but no key was obtained from
+ *   it, e.g. because the keyring is locked or has no default collection.
+ */
+export type SafeStorageUnavailableReason = 'secret-portal-missing' | 'secret-portal-backend-failed';
 
 export interface DeleteProfileOptions {
     /**

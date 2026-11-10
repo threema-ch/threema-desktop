@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 
 import {ensureError} from '@threema/ts-utils/meta/ensure-error';
 
+import type {SafeStorageUnavailableReason} from '~/common/electron-ipc';
 import {extractErrorMessage} from '~/common/error';
 import type {Logger} from '~/common/logging';
 import {fileModeInternalObjectIfPosix} from '~/common/node/fs';
@@ -33,7 +34,40 @@ export interface UserPasswordContext {
      */
     readonly passwordFilePath: string;
     readonly log: Logger;
+    /**
+     * Used to determine why secure storage is unavailable on Linux (see
+     * {@link getSecureStorageStatus}). If omitted, no reason is determined.
+     */
+    readonly diagnostics?: SafeStorageDiagnostics;
 }
+
+/**
+ * Environment checks to determine why the insecure fallback key is used on Linux.
+ */
+export interface SafeStorageDiagnostics {
+    /**
+     * Whether the app runs inside a Flatpak sandbox (where the Secret portal is used).
+     */
+    readonly isFlatpak: boolean;
+    /**
+     * Whether Chromium's `SecretPortalKeyProviderUseForEncryption` feature is enabled.
+     */
+    readonly isSecretPortalEncryptionFeatureEnabled: () => boolean;
+    /**
+     * Whether the host provides the Secret portal (`org.freedesktop.portal.Secret`).
+     */
+    readonly isSecretPortalAvailable: () => Promise<boolean>;
+}
+
+/**
+ * Whether the password can be stored securely and, if not, an actionable reason (if known).
+ */
+export type SecureStorageStatus =
+    | {readonly available: true}
+    | {readonly available: false; readonly reason: SafeStorageUnavailableReason | undefined};
+
+const AVAILABLE: SecureStorageStatus = {available: true};
+const UNAVAILABLE: SecureStorageStatus = {available: false, reason: undefined};
 
 /**
  * Ciphertext prefix used by Chromium's OSCrypt on Linux when no secret store is available and the
@@ -89,15 +123,56 @@ const PROBE_PLAIN_TEXT = 'threema-safe-storage-probe';
  * when the async encryptor is initialized, so the result does not change during the lifetime of
  * the process. Only definitive results are cached, a failed probe is retried on the next call.
  */
-const PROBE_RESULTS = new WeakMap<UserPasswordSafeStorage, boolean>();
+const PROBE_RESULTS = new WeakMap<UserPasswordSafeStorage, SecureStorageStatus>();
 
 /**
- * Encrypts a constant probe and checks that the ciphertext does not use the insecure fallback.
+ * Determines why the insecure fallback key is used. Only returns a reason that the user can act
+ * on, everything else is only logged.
+ */
+async function diagnoseInsecureFallback(
+    context: UserPasswordContext,
+): Promise<SafeStorageUnavailableReason | undefined> {
+    const {diagnostics, log} = context;
+    if (diagnostics?.isFlatpak !== true) {
+        log.warn('safeStorage diagnosis: Not running in a Flatpak sandbox, cause unknown');
+        return undefined;
+    }
+
+    if (!diagnostics.isSecretPortalEncryptionFeatureEnabled()) {
+        log.warn(
+            'safeStorage diagnosis: Chromium feature SecretPortalKeyProviderUseForEncryption is not enabled (check the --enable-features switch)',
+        );
+        return undefined;
+    }
+
+    let isSecretPortalAvailable: boolean;
+    try {
+        isSecretPortalAvailable = await diagnostics.isSecretPortalAvailable();
+    } catch (error) {
+        log.warn(`safeStorage diagnosis: Secret portal check threw: ${describeError(error)}`);
+        isSecretPortalAvailable = false;
+    }
+    if (!isSecretPortalAvailable) {
+        log.warn(
+            'safeStorage diagnosis: The host does not provide the Secret portal (org.freedesktop.portal.Secret)',
+        );
+        return 'secret-portal-missing';
+    }
+
+    log.warn(
+        'safeStorage diagnosis: The Secret portal is available, but did not provide a key (keyring locked or no default collection?)',
+    );
+    return 'secret-portal-backend-failed';
+}
+
+/**
+ * Encrypts a constant probe and checks that the ciphertext does not use the insecure fallback. If
+ * it does, determines the reason via {@link diagnoseInsecureFallback}.
  *
  * This is needed because `getSelectedStorageBackend` can report e.g. `gnome_libsecret` even though
  * no key could be obtained from the secret service and the fallback key (`v10`) is used.
  */
-async function probeEncryption(context: UserPasswordContext): Promise<boolean> {
+async function probeEncryption(context: UserPasswordContext): Promise<SecureStorageStatus> {
     const cached = PROBE_RESULTS.get(context.safeStorage);
     if (cached !== undefined) {
         return cached;
@@ -110,33 +185,38 @@ async function probeEncryption(context: UserPasswordContext): Promise<boolean> {
         context.log.warn(
             `safeStorage encryption probe failed${describeBackend(context)}: ${describeError(error)}`,
         );
-        return false;
+        return UNAVAILABLE;
     }
 
-    const secure = !hasInsecurePrefix(context, encrypted);
     const message = `safeStorage encryption probe (prefix ${describePrefix(encrypted)}${describeBackend(context)})`;
-    if (secure) {
-        context.log.info(message);
-    } else {
+    let status: SecureStorageStatus;
+    if (hasInsecurePrefix(context, encrypted)) {
         context.log.warn(`${message} uses the insecure fallback, storing the password is disabled`);
+        status = {available: false, reason: await diagnoseInsecureFallback(context)};
+    } else {
+        context.log.info(message);
+        status = AVAILABLE;
     }
-    PROBE_RESULTS.set(context.safeStorage, secure);
-    return secure;
+    PROBE_RESULTS.set(context.safeStorage, status);
+    return status;
 }
 
 /**
  * Returns whether the password can be stored securely, i.e. whether async encryption is available
- * and does not use the insecure fallback with a hardcoded key.
+ * and does not use the insecure fallback with a hardcoded key. If not, an actionable reason is
+ * included if it could be determined.
  */
-export async function isSecureStorageAvailable(context: UserPasswordContext): Promise<boolean> {
+export async function getSecureStorageStatus(
+    context: UserPasswordContext,
+): Promise<SecureStorageStatus> {
     if (!(await isAsyncEncryptionAvailable(context))) {
-        return false;
+        return UNAVAILABLE;
     }
 
     // Note: The insecure fallback prefix can only be distinguished on Linux, see
     // `LINUX_INSECURE_PREFIX`.
     if (context.platform !== 'linux') {
-        return true;
+        return AVAILABLE;
     }
 
     // `unknown` is only reported before the app is ready, so refuse it defensively.
@@ -147,10 +227,17 @@ export async function isSecureStorageAvailable(context: UserPasswordContext): Pr
     // it can report e.g. `gnome_libsecret` although the insecure fallback key is used. Only the
     // encryption probe can tell these cases apart.
     if (context.safeStorage.getSelectedStorageBackend() === 'unknown') {
-        return false;
+        return UNAVAILABLE;
     }
 
     return await probeEncryption(context);
+}
+
+/**
+ * Returns whether the password can be stored securely, see {@link getSecureStorageStatus}.
+ */
+export async function isSecureStorageAvailable(context: UserPasswordContext): Promise<boolean> {
+    return (await getSecureStorageStatus(context)).available;
 }
 
 /**

@@ -41,7 +41,12 @@ import {FileLogger} from '~/common/node/logging';
 import {removeOldProfiles, getLatestProfilePath} from '~/common/node/old-profiles';
 import {getSafeStoragePasswordPath} from '~/common/node/safe-storage/helpers';
 import {
-    isSecureStorageAvailable,
+    hasSecretPortalEncryptionFeature,
+    isRunningInFlatpak,
+    isSecretPortalAvailable,
+} from '~/common/node/safe-storage/secret-portal';
+import {
+    getSecureStorageStatus,
     loadUserPassword,
     storeUserPassword,
     type UserPasswordContext,
@@ -654,6 +659,14 @@ function main(
             platform: process.platform,
             passwordFilePath: getSafeStoragePasswordPath(appPath),
             log,
+            diagnostics: {
+                isFlatpak: isRunningInFlatpak(),
+                isSecretPortalEncryptionFeatureEnabled: () =>
+                    hasSecretPortalEncryptionFeature(
+                        electron.app.commandLine.getSwitchValue('enable-features'),
+                    ),
+                isSecretPortalAvailable: async () => await isSecretPortalAvailable(log),
+            },
         };
     }
 
@@ -941,6 +954,7 @@ function main(
             ElectronIpcCommand.GET_SYSTEM_INFO,
             async (event): Promise<SystemInfo> => {
                 validateSenderFrame(event.senderFrame);
+                const safeStorageStatus = await getSecureStorageStatus(userPasswordContext());
                 return {
                     os: getOperatingSystem(),
                     osVersion: os.version(),
@@ -948,7 +962,10 @@ function main(
                     arch: process.arch,
                     // TODO(DESK-1122): Improve this
                     locale: electron.app.getLocale(),
-                    isSafeStorageAvailable: await isSecureStorageAvailable(userPasswordContext()),
+                    isSafeStorageAvailable: safeStorageStatus.available,
+                    safeStorageUnavailableReason: safeStorageStatus.available
+                        ? undefined
+                        : safeStorageStatus.reason,
                 };
             },
         );
