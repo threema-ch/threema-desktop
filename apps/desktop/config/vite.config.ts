@@ -222,6 +222,7 @@ function determineUrls(
                 limitations: 'hidden',
                 forgotPassword: 'hidden',
                 resetProfile: 'hidden',
+                secretPortal: 'hidden',
                 presetOppfUrl,
                 support: 'hidden',
             };
@@ -239,6 +240,7 @@ function determineUrls(
         limitations: {full: 'https://threema.ch/faq/md_limit'},
         forgotPassword: {full: 'https://threema.ch/faq/md_password'},
         resetProfile: {full: 'https://threema.ch/faq/md_reset'},
+        secretPortal: {full: 'https://threema.ch/faq/md-linux-storepass'},
         presetOppfUrl: undefined,
         support,
     };

@@ -263,7 +263,7 @@ async function main(): Promise<() => Promise<void>> {
     // Get system info
     const systemInfo = await electron.getSystemInfo();
     log.info(
-        `System info: os=${systemInfo.os} (${systemInfo.arch}), locale=${systemInfo.locale}, isSafeStorageAvailable=${systemInfo.isSafeStorageAvailable}`,
+        `System info: os=${systemInfo.os} (${systemInfo.arch}), locale=${systemInfo.locale}, isSafeStorageAvailable=${systemInfo.isSafeStorageAvailable}, safeStorageUnavailableReason=${systemInfo.safeStorageUnavailableReason ?? 'none'}`,
     );
 
     // Instantiate global hotkeys manager
@@ -498,6 +498,7 @@ async function main(): Promise<() => Promise<void>> {
                 identityReady,
                 oppfConfig,
                 isSafeStorageAvailable: systemInfo.isSafeStorageAvailable,
+                safeStorageUnavailableReason: systemInfo.safeStorageUnavailableReason,
                 invalidCertificatePinStore,
             },
             electron,

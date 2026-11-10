@@ -4,6 +4,7 @@ import type {ResolvablePromise} from '@threema/ts-utils/promise/resolvable-promi
 import type {AppServicesForSvelte} from '~/app/types';
 import type {ModalProps} from '~/app/ui/components/hocs/modal/props';
 import type {LinkingState, LinkingStateErrorType, SyncingPhase} from '~/common/dom/backend';
+import type {SafeStorageUnavailableReason} from '~/common/electron-ipc';
 import type {ReusablePromise} from '~/common/utils/promise';
 import type {ReadableStore, WritableStore} from '~/common/utils/store';
 
@@ -55,6 +56,7 @@ export interface LinkingParams {
     readonly oppfConfig: ResolvablePromise<OppfConfig>;
 
     readonly isSafeStorageAvailable: boolean;
+    readonly safeStorageUnavailableReason: SafeStorageUnavailableReason | undefined;
 
     /**
      * A writable store that stores if invalid certificate pins have been detected.
@@ -90,6 +92,7 @@ export interface LinkingWizardSetPasswordProps {
     readonly userPassword: ResolvablePromise<string>;
     readonly shouldStorePassword: ResolvablePromise<boolean>;
     readonly isSafeStorageAvailable: boolean;
+    readonly safeStorageUnavailableReason: SafeStorageUnavailableReason | undefined;
 }
 
 export interface LinkingWizardSyncingProps {

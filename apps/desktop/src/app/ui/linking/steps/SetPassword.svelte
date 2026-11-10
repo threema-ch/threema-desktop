@@ -4,6 +4,7 @@
 
   import {APP_CONFIG} from '~/app/config';
   import Hint from '~/app/ui/components/atoms/hint/Hint.svelte';
+  import SafeStorageUnavailableNote from '~/app/ui/components/molecules/safe-storage-unavailable-note/SafeStorageUnavailableNote.svelte';
   import {i18n} from '~/app/ui/i18n';
   import type {LinkingWizardSetPasswordProps} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
@@ -11,8 +12,12 @@
   import Password from '~/app/ui/svelte-components/blocks/Input/Password.svelte';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
 
-  const {userPassword, shouldStorePassword, isSafeStorageAvailable}: LinkingWizardSetPasswordProps =
-    $props();
+  const {
+    userPassword,
+    shouldStorePassword,
+    isSafeStorageAvailable,
+    safeStorageUnavailableReason,
+  }: LinkingWizardSetPasswordProps = $props();
 
   let passwordComponent = $state<SvelteNullableBinding<Password>>(null);
 
@@ -20,6 +25,7 @@
   let shouldStorePasswordValue = $state<boolean>(isSafeStorageAvailable);
   let confirmation = $state<string>('');
   let showErrors = $state<boolean>(false);
+  let isSafeStorageUnavailableNoteVisible = $state<boolean>(false);
   const errors: {minPasswordLength: string | undefined; passwordEquality: string | undefined} =
     $derived({
       minPasswordLength:
@@ -58,6 +64,7 @@
     event.preventDefault();
 
     if (!isSafeStorageAvailable) {
+      isSafeStorageUnavailableNoteVisible = true;
       return;
     }
 
@@ -133,7 +140,7 @@
             >
             <Switch
               bind:checked={shouldStorePasswordValue}
-              disabled={!isSafeStorageAvailable}
+              disabled={!isSafeStorageAvailable && safeStorageUnavailableReason === undefined}
               onclick={handleClickSwitch}
               onkeydown={(event: KeyboardEvent) => {
                 if (event.key === ' ') {
@@ -142,6 +149,11 @@
               }}
             />
           </div>
+          {#if isSafeStorageUnavailableNoteVisible && safeStorageUnavailableReason !== undefined}
+            <div class="safe-storage-note">
+              <SafeStorageUnavailableNote reason={safeStorageUnavailableReason} />
+            </div>
+          {/if}
         </div>
       </div>
     </div>
@@ -194,6 +206,10 @@
       flex-direction: row-reverse;
       gap: rem(8px);
       color: var(--t-text-e2-color);
+    }
+
+    .safe-storage-note {
+      margin-top: rem(8px);
     }
   }
 
