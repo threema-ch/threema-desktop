@@ -69,9 +69,10 @@ modules:
       - install -Dm755 apps/desktop/src/rust/launcher/target/release/ThreemaDesktopLauncher /app/main/ThreemaDesktopLauncher
       # Install app wrapper.
       - install -Dm755 run.sh /app/bin/
-      # Install metadata.
-      - install -Dm644 {{app-id}}.metainfo.xml /app/share/metainfo/{{app-id}}.metainfo.xml
-      - install -Dm644 {{app-id}}.desktop /app/share/applications/{{app-id}}.desktop
+      # Generate and install metadata.
+      - pnpm --filter ./apps/desktop run generate:flatpak-metadata {{flavor}} build/flatpak-metadata
+      - install -Dm644 build/flatpak-metadata/{{app-id}}.metainfo.xml /app/share/metainfo/{{app-id}}.metainfo.xml
+      - install -Dm644 build/flatpak-metadata/{{app-id}}.desktop /app/share/applications/{{app-id}}.desktop
       # Install Icons.
       - mkdir -p /app/share/icons/hicolor/{512x512,scalable}/apps/
       - install -Dm644 apps/desktop/packaging/assets/icons/flatpak/{{flavor}}.svg /app/share/icons/hicolor/scalable/apps/{{app-id}}.svg
@@ -88,10 +89,6 @@ modules:
       - generated-libthreema-cargo-sources.json
       # Build tools, updated with `generate-tool-sources.py`.
       - generated-tool-sources.json
-      - type: file
-        path: '{{app-id}}.metainfo.xml'
-      - type: file
-        path: '{{app-id}}.desktop'
       # Wrapper to launch the app.
       - type: file
         path: run-wrapper.sh

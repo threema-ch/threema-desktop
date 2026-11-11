@@ -189,9 +189,16 @@ function printUsage(errormsg?: string): void {
     if (errormsg !== undefined) {
         log.error(`Error: ${errormsg}`);
     }
-    console.info('Usage: node . [flathub]');
-    console.info('  (no command)    Build a package for the current platform');
-    console.info('  flathub         Generate the files for a Flathub submission');
+    console.info('Usage: node . [flathub | flatpak-metadata <flavor> <out-dir>]');
+    console.info('  (no command)        Build a package for the current platform');
+    console.info('  flathub             Generate the files for a Flathub submission');
+    console.info(
+        '  flatpak-metadata    Generate the Flatpak metainfo and desktop files for <flavor> into',
+    );
+    console.info(
+        '                      <out-dir> (relative to the repository root). Works offline, used',
+    );
+    console.info('                      during the Flatpak build.');
     console.info('');
     console.info('Available environment variables (when building a package):');
     console.info('  TURBO_BUILD_ENVIRONMENT=live|onprem|sandbox    Required');
@@ -218,12 +225,15 @@ function main(args: string[]): void {
     };
 
     // Subcommands that do not build a package.
-    const [command] = args;
+    const [command, ...commandArgs] = args;
     switch (command) {
         case undefined:
             break;
         case 'flathub':
             generateFlathubFiles(dirs);
+            return;
+        case 'flatpak-metadata':
+            generateFlatpakMetadataCommand(dirs, commandArgs);
             return;
         default:
             printUsage(`Unknown command: ${command}`);
@@ -254,15 +264,7 @@ function main(args: string[]): void {
         fail(`Invalid build flavor configuration: ${flavor}`);
     }
 
-    let appName: string | undefined = 'Threema';
-    if (flavor === 'custom-onprem') {
-        const currentConfigOrError = readCustomConfig();
-        if (currentConfigOrError instanceof Error) {
-            fail(`Failed to process \`custom-onprem\` config: ${currentConfigOrError.message}`);
-        }
-
-        appName = currentConfigOrError.appName;
-    }
+    const appName = determineBaseAppName(flavor);
 
     switch (process.platform) {
         case 'darwin':
@@ -287,6 +289,21 @@ function main(args: string[]): void {
     }
 
     cleanup(dirs);
+}
+
+/**
+ * Determine the base app name of the given {@link flavor}, i.e. "Threema", or the app name from
+ * the custom config for the `custom-onprem` flavor.
+ */
+function determineBaseAppName(flavor: BuildFlavor): string {
+    if (flavor !== 'custom-onprem') {
+        return 'Threema';
+    }
+    const currentConfigOrError = readCustomConfig();
+    if (currentConfigOrError instanceof Error) {
+        fail(`Failed to process \`custom-onprem\` config: ${currentConfigOrError.message}`);
+    }
+    return currentConfigOrError.appName;
 }
 
 /**
@@ -931,6 +948,8 @@ function generateFlatpakMetadata(
     outDir: string,
     appId: string,
     displayName: string,
+    flavor: BuildFlavor,
+    gitTag: string,
 ): {readonly metainfoFilename: string; readonly desktopFilename: string} {
     const metadataDir = path.join(dirs.packageRoot, 'packaging', 'metadata');
     const metainfoFilename = `${appId}.metainfo.xml`;
@@ -963,6 +982,47 @@ function generateFlatpakMetadata(
     fs.writeFileSync(path.join(outDir, desktopFilename), desktop, {encoding: 'utf8'});
 
     return {metainfoFilename, desktopFilename};
+}
+
+/**
+ * Git tag of the current version (`v<version>` from `apps/desktop/package.json`), which Flathub
+ * builds are based on and the screenshot URLs point to.
+ */
+function releaseGitTag(dirs: Directories): string {
+    return `v${readPackageJson(dirs).version}`;
+}
+
+/**
+ * Handle the `flatpak-metadata <flavor> <out-dir>` subcommand, which generates the
+ * metainfo and desktop files for the given flavor (see {@link generateFlatpakMetadata}).
+ *
+ * This runs inside the Flatpak build sandbox (see `packaging/flatpak/manifest-template.yml`), so it
+ * must not require network access, git or any other tools that are not available there.
+ */
+function generateFlatpakMetadataCommand(dirs: Directories, args: readonly string[]): void {
+    const [flavor, outDir] = args;
+    if (args.length !== 2 || flavor === undefined || outDir === undefined) {
+        printUsage('flatpak-metadata requires exactly the arguments <flavor> and <out-dir>');
+        process.exit(1);
+    }
+    if (!isBuildFlavor(flavor)) {
+        printUsage(`Invalid build flavor: ${flavor}`);
+        process.exit(1);
+    }
+
+    const appName = determineBaseAppName(flavor);
+    const appId = determineAppRdn(flavor, appName);
+    const resolvedOutDir = path.resolve(dirs.monorepoRoot, outDir);
+    log.major(`Generating Flatpak metadata files for ${appId} in ${resolvedOutDir}`);
+    ensureDirSync(resolvedOutDir);
+    generateFlatpakMetadata(
+        dirs,
+        resolvedOutDir,
+        appId,
+        determineAppName(flavor, appName),
+        flavor,
+        releaseGitTag(dirs),
+    );
 }
 
 /**
@@ -1067,11 +1127,13 @@ function generateFlatpakSources(dirs: Directories): void {
 }
 
 /**
- * Generate the files required for a Flathub submission (manifest, metadata including the
- * screenshots of the flavor, generated sources and run wrapper) into `packaging/flatpak/flathub/<flavor>/`, for all flavors
- * published on Flathub.
+ * Generate the files required for a Flathub submission (manifest, generated sources and run
+ * wrapper) into `packaging/flatpak/flathub/<flavor>/`, for all flavors published on Flathub.
  *
- * The manifests fetch the project source from GitHub at the tag of the current version.
+ * The manifests fetch the project source from GitHub at the tag of the current version. The
+ * metainfo and desktop files are not part of the
+ * submission, they are generated during the build from the project source (see
+ * {@link generateFlatpakMetadataCommand}).
  *
  * Note: This does not build the Flatpak, that is done by Flathub itself.
  *
@@ -1098,19 +1160,14 @@ function generateFlathubFiles(dirs: Directories): void {
                 /^generated-.*-sources\.json$/u.test(filename) || filename === 'run-wrapper.sh',
         );
 
-    const appName = 'Threema';
-    const gitTag = `v${readPackageJson(dirs).version}`;
+    const gitTag = releaseGitTag(dirs);
     for (const flavor of FLATHUB_FLAVORS) {
-        const appId = determineAppRdn(flavor, appName);
+        const appId = determineAppRdn(flavor, determineBaseAppName(flavor));
         const flathubDir = path.join(flathubRootDir, flavor);
         log.minor(`Generating Flathub files for ${appId} in ${flathubDir}`);
         ensureDirSync(flathubDir);
 
         generateFlatpakManifest(dirs, flathubDir, appId, flavor, FLATPAK_RUNTIME_VERSION, gitTag);
-        generateFlatpakMetadata(dirs, flathubDir, appId, determineAppName(flavor, appName), {
-            flavor,
-            gitTag,
-        });
         for (const filename of sharedFiles) {
             fs.copyFileSync(path.join(flatpakDir, filename), path.join(flathubDir, filename));
         }
@@ -1170,10 +1227,6 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
         FLATPAK_RUNTIME_VERSION,
         undefined,
     );
-
-    // Generate metadata files (referenced as sources in the manifest)
-    log.minor('Generating metadata files');
-    generateFlatpakMetadata(dirs, flatpakDir, appId, determineAppName(flavor, appName), undefined);
 
     // Run flatpak source generators
     generateFlatpakSources(dirs);

@@ -45,6 +45,17 @@ To run:
 
     flatpak run ch.threema.threema-desktop
 
+## Metainfo and Desktop Files
+
+The metainfo and desktop files are not part of the manifest sources. They are generated during the
+Flatpak build from the templates in `../metadata/` by the `flatpak-metadata` subcommand of the
+packaging script, which works offline:
+
+    pnpm --filter ./apps/desktop run generate:flatpak-metadata <flavor> <out-dir>
+
+This way, the generated manifest for Flathub only references the project source, and the metadata
+always matches the tagged release.
+
 ## Flathub
 
 To generate the files required for a Flathub submission for all flavors published on Flathub, run

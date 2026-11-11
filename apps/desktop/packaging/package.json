@@ -5,6 +5,7 @@
   "sideEffects": false,
   "scripts": {
     "generate:flathub": "tsc -p ./tsconfig.json && node . flathub",
+    "generate:flatpak-metadata": "tsc -p ./tsconfig.json && node . flatpak-metadata",
     "package": "tsc -p ./tsconfig.json && node ."
   }
 }

@@ -34,6 +34,7 @@
     "dist": "node tools/dist-electron.mjs",
     "generate:custom-builds": "node tools/generate-custom-builds.mjs",
     "generate:flathub": "pnpm --prefix ./packaging run generate:flathub",
+    "generate:flatpak-metadata": "pnpm --prefix ./packaging run generate:flatpak-metadata",
     "generate:icons:flatpak": "tools/generate-icons-flatpak.sh",
     "generate:icons:macos": "tools/generate-icons-macos.sh",
     "generate:icons:macos:custom": "tools/generate-icons-macos-custom.sh",
