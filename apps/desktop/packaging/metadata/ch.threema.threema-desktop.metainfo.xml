@@ -15,30 +15,32 @@
             encrypted mobile messenger hosted and developed in Switzerland.
         </p>
     </description>
+    <!-- Screenshots are only included for flavors with a directory in `packaging/flatpak/screenshots/`.
+    The packaging script replaces the base URL with that directory on GitHub at the release tag. -->
     <!-- The environment attribute of screenshots have to match the following cases: -->
     <!-- https://github.com/ximion/appstream/blob/d8d39685bdc36f416f74e14064d44997056271a9/src/as-desktop-env-data.h#L75-L76 -->
     <screenshots>
         <screenshot type="default" environment="gnome:dark">
             <image type="source" width="1280" height="693">
-                https://releases.threema.ch/flatpak/threema-desktop/screenshot-1.jpg
+                {{screenshots-base-url}}/screenshot-1.jpg
             </image>
             <caption>Group chat in dark mode</caption>
         </screenshot>
-        <screenshot type="default" environment="gnome">
+        <screenshot environment="gnome">
             <image type="source" width="1280" height="693">
-                https://releases.threema.ch/flatpak/threema-desktop/screenshot-2.jpg
+                {{screenshots-base-url}}/screenshot-2.jpg
             </image>
             <caption>Group chat in light mode</caption>
         </screenshot>
         <screenshot environment="gnome:dark">
             <image type="source" width="1280" height="693">
-                https://releases.threema.ch/flatpak/threema-desktop/screenshot-3.jpg
+                {{screenshots-base-url}}/screenshot-3.jpg
             </image>
             <caption>Appearance settings in dark mode</caption>
         </screenshot>
-        <screenshot type="default" environment="gnome">
+        <screenshot environment="gnome">
             <image type="source" width="1280" height="693">
-                https://releases.threema.ch/flatpak/threema-desktop/screenshot-4.jpg
+                {{screenshots-base-url}}/screenshot-4.jpg
             </image>
             <caption>Appearance settings in light mode</caption>
         </screenshot>

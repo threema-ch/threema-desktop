@@ -1065,8 +1065,6 @@ validate:rust-versions-in-sync:
         cat $FREF
         echo "---"
       done
-    # Copy screenshot(s).
-    - cp apps/desktop/packaging/flatpak/screenshot-* apps/desktop/packaging/flatpak/repo/
     # Dump gpg public key.
     - gpg --export --armor $GPG_ID > apps/desktop/packaging/flatpak/repo/signkey.pub
     # Sync to server.

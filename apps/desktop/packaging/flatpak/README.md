@@ -57,6 +57,17 @@ the tag of the current version (`v<version>` from `apps/desktop/package.json`), 
 already have been pushed to GitHub. The source generators need the Python packages `aiohttp`,
 `tomlkit` and `yaml`.
 
+### Screenshots
+
+Screenshots are included in the metainfo of every flavor that has a `screenshots/<flavor>/`
+directory, for both local and Flathub builds. The `<screenshots>` element is defined once in the
+metainfo template (`../metadata/`), and the images live in `screenshots/<flavor>/` with the same
+filenames for every flavor. The packaging script replaces the base URL of the images with the
+flavor's directory on GitHub at the release tag, so the screenshots must be committed before the tag
+is created. Flathub mirrors the images to its own servers during the build (see the
+`--mirror-screenshots-url` option of `flatpak-builder`), so we don't need to host them ourselves.
+Flavors without a screenshots directory get no screenshots.
+
 ## Flatpak Node Generator
 
 The `flatpak-builder-tools/flatpak_node_generator` directory is vendored unchanged from
