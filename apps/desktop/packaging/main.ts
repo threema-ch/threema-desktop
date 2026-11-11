@@ -858,14 +858,89 @@ function generateFlatpakManifest(
 }
 
 /**
+ * Base URL of raw files in the GitHub repository of the project (see {@link GITHUB_URL}).
+ */
+const GITHUB_RAW_BASE_URL = 'https://raw.githubusercontent.com/threema-ch/threema-desktop';
+
+/**
+ * Placeholder for the base URL of the screenshots in the metainfo template.
+ */
+const METAINFO_SCREENSHOTS_BASE_URL_PLACEHOLDER = '{{screenshots-base-url}}';
+
+/**
+ * Flavor whose screenshots are used for flavors without their own screenshots directory. This
+ * flavor must always have screenshots.
+ */
+const FLATPAK_SCREENSHOTS_FALLBACK_FLAVOR = 'consumer-live' satisfies BuildFlavor;
+
+/**
+ * Directory of the Flatpak screenshots of the given {@link flavor}.
+ */
+function flatpakScreenshotsDir(dirs: Directories, flavor: BuildFlavor): string {
+    return path.join(dirs.packageRoot, 'packaging', 'flatpak', 'screenshots', flavor);
+}
+
+/**
+ * Point the screenshots in the {@link metainfo} to the directory of the given {@link flavor} in
+ * `packaging/flatpak/screenshots/` on GitHub at {@link gitTag}, so that the URLs are stable. If the
+ * flavor has no screenshots directory, the screenshots of
+ * {@link FLATPAK_SCREENSHOTS_FALLBACK_FLAVOR} are used instead.
+ *
+ * Flathub mirrors the images during the build (see `--mirror-screenshots-url` of
+ * `flatpak-builder`), so they only need to be reachable at build time.
+ */
+function replaceFlatpakScreenshotsBaseUrl(
+    dirs: Directories,
+    metainfo: string,
+    flavor: BuildFlavor,
+    gitTag: string,
+): string {
+    let screenshotsFlavor: BuildFlavor = flavor;
+    if (!fs.existsSync(flatpakScreenshotsDir(dirs, flavor))) {
+        log.warning(
+            `No screenshots for flavor ${flavor}, falling back to ${FLATPAK_SCREENSHOTS_FALLBACK_FLAVOR}`,
+        );
+        screenshotsFlavor = FLATPAK_SCREENSHOTS_FALLBACK_FLAVOR;
+    }
+    const screenshotsDir = flatpakScreenshotsDir(dirs, screenshotsFlavor);
+
+    // Ensure that all referenced images exist, because Flathub fails to fetch missing images.
+    for (const reference of metainfo
+        .split(`${METAINFO_SCREENSHOTS_BASE_URL_PLACEHOLDER}/`)
+        .slice(1)) {
+        const filename = reference.slice(0, reference.indexOf('<')).trim();
+        if (!fs.existsSync(path.join(screenshotsDir, filename))) {
+            fail(
+                `Screenshot "${filename}" of flavor ${screenshotsFlavor} does not exist in ${screenshotsDir}`,
+            );
+        }
+    }
+
+    const relativeDir = path
+        .relative(dirs.monorepoRoot, screenshotsDir)
+        .split(path.sep)
+        .join(path.posix.sep);
+    return replaceAllOrFail(
+        metainfo,
+        METAINFO_SCREENSHOTS_BASE_URL_PLACEHOLDER,
+        `${GITHUB_RAW_BASE_URL}/${gitTag}/${relativeDir}`,
+    );
+}
+
+/**
  * Generate the AppStream metainfo and the desktop entry file for the given app ID from the
  * templates in `packaging/metadata/`, and write them into {@link outDir}.
+ *
+ * The metainfo always contains screenshots, pointing to {@link gitTag} on GitHub. They are taken
+ * from `packaging/flatpak/screenshots/<flavor>/`, or from the directory of
+ * {@link FLATPAK_SCREENSHOTS_FALLBACK_FLAVOR} if the given {@link flavor} has no screenshots.
  */
 function generateFlatpakMetadata(
     dirs: Directories,
     outDir: string,
     appId: string,
     displayName: string,
+    {flavor, gitTag}: {readonly flavor: BuildFlavor; readonly gitTag: string},
 ): {readonly metainfoFilename: string; readonly desktopFilename: string} {
     const metadataDir = path.join(dirs.packageRoot, 'packaging', 'metadata');
     const metainfoFilename = `${appId}.metainfo.xml`;
@@ -877,6 +952,7 @@ function generateFlatpakMetadata(
     );
     metainfo = replaceAllOrFail(metainfo, METADATA_TEMPLATE_APP_ID, appId);
     metainfo = replaceAllOrFail(metainfo, '<name>Threema</name>', `<name>${displayName}</name>`);
+    metainfo = replaceFlatpakScreenshotsBaseUrl(dirs, metainfo, flavor, gitTag);
     fs.writeFileSync(path.join(outDir, metainfoFilename), metainfo, {encoding: 'utf8'});
 
     let desktop = fs.readFileSync(path.join(metadataDir, `${METADATA_TEMPLATE_APP_ID}.desktop`), {
@@ -992,8 +1068,8 @@ function generateFlatpakSources(dirs: Directories): void {
 }
 
 /**
- * Generate the files required for a Flathub submission (manifest, metadata, generated sources,
- * screenshots and run wrapper) into `packaging/flatpak/flathub/<flavor>/`, for all flavors
+ * Generate the files required for a Flathub submission (manifest, metadata including the
+ * screenshots of the flavor, generated sources and run wrapper) into `packaging/flatpak/flathub/<flavor>/`, for all flavors
  * published on Flathub.
  *
  * The manifests fetch the project source from GitHub at the tag of the current version.
@@ -1020,9 +1096,7 @@ function generateFlathubFiles(dirs: Directories): void {
         .readdirSync(flatpakDir)
         .filter(
             (filename) =>
-                /^screenshot-.*\.jpg$/u.test(filename) ||
-                /^generated-.*-sources\.json$/u.test(filename) ||
-                filename === 'run-wrapper.sh',
+                /^generated-.*-sources\.json$/u.test(filename) || filename === 'run-wrapper.sh',
         );
 
     const appName = 'Threema';
@@ -1034,7 +1108,10 @@ function generateFlathubFiles(dirs: Directories): void {
         ensureDirSync(flathubDir);
 
         generateFlatpakManifest(dirs, flathubDir, appId, flavor, FLATPAK_RUNTIME_VERSION, gitTag);
-        generateFlatpakMetadata(dirs, flathubDir, appId, determineAppName(flavor, appName));
+        generateFlatpakMetadata(dirs, flathubDir, appId, determineAppName(flavor, appName), {
+            flavor,
+            gitTag,
+        });
         for (const filename of sharedFiles) {
             fs.copyFileSync(path.join(flatpakDir, filename), path.join(flathubDir, filename));
         }
@@ -1097,7 +1174,10 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
 
     // Generate metadata files (referenced as sources in the manifest)
     log.minor('Generating metadata files');
-    generateFlatpakMetadata(dirs, flatpakDir, appId, determineAppName(flavor, appName));
+    generateFlatpakMetadata(dirs, flatpakDir, appId, determineAppName(flavor, appName), {
+        flavor,
+        gitTag: `v${readPackageJson(dirs).version}`,
+    });
 
     // Run flatpak source generators
     generateFlatpakSources(dirs);

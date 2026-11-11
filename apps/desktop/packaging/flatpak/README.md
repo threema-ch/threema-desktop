@@ -57,6 +57,11 @@ the tag of the current version (`v<version>` from `apps/desktop/package.json`), 
 already have been pushed to GitHub. The source generators need the Python packages `aiohttp`,
 `tomlkit` and `yaml`.
 
+### Screenshots
+
+Flavors without a `screenshots/<flavor>/` directory fall back to the screenshots of `consumer-live`,
+which must therefore always exist.
+
 ## Flatpak Node Generator
 
 The `flatpak-builder-tools/flatpak_node_generator` directory is vendored unchanged from
