@@ -827,28 +827,51 @@ diff:translations:
         echo -e "\e[32mNo changes detected after running 'pnpm run generate:desktop:translations'\e[0m"
       fi
 
-validate:desktop:flatpak:metainfo:
+# Generate the Flatpak metainfo and the Flathub manifest of the `consumer-live` flavor, which are
+# linted by the `validate:desktop:flatpak:*` jobs below.
+generate:desktop:flatpak:lint-inputs:
   stage: test
   needs: []
+  <<: *linux_nodejs_config
+  artifacts:
+    expire_in: 1d
+    paths:
+      - build/flatpak-metadata/
+      - apps/desktop/packaging/flatpak/flathub/consumer-live/
   before_script:
-    - apt-get update && apt-get install -y appstream-util
+    - set -euo pipefail
+    # Python packages required by the Flatpak source generators.
+    - apt-get update && apt-get install -y python3-aiohttp python3-tomlkit python3-yaml
+    - *linux_nodejs_before_script
   script:
     - set -euo pipefail
-    - |
-      G_DEBUG=fatal-criticals
-      SUCCESS_VALIDATE=1
-      appstream-util validate apps/desktop/packaging/metadata/ch.threema.threema-desktop.metainfo.xml || SUCCESS_VALIDATE=0
-      if [[ "$SUCCESS_VALIDATE" -ne 1 ]]; then
-        # If regular validation failed, validate with "validate-relax". If that
-        # succeeds, mark the build as "successful with warnings" (though the
-        # custom exit code).
-        echo "Validation with 'validate' failed. Retrying with 'validate-relax'."
-        appstream-util validate-relax apps/desktop/packaging/metadata/ch.threema.threema-desktop.metainfo.xml
-        exit 123
-      fi
-  allow_failure:
-    exit_codes:
-      - 123
+    - bash scripts/run-with-retry.sh --retries 3 --delay 15 -- pnpm ci
+    # The packaging script imports `@threema/ts-utils`, which must be built first.
+    - pnpm exec turbo run build --filter=@threema/ts-utils
+    # Generate the metainfo for the `consumer-live` flavor from the template.
+    - pnpm --filter ./apps/desktop run generate:flatpak-metadata consumer-live build/flatpak-metadata
+    # Generate the Flathub manifests (including the generated sources they reference).
+    - pnpm run generate:desktop:flathub
+
+# Lint the generated metainfo with the Flathub linter (wraps `appstreamcli validate`).
+validate:desktop:flatpak:metainfo:
+  stage: test
+  needs: [generate:desktop:flatpak:lint-inputs]
+  image:
+    name: ghcr.io/flathub-infra/flatpak-builder-lint:latest
+    entrypoint: ['']
+  script:
+    - flatpak-builder-lint appstream build/flatpak-metadata/ch.threema.threema-desktop.metainfo.xml
+
+# Lint the generated Flathub manifest with the Flathub linter.
+validate:desktop:flatpak:manifest:
+  stage: test
+  needs: [generate:desktop:flatpak:lint-inputs]
+  image:
+    name: ghcr.io/flathub-infra/flatpak-builder-lint:latest
+    entrypoint: ['']
+  script:
+    - flatpak-builder-lint manifest apps/desktop/packaging/flatpak/flathub/consumer-live/ch.threema.threema-desktop.yml
 
 validate:peer-dependencies-met:
   stage: test
