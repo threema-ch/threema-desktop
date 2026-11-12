@@ -16,18 +16,22 @@ import {
 
 const UPDATE_INFO_SCHEMA = v
     .object({
-        latestVersion: v
+        latestAvailableVersion: v
             .object({
                 version: v.string(),
                 versionCode: v.number(),
+                /**
+                 * Flag that allows us to control the displaying of the dialog more granualary
+                 */
+                windows10MigrationAvailable: v.boolean().optional(),
             })
             .rest(v.unknown()),
     })
     .rest(v.unknown());
 
 export type UpdateInfo = Pick<
-    v.Infer<typeof UPDATE_INFO_SCHEMA>['latestVersion'],
-    'version' | 'versionCode'
+    v.Infer<typeof UPDATE_INFO_SCHEMA>['latestAvailableVersion'],
+    'version' | 'versionCode' | 'windows10MigrationAvailable'
 >;
 
 export class Updater {
@@ -66,7 +70,13 @@ export class Updater {
             this._log.info(
                 `Update ${updateInfo.version} is available, but Windows 10 is no longer supported`,
             );
-            await this._services.systemDialog.open({type: 'windows-10-migration'});
+
+            // This check is necessary as we need a feature to delay the migration (e.g. if the new
+            // certificate arrives late).
+            if (updateInfo.windows10MigrationAvailable === true) {
+                await this._services.systemDialog.open({type: 'windows-10-migration'});
+            }
+
             return;
         }
 
@@ -208,7 +218,7 @@ export class Updater {
         let updateInfo: UpdateInfo;
         try {
             const data = (await response.json()) as unknown;
-            updateInfo = UPDATE_INFO_SCHEMA.parse(data).latestVersion;
+            updateInfo = UPDATE_INFO_SCHEMA.parse(data).latestAvailableVersion;
         } catch (error) {
             this._log.error(`Could not parse update info JSON: ${error}`);
             return undefined;
