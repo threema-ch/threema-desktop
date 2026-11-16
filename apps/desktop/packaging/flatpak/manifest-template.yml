@@ -72,6 +72,9 @@ modules:
       # Generate and install metadata.
       - pnpm --filter ./apps/desktop run generate:flatpak-metadata {{flavor}} build/flatpak-metadata
       - install -Dm644 build/flatpak-metadata/{{app-id}}.metainfo.xml /app/share/metainfo/{{app-id}}.metainfo.xml
+      # The metainfo references the releases with `<releases type="external" />`, which AppStream
+      # loads from `share/metainfo/releases/<app-id>.releases.xml`.
+      - install -Dm644 build/flatpak-metadata/releases/{{app-id}}.releases.xml /app/share/metainfo/releases/{{app-id}}.releases.xml
       - install -Dm644 build/flatpak-metadata/{{app-id}}.desktop /app/share/applications/{{app-id}}.desktop
       # Install Icons.
       - mkdir -p /app/share/icons/hicolor/{512x512,scalable}/apps/

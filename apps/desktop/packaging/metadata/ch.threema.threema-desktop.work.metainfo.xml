@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<component type="desktop-application">
+    <metadata_license>CC-BY-SA-3.0</metadata_license>
+    <id>ch.threema.threema-desktop</id>
+    <name>Threema</name>
+    <project_license>AGPL-3.0-or-later</project_license>
+    <summary>Private and secure messenger</summary>
+    <url type="homepage">https://threema.ch/</url>
+    <url type="help">https://threema.ch/support</url>
+    <url type="contact">https://threema.ch/en/request/default?i_have_read_the_faq=1</url>
+    <url type="vcs-browser">https://github.com/threema-ch/threema-desktop</url>
+    <description>
+        <p>
+            <em>
+                Before using Threema Work for desktop on your computer, you must install the Threema
+                Work app on your phone.
+            </em>
+        </p>
+        <p>
+            Threema Work is a highly secure, user-friendly, and GDPR-compliant communication
+            solution for business.
+        </p>
+        <p>
+            Whether team chats, voice or video calls, or files, everything is end-to-end
+            encrypted. Instead of phone numbers or email addresses, randomly generated Threema IDs
+            serve as unique identifiers, so that your company’s communication remains protected.
+        </p>
+    </description>
+    <!-- The packaging script replaces the base URL with the flavor's directory in
+    `packaging/flatpak/screenshots/` (or the `consumer-live` one as a fallback) on GitHub at the
+    release tag. -->
+    <!-- The environment attribute of screenshots have to match the following cases: -->
+    <!-- https://github.com/ximion/appstream/blob/d8d39685bdc36f416f74e14064d44997056271a9/src/as-desktop-env-data.h#L75-L76 -->
+    <screenshots>
+        <screenshot type="default" environment="gnome:dark">
+            <image type="source" width="1280" height="693">
+                {{screenshots-base-url}}/screenshot-1.jpg
+            </image>
+            <caption>Group chat in dark mode</caption>
+        </screenshot>
+        <screenshot environment="gnome">
+            <image type="source" width="1280" height="693">
+                {{screenshots-base-url}}/screenshot-2.jpg
+            </image>
+            <caption>Group chat in light mode</caption>
+        </screenshot>
+        <screenshot environment="gnome:dark">
+            <image type="source" width="1280" height="693">
+                {{screenshots-base-url}}/screenshot-3.jpg
+            </image>
+            <caption>Appearance settings in dark mode</caption>
+        </screenshot>
+        <screenshot environment="gnome">
+            <image type="source" width="1280" height="693">
+                {{screenshots-base-url}}/screenshot-4.jpg
+            </image>
+            <caption>Appearance settings in light mode</caption>
+        </screenshot>
+    </screenshots>
+    <developer id="ch.threema">
+        <name translate="no">Threema AG</name>
+    </developer>
+
+    <!-- The releases are maintained in `ch.threema.threema-desktop.releases.xml`, which is shared
+    by all build variants. -->
+    <releases type="external" />
+    <branding>
+        <color type="primary" scheme_preference="light">#a4e6ff</color>
+        <color type="primary" scheme_preference="dark">#002e63</color>
+    </branding>
+    <requires>
+        <display_length compare="ge">768</display_length>
+    </requires>
+    <supports>
+        <control>keyboard</control>
+        <control>pointing</control>
+    </supports>
+    <launchable type="desktop-id">ch.threema.threema-desktop.desktop</launchable>
+    <content_rating type="oars-1.1">
+        <content_attribute id="social-chat">intense</content_attribute>
+        <content_attribute id="social-audio">intense</content_attribute>
+    </content_rating>
+    <update_contact>help_AT_threema.ch</update_contact>
+</component>

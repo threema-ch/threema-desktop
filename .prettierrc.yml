@@ -37,7 +37,7 @@ overrides:
     options:
       # Preserve long lines that contain commands for readability.
       proseWrap: preserve
-  - files: '*.metainfo.xml'
+  - files: ['*.metainfo.xml', '*.releases.xml']
     options:
       # Note: Only enable this for files that are whitespace-insensitive.
       xmlWhitespaceSensitivity: ignore

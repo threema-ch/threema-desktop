@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# Insert a nightly release entry into an AppStream metainfo file (in place).
+# Insert a nightly release entry into an AppStream metainfo or releases file (in place).
 #
-# The base version is read from the metainfo file itself, because per the AppStream spec its first
+# The base version is read from the file itself, because per the AppStream spec its first
 # `<release>` entry is the current version. It is deliberately not read from `package.json`, which
 # uses a different version scheme (e.g. `2.0-beta66` instead of `2.0~publicbeta66`).
 #
@@ -11,10 +11,10 @@
 set -euo pipefail
 
 function print_usage() {
-    echo "Usage: $0 <metainfo-file> [--revision <revision>] [--date <date>]"
+    echo "Usage: $0 <appstream-file> [--revision <revision>] [--date <date>]"
     echo ""
     echo "Arguments:"
-    echo "  <metainfo-file>    Path to the AppStream metainfo file to patch"
+    echo "  <appstream-file>    Path to the AppStream metainfo or releases file to patch"
     echo ""
     echo "Options:"
     echo "  --revision         Revision to tag the entry with. Defaults to the short git revision"
@@ -46,7 +46,7 @@ while [[ "$#" -gt 0 ]]; do
     esac
     shift
 done
-if [ "$metainfo" = "" ]; then echo "Error: Missing <metainfo-file> argument"; echo ""; print_usage; exit 1; fi
+if [ "$metainfo" = "" ]; then echo "Error: Missing <appstream-file> argument"; echo ""; print_usage; exit 1; fi
 if [ ! -f "$metainfo" ]; then echo "Error: File not found: $metainfo"; exit 1; fi
 if [ "$date" = "" ]; then date="$(date +%Y-%m-%d)"; fi
 if ! [[ "$date" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then

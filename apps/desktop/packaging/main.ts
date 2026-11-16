@@ -945,8 +945,34 @@ function replaceFlatpakScreenshotsBaseUrl(
 }
 
 /**
- * Generate the AppStream metainfo and the desktop entry file for the given app ID from the
- * templates in `packaging/metadata/`, and write them into {@link outDir}.
+ * Determine the build variant whose metainfo template (and thus store listing text) is used for the
+ * given {@link flavor}. Custom builds are on-premises builds based on Threema Work, so they use the
+ * Work template.
+ */
+function determineMetainfoVariant(flavor: BuildFlavor): 'consumer' | 'work' {
+    switch (flavor) {
+        case 'consumer-live':
+        case 'consumer-sandbox':
+            return 'consumer';
+        case 'work-live':
+        case 'work-sandbox':
+        case 'work-onprem':
+        case 'custom-onprem':
+            return 'work';
+        default:
+            return unreachable(flavor);
+    }
+}
+
+/**
+ * Generate the AppStream metainfo, the AppStream releases and the desktop entry file for the given
+ * app ID from the templates in `packaging/metadata/`, and write them into {@link outDir}.
+ *
+ * The metainfo template is chosen by the build variant of the {@link flavor} (see
+ * {@link determineMetainfoVariant}), while the releases are shared by all variants. The metainfo
+ * references them with `<releases type="external" />`, so the releases file is written to
+ * `releases/<app-id>.releases.xml`, mirroring the layout of the install location
+ * (`share/metainfo/`).
  *
  * The metainfo always contains screenshots, pointing to the release tag on GitHub (see
  * {@link releaseGitTag}). They are taken from `packaging/flatpak/screenshots/<flavor>/`, or from
@@ -959,19 +985,37 @@ function generateFlatpakMetadata(
     appId: string,
     displayName: string,
     flavor: BuildFlavor,
-): {readonly metainfoFilename: string; readonly desktopFilename: string} {
+): {
+    readonly metainfoFilename: string;
+    readonly releasesFilename: string;
+    readonly desktopFilename: string;
+} {
     const metadataDir = path.join(dirs.packageRoot, 'packaging', 'metadata');
     const metainfoFilename = `${appId}.metainfo.xml`;
+    const releasesFilename = path.posix.join('releases', `${appId}.releases.xml`);
     const desktopFilename = `${appId}.desktop`;
 
     let metainfo = fs.readFileSync(
-        path.join(metadataDir, `${METADATA_TEMPLATE_APP_ID}.metainfo.xml`),
+        path.join(
+            metadataDir,
+            `${METADATA_TEMPLATE_APP_ID}.${determineMetainfoVariant(flavor)}.metainfo.xml`,
+        ),
         {encoding: 'utf8'},
     );
+    if (!metainfo.includes('<releases type="external" />')) {
+        fail('The metainfo template must reference the shared releases file');
+    }
     metainfo = replaceAllOrFail(metainfo, METADATA_TEMPLATE_APP_ID, appId);
     metainfo = replaceAllOrFail(metainfo, '<name>Threema</name>', `<name>${displayName}</name>`);
     metainfo = replaceFlatpakScreenshotsBaseUrl(dirs, metainfo, flavor, releaseGitTag(dirs));
     fs.writeFileSync(path.join(outDir, metainfoFilename), metainfo, {encoding: 'utf8'});
+
+    // The releases are identical for all variants and app IDs, so they are copied unchanged.
+    ensureDirSync(path.join(outDir, path.dirname(releasesFilename)));
+    fs.copyFileSync(
+        path.join(metadataDir, `${METADATA_TEMPLATE_APP_ID}.releases.xml`),
+        path.join(outDir, releasesFilename),
+    );
 
     let desktop = fs.readFileSync(path.join(metadataDir, `${METADATA_TEMPLATE_APP_ID}.desktop`), {
         encoding: 'utf8',
@@ -981,7 +1025,7 @@ function generateFlatpakMetadata(
     desktop = replaceAllOrFail(desktop, 'StartupWMClass=Threema', `StartupWMClass=${displayName}`);
     fs.writeFileSync(path.join(outDir, desktopFilename), desktop, {encoding: 'utf8'});
 
-    return {metainfoFilename, desktopFilename};
+    return {metainfoFilename, releasesFilename, desktopFilename};
 }
 
 /**

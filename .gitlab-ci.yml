@@ -827,7 +827,7 @@ diff:translations:
         echo -e "\e[32mNo changes detected after running 'pnpm run generate:desktop:translations'\e[0m"
       fi
 
-# Generate the Flatpak metainfo and the Flathub manifest of the `consumer-live` flavor, which are
+# Generate the Flatpak metainfo and the Flathub manifests of the Flathub flavors, which are
 # linted by the `validate:desktop:flatpak:*` jobs below.
 generate:desktop:flatpak:lint-inputs:
   stage: test
@@ -848,12 +848,14 @@ generate:desktop:flatpak:lint-inputs:
     - bash scripts/run-with-retry.sh --retries 3 --delay 15 -- pnpm ci
     # The packaging script imports `@threema/ts-utils`, which must be built first.
     - pnpm exec turbo run build --filter=@threema/ts-utils
-    # Generate the metainfo for the `consumer-live` flavor from the template.
+    # Generate the metainfo for the `consumer-live` and `work-live` flavors from the templates.
     - pnpm --filter ./apps/desktop run generate:flatpak-metadata consumer-live build/flatpak-metadata
+    - pnpm --filter ./apps/desktop run generate:flatpak-metadata work-live build/flatpak-metadata
     # Generate the Flathub manifests (including the generated sources they reference).
     - pnpm run generate:desktop:flathub
 
-# Lint the generated metainfo with the Flathub linter (wraps `appstreamcli validate`).
+# Lint the generated metainfo with the Flathub linter (wraps `appstreamcli validate`). The external
+# releases are picked up from `releases/<app-id>.releases.xml` next to the metainfo.
 validate:desktop:flatpak:metainfo:
   stage: test
   needs: [generate:desktop:flatpak:lint-inputs]
@@ -862,6 +864,7 @@ validate:desktop:flatpak:metainfo:
     entrypoint: ['']
   script:
     - flatpak-builder-lint appstream build/flatpak-metadata/ch.threema.threema-desktop.metainfo.xml
+    - flatpak-builder-lint appstream build/flatpak-metadata/ch.threema.threema-work-desktop.metainfo.xml
 
 # Lint the generated Flathub manifest with the Flathub linter.
 validate:desktop:flatpak:manifest:
@@ -1022,7 +1025,7 @@ validate:rust-versions-in-sync:
     # in software centers.
     - |
       if [ "$BUILD_TYPE" = "nightly" ]; then
-        bash scripts/add-nightly-release-to-metainfo.sh apps/desktop/packaging/metadata/ch.threema.threema-desktop.metainfo.xml
+        bash scripts/add-nightly-release-to-metainfo.sh apps/desktop/packaging/metadata/ch.threema.threema-desktop.releases.xml
       fi
     # Split flavors.
     - IFS=',' read -ra flavors <<< "$FLAVORS"

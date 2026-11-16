@@ -56,6 +56,14 @@ packaging script, which works offline:
 This way, the generated manifest for Flathub only references the project source, and the metadata
 always matches the tagged release.
 
+There is one metainfo template per build variant
+(`ch.threema.threema-desktop.<variant>.metainfo.xml`, where custom builds use the `work` template),
+so that each variant can have its own summary and description. The release history is shared by all
+variants and lives in `ch.threema.threema-desktop.releases.xml`. The metainfo templates reference it
+with `<releases type="external" />`, and it is installed to
+`share/metainfo/releases/<app-id>.releases.xml`, where AppStream picks it up. New releases go into
+the releases file.
+
 ## Flathub
 
 To generate the files required for a Flathub submission for all flavors published on Flathub, run
