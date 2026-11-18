@@ -1036,7 +1036,7 @@ validate:rust-versions-in-sync:
       for flavor in "${flavors[@]}"; do
         pnpm run "package:desktop:$flavor"
       done
-    # Create `.flatpakref` files.
+    # Create `.flatpakref` files and, if `END_OF_LIFE` is set, mark the apps as end-of-life.
     - |
       for flavor in "${flavors[@]}"; do
         case "$flavor" in
@@ -1082,7 +1082,27 @@ validate:rust-versions-in-sync:
         echo "$FREF:"
         cat $FREF
         echo "---"
+
+        # Re-commit the app ref with an end-of-life marker, so that users of this (deprecated)
+        # repository are asked to switch to the Flathub package with the same app ID. Their app
+        # data is kept, because it is stored per app ID.
+        if [[ "${END_OF_LIFE:-false}" = "true" ]]; then
+          REF="app/${APPID}/$(flatpak --default-arch)/${BRANCH}"
+          EOL_REASON="This version of Threema is no longer updated. Threema is now available on Flathub. To switch and keep your data, run: flatpak install --reinstall flathub ${APPID}"
+          echo "Marking $REF as end-of-life"
+          flatpak build-commit-from \
+            --gpg-sign="$GPG_ID" \
+            --end-of-life="$EOL_REASON" \
+            --src-ref="$REF" \
+            --no-update-summary \
+            apps/desktop/packaging/flatpak/repo "$REF"
+        fi
       done
+      # Update the (signed) summary and appstream data once, so that clients see the end-of-life
+      # markers.
+      if [[ "${END_OF_LIFE:-false}" = "true" ]]; then
+        flatpak build-update-repo --gpg-sign="$GPG_ID" apps/desktop/packaging/flatpak/repo
+      fi
     # Dump gpg public key.
     - gpg --export --armor $GPG_ID > apps/desktop/packaging/flatpak/repo/signkey.pub
     # Sync to server.
@@ -1134,12 +1154,17 @@ package:desktop:flatpak:publish:internal:
 
 # Note: Public builds are also pushed to the internal fileserver, and are then published using a
 # separate script.
+#
+# Deprecated: The public flavors are now published on Flathub. Builds of this job are marked as
+# end-of-life (see `END_OF_LIFE`), pointing users to the Flathub package. Remove this job after the
+# final release.
 package:desktop:flatpak:publish:public:
   <<: *linux_flatpak_config
   rules:
     - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
   variables:
     <<: *linux_nodejs_variables
+    END_OF_LIFE: 'true'
     FLAVORS: consumer-live,work-live
     FTP_HOST: $FLATPAK_PUBLIC_FTP_HOST
     FTP_PASS: $FLATPAK_PUBLIC_FTP_PASS
