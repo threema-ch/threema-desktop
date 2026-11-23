@@ -31,6 +31,14 @@ RUN apt-get update \
     # Claude Code sandboxing.
     bubblewrap \
     socat \
+    # Flatpak packaging tools and dependencies.
+    elfutils \
+    flatpak \
+    flatpak-builder \
+    librsvg2-common \
+    python3-aiohttp \
+    python3-tomlkit \
+    python3-yaml \
     # Browsers for Karma tests.
     chromium \
     firefox-esr \
@@ -88,6 +96,8 @@ RUN apt-get update \
     swaybg \
     wayvnc \
     websockify \
+    # Useful tools.
+    shellcheck \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Locale setup.
@@ -130,6 +140,15 @@ RUN mkdir -p /code && chown node:node /code
 COPY --chown=node:node start.sh /home/node/start.sh
 RUN chmod +x /home/node/start.sh
 COPY --chown=node:node sway.conf /home/node/sway.conf
+
+# Make Flatpak and `flatpak-builder` work without granting the container additional privileges.
+COPY flatpak-bwrap /usr/local/libexec/flatpak-bwrap
+RUN chmod 755 /usr/local/libexec/flatpak-bwrap
+# Wraps bubblewrap to work around the masked `/proc` (see `flatpak-bwrap`).
+ENV FLATPAK_BWRAP=/usr/local/libexec/flatpak-bwrap
+# Skips Flatpak's parental controls check, which otherwise fails because the container has no D-Bus
+# system bus.
+ENV FLATPAK_SYSTEM_HELPER_ON_SESSION=1
 
 # Switch to non-root user.
 USER node

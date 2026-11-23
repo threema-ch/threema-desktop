@@ -1,0 +1,89 @@
+#!/bin/bash
+#
+# Bubblewrap wrapper that can be used to override `FLATPAK_BWRAP`, so that `flatpak-builder` can run
+# in the devcontainer without granting the container additional privileges.
+#
+# Note: Some of the options and flags we remove or change weaken the Flatpak build sandboxing, but
+# because the devcontainer is already a sandbox and is only used for development purposes, this is
+# acceptable. Do not use this in production.
+set -euo pipefail
+
+# Flatpak runs this script with an empty environment (no `PATH`), so we use an absolute path here.
+readonly BWRAP=/usr/bin/bwrap
+
+# Arguments that Flatpak passed to bubblewrap and that haven't been processed yet.
+remaining_args=("$@")
+# Arguments that will be passed to the real bubblewrap.
+rewritten_args=()
+
+# Process the bubblewrap options one by one, rewriting the ones that don't work in the devcontainer.
+index=0
+while ((index < ${#remaining_args[@]})); do
+    arg="${remaining_args[index]}"
+    case "${arg}" in
+        # End of the bubblewrap options. Everything after it is the command to run in the sandbox,
+        # which we pass on unchanged.
+        --)
+            rewritten_args+=("${remaining_args[@]:index}")
+            break
+            ;;
+
+        # Flatpak passes most options as NUL-separated strings through a file descriptor (i.e. the
+        # number of an already open file or pipe) via `--args <fd>`, instead of the command line. We
+        # read them and prepend them to `remaining_args`, so they are rewritten like all other
+        # options in the subsequent iteration(s).
+        --args)
+            args_fd="${remaining_args[index + 1]}"
+            # Note: `mapfile` keeps empty strings, which are valid values (e.g. `--setenv NAME ""`).
+            mapfile -d '' -t args_from_fd <&"${args_fd}"
+            # Close the file descriptor, as the real bubblewrap won't read from it.
+            exec {args_fd}<&-
+            # Prepend the args to `remaining_args`.
+            remaining_args=("${args_from_fd[@]}" "${remaining_args[@]:index+2}")
+            index=0
+            continue
+            ;;
+
+        # Mounting a new `/proc` fails in the devcontainer ("Operation not permitted"), because
+        # Docker hides parts of the container's `/proc` (e.g. `/proc/kcore`), and the kernel only
+        # allows the mount if all of it is visible. Instead, we mount the container's existing
+        # `/proc` read-only.
+        --proc)
+            rewritten_args+=(--ro-bind /proc "${remaining_args[index + 1]}")
+            index=$((index + 2))
+            continue
+            ;;
+
+        # `--unshare-pid` would give the sandbox its own process IDs, which wouldn't match the
+        # container's process IDs in the `/proc` mounted above. Keep the container's process IDs.
+        # This allows the build sandbox to see and send signals to the container's processes.
+        --unshare-pid) ;;
+
+        # When a sandboxed app spawns a process in a new sandbox via Flatpak's portal, Flatpak asks
+        # bubblewrap to join the app's process namespace via `--pidns <fd>`. Because we remove
+        # `--unshare-pid` above, that is always the container's own namespace (which the new sandbox
+        # is already in), and joining it from inside the app's user namespace would fail. Therefore,
+        # we skip it and close the file descriptor.
+        --pidns)
+            pidns_fd="${remaining_args[index + 1]}"
+            exec {pidns_fd}<&-
+            index=$((index + 2))
+            continue
+            ;;
+
+        # These flags instruct bubblewrap to ensure that the subprocess can't create further user
+        # namespaces, see: https://manpages.debian.org/testing/bubblewrap/bwrap.1.en.html. This
+        # requires a writable `/proc/sys/user/max_user_namespaces`, which the read-only `/proc`
+        # can't provide, so we need to remove these flags. Flatpak's seccomp filter still blocks
+        # creating user namespaces in the sandbox anyway.
+        --disable-userns | --assert-userns-disabled) ;;
+
+        # Pass on all other options and their values unchanged.
+        *)
+            rewritten_args+=("${arg}")
+            ;;
+    esac
+    index=$((index + 1))
+done
+
+exec "${BWRAP}" "${rewritten_args[@]}"

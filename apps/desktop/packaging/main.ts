@@ -1315,6 +1315,12 @@ function buildFlatpaks(dirs: Directories, appName: string, flavor: BuildFlavor):
     // Build
     log.minor('Build Flatpak into local repo');
     const buildArgs = ['--force-clean', '--ccache'];
+    if (!fs.existsSync('/dev/fuse')) {
+        // `flatpak-builder` mounts the build directory with `rofiles-fuse` by default, which fails
+        // without FUSE (e.g. in the devcontainer). Without it, the cache is checked out by copying.
+        log.warning('/dev/fuse is not available, building without rofiles-fuse');
+        buildArgs.push('--disable-rofiles-fuse');
+    }
     let repoPath = (process.env.THREEMADESKTOP_FLATPAK_REPO_PATH ?? '').trim();
     if (repoPath === '') {
         // Fallback to default path
