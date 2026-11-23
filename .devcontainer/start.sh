@@ -52,6 +52,20 @@ append_to_file_with_marker() {
     fi
 }
 
+# Start the D-Bus session and system buses (addresses are set in `devcontainer.json`), unless they
+# are already running. The session bus is required by Flatpak apps. The system bus doesn't provide
+# any services (see `dbus-system.conf`).
+if ! dbus-send --session --dest=org.freedesktop.DBus --print-reply /org/freedesktop/DBus \
+    org.freedesktop.DBus.GetId &>/dev/null; then
+    echo "Starting D-Bus session bus..."
+    dbus-daemon --session --address="${DBUS_SESSION_BUS_ADDRESS}" --fork
+fi
+if ! dbus-send --system --dest=org.freedesktop.DBus --print-reply /org/freedesktop/DBus \
+    org.freedesktop.DBus.GetId &>/dev/null; then
+    echo "Starting D-Bus system bus..."
+    dbus-daemon --config-file="$HOME/dbus-system.conf" --address="${DBUS_SYSTEM_BUS_ADDRESS}" --fork
+fi
+
 # Set up sway + VNC server if the host doesn't support Wayland.
 if [ -f "/tmp/no-wayland" ]; then
     echo "Setting up compositor..."
@@ -115,6 +129,9 @@ else
     append_to_file_with_marker "$HOME/.bashrc" "entrypoint-display-config" "\
 export XDG_SESSION_TYPE=\"wayland\""
 fi
+
+# Make the display available to services started by D-Bus.
+dbus-update-activation-environment WAYLAND_DISPLAY XDG_SESSION_TYPE
 
 # NVM
 export NVM_DIR="$HOME/.nvm"

@@ -31,6 +31,10 @@ RUN apt-get update \
     # Claude Code sandboxing.
     bubblewrap \
     socat \
+    # D-Bus session and system buses (started by `start.sh`).
+    dbus-bin \
+    dbus-daemon \
+    dbus-session-bus-common \
     # Flatpak packaging tools and dependencies.
     elfutils \
     flatpak \
@@ -140,15 +144,13 @@ RUN mkdir -p /code && chown node:node /code
 COPY --chown=node:node start.sh /home/node/start.sh
 RUN chmod +x /home/node/start.sh
 COPY --chown=node:node sway.conf /home/node/sway.conf
+COPY --chown=node:node dbus-system.conf /home/node/dbus-system.conf
 
 # Make Flatpak and `flatpak-builder` work without granting the container additional privileges.
 COPY flatpak-bwrap /usr/local/libexec/flatpak-bwrap
 RUN chmod 755 /usr/local/libexec/flatpak-bwrap
 # Wraps bubblewrap to work around the masked `/proc` (see `flatpak-bwrap`).
 ENV FLATPAK_BWRAP=/usr/local/libexec/flatpak-bwrap
-# Skips Flatpak's parental controls check, which otherwise fails because the container has no D-Bus
-# system bus.
-ENV FLATPAK_SYSTEM_HELPER_ON_SESSION=1
 
 # Switch to non-root user.
 USER node

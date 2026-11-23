@@ -65,6 +65,9 @@
     "WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
     "XDG_RUNTIME_DIR": "/tmp",
     "XDG_SESSION_TYPE": "${localEnv:XDG_SESSION_TYPE}",
+    // D-Bus (started by `start.sh`)
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/tmp/dbus-session.sock",
+    "DBUS_SYSTEM_BUS_ADDRESS": "unix:path=/tmp/dbus-system.sock",
     // VNC connection
     "VNC_PORT": "5900",
     "NOVNC_PORT": "6080"

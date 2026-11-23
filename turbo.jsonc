@@ -11,6 +11,7 @@
   "globalPassThroughEnv": [
     "CHROMIUM_BIN",
     "CHROMIUM_FLAGS",
+    "DBUS_*",
     "ELECTRON_*",
     "FIREFOX_BIN",
     "LIBGL_*",

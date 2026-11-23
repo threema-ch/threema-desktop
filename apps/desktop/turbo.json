@@ -115,7 +115,6 @@
         "APPLE_TEAM_NAME",
         "CUSTOM_CONFIG_*",
         "FLATPAK_BWRAP",
-        "FLATPAK_SYSTEM_HELPER_ON_SESSION",
         "GIT_REVISION",
         "GITLAB_CI",
         "MINIDUMP_ENDPOINT",
