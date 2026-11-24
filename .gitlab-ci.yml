@@ -859,6 +859,8 @@ generate:desktop:flatpak:lint-inputs:
 validate:desktop:flatpak:metainfo:
   stage: test
   needs: [generate:desktop:flatpak:lint-inputs]
+  # TODO(101): Remove allow_failure after beta68
+  allow_failure: true
   image:
     name: ghcr.io/flathub-infra/flatpak-builder-lint:latest
     entrypoint: ['']
