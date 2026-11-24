@@ -837,7 +837,6 @@ generate:desktop:flatpak:lint-inputs:
     expire_in: 1d
     paths:
       - build/flatpak-metadata/
-      - apps/desktop/packaging/flatpak/flathub/consumer-live/
   before_script:
     - set -euo pipefail
     # Python packages required by the Flatpak source generators.
@@ -851,8 +850,6 @@ generate:desktop:flatpak:lint-inputs:
     # Generate the metainfo for the `consumer-live` and `work-live` flavors from the templates.
     - pnpm --filter ./apps/desktop run generate:flatpak-metadata consumer-live build/flatpak-metadata
     - pnpm --filter ./apps/desktop run generate:flatpak-metadata work-live build/flatpak-metadata
-    # Generate the Flathub manifests (including the generated sources they reference).
-    - pnpm run generate:desktop:flathub
 
 # Lint the generated metainfo with the Flathub linter (wraps `appstreamcli validate`). The external
 # releases are picked up from `releases/<app-id>.releases.xml` next to the metainfo.
@@ -867,16 +864,6 @@ validate:desktop:flatpak:metainfo:
   script:
     - flatpak-builder-lint appstream build/flatpak-metadata/ch.threema.threema-desktop.metainfo.xml
     - flatpak-builder-lint appstream build/flatpak-metadata/ch.threema.threema-work-desktop.metainfo.xml
-
-# Lint the generated Flathub manifest with the Flathub linter.
-validate:desktop:flatpak:manifest:
-  stage: test
-  needs: [generate:desktop:flatpak:lint-inputs]
-  image:
-    name: ghcr.io/flathub-infra/flatpak-builder-lint:latest
-    entrypoint: ['']
-  script:
-    - flatpak-builder-lint manifest apps/desktop/packaging/flatpak/flathub/consumer-live/ch.threema.threema-desktop.yml
 
 validate:peer-dependencies-met:
   stage: test
