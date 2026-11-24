@@ -60,7 +60,8 @@ RUN curl --proto '=https' --tlsv1.3 -sSf "https://sh.rustup.rs" \
 ENV PATH="/home/${USER_NAME}/.cargo/bin:${PATH}"
 RUN rustup set auto-self-update disable \
  && rustup set auto-install disable \
- && cargo install --locked cargo-deny \
+ # TODO(#103): Pin to a specific version the cargo dependencies
+ && cargo install --locked cargo-deny@0.21.0 \
  && cargo install --locked cargo-expand \
  && cargo install --locked cargo-tarpaulin \
  && rustup toolchain install nightly --component rustfmt
