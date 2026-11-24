@@ -5,6 +5,24 @@
 <releases>
     <!-- Note: First entry is used as the current version. For full spec, see
     https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+    <release version="2.0~publicbeta68" date="2026-11-24">
+        <description>
+            <p>Note:</p>
+            <ul>
+                <li>This version requires macOS 13 or higher</li>
+            </ul>
+            <p>Improvements:</p>
+            <ul>
+                <li>Reduced required permissions for Flatpak packages</li>
+                <li>Added aarch64 as supported architecture for Flatpak packages</li>
+            </ul>
+            <p>Fixes:</p>
+            <ul>
+                <li>Truncated long participant names in group calls</li>
+            </ul>
+            <p>…and various under-the-hood changes and improvements.</p>
+        </description>
+    </release>
     <release version="2.0~publicbeta67" date="2026-10-23">
         <description>
             <p>Improvements:</p>
