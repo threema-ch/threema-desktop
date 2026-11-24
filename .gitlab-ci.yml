@@ -1023,12 +1023,6 @@ validate:rust-versions-in-sync:
           echo "Invalid build type: $BUILD_TYPE"
           exit 1
       esac
-    # Patch metadata for nightlies, so that they are distinguishable from the last stable release
-    # in software centers.
-    - |
-      if [ "$BUILD_TYPE" = "nightly" ]; then
-        bash scripts/add-nightly-release-to-metainfo.sh apps/desktop/packaging/metadata/ch.threema.threema-desktop.releases.xml
-      fi
     # Split flavors.
     - IFS=',' read -ra flavors <<< "$FLAVORS"
     # Build Flatpak package.
